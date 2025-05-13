@@ -10,14 +10,14 @@ import states.FreeplayState;
 class MasterEditorMenu extends MusicBeatState
 {
 	var options:Array<String> = [
-		'Chart Editor',
-		'Character Editor',
-		'Stage Editor',
-		'Week Editor',
-		'Menu Character Editor',
-		'Dialogue Editor',
-		'Dialogue Portrait Editor',
-		'Note Splash Editor'
+        Language.getPhrase('chart_editor', 'Chart Editor'),
+        Language.getPhrase('character_editor', 'Character Editor'),
+        Language.getPhrase('stage_editor', 'Stage Editor'),
+        Language.getPhrase('week_editor', 'Week Editor'),
+        Language.getPhrase('menu_character_editor', 'Menu Character Editor'),
+        Language.getPhrase('dialogue_editor', 'Dialogue Editor'),
+        Language.getPhrase('dialogue_portrait_editor', 'Dialogue Portrait Editor'),
+        Language.getPhrase('note_splash_editor', 'Note Splash Editor')
 	];
 	private var grpTexts:FlxTypedGroup<Alphabet>;
 	private var directories:Array<String> = [null];
@@ -156,11 +156,11 @@ class MasterEditorMenu extends MusicBeatState
 	
 		WeekData.setDirectoryFromWeek();
 		if(directories[curDirectory] == null || directories[curDirectory].length < 1)
-			directoryTxt.text = '< No Mod Directory Loaded >';
+			directoryTxt.text = Language.getPhrase('no_mod_directory_loaded', '< No Mod Directory Loaded >');
 		else
 		{
 			Mods.currentModDirectory = directories[curDirectory];
-			directoryTxt.text = '< Loaded Mod Directory: ' + Mods.currentModDirectory + ' >';
+			directoryTxt.text = Language.getPhrase('loaded_mod_directory', '< Loaded Mod Directory: {1} >', [Mods.currentModDirectory]);
 		}
 		directoryTxt.text = directoryTxt.text.toUpperCase();
 	}

@@ -64,13 +64,24 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		option.onChange = onChangeHitsoundVolume;
 
 		var option:Option = new Option('Rating Offset',
-			'Changes how late/early you have to hit for a "Sick!"\nHigher values mean you have to hit later.',
+			'Changes how late/early you have to hit for a "Marvelous!!"\nHigher values mean you have to hit later.',
 			'ratingOffset',
 			INT);
 		option.displayFormat = '%vms';
 		option.scrollSpeed = 20;
 		option.minValue = -30;
 		option.maxValue = 30;
+		addOption(option);
+
+		var option:Option = new Option('Marvelous!! Hit Window',
+			'Changes the amount of time you have\nfor hitting a "Marvelous!!" in milliseconds.',
+			'marvelousWindow',
+			FLOAT);
+		option.displayFormat = '%vms';
+		option.scrollSpeed = 5;
+		option.minValue = 15.0;
+		option.maxValue = 20.0;
+		option.changeValue = 0.1;
 		addOption(option);
 
 		var option:Option = new Option('Sick! Hit Window',
@@ -115,6 +126,12 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		option.maxValue = 10;
 		option.changeValue = 0.1;
 		addOption(option);
+
+        var option:Option = new Option('Judgement Counter',
+            'Show the judgement counter during gameplay.',
+            'judgementCounter',
+            BOOL);
+        addOption(option);
 
 		super();
 	}

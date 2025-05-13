@@ -19,6 +19,7 @@ import openfl.utils.Assets as OpenFlAssets;
 import openfl.events.KeyboardEvent;
 import haxe.Json;
 
+
 import cutscenes.DialogueBoxPsych;
 
 import states.StoryMenuState;
@@ -56,20 +57,20 @@ import crowplexus.hscript.Printer;
 #end
 
 /**
- * This is where all the Gameplay stuff happens and is managed
+ * Aquí es donde sucede y se gestiona toda la jugabilidad.
  *
- * here's some useful tips if you are making a mod in source:
+ * Aquí tienes algunos consejos útiles si estás haciendo un mod en el source:
  *
- * If you want to add your stage to the game, copy states/stages/Template.hx,
- * and put your stage code there, then, on PlayState, search for
- * "switch (curStage)", and add your stage to that list.
+ * Si quieres agregar tu escenario al juego, copia states/stages/Template.hx,
+ * y pon tu código de escenario ahí, luego, en PlayState, busca
+ * "switch (curStage)", y agrega tu escenario a esa lista.
  *
- * If you want to code Events, you can either code it on a Stage file or on PlayState, if you're doing the latter, search for:
+ * Si quieres programar Eventos, puedes hacerlo en un archivo de Stage o en PlayState, si eliges lo último, busca:
  *
- * "function eventPushed" - Only called *one time* when the game loads, use it for precaching events that use the same assets, no matter the values
- * "function eventPushedUnique" - Called one time per event, use it for precaching events that uses different assets based on its values
- * "function eventEarlyTrigger" - Used for making your event start a few MILLISECONDS earlier
- * "function triggerEvent" - Called when the song hits your event's timestamp, this is probably what you were looking for
+ * "function eventPushed" - Solo se llama *una vez* cuando el juego carga, úsalo para precargar eventos que usan los mismos assets, sin importar los valores.
+ * "function eventPushedUnique" - Se llama una vez por evento, úsalo para precargar eventos que usan diferentes assets según sus valores.
+ * "function eventEarlyTrigger" - Se usa para hacer que tu evento comience unos MILISEGUNDOS antes.
+ * "function triggerEvent" - Se llama cuando la canción llega al timestamp de tu evento, probablemente esto es lo que estabas buscando.
 **/
 class PlayState extends MusicBeatState
 {
@@ -85,8 +86,9 @@ class PlayState extends MusicBeatState
 		['Nice', 0.7], //69%
 		['Good', 0.8], //From 70% to 79%
 		['Great', 0.9], //From 80% to 89%
-		['Sick!', 1], //From 90% to 99%
-		['Perfect!!', 1] //The value on this one isn't used actually, since Perfect is always "1"
+		['Sick!', 0.95], //From 90% to 94%
+		['Marvelous!!', 1], //From 95% to 99%
+		['Perfect!!!', 1] //The value on this one isn't used actually, since Perfect is always "1"
 	];
 
 	//event variables
@@ -215,6 +217,7 @@ class PlayState extends MusicBeatState
 	public var scoreTxt:FlxText;
 	var timeTxt:FlxText;
 	var scoreTxtTween:FlxTween;
+    var judgementCounterText:FlxText;
 
 	public static var campaignScore:Int = 0;
 	public static var campaignMisses:Int = 0;
@@ -246,6 +249,9 @@ class PlayState extends MusicBeatState
 	var keysPressed:Array<Int> = [];
 	var boyfriendIdleTime:Float = 0.0;
 	var boyfriendIdled:Bool = false;
+
+	//Version shit
+	var versionText:FlxText;
 
 	// Lua shit
 	public static var instance:PlayState;
@@ -477,6 +483,30 @@ class PlayState extends MusicBeatState
 		add(uiGroup);
 		add(noteGroup);
 
+		// Counter
+	    judgementCounterText = new FlxText(10, (FlxG.height / 2) - 100, 0, "", 23); // Más grande y centrado vertical
+		judgementCounterText.setFormat(Paths.font("vcr.ttf"), 23, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		judgementCounterText.scrollFactor.set();
+		judgementCounterText.alpha = 1;
+		judgementCounterText.borderSize = 2;
+		judgementCounterText.cameras = [camHUD];
+		//judgementCounterText.allowMarkup = true; // No work
+		add(judgementCounterText);
+
+		// Mostrar la versión del motor y del juego en la parte inferior de la pantalla
+		versionText = new FlxText(0, FlxG.height - 120, FlxG.width, 
+			"Psych Engine v" + MainMenuState.psychEngineVersion + "\n" +
+			"Plus Engine v" + MainMenuState.plusEngineVersion + "\n" +
+			"Friday Night Funkin v0.2.8\n(Modified)", 12);
+		// Configura la fuente, tamaño, color y borde del texto
+		versionText.setFormat(Paths.font("vcr.ttf"), 10, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		versionText.scrollFactor.set();
+		versionText.screenCenter(X); // Centra horizontalmente el texto
+		versionText.alpha = 0.5; // Hace el texto un poco transparente
+		versionText.borderSize = 1.5; // Tamaño del borde
+		versionText.cameras = [camHUD]; // Asigna la cámara del HUD
+		add(versionText); // Agrega el texto a la escena
+
 		Conductor.songPosition = -Conductor.crochet * 5 + Conductor.offset;
 		var showTime:Bool = (ClientPrefs.data.timeBarType != 'Disabled');
 		timeTxt = new FlxText(STRUM_X + (FlxG.width / 2) - 248, 19, 400, "", 32);
@@ -504,7 +534,11 @@ class PlayState extends MusicBeatState
 			timeTxt.y += 3;
 		}
 
-		generateSong();
+		trace("Antes de generateSong()");
+        generateSong();
+        trace("Después de generateSong()");
+        trace('Notas generadas: ' + notes.length);
+        trace('generateSong() terminado');
 
 		noteGroup.add(grpNoteSplashes);
 
@@ -1160,21 +1194,25 @@ class PlayState extends MusicBeatState
 
 	public dynamic function fullComboFunction()
 	{
-		var sicks:Int = ratingsData[0].hits;
-		var goods:Int = ratingsData[1].hits;
-		var bads:Int = ratingsData[2].hits;
-		var shits:Int = ratingsData[3].hits;
-
+        var marvelous:Int = ratingsData[0].hits;  
+		var sicks:Int = ratingsData[1].hits;
+		var goods:Int = ratingsData[2].hits;
+		var bads:Int = ratingsData[3].hits;
+		var shits:Int = ratingsData[4].hits;  
+        
 		ratingFC = "";
 		if(songMisses == 0)
 		{
-			if (bads > 0 || shits > 0) ratingFC = 'FC';
+			if (shits > 0) ratingFC = 'FC';
+			else if (bads > 0) ratingFC = 'BFC';
 			else if (goods > 0) ratingFC = 'GFC';
 			else if (sicks > 0) ratingFC = 'SFC';
-		}
-		else {
-			if (songMisses < 10) ratingFC = 'SDCB';
-			else ratingFC = 'Clear';
+			else if (marvelous > 0) ratingFC = 'MFC';
+		} else {
+			if (songMisses < 2) ratingFC = 'SMC';
+			else if (songMisses < 5) ratingFC = 'LMC';
+			else if (songMisses < 10) ratingFC = 'MMC';
+			else ratingFC = 'HMC';
 		}
 	}
 
@@ -1494,6 +1532,7 @@ class PlayState extends MusicBeatState
 		stagesFunc(function(stage:BaseStage) stage.eventPushedUnique(event));
 	}
 
+	// called for every event that has the same name
 	function eventEarlyTrigger(event:EventNote):Float {
 		var returnedValue:Null<Float> = callOnScripts('eventEarlyTrigger', [event.event, event.value1, event.value2, event.strumTime], true);
 		if(returnedValue != null && returnedValue != 0) {
@@ -1731,6 +1770,25 @@ class PlayState extends MusicBeatState
 			}
 		}
 
+        if (judgementCounterText != null)
+        {
+            if (ClientPrefs.judgementCounter)
+            {
+                judgementCounterText.visible = true;
+                judgementCounterText.text =
+                    'MVS:  ' + ratingsData[0].hits + '\n' +
+                    'SKS:  ' + ratingsData[1].hits + '\n' +
+                    'GDS:  ' + ratingsData[2].hits + '\n' +
+                    'BDS:  ' + ratingsData[3].hits + '\n' +
+                    'SHS:  ' + ratingsData[4].hits + '\n' +
+                    'MIS:  ' + songMisses;
+            }
+            else
+            {
+                judgementCounterText.visible = false;
+            }
+        }
+
 		if (startingSong)
 		{
 			if (startedCountdown && Conductor.songPosition >= Conductor.offset)
@@ -1872,6 +1930,7 @@ class PlayState extends MusicBeatState
 	// Health icon updaters
 	public dynamic function updateIconsScale(elapsed:Float)
 	{
+
 		var mult:Float = FlxMath.lerp(1, iconP1.scale.x, Math.exp(-elapsed * 9 * playbackRate));
 		iconP1.scale.set(mult, mult);
 		iconP1.updateHitbox();

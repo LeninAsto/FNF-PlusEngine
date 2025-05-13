@@ -18,6 +18,8 @@ class Bar extends FlxSpriteGroup
 	public var barHeight(default, set):Int = 1;
 	public var barOffset:FlxPoint = new FlxPoint(3, 3);
 
+	public var smoothPercent:Float = 0; 
+
 	public function new(x:Float, y:Float, image:String = 'healthBar', valueFunction:Void->Float = null, boundX:Float = 0, boundY:Float = 1)
 	{
 		super(x, y);
@@ -58,8 +60,40 @@ class Bar extends FlxSpriteGroup
 			percent = (value != null ? value : 0);
 		}
 		else percent = 0;
+
+		    // Interpolación suave
+            smoothPercent = FlxMath.lerp(smoothPercent, percent, 0.15); // 0.15 puedes ajustarlo para más o menos suavidad
+            updateBarSmooth();
+
 		super.update(elapsed);
 	}
+
+	public function updateBarSmooth()
+{
+    if(leftBar == null || rightBar == null) return;
+
+    leftBar.setPosition(bg.x, bg.y);
+    rightBar.setPosition(bg.x, bg.y);
+
+    var leftSize:Float = 0;
+    if(leftToRight) leftSize = FlxMath.lerp(0, barWidth, smoothPercent / 100);
+    else leftSize = FlxMath.lerp(0, barWidth, 1 - smoothPercent / 100);
+
+    leftBar.clipRect.width = leftSize;
+    leftBar.clipRect.height = barHeight;
+    leftBar.clipRect.x = barOffset.x;
+    leftBar.clipRect.y = barOffset.y;
+
+    rightBar.clipRect.width = barWidth - leftSize;
+    rightBar.clipRect.height = barHeight;
+    rightBar.clipRect.x = barOffset.x + leftSize;
+    rightBar.clipRect.y = barOffset.y;
+
+    barCenter = leftBar.x + leftSize + barOffset.x;
+
+    leftBar.clipRect = leftBar.clipRect;
+    rightBar.clipRect = rightBar.clipRect;
+}
 	
 	public function setBounds(min:Float, max:Float)
 	{
