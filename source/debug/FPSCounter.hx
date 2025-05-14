@@ -60,9 +60,17 @@ class FPSCounter extends TextField
 		deltaTimeout = 0.0;
 	}
 
-	public dynamic function updateText():Void { // so people can override it in hscript
+	public dynamic function updateText():Void {
 		text = 'FPS: ${currentFPS}'
 		+ '\nMemory: ${flixel.util.FlxStringUtil.formatBytes(memoryMegas)}';
+
+		if (ClientPrefs.data.showStateInFPS) {
+			// Añadir el nombre del state actual
+			var stateName = "";
+			if (FlxG.state != null)
+				stateName = Type.getClassName(Type.getClass(FlxG.state));
+			text += '\nState: $stateName';
+		}
 
 		textColor = 0xFFFFFFFF;
 		if (currentFPS < FlxG.drawFramerate * 0.5)

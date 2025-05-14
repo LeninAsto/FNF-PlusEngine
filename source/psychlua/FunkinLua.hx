@@ -205,6 +205,9 @@ class FunkinLua {
 		set('splashSkin', ClientPrefs.data.splashSkin);
 		set('splashSkinPostfix', NoteSplash.getSplashSkinPostfix());
 		set('splashAlpha', ClientPrefs.data.splashAlpha);
+		var now = Date.now();
+        set('time', now.toString().split(" ")[1]); 
+        set('date', now.toString().split(" ")[0]);
 
 		// build target (windows, mac, linux, etc.)
 		set('buildTarget', LuaUtils.getBuildTarget());

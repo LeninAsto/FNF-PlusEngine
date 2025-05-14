@@ -62,14 +62,14 @@ class Bar extends FlxSpriteGroup
 		else percent = 0;
 
 		    // Interpolación suave
-            smoothPercent = FlxMath.lerp(smoothPercent, percent, 0.15); // 0.15 puedes ajustarlo para más o menos suavidad
+            smoothPercent = FlxMath.lerp(smoothPercent, percent, 0.01); // 0.15 puedes ajustarlo para más o menos suavidad
             updateBarSmooth();
 
 		super.update(elapsed);
 	}
 
 	public function updateBarSmooth()
-{
+    {
     if(leftBar == null || rightBar == null) return;
 
     leftBar.setPosition(bg.x, bg.y);
@@ -93,7 +93,7 @@ class Bar extends FlxSpriteGroup
 
     leftBar.clipRect = leftBar.clipRect;
     rightBar.clipRect = rightBar.clipRect;
-}
+    }
 	
 	public function setBounds(min:Float, max:Float)
 	{
@@ -160,14 +160,14 @@ class Bar extends FlxSpriteGroup
 		if(value != percent) doUpdate = true;
 		percent = value;
 
-		if(doUpdate) updateBar();
+		if(doUpdate) updateBarSmooth();
 		return value;
 	}
 
 	private function set_leftToRight(value:Bool)
 	{
 		leftToRight = value;
-		updateBar();
+		updateBarSmooth();
 		return value;
 	}
 

@@ -5,6 +5,7 @@ import backend.StageData;
 import backend.WeekData;
 import backend.Song;
 import backend.Rating;
+import backend.ModCompatibilityChecker;
 
 import flixel.FlxBasic;
 import flixel.FlxObject;
@@ -217,7 +218,10 @@ class PlayState extends MusicBeatState
 	public var scoreTxt:FlxText;
 	var timeTxt:FlxText;
 	var scoreTxtTween:FlxTween;
+    var timeTxtTween:FlxTween; // <-- Añade esto
+	var ratingTxtTween:FlxTween = null;
     var judgementCounterText:FlxText;
+	var ratingTxt:FlxText = null;
 
 	public static var campaignScore:Int = 0;
 	public static var campaignMisses:Int = 0;
@@ -495,11 +499,11 @@ class PlayState extends MusicBeatState
 
 		// Mostrar la versión del motor y del juego en la parte inferior de la pantalla
 		versionText = new FlxText(0, FlxG.height - 120, FlxG.width, 
-			"Psych Engine v" + MainMenuState.psychEngineVersion + "\n" +
 			"Plus Engine v" + MainMenuState.plusEngineVersion + "\n" +
+			"Psych Engine v" + MainMenuState.psychEngineVersion + "\n" +
 			"Friday Night Funkin v0.2.8\n(Modified)", 12);
 		// Configura la fuente, tamaño, color y borde del texto
-		versionText.setFormat(Paths.font("vcr.ttf"), 10, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		versionText.setFormat(Paths.font("vcr.ttf"), 12, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		versionText.scrollFactor.set();
 		versionText.screenCenter(X); // Centra horizontalmente el texto
 		versionText.alpha = 0.5; // Hace el texto un poco transparente
@@ -588,6 +592,22 @@ class PlayState extends MusicBeatState
 		scoreTxt.visible = !ClientPrefs.data.hideHud;
 		uiGroup.add(scoreTxt);
 
+		ratingTxt = new FlxText(0, 150, 400, "", 40);
+        ratingTxt.setFormat(Paths.font("vcr.ttf"), 40, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+        ratingTxt.scrollFactor.set();
+        ratingTxt.borderSize = 2;
+        ratingTxt.visible = false;
+        ratingTxt.cameras = [camHUD];
+
+        // Posición según downScroll
+        if (ClientPrefs.data.downScroll)
+            ratingTxt.y = 30;
+        else
+            ratingTxt.y = FlxG.height - ratingTxt.height - 16;
+
+        ratingTxt.x = FlxG.width - ratingTxt.width - 16;
+        uiGroup.add(ratingTxt);
+
 		botplayTxt = new FlxText(400, healthBar.y - 90, FlxG.width - 800, Language.getPhrase("Botplay").toUpperCase(), 32);
 		botplayTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		botplayTxt.scrollFactor.set();
@@ -668,6 +688,19 @@ class PlayState extends MusicBeatState
 		splash.alpha = 0.000001; //cant make it invisible or it won't allow precaching
 
 		super.create();
+
+        #if sys
+        if (Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0 && Mods.currentModDirectory != "ModTemplate.zip" && Mods.currentModDirectory != "readme.txt") {
+            ModCompatibilityChecker.checkModCompatibility(Mods.currentModDirectory, function(warning:String) {
+            #if (LUA_ALLOWED || HSCRIPT_ALLOWED)
+            addTextToDebug(warning, FlxColor.YELLOW);
+            #else
+            FlxG.log.warn(warning);
+            #end
+        });
+     }
+#end
+
 		Paths.clearUnusedMemory();
 
 		cacheCountdown();
@@ -1178,19 +1211,45 @@ class PlayState extends MusicBeatState
 	}
 
 	public dynamic function updateScoreText()
-	{
-		var str:String = Language.getPhrase('rating_$ratingName', ratingName);
-		if(totalPlayed != 0)
-		{
-			var percent:Float = CoolUtil.floorDecimal(ratingPercent * 100, 2);
-			str += ' (${percent}%) - ' + Language.getPhrase(ratingFC);
-		}
+    {
+        var percent:Float = 0;
+        if(totalPlayed != 0)
+            percent = CoolUtil.floorDecimal(ratingPercent * 100, 2);
 
-		var tempScore:String;
-		if(!instakillOnMiss) tempScore = Language.getPhrase('score_text', 'Score: {1} | Misses: {2} | Rating: {3}', [songScore, songMisses, str]);
-		else tempScore = Language.getPhrase('score_text_instakill', 'Score: {1} | Rating: {2}', [songScore, str]);
-		scoreTxt.text = tempScore;
-	}
+        if(ClientPrefs.data.newScoreTxt) {
+            // Nuevo estilo: solo score, misses y precisión, con traducción
+            var tempScore:String;
+            if(!instakillOnMiss)
+                tempScore = Language.getPhrase('score_text_simple', 'Score: {1} | Misses: {2} | Accuracy: {3}%', [songScore, songMisses, percent]);
+            else
+                tempScore = Language.getPhrase('score_text_simple_instakill', 'Score: {1} | Accuracy: {2}%', [songScore, percent]);
+        scoreTxt.text = tempScore;
+
+        // Mostrar rating y FC aparte
+        if(ratingTxt != null) {
+            var txt = ratingName;
+            if(ratingFC != null && ratingFC.length > 0)
+                txt += '\n' + ratingFC;
+            ratingTxt.text = txt;
+            ratingTxt.visible = true;
+        }
+    } else {
+        // Estilo clásico
+        var str:String = Language.getPhrase('rating_$ratingName', ratingName);
+        if(totalPlayed != 0)
+            str += ' (${percent}%) - ' + Language.getPhrase(ratingFC);
+
+        var tempScore:String;
+        if(!instakillOnMiss)
+            tempScore = Language.getPhrase('score_text', 'Score: {1} | Misses: {2} | Rating: {3}', [songScore, songMisses, str]);
+        else
+            tempScore = Language.getPhrase('score_text_instakill', 'Score: {1} | Rating: {2}', [songScore, str]);
+        scoreTxt.text = tempScore;
+
+        if(ratingTxt != null)
+            ratingTxt.visible = false;
+        }
+    }
 
 	public dynamic function fullComboFunction()
 	{
@@ -1231,6 +1290,19 @@ class PlayState extends MusicBeatState
 			}
 		});
 	}
+
+	public function doTimeBump():Void {
+        if(timeTxtTween != null)
+            timeTxtTween.cancel();
+
+            timeTxt.scale.set(1.5, 1.5);
+            timeTxtTween = FlxTween.tween(timeTxt.scale, {x: 1, y: 1}, 0.3, {
+				ease: FlxEase.expoOut, // <-- Easing suave
+                onComplete: function(twn:FlxTween) {
+                    timeTxtTween = null;
+                }
+        });
+   }
 
 	public function setSongTime(time:Float)
 	{
@@ -3289,6 +3361,22 @@ class PlayState extends MusicBeatState
 
 		characterBopper(curBeat);
 
+		doTimeBump();
+
+		if (ratingTxt != null && ratingTxt.visible)
+        {
+            if (ratingTxtTween != null)
+                ratingTxtTween.cancel();
+
+            ratingTxt.scale.set(1.8, 1.8);
+            ratingTxtTween = FlxTween.tween(ratingTxt.scale, {x: 1.1, y: 1.1}, 0.3, {
+				ease: FlxEase.expoOut,
+                onComplete: function(twn:FlxTween) {
+                    ratingTxtTween = null;
+            }
+        });
+        }
+
 		super.beatHit();
 		lastBeatHit = curBeat;
 
@@ -3358,7 +3446,9 @@ class PlayState extends MusicBeatState
 		#end
 		{
 			for (script in luaArray)
+			{
 				if(script.scriptName == luaToLoad) return false;
+			}
 
 			new FunkinLua(luaToLoad);
 			return true;

@@ -24,15 +24,11 @@ class OutdatedSubState extends MusicBeatSubstate
 		add(bg);
 
 		warnText = new FlxText(0, 0, FlxG.width,
-			'Sup bro, looks like you\'re running an outdated version of\nPsych Engine (${MainMenuState.psychEngineVersion})\n
-			-----------------------------------------------\n
-			Press ENTER to update to the latest version ${updateVersion}\n
-			Press ESCAPE to proceed anyway.\n
-			You can disable this warning by unchecking the
-			"Check for Updates" setting in the Options Menu\n
-			-----------------------------------------------\n
-			Thank you for using the Engine!',
-			32);
+            Language.getPhrase('outdated_warning',
+                'Sup bro, looks like you\'re running an outdated version of\nPlus Engine ({1})\n-----------------------------------------------\nPress ENTER to update to the latest version {2}\nPress ESCAPE to proceed anyway.\nYou can disable this warning by unchecking the\n"Check for Updates" setting in the Options Menu\n-----------------------------------------------\nThank you for using the Engine!',
+                [MainMenuState.psychEngineVersion, updateVersion]
+        ),
+        32);
 		warnText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER);
 		warnText.scrollFactor.set();
 		warnText.screenCenter(Y);
@@ -48,7 +44,7 @@ class OutdatedSubState extends MusicBeatSubstate
 		if(!leftState) {
 			if (controls.ACCEPT) {
 				leftState = true;
-				CoolUtil.browserLoad("https://github.com/ShadowMario/FNF-PsychEngine/releases");
+				CoolUtil.browserLoad("https://github.com/LeninAsto/FNF-PlusEngine/releases");
 			}
 			else if(controls.BACK) {
 				leftState = true;

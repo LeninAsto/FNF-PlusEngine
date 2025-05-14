@@ -80,7 +80,7 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		option.displayFormat = '%vms';
 		option.scrollSpeed = 5;
 		option.minValue = 15.0;
-		option.maxValue = 20.0;
+		option.maxValue = 25.0;
 		option.changeValue = 0.1;
 		addOption(option);
 
@@ -130,6 +130,12 @@ class GameplaySettingsSubState extends BaseOptionsMenu
         var option:Option = new Option('Judgement Counter',
             'Show the judgement counter during gameplay.',
             'judgementCounter',
+            BOOL);
+        addOption(option);
+
+		var option:Option = new Option('Use de New ScoreTxt',
+            'If enabled, ScoreTxt will only display score, misses, and accuracy.\nThe rating and ratingFC will be displayed separately.',
+            'newScoreTxt',
             BOOL);
         addOption(option);
 

@@ -160,6 +160,13 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 
+		var option:Option = new Option(
+            'Show current state',
+            'If enabled, the FPS counter will show the current State.',
+            'showStateInFPS',
+            BOOL);
+        addOption(option);
+
 		super();
 		add(notes);
 		add(splashes);

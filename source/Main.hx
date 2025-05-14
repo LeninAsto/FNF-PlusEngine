@@ -239,7 +239,7 @@ class Main extends Sprite
 		// remove if you're modding and want the crash log message to contain the link
 		// please remember to actually modify the link for the github page to report the issues to.
 		#if officialBuild
-		errMsg += "\nPlease report this error to the GitHub page: https://github.com/ShadowMario/FNF-PsychEngine";
+		errMsg += "\nPlease report this error to the GitHub page: https://github.com/LeninAsto/FNF-PlusEngine";
 		#end
 		errMsg += "\n\n> Crash Handler written by: sqirra-rng";
 
