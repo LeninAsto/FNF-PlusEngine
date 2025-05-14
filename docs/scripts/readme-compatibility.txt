@@ -1,6 +1,5 @@
-Put your custom charts here
-
 In "compatibility.txt" write the versions compatible with the mod
+compatibility.txt should go in your mod's folder "/..name of your mod../data/compatibility.txt"
 (the first line is Psych version, and the second is Plus version); NOTE: NO COMMENTS, ONLY VERSIONS.
 
 Example:
