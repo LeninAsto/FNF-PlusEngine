@@ -17,10 +17,10 @@ function onCreate()
     
     --Display time
     --Mostrar la hora
-    makeLuaText('timetest', time, 100, 0, 0)
+    makeLuaText('timetest', time, 100, 0, 0)--not work in "onUpdate()"
     
     --Display date
-    -- Mostrar la fecha
+    --Mostrar la fecha
     makeLuaText('datetest', date, 100, 0, 0) 
 end
 
@@ -55,13 +55,13 @@ function onStepHit()
         winTweenX("moveX", 100, 1.2, "quadInOut")
         --[[Donde:
             --> moveX = nombre de Tween
-            --> 100 = cuanto se movera en el eje X
+            --> 100 = Se movera 100 respecto al borde izquierdo en el eje X "0 = pegado al lado izquierdo"
             --> 1.2 = tiempo
             --> "quadInOut" = tipo de interpolación
             ------
             Where:
             --> moveX = name of Tween
-            --> 100 = how much it will move on the X axis
+            --> 100 = It will move 100 from the left edge on the X axis "0 = stuck to the left side"
             --> 1.2 = time
             --> "quadInOut" = type of interpolation]]
 
@@ -70,13 +70,13 @@ function onStepHit()
         winTweenY("moveY", 200, 1.5, "linear") 
         --[[Donde:
             --> moveY = nombre de Tween
-            --> 200 = cuanto se movera en el eje Y
+            --> 200 = Se movera 200 respecto al borde superior en el eje Y "0 = pegado al lado superior"
             --> 1.5 = tiempo
             --> "linear" = tipo de interpolación
             ------
             Where:
             --> moveY = name of Tween
-            --> 200 = how much it will move on the Y axis
+            --> 200 = It will move 200 from the top edge on the Y axis "0 = stuck to the top side"
             --> 1.5 = time
             --> "linear" = type of interpolation]]
     end

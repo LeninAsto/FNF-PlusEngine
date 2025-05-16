@@ -2,6 +2,10 @@ Plus Engine
 
 > Description in process.. =D
 
+To learn about new Lua scripts, click [here](https://github.com/LeninAsto/FNF-PlusEngine/blob/main/docs/scripts/TemplatePlusScript.lua).
+
+To learn more about mod compatibility in the engine, [click here](https://github.com/LeninAsto/FNF-PlusEngine/blob/main/docs/scripts/readme-compatibility.txt).
+
 <details>
   <summary><h2>Psych Team</h2></summary>
 
