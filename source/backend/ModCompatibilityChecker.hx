@@ -20,7 +20,7 @@ class ModCompatibilityChecker {
                 if (compareVersions(MainMenuState.psychEngineVersion, psychVersion) < 0) {
                     onWarning('WARNING: Mod "$modName" requires Psych Engine version $psychVersion or higher!');
                 }
-                if (psychVersion == "0.6.3") {
+                if (compareVersions(psychVersion, "0.6.3") <= 0) {
                     onWarning('WARNING: Mod "$modName" was made for Psych Engine 0.6.3. This mod may not be compatible with this engine!');
                 }
                 if (compareVersions(MainMenuState.plusEngineVersion, plusVersion) < 0) {
@@ -28,7 +28,7 @@ class ModCompatibilityChecker {
                 }
             }
         } else {
-            onWarning('WARNING: Mod "$modName" is missing "compatibility" file! There may be errors in the mod, or maybe not.');
+            onWarning('WARNING: Missing "compatibility.txt" file! There may be errors in the mod, or maybe not.');
         }
     }
 

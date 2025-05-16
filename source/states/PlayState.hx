@@ -117,6 +117,8 @@ class PlayState extends MusicBeatState
 
 	public var playbackRate(default, set):Float = 1;
 
+    public var originalStrumY:Array<Float> = [];
+
 	public var boyfriendGroup:FlxSpriteGroup;
 	public var dadGroup:FlxSpriteGroup;
 	public var gfGroup:FlxSpriteGroup;
@@ -592,21 +594,23 @@ class PlayState extends MusicBeatState
 		scoreTxt.visible = !ClientPrefs.data.hideHud;
 		uiGroup.add(scoreTxt);
 
-		ratingTxt = new FlxText(0, 150, 400, "", 40);
-        ratingTxt.setFormat(Paths.font("vcr.ttf"), 40, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-        ratingTxt.scrollFactor.set();
-        ratingTxt.borderSize = 2;
-        ratingTxt.visible = false;
-        ratingTxt.cameras = [camHUD];
-
-        // Posición según downScroll
-        if (ClientPrefs.data.downScroll)
-            ratingTxt.y = 30;
-        else
-            ratingTxt.y = FlxG.height - ratingTxt.height - 16;
-
-        ratingTxt.x = FlxG.width - ratingTxt.width - 16;
-        uiGroup.add(ratingTxt);
+		ratingTxt = new FlxText(0, 500, 400, "Perfect!!!\nMFC", 40); // Texto temporal
+		ratingTxt.setFormat(Paths.font("vcr.ttf"), 40, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		ratingTxt.scrollFactor.set();
+		ratingTxt.borderSize = 2;
+		ratingTxt.visible = false;
+		ratingTxt.cameras = [camHUD];
+		
+		// Posición según downScroll
+		if (ClientPrefs.data.downScroll)
+			ratingTxt.y = 30;
+		else
+			ratingTxt.y = FlxG.height - ratingTxt.height - 30; // Más arriba
+		
+		ratingTxt.x = FlxG.width - ratingTxt.width - 15;
+		uiGroup.add(ratingTxt);
+		
+		ratingTxt.text = ""; // Limpia el texto si no quieres mostrar nada al inicio
 
 		botplayTxt = new FlxText(400, healthBar.y - 90, FlxG.width - 800, Language.getPhrase("Botplay").toUpperCase(), 32);
 		botplayTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -1249,6 +1253,10 @@ class PlayState extends MusicBeatState
         if(ratingTxt != null)
             ratingTxt.visible = false;
         }
+
+		if (!ClientPrefs.data.downScroll) {
+        ratingTxt.y = FlxG.height - ratingTxt.height - 30; // Usa -30 para dejar más espacio
+        }
     }
 
 	public dynamic function fullComboFunction()
@@ -1675,6 +1683,7 @@ class PlayState extends MusicBeatState
 
 			strumLineNotes.add(babyArrow);
 			babyArrow.playerPosition();
+
 		}
 	}
 

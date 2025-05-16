@@ -529,8 +529,7 @@ class TitleState extends MusicBeatState
 				case 2:
 					createCoolText(['Plus Engine by'], 40);
 				case 4:
-					addMoreText('Lenin', 40);
-					addMoreText('Asto', 40);
+					addMoreText('Lenin Asto', 40);
 				case 5:
 					deleteCoolText();
 				case 6:
@@ -566,7 +565,7 @@ class TitleState extends MusicBeatState
 	{
 		if (!skippedIntro)
 		{
-			#if TITLE_SCREEN_EASTER_EGG
+			
 			if (playJingle) //Ignore deez
 			{
 				playJingle = false;
@@ -623,7 +622,7 @@ class TitleState extends MusicBeatState
 					};
 				}
 			}
-			else #end //Default! Edit this one!!
+			else  //Default! Edit this one!!
 			{
 				remove(ngSpr);
 				remove(credGroup);
@@ -632,7 +631,7 @@ class TitleState extends MusicBeatState
 				var easteregg:String = FlxG.save.data.psychDevsEasterEgg;
 				if (easteregg == null) easteregg = '';
 				easteregg = easteregg.toUpperCase();
-				#if TITLE_SCREEN_EASTER_EGG
+				
 				if(easteregg == 'SHADOW')
 				{
 					FlxG.sound.music.fadeOut();
@@ -641,7 +640,7 @@ class TitleState extends MusicBeatState
 						FreeplayState.vocals.fadeOut();
 					}
 				}
-				#end
+				
 			}
 			skippedIntro = true;
 		}

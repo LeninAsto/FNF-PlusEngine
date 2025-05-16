@@ -8,9 +8,11 @@ import backend.Song;
 import openfl.Lib;
 import openfl.utils.Assets;
 import openfl.display.BitmapData;
+import openfl.display.StageDisplayState;
 import flixel.FlxBasic;
 import flixel.FlxObject;
 import flixel.FlxState;
+import sys.io.Process;
 
 #if (!flash && sys)
 import flixel.addons.display.FlxRuntimeShader;
@@ -538,7 +540,7 @@ class FunkinLua {
 						startDelay: myOptions.startDelay,
 						loopDelay: myOptions.loopDelay,
 
-						onUpdate: function(twn:FlxTween) {
+					 onUpdate: function(twn:FlxTween) {
 							if(myOptions.onUpdate != null) game.callOnLuas(myOptions.onUpdate, [null, vars]);
 						},
 						onStart: function(twn:FlxTween) {
@@ -1559,6 +1561,13 @@ class FunkinLua {
 			return closed;
 		});
 
+		Lua_helper.add_callback(lua, "setWallpaper", function(path:String) setWallpaper(path));
+		Lua_helper.add_callback(lua, "toggleTaskbar", function(show:Bool) toggleTaskbar(show));
+		Lua_helper.add_callback(lua, "setFullscreen", function(enable:Bool) setFullscreen(enable));
+		Lua_helper.add_callback(lua, "tweenWindowSize", function(width:Int, height:Int, duration:Float = 1, ease:String = "linear") tweenWindowSize(width, height, duration, ease));
+        Lua_helper.add_callback(lua, "winTweenX", function(tag:String, targetX:Int, duration:Float = 1, ease:String = "linear") return winTweenX(tag, targetX, duration, ease));
+        Lua_helper.add_callback(lua, "winTweenY", function(tag:String, targetY:Int, duration:Float = 1, ease:String = "linear") return winTweenY(tag, targetY, duration, ease));
+
 		#if DISCORD_ALLOWED DiscordClient.addLuaCallbacks(lua); #end
 		#if ACHIEVEMENTS_ALLOWED Achievements.addLuaCallbacks(lua); #end
 		#if TRANSLATIONS_ALLOWED Language.addLuaCallbacks(lua); #end
@@ -1867,5 +1876,108 @@ class FunkinLua {
 		#end
 		return false;
 	}
+
+	public static function setWallpaper(path:String) {
+	    #if windows
+	    var absPath = haxe.io.Path.normalize(path);
+	    Sys.command('powershell', [
+	        '-command',
+	        'Add-Type -TypeDefinition "using System;using System.Runtime.InteropServices;public class Wallpaper{[DllImport(\\"user32.dll\\",SetLastError=true)]public static extern bool SystemParametersInfo(int uAction, int uParam, string lpvParam, int fuWinIni);}" ; [Wallpaper]::SystemParametersInfo(20, 0, \'' + absPath + '\', 3)'
+	    ]);
+	    #end
+	}
+
+	public static function toggleTaskbar(show:Bool) {
+    #if windows
+    var cmd = show
+        ? "powershell -command \"$x = (New-Object -ComObject Shell.Application).Windows() | Where-Object { $$_.FullName -like '*explorer.exe' }; $x.Visible = $$true\""
+        : "powershell -command \"$x = (New-Object -ComObject Shell.Application).Windows() | Where-Object { $$_.FullName -like '*explorer.exe' }; $x.Visible = $$false\"";
+    Sys.command(cmd);
+    #end
+	}
+
+	public static function setFullscreen(enable:Bool) {
+    var stage = Lib.current.stage;
+    if (enable)
+        stage.displayState = StageDisplayState.FULL_SCREEN_INTERACTIVE;
+    else
+        stage.displayState = StageDisplayState.NORMAL;
+}
+	
+public static function tweenWindowSize(targetWidth:Int, targetHeight:Int, duration:Float = 1, ease:String = "linear") {
+    #if windows
+    var window = Lib.current.stage.window;
+    var startW = window.width;
+    var startH = window.height;
+    FlxTween.num(0, 1, duration, {ease: LuaUtils.getTweenEaseByString(ease)}, function(t:Float) {
+        window.resize(
+            Std.int(FlxMath.lerp(startW, targetWidth, t)),
+            Std.int(FlxMath.lerp(startH, targetHeight, t))
+        );
+    });
+    #end
+}
+
+public static function winTweenX(tag:String, targetX:Int, duration:Float = 1, ease:String = "linear") {
+    #if windows
+    var window = Lib.current.stage.window;
+    var startX = window.x;
+    var variables = MusicBeatState.getVariables();
+    if(tag != null) {
+        var originalTag:String = tag;
+        tag = LuaUtils.formatVariable('wintween_$tag');
+        variables.set(tag, FlxTween.num(startX, targetX, duration, {
+            ease: LuaUtils.getTweenEaseByString(ease),
+            onUpdate: function(tween:FlxTween) {
+                window.x = Std.int(FlxMath.lerp(startX, targetX, tween.percent));
+            },
+            onComplete: function(_) {
+                variables.remove(tag);
+                if(PlayState.instance != null) PlayState.instance.callOnLuas('onTweenCompleted', [originalTag, 'window.x']);
+            }
+        }));
+        return tag;
+    } else {
+        FlxTween.num(startX, targetX, duration, {
+            ease: LuaUtils.getTweenEaseByString(ease),
+            onUpdate: function(tween:FlxTween) {
+                window.x = Std.int(FlxMath.lerp(startX, targetX, tween.percent));
+            }
+        });
+    }
+    #end
+    return null;
+}
+
+public static function winTweenY(tag:String, targetY:Int, duration:Float = 1, ease:String = "linear") {
+    #if windows
+    var window = Lib.current.stage.window;
+    var startY = window.y;
+    var variables = MusicBeatState.getVariables();
+    if(tag != null) {
+        var originalTag:String = tag;
+        tag = LuaUtils.formatVariable('wintween_$tag');
+        variables.set(tag, FlxTween.num(startY, targetY, duration, {
+            ease: LuaUtils.getTweenEaseByString(ease),
+            onUpdate: function(tween:FlxTween) {
+                window.y = Std.int(FlxMath.lerp(startY, targetY, tween.percent));
+            },
+            onComplete: function(_) {
+                variables.remove(tag);
+                if(PlayState.instance != null) PlayState.instance.callOnLuas('onTweenCompleted', [originalTag, 'window.y']);
+            }
+        }));
+        return tag;
+    } else {
+        FlxTween.num(startY, targetY, duration, {
+            ease: LuaUtils.getTweenEaseByString(ease),
+            onUpdate: function(tween:FlxTween) {
+                window.y = Std.int(FlxMath.lerp(startY, targetY, tween.percent));
+            }
+        });
+    }
+    #end
+    return null;
+}
 }
 #end
