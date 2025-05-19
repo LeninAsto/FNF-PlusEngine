@@ -62,7 +62,7 @@ class Bar extends FlxSpriteGroup
 		else percent = 0;
 
 		    // Interpolación suave
-            smoothPercent = FlxMath.lerp(smoothPercent, percent, 0.01); // 0.15 puedes ajustarlo para más o menos suavidad
+            smoothPercent = FlxMath.lerp(smoothPercent, percent, 0.1); // 0.15 puedes ajustarlo para más o menos suavidad
             updateBarSmooth();
 
 		super.update(elapsed);

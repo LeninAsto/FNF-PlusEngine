@@ -1,13 +1,36 @@
-Plus Engine
+**🎮 FNF-PlusEngine**
+Welcome to FNF-PlusEngine! This is a modified version of Friday Night Funkin', based on Psych Engine, with added features and improvements for a more dynamic and customizable gameplay experience.
 
-> Description in process.. =D
+## Features
+- Video in HUD: Now you can play videos directly on camHUD or camGame. Perfect for custom cutscenes or visual effects. More info here.
+- New Lua Variables: Added custom variables like setFullscreen, tweenWindowSize, winTweenX, and winTweenY for advanced window control.
+- Mod compatibility in the engine.
+- Cool Font and New RatingTxt and ScoreTxt
+- Judgement Counter
+
+## 📦 Latest Releases
+> v0.2 - Video in HUD
+- Added support for playing videos on camHUD or camGame.
+- Fix the Achievements an Easter Eggs of Psych.
+- New judgement bop
+
+> v0.1.4 - Stable
+- Added Lua variables for fullscreen toggle and window animations.
+- Fixed rating text misalignment when upscroll is active.
+- Temporarily removed the "Nightmare" songs due to visual issues.
+
+## 🤝 Contributions... Only me =')
+- Contributions are welcome! If you have ideas, improvements, or fixes, feel free to fork the repo and open a pull request.
+
+**Thanks for checking out FNF-PlusEngine! If you enjoy the project, leave a ⭐ and share it with other FNF fans.**
+
+> This project is subject to bugs, fixes, improvements and changes.
 
 To learn about new Lua scripts, click [here](https://github.com/LeninAsto/FNF-PlusEngine/blob/main/docs/scripts/TemplatePlusScript.lua).
 
 To learn more about mod compatibility in the engine, [click here](https://github.com/LeninAsto/FNF-PlusEngine/blob/main/docs/scripts/readme-compatibility.txt).
 
-<details>
-  <summary><h2>Psych Team</h2></summary>
+<summary><h2>Psych Team</h2></summary>
 
 Psych Engine by ShadowMario
 

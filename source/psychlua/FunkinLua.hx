@@ -51,6 +51,7 @@ class FunkinLua {
 	public var scriptName:String = '';
 	public var modFolder:String = null;
 	public var closed:Bool = false;
+	public var luaVideos:Map<String, Dynamic> = new Map<String, Dynamic>();
 
 	#if HSCRIPT_ALLOWED
 	public var hscript:HScript = null;
@@ -1285,7 +1286,7 @@ class FunkinLua {
 			}
 			return false;
 		});
-		Lua_helper.add_callback(lua, "startVideo", function(videoFile:String, ?canSkip:Bool = true, ?forMidSong:Bool = false, ?shouldLoop:Bool = false, ?playOnLoad:Bool = true) {
+		Lua_helper.add_callback(lua, "startVideo", function(videoFile:String, ?forMidSong:Bool = false, ?canSkip:Bool = true, ?shouldLoop:Bool = false, ?playOnLoad:Bool = true, ?camera:String = "other") {
 			#if VIDEOS_ALLOWED
 			if(FileSystem.exists(Paths.video(videoFile)))
 			{
@@ -1294,7 +1295,7 @@ class FunkinLua {
 					game.remove(game.videoCutscene);
 					game.videoCutscene.destroy();
 				}
-				game.videoCutscene = game.startVideo(videoFile, forMidSong, canSkip, shouldLoop, playOnLoad);
+				game.videoCutscene = game.startVideo(videoFile, forMidSong, canSkip, shouldLoop, playOnLoad, camera);
 				return true;
 			}
 			else
@@ -1659,6 +1660,20 @@ class FunkinLua {
 			trace(e);
 		}
 		return LuaUtils.Function_Continue;
+	}
+
+	// Llama esto desde onPause y onResume
+	public function pauseLuaVideos() {
+		for (video in luaVideos) {
+			if (video != null && video.videoSprite != null && video.videoSprite.bitmap != null)
+				video.videoSprite.bitmap.pause();
+		}
+	}
+	public function resumeLuaVideos() {
+		for (video in luaVideos) {
+			if (video != null && video.videoSprite != null && video.videoSprite.bitmap != null)
+				video.videoSprite.bitmap.play();
+		}
 	}
 
 	public function set(variable:String, data:Dynamic) {

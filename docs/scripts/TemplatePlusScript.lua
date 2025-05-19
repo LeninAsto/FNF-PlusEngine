@@ -79,5 +79,19 @@ function onStepHit()
             --> 200 = It will move 200 from the top edge on the Y axis "0 = stuck to the top side"
             --> 1.5 = time
             --> "linear" = type of interpolation]]
+
+            -- Video
+
+        -- si usaras para cutcenes de tu nivel
+        -- if you use for your level cutscenes
+        startVideo("yourvideoname", true, false, false, true)
+        -- sin cam
+        -- without cam
+
+        -- pero si usaras para introducirlo al camHUD o camGame
+        -- if you use for your level introduction to camHUD or camGame
+        startVideo("yourvideoname", false, false, false, true, "cam")
+        -- no cambies the >false, false, false, true< Solo cam (hud o game)
+        -- don't change the >false, false, false, true< Only cam (hud or game)
     end
 end
