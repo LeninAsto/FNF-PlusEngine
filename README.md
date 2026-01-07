@@ -36,7 +36,7 @@ Engine based in Psych 1.0.4 with modcharts like NotITG and compatible with hxcod
         <sub><b>MTGC</b></sub>
       </a>
       <br />
-      <sub>Translate</sub>
+      <sub>Indonesian translation and other PRs</sub>
     </td>
   </tr>
 </table>
@@ -53,6 +53,16 @@ Engine based in Psych 1.0.4 with modcharts like NotITG and compatible with hxcod
       </a>
       <br />
       <sub>Creator of several used Slushi Engine codes</sub>
+    </td>
+  </tr>
+    <td align="center">
+      <a href="https://www.facebook.com/hansuke.hotaroshi">
+        <img src="https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/d98e506ac8d567d1731e4652bc120887aff4376c/assets/shared/images/credits/hansu.png" width="100px;" alt="Hansu"/>
+        <br />
+        <sub><b>Hansuke H</b></sub>
+      </a>
+      <br />
+      <sub>Vietnamese translation and alphabet sprite</sub>
     </td>
   </tr>
 </table>
