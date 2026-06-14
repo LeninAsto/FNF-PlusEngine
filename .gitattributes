@@ -1,2 +1,21 @@
 # Auto detect text files and perform LF normalization
 * text=auto
+
+# Mark library/third-party code as vendored to exclude from language stats
+source/flixel/** linguist-vendored
+source/flxanimate/** linguist-vendored
+source/lime/** linguist-vendored
+
+# Ensure Haxe, Kotlin and C/C++ are properly detected
+*.hx linguist-language=Haxe linguist-detectable
+*.kt linguist-language=Kotlin linguist-detectable
+*.c linguist-language=C linguist-detectable
+*.h linguist-language=C linguist-detectable
+*.cpp linguist-language=C++ linguist-detectable
+*.hpp linguist-language=C++ linguist-detectable
+source/kotlin/** linguist-detectable
+source/funkin/external/** linguist-detectable
+
+# Documentation files
+*.md linguist-documentation
+docs/** linguist-documentation
