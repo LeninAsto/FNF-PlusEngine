@@ -13,6 +13,7 @@ permissions:
 env:
   APP_VERSION: 4.0.0-${{ github.run_id }}
   HAXE_VERSION: 4.3.7
+  HAXE_BASE_URL: https://github.com/HaxeFoundation/haxe/releases/download
   SSCRIPT_SETTINGS: oy9:showMacroty8:loopCosti25y10:includeAllfg
 
 jobs:
@@ -135,7 +136,20 @@ jobs:
 
       - name: Setup Haxe
         run: |
-          choco install haxe --version=${env:HAXE_VERSION} -y --no-progress
+          $archive = "$env:RUNNER_TEMP\haxe-win64.zip"
+          $extractDir = "$env:RUNNER_TEMP\haxe"
+          $downloadUrl = "$env:HAXE_BASE_URL/$env:HAXE_VERSION/haxe-$env:HAXE_VERSION-win64.zip"
+          Invoke-WebRequest -Uri $downloadUrl -OutFile $archive
+          if (Test-Path $extractDir) { Remove-Item -LiteralPath $extractDir -Recurse -Force }
+          Expand-Archive -LiteralPath $archive -DestinationPath $extractDir -Force
+          $haxeExe = Get-ChildItem -Path $extractDir -Recurse -Filter haxe.exe | Select-Object -First 1
+          if (-not $haxeExe) { throw "No se encontro haxe.exe en $extractDir" }
+          $haxeDir = $haxeExe.Directory.FullName
+          Add-Content -Path $env:GITHUB_PATH -Value $haxeDir
+          $nekoDir = Join-Path $haxeDir "neko"
+          if (Test-Path $nekoDir) {
+            Add-Content -Path $env:GITHUB_PATH -Value $nekoDir
+          }
           haxe --version
 
       - name: Install libraries
@@ -172,8 +186,22 @@ jobs:
 
       - name: Setup Haxe
         run: |
-          brew update
-          brew install haxe
+          archive="$RUNNER_TEMP/haxe-osx.tar.gz"
+          extract_dir="$RUNNER_TEMP/haxe"
+          download_url="$HAXE_BASE_URL/$HAXE_VERSION/haxe-$HAXE_VERSION-osx.tar.gz"
+          curl -fsSL "$download_url" -o "$archive"
+          rm -rf "$extract_dir"
+          mkdir -p "$extract_dir"
+          tar -xzf "$archive" -C "$extract_dir"
+          haxe_dir="$(find "$extract_dir" -type f -name haxe -perm -111 -exec dirname {} \; | head -n 1)"
+          if [ -z "$haxe_dir" ]; then
+            echo "No se encontro el binario de Haxe" >&2
+            exit 1
+          fi
+          printf '%s\n' "$haxe_dir" >> "$GITHUB_PATH"
+          if [ -d "$haxe_dir/neko" ]; then
+            printf '%s\n' "$haxe_dir/neko" >> "$GITHUB_PATH"
+          fi
           haxe --version
 
       - name: Install libraries
@@ -210,8 +238,22 @@ jobs:
 
       - name: Setup Haxe
         run: |
-          brew update
-          brew install haxe
+          archive="$RUNNER_TEMP/haxe-osx.tar.gz"
+          extract_dir="$RUNNER_TEMP/haxe"
+          download_url="$HAXE_BASE_URL/$HAXE_VERSION/haxe-$HAXE_VERSION-osx.tar.gz"
+          curl -fsSL "$download_url" -o "$archive"
+          rm -rf "$extract_dir"
+          mkdir -p "$extract_dir"
+          tar -xzf "$archive" -C "$extract_dir"
+          haxe_dir="$(find "$extract_dir" -type f -name haxe -perm -111 -exec dirname {} \; | head -n 1)"
+          if [ -z "$haxe_dir" ]; then
+            echo "No se encontro el binario de Haxe" >&2
+            exit 1
+          fi
+          printf '%s\n' "$haxe_dir" >> "$GITHUB_PATH"
+          if [ -d "$haxe_dir/neko" ]; then
+            printf '%s\n' "$haxe_dir/neko" >> "$GITHUB_PATH"
+          fi
           haxe --version
 
       - name: Install libraries
@@ -248,8 +290,22 @@ jobs:
 
       - name: Setup Haxe
         run: |
-          brew update
-          brew install haxe
+          archive="$RUNNER_TEMP/haxe-osx.tar.gz"
+          extract_dir="$RUNNER_TEMP/haxe"
+          download_url="$HAXE_BASE_URL/$HAXE_VERSION/haxe-$HAXE_VERSION-osx.tar.gz"
+          curl -fsSL "$download_url" -o "$archive"
+          rm -rf "$extract_dir"
+          mkdir -p "$extract_dir"
+          tar -xzf "$archive" -C "$extract_dir"
+          haxe_dir="$(find "$extract_dir" -type f -name haxe -perm -111 -exec dirname {} \; | head -n 1)"
+          if [ -z "$haxe_dir" ]; then
+            echo "No se encontro el binario de Haxe" >&2
+            exit 1
+          fi
+          printf '%s\n' "$haxe_dir" >> "$GITHUB_PATH"
+          if [ -d "$haxe_dir/neko" ]; then
+            printf '%s\n' "$haxe_dir/neko" >> "$GITHUB_PATH"
+          fi
           haxe --version
 
       - name: Install libraries
