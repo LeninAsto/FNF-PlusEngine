@@ -58,4 +58,3 @@ haxelib git grig.audio https://gitlab.com/haxe-grig/grig.audio.git cbf91e2180fd2
 
 echo.
 echo Finished installing libraries!
-pause
