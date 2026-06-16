@@ -49,7 +49,7 @@ jobs:
           tar -C export/release/linux/bin -czf dist/FNF-PlusEngine-linux-x64.tar.gz .
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: linux-x64-artifact
           path: dist/FNF-PlusEngine-linux-x64.tar.gz
@@ -120,7 +120,7 @@ jobs:
           cp "$apk_path" dist/FNF-PlusEngine-android.apk
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: android-artifact
           path: dist/FNF-PlusEngine-android.apk
@@ -156,7 +156,7 @@ jobs:
           Compress-Archive -Path export/release/windows/bin/* -DestinationPath dist/FNF-PlusEngine-windows-x64.zip -Force
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: windows-x64-artifact
           path: dist/FNF-PlusEngine-windows-x64.zip
@@ -192,7 +192,7 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent export/release/macos/bin dist/FNF-PlusEngine-macos-arm64.zip
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-arm64-artifact
           path: dist/FNF-PlusEngine-macos-arm64.zip
@@ -228,7 +228,7 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent export/release/macos/bin dist/FNF-PlusEngine-macos-intel.zip
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: macos-intel-artifact
           path: dist/FNF-PlusEngine-macos-intel.zip
@@ -264,7 +264,7 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent export/release/ios/build/Release-iphoneos dist/FNF-PlusEngine-ios.zip
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: ios-artifact
           path: dist/FNF-PlusEngine-ios.zip
