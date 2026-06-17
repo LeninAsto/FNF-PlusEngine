@@ -13,8 +13,12 @@ import options.GameplayChangersSubstate;
 import options.OptionsMenuTheme;
 import substates.ResetScoreSubState;
 import backend.ui.md3.MD3ShapeTools;
+import backend.ui.md3.MaterialTextField;
+import backend.ui.md3.MaterialWavyProgressIndicator;
+import backend.ui.md3.MaterialWavyProgressIndicator.WavyProgressType;
 
 import flixel.math.FlxMath;
+import flixel.graphics.FlxGraphic;
 import flixel.util.FlxDestroyUtil;
 
 import openfl.utils.AssetType;
@@ -59,6 +63,24 @@ class FreeplayState extends MusicBeatState
 
 	private var grpSongs:FlxTypedGroup<FlxText>;
 	private var curPlaying:Bool = false;
+	private var searchField:MaterialTextField;
+	private var songSearchQuery:String = "";
+	private var songInfoCardBg:FlxSprite;
+	private var songInfoCardCover:FlxSprite;
+	private var songInfoCardTitle:FlxText;
+	private var songInfoCardStats:FlxText;
+	private var songInfoCardDifficulty:FlxText;
+	private var songInfoCardScores:FlxText;
+	private var songInfoCardLoadingLabel:FlxText;
+	private var songInfoCardSpinner:MaterialWavyProgressIndicator;
+	private var songInfoCardY:Float = 0;
+	private var songInfoCardHiddenY:Float = 0;
+	private var songInfoCardShownY:Float = 0;
+	private var songInfoCardTween:FlxTween = null;
+	private var songInfoCardLoadTimer:FlxTimer = null;
+	private var songInfoCardLoadToken:Int = 0;
+	private var songInfoCardLoading:Bool = false;
+	private var songInfoCardData:FreeplaySongCardData = null;
 
 	private var iconArray:Array<HealthIcon> = [];
 
@@ -106,6 +128,10 @@ class FreeplayState extends MusicBeatState
     public var _pendingInstIndex:Int = -1;
     public var _pendingInstBpm:Float = 102;
     public var _instLoadMutex:Mutex = new Mutex();
+    public var _pendingSongCardData:FreeplaySongCardData = null;
+    public var _pendingSongCardToken:Int = 0;
+    public var _pendingSongCardIndex:Int = -1;
+    public var _songCardMutex:Mutex = new Mutex();
     #end
 	public var _prevInstSongName:String = null;
 	public var currentBPM:Float = 102;
@@ -350,6 +376,15 @@ class FreeplayState extends MusicBeatState
 		freeplayText.x = FlxG.width * 0.41;
 		freeplayText.y = 15;
 		add(freeplayText);
+
+		searchField = new MaterialTextField(FlxG.width - 238, 12, 206, Language.getPhrase("freeplay_search", "Search..."));
+		searchField.helperText = "Press B to focus, ESC to exit";
+		searchField.onChange = function(value:String)
+		{
+			updateSongFilter(value);
+		};
+		add(searchField);
+		createSongInfoCard();
 		
 		// Opponent Mode indicator
 		opponentModeText = new FlxText(FlxG.width * 0.68, 5, 0, "", 20);
@@ -439,6 +474,96 @@ class FreeplayState extends MusicBeatState
 		songs.push(new SongMetadata(songName, weekNum, songCharacter, color));
 	}
 
+	function songMatchesFilter(song:SongMetadata, queryLower:String):Bool
+	{
+		if (song == null || queryLower == null || queryLower.length == 0)
+			return true;
+
+		var songName:String = song.songName != null ? song.songName.toLowerCase() : "";
+		var folderName:String = song.folder != null ? song.folder.toLowerCase() : "";
+		var characterName:String = song.songCharacter != null ? song.songCharacter.toLowerCase() : "";
+		var smFolderName:String = song.smFolder != null ? song.smFolder.toLowerCase() : "";
+
+		return songName.contains(queryLower)
+			|| folderName.contains(queryLower)
+			|| characterName.contains(queryLower)
+			|| smFolderName.contains(queryLower);
+	}
+
+	function updateSongFilter(value:String):Void
+	{
+		songSearchQuery = StringTools.trim(value != null ? value : "");
+
+		if (songSearchQuery.length > 0 && curSelected >= 0 && curSelected < songs.length)
+		{
+			var query:String = songSearchQuery.toLowerCase();
+			if (!songMatchesFilter(songs[curSelected], query))
+			{
+				for (i in 0...songs.length)
+				{
+					if (songMatchesFilter(songs[i], query))
+					{
+						curSelected = i;
+						break;
+					}
+				}
+			}
+		}
+
+		updateCurrentBpmFromSelection();
+		queueSongInfoCardLoad();
+		updateTexts();
+	}
+
+	function updateCurrentBpmFromSelection():Void
+	{
+		if (songs == null || songs.length == 0 || curSelected < 0 || curSelected >= songs.length)
+		{
+			currentBPM = 102;
+			Conductor.bpm = currentBPM;
+			return;
+		}
+
+		var selectedSong:SongMetadata = songs[curSelected];
+		var resolvedBpm:Float = 102;
+
+		try
+		{
+			if (selectedSong != null && selectedSong.isStepMania)
+			{
+				#if sys
+				var smDiffName:String = (selectedSong.smDifficulties != null && selectedSong.smDifficulties.length > 0)
+					? Paths.formatToSongPath(selectedSong.smDifficulties[Std.int(FlxMath.bound(curDifficulty, 0, selectedSong.smDifficulties.length - 1))])
+					: 'normal';
+				var smDir:String = #if mobile StorageUtil.getSMDirectory() #else './sm/' #end;
+				var smPath:String = smDir + selectedSong.smFolder + '/' + smDiffName + '.json';
+				if (sys.FileSystem.exists(smPath))
+				{
+					var rawJson:String = sys.io.File.getContent(smPath);
+					var chart:SwagSong = Song.parseJSON(rawJson, selectedSong.songName);
+					if (chart != null && chart.bpm > 0)
+						resolvedBpm = chart.bpm;
+				}
+				#end
+			}
+			else
+			{
+				var songKey:String = Paths.formatToSongPath(selectedSong.songName);
+				var chartName:String = Highscore.formatSong(songKey, curDifficulty);
+				var chart:SwagSong = Song.getChart(chartName, songKey);
+				if (chart != null && chart.bpm > 0)
+					resolvedBpm = chart.bpm;
+			}
+		}
+		catch (e:Dynamic)
+		{
+			trace('[FreePlay] BPM resolve failed: $e');
+		}
+
+		currentBPM = resolvedBpm;
+		Conductor.bpm = currentBPM;
+	}
+
 	function weekIsLocked(name:String):Bool
 	{
 		var leWeek:WeekData = WeekData.weeksLoaded.get(name);
@@ -454,6 +579,21 @@ class FreeplayState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+		var searchFocused:Bool = searchField != null && searchField.focused;
+
+		if (searchFocused && FlxG.keys.justPressed.ESCAPE)
+		{
+			searchField.blur();
+			updateTexts(elapsed);
+			return;
+		}
+
+		if (searchField != null && searchField.escapeConsumed)
+		{
+			searchField.escapeConsumed = false;
+			updateTexts(elapsed);
+			return;
+		}
 
 		 #if (target.threaded && sys)
         // Dispatch a pending inst sound loaded by the background thread.
@@ -477,12 +617,19 @@ class FreeplayState extends MusicBeatState
                     Paths.currentTrackedSounds.set(cacheKey, pendingSound);
                 Paths.localTrackedAssets.push(cacheKey);
 
-                FlxG.sound.playMusic(pendingSound, 0, true);
-                FlxG.sound.music.fadeIn(1.0, 0, 0.7);
-                instSound = FlxG.sound.music;
-                instPlaying = pendingIndex;
+				FlxG.sound.playMusic(pendingSound, 0, true);
+				FlxG.sound.music.fadeIn(1.0, 0, 0.7);
+				instSound = FlxG.sound.music;
+				instPlaying = pendingIndex;
 
-                Conductor.bpm = pendingBpm;
+				if (songInfoCardData != null && pendingIndex == curSelected && songInfoCardData.durationMs <= 0 && pendingSound.length > 0)
+				{
+					songInfoCardData.durationMs = pendingSound.length;
+					if (songInfoCardStats != null)
+						songInfoCardStats.text = 'Tiempo: ${formatDuration(songInfoCardData.durationMs)}\nBPM: ${formatFloat(songInfoCardData.bpm)}';
+				}
+
+				Conductor.bpm = pendingBpm;
 
                 #if funkin.vis
                 _analyzer = null;
@@ -495,6 +642,20 @@ class FreeplayState extends MusicBeatState
             }
         }
         #end
+
+		#if (target.threaded && sys)
+		_songCardMutex.acquire();
+		var pendingCard:FreeplaySongCardData = _pendingSongCardData;
+		var pendingCardToken:Int = _pendingSongCardToken;
+		var pendingCardIndex:Int = _pendingSongCardIndex;
+		if(pendingCard != null) _pendingSongCardData = null;
+		_songCardMutex.release();
+
+		if(pendingCard != null && pendingCardToken == songInfoCardLoadToken && pendingCardIndex == curSelected)
+		{
+			applySongInfoCardData(pendingCard);
+		}
+		#end
 		
 		// Full-width bottom spectral visualizer bars — driven exclusively by SpectralAnalyzer.
         #if funkin.vis
@@ -590,7 +751,7 @@ class FreeplayState extends MusicBeatState
 		var shiftMult:Int = 1;
 		if((FlxG.keys.pressed.SHIFT || (touchPad != null && touchPad.buttonZ.pressed)) && !player.playingMusic) shiftMult = 3;
 
-		if (!player.playingMusic)
+		if (!searchFocused && !player.playingMusic)
 		{
 			// scoreText ya no se muestra, los scores se muestran debajo de cada dificultad
 			
@@ -653,7 +814,7 @@ class FreeplayState extends MusicBeatState
 		}
 		
 		// Toggle between normal and opponent mode scores
-		if (FlxG.keys.justPressed.TAB && !player.playingMusic)
+		if (!searchFocused && FlxG.keys.justPressed.TAB && !player.playingMusic)
 		{
 			viewingOpponentScores = !viewingOpponentScores;
 			FlxG.sound.play(Paths.sound('scrollMenu'));
@@ -674,9 +835,17 @@ class FreeplayState extends MusicBeatState
 			{
 				opponentModeText.visible = false;
 			}
+
+			if (songInfoCardData != null)
+				applySongInfoCardData(songInfoCardData);
 		}
 
-		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed))
+		if (!searchFocused && FlxG.keys.justPressed.B && !player.playingMusic && searchField != null)
+		{
+			searchField.focus();
+		}
+
+		if (!searchFocused && (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed)))
 		{
 			if (player.playingMusic)
 			{
@@ -703,13 +872,13 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 
-		if((FlxG.keys.justPressed.CONTROL || (touchPad != null && touchPad.buttonC.justPressed)) && !player.playingMusic)
+		if(!searchFocused && (FlxG.keys.justPressed.CONTROL || (touchPad != null && touchPad.buttonC.justPressed)) && !player.playingMusic)
 		{
 			persistentUpdate = false;
 			removeTouchPad();
 			openSubState(new GameplayChangersSubstate());
 		}
-		if(FlxG.keys.justPressed.SPACE || (touchPad != null && touchPad.buttonX.justPressed))
+		if(!searchFocused && (FlxG.keys.justPressed.SPACE || (touchPad != null && touchPad.buttonX.justPressed)))
 		{
 			if(instPlaying != curSelected && !player.playingMusic)
 			{
@@ -791,7 +960,7 @@ class FreeplayState extends MusicBeatState
 				player.pauseOrResume(!player.playing);
 			}
 		}
-			else if ((controls.ACCEPT || (touchPad != null && touchPad.buttonA.justPressed)) && !player.playingMusic)
+			else if (!searchFocused && (controls.ACCEPT || (touchPad != null && touchPad.buttonA.justPressed)) && !player.playingMusic)
 		{
 			if (!inDifficultySelect)
 			{
@@ -894,7 +1063,7 @@ class FreeplayState extends MusicBeatState
 				#end
 			}
 		}
-		else if((controls.RESET || (touchPad != null && touchPad.buttonY.justPressed)) && !player.playingMusic)
+		else if(!searchFocused && (controls.RESET || (touchPad != null && touchPad.buttonY.justPressed)) && !player.playingMusic)
 		{
 		persistentUpdate = false;
 		removeTouchPad();
@@ -902,6 +1071,7 @@ class FreeplayState extends MusicBeatState
 		FlxG.sound.play(Paths.sound('scrollMenu'));
 	}
 
+		updateSongInfoCardLayout();
 		updateTexts(elapsed);
 	}
 	function getVocalFromCharacter(char:String)
@@ -947,6 +1117,7 @@ class FreeplayState extends MusicBeatState
 	{
 		inDifficultySelect = true;
 		FlxG.sound.play(Paths.sound('scrollMenu'));
+		hideSongInfoCard();
 
 		difficultySelector.loadDifficulties();
 		difficultySelector.curSelected = curDifficulty;
@@ -972,6 +1143,7 @@ class FreeplayState extends MusicBeatState
 		
 		FlxTween.tween(this, {songsOffsetX: 0}, 0.3, {ease: FlxEase.expoOut});
 		FlxTween.tween(blackOverlay, {alpha: 0.1}, 1.0, {ease: FlxEase.sineInOut});
+		showSongInfoCard();
 	}
 
 	function changeDifficultySelection(change:Int = 0)
@@ -1069,8 +1241,11 @@ class FreeplayState extends MusicBeatState
             previewTimer = null;
         }
         
-        if (instPlaying != -1 || instSound != null || _prevInstSongName != null)
+		if (instPlaying != -1 || instSound != null || _prevInstSongName != null)
             stopInstPreview(false);
+
+		updateCurrentBpmFromSelection();
+		queueSongInfoCardLoad();
 
 		if (songs[curSelected].isStepMania) {
             // StepMania songs don't use the regular inst preview loader.
@@ -1132,6 +1307,470 @@ class FreeplayState extends MusicBeatState
 
 	inline private function _updateSongLastDifficulty()
 		songs[curSelected].lastDifficulty = Difficulty.getString(curDifficulty, false);
+
+	function createSongInfoCard():Void
+	{
+		var cardW:Int = 402;
+		var cardH:Int = 418;
+		songInfoCardShownY = Math.max(56, (FlxG.height - cardH) * 0.5);
+		songInfoCardHiddenY = FlxG.height + 60;
+		songInfoCardY = songInfoCardShownY;
+
+		var cardX:Float = FlxG.width - cardW - 58;
+
+		songInfoCardBg = new FlxSprite(cardX, songInfoCardY);
+		MD3ShapeTools.fillAndStrokeRoundRect(songInfoCardBg, cardW, cardH, 24, 3, OptionsMenuTheme.cardFill(true), intendedColor);
+		songInfoCardBg.alpha = 0.94;
+		add(songInfoCardBg);
+
+		songInfoCardCover = new FlxSprite(cardX + (cardW - 128) * 0.5, songInfoCardY + 18);
+		songInfoCardCover.antialiasing = ClientPrefs.data.antialiasing;
+		var fallbackCover = Paths.image('albumRoll/example');
+		if (fallbackCover != null)
+			songInfoCardCover.loadGraphic(fallbackCover);
+		songInfoCardCover.setGraphicSize(128, 128);
+		songInfoCardCover.updateHitbox();
+		add(songInfoCardCover);
+
+		songInfoCardTitle = new FlxText(cardX + 18, songInfoCardY + 160, cardW - 36, "", 26);
+		songInfoCardTitle.setFormat(Paths.font('NotoSans-Medium.ttf'), 26, FlxColor.WHITE, CENTER);
+		songInfoCardTitle.borderSize = 0;
+		songInfoCardTitle.alpha = 0.95;
+		add(songInfoCardTitle);
+
+		songInfoCardStats = new FlxText(cardX + 18, songInfoCardY + 206, cardW - 36, "", 16);
+		songInfoCardStats.setFormat(Paths.font('NotoSans-Medium.ttf'), 16, FlxColor.WHITE, LEFT);
+		songInfoCardStats.alpha = 0.9;
+		add(songInfoCardStats);
+
+		songInfoCardDifficulty = new FlxText(cardX + 18, songInfoCardY + 258, cardW - 36, "", 13);
+		songInfoCardDifficulty.setFormat(Paths.font('NotoSans-Medium.ttf'), 13, FlxColor.WHITE, LEFT);
+		songInfoCardDifficulty.alpha = 0.88;
+		songInfoCardDifficulty.wordWrap = true;
+		add(songInfoCardDifficulty);
+
+		songInfoCardScores = new FlxText(cardX + 18, songInfoCardY + 294, cardW - 36, "", 13);
+		songInfoCardScores.setFormat(Paths.font('NotoSans-Medium.ttf'), 13, FlxColor.WHITE, LEFT);
+		songInfoCardScores.alpha = 0.88;
+		songInfoCardScores.wordWrap = true;
+		add(songInfoCardScores);
+
+		songInfoCardSpinner = new MaterialWavyProgressIndicator(FlxG.width * 0.5 - 28, FlxG.height * 0.5 - 28, CIRCULAR, 56);
+		songInfoCardSpinner.indeterminate = true;
+		songInfoCardSpinner.alpha = 0.9;
+		songInfoCardSpinner.visible = false;
+		add(songInfoCardSpinner);
+
+		songInfoCardLoadingLabel = new FlxText(FlxG.width * 0.5 - 120, FlxG.height * 0.5 + 42, 240, "Loading...", 14);
+		songInfoCardLoadingLabel.setFormat(Paths.font('NotoSans-Medium.ttf'), 14, FlxColor.WHITE, CENTER);
+		songInfoCardLoadingLabel.alpha = 0.8;
+		songInfoCardLoadingLabel.visible = false;
+		add(songInfoCardLoadingLabel);
+
+		updateSongInfoCardLayout();
+		queueSongInfoCardLoad();
+	}
+
+	function hideSongInfoCard():Void
+	{
+		if (songInfoCardTween != null)
+		{
+			songInfoCardTween.cancel();
+			songInfoCardTween = null;
+		}
+
+		songInfoCardTween = FlxTween.tween(this, {songInfoCardY: songInfoCardHiddenY}, 0.32, {
+			ease: FlxEase.expoInOut,
+			onComplete: function(_) {
+				songInfoCardTween = null;
+			}
+		});
+	}
+
+	function showSongInfoCard():Void
+	{
+		if (songInfoCardTween != null)
+		{
+			songInfoCardTween.cancel();
+			songInfoCardTween = null;
+		}
+
+		songInfoCardTween = FlxTween.tween(this, {songInfoCardY: songInfoCardShownY}, 0.35, {
+			ease: FlxEase.expoOut,
+			onComplete: function(_) {
+				songInfoCardTween = null;
+			}
+		});
+	}
+
+	function setFreeplayLoadingUi(active:Bool):Void
+	{
+		// Solo se oculta la card de datos de la canción; el resto del Freeplay sigue normal.
+		if (songInfoCardCover != null) songInfoCardCover.visible = !active;
+		if (songInfoCardTitle != null) songInfoCardTitle.visible = !active;
+		if (songInfoCardStats != null) songInfoCardStats.visible = !active;
+		if (songInfoCardDifficulty != null) songInfoCardDifficulty.visible = !active;
+		if (songInfoCardScores != null) songInfoCardScores.visible = !active;
+		if (songInfoCardSpinner != null) songInfoCardSpinner.visible = active;
+		if (songInfoCardLoadingLabel != null) songInfoCardLoadingLabel.visible = active;
+	}
+
+	function queueSongInfoCardLoad():Void
+	{
+		if (songs == null || songs.length == 0 || curSelected < 0 || curSelected >= songs.length)
+			return;
+
+		songInfoCardLoadToken++;
+		var requestToken:Int = songInfoCardLoadToken;
+		var requestIndex:Int = curSelected;
+
+		if (songInfoCardLoadTimer != null)
+		{
+			songInfoCardLoadTimer.cancel();
+			songInfoCardLoadTimer = null;
+		}
+
+		songInfoCardLoading = true;
+		setFreeplayLoadingUi(true);
+
+		songInfoCardLoadTimer = new FlxTimer().start(1.0, function(_:FlxTimer) {
+			songInfoCardLoadTimer = null;
+			if (requestToken != songInfoCardLoadToken || requestIndex != curSelected)
+				return;
+
+			var song:SongMetadata = songs[requestIndex];
+			var diffNames:Array<String> = getSongDifficultyNames(song);
+			var bpmSnapshot:Float = currentBPM;
+
+			#if (target.threaded && sys)
+			_songCardMutex.acquire();
+			_pendingSongCardData = null;
+			_songCardMutex.release();
+
+			ThreadUtil.execAsync(function() {
+				try
+				{
+					var cardData:FreeplaySongCardData = buildSongInfoCardData(song, diffNames, bpmSnapshot);
+					_songCardMutex.acquire();
+					if (requestToken == songInfoCardLoadToken)
+					{
+						_pendingSongCardData = cardData;
+						_pendingSongCardToken = requestToken;
+						_pendingSongCardIndex = requestIndex;
+					}
+					_songCardMutex.release();
+				}
+				catch (e:Dynamic)
+				{
+					trace('[FreePlay] Song card load failed: $e');
+					_songCardMutex.acquire();
+					if (requestToken == songInfoCardLoadToken)
+					{
+						_pendingSongCardData = {
+							songName: song.songName,
+							coverKey: 'albumRoll/${Paths.formatToSongPath(song.songName)}',
+							bpm: bpmSnapshot > 0 ? bpmSnapshot : 102,
+							durationMs: 0,
+							noteCount: 0,
+							difficultyNames: diffNames != null ? diffNames.copy() : []
+						};
+						_pendingSongCardToken = requestToken;
+						_pendingSongCardIndex = requestIndex;
+					}
+					_songCardMutex.release();
+				}
+			});
+			#else
+			applySongInfoCardData(buildSongInfoCardData(song, diffNames, bpmSnapshot));
+			#end
+		});
+	}
+
+	function applySongInfoCardData(data:FreeplaySongCardData):Void
+	{
+		if (data == null)
+			return;
+
+		songInfoCardData = data;
+		songInfoCardLoading = false;
+		setFreeplayLoadingUi(false);
+
+		if (songInfoCardTitle != null)
+			songInfoCardTitle.text = data.songName;
+
+		if (songInfoCardStats != null)
+			songInfoCardStats.text = 'Tiempo: ${formatDuration(data.durationMs)}\nBPM: ${formatFloat(data.bpm)}';
+
+		var diffList:Array<String> = data.difficultyNames != null ? data.difficultyNames.copy() : [];
+		var diffLabel:String = diffList.length > 0 ? diffList.join(', ') : 'Normal';
+		if (songInfoCardDifficulty != null)
+			songInfoCardDifficulty.text = 'Difficulties: $diffLabel';
+
+		if (songInfoCardScores != null)
+		{
+			var scoreLines:Array<String> = [];
+			for (i in 0...diffList.length)
+			{
+				var diffName:String = diffList[i];
+				var score:Int = Highscore.getScore(data.songName, i, viewingOpponentScores);
+				var accuracySystem:String = Highscore.getAccuracySystem(data.songName, i, viewingOpponentScores);
+				if (accuracySystem == null || accuracySystem.length == 0)
+					accuracySystem = ClientPrefs.data.accuracySystem;
+				scoreLines.push('${diffName}: ${score} [$accuracySystem]');
+			}
+			songInfoCardScores.text = 'Scores:\n' + scoreLines.join('\n');
+		}
+
+		var coverGraphic:FlxGraphic = Paths.image(data.coverKey);
+		if (coverGraphic == null)
+			coverGraphic = Paths.image('albumRoll/example');
+		if (coverGraphic != null && songInfoCardCover != null)
+		{
+			songInfoCardCover.loadGraphic(coverGraphic);
+			songInfoCardCover.setGraphicSize(128, 128);
+			songInfoCardCover.updateHitbox();
+		}
+
+		if (!inDifficultySelect)
+			showSongInfoCard();
+	}
+
+	function updateSongInfoCardLayout():Void
+	{
+		if (songInfoCardBg == null)
+			return;
+
+		var cardW:Int = 402;
+		var cardH:Int = 418;
+		var cardX:Float = FlxG.width - cardW - 58;
+		var baseY:Float = songInfoCardY;
+
+		songInfoCardBg.x = cardX;
+		songInfoCardBg.y = baseY;
+		MD3ShapeTools.fillAndStrokeRoundRect(songInfoCardBg, cardW, cardH, 24, 3, OptionsMenuTheme.cardFill(true), intendedColor);
+		songInfoCardBg.alpha = 0.94;
+
+		songInfoCardCover.x = cardX + (cardW - 128) * 0.5;
+		songInfoCardCover.y = baseY + 18;
+		songInfoCardTitle.x = cardX + 18;
+		songInfoCardTitle.y = baseY + 160;
+		songInfoCardStats.x = cardX + 18;
+		songInfoCardStats.y = baseY + 206;
+		songInfoCardDifficulty.x = cardX + 18;
+		songInfoCardDifficulty.y = baseY + 258;
+		songInfoCardScores.x = cardX + 18;
+		songInfoCardScores.y = baseY + 294;
+		if (songInfoCardSpinner != null)
+		{
+			if (songInfoCardLoading)
+			{
+				songInfoCardSpinner.x = cardX + (cardW * 0.5) - 28;
+				songInfoCardSpinner.y = baseY + (cardH * 0.5) - 54;
+			}
+			else
+			{
+				songInfoCardSpinner.x = cardX + 170;
+				songInfoCardSpinner.y = baseY + 86;
+			}
+		}
+		if (songInfoCardLoadingLabel != null)
+		{
+			if (songInfoCardLoading)
+			{
+				songInfoCardLoadingLabel.x = cardX + (cardW * 0.5) - 120;
+				songInfoCardLoadingLabel.y = baseY + (cardH * 0.5) + 12;
+			}
+			else
+			{
+				songInfoCardLoadingLabel.x = cardX + 126;
+				songInfoCardLoadingLabel.y = baseY + 146;
+			}
+		}
+	}
+
+	function getSongDifficultyNames(song:SongMetadata):Array<String>
+	{
+		if (song == null)
+			return [];
+
+		if (song.isStepMania)
+		{
+			if (song.smDifficulties != null && song.smDifficulties.length > 0)
+				return song.smDifficulties.copy();
+			return ['Normal'];
+		}
+
+		if (Difficulty.list != null && Difficulty.list.length > 0)
+			return Difficulty.list.copy();
+
+		return [Difficulty.getDefault()];
+	}
+
+	function buildSongInfoCardData(song:SongMetadata, diffNames:Array<String>, capturedBpm:Float):FreeplaySongCardData
+	{
+		var totalNotes:Int = 0;
+		var longestDuration:Float = 0;
+		var songKey:String = Paths.formatToSongPath(song.songName);
+
+		if (diffNames != null)
+		{
+			for (i in 0...diffNames.length)
+			{
+				var diffName:String = diffNames[i];
+				var chartPath:String = resolveSongChartPath(song, i, diffName);
+				var rawChart:String = AssetLoader.loadText(chartPath);
+				if (rawChart == null || rawChart.length == 0)
+					continue;
+
+				var summary:FreeplayChartSummary = summarizeChart(rawChart);
+				totalNotes += summary.noteCount;
+				if (summary.durationMs > longestDuration)
+					longestDuration = summary.durationMs;
+				if (capturedBpm <= 0 && summary.bpm > 0)
+					capturedBpm = summary.bpm;
+			}
+		}
+
+		return {
+			songName: song.songName,
+			coverKey: 'albumRoll/$songKey',
+			bpm: capturedBpm > 0 ? capturedBpm : 102,
+			durationMs: longestDuration,
+			noteCount: totalNotes,
+			difficultyNames: diffNames != null ? diffNames.copy() : []
+		};
+	}
+
+	function resolveSongChartPath(song:SongMetadata, diffIndex:Int, diffName:String):String
+	{
+		if (song == null)
+			return null;
+
+		if (song.isStepMania)
+		{
+			#if mobile
+			var smDir = StorageUtil.getSMDirectory();
+			#else
+			var smDir = './sm/';
+			#end
+			return smDir + song.smFolder + '/' + Paths.formatToSongPath(diffName) + '.json';
+		}
+
+		var songKey:String = Paths.formatToSongPath(song.songName);
+		return Paths.json('$songKey/${songKey}-${Paths.formatToSongPath(diffName)}');
+	}
+
+	function summarizeChart(rawChart:String):FreeplayChartSummary
+	{
+		var summary:FreeplayChartSummary = {bpm: 0, noteCount: 0, durationMs: 0};
+		if (rawChart == null || rawChart.length == 0)
+			return summary;
+
+		try
+		{
+			var parsed:Dynamic = haxe.Json.parse(rawChart);
+			if (Reflect.hasField(parsed, 'song'))
+			{
+				var subSong:Dynamic = Reflect.field(parsed, 'song');
+				if (subSong != null)
+					parsed = subSong;
+			}
+
+			if (parsed == null)
+				return summary;
+
+			var fmt:Dynamic = Reflect.field(parsed, 'format');
+			var formatStr:String = fmt != null ? Std.string(fmt) : '';
+			var bpmField:Dynamic = Reflect.field(parsed, 'bpm');
+			if (bpmField != null)
+				summary.bpm = getDynamicFloat(parsed, 'bpm');
+
+			if (formatStr != null && formatStr.indexOf('psych_v2') == 0)
+			{
+				var notesV2:Array<Dynamic> = cast Reflect.field(parsed, 'notes');
+				if (notesV2 != null)
+				{
+					for (note in notesV2)
+					{
+						if (note == null)
+							continue;
+						var t:Float = getDynamicFloat(note, 't');
+						var l:Float = getDynamicFloat(note, 'l');
+						summary.noteCount++;
+						if (t + l > summary.durationMs)
+							summary.durationMs = t + l;
+					}
+				}
+			}
+			else
+			{
+				var sections:Array<Dynamic> = cast Reflect.field(parsed, 'notes');
+				if (sections != null)
+				{
+					for (section in sections)
+					{
+						if (section == null)
+							continue;
+						var sectionNotes:Array<Dynamic> = cast Reflect.field(section, 'sectionNotes');
+						if (sectionNotes == null)
+							continue;
+
+						for (note in sectionNotes)
+						{
+							if (note == null)
+								continue;
+
+							var noteArray:Array<Dynamic> = cast note;
+							if (noteArray != null && noteArray.length > 0)
+							{
+								var t:Float = Std.parseFloat(Std.string(noteArray[0]));
+								if (Math.isNaN(t)) t = 0;
+								var sustain:Float = noteArray.length > 2 && noteArray[2] != null ? Std.parseFloat(Std.string(noteArray[2])) : 0;
+								if (Math.isNaN(sustain)) sustain = 0;
+								summary.noteCount++;
+								if (t + sustain > summary.durationMs)
+									summary.durationMs = t + sustain;
+							}
+						}
+					}
+				}
+			}
+		}
+		catch (e:Dynamic)
+		{
+			trace('[FreePlay] Chart summary failed: $e');
+		}
+
+		return summary;
+	}
+
+	inline function getDynamicFloat(value:Dynamic, field:String):Float
+	{
+		var raw:Dynamic = Reflect.field(value, field);
+		if (raw == null)
+			return 0;
+		var parsed:Float = Std.parseFloat(Std.string(raw));
+		return Math.isNaN(parsed) ? 0 : parsed;
+	}
+
+	inline function formatFloat(value:Float):String
+	{
+		if (Math.isNaN(value) || value <= 0)
+			return '0';
+		var rounded:Float = CoolUtil.floorDecimal(value, 2);
+		return Std.string(rounded);
+	}
+
+	inline function formatDuration(durationMs:Float):String
+	{
+		if (Math.isNaN(durationMs) || durationMs <= 0)
+			return '???';
+
+		var totalSeconds:Int = Std.int(durationMs / 1000);
+		var minutes:Int = Std.int(totalSeconds / 60);
+		var seconds:Int = totalSeconds % 60;
+		return StringTools.lpad(Std.string(minutes), '0', 1) + ':' + StringTools.lpad(Std.string(seconds), '0', 2);
+	}
 
 	 function playInstPreview():Void {
         if(songs.length == 0 || curSelected >= songs.length) return;
@@ -1271,12 +1910,17 @@ class FreeplayState extends MusicBeatState
 	public function updateTexts(elapsed:Float = 0.0)
 	{
 		lerpSelected = FlxMath.lerp(curSelected, lerpSelected, Math.exp(-elapsed * 9.6));
+		var query:String = StringTools.trim(songSearchQuery != null ? songSearchQuery.toLowerCase() : "");
 		for (i in _lastVisibles)
 		{
-			grpSongs.members[i].visible = grpSongs.members[i].active = false;
-			iconArray[i].visible = iconArray[i].active = false;
-			cardArray[i].visible = false;
-			modTextArray[i].visible = false;
+			if (i >= 0 && i < grpSongs.members.length && grpSongs.members[i] != null)
+				grpSongs.members[i].visible = grpSongs.members[i].active = false;
+			if (i >= 0 && i < iconArray.length && iconArray[i] != null)
+				iconArray[i].visible = iconArray[i].active = false;
+			if (i >= 0 && i < cardArray.length && cardArray[i] != null)
+				cardArray[i].visible = false;
+			if (i >= 0 && i < modTextArray.length && modTextArray[i] != null)
+				modTextArray[i].visible = false;
 		}
 		_lastVisibles = [];
 
@@ -1284,7 +1928,14 @@ class FreeplayState extends MusicBeatState
 		var max:Int = Math.round(Math.max(0, Math.min(songs.length, lerpSelected + _drawDistance)));
 		for (i in min...max)
 		{
+			if (i < 0 || i >= grpSongs.members.length || i >= iconArray.length || i >= cardArray.length || i >= modTextArray.length || songs[i] == null)
+				continue;
+			if (query.length > 0 && !songMatchesFilter(songs[i], query))
+				continue;
+
 			var item:FlxText = grpSongs.members[i];
+			if (item == null)
+				continue;
 			item.visible = item.active = true;
 
 			var difference:Float = item.ID - lerpSelected;
@@ -1300,12 +1951,16 @@ class FreeplayState extends MusicBeatState
 
 			var baseX:Float = 90 - curveOffset + itemOffset;
 			var icon:HealthIcon = iconArray[i];
+			if (icon == null)
+				continue;
 
 			icon.visible = icon.active = true;
 			icon.updateHitbox();
 			icon.y = item.y - 20;
 
 			var card:FlxSprite = cardArray[i];
+			if (card == null)
+				continue;
 			card.visible = true;
 			card.x = baseX + 80;
 			card.y = item.y - 10;
@@ -1318,6 +1973,8 @@ class FreeplayState extends MusicBeatState
 			item.x = card.x + 50;
 
 			var modText:FlxText = modTextArray[i];
+			if (modText == null)
+				continue;
 			modText.visible = true;
 			modText.x = item.x;
 			modText.y = item.y + 60;
@@ -1484,16 +2141,24 @@ class FreeplayState extends MusicBeatState
 	override public function beatHit():Void
 	{
 		super.beatHit();
-		
-		// Animar el fondo cada 2 beats (solo en beats pares)
-		if (curBeat % 2 == 0)
-		{
-			bgZoom += 0.015; // Mismo valor que en PlayState para la cámara
-		}
+
+		bgZoom += 0.05; // Mismo valor que en PlayState para la cámara
 	}
 	
 	override function destroy():Void
 	{
+		if (songInfoCardLoadTimer != null)
+		{
+			songInfoCardLoadTimer.cancel();
+			songInfoCardLoadTimer = null;
+		}
+		if (songInfoCardTween != null)
+		{
+			songInfoCardTween.cancel();
+			songInfoCardTween = null;
+		}
+		songInfoCardData = null;
+
 		if(vizBarsGroup != null) {
 		    vizBarsGroup.destroy();
 		    vizBarsGroup = null;
@@ -1535,6 +2200,23 @@ class SongMetadata
 		this.folder = Mods.currentModDirectory;
 		if(this.folder == null) this.folder = '';
 	}
+}
+
+typedef FreeplayChartSummary =
+{
+	var bpm:Float;
+	var noteCount:Int;
+	var durationMs:Float;
+}
+
+typedef FreeplaySongCardData =
+{
+	var songName:String;
+	var coverKey:String;
+	var bpm:Float;
+	var durationMs:Float;
+	var noteCount:Int;
+	var difficultyNames:Array<String>;
 }
 
 class DifficultySelector

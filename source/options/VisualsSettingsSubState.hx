@@ -122,12 +122,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		    BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Use Wavy Time Bar',
-		    'If checked, uses a Material-style wavy progress indicator instead of the classic time bar.',
-		    'useWavyTimeBar',
-		    BOOL);
-		addOption(option);
-
 		var option:Option = new Option('Flashing Lights',
 			"Uncheck this if you're sensitive to flashing lights!",
 			'flashing',

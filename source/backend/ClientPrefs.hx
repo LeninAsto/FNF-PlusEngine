@@ -106,7 +106,6 @@ import states.TitleState;
 
 	public var ghostTapping:Bool = true;
 	public var timeBarType:String = 'Time Left';
-	public var useWavyTimeBar:Bool = false;
 	public var shadedTimeBar:Bool = false;
 	public var scoreZoom:Bool = true;
 	public var timeBump:Bool = false;

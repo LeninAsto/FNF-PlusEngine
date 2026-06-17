@@ -45,6 +45,7 @@ import openfl.geom.Rectangle;
 import backend.ui.md3.MaterialWavyProgressIndicator;
 import backend.ui.md3.MaterialWavyProgressIndicator.WavyProgressType;
 import options.OptionsMenuTheme;
+import Main;
 
 import objects.VideoSprite;
 import objects.JudCounter;
@@ -255,11 +256,6 @@ class PlayState extends MusicBeatState
 
 	public var healthBar:Bar;
 	public var timeBar:Bar;
-	public var timeProgressIndicator:MaterialWavyProgressIndicator;
-	var timeBarBaseX:Float = 0;
-	var timeBarBaseY:Float = 0;
-	var timeBarBaseScaleX:Float = 0;
-	var timeBarBaseVisible:Bool = false;
 	var songPercent:Float = 0;
 
 	public var ratingsData:Array<Rating> = Rating.loadDefault();
@@ -372,11 +368,6 @@ class PlayState extends MusicBeatState
 	static inline var BREAK_TIMER_TEXT_SIZE:Int = 28;
 	static inline var BREAK_TIMER_INDICATOR_SIZE:Float = 64;
 
-	inline function isWavyTimeBarEnabled():Bool
-	{
-		return ClientPrefs.data.useWavyTimeBar;
-	}
-	
 	#if windows
 	// Window border color tween system (Slushi Engine method)
 	var windowBorderColorTween:flixel.tweens.misc.NumTween;
@@ -386,6 +377,13 @@ class PlayState extends MusicBeatState
 	// Modchart warning variables
 	var modchartWarningShown:Bool = false;
 	var isShowingModchartWarning:Bool = false;
+	#if MODCHARTS_NOTITG_ALLOWED
+	var modchartDebugTxt:FlxText = null;
+	var modchartDebugEnabled:Bool = false;
+	var modchartDebugAccum:Float = 0;
+	var modchartDebugSamples:Int = 0;
+	var modchartAverageFPS:Float = 0;
+	#end
 	
 	// Variables para mantener animación hold
 	var keysHeld:Array<Bool> = [false, false, false, false];
@@ -820,36 +818,8 @@ class PlayState extends MusicBeatState
 		timeBar.alpha = 1; // Alpha siempre visible
 		timeBar.scale.x = 0; // Inicia con escala X en 0
 		timeBar.visible = showTime;
-		timeBarBaseX = timeBar.x + timeBar.barOffset.x;
-		timeBarBaseY = timeBar.y + timeBar.barOffset.y;
-		timeBarBaseScaleX = timeBar.scale.x;
-		timeBarBaseVisible = timeBar.visible;
-
-		timeProgressIndicator = new MaterialWavyProgressIndicator(0, 0, WavyProgressType.LINEAR, timeBar.barWidth);
-		timeProgressIndicator.scrollFactor.set();
-		timeProgressIndicator.alpha = timeBar.alpha;
-		timeProgressIndicator.visible = showTime;
-		timeProgressIndicator.scale.x = timeBarBaseScaleX;
-		timeProgressIndicator.linearHeightScale = 1.8;
-		timeProgressIndicator.linearGapSize = 9;
-		timeProgressIndicator.linearShowStopDot = true;
-		timeProgressIndicator.linearStopDotSize = 6;
-		timeProgressIndicator.linearWaveThicknessScale = 1.0;
-		timeProgressIndicator.linearTrackThicknessScale = 1.0;
-		timeProgressIndicator.x = timeBarBaseX;
-		timeProgressIndicator.y = timeBarBaseY;
-
-		if (isWavyTimeBarEnabled())
-		{
-			timeBar.visible = false;
-		}
-		else
-		{
-			uiGroup.add(timeBar);
-		}
-		uiGroup.add(timeProgressIndicator);
+		uiGroup.add(timeBar);
 		uiGroup.add(timeTxt);
-		refreshTimeBarVisualStyle();
 
 		noteGroup.add(strumLineNotes);
 
@@ -1157,6 +1127,10 @@ class PlayState extends MusicBeatState
 		
 		// Initialize modcharts after all scripts are loaded
 		initModchart();
+		#if MODCHARTS_NOTITG_ALLOWED
+		if (Manager.instance != null)
+			createModchartDebugOverlay();
+		#end
 		
 		// Initialize gradient time bar
 		if (ClientPrefs.data.shadedTimeBar) {
@@ -1376,6 +1350,77 @@ class PlayState extends MusicBeatState
 		}
 		#end
 	}
+
+	#if MODCHARTS_NOTITG_ALLOWED
+	function createModchartDebugOverlay():Void
+	{
+		if (modchartDebugTxt != null || Manager.instance == null)
+			return;
+
+		modchartDebugEnabled = true;
+		modchartDebugAccum = 0;
+		modchartDebugSamples = 0;
+		modchartAverageFPS = ClientPrefs.data.framerate;
+
+		modchartDebugTxt = new FlxText(0, 10, 240, "", 20);
+		modchartDebugTxt.setFormat(Paths.font("NotoSans-Medium.ttf"), 20, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.SHADOW, FlxColor.BLACK);
+		modchartDebugTxt.scrollFactor.set();
+		modchartDebugTxt.borderSize = 1.2;
+		modchartDebugTxt.alpha = 0.7;
+		modchartDebugTxt.wordWrap = false;
+		modchartDebugTxt.cameras = [camOther];
+		add(modchartDebugTxt);
+
+		positionModchartDebugOverlay();
+		updateModchartDebugOverlay(0);
+	}
+
+	inline function positionModchartDebugOverlay():Void
+	{
+		if (modchartDebugTxt == null)
+			return;
+
+		modchartDebugTxt.x = FlxG.width - modchartDebugTxt.width - 10;
+		modchartDebugTxt.y = 10;
+	}
+
+	function updateModchartDebugOverlay(elapsed:Float):Void
+	{
+		if (!modchartDebugEnabled || modchartDebugTxt == null || Manager.instance == null)
+			return;
+
+		if (elapsed > 0)
+		{
+			modchartDebugAccum += elapsed;
+			modchartDebugSamples++;
+			if (modchartDebugSamples >= 30)
+			{
+				modchartAverageFPS = modchartDebugSamples / modchartDebugAccum;
+				modchartDebugAccum = 0;
+				modchartDebugSamples = 0;
+			}
+		}
+
+		final stats = Manager.instance.rendererStats;
+		final currentFPS = Main.fpsVar != null ? Main.fpsVar.currentFPS : ClientPrefs.data.framerate;
+		final averageFPS = modchartAverageFPS > 0 ? modchartAverageFPS : currentFPS;
+		final verticesPerFrame = stats != null ? stats.dbgVertices : 0;
+		final drawsPerFrame = stats != null ? stats.dbgDrawCmds : 0;
+		final drawsPerSecond = Std.int(Math.round(drawsPerFrame * averageFPS));
+		final memoryText = Main.fpsVar != null ? Std.int(Math.round(Main.fpsVar.memoryMegas / 1048576)) + " MB" : "0 MB";
+
+		modchartDebugTxt.text =
+			'${currentFPS} FPS' +
+			'\n${Std.int(Math.round(averageFPS))} av FPS' +
+			'\n${verticesPerFrame} VPF' +
+			'\n${drawsPerFrame} DPF' +
+			'\n${drawsPerSecond} DPS' +
+			'\n${memoryText}' +
+			'\nOpenFL';
+
+		positionModchartDebugOverlay();
+	}
+	#end
 
 	function set_songSpeed(value:Float):Float
 	{
@@ -2357,8 +2402,6 @@ class PlayState extends MusicBeatState
 		songLength = FlxG.sound.music.length;
 		if (timeBar != null)
 			FlxTween.tween(timeBar.scale, {x: 1}, 0.5, {ease: FlxEase.circOut});
-		if (timeProgressIndicator != null)
-			FlxTween.tween(timeProgressIndicator.scale, {x: 1}, 0.5, {ease: FlxEase.circOut});
 		FlxTween.tween(versionText, {y: 5}, 0.5, {ease: FlxEase.circOut});
 		
 		// Después de 5 segundos, cambiar el alpha a 0.6
@@ -2998,6 +3041,9 @@ class PlayState extends MusicBeatState
 			// Resetear timer después de actualizar
 			timeUpdateTimer = 0;
 		}
+		#if MODCHARTS_NOTITG_ALLOWED
+		updateModchartDebugOverlay(elapsed);
+		#end
 
 		if (judgementCounter != null)
 		{
@@ -3086,9 +3132,6 @@ class PlayState extends MusicBeatState
 
 			var curTime:Float = Math.max(0, Conductor.songPosition - ClientPrefs.data.noteOffset);
 			songPercent = (curTime / songLength);
-			if (timeProgressIndicator != null)
-				timeProgressIndicator.value = FlxMath.bound(songPercent, 0, 1);
-
 			var songCalc:Float = (songLength - curTime);
 			if(ClientPrefs.data.timeBarType == 'Time Elapsed') songCalc = curTime;
 
@@ -3362,7 +3405,8 @@ class PlayState extends MusicBeatState
 	}
 
 	public function gradientTimebar(?dadColor:FlxColor = null, ?bfColor:FlxColor = null) {
-		if (timeBar == null || timeBar.leftBar == null) return;
+		if (timeBar == null)
+			return;
 		
 		if (dadColor == null && dad != null)
 			dadColor = FlxColor.fromRGB(dad.healthColorArray[0], dad.healthColorArray[1], dad.healthColorArray[2]);
@@ -3371,55 +3415,20 @@ class PlayState extends MusicBeatState
 			bfColor = FlxColor.fromRGB(boyfriend.healthColorArray[0], boyfriend.healthColorArray[1], boyfriend.healthColorArray[2]);
 
 		if (bfColor != null && dadColor != null) {
-			timeBar.leftBar.pixels.fillRect(new Rectangle(0, 0, timeBar.leftBar.width, timeBar.leftBar.height), 0);
+			if (timeBar.leftBar != null)
+			{
+				timeBar.leftBar.pixels.fillRect(new Rectangle(0, 0, timeBar.leftBar.width, timeBar.leftBar.height), 0);
 
-			FlxGradient.overlayGradientOnFlxSprite(
-				timeBar.leftBar, 
-				Std.int(timeBar.leftBar.width), 
-				Std.int(timeBar.leftBar.height), 
-				[bfColor, dadColor], 
-				0, 0, 1, 180, true
-			);
+				FlxGradient.overlayGradientOnFlxSprite(
+					timeBar.leftBar, 
+					Std.int(timeBar.leftBar.width), 
+					Std.int(timeBar.leftBar.height), 
+					[bfColor, dadColor], 
+					0, 0, 1, 180, true
+				);
 
-			timeBar.leftBar.dirty = true;
-		}
-
-		if (timeProgressIndicator != null && bfColor != null && dadColor != null)
-		{
-			if (ClientPrefs.data.shadedTimeBar)
-				timeProgressIndicator.setWaveGradient(bfColor, dadColor);
-			else
-				timeProgressIndicator.setWaveColor(FlxColor.WHITE);
-		}
-	}
-
-	function refreshTimeBarVisualStyle():Void
-	{
-		if (timeProgressIndicator == null) return;
-
-		if (timeBar != null)
-		{
-			timeBarBaseX = timeBar.x + timeBar.barOffset.x;
-			timeBarBaseY = timeBar.y + timeBar.barOffset.y;
-			timeBarBaseScaleX = timeBar.scale.x;
-			if (!isWavyTimeBarEnabled())
-				timeBarBaseVisible = timeBar.visible;
-		}
-
-		timeProgressIndicator.x = timeBarBaseX;
-		var classicHeight:Float = (timeBar != null ? timeBar.barHeight : 8);
-		var waveHeight:Float = timeProgressIndicator.getIndicatorHeight();
-		timeProgressIndicator.y = timeBarBaseY - Math.max(0, (waveHeight - classicHeight) * 0.5);
-		timeProgressIndicator.visible = updateTime && isWavyTimeBarEnabled();
-		timeProgressIndicator.scale.x = timeBarBaseScaleX;
-
-		if (timeBar != null && isWavyTimeBarEnabled())
-		{
-			timeBar.visible = false;
-		}
-		else if (timeBar != null)
-		{
-			timeBar.visible = true;
+				timeBar.leftBar.dirty = true;
+			}
 		}
 	}
 
@@ -3432,22 +3441,13 @@ class PlayState extends MusicBeatState
 		setOnScripts('dadHealthColor', dadHealthColor);
 		setOnScripts('boyfriendHealthColor', boyfriendHealthColor);
 		if (gf != null)
-			setOnScripts('gfHealthColor', gfHealthColor);
+		setOnScripts('gfHealthColor', gfHealthColor);
 
 		if (ClientPrefs.data.shadedTimeBar)
 			gradientTimebar();
-		else if (timeProgressIndicator != null)
-			timeProgressIndicator.setWaveColor(FlxColor.WHITE);
+		else if (timeBar != null && timeBar.leftBar != null)
+			timeBar.leftBar.color = FlxColor.WHITE;
 
-		if (timeProgressIndicator != null)
-		{
-			if (ClientPrefs.data.shadedTimeBar)
-				timeProgressIndicator.setTrackColor(0x4D000000);
-			else
-				timeProgressIndicator.setTrackColor(0x8C000000);
-		}
-
-		refreshTimeBarVisualStyle();
 		refreshBreakTimerVisualStyle();
 	}
 
@@ -4102,7 +4102,6 @@ class PlayState extends MusicBeatState
 		}
 
 		if (timeBar != null) timeBar.visible = false;
-		if (timeProgressIndicator != null) timeProgressIndicator.visible = false;
 		timeTxt.visible = false;
 		canPause = false;
 		endingSong = true;

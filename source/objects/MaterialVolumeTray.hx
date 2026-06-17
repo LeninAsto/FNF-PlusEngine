@@ -18,7 +18,10 @@ class MaterialVolumeTray extends Sprite
 	static inline var TRAY_RADIUS:Int = 24;
 	static inline var SHOWN_Y:Float = 18;
 	static inline var HIDDEN_Y:Float = -78;
+	static inline var WAVE_X:Float = 84;
 	static inline var WAVE_WIDTH:Float = 124;
+	static inline var SPEAKER_ICON_X:Float = 12;
+	static inline var SPEAKER_WAVE_X:Float = 18;
 	static inline var WAVE_BASE_AMPLITUDE:Float = 0.85;
 	static inline var WAVE_EXTRA_AMPLITUDE:Float = 1.75;
 	static inline var TAU:Float = 6.283185307179586;
@@ -58,24 +61,24 @@ class MaterialVolumeTray extends Sprite
 		addChild(iconChip);
 
 		waveTrack = new Shape();
-		waveTrack.x = 68;
+		waveTrack.x = WAVE_X;
 		waveTrack.y = 29;
 		addChild(waveTrack);
 
 		waveShape = new Shape();
-		waveShape.x = 68;
+		waveShape.x = WAVE_X;
 		waveShape.y = 29;
 		addChild(waveShape);
 
 		iconShape = new Shape();
-		iconShape.x = 24;
+		iconShape.x = SPEAKER_ICON_X + 2;
 		iconShape.y = 19;
 		addChild(iconShape);
 
-		labelText = makeTextField(68, 11, 106, 11, 0x8CB89A, TextFormatAlign.LEFT, 0.82);
+		labelText = makeTextField(WAVE_X, 11, 96, 11, 0x8CB89A, TextFormatAlign.LEFT, 0.82);
 		addChild(labelText);
 
-		valueText = makeTextField(216, 15, 50, 17, 0xE9FFF0, TextFormatAlign.RIGHT, 0.94, true);
+		valueText = makeTextField(214, 15, 52, 17, 0xE9FFF0, TextFormatAlign.RIGHT, 0.94, true);
 		addChild(valueText);
 
 		redrawChrome();
@@ -207,10 +210,10 @@ class MaterialVolumeTray extends Sprite
 		if (shownVolume <= 0.01)
 		{
 			graphics.lineStyle(2.2, MD3Theme.onPrimaryContainer, 0.75);
-			graphics.moveTo(16, 6);
-			graphics.lineTo(24, 14);
-			graphics.moveTo(24, 6);
-			graphics.lineTo(16, 14);
+			graphics.moveTo(SPEAKER_WAVE_X, 6);
+			graphics.lineTo(SPEAKER_WAVE_X + 8, 14);
+			graphics.moveTo(SPEAKER_WAVE_X + 8, 6);
+			graphics.lineTo(SPEAKER_WAVE_X, 14);
 			return;
 		}
 
@@ -221,8 +224,8 @@ class MaterialVolumeTray extends Sprite
 			var radius:Float = 5 + i * 4;
 			var topY:Float = 10 - radius * 0.55;
 			var bottomY:Float = 10 + radius * 0.55;
-			var controlX:Float = 8 + radius * 0.78;
-			var endX:Float = 8 + radius * 0.4;
+			var controlX:Float = SPEAKER_WAVE_X - 4 + radius * 0.78;
+			var endX:Float = SPEAKER_WAVE_X - 4 + radius * 0.4;
 			graphics.moveTo(endX, topY);
 			graphics.curveTo(controlX, 10, endX, bottomY);
 		}

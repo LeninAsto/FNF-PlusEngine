@@ -133,6 +133,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 			return;
 		}
 
+		if (curOption != null && !curOption.selectable)
+			changeSelection(0);
+
 		if (controls.UI_UP_P)
 		{
 			changeSelection(-1);
@@ -147,7 +150,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 		}
 
-		if(nextAccept <= 0)
+		if(nextAccept <= 0 && curOption != null && curOption.selectable)
 		{
 			switch(curOption.type)
 			{
@@ -482,7 +485,26 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	
 	function changeSelection(change:Int = 0)
 	{
-		curSelected = FlxMath.wrap(curSelected + change, 0, optionsArray.length - 1);
+		if (optionsArray == null || optionsArray.length == 0)
+			return;
+
+		var direction:Int = change < 0 ? -1 : 1;
+		var target:Int = curSelected + change;
+		var found:Int = -1;
+		for (step in 0...optionsArray.length)
+		{
+			var index:Int = FlxMath.wrap(target + (step * direction), 0, optionsArray.length - 1);
+			if (optionsArray[index] != null && optionsArray[index].selectable)
+			{
+				found = index;
+				break;
+			}
+		}
+
+		if (found == -1)
+			found = Std.int(FlxMath.bound(curSelected, 0, optionsArray.length - 1));
+
+		curSelected = found;
 
 		descText.text = optionsArray[curSelected].description;
 		descText.screenCenter(Y);
@@ -491,13 +513,13 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		for (num => item in grpOptions.members)
 		{
 			item.targetY = num - curSelected;
-			item.alpha = 0.6;
-			if (item.targetY == 0) item.alpha = 1;
+			item.alpha = (optionsArray[num] != null && !optionsArray[num].selectable) ? 0.35 : 0.6;
+			if (item.targetY == 0 && (optionsArray[num] == null || optionsArray[num].selectable)) item.alpha = 1;
 		}
 		for (text in grpTexts)
 		{
-			text.alpha = 0.6;
-			if(text.ID == curSelected) text.alpha = 1;
+			text.alpha = (optionsArray[text.ID] != null && !optionsArray[text.ID].selectable) ? 0.35 : 0.6;
+			if(text.ID == curSelected && (optionsArray[text.ID] == null || optionsArray[text.ID].selectable)) text.alpha = 1;
 		}
 
 		descBox.setPosition(descText.x - 10, descText.y - 10);
