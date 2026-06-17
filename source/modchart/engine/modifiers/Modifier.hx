@@ -4,6 +4,7 @@ import flixel.FlxG;
 import modchart.Manager;
 import modchart.backend.core.ModifierParameters;
 import modchart.backend.core.VisualParameters;
+import modchart.backend.core.TransformMode;
 import modchart.engine.PlayField;
 
 using StringTools;
@@ -27,8 +28,16 @@ class Modifier {
 		return data;
 	}
 
+	public function transformMode():TransformMode
+		return TransformMode.ALL;
+
 	public function shouldRun(params:ModifierParameters):Bool
 		return false;
+
+	public inline function supportsMode(mode:TransformMode):Bool {
+		final myMode = transformMode();
+		return myMode == TransformMode.ALL || mode == TransformMode.ALL || myMode.has(mode);
+	}
 
 	public function allowOnStraightHolds():Bool
 		return true;

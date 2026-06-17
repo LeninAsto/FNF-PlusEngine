@@ -146,7 +146,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 
 		final size = hold.frame.frame.width * hold.scale.x * .5;
 
-		var origin:ModifierOutput = parent.modifiers.getPath(copyVec3(basePos, _pathInputA), params);
+		var origin:ModifierOutput = parent.getNotePath(copyVec3(basePos, _pathInputA), params);
 		var curPoint = new Vector3(origin.pos.x, origin.pos.y, 0);
 		final depth = (origin.pos.z - 1) * 1000;
 		final worldX = origin.rawX;
@@ -159,7 +159,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		if (Config.OPTIMIZE_HOLDS) {
 			unit = __holdUnitUp; // reuse static up-vector, no allocation
 		} else {
-			var next = parent.modifiers.getPath(copyVec3(basePos, _pathInputB), params, 1, false, true);
+			var next = parent.getNotePath(copyVec3(basePos, _pathInputB), params, 1, false, true);
 			next.pos.z = 0;
 
 			// normalized points difference (from 0-1)
@@ -344,7 +344,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		_parentDataBuf.straightHolds = __straightHolds > 0;
 		final parentData = _parentDataBuf;
 		if (__rotateX != 0 || __rotateY != 0 || __rotateZ != 0) {
-			__parentOutput = parent.modifiers.getPath(copyVec3(basePos, _pathInputA), parentData);
+			__parentOutput = parent.getNotePath(copyVec3(basePos, _pathInputA), parentData);
 		}
 
 		var vertPointer = 0;

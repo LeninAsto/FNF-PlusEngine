@@ -1,6 +1,7 @@
 package modchart.engine.modifiers.list;
 
 import flixel.FlxG;
+import modchart.backend.core.TransformMode;
 
 class Zoom extends Modifier {
 	var __curPercent:Null<Float> = -1;
@@ -43,4 +44,7 @@ class Zoom extends Modifier {
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function transformMode():TransformMode
+		return TransformMode.FIELD;
 }

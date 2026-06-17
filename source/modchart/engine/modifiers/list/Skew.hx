@@ -3,6 +3,7 @@ package modchart.engine.modifiers.list;
 import flixel.math.FlxAngle;
 import modchart.backend.core.ModifierParameters;
 import modchart.backend.core.VisualParameters;
+import modchart.backend.core.TransformMode;
 
 class Skew extends Modifier {
 	var xID = 0;
@@ -66,4 +67,7 @@ class Skew extends Modifier {
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function transformMode():TransformMode
+		return TransformMode.FIELD;
 }

@@ -1,6 +1,7 @@
 package modchart.engine.modifiers.list;
 
 import modchart.backend.core.ModifierParameters;
+import modchart.backend.core.TransformMode;
 
 class FieldRotate extends Rotate {
 	override public function getOrigin(curPos:Vector3, params:ModifierParameters):Vector3 {
@@ -21,4 +22,7 @@ class FieldRotate extends Rotate {
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function transformMode():TransformMode
+		return TransformMode.FIELD;
 }

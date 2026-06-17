@@ -89,12 +89,13 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		arrowPosition.setTo(Adapter.instance.getDefaultReceptorX(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2,
 			Adapter.instance.getDefaultReceptorY(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2, 0);
 
-		final output = parent.modifiers.getPath(arrowPosition, arrowData);
+		final output = parent.getNotePath(arrowPosition, arrowData);
 		arrowPosition.setTo(output.rawX, output.rawY, output.rawZ);
+		var visualAngleZ = output.visuals.angleZ;
 
 		// internal mods
 		if (orient != 0) {
-			final nextOutput = parent.modifiers.getPath(new Vector3(Adapter.instance.getDefaultReceptorX(arrowData.lane, arrowData.player)
+			final nextOutput = parent.getNotePath(new Vector3(Adapter.instance.getDefaultReceptorX(arrowData.lane, arrowData.player)
 				+ Manager.ARROW_SIZEDIV2,
 				Adapter.instance.getDefaultReceptorY(arrowData.lane, arrowData.player)
 				+ Manager.ARROW_SIZEDIV2),
@@ -102,7 +103,8 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 			final thisPos = output.pos;
 			final nextPos = nextOutput.pos;
 
-			output.visuals.angleZ += FlxAngle.wrapAngle((-90 + (Math.atan2(nextPos.y - thisPos.y, nextPos.x - thisPos.x) * FlxAngle.TO_DEG)) * orient);
+			final orientAngle = FlxAngle.wrapAngle((-90 + (Math.atan2(nextPos.y - thisPos.y, nextPos.x - thisPos.x) * FlxAngle.TO_DEG)) * orient);
+			visualAngleZ += orientAngle;
 		}
 
 		__lastPlayer = player;
@@ -133,7 +135,7 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 
 			// The result of the vert rotation
 			var rotation = ModchartUtil.rotate3DVector(rotationVector, visualAngleX, visualAngleY,
-				ModchartUtil.getFrameAngle(arrow) + output.visuals.angleZ + arrow.angle);
+				ModchartUtil.getFrameAngle(arrow) + visualAngleZ + arrow.angle);
 
 			// apply skewness
 			if (output.visuals.skewX != 0 || output.visuals.skewY != 0) {

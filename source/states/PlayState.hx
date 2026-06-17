@@ -4406,17 +4406,6 @@ class PlayState extends MusicBeatState
 		var noteDiff:Float = Math.abs(note.strumTime - Conductor.songPosition + ClientPrefs.data.ratingOffset);
 		vocals.volume = 1;
 
-		if (!ClientPrefs.data.comboStacking && comboGroup.members.length > 0)
-		{
-			for (spr in comboGroup)
-			{
-				if(spr == null) continue;
-
-				comboGroup.remove(spr);
-				spr.destroy();
-			}
-		}
-
 		var placement:Float = FlxG.width * 0.35;
 		var rating:FlxSprite = new FlxSprite();
 		var score:Int = 350;
@@ -4628,12 +4617,11 @@ class PlayState extends MusicBeatState
 				// Mostrar judgement de StepMania en su lugar
 				showStepManiaJudgement(daRating.name);
 			} else {
-				rating.visible = (!ClientPrefs.data.hideHud && showRating);
+			rating.visible = (!ClientPrefs.data.hideHud && showRating);
 			}
 			
 			rating.x += ClientPrefs.data.comboOffset[0];
 			rating.y -= ClientPrefs.data.comboOffset[1];
-
 			var comboSpr:FlxSprite = new FlxSprite().loadGraphic(Paths.image(uiFolder + 'combo' + uiPostfix));
 			comboSpr.screenCenter();
 			comboSpr.x = placement;
@@ -4654,8 +4642,7 @@ class PlayState extends MusicBeatState
 			comboSpr.updateHitbox();
 			
 			comboSpr.visible = (!ClientPrefs.data.hideHud && showCombo);
-			comboSpr.x += ClientPrefs.data.comboOffset[0];
-			comboSpr.y -= ClientPrefs.data.comboOffset[1];
+			comboSpr.x += ClientPrefs.data.comboOffset[2];
 			comboSpr.y += 60;
 			comboSpr.velocity.x += FlxG.random.int(1, 10) * playbackRate;
 			comboGroup.add(rating);
@@ -4688,7 +4675,9 @@ class PlayState extends MusicBeatState
 
 				if (combo >= 10 || combo == 0)
 				if(showComboNum)
+				{
 					comboGroup.add(numScore);
+				}
 
 				FlxTween.tween(numScore, {alpha: 0}, 0.2 / playbackRate, {
 					onComplete: function(tween:FlxTween)
@@ -5537,6 +5526,7 @@ class PlayState extends MusicBeatState
 		backend.NoteTypesConfig.clearNoteTypesData();
 
 		NoteSplash.configs.clear();
+		NoteSplash.clearCache();
 		
 		// Limpiar Manager de modchart
 		#if LUA_ALLOWED

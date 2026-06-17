@@ -2,6 +2,7 @@ package modchart.engine.modifiers.list;
 
 import modchart.backend.core.ModifierParameters;
 import modchart.backend.core.VisualParameters;
+import modchart.backend.core.TransformMode;
 
 class Scale extends Modifier {
 	// Pre-computed IDs indexed by axisIdx (0='', 1='x', 2='y') to avoid Std.string(lane) allocations.
@@ -77,4 +78,7 @@ class Scale extends Modifier {
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function transformMode():TransformMode
+		return TransformMode.FIELD;
 }

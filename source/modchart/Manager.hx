@@ -60,6 +60,7 @@ final class Manager extends FlxBasic {
 	private var __scheduledPlayfieldOps:Array<ScheduledPlayfieldOperation> = [];
 
 	private var renderer:CtxRenderer;
+	private var __frameToken:Int = 0;
 
 	/** Exposes renderer stats for debug overlays. */
 	public var rendererStats(get, never):CtxRenderer;
@@ -368,6 +369,11 @@ final class Manager extends FlxBasic {
 	override function update(elapsed:Float):Void {
 		super.update(elapsed);
 
+		__frameToken++;
+		final songPos = Adapter.instance.getSongPosition();
+		final beat = Adapter.instance.getCurrentBeat();
+
+		iteratePlayfields(pf -> pf.beginFrame(__frameToken, songPos, beat));
 		__updateScheduledPlayfieldOps(Adapter.instance.getCurrentBeat());
 
 		iteratePlayfields(pf -> pf.update(elapsed));

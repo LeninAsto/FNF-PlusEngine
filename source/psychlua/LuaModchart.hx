@@ -74,7 +74,7 @@ class LuaModchart
             Adapter.instance.getDefaultReceptorY(lane, player) + Manager.ARROW_SIZEDIV2,
             0
         );
-        final output = playfield.modifiers.getPath(arrowPosition, __luaArrowData);
+        final output = playfield.getReceptorPath(arrowPosition, __luaArrowData);
 
         __luaArrowPoint.set(output.pos.x - Manager.ARROW_SIZEDIV2, output.pos.y - Manager.ARROW_SIZEDIV2);
         return __luaArrowPoint;

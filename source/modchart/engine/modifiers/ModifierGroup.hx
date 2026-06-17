@@ -9,6 +9,7 @@ import modchart.backend.core.ModifierOutput;
 import modchart.backend.core.ModifierParameters;
 import modchart.backend.core.PercentArray;
 import modchart.backend.core.VisualParameters;
+import modchart.backend.core.TransformMode;
 import modchart.backend.macros.ModifiersMacro;
 import modchart.backend.util.ModchartUtil;
 import modchart.engine.modifiers.Modifier;
@@ -111,7 +112,7 @@ final class ModifierGroup {
 	 * - Iterates through all active modifiers, applying transformations if conditions are met.
 	 * - Adjusts the `z` position based on `Config.Z_SCALE` and projects the final position.
 	 */
-	public inline function getPath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput {
+	public inline function getPath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true, ?transformMode:Int = 15):ModifierOutput {
 		if (!allowVis && !allowPos)
 			return {pos: pos, visuals: {}, rawX: pos.x, rawY: pos.y, rawZ: pos.z};
 
@@ -155,7 +156,7 @@ final class ModifierGroup {
 			final useStraightAnchor = args.straightHolds && !mod.allowOnStraightHolds();
 			final activeArgs = useStraightAnchor ? straightArgs : args;
 
-			if (!mod.shouldRun(activeArgs))
+			if (!mod.supportsMode(cast transformMode) || !mod.shouldRun(activeArgs))
 				continue;
 
 			if (allowPos)

@@ -3,6 +3,7 @@ package modchart.engine.modifiers.list;
 import flixel.math.FlxMath;
 import modchart.backend.core.ModifierParameters;
 import modchart.backend.core.VisualParameters;
+import modchart.backend.core.TransformMode;
 
 class Stealth extends Modifier {
 	// Pre-computed hashed IDs to avoid Std.string(lane) allocations in hot path.
@@ -113,4 +114,7 @@ class Stealth extends Modifier {
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function transformMode():TransformMode
+		return TransformMode.FIELD;
 }

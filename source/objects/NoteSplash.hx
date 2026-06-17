@@ -64,6 +64,10 @@ class NoteSplash extends FlxSprite
 	{
 		config = null;
 		maxAnims = 0;
+		spawned = false;
+		animation.finishCallback = null;
+		@:privateAccess
+		animation.clearAnimations();
 
 		if(splash == null)
 		{
@@ -72,40 +76,71 @@ class NoteSplash extends FlxSprite
 		}
 
 		texture = splash;
+		frames = null;
 		var atlasPath:String = 'images/$texture';
+		var loadedAtlas:Bool = false;
 		if (framesCache.exists(atlasPath))
+		{
 			frames = framesCache.get(atlasPath);
+			loadedAtlas = frames != null;
+		}
 		else
 		{
 			frames = Paths.getSparrowAtlas(texture);
 			if (frames != null)
+			{
 				framesCache.set(atlasPath, frames);
+				loadedAtlas = true;
+			}
 		}
 		if (frames == null)
 		{
 			texture = getDefaultNoteSplashPath() + getSplashSkinPostfix();
 			atlasPath = 'images/$texture';
 			if (framesCache.exists(atlasPath))
+			{
 				frames = framesCache.get(atlasPath);
+				loadedAtlas = frames != null;
+			}
 			else
 			{
 				frames = Paths.getSparrowAtlas(texture);
 				if (frames != null)
+				{
 					framesCache.set(atlasPath, frames);
+					loadedAtlas = true;
+				}
 			}
 			if (frames == null)
 			{
 				texture = defaultNoteSplash;
 				atlasPath = 'images/$texture';
 				if (framesCache.exists(atlasPath))
+				{
 					frames = framesCache.get(atlasPath);
+					loadedAtlas = frames != null;
+				}
 				else
 				{
 					frames = Paths.getSparrowAtlas(texture);
 					if (frames != null)
+					{
 						framesCache.set(atlasPath, frames);
+						loadedAtlas = true;
+					}
 				}
 			}
+		}
+
+		if (!loadedAtlas || frames == null)
+		{
+			// Keep the splash invisible rather than inheriting stale frames from a recycled instance.
+			texture = null;
+			makeGraphic(1, 1, FlxColor.TRANSPARENT);
+			updateHitbox();
+			config = createConfig();
+			maxAnims = 0;
+			return;
 		}
 
 		var path:String = 'images/$texture';
@@ -218,6 +253,11 @@ class NoteSplash extends FlxSprite
 	{
 		var preview:NoteSplash = new NoteSplash(0, 0, splash);
 		preview.kill();
+	}
+
+	public static function clearCache():Void
+	{
+		framesCache.clear();
 	}
 
 	public function spawnSplashNote(?x:Float = 0, ?y:Float = 0, ?noteData:Int = 0, ?note:Note, ?randomize:Bool = true)
@@ -352,7 +392,13 @@ class NoteSplash extends FlxSprite
 	{
 		var anim:String = noteDataMap.get(noteData);
 		if (anim != null && animation.exists(anim))
+		{
 			animation.play(anim, true);
+		}
+		else if (animation.getNameList().length > 0)
+		{
+			animation.play(animation.getNameList()[0], true);
+		}
 
 		return anim;
 	}
@@ -401,9 +447,9 @@ class NoteSplash extends FlxSprite
 
 	public static function getDefaultNoteSplashPath():String
 	{
-		var preferred:String = ClientPrefs.data.noteRGB ? defaultNoteSplash : noRgbNoteSplash;
+		var preferred:String = defaultNoteSplash;
 		if(Paths.fileExists('images/' + preferred + '.png', IMAGE)) return preferred;
-		return defaultNoteSplash;
+		return noRgbNoteSplash;
 	}
 
 	public static function createConfig():NoteSplashConfig

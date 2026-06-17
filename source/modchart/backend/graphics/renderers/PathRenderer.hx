@@ -249,7 +249,7 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 			_paramBuf.distance = hitTime;
 			_paramBuf.sourceTime = songPos + hitTime;
 
-			final output = parent.modifiers.getPath(_scratch, _paramBuf);
+			final output = parent.getReceptorPath(_scratch, _paramBuf);
 
 			_px[index] = output.pos.x;
 			_py[index] = output.pos.y;
