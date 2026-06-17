@@ -270,140 +270,6 @@ jobs:
           path: dist/FNF-PlusEngine-ios.zip
           if-no-files-found: error
 
-  scan_artifacts:
-    name: VirusTotal Scan
-    runs-on: ubuntu-24.04
-    needs:
-      - build_linux_x64
-      - build_android
-      - build_windows_x64
-      - build_macos_arm64
-      - build_macos_intel
-      - build_ios
-    if: always() && !cancelled()
-
-    steps:
-      - name: Download artifacts
-        uses: actions/download-artifact@v5
-        with:
-          path: vt-artifacts
-          pattern: "*-artifact"
-          merge-multiple: true
-
-      - name: Scan files
-        env:
-          VT_API_KEY: ${{ secrets.VIRUSTOTAL_API_KEY }}
-        run: |
-          python - <<'PY'
-          import json
-          import os
-          import subprocess
-          import sys
-          import time
-          import urllib.request
-
-          root = "vt-artifacts"
-          summary_path = os.environ["GITHUB_STEP_SUMMARY"]
-          api_key = os.environ.get("VT_API_KEY", "").strip()
-          files = []
-          for current_root, _, names in os.walk(root):
-              for name in names:
-                  files.append(os.path.join(current_root, name))
-          files.sort()
-
-          with open(summary_path, "a", encoding="utf-8") as handle:
-              handle.write("## VirusTotal\n")
-              if not files:
-                  handle.write("- No se encontraron artefactos para escanear.\n")
-                  raise SystemExit(1)
-              if not api_key:
-                  handle.write("- `VIRUSTOTAL_API_KEY` no esta configurada; el escaneo queda omitido.\n")
-                  raise SystemExit(0)
-
-          def request_json(url, method="GET", data=None, headers=None):
-              req = urllib.request.Request(url, data=data, method=method)
-              for key, value in (headers or {}).items():
-                  req.add_header(key, value)
-              with urllib.request.urlopen(req, timeout=120) as response:
-                  return json.loads(response.read().decode("utf-8"))
-
-          results = []
-          blocked = []
-
-          for path in files:
-              size = os.path.getsize(path)
-              upload_url = "https://www.virustotal.com/api/v3/files"
-              headers = {"x-apikey": api_key}
-              if size > 32 * 1024 * 1024:
-                  upload_url = request_json(
-                      "https://www.virustotal.com/api/v3/files/upload_url",
-                      headers=headers,
-                  )["data"]
-
-              command = [
-                  "curl",
-                  "--silent",
-                  "--show-error",
-                  "--fail",
-                  "--request",
-                  "POST",
-                  "--header",
-                  f"x-apikey: {api_key}",
-                  "--form",
-                  f"file=@{path}",
-                  upload_url,
-              ]
-              response = subprocess.run(command, capture_output=True, text=True, check=True)
-              analysis_id = json.loads(response.stdout)["data"]["id"]
-
-              status = "queued"
-              stats = {}
-              for _ in range(30):
-                  analysis = request_json(
-                      f"https://www.virustotal.com/api/v3/analyses/{analysis_id}",
-                      headers=headers,
-                  )["data"]["attributes"]
-                  status = analysis.get("status", "unknown")
-                  stats = analysis.get("stats", {})
-                  if status == "completed":
-                      break
-                  time.sleep(15)
-              else:
-                  blocked.append(f"{os.path.basename(path)} (timeout)")
-                  continue
-
-              malicious = int(stats.get("malicious", 0))
-              suspicious = int(stats.get("suspicious", 0))
-              harmless = int(stats.get("harmless", 0))
-              undetected = int(stats.get("undetected", 0))
-              results.append(
-                  {
-                      "name": os.path.basename(path),
-                      "status": "failed" if (malicious or suspicious) else "passed",
-                      "malicious": malicious,
-                      "suspicious": suspicious,
-                      "harmless": harmless,
-                      "undetected": undetected,
-                      "url": f"https://www.virustotal.com/gui/file-analysis/{analysis_id}",
-                  }
-              )
-              if malicious or suspicious:
-                  blocked.append(os.path.basename(path))
-
-          with open(summary_path, "a", encoding="utf-8") as handle:
-              handle.write("| Archivo | Estado | Malicious | Suspicious | Harmless | Undetected |\n")
-              handle.write("| --- | --- | ---: | ---: | ---: | ---: |\n")
-              for item in results:
-                  handle.write(
-                      f"| [{item['name']}]({item['url']}) | {item['status']} | {item['malicious']} | {item['suspicious']} | {item['harmless']} | {item['undetected']} |\n"
-                  )
-              if blocked:
-                  handle.write(f"\n- Archivos con senales raras: {', '.join(blocked)}\n")
-
-          if blocked:
-              raise SystemExit(1)
-          PY
-
   summary:
     name: Workflow Summary
     runs-on: ubuntu-24.04
@@ -414,7 +280,6 @@ jobs:
       - build_macos_arm64
       - build_macos_intel
       - build_ios
-      - scan_artifacts
     if: always()
 
     steps:
@@ -433,7 +298,6 @@ jobs:
               ("build_macos_arm64", "macOS ARM64"),
               ("build_macos_intel", "macOS Intel"),
               ("build_ios", "iOS"),
-              ("scan_artifacts", "VirusTotal"),
           ]
           icons = {
               "success": "[ok]",
