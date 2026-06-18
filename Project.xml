@@ -72,28 +72,22 @@
 
 	<!-- Assets -->
 	<assets path="assets/fonts" />
-	<assets path="assets/shared"        exclude="*.ogg" if="web"/>
-	<assets path="assets/shared"        exclude="*.mp3" unless="web"/>
-	<assets path="assets/embed"         exclude="*.ogg" if="web" embed="true"/>
-	<assets path="assets/embed"         exclude="*.mp3" unless="web" embed="true"/>
+	<assets path="assets/shared" />
+	<assets path="assets/embed"         embed="true"/>
 	<assets path="assets/videos"        if="VIDEOS_ALLOWED"/>
-	<assets path="assets/songs"         exclude="*.ogg" if="web"/>
-	<assets path="assets/songs"         exclude="*.mp3" unless="web"/>
-	<assets path="assets/week_assets"   rename="assets" exclude="*.ogg" if="web"/>
-	<assets path="assets/week_assets"   rename="assets" exclude="*.mp3" unless="web"/>
+	<assets path="assets/songs" />
+	<assets path="assets/songs" />
+	<assets path="assets/week_assets" />
 	<section if="TITLE_SCREEN_EASTER_EGG">
-		<assets path="assets/secrets" rename="assets/shared" exclude="*.ogg" if="web"/>
-		<assets path="assets/secrets" rename="assets/shared" exclude="*.mp3"  unless="web"/>
+		<assets path="assets/secrets" rename="assets/shared"/>
 	</section>
 
 	<section if="TRANSLATIONS_ALLOWED">
-		<assets path="assets/translations" rename="assets" exclude="*.ogg" if="web"/>
-		<assets path="assets/translations" rename="assets" exclude="*.mp3"  unless="web"/>
+		<assets path="assets/translations" rename="assets"/>
 	</section>
 
 	<section if="BASE_GAME_FILES">
-		<assets path="assets/base_game" rename="assets" exclude="*.ogg" if="web"/>
-		<assets path="assets/base_game" rename="assets" exclude="*.mp3"  unless="web"/>
+		<assets path="assets/base_game" rename="assets"/>
 		<haxelib name="grig.audio" if="BASE_GAME_FILES"/>
 		<haxelib name="funkin.vis" if="BASE_GAME_FILES"/>
 	</section>
@@ -197,7 +191,7 @@
 	<haxedef name="message.reporting" value="pretty" />
 
 	<!-- Do whatever you want I'm tired uninstall and install everytime -->
-	<certificate path="key.keystore" password="psychengine" alias="psychport" alias-password="psychengine" if="android" unless="debug" />
+	<certificate path="key.keystore" password="plusengine" alias="psychplus" alias-password="plusengine" if="android" unless="debug" />
 
 	<!-- Category Type for Apple Systems -->
 	<config:ios category_type="public.app-category.music-games" />
@@ -239,19 +233,7 @@
 	<icon path="art/icons/icon32.png" size='32' unless="android"/>
 	<icon path="art/icons/icon64.png" size='64' unless="android"/>
 	<icon path="art/icons/iconOG.png" unless="android"/>
-
-	<!-- Only iOS icon -->
 	<icon path="art/icons/iconALT.png" if="ios"/>
-	
-	<icon path="art/icons/iOS/bf-iOS-Default-20x20@2x.png" size='40' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-20x20@3x.png" size='60' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-29x29.png" size='29' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-29x29@2x.png" size='58' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-29x29@3x.png" size='87' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-40x40@2x.png" size='80' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-60x60@2x.png" size='120' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-60x60@3x.png" size='180' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-76x76@2x.png" size='152' if="ios" />
 
 	<section if="android">
 		<assets path="art/icons/android/res" rename="app/src/main/res" type="template" />
