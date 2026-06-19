@@ -29,6 +29,9 @@ import cutscenes.DialogueBoxPsych;
 
 import states.StoryMenuState;
 import states.FreeplayState;
+import states.play.BreakTimerHud;
+import states.play.GameplayRuntimeBridge;
+import states.play.StepmaniaHud;
 import states.editors.ChartingState;
 import states.editors.CharacterEditorState;
 
@@ -42,9 +45,6 @@ import openfl.filters.ShaderFilter;
 import shaders.ErrorHandledShader;
 import flixel.util.FlxGradient;
 import openfl.geom.Rectangle;
-import backend.ui.md3.MaterialWavyProgressIndicator;
-import backend.ui.md3.MaterialWavyProgressIndicator.WavyProgressType;
-import options.OptionsMenuTheme;
 import Main;
 
 import objects.VideoSprite;
@@ -155,6 +155,7 @@ class PlayState extends MusicBeatState
 	public var hscriptArray:Array<HScript> = [];  
 	#end
 
+	//holy moly psych 0.7.3
 	#if LUA_ALLOWED
 	public var modchartTweens:Map<String, FlxTween> = new Map<String, FlxTween>();
 	public var modchartSprites:Map<String, FlxSprite> = new Map<String, FlxSprite>();
@@ -314,16 +315,8 @@ class PlayState extends MusicBeatState
 	var judgementCounter:JudCounter;
 	
 	// StepMania UI
-	var smScoreTxt:FlxText;
-	var smAccuracyTxt:FlxText;
-	var smRatingTxt:FlxText;
-	var smScoreTween:FlxTween;
-	var smDisplayedScore:Float = 0; // Score mostrado (animado)
+	var stepmaniaHud:StepmaniaHud;
 	var isStepManiaChart:Bool = false;
-	
-	// StepMania Judgements
-	var smJudgement:FlxSprite;
-	var smJudgementTween:FlxTween;
 
 	// TPS/NPS System
 	var notesHitArray:Array<Date> = [];
@@ -347,26 +340,13 @@ class PlayState extends MusicBeatState
 	var iconAnimationEnabled:Bool = true;
 	
 	// ← VARIABLES DE OPTIMIZACIÓN
-	var timeUpdateTimer:Float = 0;
-	var TIME_UPDATE_INTERVAL:Float = 1.0; // Actualizar cada segundo
-	var debugUpdateTimer:Float = 0;
-	var DEBUG_UPDATE_INTERVAL:Float = 0.1; // Actualizar cada 100ms
 	var missSpritesPool:Array<FlxSprite> = [];
 	var MAX_MISS_SPRITES:Int = 3;
 	var endCountdownText:FlxText = null;
 	var lastEndCountdown:Int = -1;
 	var lastJudName:String = "None";
-	var breakTimerText:FlxText = null;
-	var breakTimerIndicator:MaterialWavyProgressIndicator = null;
-	var breakTimerNoteTimes:Array<Float> = [];
-	var breakTimerNoteIndex:Int = 0;
-	var breakTimerUpdateAccum:Float = 0;
-	var breakTimerNextNoteTime:Float = -1;
-	var breakTimerLastNoteTime:Float = -1;
-	var lastBreakTimerValue:Int = -1;
-	static inline var BREAK_TIMER_MIN_GAP:Float = 2000;
-	static inline var BREAK_TIMER_TEXT_SIZE:Int = 28;
-	static inline var BREAK_TIMER_INDICATOR_SIZE:Float = 64;
+	var breakTimerHud:BreakTimerHud = null;
+	var gameplayRuntimeBridge:GameplayRuntimeBridge = null;
 
 	#if windows
 	// Window border color tween system (Slushi Engine method)
@@ -787,19 +767,24 @@ class PlayState extends MusicBeatState
 		add(uiGroup);
 		add(noteGroup);
 
-		// Counter
-		judgementCounter = new JudCounter(10, (FlxG.height / 2) - 100);
-		judgementCounter.setCameras([camHUD]);
-		add(judgementCounter);
+		if (ClientPrefs.data.judgementCounter)
+		{
+			judgementCounter = new JudCounter(10, (FlxG.height / 2) - 100);
+			judgementCounter.setCameras([camHUD]);
+			add(judgementCounter);
+		}
 
-		var versionStr = "PlE v" + MainMenuState.plusEngineVersion + " | " + SONG.song + " (" + Difficulty.getString() + ")";
-		versionText = new FlxText(0, -50, FlxG.width, versionStr, 14);
-		versionText.setFormat(Paths.font("vcr.ttf"), 14, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		versionText.scrollFactor.set();
-		versionText.alpha = 1.0; 
-		versionText.borderSize = 1;
-		versionText.visible = ClientPrefs.data.versionTextOnGameplay;
-		versionText.cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
+		if (ClientPrefs.data.versionTextOnGameplay)
+		{
+			var versionStr = "PlE v" + MainMenuState.plusEngineVersion + " | " + SONG.song + " (" + Difficulty.getString() + ")";
+			versionText = new FlxText(0, -50, FlxG.width, versionStr, 14);
+			versionText.setFormat(Paths.font("vcr.ttf"), 14, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			versionText.scrollFactor.set();
+			versionText.alpha = 1.0;
+			versionText.borderSize = 1;
+			versionText.visible = true;
+			versionText.cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
+		}
 
 		Conductor.songPosition = -Conductor.crochet * 5 + Conductor.offset;
 		var showTime:Bool = (ClientPrefs.data.timeBarType != 'Disabled');
@@ -830,28 +815,11 @@ class PlayState extends MusicBeatState
 		}
 
 		generateSong();
-		cacheBreakTimerNotes();
-
 		if (ClientPrefs.data.breakTimer)
 		{
-			breakTimerIndicator = new MaterialWavyProgressIndicator(0, 0, WavyProgressType.CIRCULAR, BREAK_TIMER_INDICATOR_SIZE);
-			breakTimerIndicator.cameras = [camHUD];
-			breakTimerIndicator.scrollFactor.set();
-			breakTimerIndicator.circularEdgeGap = 0.12;
-			breakTimerIndicator.circularTrackRadiusOffset = 0;
-			breakTimerIndicator.circularTrackThicknessScale = 1;
-			breakTimerIndicator.visible = false;
-			breakTimerIndicator.value = 0;
-			add(breakTimerIndicator);
-
-			breakTimerText = new FlxText(0, 0, 0, "", BREAK_TIMER_TEXT_SIZE);
-			breakTimerText.setFormat(Paths.font("vcr.ttf"), BREAK_TIMER_TEXT_SIZE, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			breakTimerText.cameras = [camHUD];
-			breakTimerText.scrollFactor.set();
-			breakTimerText.borderSize = 3;
-			breakTimerText.visible = false;
-			add(breakTimerText);
-			refreshBreakTimerVisualStyle();
+			breakTimerHud = new BreakTimerHud(camHUD);
+			breakTimerHud.addTo(this);
+			cacheBreakTimerNotes();
 		}
 
 		noteGroup.add(grpNoteSplashes);
@@ -932,42 +900,11 @@ class PlayState extends MusicBeatState
 		uiGroup.add(scoreTxt);
 	
 		// Detectar si es un chart de StepMania o si usa el stage notitg
-		isStepManiaChart = (customAudioPath != null && (customAudioPath.contains('/sm/') || customAudioPath.contains('sm/'))) || (curStage == 'notitg');		// Crear UI de StepMania si es necesario
-		if (isStepManiaChart) {
-		// Ocultar scoreTxt normal
-			scoreTxt.visible = false;			// Calcular posición vertical centrada
-			var centerY:Float = FlxG.height / 2;
-			
-			// Score grande en el medio derecho (centrado verticalmente)
-			smScoreTxt = new FlxText(FlxG.width - 320, centerY - 60, 300, "00000000", 48);
-			smScoreTxt.setFormat(Paths.font("aller.ttf"), 48, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			smScoreTxt.scrollFactor.set();
-			smScoreTxt.borderSize = 2;
-			smScoreTxt.visible = !ClientPrefs.data.hideHud;
-			uiGroup.add(smScoreTxt);
-			
-			// Accuracy debajo del score
-			smAccuracyTxt = new FlxText(FlxG.width - 320, centerY, 300, "0.00%", 28);
-			smAccuracyTxt.setFormat(Paths.font("aller.ttf"), 28, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			smAccuracyTxt.scrollFactor.set();
-			smAccuracyTxt.borderSize = 1.5;
-			smAccuracyTxt.visible = !ClientPrefs.data.hideHud;
-			uiGroup.add(smAccuracyTxt);
-			
-			// Rating name debajo del accuracy
-			smRatingTxt = new FlxText(FlxG.width - 320, centerY + 35, 300, "?", 24);
-			smRatingTxt.setFormat(Paths.font("aller.ttf"), 24, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			smRatingTxt.scrollFactor.set();
-			smRatingTxt.borderSize = 1.5;
-			smRatingTxt.visible = !ClientPrefs.data.hideHud;
-			uiGroup.add(smRatingTxt);
-			
-			// Crear sprite de judgement (inicialmente invisible)
-			smJudgement = new FlxSprite();
-			smJudgement.cameras = [camHUD];
-			smJudgement.visible = false;
-			smJudgement.alpha = 0;
-			add(smJudgement);
+		isStepManiaChart = (customAudioPath != null && (customAudioPath.contains('/sm/') || customAudioPath.contains('sm/'))) || (curStage == 'notitg');
+		if (isStepManiaChart)
+		{
+			scoreTxt.visible = false;
+			stepmaniaHud = new StepmaniaHud(uiGroup, this, camHUD, FlxG.width, FlxG.height, ClientPrefs.data.hideHud);
 		}
 
 		botplayTxt = new FlxText(400, healthBar.y - 90, FlxG.width - 800, "", 32);
@@ -1154,13 +1091,15 @@ class PlayState extends MusicBeatState
 
 		super.create();
 		Paths.clearUnusedMemory();
+		gameplayRuntimeBridge = Main.fpsVar != null ? new GameplayRuntimeBridge(Main.fpsVar) : null;
 		
 		updateScriptStats();
 
 		cacheCountdown();
 		cachePopUpScore();
 		
-		add(versionText);
+		if (versionText != null)
+			add(versionText);
 
 		if(eventNotes.length < 1) checkEventNote();
 	}
@@ -1459,7 +1398,7 @@ class PlayState extends MusicBeatState
 		Conductor.offset = Reflect.hasField(PlayState.SONG, 'offset') ? (PlayState.SONG.offset / value) : 0;
 		Conductor.safeZoneOffset = (ClientPrefs.data.safeFrames / 60) * 1000 * value;
 		#if VIDEOS_ALLOWED
-		if(videoCutscene != null && videoCutscene.videoSprite != null) videoCutscene.videoSprite.bitmap.rate = value;
+		setVideoCutsceneRate(value);
 		#end
 		setOnScripts('playbackRate', playbackRate);
 		#else
@@ -1607,6 +1546,15 @@ class PlayState extends MusicBeatState
 	}
 
 	public var videoCutscene:VideoSprite = null;
+	#if VIDEOS_ALLOWED
+	inline function setVideoCutsceneRate(rate:Float)
+	{
+		if(videoCutscene != null && videoCutscene.videoSprite != null && videoCutscene.videoSprite.bitmap != null)
+		{
+			videoCutscene.videoSprite.bitmap.rate = rate;
+		}
+	}
+	#end
 	public function startVideo(name:String, forMidSong:Bool = false, canSkip:Bool = true, loop:Bool = false, playOnLoad:Bool = true)
 	{
 		#if VIDEOS_ALLOWED
@@ -1626,7 +1574,7 @@ class PlayState extends MusicBeatState
 		if (foundFile)
 		{
 			videoCutscene = new VideoSprite(fileName, forMidSong, canSkip, loop);
-			if(forMidSong) videoCutscene.videoSprite.bitmap.rate = playbackRate;
+			if(forMidSong) setVideoCutsceneRate(playbackRate);
 
 			// Finish callback
 			if (!forMidSong)
@@ -1967,68 +1915,14 @@ class PlayState extends MusicBeatState
 
 	function cacheBreakTimerNotes():Void
 	{
-		breakTimerNoteTimes = [];
-		breakTimerNoteIndex = 0;
-		breakTimerNextNoteTime = -1;
-		breakTimerLastNoteTime = -1;
-		if (unspawnNotes == null) return;
-
-		for (note in unspawnNotes)
-			if (note != null && note.mustPress && !note.isSustainNote)
-				breakTimerNoteTimes.push(note.strumTime);
-
-		breakTimerNoteTimes.sort(function(a:Float, b:Float):Int
-		{
-			return a < b ? -1 : (a > b ? 1 : 0);
-		});
-	}
-
-	function syncBreakTimerNotes(currentTime:Float):Void
-	{
-		if (breakTimerNoteTimes == null || breakTimerNoteTimes.length == 0)
-		{
-			breakTimerNoteIndex = 0;
-			breakTimerLastNoteTime = -1;
-			breakTimerNextNoteTime = -1;
-			return;
-		}
-
-		if (breakTimerLastNoteTime > currentTime)
-		{
-			breakTimerNoteIndex = 0;
-			breakTimerLastNoteTime = -1;
-		}
-
-		while (breakTimerNoteIndex < breakTimerNoteTimes.length && currentTime >= breakTimerNoteTimes[breakTimerNoteIndex])
-		{
-			breakTimerLastNoteTime = breakTimerNoteTimes[breakTimerNoteIndex];
-			breakTimerNoteIndex++;
-		}
-		breakTimerNextNoteTime = breakTimerNoteIndex < breakTimerNoteTimes.length ? breakTimerNoteTimes[breakTimerNoteIndex] : -1;
+		if (breakTimerHud != null)
+			breakTimerHud.cacheNotes(unspawnNotes);
 	}
 
 	function refreshBreakTimerVisualStyle():Void
 	{
-		if (breakTimerIndicator == null) return;
-
-		// Keep MD3 theme synced with Options prefs so gameplay widgets match menu accent/dark mode.
-		OptionsMenuTheme.syncAccent();
-
-		var trackRgb:Int = OptionsMenuTheme.loadingOverlayTrackColor();
-		var waveRgb:Int = OptionsMenuTheme.loadingOverlayWaveColor();
-		var outlineRgb:Int = OptionsMenuTheme.loadingOverlayOutlineColor();
-		var trackAlpha:Int = Std.int(0.22 * 255); // Same visual intensity as GlobalLoadingOverlay.
-		var trackColor:Int = (trackAlpha << 24) | (trackRgb & 0x00FFFFFF);
-
-		breakTimerIndicator.resetThemeColors();
-		breakTimerIndicator.setTrackColor(trackColor);
-		breakTimerIndicator.setWaveColor(waveRgb);
-
-		if (breakTimerText != null)
-		{
-			breakTimerText.color = waveRgb;
-			breakTimerText.borderColor = outlineRgb;
-		}
+		if (breakTimerHud != null)
+			breakTimerHud.refreshVisualStyle();
 	}
 
 	inline function getRenderedStrumCenterX(strum:StrumNote):Float
@@ -2136,7 +2030,8 @@ class PlayState extends MusicBeatState
 	{
 		// Si es un chart de StepMania, actualizar UI personalizado
 		if (isStepManiaChart) {
-			updateStepManiaUI();
+			if (stepmaniaHud != null)
+				stepmaniaHud.updateScore(songScore, ratingPercent, ratingName, ratingFC);
 			return;
 		}
 		
@@ -2199,68 +2094,10 @@ class PlayState extends MusicBeatState
 		}
 	}
 	
-	function updateStepManiaUI()
-	{
-		if (smScoreTxt == null || smAccuracyTxt == null || smRatingTxt == null)
-			return;
-		
-		// No animar el score: mostrar el valor actual inmediatamente
-		smDisplayedScore = songScore;
-		
-		// Formatear score con 8 dígitos y ceros a la izquierda
-		var scoreInt:Int = Math.floor(smDisplayedScore);
-		var scoreStr:String = Std.string(scoreInt);
-		while (scoreStr.length < 8) {
-			scoreStr = '0' + scoreStr;
-		}
-		smScoreTxt.text = scoreStr;
-		
-		// Formatear accuracy con 2 decimales
-		var percent:Float = CoolUtil.floorDecimal(ratingPercent * 100, 2);
-		smAccuracyTxt.text = Std.string(percent) + '%';
-		
-		// Mostrar rating name
-		smRatingTxt.text = ratingName + ' [' + ratingFC + ']';
-	}
-	
 	function showStepManiaJudgement(ratingName:String)
 	{
-		if (smJudgement == null || ClientPrefs.data.hideHud)
-			return;
-		
-		// Mapeo de ratings FNF a sprites StepMania
-		var smSprite:String = switch(ratingName.toLowerCase()) {
-			case 'flawless': 'fantastic';
-			case 'sick': 'excellent';
-			case 'good': 'great';
-			case 'bad': 'decent';
-			case 'shit': 'way-off';
-			default: ratingName.toLowerCase();
-		}
-		
-		// Cancelar tween anterior si existe (esto hace que el anterior desaparezca inmediatamente)
-		if (smJudgementTween != null) {
-			smJudgementTween.cancel();
-			smJudgementTween = null;
-		}
-		
-		// Cargar sprite del judgement
-		smJudgement.loadGraphic(Paths.image('stepmania/' + smSprite));
-		smJudgement.setGraphicSize(Std.int(smJudgement.width * 0.7));
-		smJudgement.updateHitbox();
-		
-		// Centrar en pantalla
-		smJudgement.screenCenter();
-		
-		// Hacer visible con alpha completo y escala inicial para bump
-		smJudgement.visible = true;
-		smJudgement.alpha = 1;
-		smJudgement.scale.set(1.3, 1.3);
-		
-		// Animación bump: escalar de 1.3 a 1.0
-		smJudgementTween = FlxTween.tween(smJudgement.scale, {x: 1, y: 1}, 0.2, {
-			ease: FlxEase.backOut
-		});
+		if (stepmaniaHud != null)
+			stepmaniaHud.showJudgement(ratingName, ClientPrefs.data.hideHud);
 	}
 
 	public dynamic function fullComboFunction()
@@ -2326,6 +2163,9 @@ class PlayState extends MusicBeatState
 	}
 
 	public function doVerBump():Void {
+		if (versionText == null)
+			return;
+
 		if(versionTextTween != null)
 			versionTextTween.cancel();
 
@@ -2402,13 +2242,18 @@ class PlayState extends MusicBeatState
 		songLength = FlxG.sound.music.length;
 		if (timeBar != null)
 			FlxTween.tween(timeBar.scale, {x: 1}, 0.5, {ease: FlxEase.circOut});
-		FlxTween.tween(versionText, {y: 5}, 0.5, {ease: FlxEase.circOut});
+		if (versionText != null)
+			FlxTween.tween(versionText, {y: 5}, 0.5, {ease: FlxEase.circOut});
 		
 		// Después de 5 segundos, cambiar el alpha a 0.6
-		new FlxTimer().start(5.0, function(tmr:FlxTimer)
+		if (versionText != null)
 		{
-			FlxTween.tween(versionText, {alpha: 0.4}, 1.0, {ease: FlxEase.sineInOut});
-		});
+			new FlxTimer().start(5.0, function(tmr:FlxTimer)
+			{
+				if (versionText != null)
+					FlxTween.tween(versionText, {alpha: 0.4}, 1.0, {ease: FlxEase.sineInOut});
+			});
+		}
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence (with Time Left)
@@ -2964,10 +2809,7 @@ class PlayState extends MusicBeatState
 
 		super.update(elapsed);
 
-		if(videoCutscene != null && videoCutscene.videoSprite != null)
-		{
-			videoCutscene.videoSprite.bitmap.rate = paused ? 0 : playbackRate;
-		}
+		setVideoCutsceneRate(paused ? 0 : playbackRate);
 
 		setOnScripts('curDecStep', curDecStep);
 		setOnScripts('curDecBeat', curDecBeat);
@@ -3024,23 +2866,9 @@ class PlayState extends MusicBeatState
 		}
 
 		// ← OPTIMIZAR ACTUALIZACIÓN DE TIEMPO - Solo cada segundo
-		timeUpdateTimer += elapsed;
+		if (gameplayRuntimeBridge != null)
+			gameplayRuntimeBridge.sync(curStep, curBeat, curSection, songSpeed, Conductor.bpm, health, capitalizeFirst(lastJudName), combo);
 
-		// Actualizar Step, Beat y Section en el FPSCounter (optimizado para reducir lag)
-		// Solo actualizar cada 0.1 segundos en lugar de cada frame
-		if (Main.fpsVar != null && timeUpdateTimer >= 0.1) {
-			Main.fpsVar.currentStep = curStep;
-			Main.fpsVar.currentBeat = curBeat;
-			Main.fpsVar.currentSection = curSection;
-			Main.fpsVar.songSpeed = songSpeed;
-			Main.fpsVar.currentBPM = Std.int(Conductor.bpm);
-			Main.fpsVar.playerHealth = health;
-			Main.fpsVar.lastRating = capitalizeFirst(lastJudName);
-			Main.fpsVar.comboCount = combo;
-			
-			// Resetear timer después de actualizar
-			timeUpdateTimer = 0;
-		}
 		#if MODCHARTS_NOTITG_ALLOWED
 		updateModchartDebugOverlay(elapsed);
 		#end
@@ -3058,77 +2886,9 @@ class PlayState extends MusicBeatState
 		}
 		else if (!paused && updateTime)
 		{
-			if (ClientPrefs.data.breakTimer && breakTimerText != null && breakTimerIndicator != null && playerStrums != null && playerStrums.length > 0)
-			{
-				var currentTime:Float = Conductor.songPosition;
-				breakTimerUpdateAccum += elapsed;
-				if (breakTimerUpdateAccum >= 0.1)
-				{
-					breakTimerUpdateAccum = 0;
-					syncBreakTimerNotes(currentTime);
-				}
-
-				var gapStart:Float = breakTimerLastNoteTime >= 0 ? breakTimerLastNoteTime : 0;
-				var totalGap:Float = breakTimerNextNoteTime > 0 ? (breakTimerNextNoteTime - gapStart) : -1;
-				var timeUntilNext:Float = (breakTimerNextNoteTime - currentTime) / 1000;
-				if (!startingSong && breakTimerNextNoteTime > 0 && totalGap >= BREAK_TIMER_MIN_GAP && timeUntilNext > 0)
-				{
-					var displayValue:Int = Math.ceil(timeUntilNext);
-					if (displayValue >= 1)
-					{
-						breakTimerText.visible = true;
-						breakTimerIndicator.visible = true;
-						breakTimerText.text = Std.string(displayValue);
-						var countdownDuration = Math.max(0.001, totalGap / 1000);
-						breakTimerIndicator.value = FlxMath.bound(timeUntilNext / countdownDuration, 0, 1);
-
-						var centerX:Float = 0;
-						var centerY:Float = 0;
-						for (strum in playerStrums)
-						{
-							if (strum != null)
-							{
-								centerX += getRenderedStrumCenterX(strum);
-								centerY += getRenderedStrumTopY(strum);
-							}
-						}
-						centerX /= playerStrums.length;
-						centerY /= playerStrums.length;
-
-						var indicatorY = centerY + (ClientPrefs.data.downScroll ? -164 : 100);
-						var indicatorSize = breakTimerIndicator.getIndicatorHeight();
-						breakTimerIndicator.x = centerX - indicatorSize / 2;
-						breakTimerIndicator.y = indicatorY;
-						breakTimerText.x = centerX - breakTimerText.width / 2;
-						breakTimerText.y = indicatorY + Math.max(0, (indicatorSize - breakTimerText.height) * 0.5) - 3;
-
-						if (lastBreakTimerValue != displayValue)
-						{
-							breakTimerText.scale.set(1.5, 1.5);
-							breakTimerIndicator.scale.set(1.1, 1.1);
-							FlxTween.tween(breakTimerText.scale, {x: 1, y: 1}, 0.2, {ease: FlxEase.circOut});
-							FlxTween.tween(breakTimerIndicator.scale, {x: 1, y: 1}, 0.2, {ease: FlxEase.circOut});
-							lastBreakTimerValue = displayValue;
-						}
-					}
-					else
-					{
-						breakTimerText.visible = false;
-						breakTimerIndicator.visible = false;
-						breakTimerIndicator.value = 0;
-						breakTimerIndicator.scale.set(1, 1);
-						lastBreakTimerValue = -1;
-					}
-				}
-				else
-				{
-					breakTimerText.visible = false;
-					breakTimerIndicator.visible = false;
-					breakTimerIndicator.value = 0;
-					breakTimerIndicator.scale.set(1, 1);
-					lastBreakTimerValue = -1;
-				}
-			}
+			if (breakTimerHud != null && playerStrums != null && playerStrums.length > 0)
+				breakTimerHud.updateDisplay(Conductor.songPosition, startingSong, playerStrums, ClientPrefs.data.downScroll, getRenderedStrumCenterX,
+					getRenderedStrumTopY);
 
 			var curTime:Float = Math.max(0, Conductor.songPosition - ClientPrefs.data.noteOffset);
 			songPercent = (curTime / songLength);
@@ -3570,7 +3330,7 @@ class PlayState extends MusicBeatState
 	public var gameOverTimer:FlxTimer;
 	function shouldRelaxOverflowHealth():Bool
 	{
-		var canRelax:Bool = ClientPrefs.data.smoothHPBug && generatedMusic && breakTimerNextNoteTime <= 0;
+		var canRelax:Bool = ClientPrefs.data.smoothHPBug && generatedMusic && (breakTimerHud == null || !breakTimerHud.hasUpcomingNote());
 
 		if (canRelax)
 		{
@@ -5465,15 +5225,13 @@ class PlayState extends MusicBeatState
 			endCountdownText.destroy();
 			endCountdownText = null;
 		}
-		if (breakTimerText != null) {
-			remove(breakTimerText);
-			breakTimerText.destroy();
-			breakTimerText = null;
+		if (breakTimerHud != null) {
+			breakTimerHud.destroyFrom(this);
+			breakTimerHud = null;
 		}
-		if (breakTimerIndicator != null) {
-			remove(breakTimerIndicator);
-			breakTimerIndicator.destroy();
-			breakTimerIndicator = null;
+		if (stepmaniaHud != null) {
+			stepmaniaHud.destroyFrom(this, uiGroup);
+			stepmaniaHud = null;
 		}
 		for (i in 0...botplayKeyReleaseTimers.length)
 		{
@@ -6487,3 +6245,4 @@ class PlayState extends MusicBeatState
 			FlxG.signals.preUpdate.add(checkForResync);
 	}
 }
+

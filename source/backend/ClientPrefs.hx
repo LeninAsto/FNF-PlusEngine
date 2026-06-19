@@ -463,6 +463,10 @@ class ClientPrefs {
 
 	static function getInterpolatedDrawFramerate(safeFramerate:Int):Int
 	{
+		#if mobile
+		return safeFramerate;
+		#end
+
 		#if (!html5 && !switch)
 		try
 		{
@@ -470,7 +474,7 @@ class ClientPrefs {
 			{
 				var refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
 				if (refreshRate > 0)
-					return Std.int(FlxMath.bound(refreshRate, 30, 240));
+					return Std.int(FlxMath.bound(refreshRate, safeFramerate, Std.int(Math.min(240, safeFramerate * 2))));
 			}
 		}
 		catch (e:Dynamic)

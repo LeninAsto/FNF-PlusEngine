@@ -73,8 +73,8 @@
 	<!-- Assets -->
 	<assets path="assets/fonts" />
 	<assets path="assets/shared" />
-	<assets path="assets/embed"         embed="true"/>
-	<assets path="assets/videos"        if="VIDEOS_ALLOWED"/>
+	<assets path="assets/embed" embed="true"/>
+	<assets path="assets/videos" if="VIDEOS_ALLOWED"/>
 	<assets path="assets/songs" />
 	<assets path="assets/songs" />
 	<assets path="assets/week_assets" />

@@ -35,6 +35,8 @@ import backend.ThreadUtil;
 
 #if MODS_ALLOWED
 import sys.FileSystem;
+import sys.io.File;
+import haxe.io.Path;
 #end
 
 #if mobile
@@ -89,6 +91,10 @@ class FreeplayState extends MusicBeatState
 
 	public var missingTextBG:FlxSprite;
 	public var missingText:FlxText;
+	public var missingTextTween:FlxTween = null;
+	public var missingTextShownX:Float = 48;
+	public var missingTextHiddenX:Float = -470;
+	public var missingTextCardY:Float = 0;
 
 	public var bottomString:String;
 	public var bottomText:FlxText;
@@ -157,6 +163,10 @@ class FreeplayState extends MusicBeatState
 	public var _vizCurrentHeights:Array<Float> = [];
 	public var _vizTargetHeights:Array<Float> = [];
 	public var _vizUpdateAccum:Float = 0;
+
+	#if (MODS_ALLOWED && sys && !mobile)
+	var droppedModPath:String = null;
+	#end
 
 	override function create()
 	{
@@ -393,13 +403,16 @@ class FreeplayState extends MusicBeatState
 		opponentModeText.visible = false;
 		add(opponentModeText);
 
-		missingTextBG = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
-		missingTextBG.alpha = 0.6;
+		missingTextCardY = Math.max(90, (FlxG.height * 0.5) - 120);
+		missingTextBG = new FlxSprite(missingTextHiddenX, missingTextCardY);
+		MD3ShapeTools.fillAndStrokeRoundRect(missingTextBG, 430, 220, 24, 3, OptionsMenuTheme.cardFill(false), OptionsMenuTheme.cardStroke(true));
+		missingTextBG.alpha = 0.96;
 		missingTextBG.visible = false;
 		add(missingTextBG);
 		
-		missingText = new FlxText(50, 0, FlxG.width - 100, '', 24);
-		missingText.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		missingText = new FlxText(missingTextHiddenX + 20, missingTextCardY + 20, 390, '', 24);
+		missingText.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		missingText.borderSize = 2;
 		missingText.scrollFactor.set();
 		missingText.visible = false;
 		add(missingText);
@@ -422,6 +435,9 @@ class FreeplayState extends MusicBeatState
 		final reset:String = (controls.mobileC) ? "Y" : "RESET";
 		
 		var leText:String = Language.getPhrase("freeplay_tip", "Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.", [space, control, reset]);
+		#if (MODS_ALLOWED && sys && !mobile)
+		leText += " / F5 reloads mods / drop a mod folder to import it.";
+		#end
 		bottomString = leText;
 		var size:Int = 16;
 		bottomText = new FlxText(0, FlxG.height - 24, FlxG.width, leText, size);
@@ -446,6 +462,10 @@ class FreeplayState extends MusicBeatState
 		updateTexts();
 
 		super.create();
+
+		#if (MODS_ALLOWED && sys && !mobile)
+		FlxG.stage.window.onDropFile.add(onDropFile);
+		#end
 		
 		addTouchPad('UP_DOWN', 'A_B_C_X_Y_Z');
 		addTouchPadCamera();
@@ -467,6 +487,70 @@ class FreeplayState extends MusicBeatState
 			touchPad.visible = true;
 			touchPad.updateTrackedButtons();
 		}
+	}
+
+	function hideMissingCard(?instant:Bool = false):Void
+	{
+		if (missingTextTween != null)
+		{
+			missingTextTween.cancel();
+			missingTextTween = null;
+		}
+
+		if (instant)
+		{
+			missingTextBG.x = missingTextHiddenX;
+			missingText.x = missingTextHiddenX + 20;
+			missingText.visible = false;
+			missingTextBG.visible = false;
+			return;
+		}
+
+		if (!missingText.visible && !missingTextBG.visible)
+			return;
+
+		missingTextTween = FlxTween.tween(missingTextBG, {x: missingTextHiddenX}, 0.22, {
+			ease: FlxEase.expoIn,
+			onUpdate: function(_)
+			{
+				missingText.x = missingTextBG.x + 20;
+			},
+			onComplete: function(_)
+			{
+				missingText.visible = false;
+				missingTextBG.visible = false;
+				missingText.x = missingTextHiddenX + 20;
+				missingTextTween = null;
+			}
+		});
+	}
+
+	function showMissingCard(message:String):Void
+	{
+		if (missingTextTween != null)
+		{
+			missingTextTween.cancel();
+			missingTextTween = null;
+		}
+
+		missingText.text = 'ERROR WHILE LOADING CHART:\n\n' + message;
+		missingTextBG.visible = true;
+		missingText.visible = true;
+		missingTextBG.x = missingTextHiddenX;
+		missingText.x = missingTextHiddenX + 20;
+		missingText.y = missingTextCardY + 20;
+
+		missingTextTween = FlxTween.tween(missingTextBG, {x: missingTextShownX}, 0.28, {
+			ease: FlxEase.expoOut,
+			onUpdate: function(_)
+			{
+				missingText.x = missingTextBG.x + 20;
+			},
+			onComplete: function(_)
+			{
+				missingTextTween = null;
+			}
+		});
 	}
 
 	public function addSong(songName:String, weekNum:Int, songCharacter:String, color:Int)
@@ -1038,11 +1122,7 @@ class FreeplayState extends MusicBeatState
 					if(errorStr.contains('There is no TEXT asset with an ID of')) errorStr = 'Missing file: ' + errorStr.substring(errorStr.indexOf(songLowercase), errorStr.length-1); //Missing chart
 					else errorStr += '\n\n' + e.stack;
 
-
-				missingText.text = 'ERROR WHILE LOADING CHART:\n$errorStr';
-				missingText.screenCenter(Y);
-				missingText.visible = true;
-				missingTextBG.visible = true;
+				showMissingCard(errorStr);
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 
 				updateTexts(elapsed);
@@ -1070,6 +1150,14 @@ class FreeplayState extends MusicBeatState
 		openSubState(new ResetScoreSubState(songs[curSelected].songName, curDifficulty, songs[curSelected].songCharacter));
 		FlxG.sound.play(Paths.sound('scrollMenu'));
 	}
+
+		#if (MODS_ALLOWED && sys && !mobile)
+		if (!searchFocused && !player.playingMusic && FlxG.keys.justPressed.F5)
+		{
+			reloadModsFromFreeplay();
+			return;
+		}
+		#end
 
 		updateSongInfoCardLayout();
 		updateTexts(elapsed);
@@ -1109,8 +1197,7 @@ class FreeplayState extends MusicBeatState
 
 		lastDifficultyName = Difficulty.getString(curDifficulty, false);
 
-		missingText.visible = false;
-		missingTextBG.visible = false;
+		hideMissingCard(true);
 	}
 
 	function enterDifficultySelect()
@@ -1164,6 +1251,8 @@ class FreeplayState extends MusicBeatState
 	{
 		if (player.playingMusic)
 			return;
+
+		hideMissingCard();
 
 		curSelected = FlxMath.wrap(curSelected + change, 0, songs.length-1);
 		_updateSongLastDifficulty();
@@ -2002,6 +2091,59 @@ class FreeplayState extends MusicBeatState
 		}
 	}		
 	
+	#if (MODS_ALLOWED && sys && !mobile)
+	function reloadModsFromFreeplay():Void
+	{
+		FlxG.sound.play(Paths.sound('scrollMenu'));
+		WeekData.reloadWeekFiles(false);
+		Mods.loadTopMod();
+		persistentUpdate = false;
+		MusicBeatState.switchState(new FreeplayState());
+	}
+
+	function copyModFolderRecursive(source:String, target:String):Void
+	{
+		if (!FileSystem.exists(target))
+			FileSystem.createDirectory(target);
+
+		for (entry in FileSystem.readDirectory(source))
+		{
+			var srcPath:String = Path.join([source, entry]);
+			var dstPath:String = Path.join([target, entry]);
+			if (FileSystem.isDirectory(srcPath))
+				copyModFolderRecursive(srcPath, dstPath);
+			else
+			{
+				var parentDir:String = Path.directory(dstPath);
+				if (parentDir != null && parentDir.length > 0 && !FileSystem.exists(parentDir))
+					FileSystem.createDirectory(parentDir);
+				File.copy(srcPath, dstPath);
+			}
+		}
+	}
+
+	function importDroppedModFolder(path:String):Void
+	{
+		if (path == null || path.length < 1 || !FileSystem.exists(path) || !FileSystem.isDirectory(path))
+			return;
+
+		var folderName:String = Path.withoutDirectory(path);
+		if (folderName == null || folderName.length < 1)
+			return;
+
+		var targetPath:String = Paths.mods(folderName);
+		copyModFolderRecursive(path, targetPath);
+		reloadModsFromFreeplay();
+	}
+
+	function onDropFile(path:String):Void
+	{
+		if (player != null && player.playingMusic)
+			return;
+		importDroppedModFolder(path);
+	}
+	#end
+
 	/**
 	 * Escanea la carpeta sm/ en la raíz del juego para cargar archivos .sm
 	 */
@@ -2141,12 +2283,14 @@ class FreeplayState extends MusicBeatState
 	override public function beatHit():Void
 	{
 		super.beatHit();
-
-		bgZoom += 0.05; // Mismo valor que en PlayState para la cámara
 	}
 	
 	override function destroy():Void
 	{
+		#if (MODS_ALLOWED && sys && !mobile)
+		FlxG.stage.window.onDropFile.remove(onDropFile);
+		#end
+
 		if (songInfoCardLoadTimer != null)
 		{
 			songInfoCardLoadTimer.cancel();

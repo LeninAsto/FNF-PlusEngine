@@ -567,32 +567,65 @@ class Note extends FlxSprite
 		if (!myStrum.downScroll) distance *= -1;
 
 		var angleDir = strumDirection * Math.PI / 180;
-		if (copyAngle)
-			angle = strumDirection - 90 + strumAngle + offsetAngle;
+		if (isSustainNote)
+			angle = strumDirection - 90 + offsetAngle;
+		else if (copyAngle)
+			angle = strumAngle + offsetAngle;
+
+		if (isSustainNote)
+			flipY = myStrum.downScroll;
 
 		if(copyAlpha)
 			alpha = strumAlpha * multAlpha;
 
-		if(copyX)
-			x = strumX + offsetX + Math.cos(angleDir) * distance;
-
-		if(copyY)
+		if (isSustainNote)
 		{
-			y = strumY + offsetY + correctionOffset + Math.sin(angleDir) * distance;
-			if(myStrum.downScroll && isSustainNote)
+			var axisX:Float = Math.cos(angleDir);
+			var axisY:Float = Math.sin(angleDir);
+			var sustainCorrectionOffset:Float = correctionOffset;
+			if (!PlayState.isPixelStage)
+				sustainCorrectionOffset = myStrum.downScroll ? 0 : ((parent != null) ? parent.height / 2 : correctionOffset);
+
+			var sustainVisualOffset:Float = 0;
+
+			if(myStrum.downScroll)
 			{
+				sustainVisualOffset = (frameHeight * scale.y) - (Note.swagWidth / 2);
 				if(PlayState.isPixelStage)
-				{
-					y -= PlayState.daPixelZoom * 9.5;
-				}
-				y -= (frameHeight * scale.y) - (Note.swagWidth / 2);
+					sustainVisualOffset += PlayState.daPixelZoom * 9.5;
 			}
+
+			var alongAxis:Float = distance + sustainCorrectionOffset - sustainVisualOffset + offsetY;
+			var noteX:Float = strumX + offsetX + (axisX * alongAxis);
+			var noteY:Float = strumY + (axisY * alongAxis);
+
+			if(copyX)
+				x = noteX;
+
+			if(copyY)
+				y = noteY;
+		}
+		else
+		{
+			if(copyX)
+				x = strumX + offsetX + Math.cos(angleDir) * distance;
+
+			if(copyY)
+				y = strumY + offsetY + Math.sin(angleDir) * distance;
 		}
 	}
 
 	public function clipToStrumNote(myStrum:StrumNote)
 	{
-		var center:Float = myStrum.y + offsetY + Note.swagWidth / 2;
+		var angleDir:Float = myStrum.direction * Math.PI / 180;
+		var axisX:Float = Math.cos(angleDir);
+		var axisY:Float = Math.sin(angleDir);
+		var clipOffset:Float = Note.swagWidth / 2;
+		var centerX:Float = myStrum.x + offsetX + (axisX * clipOffset);
+		var centerY:Float = myStrum.y + offsetY + (axisY * clipOffset);
+		var centerProjection:Float = (centerX * axisX) + (centerY * axisY);
+		var noteProjection:Float = (x * axisX) + (y * axisY);
+		var localFrameHeight:Float = height / Math.max(scale.y, 0.00001);
 		if((mustPress || !ignoreNote) && (wasGoodHit || (prevNote.wasGoodHit && !canBeHit)))
 		{
 			var swagRect:FlxRect = clipRect;
@@ -600,18 +633,19 @@ class Note extends FlxSprite
 
 			if (myStrum.downScroll)
 			{
-				if(y - offset.y * scale.y + height >= center)
+				var visibleWorldLength:Float = centerProjection - noteProjection;
+				if(visibleWorldLength >= 0)
 				{
 					swagRect.width = frameWidth;
-					swagRect.height = (center - y) / scale.y;
+					swagRect.height = FlxMath.bound(visibleWorldLength / Math.max(scale.y, 0.00001), 0, localFrameHeight);
 					swagRect.y = frameHeight - swagRect.height;
 				}
 			}
-			else if (y + offset.y * scale.y <= center)
+			else if (noteProjection <= centerProjection)
 			{
-				swagRect.y = (center - y) / scale.y;
+				swagRect.y = FlxMath.bound((centerProjection - noteProjection) / Math.max(scale.y, 0.00001), 0, localFrameHeight);
 				swagRect.width = width / scale.x;
-				swagRect.height = (height / scale.y) - swagRect.y;
+				swagRect.height = localFrameHeight - swagRect.y;
 			}
 			clipRect = swagRect;
 		}

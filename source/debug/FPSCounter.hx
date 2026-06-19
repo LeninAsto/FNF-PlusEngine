@@ -1,7 +1,6 @@
 package debug;
 
 import flixel.FlxG;
-import openfl.Lib;
 import haxe.Timer;
 import openfl.text.TextField;
 import openfl.text.TextFormat;
@@ -60,7 +59,6 @@ class FPSCounter extends Sprite
 	private var displayedMemory:Float = 0;
 
 	private var displayedMemoryPeak:Float = 0;
-	private var memoryLerpSpeed:Float = 0.1; // Speed of memory interpolation (0.1 = smooth, 1.0 = instant)
 
 	/**
 		Debug level for FPS counter (0: normal without bg, 1: normal with bg, 2: basic debug, 3: extended debug)
@@ -152,9 +150,6 @@ class FPSCounter extends Sprite
 	/**
 		Text update throttling to reduce overhead in debug mode.
 	**/
-	private var lastTextUpdateTime:Float = 0.0;
-
-	private var textUpdateInterval:Float = 0.5; // Refresh static text every 500ms.
 	private var cachedStaticText:String = ""; // Cached static text (OS, commit, etc.).
 
 	/**
@@ -167,11 +162,8 @@ class FPSCounter extends Sprite
 	private var avgFrameTimeMs:Float = 0.0;
 
 	@:noCompletion private var times:Array<Float>;
-	@:noCompletion private var updateTime:Int;
-	@:noCompletion private var framesCount:Int;
-	@:noCompletion private var prevTime:Int;
-
 	public var os:String = '';
+	private var lastTextColorValue:Int = 0xFFFFFF;
 
 	public function new(x:Float = 10, y:Float = 10, color:Int = 0x000000)
 	{
@@ -217,8 +209,6 @@ class FPSCounter extends Sprite
 		addChild(textDisplay);
 
 		times = [];
-		prevTime = Lib.getTimer();
-		updateTime = prevTime + 500;
 
 		// Initialize frame time measurement
 		lastFrameTime = Timer.stamp();
@@ -256,20 +246,8 @@ class FPSCounter extends Sprite
 			memoryPeak = currentMemory;
 		}
 
-		// Smooth interpolation for displayed memory (lerp)
-		// This makes the memory counter animate smoothly instead of jumping
-		if (displayedMemory == 0)
-		{
-			// First time initialization
-			displayedMemory = currentMemory;
-			displayedMemoryPeak = memoryPeak;
-		}
-		else
-		{
-			// Lerp towards target values
-			displayedMemory += (currentMemory - displayedMemory) * memoryLerpSpeed;
-			displayedMemoryPeak += (memoryPeak - displayedMemoryPeak) * memoryLerpSpeed;
-		}
+		displayedMemory = currentMemory;
+		displayedMemoryPeak = memoryPeak;
 
 		// Format displayed memory (smoothed values)
 		var currentMemoryStr = flixel.util.FlxStringUtil.formatBytes(displayedMemory);
@@ -288,8 +266,12 @@ class FPSCounter extends Sprite
 		{
 			textColorValue = 0xFF0000; // Red
 		}
-		textDisplay.defaultTextFormat = new TextFormat('Monsterrat', 14, textColorValue);
-		textDisplay.setTextFormat(textDisplay.defaultTextFormat);
+		if (textColorValue != lastTextColorValue)
+		{
+			lastTextColorValue = textColorValue;
+			textDisplay.defaultTextFormat = new TextFormat('Monsterrat', 14, textColorValue);
+			textDisplay.setTextFormat(textDisplay.defaultTextFormat);
+		}
 
 		// Update counters for extended debug mode without extra throttling.
 		if (debugLevel == 3)
@@ -341,46 +323,35 @@ class FPSCounter extends Sprite
 
 			case 3:
 				// Extended debug mode - optimized for better performance
-				var currentTime = Timer.stamp();
+				cachedStaticText = os.substring(1);
+				cachedStaticText += '\nLast Commit: ' + lastCommit;
 
-				// Update static text only every textUpdateInterval seconds
-				if (cachedStaticText == "" || (currentTime - lastTextUpdateTime) >= textUpdateInterval)
+				if (commitDate != null && commitDate.length > 0)
 				{
-					lastTextUpdateTime = currentTime;
+					cachedStaticText += '\nDate: ' + commitDate;
+				}
+				if (commitTime != null && commitTime.length > 0)
+				{
+					cachedStaticText += '\nTime: ' + commitTime + ' UTC';
+				}
 
-					// Build static text (that doesn't change frequently)
-					cachedStaticText = os.substring(1);
-					cachedStaticText += '\nLast Commit: ' + lastCommit;
+				cachedStaticText += '\nUptime: ' + getUptime();
+				cachedStaticText += '\nState: ' + cachedCurrentState;
 
-					// Show commit date and time if available
-					if (commitDate != null && commitDate.length > 0)
-					{
-						cachedStaticText += '\nDate: ' + commitDate;
-					}
-					if (commitTime != null && commitTime.length > 0)
-					{
-						cachedStaticText += '\nTime: ' + commitTime + ' UTC';
-					}
-
-					cachedStaticText += '\nUptime: ' + getUptime();
-					cachedStaticText += '\nState: ' + cachedCurrentState;
-
-					// Script information (updated infrequently)
-					var totalScripts = luaScriptsLoaded + hscriptsLoaded;
-					var totalFailed = luaScriptsFailed + hscriptsFailed;
-					cachedStaticText += '\n\nScripts: ' + totalScripts;
-					if (totalFailed > 0)
-					{
-						cachedStaticText += ' (Failed: ' + totalFailed + ')';
-					}
-					if (sscriptsErrors > 0)
-					{
-						cachedStaticText += ' (SScript Errors: ' + sscriptsErrors + ')';
-					}
-					if (totalScripts > 0)
-					{
-						cachedStaticText += '\n  Lua: ' + luaScriptsLoaded + ' | HScript: ' + hscriptsLoaded;
-					}
+				var totalScripts = luaScriptsLoaded + hscriptsLoaded;
+				var totalFailed = luaScriptsFailed + hscriptsFailed;
+				cachedStaticText += '\n\nScripts: ' + totalScripts;
+				if (totalFailed > 0)
+				{
+					cachedStaticText += ' (Failed: ' + totalFailed + ')';
+				}
+				if (sscriptsErrors > 0)
+				{
+					cachedStaticText += ' (SScript Errors: ' + sscriptsErrors + ')';
+				}
+				if (totalScripts > 0)
+				{
+					cachedStaticText += '\n  Lua: ' + luaScriptsLoaded + ' | HScript: ' + hscriptsLoaded;
 				}
 
 				// Build dynamic text (updated every frame for modders)
@@ -421,8 +392,6 @@ class FPSCounter extends Sprite
 		updateBackground();
 	}
 
-	var deltaTimeout:Float = 0.0;
-
 	private override function __enterFrame(deltaTime:Float):Void
 	{
 		// Compute frame time (delay).
@@ -445,47 +414,19 @@ class FPSCounter extends Sprite
 		}
 		avgFrameTimeMs = sum / frameTimesArray.length;
 
-		if (ClientPrefs.data.fpsRework)
+		if (ClientPrefs.data.fpsRework
+			&& FlxG.stage.window.frameRate != ClientPrefs.data.framerate
+			&& FlxG.stage.window.frameRate != FlxG.game.focusLostFramerate)
 		{
-			// Flixel can reset this to 60 on focus gained, so keep the draw cap aligned.
-			if (FlxG.stage.window.frameRate != ClientPrefs.data.framerate && FlxG.stage.window.frameRate != FlxG.game.focusLostFramerate)
-				FlxG.stage.window.frameRate = ClientPrefs.data.framerate;
-
-			var currentTime = openfl.Lib.getTimer();
-			framesCount++;
-
-			if (currentTime >= updateTime)
-			{
-				var elapsed = currentTime - prevTime;
-				// Use round instead of ceil for more accurate FPS display
-				currentFPS = Math.round((framesCount * 1000) / elapsed);
-				framesCount = 0;
-				prevTime = currentTime;
-				updateTime = currentTime + 500;
-			}
-		}
-		else
-		{
-			// Improved standard FPS calculation for a more responsive value.
-			final now:Float = haxe.Timer.stamp() * 1000;
-			times.push(now);
-			while (times[0] < now - 1000)
-				times.shift();
-
-			// Update more frequently for better accuracy.
-			if (deltaTimeout < 33)
-			{
-				deltaTimeout += deltaTime;
-				return;
-			}
-
-			// Show actual FPS instead of clamping to the configured update rate.
-			currentFPS = times.length;
-			deltaTimeout = 0.0;
+			FlxG.stage.window.frameRate = ClientPrefs.data.framerate;
 		}
 
-		var targetFPS:Int = Std.int(FlxG.stage.window.frameRate);
-		targetFPS = ClientPrefs.data.framerate;
+		final now:Float = Timer.stamp() * 1000;
+		times.push(now);
+		while (times.length > 0 && times[0] < now - 1000)
+			times.shift();
+
+		currentFPS = times.length;
 
 		updateText();
 	}
