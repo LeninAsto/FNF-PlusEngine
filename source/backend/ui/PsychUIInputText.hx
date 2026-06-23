@@ -476,22 +476,28 @@ class PsychUIInputText extends FlxSpriteGroup
 		if(textObj == null || !textObj.exists) return;
 
 		var textField = textObj.textField;
-		textField.setSelection(caretIndex, caretIndex);
+		var textLen = text != null ? text.length : 0;
+		var safeCaretIndex = Std.int(Math.max(0, Math.min(textLen, caretIndex)));
+		var safeSelectIndex = selectIndex;
+		if (safeSelectIndex >= 0)
+			safeSelectIndex = Std.int(Math.max(0, Math.min(textLen, safeSelectIndex)));
+
+		textField.setSelection(safeCaretIndex, safeCaretIndex);
 		_caretTime = 0;
 		if(caret != null && caret.exists)
 		{
 			caret.y = textObj.y + 2;
 			caret.x = textObj.x + 1 - textObj.textField.scrollH;
-			if(caretIndex > 0)
-				caret.x += _boundaries[Std.int(Math.max(0, Math.min(_boundaries.length-1, caretIndex-1)))];
+			if(safeCaretIndex > 0 && _boundaries.length > 0)
+				caret.x += _boundaries[Std.int(Math.max(0, Math.min(_boundaries.length-1, safeCaretIndex-1)))];
 		}
 		
 		if(selection != null && selection.exists)
 		{
 			selection.y = textObj.y + 2;
 			selection.x = textObj.x + 1 - textObj.textField.scrollH;
-			if(selectIndex > 0)
-				selection.x += _boundaries[Std.int(Math.max(0, Math.min(_boundaries.length-1, selectIndex-1)))];
+			if(safeSelectIndex > 0 && _boundaries.length > 0)
+				selection.x += _boundaries[Std.int(Math.max(0, Math.min(_boundaries.length-1, safeSelectIndex-1)))];
 
 			selection.scale.y = textField.textHeight;
 			selection.scale.x = caret.x - selection.x;
@@ -610,6 +616,9 @@ class PsychUIInputText extends FlxSpriteGroup
 	var _boundaries:Array<Float> = [];
 	function set_text(v:String)
 	{
+		if (v == null)
+			v = '';
+
 		for (i in 0..._boundaries.length) _boundaries.pop();
 		v = filter(v);
 
