@@ -10,19 +10,6 @@
 	</config:android>
 	<!-- Copy our custom launcher icon resources into the generated Gradle project -->
 	
-	<!-- Copy Kotlin source files to Android project -->
-	<template path="FileManagerActivity.kt" rename="app/src/main/java/com/leninasto/plusengine/FileManagerActivity.kt" />
-	<template path="PlusEngineExtension.kt" rename="app/src/main/java/com/leninasto/plusengine/PlusEngineExtension.kt" />
-	<template path="FileUtil.kt" rename="app/src/main/java/com/leninasto/plusengine/FileUtil.kt" />
-	<template path="NativeUI.kt" rename="app/src/main/java/com/leninasto/plusengine/NativeUI.kt" />
-	<template path="NativeCrashHandler.kt" rename="app/src/main/java/com/leninasto/plusengine/NativeCrashHandler.kt" />
-	<template path="NativeCrashActivity.kt" rename="app/src/main/java/com/leninasto/plusengine/NativeCrashActivity.kt" />
-	<template path="components/DropDown.kt" rename="app/src/main/java/com/leninasto/plusengine/components/DropDown.kt" />
-	<template path="languages/Language.kt" rename="app/src/main/java/com/leninasto/plusengine/languages/Language.kt" />
-	<template path="languages/English.kt" rename="app/src/main/java/com/leninasto/plusengine/languages/English.kt" />
-	<template path="languages/Spanish.kt" rename="app/src/main/java/com/leninasto/plusengine/languages/Spanish.kt" />
-        <template path="languages/Indonesia.kt" rename="app/src/main/java/com/leninasto/plusengine/languages/Indonesia.kt" />
-	
 	<!-- Android Permissions -->
 	<config:android permission="android.permission.INTERNET" />
 	<config:android permission="android.permission.ACCESS_NETWORK_STATE" />
