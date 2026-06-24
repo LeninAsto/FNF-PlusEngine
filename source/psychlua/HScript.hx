@@ -1441,6 +1441,23 @@ class CustomInterp extends crowplexus.hscript.Interp
 			trace('WARNING ($scriptName): $warnMsg');
 			return null;
 		}
+
+		// Legacy Psych compatibility: map old HUD background names to Bar.bg.
+		// This keeps old scripts working with `game.healthBarBG` / `game.timeBarBG`.
+		var className:String = null;
+		try {
+			className = Type.getClassName(Type.getClass(o));
+		} catch(e:Dynamic) {}
+		if (className == "states.PlayState") {
+			switch (field) {
+				case "healthBarBG":
+					var healthBar:Dynamic = Reflect.getProperty(o, "healthBar");
+					if (healthBar != null) return Reflect.getProperty(healthBar, "bg");
+				case "timeBarBG":
+					var timeBar:Dynamic = Reflect.getProperty(o, "timeBar");
+					if (timeBar != null) return Reflect.getProperty(timeBar, "bg");
+			}
+		}
 		
 		// Scripted class instance: route all field access through hget()
 		if ((o is psychlua.ScriptedClass.IScriptCustomBehaviour))

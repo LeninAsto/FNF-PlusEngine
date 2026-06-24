@@ -74,7 +74,8 @@ class Conductor
 	public static function beatToSeconds(beat:Float): Float{
 		var step = beat * 4;
 		var lastChange = getBPMFromStep(step);
-		return lastChange.songTime + ((step - lastChange.stepTime) / (lastChange.bpm / 60)/4) * 1000; // TODO: make less shit and take BPM into account PROPERLY
+		var stepLength:Float = lastChange.stepCrochet;
+		return lastChange.songTime + ((step - lastChange.stepTime) * stepLength);
 	}
 
 	public static function getStep(time:Float){
@@ -84,7 +85,7 @@ class Conductor
 
 	public static function getStepRounded(time:Float){
 		var lastChange = getBPMFromSeconds(time);
-		return lastChange.stepTime + Math.floor(time - lastChange.songTime) / lastChange.stepCrochet;
+		return lastChange.stepTime + Math.floor((time - lastChange.songTime) / lastChange.stepCrochet);
 	}
 
 	public static function getBeat(time:Float){

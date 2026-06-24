@@ -1690,6 +1690,15 @@ class PlayState extends MusicBeatState
 
 		seenCutscene = true;
 		inCutscene = false;
+
+		var introBpm:Float = SONG.bpm;
+		if (SONG.notes != null && SONG.notes.length > 0 && SONG.notes[0] != null && SONG.notes[0].changeBPM && SONG.notes[0].bpm > 0)
+			introBpm = SONG.notes[0].bpm;
+		Conductor.bpm = introBpm;
+		setOnScripts('curBpm', Conductor.bpm);
+		setOnScripts('crochet', Conductor.crochet);
+		setOnScripts('stepCrochet', Conductor.stepCrochet);
+
 		var ret:Dynamic = callOnScripts('onStartCountdown', null, true);
 		if(ret != LuaUtils.Function_Stop) {
 			if (skipCountdown || startOnTime > 0) skipArrowStartTween = true;
@@ -1725,7 +1734,8 @@ class PlayState extends MusicBeatState
 			}
 			moveCameraSection();
 
-			startTimer = new FlxTimer().start(Conductor.crochet / 1000 / playbackRate, function(tmr:FlxTimer)
+			final countdownStepTime:Float = Conductor.crochet / 1000 / playbackRate;
+			startTimer = new FlxTimer().start(countdownStepTime, function(tmr:FlxTimer)
 			{
 				characterBopper(tmr.loopsLeft);
 

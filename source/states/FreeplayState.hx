@@ -250,8 +250,9 @@ class FreeplayState extends MusicBeatState
 		for(i in 0...VIZ_BAR_COUNT) {
 		    var vbar:FlxSprite = new FlxSprite();
 		    vbar.makeGraphic(vizDrawW, VIZ_BAR_MAX_H, FlxColor.WHITE);
+		    vbar.origin.y = VIZ_BAR_MAX_H;
 		    vbar.x = i * vizBarW + vizOffsetX;
-		    vbar.y = FlxG.height - VIZ_BAR_MAX_H;
+		    vbar.y = FlxG.height;
 		    vbar.alpha = 0.7;
 		
 		    vizBarsGroup.add(vbar);
@@ -578,19 +579,25 @@ class FreeplayState extends MusicBeatState
 	{
 		songSearchQuery = StringTools.trim(value != null ? value : "");
 
-		if (songSearchQuery.length > 0 && curSelected >= 0 && curSelected < songs.length)
+		if (songSearchQuery.length > 0)
 		{
 			var query:String = songSearchQuery.toLowerCase();
-			if (!songMatchesFilter(songs[curSelected], query))
+			var matchedIndex:Int = -1;
+
+			for (i in 0...songs.length)
 			{
-				for (i in 0...songs.length)
+				if (songMatchesFilter(songs[i], query))
 				{
-					if (songMatchesFilter(songs[i], query))
-					{
-						curSelected = i;
-						break;
-					}
+					matchedIndex = i;
+					break;
 				}
+			}
+
+			if (matchedIndex != -1 && matchedIndex != curSelected)
+			{
+				curSelected = matchedIndex;
+				lerpSelected = curSelected;
+				changeSelection(0, false);
 			}
 		}
 
@@ -794,7 +801,7 @@ class FreeplayState extends MusicBeatState
 
                 vbar.scale.y = curH / VIZ_BAR_MAX_H;
                 // vbar.x is set once at create() — vizBarW/vizOffsetX are constants
-                vbar.y = FlxG.height - curH;
+                vbar.y = FlxG.height;
                 vbar.alpha = 1.0;
             }
         }

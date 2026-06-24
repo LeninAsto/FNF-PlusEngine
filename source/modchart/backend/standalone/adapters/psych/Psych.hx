@@ -20,25 +20,13 @@ class Psych implements IAdapter {
 		return null; // ModchartEditorState.instance;
 	}
 
-	public function new() {
-		try {
-			setupLuaFunctions();
-		} catch (e) {
-			trace('[FunkinModchart Psych Adapter] Failed while adding lua functions: $e');
-		}
-	}
+	public function new() {}
 
 	public function onModchartingDispose() {}
 
 	public function onModchartingInitialization() {
 		__fCrochet = (Conductor.crochet + 8) / 4;
 		__holdSubdivisions = 4;
-	}
-
-	private function setupLuaFunctions() {
-		#if LUA_ALLOWED
-		// todo
-		#end
 	}
 
 	public function isTapNote(sprite:FlxSprite) {

@@ -84,9 +84,7 @@ class ModifiersMacro {
 			// Expression contains String, [Class<T>...]
 			var classListEntries:Array<Expr> = [macro $v{request}];
 			for (i in classListsRaw.get(request)) {
-				// TODO: Boost performance by making this an Array<Class<T>> instead of an Array<String>
-				// How to perform perform macro reificiation to types given a name?
-				classListEntries.push(macro $v{i});
+				classListEntries.push(classRefExpr(i));
 			}
 
 			classLists.push(macro $a{classListEntries});
@@ -142,6 +140,10 @@ class ModifiersMacro {
 			default:
 				throw 'Class type could not be parsed: ${name}';
 		}
+	}
+
+	static function classRefExpr(className:String):Expr {
+		return macro $v{className};
 	}
 
 	/**

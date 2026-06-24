@@ -28,9 +28,11 @@ class CompiledClassList {
 				// All other elements are class types.
 				var classes:List<Class<Dynamic>> = new List();
 				for (i in 1...data.length) {
-					var className:String = cast data[i];
-					// var classType:Class<Dynamic> = cast data[i];
-					var classType:Class<Dynamic> = cast Type.resolveClass(className);
+					var classType:Class<Dynamic> = if (Std.isOfType(data[i], String)) {
+						Type.resolveClass(cast data[i]);
+					} else {
+						cast data[i];
+					}
 					classes.push(classType);
 				}
 

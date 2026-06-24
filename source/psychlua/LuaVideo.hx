@@ -117,12 +117,13 @@ class LuaVideo {
         });
         
         Lua_helper.add_callback(lua, "setLuaVideoVolume", function(tag:String, volume:Float) {
-            var video = getLuaVideo(tag);
-            if(video != null) {
-                video.bitmap.volume = Std.int(volume * 100);
-            }
+            setLuaVideoVolume(tag, volume);
         });
-        
+
+        Lua_helper.add_callback(lua, "getLuaVideoVolume", function(tag:String):Float {
+            return getLuaVideoVolume(tag);
+        });
+
         Lua_helper.add_callback(lua, "getLuaVideoDuration", function(tag:String):Float {
             var video = getLuaVideo(tag);
             if(video != null) {
@@ -204,6 +205,21 @@ class LuaVideo {
         allowDestroy.remove(tag);
         
         trace('Video "$tag" destroyed');
+    }
+
+    private static function setLuaVideoVolume(tag:String, volume:Float):Void {
+        var video = getLuaVideo(tag);
+        if(video != null) {
+            video.bitmap.volume = Std.int(Math.max(0, Math.min(1, volume)) * 100);
+        }
+    }
+
+    private static function getLuaVideoVolume(tag:String):Float {
+        var video = getLuaVideo(tag);
+        if(video != null) {
+            return Math.max(0, Math.min(100, video.bitmap.volume)) / 100;
+        }
+        return 0;
     }
     
     public static function pauseAll():Void {
