@@ -127,6 +127,8 @@ class FreeplayState extends MusicBeatState
 	public var _analyzer:SpectralAnalyzer = null;
 	public var _analyzerLevels:Array<funkin.vis.dsp.SpectralAnalyzer.Bar> = null;
 	public var _needsAnalyzerInit:Bool = false;
+	public var _vizMusicRef:FlxSound = null;
+	public var _vizBeatPulse:Float = 0;
 	#end
 	#if (target.threaded && sys)
     public var _pendingInstSound:openfl.media.Sound = null;
@@ -167,6 +169,60 @@ class FreeplayState extends MusicBeatState
 	#if (MODS_ALLOWED && sys && !mobile)
 	var droppedModPath:String = null;
 	#end
+
+	function getSelectedSongModFolder():String
+	{
+		if (songs == null || curSelected < 0 || curSelected >= songs.length || songs[curSelected] == null)
+			return null;
+
+		var modFolder:String = songs[curSelected].folder;
+		if (modFolder == null || modFolder.length == 0 || songs[curSelected].isStepMania)
+			return null;
+		return modFolder;
+	}
+
+	function loadSelectedFreeplayBackground():Void
+	{
+		if (bg == null)
+			return;
+
+		var modFolder:String = getSelectedSongModFolder();
+		var bgGraphic:FlxGraphic = null;
+		if (modFolder != null)
+			bgGraphic = Paths.image('menuDesat', modFolder);
+		if (bgGraphic == null)
+			bgGraphic = Paths.image('menuDesat');
+		if (bgGraphic == null)
+			return;
+
+		bg.loadGraphic(bgGraphic);
+		bg.antialiasing = ClientPrefs.data.antialiasing;
+		bg.setGraphicSize(FlxG.width, FlxG.height);
+		bg.updateHitbox();
+		bg.screenCenter();
+	}
+
+	function refreshVizBarsLayout():Void
+	{
+		if (vizBarsGroup == null)
+			return;
+
+		var vizBarW:Int = Std.int(FlxG.width / VIZ_BAR_COUNT);
+		var vizDrawW:Int = Std.int(Math.max(1, vizBarW * VIZ_BAR_FILL));
+		var vizOffsetX:Float = (vizBarW - vizDrawW) * 0.5;
+
+		for (i in 0...vizBarsGroup.members.length)
+		{
+			var vbar = vizBarsGroup.members[i];
+			if (vbar == null)
+				continue;
+
+			vbar.x = i * vizBarW + vizOffsetX;
+			vbar.y = FlxG.height - Math.max(VIZ_MIN_H, _vizCurrentHeights[i]);
+			vbar.visible = true;
+			vbar.alpha = 1.0;
+		}
+	}
 
 	override function create()
 	{
@@ -231,10 +287,9 @@ class FreeplayState extends MusicBeatState
 		// Cargar archivos StepMania (.sm)
 		loadStepManiaFiles();
 
-		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
-		bg.antialiasing = ClientPrefs.data.antialiasing;
+		bg = new FlxSprite();
 		add(bg);
-		bg.screenCenter();
+		loadSelectedFreeplayBackground();
 		bgZoom = defaultBgZoom = 1;
 		
 		blackOverlay = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
@@ -249,23 +304,31 @@ class FreeplayState extends MusicBeatState
 
 		for(i in 0...VIZ_BAR_COUNT) {
 		    var vbar:FlxSprite = new FlxSprite();
-		    vbar.makeGraphic(vizDrawW, VIZ_BAR_MAX_H, FlxColor.WHITE);
-		    vbar.origin.y = VIZ_BAR_MAX_H;
+		    vbar.makeGraphic(vizDrawW, 1, FlxColor.WHITE);
+		    vbar.origin.set(0, 0);
 		    vbar.x = i * vizBarW + vizOffsetX;
-		    vbar.y = FlxG.height;
+		    vbar.y = FlxG.height - VIZ_MIN_H;
 		    vbar.alpha = 0.7;
+		    vbar.scale.y = VIZ_MIN_H;
+		    vbar.visible = true;
 		
 		    vizBarsGroup.add(vbar);
 		}
+		_vizCurrentHeights.resize(VIZ_BAR_COUNT);
+		_vizTargetHeights.resize(VIZ_BAR_COUNT);
+		for (i in 0...VIZ_BAR_COUNT) {
+			_vizCurrentHeights[i] = VIZ_MIN_H;
+			_vizTargetHeights[i] = VIZ_MIN_H;
+		}
 
 		add(vizBarsGroup);
-		
 		layerFree = new FlxSprite().loadGraphic(Paths.image('ui/layerfree'));
 		layerFree.antialiasing = ClientPrefs.data.antialiasing;
 		layerFree.setGraphicSize(FlxG.width, FlxG.height);
 		layerFree.updateHitbox();
 		layerFree.alpha = 0.5;
 		add(layerFree);
+		vizBarsGroup.visible = true;
 		OptionsMenuTheme.syncAccent();
 		lastThemeSignature = OptionsMenuTheme.signature();
 
@@ -441,7 +504,7 @@ class FreeplayState extends MusicBeatState
 		#end
 		bottomString = leText;
 		var size:Int = 16;
-		bottomText = new FlxText(0, FlxG.height - 24, FlxG.width, leText, size);
+		bottomText = new FlxText(0, FlxG.height - 34, FlxG.width, leText, size);
 		bottomText.setFormat(Paths.font("vcr.ttf"), size, FlxColor.WHITE, CENTER);
 		bottomText.scrollFactor.set();
 		add(bottomText);
@@ -501,7 +564,7 @@ class FreeplayState extends MusicBeatState
 		if (instant)
 		{
 			missingTextBG.x = missingTextHiddenX;
-			missingText.x = missingTextHiddenX + 20;
+			missingText.x = missingTextHiddenX + 28;
 			missingText.visible = false;
 			missingTextBG.visible = false;
 			return;
@@ -514,16 +577,44 @@ class FreeplayState extends MusicBeatState
 			ease: FlxEase.expoIn,
 			onUpdate: function(_)
 			{
-				missingText.x = missingTextBG.x + 20;
+				missingText.x = missingTextBG.x + 28;
 			},
 			onComplete: function(_)
 			{
 				missingText.visible = false;
 				missingTextBG.visible = false;
-				missingText.x = missingTextHiddenX + 20;
+				missingText.x = missingTextHiddenX + 28;
 				missingTextTween = null;
 			}
 		});
+	}
+
+	function updateMissingCardLayout(message:String):Void
+	{
+		final displayText = 'No chart is available for this difficulty.';
+		missingText.text = displayText;
+		missingText.wordWrap = false;
+		if (missingText.textField != null)
+			missingText.textField.autoSize = openfl.text.TextFieldAutoSize.LEFT;
+
+		final textField = missingText.textField;
+		final textW:Int = Std.int(Math.ceil((textField != null ? textField.textWidth : missingText.width) + 1));
+		final textH:Int = Std.int(Math.ceil((textField != null ? textField.textHeight : missingText.height) + 1));
+		final padX:Int = 28;
+		final padY:Int = 28;
+		final cardW:Int = Std.int(Math.max(360, textW + padX * 2));
+		final cardH:Int = Std.int(Math.max(120, textH + padY * 2));
+
+		missingTextHiddenX = -cardW - 40;
+		missingTextCardY = Math.max(90, (FlxG.height * 0.5) - (cardH * 0.5));
+		missingTextBG.y = missingTextCardY;
+		MD3ShapeTools.fillAndStrokeRoundRect(missingTextBG, cardW, cardH, 24, 3, OptionsMenuTheme.cardFill(false), OptionsMenuTheme.cardStroke(true));
+		missingTextBG.x = missingTextHiddenX;
+		missingTextBG.visible = true;
+		missingText.visible = true;
+		missingText.fieldWidth = cardW - padX * 2;
+		missingText.x = missingTextBG.x + padX;
+		missingText.y = missingTextCardY + padY - 2;
 	}
 
 	function showMissingCard(message:String):Void
@@ -534,18 +625,13 @@ class FreeplayState extends MusicBeatState
 			missingTextTween = null;
 		}
 
-		missingText.text = 'ERROR WHILE LOADING CHART:\n\n' + message;
-		missingTextBG.visible = true;
-		missingText.visible = true;
-		missingTextBG.x = missingTextHiddenX;
-		missingText.x = missingTextHiddenX + 20;
-		missingText.y = missingTextCardY + 20;
+		updateMissingCardLayout(message);
 
 		missingTextTween = FlxTween.tween(missingTextBG, {x: missingTextShownX}, 0.28, {
 			ease: FlxEase.expoOut,
 			onUpdate: function(_)
 			{
-				missingText.x = missingTextBG.x + 20;
+				missingText.x = missingTextBG.x + 28;
 			},
 			onComplete: function(_)
 			{
@@ -750,6 +836,14 @@ class FreeplayState extends MusicBeatState
 		
 		// Full-width bottom spectral visualizer bars — driven exclusively by SpectralAnalyzer.
         #if funkin.vis
+        if (FlxG.sound.music != _vizMusicRef)
+        {
+            _vizMusicRef = FlxG.sound.music;
+            _analyzer = null;
+            _analyzerLevels = null;
+            _needsAnalyzerInit = _vizMusicRef != null;
+        }
+
         // Lazy-init: attach to FlxG.sound.music as soon as __audioSource is ready.
         // Both inst preview and freeplay bg music go through FlxG.sound.music now.
         if(_needsAnalyzerInit && FlxG.sound.music != null && FlxG.sound.music.playing) {
@@ -780,11 +874,22 @@ class FreeplayState extends MusicBeatState
                     _analyzerLevels = _analyzer.getLevels(_analyzerLevels);
                     for(i in 0...vizBarsGroup.members.length) {
                         var level:Float = (i < _analyzerLevels.length) ? _analyzerLevels[i].value : 0.0;
-                        _vizTargetHeights[i] = Math.max(VIZ_MIN_H, level * VIZ_BAR_MAX_H);
+                        var bandPos:Float = vizBarsGroup.members.length > 1 ? i / (vizBarsGroup.members.length - 1) : 0;
+                        var lowBias:Float = 1.0 - bandPos;
+                        var highBias:Float = bandPos;
+                        var rhythmicPulse:Float = 0.72 + (0.28 * Math.abs(Math.sin((Conductor.songPosition * (0.004 + bandPos * 0.003)) + (i * 0.11))));
+                        var shapedLevel:Float = Math.pow(Math.max(0, level), 0.78);
+                        var spectralH:Float = shapedLevel * VIZ_BAR_MAX_H;
+                        var bandEmphasis:Float = (spectralH * (0.55 + lowBias * 0.30 + highBias * 0.15)) + (rhythmicPulse * (12 + highBias * 18));
+                        _vizTargetHeights[i] = Math.max(VIZ_MIN_H, bandEmphasis);
                     }
                 } else {
+                    _vizBeatPulse = Math.max(0, _vizBeatPulse - elapsed * 1.8);
                     for(i in 0...vizBarsGroup.members.length) {
-                        _vizTargetHeights[i] = VIZ_MIN_H;
+                        var bandPos:Float = vizBarsGroup.members.length > 1 ? i / (vizBarsGroup.members.length - 1) : 0;
+                        var wave:Float = Math.abs(Math.sin((Conductor.songPosition * (0.003 + bandPos * 0.0025)) + (i * 0.29)));
+                        var fallbackH:Float = VIZ_MIN_H + 6 + (wave * (18 + bandPos * 32)) + (_vizBeatPulse * (12 + bandPos * 10));
+                        _vizTargetHeights[i] = Math.max(VIZ_MIN_H, fallbackH);
                     }
                 }
             }
@@ -799,10 +904,13 @@ class FreeplayState extends MusicBeatState
                 curH = FlxMath.lerp(targetH, curH, 1 - lerpFactor);
                 _vizCurrentHeights[i] = curH;
 
-                vbar.scale.y = curH / VIZ_BAR_MAX_H;
+                vbar.scale.y = Math.max(1, curH);
                 // vbar.x is set once at create() — vizBarW/vizOffsetX are constants
-                vbar.y = FlxG.height;
+                vbar.y = FlxG.height - Math.max(VIZ_MIN_H, curH);
                 vbar.alpha = 1.0;
+                vbar.visible = true;
+                var colorMix:Float = 0.28 + (0.22 * (i / Math.max(1, vizBarsGroup.members.length - 1)));
+                vbar.color = FlxColor.interpolate(intendedColor, FlxColor.WHITE, colorMix);
             }
         }
         #end
@@ -1125,9 +1233,11 @@ class FreeplayState extends MusicBeatState
 				{
 					trace('ERROR! ${e.message}');
 
-					var errorStr:String = e.message;
-					if(errorStr.contains('There is no TEXT asset with an ID of')) errorStr = 'Missing file: ' + errorStr.substring(errorStr.indexOf(songLowercase), errorStr.length-1); //Missing chart
-					else errorStr += '\n\n' + e.stack;
+				var errorStr:String = e.message;
+				if(errorStr.contains('There is no TEXT asset with an ID of') || errorStr.contains('Invalid difficulty index') || errorStr.contains('chart file not found'))
+					errorStr = 'No chart is available for this difficulty!';
+				else
+					errorStr += '\n\n' + e.stack;
 
 				showMissingCard(errorStr);
 				FlxG.sound.play(Paths.sound('cancelMenu'));
@@ -1264,6 +1374,8 @@ class FreeplayState extends MusicBeatState
 		curSelected = FlxMath.wrap(curSelected + change, 0, songs.length-1);
 		_updateSongLastDifficulty();
 		if(playSound) FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+
+		loadSelectedFreeplayBackground();
 
 		var newColor:Int = songs[curSelected].color;
 		if(newColor != intendedColor)
@@ -2290,6 +2402,12 @@ class FreeplayState extends MusicBeatState
 	override public function beatHit():Void
 	{
 		super.beatHit();
+		bgZoom = 1.06;
+		#if funkin.vis
+		_vizBeatPulse = 1;
+		if (vizBarsGroup != null)
+			vizBarsGroup.visible = true;
+		#end
 	}
 	
 	override function destroy():Void

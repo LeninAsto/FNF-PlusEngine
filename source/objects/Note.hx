@@ -82,6 +82,7 @@ class Note extends FlxSprite
 
 	public var sustainLength:Float = 0;
 	public var isSustainNote:Bool = false;
+	public var isSustainEnd:Bool = false;
 	public var noteType(default, set):String = null;
 
 	public var eventName:String = '';
@@ -166,7 +167,7 @@ class Note extends FlxSprite
 
 	public function resizeByRatio(ratio:Float) //haha funny twitter shit
 	{
-		if(isSustainNote && animation.curAnim != null && !animation.curAnim.name.endsWith('end'))
+		if (isSustainNote && !isSustainEnd)
 		{
 			scale.y *= ratio;
 			updateHitbox();
@@ -590,7 +591,8 @@ class Note extends FlxSprite
 
 			if(myStrum.downScroll)
 			{
-				sustainVisualOffset = (frameHeight * scale.y) - (Note.swagWidth / 2);
+				final sustainScaleY = isSustainEnd ? 1.0 : scale.y;
+				sustainVisualOffset = (frameHeight * sustainScaleY) - (Note.swagWidth / 2);
 				if(PlayState.isPixelStage)
 					sustainVisualOffset += PlayState.daPixelZoom * 9.5;
 			}

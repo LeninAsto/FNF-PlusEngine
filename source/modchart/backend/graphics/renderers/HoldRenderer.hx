@@ -128,6 +128,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 	@:noCompletion
 	inline private function getHoldSegment(hold:FlxSprite, basePos:Vector3, params:ArrowData, doClip:Bool = true):HoldSegmentOutput {
 		@:privateAccess
+		final holdIsEnd = Adapter.instance.isHoldEnd(hold);
 		var holdTime = params.hitTime;
 		var parentTime = Adapter.instance.getHoldParentTime(hold);
 		var clipped = false;
@@ -171,6 +172,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		var quad1 = new Vector3(unit.y * size, -unit.x * size);
 
 		final visuals = origin.visuals;
+		final visualScaleY = holdIsEnd ? Math.min(visuals.scaleY, 1.15) : visuals.scaleY;
 		@:privateAccess
 		for (i in 0...2) {
 			var quad = i == 0 ? quad0 : quad1;
@@ -190,14 +192,13 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 				rotation.y = __matrix.__transformY(rotation.x, rotation.y);
 			}
 			rotation.x = rotation.x * visuals.scaleX;
-			rotation.y = rotation.y * visuals.scaleY;
+			rotation.y = rotation.y * visualScaleY;
 
 			var view = new Vector3(rotation.x + worldX, rotation.y + worldY, worldZ + (rotation.z * 0.001 * Config.Z_SCALE));
 			view = __rotateTail(view);
 
 			// The result of the perspective projection of rotation
 			var projection = this.view.transformVector(view);
-
 			quad.x = projection.x;
 			quad.y = projection.y;
 			quad.z = projection.z;
@@ -314,7 +315,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		var vertices = _getPooledVertices(item, HOLD_SUBDIVISIONS);
 		var transfTotal = _getPooledColors(item, HOLD_SUBDIVISIONS);
 		var tID = 0;
-
+		final holdIsEnd:Bool = Adapter.instance.isHoldEnd(item);
 		var lastData:ArrowData = null;
 		var lastSegment:Null<HoldSegmentOutput> = null;
 
@@ -349,7 +350,6 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 
 		var vertPointer = 0;
 
-		final holdIsEnd:Bool = Adapter.instance.isHoldEnd(item);
 		final holdHeight:Float = item.width * Config.HOLD_END_SCALE;
 		final holdTimeInterval:Float = (Adapter.instance.getHoldLength(item) * (holdIsEnd ? Config.HOLD_END_SCALE : 1.0)) / HOLD_SUBDIVISIONS;
 		var timeScale:Float = 1;
@@ -380,7 +380,8 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 					}
 
 					if (segmentLength > 0) {
-						timeScale = (holdHeight / HOLD_SUBDIVISIONS) / segmentLength;
+						final rawTimeScale = (holdHeight / HOLD_SUBDIVISIONS) / segmentLength;
+						timeScale = Math.min(rawTimeScale, 1.15);
 						out2 = getHoldSegment(item, basePos, (lastData = getArrowParams(item, holdTimeInterval * timeScale)));
 					}
 				}

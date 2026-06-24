@@ -75,6 +75,8 @@ class Psych implements IAdapter {
 		if (arrow is Note) {
 			final castedNote = cast(arrow, Note);
 
+			if (castedNote.isSustainEnd)
+				return true;
 			if (castedNote.nextNote != null)
 				return !castedNote.nextNote.isSustainNote;
 		}

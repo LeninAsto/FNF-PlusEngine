@@ -88,13 +88,6 @@ class ModchartSettingsSubState extends BaseOptionsMenu
 		option.decimals = 1;
 		addOption(option);
 
-		// Prevent Scaled Hold End option
-		var option:Option = new Option('Prevent Scaled Hold Ends',
-			'Prevents scaling the hold note endings.\nWARNING: May affect performance with many holds on screen.',
-			'preventScaledHoldEnd',
-			BOOL);
-		addOption(option);
-
 		// Column Specific Modifiers option
 		var option:Option = new Option('Column Specific Modifiers',
 			'Enables column-specific modifiers.\nDisabling may improve performance by reducing calculations.',

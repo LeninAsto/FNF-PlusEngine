@@ -166,10 +166,15 @@ class LuaModchart
             // Check if first parameter is a table of mods
             if (Std.isOfType(nameOrMods, String)) {
                 // Single mod: set('modname', beat, value, player, field)
+                final modName:String = cast nameOrMods;
                 if (namedPlayfield != null)
-                    namedPlayfield.set(cast nameOrMods, beat, cast value, player);
+                {
+                    namedPlayfield.set(modName, beat, cast value, player);
+                }
                 else
-                    Manager.instance.set(cast nameOrMods, beat, cast value, player, resolveFieldIndex(field, -1));
+                {
+                    Manager.instance.set(modName, beat, cast value, player, resolveFieldIndex(field, -1));
+                }
             } else {
                 // Multiple mods: set({mod1=100, mod2=50}, beat, player, field)
                 // In this case: value becomes player, player becomes field
@@ -440,13 +445,32 @@ class LuaModchart
         });
 
 		// PathModifier helpers (works for any modifier that extends PathModifier, e.g. arrowshape, luapath)
-        Lua_helper.add_callback(lua, "setModifierPath", function(modName:String, nodes:Array<Dynamic>, ?field:Dynamic = 0, ?lane:Int = -1) {
+        Lua_helper.add_callback(lua, "setModifierPath", function(modName:String, nodes:Array<Dynamic>, ?field:Dynamic = -1, ?lane:Int = -1) {
 			if (Manager.instance == null)
 				return;
-            final pf = resolvePlayfield(field, 0, 'setModifierPath');
-			if (pf == null) {
+			final parsed = parsePathNodes(nodes);
+			final fieldIndex = resolveFieldIndex(field, -1);
+
+			if (fieldIndex == -1) {
+				for (pf in Manager.instance.playfields) {
+					if (pf == null)
+						continue;
+
+					final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
+					if (mod == null || !Std.isOfType(mod, PathModifier))
+						continue;
+
+					if (lane >= 0)
+						cast(mod, PathModifier).loadPathForLane(parsed, lane);
+					else
+						cast(mod, PathModifier).loadPath(parsed);
+				}
 				return;
 			}
+
+            final pf = resolvePlayfield(fieldIndex, 0, 'setModifierPath');
+			if (pf == null)
+				return;
 
 			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
 			if (mod == null) {
@@ -458,7 +482,6 @@ class LuaModchart
 				return;
 			}
 
-			final parsed = parsePathNodes(nodes);
 			if (lane >= 0) {
 				// Set path for specific lane
 				cast(mod, PathModifier).loadPathForLane(parsed, lane);
@@ -468,13 +491,26 @@ class LuaModchart
 			}
 		});
 
-        Lua_helper.add_callback(lua, "setModifierPathOffset", function(modName:String, x:Float, y:Float, ?z:Float = 0, ?field:Dynamic = 0) {
+        Lua_helper.add_callback(lua, "setModifierPathOffset", function(modName:String, x:Float, y:Float, ?z:Float = 0, ?field:Dynamic = -1) {
 			if (Manager.instance == null)
 				return;
-            final pf = resolvePlayfield(field, 0, 'setModifierPathOffset');
-	 		if (pf == null) {
+
+			final fieldIndex = resolveFieldIndex(field, -1);
+			if (fieldIndex == -1) {
+				for (pf in Manager.instance.playfields) {
+					if (pf == null)
+						continue;
+
+					final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
+					if (mod != null && Std.isOfType(mod, PathModifier))
+						cast(mod, PathModifier).pathOffset.setTo(x, y, z);
+				}
 				return;
 			}
+
+            final pf = resolvePlayfield(fieldIndex, 0, 'setModifierPathOffset');
+	 		if (pf == null)
+				return;
 
 			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
 			if (mod == null || !Std.isOfType(mod, PathModifier)) {
@@ -485,13 +521,26 @@ class LuaModchart
 			cast(mod, PathModifier).pathOffset.setTo(x, y, z);
 		});
 
-        Lua_helper.add_callback(lua, "setModifierPathBound", function(modName:String, bound:Float, ?field:Dynamic = 0) {
+        Lua_helper.add_callback(lua, "setModifierPathBound", function(modName:String, bound:Float, ?field:Dynamic = -1) {
 			if (Manager.instance == null)
 				return;
-            final pf = resolvePlayfield(field, 0, 'setModifierPathBound');
-			if (pf == null) {
+
+			final fieldIndex = resolveFieldIndex(field, -1);
+			if (fieldIndex == -1) {
+				for (pf in Manager.instance.playfields) {
+					if (pf == null)
+						continue;
+
+					final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
+					if (mod != null && Std.isOfType(mod, PathModifier))
+						cast(mod, PathModifier).setPathBound(bound);
+				}
 				return;
 			}
+
+            final pf = resolvePlayfield(fieldIndex, 0, 'setModifierPathBound');
+			if (pf == null)
+				return;
 
 			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
 			if (mod == null || !Std.isOfType(mod, PathModifier)) {

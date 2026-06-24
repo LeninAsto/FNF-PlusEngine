@@ -129,44 +129,55 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		return percs != null ? percs[player] : null;
 	}
 
+	private inline function getMirroredPercent(name:String, player:Int):Null<Float> {
+		final current = getDefinedPercent(name, player);
+		if (current != null)
+			return current;
+
+		final otherPlayer = player == 0 ? 1 : 0;
+		return getDefinedPercent(name, otherPlayer);
+	}
+
 	private inline function getPathAlpha(player:Int, lane:Int):Float {
-		final laneAlpha = getDefinedPercent('path' + lane, player);
+		final laneAlpha = getMirroredPercent('path' + lane, player);
 		if (laneAlpha != null)
 			return laneAlpha;
 
-		final globalAlpha = getDefinedPercent('path', player);
+		final globalAlpha = getMirroredPercent('path', player);
 		if (globalAlpha != null)
 			return globalAlpha;
 
-		return parent.getPercent('arrowPathAlpha', player);
+		final mirroredArrowPathAlpha = getMirroredPercent('arrowPathAlpha', player);
+		return mirroredArrowPathAlpha != null ? mirroredArrowPathAlpha : parent.getPercent('arrowPathAlpha', player);
 	}
 
 	private inline function getPathThickness(player:Int, lane:Int):Float {
-		final laneThickness = getDefinedPercent('path' + lane + 'thickness', player);
+		final laneThickness = getMirroredPercent('path' + lane + 'thickness', player);
 		if (laneThickness != null)
 			return laneThickness;
 
-		final laneTickness = getDefinedPercent('path' + lane + 'tickness', player);
+		final laneTickness = getMirroredPercent('path' + lane + 'tickness', player);
 		if (laneTickness != null)
 			return laneTickness;
 
-		final globalThickness = getDefinedPercent('paththickness', player);
+		final globalThickness = getMirroredPercent('paththickness', player);
 		if (globalThickness != null)
 			return globalThickness;
 
-		final globalTickness = getDefinedPercent('pathtickness', player);
+		final globalTickness = getMirroredPercent('pathtickness', player);
 		if (globalTickness != null)
 			return globalTickness;
 
-		return parent.getPercent('arrowPathThickness', player);
+		final mirroredArrowPathThickness = getMirroredPercent('arrowPathThickness', player);
+		return mirroredArrowPathThickness != null ? mirroredArrowPathThickness : parent.getPercent('arrowPathThickness', player);
 	}
 
 	private inline function getPathBound(player:Int, lane:Int):Float {
-		final laneBound = getDefinedPercent('path' + lane + 'bound', player);
+		final laneBound = getMirroredPercent('path' + lane + 'bound', player);
 		if (laneBound != null)
 			return laneBound;
 
-		final globalBound = getDefinedPercent('pathbound', player);
+		final globalBound = getMirroredPercent('pathbound', player);
 		if (globalBound != null)
 			return globalBound;
 
@@ -174,11 +185,9 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		final reverseModifier = parent.modifiers.modifiers.get('reverse');
 		if (reverseModifier != null && Std.isOfType(reverseModifier, Reverse)) {
 			final spawnTimeMs = cast(reverseModifier, Reverse).getSpawnTime(player);
-			final scrollSpeed = Adapter.instance.getCurrentScrollSpeed();
-			// Convert spawn time (ms) to visual distance (pixels)
-			// scrollSpeed represents pixels per millisecond of note progression
-			final dynamicBound = Math.max(spawnTimeMs * scrollSpeed * 0.5, DEFAULT_PATH_BOUND);
-			return dynamicBound;
+			// Use the exact spawn window as the visual bound instead of multiplying it
+			// by scroll speed, which makes the path feel longer than the note timing.
+			return Math.max(spawnTimeMs, DEFAULT_PATH_BOUND);
 		}
 
 		return DEFAULT_PATH_BOUND;
