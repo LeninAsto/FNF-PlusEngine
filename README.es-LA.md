@@ -35,7 +35,7 @@ Motor basado en Psych 1.0.4 con modcharts como NotITG y compatible con videos hx
   Y más de 100 más...
 </a>
 
-Creado con (contrib.rocks)[https://contrib.rocks/].
+Creado con [contrib.rocks](https://contrib.rocks/).
 
 ¡Las contribuciones son bienvenidas! Si tienes ideas, mejoras o correcciones, siéntete libre de hacer un fork del repositorio y abrir un pull request.
 
