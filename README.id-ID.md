@@ -35,7 +35,7 @@ Mesin berbasis Psych 1.0.4 dengan modcharts seperti NotITG dan kompatibel dengan
   Dan 100+ lainnya...
 </a>
 
-Dibuat dengan (contrib.rocks)[https://contrib.rocks/].
+Dibuat dengan [contrib.rocks](https://contrib.rocks/).
 
 Kontribusi sangat diharapkan! Jika Anda memiliki ide, perbaikan, atau pembaruan, silakan fork repositori ini dan buka pull request.
 
