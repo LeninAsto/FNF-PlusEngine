@@ -133,7 +133,7 @@ class EnUS
         "options_graphics" => "Graphics",
         "options_modchart" => "Modchart",
         "options_language" => "Language",
-        "options_mobile" => "Mobile Options",
+        "options_mobile" => "Mobile",
         "android_tools_title" => "ANDROID TOOLS",
         "android_tools_subtitle" => "Here you can request permissions or reload the alphabet without wrestling the system.",
         "android_tools_request" => "REQUEST PERMISSIONS",
@@ -146,6 +146,7 @@ class EnUS
         "gameplay_menu" => "Gameplay Settings",
         "modchart_menu" => "Modchart Settings",
         "language_menu" => "Language Settings",
+        "mobile_menu" => "Mobile Settings",
 
         // Note Colors Menu
         "note_colors_tip" => "Press RESET to Reset the selected Note Part.",

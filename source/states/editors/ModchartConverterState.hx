@@ -34,14 +34,14 @@ class ModchartConverterState extends MusicBeatState
 		title.scrollFactor.set();
 		add(title);
 
-		statusText = new FlxText(24, 64, FlxG.width - 48, 'Copia un modchart Lua de NVME al portapapeles y luego pulsa Convert Clipboard.', 18);
+		statusText = new FlxText(24, 64, FlxG.width - 48, 'Copy an NVME Lua modchart to the clipboard, and then click \"Convert Clipboard\"".', 18);
 		statusText.setFormat(Paths.font('vcr.ttf'), 18, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		statusText.scrollFactor.set();
 		add(statusText);
 
 		var helpText = new FlxText(24, 102, 420,
-			'Esta herramienta hace una conversion practica de primera pasada.\n' +
-			'Reasigna steps, elimina helpers de radianes de NVME y recuerda que fieldYaw es el nombre del lado de Plus.', 16);
+			'This tool performs a practical first-pass conversion.\n' +
+			'Reassign the steps, remove the NVMe radian helpers, and remember that fieldYaw is the name of the Plus side.', 16);
 		helpText.setFormat(Paths.font('vcr.ttf'), 16, FlxColor.fromRGB(215, 225, 235), LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		helpText.scrollFactor.set();
 		helpText.fieldWidth = 420;
@@ -64,7 +64,7 @@ class ModchartConverterState extends MusicBeatState
 		var templateButton = new PsychUIButton(184, FlxG.height - 86, 'Copy Starter', function()
 		{
 			Clipboard.text = makeStarterTemplate();
-			setStatus('Plantilla inicial copiada al portapapeles.');
+			setStatus('The initial template has been copied to the clipboard.');
 			showPreview(Clipboard.text);
 		});
 		add(templateButton);
@@ -75,7 +75,7 @@ class ModchartConverterState extends MusicBeatState
 		});
 		add(backButton);
 
-		setStatus('Listo. Convierte un modchart desde el portapapeles o copia la plantilla inicial.');
+		setStatus('Done. Import a modchart from the clipboard or copy the initial template.');
 		showPreview(makeStarterTemplate());
 
 		super.create();
@@ -114,14 +114,14 @@ class ModchartConverterState extends MusicBeatState
 		var source = Clipboard.text;
 		if (source == null || source.trim().length == 0)
 		{
-			setStatus('El portapapeles esta vacio. Copia primero un script de NVME.');
-			showPreview('No se encontro texto en el portapapeles.');
+			setStatus('The clipboard is empty. First, copy an NVMe script.');
+			showPreview('No text was found in the clipboard.');
 			return;
 		}
 
 		var converted = convertNvmToPlus(source);
 		Clipboard.text = converted;
-		setStatus('Convertidos ' + source.length + ' caracteres en ' + converted.length + ' y copiados otra vez al portapapeles.');
+		setStatus('Converts ' + source.length + ' characters in ' + converted.length + ' and copied to the clipboard again.');
 		showPreview(converted);
 	}
 
@@ -129,29 +129,29 @@ class ModchartConverterState extends MusicBeatState
 	{
 		var out = source.replace('\r\n', '\n');
 
-		// Quita helpers exclusivos de NVME para que los valores queden en grados de Plus.
+		// Remove NVMe-specific helpers so that the values are in Plus units.
 		out = out.replace("local function p(value)\n    return value / 100\nend\n\n", "");
 		out = out.replace("local function tr(deg)\n    return math.rad(deg)\nend\n\n", "");
 
-		// Mapeo de nombres en una primera pasada.
+		// Mapping names on the first pass.
 		out = out.replace('scheduleSetPercent(', 'scheduleSet(');
 		out = out.replace('scheduleEasePercent(', 'scheduleEase(');
 
-		// Quita los wrappers de ayuda despues de reescribir las llamadas.
+		// Remove the helper wrappers after rewriting the calls.
 		out = out.replace('p(', '(');
 		out = out.replace('tr(', '(');
 		out = out.replace('math.rad(', '(');
 
-		return '-- Convertido de NVME a Plus Engine\n'
-			+ '-- fieldX, fieldY, fieldDepth y fieldYaw son submods del modificador Field.\n'
-			+ '-- Revisa manualmente cualquier matematica de camara personalizada, porque ahi esta la parte mas delicada.\n\n'
+		return '-- Converted from NVMe to Plus Engine\n'
+			+ '-- fieldX, fieldY, fieldDepth, and fieldYaw are submods of the Field modifier.\n'
+			+ '-- Manually check any custom camera math, because that\'s where the most delicate part lies.\n\n'
 			+ out;
 	}
 
 	function makeStarterTemplate():String
 	{
 		return [
-			'-- Plantilla inicial para convertir modcharts de NVME en Plus Engine',
+			'-- Initial template for converting NVMe modcharts in Plus Engine',
 			'function onInitModchart()',
 			'    addModifier(\'transform\')',
 			'    addModifier(\'localrotate\')',
@@ -159,11 +159,11 @@ class ModchartConverterState extends MusicBeatState
 			'    addModifier(\'field\')',
 			'',
 			'    -- Guia rapida de mapeo:',
-			'    -- yaw    -> fieldYaw (submod de field)',
-			'    -- depth  -> fieldDepth (submod de field) o ajuste de z / zoffset',
-			'    -- fieldX -> fieldX (submod de field) o transformX segun la intencion',
-			'    -- fieldY -> fieldY (submod de field) o transformY segun la intencion',
-			'    -- tr(x)  -> x (Plus usa grados directamente)',
+			'    -- yaw    -> fieldYaw (field submodule)',
+			'    -- depth  -> fieldDepth (field submode) or z adjustment / zoffset',
+			'    -- fieldX -> fieldX (field submod) or transformX, depending on the intended use',
+			'    -- fieldY -> fieldY (field submod) or transformY, depending on the intended use',
+			'    -- tr(x)  -> x (Plus uses degrees directly)',
 			'end'
 		].join('\n');
 	}

@@ -15,7 +15,7 @@ class OptionsState extends MusicBeatState
 		'Legacy',
 		#if MODCHARTS_NOTITG_ALLOWED 'Modchart' #end
 		#if TRANSLATIONS_ALLOWED , 'Language' #end,
-		#if mobile 'Mobile Options' #end
+		#if mobile 'Mobile' #end
 	];
 	private var grpOptions:FlxTypedGroup<Alphabet>;
 	private static var curSelected:Int = 0;
@@ -47,7 +47,7 @@ class OptionsState extends MusicBeatState
 				openSubState(new options.ModchartSettingsSubState());
 			case 'Adjust Delay and Combo':
 				MusicBeatState.switchState(new options.NoteOffsetState());
-			case 'Mobile Options':
+			case 'Mobile':
 				openSubState(new mobile.options.MobileSettingsSubState());
 			case 'Language':
 				openSubState(new options.LanguageSubState());

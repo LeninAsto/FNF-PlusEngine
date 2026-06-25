@@ -168,13 +168,13 @@ class IdID
         "options_graphics" => "Grafik",
         "options_modchart" => "Modchart",
         "options_language" => "Bahasa",
-        "options_mobile_options" => "Pengaturan Ponsel",
+        "options_mobile" => "Ponsel",
         "graphics_menu" => "Pengaturan Grafik",
         "visuals_menu" => "Pengaturan Visuals",
         "gameplay_menu" => "Pengaturan Gameplay",
         "modchart_menu" => "Pengaturan Modchart",
         "language_menu" => "Pengaturan Bahasa",
-        "mobile_options_menu" => "Pengaturan Ponsel",
+        "mobile_menu" => "Pengaturan Ponsel",
         "mobile_controls_tip" => "Tekan {1} untuk pergi ke Menu Kontrol Ponsel",
 
         // Note Colors Menu
