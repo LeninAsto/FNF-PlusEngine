@@ -237,6 +237,6 @@
 
 	<section if="android">
 		<assets path="art/icons/android/res" rename="app/src/main/res" type="template" />
-		<include path="source/kotlin/include_android.xml" />
+		<include path="Android.xml" />
 	</section>
 </project>
