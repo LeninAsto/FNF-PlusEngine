@@ -6,6 +6,35 @@ on:
   pull_request:
     branches: [main, dev]
   workflow_dispatch:
+    inputs:
+      build_linux:
+        description: 'Build Linux x64'
+        type: boolean
+        default: true
+      build_android:
+        description: 'Build Android'
+        type: boolean
+        default: true
+      build_windows:
+        description: 'Build Windows x64'
+        type: boolean
+        default: true
+      build_macos_arm64:
+        description: 'Build macOS ARM64'
+        type: boolean
+        default: true
+      build_macos_intel:
+        description: 'Build macOS Intel'
+        type: boolean
+        default: true
+      build_ios:
+        description: 'Build iOS'
+        type: boolean
+        default: true
+      publish_all:
+        description: 'Publish to all platforms (dev build)'
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -17,9 +46,43 @@ env:
   DEV_BUILD_TAG: dev-build
 
 jobs:
+  check_platforms:
+    name: Check Platforms
+    runs-on: ubuntu-24.04
+    outputs:
+      build_linux: ${{ steps.set_outputs.outputs.build_linux }}
+      build_android: ${{ steps.set_outputs.outputs.build_android }}
+      build_windows: ${{ steps.set_outputs.outputs.build_windows }}
+      build_macos_arm64: ${{ steps.set_outputs.outputs.build_macos_arm64 }}
+      build_macos_intel: ${{ steps.set_outputs.outputs.build_macos_intel }}
+      build_ios: ${{ steps.set_outputs.outputs.build_ios }}
+      publish_all: ${{ steps.set_outputs.outputs.publish_all }}
+    steps:
+      - id: set_outputs
+        run: |
+          if [[ "${{ github.event_name }}" == "push" ]] || [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "build_linux=true" >> $GITHUB_OUTPUT
+            echo "build_android=true" >> $GITHUB_OUTPUT
+            echo "build_windows=true" >> $GITHUB_OUTPUT
+            echo "build_macos_arm64=true" >> $GITHUB_OUTPUT
+            echo "build_macos_intel=true" >> $GITHUB_OUTPUT
+            echo "build_ios=true" >> $GITHUB_OUTPUT
+            echo "publish_all=true" >> $GITHUB_OUTPUT
+          else
+            echo "build_linux=${{ github.event.inputs.build_linux }}" >> $GITHUB_OUTPUT
+            echo "build_android=${{ github.event.inputs.build_android }}" >> $GITHUB_OUTPUT
+            echo "build_windows=${{ github.event.inputs.build_windows }}" >> $GITHUB_OUTPUT
+            echo "build_macos_arm64=${{ github.event.inputs.build_macos_arm64 }}" >> $GITHUB_OUTPUT
+            echo "build_macos_intel=${{ github.event.inputs.build_macos_intel }}" >> $GITHUB_OUTPUT
+            echo "build_ios=${{ github.event.inputs.build_ios }}" >> $GITHUB_OUTPUT
+            echo "publish_all=${{ github.event.inputs.publish_all }}" >> $GITHUB_OUTPUT
+          fi
+
   build_linux_x64:
     name: Build Linux x64
     runs-on: ubuntu-24.04
+    needs: check_platforms
+    if: needs.check_platforms.outputs.build_linux == 'true'
 
     steps:
       - uses: actions/checkout@v5
@@ -59,6 +122,8 @@ jobs:
   build_android:
     name: Build Android
     runs-on: ubuntu-24.04
+    needs: check_platforms
+    if: needs.check_platforms.outputs.build_android == 'true'
 
     steps:
       - uses: actions/checkout@v5
@@ -130,6 +195,8 @@ jobs:
   build_windows_x64:
     name: Build Windows x64
     runs-on: windows-2025
+    needs: check_platforms
+    if: needs.check_platforms.outputs.build_windows == 'true'
 
     steps:
       - uses: actions/checkout@v5
@@ -166,6 +233,8 @@ jobs:
   build_macos_arm64:
     name: Build macOS ARM64
     runs-on: macos-15
+    needs: check_platforms
+    if: needs.check_platforms.outputs.build_macos_arm64 == 'true'
 
     steps:
       - uses: actions/checkout@v5
@@ -202,6 +271,8 @@ jobs:
   build_macos_intel:
     name: Build macOS Intel
     runs-on: macos-15-intel
+    needs: check_platforms
+    if: needs.check_platforms.outputs.build_macos_intel == 'true'
 
     steps:
       - uses: actions/checkout@v5
@@ -238,6 +309,8 @@ jobs:
   build_ios:
     name: Build iOS
     runs-on: macos-15
+    needs: check_platforms
+    if: needs.check_platforms.outputs.build_ios == 'true'
 
     steps:
       - uses: actions/checkout@v5
@@ -275,6 +348,7 @@ jobs:
     name: Workflow Summary
     runs-on: ubuntu-24.04
     needs:
+      - check_platforms
       - build_linux_x64
       - build_android
       - build_windows_x64
@@ -331,8 +405,14 @@ jobs:
     name: Publish Dev Build
     runs-on: ubuntu-24.04
     needs:
+      - check_platforms
       - summary
-    if: github.event_name != 'pull_request' && github.ref == 'refs/heads/dev'
+    if: |
+      always() &&
+      github.event_name != 'pull_request' &&
+      github.ref == 'refs/heads/dev' &&
+      needs.check_platforms.outputs.publish_all == 'true'
+
     permissions:
       contents: write
 
@@ -344,36 +424,42 @@ jobs:
         with:
           name: linux-x64-artifact
           path: release-assets/linux-x64
+        continue-on-error: true
 
       - name: Download Android artifact
         uses: actions/download-artifact@v7
         with:
           name: android-artifact
           path: release-assets/android
+        continue-on-error: true
 
       - name: Download Windows artifact
         uses: actions/download-artifact@v7
         with:
           name: windows-x64-artifact
           path: release-assets/windows-x64
+        continue-on-error: true
 
       - name: Download macOS ARM64 artifact
         uses: actions/download-artifact@v7
         with:
           name: macos-arm64-artifact
           path: release-assets/macos-arm64
+        continue-on-error: true
 
       - name: Download macOS Intel artifact
         uses: actions/download-artifact@v7
         with:
           name: macos-intel-artifact
           path: release-assets/macos-intel
+        continue-on-error: true
 
       - name: Download iOS artifact
         uses: actions/download-artifact@v7
         with:
           name: ios-artifact
           path: release-assets/ios
+        continue-on-error: true
 
       - name: Publish prerelease
         uses: actions/github-script@v8
