@@ -424,42 +424,36 @@ jobs:
         with:
           name: linux-x64-artifact
           path: release-assets/linux-x64
-        continue-on-error: true
 
       - name: Download Android artifact
         uses: actions/download-artifact@v7
         with:
           name: android-artifact
           path: release-assets/android
-        continue-on-error: true
 
       - name: Download Windows artifact
         uses: actions/download-artifact@v7
         with:
           name: windows-x64-artifact
           path: release-assets/windows-x64
-        continue-on-error: true
 
       - name: Download macOS ARM64 artifact
         uses: actions/download-artifact@v7
         with:
           name: macos-arm64-artifact
           path: release-assets/macos-arm64
-        continue-on-error: true
 
       - name: Download macOS Intel artifact
         uses: actions/download-artifact@v7
         with:
           name: macos-intel-artifact
           path: release-assets/macos-intel
-        continue-on-error: true
 
       - name: Download iOS artifact
         uses: actions/download-artifact@v7
         with:
           name: ios-artifact
           path: release-assets/ios
-        continue-on-error: true
 
       - name: Publish prerelease
         uses: actions/github-script@v8
