@@ -5,6 +5,7 @@ import flixel.input.keyboard.FlxKey;
 import flixel.util.FlxDestroyUtil;
 import flash.events.KeyboardEvent;
 import lime.system.Clipboard;
+import options.OptionsMenuTheme;
 
 enum abstract AccentCode(Int) from Int from UInt to Int to UInt
 {
@@ -74,7 +75,7 @@ class PsychUIInputText extends FlxSpriteGroup
 		add(this.textObj);
 		add(this.caret);
 
-		this.textObj.color = FlxColor.BLACK;
+		applyThemeColors();
 		this.textObj.textField.selectable = false;
 		this.textObj.textField.wordWrap = false;
 		this.textObj.textField.multiline = false;
@@ -86,6 +87,17 @@ class PsychUIInputText extends FlxSpriteGroup
 		this.text = text;
 
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+	}
+
+	function applyThemeColors():Void
+	{
+		var fill:Int = OptionsMenuTheme.cardFill(false);
+		var textColor:Int = OptionsMenuTheme.readableTextOn(fill);
+		bg.color = fill;
+		behindText.color = OptionsMenuTheme.difficultyCardStroke(OptionsMenuTheme.current().accent, false);
+		textObj.color = textColor;
+		selection.color = OptionsMenuTheme.current().accent;
+		caret.color = textColor;
 	}
 	
 	public var selectIndex:Int = -1;

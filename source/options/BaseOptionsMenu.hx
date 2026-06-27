@@ -21,6 +21,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 	private var descBox:FlxSprite;
 	private var descText:FlxText;
+	private var lastThemeSignature:String = "";
 
 	public var title:String;
 	public var rpcTitle:String;
@@ -40,7 +41,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		#end
 		
 		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
-		bg.color = 0xFFea71fd;
+		bg.color = OptionsMenuTheme.current().accent;
 		bg.screenCenter();
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		add(bg);
@@ -65,10 +66,11 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		add(titleText);
 
 		descText = new FlxText(50, 600, 1180, "", 32);
-		descText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		descText.setFormat(Paths.font("vcr.ttf"), 32, OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false)), CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		descText.scrollFactor.set();
 		descText.borderSize = 2.4;
 		add(descText);
+		refreshThemeVisuals();
 
 		for (i in 0...optionsArray.length)
 		{
@@ -167,6 +169,8 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+		if (lastThemeSignature != OptionsMenuTheme.signature())
+			refreshThemeVisuals();
 
 		if(bindingKey)
 		{
@@ -349,6 +353,19 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		if(nextAccept > 0) {
 			nextAccept -= 1;
 		}
+	}
+
+	function refreshThemeVisuals():Void
+	{
+		lastThemeSignature = OptionsMenuTheme.signature();
+		if (bg != null) bg.color = OptionsMenuTheme.current().accent;
+		if (descBox != null)
+		{
+			descBox.color = OptionsMenuTheme.cardFill(false);
+			descBox.alpha = OptionsMenuTheme.isDark() ? 0.88 : 0.96;
+		}
+		if (descText != null)
+			descText.color = OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false));
 	}
 
 	function bindingKeyUpdate(elapsed:Float)

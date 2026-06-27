@@ -55,7 +55,9 @@ import states.TitleState;
 	public var splashAlpha:Float = 0.6;
 	public var colorQuantization:Bool = false; // StepMania-style color quantization
 	public var menuAccentColor:String = 'Purple';
+	public var menuAccentColorCustom:Int = 0xFF6F52D8;
 	public var menuDarkTheme:Bool = false;
+	public var menuThemeMode:String = 'Light';
 	public var lowQuality:Bool = false;
 	public var shaders:Bool = true;
 	public var colorblindMode:String = 'None';
@@ -328,6 +330,7 @@ class ClientPrefs {
 	#end
 
 	public static function saveSettings() {
+		syncThemeModeFlags();
 		data.cloudLastLocalSaveAt = Date.now().toString();
 
 		for (key in Reflect.fields(data))
@@ -367,6 +370,9 @@ class ClientPrefs {
 			data.framerateMode = Std.string(storedFramerateMode);
 		data.framerateMode = normalizeFramerateMode(data.framerateMode);
 		syncLegacyFpsReworkFlag();
+		if (!Reflect.hasField(FlxG.save.data, 'menuThemeMode'))
+			data.menuThemeMode = data.menuDarkTheme ? 'Dark' : 'Light';
+		syncThemeModeFlags();
 		
 		if(Main.fpsVar != null)
 			Main.fpsVar.visible = data.showFPS;
@@ -520,6 +526,21 @@ class ClientPrefs {
 	static function syncLegacyFpsReworkFlag():Void
 	{
 		data.fpsRework = normalizeFramerateMode(data.framerateMode) != 'Psych';
+	}
+
+	public static function syncThemeModeFlags():Void
+	{
+		var themeMode:String = data.menuThemeMode;
+		if (themeMode == null || themeMode.length == 0)
+			themeMode = data.menuDarkTheme ? 'Dark' : 'Light';
+
+		data.menuThemeMode = switch (themeMode.toLowerCase())
+		{
+			case 'dark': 'Dark';
+			default: 'Light';
+		};
+		data.menuDarkTheme = data.menuThemeMode == 'Dark';
+		data.menuAccentColorCustom = 0xFF000000 | (data.menuAccentColorCustom & 0x00FFFFFF);
 	}
 
 	static function getInterpolatedDrawFramerate(safeFramerate:Int):Int

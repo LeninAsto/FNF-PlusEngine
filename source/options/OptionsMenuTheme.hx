@@ -2,6 +2,7 @@ package options;
 
 import flixel.util.FlxColor;
 import backend.ui.md3.MD3Theme;
+import StringTools;
 
 typedef OptionsAccentPalette = {
 	var name:String;
@@ -14,7 +15,7 @@ typedef OptionsAccentPalette = {
 
 class OptionsMenuTheme
 {
-	public static var ACCENT_CHOICES(default, null):Array<String> = ['Purple', 'Teal', 'Rose', 'Amber', 'Indigo', 'Green', 'Red', 'Black'];
+	public static var ACCENT_CHOICES(default, null):Array<String> = ['Purple', 'Teal', 'Rose', 'Amber', 'Indigo', 'Green', 'Red', 'Black', 'Custom'];
 
 	public static inline function isDark():Bool
 	{
@@ -23,7 +24,9 @@ class OptionsMenuTheme
 
 	public static function signature():String
 	{
-		return normalizeAccent(ClientPrefs.data.menuAccentColor) + ':' + (isDark() ? 'dark' : 'light');
+		var accentName = normalizeAccent(ClientPrefs.data.menuAccentColor);
+		var customPart = accentName == 'Custom' ? ':' + Std.string(StringTools.hex(getCustomAccent() & 0x00FFFFFF, 6)) : '';
+		return accentName + ':' + (isDark() ? 'dark' : 'light') + customPart;
 	}
 
 	public static function normalizeAccent(value:String):String
@@ -40,6 +43,11 @@ class OptionsMenuTheme
 		return 'Purple';
 	}
 
+	public static inline function getCustomAccent():Int
+	{
+		return 0xFF000000 | (ClientPrefs.data.menuAccentColorCustom & 0x00FFFFFF);
+	}
+
 	public static function current():OptionsAccentPalette
 	{
 		return getPalette(ClientPrefs.data.menuAccentColor);
@@ -49,6 +57,8 @@ class OptionsMenuTheme
 	{
 		switch (normalizeAccent(value))
 		{
+			case 'Custom':
+				return buildPaletteFromAccent(getCustomAccent(), 'Custom');
 			case 'Black':
 				return {
 					name: 'Black',
@@ -124,8 +134,22 @@ class OptionsMenuTheme
 		}
 	}
 
+	static function buildPaletteFromAccent(color:Int, name:String):OptionsAccentPalette
+	{
+		var accent:Int = 0xFF000000 | (color & 0x00FFFFFF);
+		return {
+			name: name,
+			accent: accent,
+			strong: blendColor(accent, 0xFF111318, 0.58),
+			muted: blendColor(accent, 0xFF7C8696, 0.34),
+			pale: blendColor(accent, 0xFFFFFFFF, 0.72),
+			mist: blendColor(accent, 0xFFFFFFFF, 0.88)
+		};
+	}
+
 	public static function syncAccent():Void
 	{
+		ClientPrefs.syncThemeModeFlags();
 		var palette = current();
 		MD3Theme.setAccent(palette.accent, isDark());
 	}
@@ -144,6 +168,47 @@ class OptionsMenuTheme
 	{
 		var ratio = clamp01(amount);
 		return FlxColor.interpolate(base, tint, ratio);
+	}
+
+	static inline function relativeLuminance(color:Int):Float
+	{
+		var r:Float = ((color >> 16) & 0xFF) / 255;
+		var g:Float = ((color >> 8) & 0xFF) / 255;
+		var b:Float = (color & 0xFF) / 255;
+		return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+	}
+
+	public static inline function readableTextOn(fill:Int):Int
+	{
+		return relativeLuminance(fill) > 0.58 ? 0xFF17191D : 0xFFF5F7FA;
+	}
+
+	public static inline function readableMetaTextOn(fill:Int):Int
+	{
+		return relativeLuminance(fill) > 0.58 ? 0xFF45395A : 0xFFD3D9E4;
+	}
+
+	public static inline function difficultyCardFill(color:Int, selected:Bool):Int
+	{
+		var base = cardFill(selected);
+		return blendColor(base, color, isDark() ? (selected ? 0.18 : 0.11) : (selected ? 0.22 : 0.15));
+	}
+
+	public static inline function difficultyCardStroke(color:Int, selected:Bool):Int
+	{
+		return selected ? blendColor(color, current().accent, 0.4) : blendColor(color, neutralOutlineColor(), 0.28);
+	}
+
+	public static inline function difficultyTitleColor(color:Int, selected:Bool):Int
+	{
+		var fill = difficultyCardFill(color, selected);
+		return readableTextOn(fill);
+	}
+
+	public static inline function difficultyMetaColor(color:Int, selected:Bool):Int
+	{
+		var fill = difficultyCardFill(color, selected);
+		return readableMetaTextOn(fill);
 	}
 
 	public static inline function backdropColor():Int

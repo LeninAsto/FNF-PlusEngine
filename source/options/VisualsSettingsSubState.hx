@@ -9,13 +9,19 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 	var noteOptionID:Int = -1;
 	var noteSkinOption:Option = null;
 	var splashSkinOption:Option = null;
+	var themeModeOption:Option = null;
+	var accentColorOption:Option = null;
 	var notes:FlxTypedGroup<StrumNote>;
 	var splashes:FlxTypedGroup<NoteSplash>;
 	var noteY:Float = 90;
+	var lastNonCustomAccent:String = 'Purple';
 	public function new()
 	{
 		title = Language.getPhrase('visuals_menu', 'Visuals Settings');
 		rpcTitle = 'Visuals Settings Menu'; //for Discord Rich Presence
+		lastNonCustomAccent = OptionsMenuTheme.normalizeAccent(ClientPrefs.data.menuAccentColor);
+		if (lastNonCustomAccent == 'Custom')
+			lastNonCustomAccent = 'Purple';
 
 		// for note skins and splash skins
 		notes = new FlxTypedGroup<StrumNote>();
@@ -108,6 +114,26 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			['Gray', 'Red', 'Blue', 'Green', 'Purple', 'Orange', 'Pink', 'Cyan', 'White', 'Black']);
 		addOption(option);
 		option.onChange = onChangeKeyViewerColor;
+
+		var option:Option = new Option('Theme Mode:',
+			'Choose between light and dark menu themes.',
+			'menuThemeMode',
+			STRING,
+			['Light', 'Dark'],
+			'theme_mode');
+		addOption(option);
+		option.onChange = onChangeThemeMode;
+		themeModeOption = option;
+
+		var option:Option = new Option('Accent Color:',
+			'Choose a preset accent color or open the custom color picker.',
+			'menuAccentColor',
+			STRING,
+			OptionsMenuTheme.ACCENT_CHOICES.copy(),
+			'accent_color');
+		addOption(option);
+		option.onChange = onChangeAccentColor;
+		accentColorOption = option;
 		
 		var option:Option = new Option('Time Bar:',
 			"What should the Time Bar display?",
@@ -540,5 +566,61 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		{
 			PlayState.instance.keyViewer.updateKeyColors();
 		}
+	}
+
+	function onChangeThemeMode()
+	{
+		ClientPrefs.syncThemeModeFlags();
+		OptionsMenuTheme.syncAccent();
+		ClientPrefs.saveSettings();
+	}
+
+	function onChangeAccentColor()
+	{
+		ClientPrefs.data.menuAccentColor = OptionsMenuTheme.normalizeAccent(ClientPrefs.data.menuAccentColor);
+		if (ClientPrefs.data.menuAccentColor != 'Custom')
+		{
+			lastNonCustomAccent = ClientPrefs.data.menuAccentColor;
+			OptionsMenuTheme.syncAccent();
+			ClientPrefs.saveSettings();
+			return;
+		}
+
+		var previousAccentChoice = lastNonCustomAccent;
+		var previousCustomColor = ClientPrefs.data.menuAccentColorCustom;
+		openSubState(backend.ScriptableSubstate.tryCreate('ThemeAccentColorSubState',
+			new ThemeAccentColorSubState(ClientPrefs.data.menuAccentColorCustom,
+				function(color:Int)
+				{
+					ClientPrefs.data.menuAccentColor = 'Custom';
+					ClientPrefs.data.menuAccentColorCustom = color;
+					OptionsMenuTheme.syncAccent();
+				},
+				function()
+				{
+					ClientPrefs.data.menuAccentColor = 'Custom';
+					OptionsMenuTheme.syncAccent();
+					ClientPrefs.saveSettings();
+					refreshAccentOptionVisual();
+				},
+				function()
+				{
+					ClientPrefs.data.menuAccentColor = previousAccentChoice;
+					ClientPrefs.data.menuAccentColorCustom = previousCustomColor;
+					OptionsMenuTheme.syncAccent();
+					refreshAccentOptionVisual();
+					ClientPrefs.saveSettings();
+				}
+			)
+		));
+	}
+
+	function refreshAccentOptionVisual():Void
+	{
+		if (accentColorOption == null) return;
+		accentColorOption.curOption = accentColorOption.options.indexOf(ClientPrefs.data.menuAccentColor);
+		if (accentColorOption.curOption < 0)
+			accentColorOption.curOption = 0;
+		refreshStringOptionVisual(accentColorOption);
 	}
 }

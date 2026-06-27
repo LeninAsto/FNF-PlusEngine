@@ -131,6 +131,17 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	function updateVortexColor()
 		vortexIndicator.color = quantColors[Std.int(FlxMath.bound(quantizations.indexOf(curQuant), 0, quantColors.length - 1))];
 
+	function updateVortexIndicatorPosition():Void
+	{
+		if(vortexIndicator == null || gridBg == null) return;
+
+		vortexIndicator.x = gridBg.x - vortexIndicator.width - 6;
+		if(timeLine != null)
+			vortexIndicator.y = timeLine.y + ((timeLine.height - vortexIndicator.height) * 0.5);
+		else
+			vortexIndicator.y = (FlxG.height - vortexIndicator.height) * 0.5;
+	}
+
 	var sectionFirstNoteID:Int = 0;
 	var sectionFirstEventID:Int = 0;
 	var curSec:Int = 0;
@@ -221,6 +232,8 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	var dragDropOverlay:FlxSprite;
 	var dragDropText:FlxText;
 	var droppedFilePath:String = null;
+	var selectedEventBox:PsychUIBox;
+	var selectedEventPanelText:FlxText;
 
 	override function create()
 	{
@@ -253,7 +266,13 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 		if(chartEditorSave.data.autoSave != null) autoSaveCap = chartEditorSave.data.autoSave;
 		if(chartEditorSave.data.backupLimit != null) backupLimit = chartEditorSave.data.backupLimit;
-		if(chartEditorSave.data.vortex != null) vortexEnabled = chartEditorSave.data.vortex;
+		if(chartEditorSave.data.vortexInitFixed == null)
+		{
+			chartEditorSave.data.vortex = true;
+			chartEditorSave.data.vortexInitFixed = true;
+			chartEditorSave.flush();
+		}
+		vortexEnabled = chartEditorSave.data.vortex;
 
 		if(chartEditorSave.data.customBgColor == null) chartEditorSave.data.customBgColor = '303030';
 		if(chartEditorSave.data.customGridColors == null || chartEditorSave.data.customGridColors.length < 2)
@@ -282,7 +301,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		vortexIndicator.scrollFactor.set();
 		vortexIndicator.active = false;
 		updateVortexColor();
-		add(vortexIndicator);
 		add(strumLineNotes);
 
 		add(behindRenderedNotes);
@@ -303,11 +321,13 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		timeLine.screenCenter(Y);
 		timeLine.scrollFactor.set();
 		add(timeLine);
+		add(vortexIndicator);
 		
 		var startX:Float = gridBg.x;
 		var startY:Float = FlxG.height/2;
 		vortexIndicator.visible = strumLineNotes.visible = strumLineNotes.active = vortexEnabled;
 		if(SHOW_EVENT_COLUMN) startX += GRID_SIZE;
+		updateVortexIndicatorPosition();
 
 		for (i in 0...Std.int(GRID_PLAYERS * GRID_COLUMNS_PER_PLAYER))
 		{
@@ -387,6 +407,19 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		infoText.scrollFactor.set();
 		infoBox.getTab('Information').menu.add(infoText);
 		add(infoBox);
+
+		selectedEventBox = new PsychUIBox(12, FlxG.height - 182, 280, 170, ['Events']);
+		selectedEventBox.scrollFactor.set();
+		selectedEventBox.cameras = [camUI];
+		selectedEventBox.canMove = true;
+		selectedEventBox.minimizeOnFocusLost = false;
+		selectedEventBox.selectedName = 'Events';
+		add(selectedEventBox);
+
+		selectedEventPanelText = new FlxText(10, 10, 250, 'Select an event to inspect its stacked values.', 14);
+		selectedEventPanelText.setFormat(Paths.font('vcr.ttf'), 14, 0xFFE0E0E0, LEFT);
+		selectedEventPanelText.scrollFactor.set();
+		selectedEventBox.getTab('Events').menu.add(selectedEventPanelText);
 
 		mainBox = new PsychUIBox(mainBoxPosition.x, mainBoxPosition.y, 300, 280, ['Charting', 'Data', 'Events', 'Note', 'Section', 'Song']);
 		mainBox.selectedName = 'Song';
@@ -1855,6 +1888,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 		outputTxt.alpha = outputAlpha;
 		outputTxt.visible = (outputAlpha > 0);
+		updateVortexIndicatorPosition();
 		FlxG.camera.scroll.y = scrollY;
 		lastFocus = PsychUIInputText.focusOn;
 	}
@@ -2036,6 +2070,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			value1InputText.text = '';
 			value2InputText.text = '';
 		}
+		refreshSelectedEventPanel();
 		forceDataUpdate = true;
 	}
 
@@ -2065,6 +2100,48 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			}
 		}
 		else selectedEventText.visible = false;
+		refreshSelectedEventPanel();
+	}
+
+	function refreshSelectedEventPanel():Void
+	{
+		if(selectedEventPanelText == null) return;
+
+		if(selectedNotes.length == 1 && selectedNotes[0].isEvent)
+		{
+			var eventNote:EventMetaNote = cast selectedNotes[0];
+			var lines:Array<String> = [];
+			lines.push('Time: ' + FlxMath.roundDecimal(eventNote.strumTime, 2) + ' ms');
+			lines.push('Total: ' + eventNote.events.length);
+			lines.push('');
+
+			for(i in 0...eventNote.events.length)
+			{
+				var eventData:Array<String> = eventNote.events[i];
+				var marker:String = (i == curEventSelected) ? '>' : '-';
+				var name:String = (eventData != null && eventData[0] != null && eventData[0].length > 0) ? eventData[0] : '(Empty)';
+				var value1:String = (eventData != null && eventData.length > 1 && eventData[1] != null && eventData[1].length > 0) ? eventData[1] : '(blank)';
+				var value2:String = (eventData != null && eventData.length > 2 && eventData[2] != null && eventData[2].length > 0) ? eventData[2] : '(blank)';
+				lines.push('$marker ${i + 1}. $name');
+				lines.push('   v1: $value1');
+				lines.push('   v2: $value2');
+			}
+
+			selectedEventPanelText.text = lines.join('\n');
+		}
+		else if(selectedNotes.length > 1)
+		{
+			var selectedEvents:Int = 0;
+			for(note in selectedNotes)
+			{
+				if(note != null && note.isEvent) selectedEvents++;
+			}
+			selectedEventPanelText.text = selectedEvents > 0
+				? '$selectedEvents events are selected.\nSelect a single event to inspect its values.'
+				: 'The current selection does not include any events.';
+		}
+		else
+			selectedEventPanelText.text = 'Select an event to inspect its stacked values.';
 	}
 
 	function createGrids()
@@ -2473,6 +2550,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		gridBg.y = cachedSectionRow[curSec] * GRID_SIZE * curZoom;
 		gridBg.rows = 4 * PlayState.SONG.notes[curSec].sectionBeats * curZoom;
 		hei += gridBg.height;
+		updateVortexIndicatorPosition();
 
 		if(!prevGridBg.visible) eventLockOverlay.y = gridBg.y;
 		eventLockOverlay.scale.y = hei;
@@ -2880,6 +2958,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				event.events[Std.int(FlxMath.bound(curEventSelected, 0, event.events.length - 1))][0] = eventName;
 				event.updateEventText();
 			}
+			refreshSelectedEventPanel();
 		});
 
 		function genericEventButton(func:EventMetaNote->Void)
@@ -2966,6 +3045,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				event.events[Std.int(FlxMath.bound(curEventSelected, 0, event.events.length - 1))][n] = str;
 				event.updateEventText();
 			}
+			refreshSelectedEventPanel();
 		}
 
 		objY += 70;
@@ -4596,6 +4676,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			vortexEnabled = !vortexEnabled;
 			chartEditorSave.data.vortex = vortexEnabled;
 			vortexIndicator.visible = strumLineNotes.visible = strumLineNotes.active = vortexEnabled;
+			updateVortexIndicatorPosition();
 			vortexEditorButton.text.text = vortexEnabled ? '  Vortex Editor ON' : '  Vortex Editor OFF';
 
 			for (note in strumLineNotes)

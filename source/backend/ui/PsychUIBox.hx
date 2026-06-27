@@ -1,5 +1,7 @@
 package backend.ui;
 
+import options.OptionsMenuTheme;
+
 typedef UIStyleData = {
 	var bgColor:FlxColor;
 	var textColor:FlxColor;
@@ -44,10 +46,11 @@ class PsychUIBox extends FlxSpriteGroup
 	public function new(x:Float, y:Float, width:Int, height:Int, tabs:Array<String> = null)
 	{
 		super(x, y);
+		refreshStyles();
 		
 		bg = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
-		bg.color = FlxColor.BLACK;
-		bg.alpha = 0.6;
+		bg.color = unselectedStyle.bgColor;
+		bg.alpha = unselectedStyle.bgAlpha;
 		add(bg);
 
 		if(tabs != null)
@@ -63,6 +66,25 @@ class PsychUIBox extends FlxSpriteGroup
 		resize(width, height);
 		selectedIndex = 0;
 		forceCheckNext = true;
+	}
+
+	function refreshStyles():Void
+	{
+		selectedStyle = {
+			bgColor: OptionsMenuTheme.cardFill(true),
+			textColor: OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(true)),
+			bgAlpha: 1
+		};
+		hoverStyle = {
+			bgColor: OptionsMenuTheme.difficultyCardFill(OptionsMenuTheme.current().accent, false),
+			textColor: OptionsMenuTheme.readableTextOn(OptionsMenuTheme.difficultyCardFill(OptionsMenuTheme.current().accent, false)),
+			bgAlpha: 0.92
+		};
+		unselectedStyle = {
+			bgColor: OptionsMenuTheme.cardFill(false),
+			textColor: OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false)),
+			bgAlpha: OptionsMenuTheme.isDark() ? 0.9 : 0.97
+		};
 	}
 
 	var _draggingPos:FlxPoint;

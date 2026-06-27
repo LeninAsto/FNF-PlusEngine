@@ -1,6 +1,7 @@
 package backend.ui;
 
 import backend.ui.PsychUIBox.UIStyleData;
+import options.OptionsMenuTheme;
 #if mobile
 import backend.MusicBeatSubstate;
 #end
@@ -344,6 +345,7 @@ class PsychUIDropDownItem extends FlxSpriteGroup
 	public function new(x:Float = 0, y:Float = 0, width:Float = 100)
 	{
 		super(x, y);
+		refreshStyles();
 
 		bg = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
 		bg.setGraphicSize(width, 20);
@@ -351,8 +353,22 @@ class PsychUIDropDownItem extends FlxSpriteGroup
 		add(bg);
 
 		text = new FlxText(0, 0, width, 8);
-		text.color = FlxColor.BLACK;
+		text.color = normalStyle.textColor;
 		add(text);
+	}
+
+	function refreshStyles():Void
+	{
+		hoverStyle = {
+			bgColor: OptionsMenuTheme.current().accent,
+			textColor: OptionsMenuTheme.readableTextOn(OptionsMenuTheme.current().accent),
+			bgAlpha: 1
+		};
+		normalStyle = {
+			bgColor: OptionsMenuTheme.cardFill(false),
+			textColor: OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false)),
+			bgAlpha: OptionsMenuTheme.isDark() ? 0.96 : 1
+		};
 	}
 
 	public var onClick:Void->Void;
@@ -433,7 +449,8 @@ class PsychUIDropDownMobileSelector extends MusicBeatSubstate
 		var panelWidth:Int = Std.int(Math.min(FlxG.width - 40, 620));
 		var panelHeight:Int = Std.int(Math.min(FlxG.height - 60, 80 + (DROPDOWN_PAGE_SIZE * 42) + 80));
 		panel = new FlxSprite().makeGraphic(1, 1, FlxColor.BLACK);
-		panel.alpha = 0.9;
+		panel.color = OptionsMenuTheme.cardFill(false);
+		panel.alpha = 0.96;
 		panel.scale.set(panelWidth, panelHeight);
 		panel.updateHitbox();
 		panel.screenCenter();
@@ -442,6 +459,7 @@ class PsychUIDropDownMobileSelector extends MusicBeatSubstate
 
 		titleText = new FlxText(panel.x + 20, panel.y + 18, panelWidth - 40, 'Choose an option', 20);
 		titleText.alignment = CENTER;
+		titleText.color = OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false));
 		titleText.cameras = cameras;
 		add(titleText);
 
@@ -474,8 +492,8 @@ class PsychUIDropDownMobileSelector extends MusicBeatSubstate
 
 			if(optionIndex == selectedIndex)
 			{
-				optionButton.normalStyle.bgColor = 0xFF0066FF;
-				optionButton.normalStyle.textColor = FlxColor.WHITE;
+				optionButton.normalStyle.bgColor = OptionsMenuTheme.current().accent;
+				optionButton.normalStyle.textColor = OptionsMenuTheme.readableTextOn(OptionsMenuTheme.current().accent);
 			}
 
 			add(optionButton);
@@ -507,6 +525,7 @@ class PsychUIDropDownMobileSelector extends MusicBeatSubstate
 
 			var pageText = new FlxText(panel.x, panel.y + panel.height - 44, Std.int(panel.width), 'Page ${currentPage + 1} / $totalPages', 16);
 			pageText.alignment = CENTER;
+			pageText.color = OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false));
 			pageText.cameras = cameras;
 			add(pageText);
 		}

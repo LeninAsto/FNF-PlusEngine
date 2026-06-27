@@ -6,21 +6,30 @@ class EnUS
     public static var languageCode:String = "en-US";
     
     public static var translations:Map<String, String> = [
+        // Core / General
+        "language_name" => "English (US)",
         "update_available_title" => "Update Available!",
         "version_comparison" => "Current Version: {1} => New Version: {2}",
         "loading_changelog" => "Loading changelog...",
         "update_controls" => "Press ENTER to update to the latest version\nPress ESCAPE if you're on the correct engine version\nYou can disable this warning in Options Menu",
+        "update_controls_mobile" => "Press A to update to the latest version\nPress B if you're on the correct engine version\nYou can disable this warning in Options Menu",
         "changelog_title" => "What's New:\n{1}",
         "changelog_error" => "Error loading changelog: {1}",
+        "back" => "Back",
 
         // Gameplay
         "score_text" => "Score: {1} | {2}: {3} | Rating: {4} | TPS: {5}/{6}",
         "score_text_instakill" => "Score: {1} | Rating: {2} | TPS: {3}/{4}",
+        "score_text_legacy" => "Score: {1} | Misses: {2} | Rating: {3}",
+        "score_text_instakill_legacy" => "Score: {1} | Rating: {2}",
         "botplay" => "Botplay",
+        "perfect_mode" => "Perfect Mode",
+        "opponent_mode" => "Opponent Mode",
         "misses" => "Misses",
         "combo_breaks" => "Combo Breaks",
 
         // Ratings
+        "rating_terrible" => "Terrible",
         "rating_you_suck" => "You Suck!",
         "rating_shit" => "Shit",
         "rating_bad" => "Bad",
@@ -32,6 +41,9 @@ class EnUS
         "rating_sick" => "Sick!",
         "rating_flawless" => "Flawless!!",
         "rating_perfect" => "Perfect!!!",
+        "rating_marvelous" => "MARVELOUS!!!!",
+        "rating_legendary" => "★ LEGENDARY ★",
+        "rating_clear" => "Clear",
 
         // Dialogues
         "dialogue_skip" => "Press BACK to skip",
@@ -65,11 +77,13 @@ class EnUS
         "storyname_weekend1" => "Due Debts",
 
         // Freeplay
+        "freeplay_search" => "Search...",
         "personal_best" => "PERSONAL BEST:\n{1} ({2}%)",
         "freeplay_tip" => "Press SPACE to listen to the Song / Press CTRL to open the Gameplay Changers Menu / Press RESET to Reset your Score and Accuracy.",
         "musicplayer_playing" => "PLAYING: {1}",
         "musicplayer_paused" => "PLAYING: {1} (PAUSED)",
         "musicplayer_tip" => "Press SPACE to Pause / Press ESCAPE to Exit / Press R to Reset the Song",
+        "no_score" => "No score yet",
 
         // Mods Menu
         "no_mods_installed" => "NO MODS INSTALLED\nPRESS BACK TO EXIT OR INSTALL A MOD",
@@ -78,8 +92,11 @@ class EnUS
         "reload_button" => "RELOAD",
         "enable_all_button" => "ENABLE ALL",
         "disable_all_button" => "DISABLE ALL",
+        "mods_leave" => "Press {1} To Leave",
 
         // Credits
+        "credits_title" => "CREDITS",
+        "link_hint" => "Press A/ENTER to open link | B/ESC to go back",
         "description_shadow_mario" => "Psych Engine Team",
 
         // Reset Score/Achievement
@@ -146,7 +163,9 @@ class EnUS
         "gameplay_menu" => "Gameplay Settings",
         "modchart_menu" => "Modchart Settings",
         "language_menu" => "Language Settings",
+        "legacy_menu" => "Legacy Settings",
         "mobile_menu" => "Mobile Settings",
+        "mobile_controls_tip" => "Press {1} to Go Mobile Controls Menu",
 
         // Note Colors Menu
         "note_colors_tip" => "Press RESET to Reset the selected Note Part.",
@@ -159,11 +178,13 @@ class EnUS
         "delay_current_offset" => "Current offset: {1} ms",
         "combo_rating_offset" => "Rating Offset:",
         "combo_number_offset" => "Number Offset:",
+        "combo_numbers_offset" => "Numbers Offset:",
         "keyviewer_offset" => "KeyViewer Offset",
         "keyviewer_position_offset" => "KeyViewer Position:",
         "keyviewer_color_setting" => "KeyViewer Color:",
         "combo_offset" => "Combo Offset",
         "note_delay" => "Note/Beat Delay",
+        "switch_on_button" => "(Press {1} to Switch)",
         "switch_on_accept" => "(Press Accept to Switch)",
         "switch_on_start" => "(Press Start to Switch)",
 
@@ -245,6 +266,21 @@ class EnUS
         "description_show_key_viewer" => "If checked, shows a key viewer displaying which keys are being pressed.",
         "setting_key_viewer_color" => "Key Viewer Color:",
         "description_key_viewer_color" => "Select the color for the key viewer buttons.",
+        "setting_theme_mode" => "Theme Mode:",
+        "description_theme_mode" => "Choose between light and dark menu themes.",
+        "setting_theme_mode-light" => "Light",
+        "setting_theme_mode-dark" => "Dark",
+        "setting_accent_color" => "Accent Color:",
+        "description_accent_color" => "Choose a preset accent color or open the custom color picker.",
+        "setting_accent_color-purple" => "Purple",
+        "setting_accent_color-teal" => "Teal",
+        "setting_accent_color-rose" => "Rose",
+        "setting_accent_color-amber" => "Amber",
+        "setting_accent_color-indigo" => "Indigo",
+        "setting_accent_color-green" => "Green",
+        "setting_accent_color-red" => "Red",
+        "setting_accent_color-black" => "Black",
+        "setting_accent_color-custom" => "Custom",
         "setting_camera_zooms" => "Camera Zooms",
         "description_camera_zooms" => "If unchecked, the camera won't zoom in on a beat hit.",
         "setting_score_text_grow_on_hit" => "Score Text Grow on Hit",
@@ -271,6 +307,34 @@ class EnUS
         "description_show_current_state" => "If checked, the FPS counter will show the current state.",
         "setting_combo_and_rating_in_camgame" => "Combo and Rating in camGame",
         "description_combo_and_rating_in_camgame" => "If checked, Combo and Rating will render in the camGame layer instead of camHUD.",
+
+        "theme_accent_picker" => "Theme Accent Picker",
+        "theme_accent_color_title" => "Theme Accent Color",
+        "theme_accent_color_hint" => "Preview real MD3 widgets while you drag the picker. ENTER confirms, BACK cancels.",
+        "theme_preview_box" => "Theme Preview",
+        "accent_picker_box" => "Accent Picker",
+        "md3_components_preview_box" => "MD3 Components Preview",
+        "theme_accent_picker_hint" => "Wheel + luminance strip + palette, without turning into visual soup.",
+        "theme_accent_preview_title" => "FREEPLAY SAMPLE",
+        "theme_accent_preview_meta" => "Custom Accent Preview",
+        "theme_accent_chip_active" => "Accent active",
+        "theme_accent_chip_custom" => "Custom token",
+        "theme_accent_live_preview" => "Live preview enabled",
+        "theme_accent_copy_hex" => "Copy HEX",
+        "theme_accent_paste_hex" => "Paste HEX",
+        "theme_accent_apply" => "Apply",
+        "theme_accent_cancel" => "Cancel",
+        "theme_accent_mini_hint" => "The right side shows stock engine widgets tinted with your accent. If it looks cursed here, it would look cursed in menus too.",
+        "theme_accent_section_standard" => "Standard Progress",
+        "theme_accent_section_wavy" => "Wavy Progress",
+        "theme_accent_section_widgets" => "Other Engine Widgets",
+        "theme_accent_chip_preset_safe" => "Preset-safe",
+        "theme_accent_chip_selected" => "Selected",
+        "theme_accent_chip_hex" => "HEX token",
+        "theme_accent_use_custom" => "Use custom accent",
+        "theme_accent_preview" => "Preview",
+        "theme_accent_accent" => "Accent",
+        "theme_accent_hex_label" => "HEX {1}",
 
         // Gameplay Settings
         "setting_downscroll" => "Downscroll",
@@ -317,16 +381,21 @@ class EnUS
 
         // Loading Screen
         "now_loading" => "Loading{1}",
+        "loading_timeout" => "Loading is taking too long...\nPress ESC to return",
 
         // Difficulties
         "difficulty_easy" => "Easy",
         "difficulty_normal" => "Normal",
         "difficulty_hard" => "Hard",
+        "difficulty_erect" => "Erect",
+        "difficulty_nightmare" => "Nightmare",
 
         // Debug and Time
         "debug_speed" => "Speed",
         "debug_bpm" => "BPM",
         "debug_health" => "Health",
+        "psych_engine_version" => "Psych Engine v",
+        "fnf_version" => "Friday Night Funkin' v",
 
         // Enhanced Transitions
         "trans_opening" => "Opening...",
@@ -395,6 +464,7 @@ class EnUS
         "results_rating" => "Rating",
         "results_played_on" => "Played on",
         "results_press_enter" => "Press Enter\nto Continue",
+        "results_press_enter_mobile" => "Press A\nto Continue",
         "results_practice_mode" => "Played in practice mode",
 
         // Judgment counters  
@@ -452,6 +522,42 @@ class EnUS
         "editorplaystate_beat" => "Beat: {1}",
         "editorplaystate_step" => "Step: {1}",
         "editorplaystate_score" => "Hits: {1} | Misses: {2}",
+        
+        // Mobile / Android
+        "mobile_notice" => "Notice",
+        "mobile_warning" => "Warning",
+        "mobile_error" => "Error",
+        "mobile_success" => "Success",
+        "permissions_message" => "Storage permissions are required to save or export files correctly.",
+        "create_directory_error" => "Could not create the required directory:\n{1}",
+        "file_save_success" => "File saved successfully:\n{1}",
+        "file_save_fail" => "Could not save the file:\n{1}",
+        "mobilec_left" => "Left",
+        "mobilec_down" => "Down",
+        "mobilec_up" => "Up",
+        "mobilec_right" => "Right",
+        "mobilec_reset" => "Reset",
+        "mobilec_exitandsave" => "Exit and Save",
+        "pad-extra_save" => "Save",
+        "touchpad_actionmode_missing" => "This touchpad mode is missing its action buttons configuration.",
+        "touchpad_dpadmode_missing" => "This touchpad mode is missing its d-pad configuration.",
+
+        // Misc UI / Translator Notes
+        "modchart_converter" => "Modchart Converter",
+        "note_colors_notitg" => "RGB SHADERS DISABLED - NotITG skin preserves original colors",
+
+        // Translator reference:
+        // The following families are generated dynamically by the engine and
+        // resolve to concrete keys already declared above:
+        // - options_$option
+        // - pause_$str
+        // - achievement_$achievement / description_$achievement
+        // - storyname_${leWeek.fileName}
+        // - difficulty_$diffName / rating_$ratingName
+        // - key_$keyStr / keygroup_$str
+        // - setting_$name / setting_$_translationKey / value variants
+        // When new runtime values are introduced, add their concrete keys here
+        // so translators can work with a stable, explicit preset.
         
         // Language example text
         "language_example_text" => "This is an example text in English United States language"

@@ -115,6 +115,7 @@ class FreeplayState extends MusicBeatState
 	public var blackOverlay:FlxSprite;
 	public var layerFree:FlxSprite;
 	public var cardArray:Array<FlxSprite> = [];
+	public var cardAccentArray:Array<FlxSprite> = [];
 	public var modTextArray:Array<FlxText> = [];
 	public var freeplayText:FlxText;
 	public var lastThemeSignature:String = "";
@@ -157,12 +158,12 @@ class FreeplayState extends MusicBeatState
 	public static var instSound:FlxSound = null;
 
 	#if mobile
-	static inline var VIZ_BAR_COUNT:Int = 96;
+	static inline var VIZ_BAR_COUNT:Int = 56;
 	#else
-	static inline var VIZ_BAR_COUNT:Int = 160;
+	static inline var VIZ_BAR_COUNT:Int = 88;
 	#end
 
-	public static inline var VIZ_BAR_MAX_H:Int = 240;
+	public static inline var VIZ_BAR_MAX_H:Int = 150;
 	public static inline var VIZ_BAR_FILL:Float = 0.62;
 	public static inline var VIZ_MIN_H:Int = 2;
 	public static inline var VIZ_SMOOTH_SPEED:Float = 18;
@@ -472,6 +473,11 @@ class FreeplayState extends MusicBeatState
 					card.visible = false;
 					cardArray.push(card);
 					add(card);
+					var accentBar:FlxSprite = new FlxSprite();
+					MD3ShapeTools.fillRoundRect(accentBar, 10, 84, 5);
+					accentBar.visible = false;
+					cardAccentArray.push(accentBar);
+					add(accentBar);
 				}
 				else
 				{
@@ -480,6 +486,11 @@ class FreeplayState extends MusicBeatState
 					card.visible = false;
 					cardArray.push(card);
 					add(card);
+					var accentBar:FlxSprite = new FlxSprite();
+					MD3ShapeTools.fillRoundRect(accentBar, 10, 84, 5);
+					accentBar.visible = false;
+					cardAccentArray.push(accentBar);
+					add(accentBar);
 				}
 			}
 			catch (e:Dynamic)
@@ -490,6 +501,11 @@ class FreeplayState extends MusicBeatState
 				card.visible = false;
 				cardArray.push(card);
 				add(card);
+				var accentBar:FlxSprite = new FlxSprite();
+				MD3ShapeTools.fillRoundRect(accentBar, 10, 84, 5);
+				accentBar.visible = false;
+				cardAccentArray.push(accentBar);
+				add(accentBar);
 			}
 		}
 
@@ -542,8 +558,9 @@ class FreeplayState extends MusicBeatState
 					modName = "Friday Night Funkin";
 			}
 
-			var modText:FlxText = new FlxText(0, 0, 400, modName, 20);
-			modText.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, LEFT);
+			var modText:FlxText = new FlxText(0, 0, 430, modName, 16);
+			modText.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			modText.borderSize = 1.5;
 			modText.alpha = 0.7;
 			modText.visible = false;
 			modTextArray.push(modText);
@@ -2263,6 +2280,8 @@ class FreeplayState extends MusicBeatState
 				iconArray[i].visible = iconArray[i].active = false;
 			if (i >= 0 && i < cardArray.length && cardArray[i] != null)
 				cardArray[i].visible = false;
+			if (i >= 0 && i < cardAccentArray.length && cardAccentArray[i] != null)
+				cardAccentArray[i].visible = false;
 			if (i >= 0 && i < modTextArray.length && modTextArray[i] != null)
 				modTextArray[i].visible = false;
 		}
@@ -2272,7 +2291,7 @@ class FreeplayState extends MusicBeatState
 		var max:Int = Math.round(Math.max(0, Math.min(songs.length, lerpSelected + _drawDistance)));
 		for (i in min...max)
 		{
-			if (i < 0 || i >= grpSongs.members.length || i >= iconArray.length || i >= cardArray.length || i >= modTextArray.length || songs[i] == null)
+			if (i < 0 || i >= grpSongs.members.length || i >= iconArray.length || i >= cardArray.length || i >= cardAccentArray.length || i >= modTextArray.length || songs[i] == null)
 				continue;
 			if (query.length > 0 && !songMatchesFilter(songs[i], query))
 				continue;
@@ -2310,28 +2329,42 @@ class FreeplayState extends MusicBeatState
 			card.y = item.y - 10;
 			var isSelected = (i == curSelected) && !inDifficultySelect;
 			var cardColor = songs[i].color;
-			var darkestColor = FlxColor.interpolate(cardColor, FlxColor.BLACK, 0.5);
+			var cardFillColor = OptionsMenuTheme.difficultyCardFill(cardColor, isSelected);
+			var cardStrokeColor = OptionsMenuTheme.difficultyCardStroke(cardColor, isSelected);
 			var cardSignature:String = cardColor + ':' + isSelected;
 			if (i >= _cardVisualSignatures.length)
 				_cardVisualSignatures.resize(i + 1);
 			if (_cardVisualSignatures[i] != cardSignature)
 			{
-				MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, isSelected ? 3 : 2, darkestColor, OptionsMenuTheme.cardStroke(isSelected));
+				MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, isSelected ? 3 : 2, cardFillColor, cardStrokeColor);
 				_cardVisualSignatures[i] = cardSignature;
+			}
+
+			var accentBar:FlxSprite = cardAccentArray[i];
+			if (accentBar != null)
+			{
+				accentBar.visible = true;
+				accentBar.x = card.x + 12;
+				accentBar.y = card.y + 13;
+				accentBar.color = OptionsMenuTheme.cardAccent(isSelected);
+				accentBar.alpha = isSelected ? 1.0 : 0.72;
 			}
 
 			icon.x = card.x + 340;
 			item.x = card.x + 50;
+			item.color = OptionsMenuTheme.readableTextOn(cardFillColor);
 
 			var modText:FlxText = modTextArray[i];
 			if (modText == null)
 				continue;
+			var textBlockHeight:Float = item.height + 4 + modText.height;
+			var textStartY:Float = card.y + Math.max(12, (card.height - textBlockHeight) * 0.5);
+			item.y = textStartY;
 			modText.visible = true;
 			modText.x = item.x;
-			modText.y = item.y + 60;
-			modText.alpha = (i == curSelected) ? 0.8 : 0.5;
-			modText.color = OptionsMenuTheme.optionDescriptionColor(isSelected);
-			item.color = OptionsMenuTheme.optionTitleColor(isSelected);
+			modText.y = item.y + item.height + 4;
+			modText.alpha = (i == curSelected) ? 0.82 : 0.58;
+			modText.color = OptionsMenuTheme.readableMetaTextOn(cardFillColor);
 
 			_lastVisibles.push(i);
 		}
@@ -2851,16 +2884,18 @@ class DifficultySelector
 			var difference:Float = item.ID - lerpSelected;
 			item.y = (difference * 120) + (FlxG.height * 0.5) - 60;
 			var difficultyColor:Int = getDifficultyColor(item.text);
+			var isSelected:Bool = (i == curSelected);
+			var cardFillColor:Int = OptionsMenuTheme.difficultyCardFill(difficultyColor, isSelected);
 
 			var baseX:Float = (FlxG.width * 0.5) - (card.width * 0.5) + baseXOffset;
 			var targetX:Float = FlxMath.lerp(baseX + slideDistance, baseX, enterProgress);
 			card.x = targetX;
 			card.y = item.y - 15;
-			card.color = difficultyColor;
+			MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, isSelected ? 3 : 2, cardFillColor, OptionsMenuTheme.difficultyCardStroke(difficultyColor, isSelected));
 			
 			item.x = card.x + (card.width * 0.5) - (item.width * 0.5);
 			card.y = item.y - 15;
-			item.color = difficultyColor;
+			item.color = OptionsMenuTheme.difficultyTitleColor(difficultyColor, isSelected);
 			
 			// Posicionar texto de score/accuracy debajo de la dificultad
 			if (i < scoreTexts.members.length)
@@ -2870,9 +2905,9 @@ class DifficultySelector
 				{
 					scoreText.x = card.x + (card.width * 0.5) - (scoreText.width * 0.5);
 					scoreText.y = item.y + 50; // Más abajo del nombre de dificultad
-					scoreText.color = difficultyColor;
+					scoreText.color = OptionsMenuTheme.difficultyMetaColor(difficultyColor, isSelected);
 					
-					if (i == curSelected)
+					if (isSelected)
 					{
 						scoreText.alpha = 1.0 * enterProgress;
 					}
@@ -2883,7 +2918,7 @@ class DifficultySelector
 				}
 			}
 			
-			if (i == curSelected)
+			if (isSelected)
 			{
 				item.alpha = 1.0 * enterProgress;
 				card.alpha = 1.0 * enterProgress;

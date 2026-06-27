@@ -2,6 +2,7 @@ package backend.ui;
 
 import flixel.util.FlxDestroyUtil;
 import flixel.math.FlxPoint;
+import options.OptionsMenuTheme;
 
 class PsychUITab extends FlxSprite
 {
@@ -13,12 +14,13 @@ class PsychUITab extends FlxSprite
 	{
 		super();
 		makeGraphic(1, 1, FlxColor.WHITE);
-		color = FlxColor.BLACK;
+		color = OptionsMenuTheme.cardFill(false);
 		alpha = 0.6;
 
 		@:bypassAccessor this.name = name;
 		text = new FlxText(0, 0, 100, name);
 		text.alignment = CENTER;
+		text.color = OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false));
 	}
 
 	override function draw()
