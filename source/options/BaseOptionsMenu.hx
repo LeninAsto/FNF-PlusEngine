@@ -108,10 +108,51 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		addTouchPad('LEFT_FULL', 'A_B_C');
 	}
 
+	override function create()
+	{
+		super.create();
+		callOnCompanionScript('onOptionsMenuCreatePost', [getOptionsCopy()]);
+	}
+
 	public function addOption(option:Option) {
 		if(optionsArray == null || optionsArray.length < 1) optionsArray = [];
 		optionsArray.push(option);
 		return option;
+	}
+
+	public function setOptionsList(newOptions:Array<Option>):Void
+	{
+		optionsArray = (newOptions != null) ? newOptions.copy() : [];
+		if (curSelected >= optionsArray.length)
+			curSelected = Std.int(Math.max(0, optionsArray.length - 1));
+		rebuildOptionsVisuals();
+	}
+
+	public function removeOptionAt(index:Int):Option
+	{
+		if (optionsArray == null || index < 0 || index >= optionsArray.length)
+			return null;
+
+		var removed = optionsArray.splice(index, 1);
+		if (curSelected >= optionsArray.length)
+			curSelected = Std.int(Math.max(0, optionsArray.length - 1));
+		rebuildOptionsVisuals();
+		return removed.length > 0 ? removed[0] : null;
+	}
+
+	public function removeOptionByName(name:String):Option
+	{
+		if (optionsArray == null || name == null)
+			return null;
+
+		for (i in 0...optionsArray.length)
+		{
+			var option = optionsArray[i];
+			if (option == null) continue;
+			if (option.name == name || option.variable == name)
+				return removeOptionAt(i);
+		}
+		return null;
 	}
 
 	var nextAccept:Int = 5;
@@ -146,6 +187,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		}
 
 		if (controls.BACK) {
+			var backStop = callOnCompanionScript('onOptionsBack', [getCurrentOption(), curSelected]);
+			if (backStop == Function_Stop)
+				return;
 			close();
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 		}
@@ -157,6 +201,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 				case BOOL:
 					if(controls.ACCEPT)
 					{
+						var acceptStop = callOnCompanionScript('onOptionAccept', [getCurrentOption(), curSelected]);
+						if (acceptStop == Function_Stop)
+							return;
 						FlxG.sound.play(Paths.sound('scrollMenu'));
 						curOption.setValue((curOption.getValue() == true) ? false : true);
 						curOption.change();
@@ -168,6 +215,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 				case KEYBIND:
 					if(controls.ACCEPT)
 					{
+						var keybindStop = callOnCompanionScript('onOptionAccept', [getCurrentOption(), curSelected]);
+						if (keybindStop == Function_Stop)
+							return;
 						bindingBlack = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
 						bindingBlack.scale.set(FlxG.width, FlxG.height);
 						bindingBlack.updateHitbox();
@@ -527,10 +577,114 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		descBox.updateHitbox();
 
 		curOption = optionsArray[curSelected]; //shorter lol
+		callOnCompanionScript('onOptionSelectionChange', [curSelected, getCurrentOption()]);
 		FlxG.sound.play(Paths.sound('scrollMenu'));
 	}
 
 	function reloadCheckboxes()
 		for (checkbox in checkboxGroup)
 			checkbox.daValue = Std.string(optionsArray[checkbox.ID].getValue()) == 'true'; //Do not take off the Std.string() from this, it will break a thing in Mod Settings Menu
+
+	public function getOptionsCopy():Array<Option>
+		return optionsArray != null ? optionsArray.copy() : [];
+
+	public function getCurrentOption():Option
+		return curOption;
+
+	public function getCurrentOptionIndex():Int
+		return curSelected;
+
+	public function getOptionAt(index:Int):Option
+		return (optionsArray != null && index >= 0 && index < optionsArray.length) ? optionsArray[index] : null;
+
+	public function getOptionByName(name:String):Option
+	{
+		if (optionsArray == null || name == null) return null;
+		for (option in optionsArray)
+		{
+			if (option == null) continue;
+			if (option.name == name || option.variable == name)
+				return option;
+		}
+		return null;
+	}
+
+	public function selectOption(index:Int):Void
+	{
+		if (optionsArray == null || optionsArray.length < 1) return;
+		curSelected = FlxMath.wrap(index, 0, optionsArray.length - 1);
+		changeSelection(0);
+	}
+
+	public function rebuildOptionsVisuals():Void
+	{
+		if (optionsArray == null)
+			optionsArray = [];
+
+		for (i in 0...grpOptions.members.length)
+		{
+			var item = grpOptions.members[0];
+			item.kill();
+			grpOptions.remove(item, true);
+			item.destroy();
+		}
+		for (i in 0...grpTexts.members.length)
+		{
+			var text = grpTexts.members[0];
+			text.kill();
+			grpTexts.remove(text, true);
+			text.destroy();
+		}
+		for (i in 0...checkboxGroup.members.length)
+		{
+			var checkbox = checkboxGroup.members[0];
+			checkbox.kill();
+			checkboxGroup.remove(checkbox, true);
+			checkbox.destroy();
+		}
+
+		for (i in 0...optionsArray.length)
+		{
+			var optionText:Alphabet = new Alphabet(220, 260, optionsArray[i].name, false);
+			optionText.isMenuItem = true;
+			optionText.targetY = i;
+			grpOptions.add(optionText);
+
+			if(optionsArray[i].type == BOOL)
+			{
+				var checkbox:CheckboxThingie = new CheckboxThingie(optionText.x - 105, optionText.y, Std.string(optionsArray[i].getValue()) == 'true');
+				checkbox.sprTracker = optionText;
+				checkbox.ID = i;
+				checkboxGroup.add(checkbox);
+			}
+			else
+			{
+				optionText.x -= 80;
+				optionText.startPosition.x -= 80;
+				var valueText:AttachedText = new AttachedText('' + optionsArray[i].getValue(), optionText.width + 60);
+				valueText.sprTracker = optionText;
+				valueText.copyAlpha = true;
+				valueText.ID = i;
+				grpTexts.add(valueText);
+				optionsArray[i].child = valueText;
+			}
+			updateTextFrom(optionsArray[i]);
+		}
+
+		if (optionsArray.length > 0)
+		{
+			curSelected = Std.int(FlxMath.bound(curSelected, 0, optionsArray.length - 1));
+			changeSelection(0);
+			reloadCheckboxes();
+		}
+		else
+		{
+			curSelected = 0;
+			curOption = null;
+			descText.text = '';
+			descBox.setGraphicSize(1, 1);
+			descBox.updateHitbox();
+		}
+		callOnCompanionScript('onRebuildOptionsVisuals', [getOptionsCopy()]);
+	}
 }

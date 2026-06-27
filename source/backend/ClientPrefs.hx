@@ -28,11 +28,12 @@ import states.TitleState;
 	public var versionTextOnGameplay:Bool = false;
 	public var gameOverVibration:Bool = false;
 	public var fpsRework:Bool = true;
+	public var framerateMode:String = 'Interpolated';
 	public var mobileReceptorAlign:Bool = false; // Align receptors with hitbox lanes (mobile only, may break scripts)
 	#if windows
 	public var fullscreenMode:String = 'Borderless'; // 'Borderless', 'Borderless Fix', 'Exclusive'
 	#end
-	public var accuracySystem:String = 'Wife3'; // 'Wife3', 'Psych', 'Simple', 'osu!mania', 'DJMAX', 'ITG'
+	public var accuracySystem:String = 'Psych'; // 'Wife3', 'Psych', 'Simple', 'osu!mania', 'DJMAX', 'ITG'
 	public var badShitBreakCombo:Bool = false; // When true, Bad and Shit will break the combo
 	public var systemScoreMultiplier:String = 'Psych'; // 'Psych', 'Codename'
 	public var downScroll:Bool = false;
@@ -198,6 +199,7 @@ class ClientPrefs {
 	public static var data:SaveVariables = {};
 	public static var defaultData:SaveVariables = {};
 	public static var judgementCounter:Bool = false;
+	public static final FRAMERATE_MODES:Array<String> = ['Interpolated', 'Fixed', 'Psych'];
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
@@ -358,8 +360,13 @@ class ClientPrefs {
 			if (key != 'gameplaySettings' && Reflect.hasField(FlxG.save.data, key))
 				Reflect.setField(data, key, Reflect.field(FlxG.save.data, key));
 
-		// Fixed timestep is now always enabled to keep simulation and interpolation consistent.
-		data.fpsRework = true;
+		var storedFramerateMode:Dynamic = Reflect.field(FlxG.save.data, 'framerateMode');
+		if (storedFramerateMode == null)
+			data.framerateMode = (Reflect.field(FlxG.save.data, 'fpsRework') == false) ? 'Psych' : 'Interpolated';
+		else
+			data.framerateMode = Std.string(storedFramerateMode);
+		data.framerateMode = normalizeFramerateMode(data.framerateMode);
+		syncLegacyFpsReworkFlag();
 		
 		if(Main.fpsVar != null)
 			Main.fpsVar.visible = data.showFPS;
@@ -434,15 +441,35 @@ class ClientPrefs {
 
 	public static function applyFramePacing():Void
 	{
-		// Keep fixed timestep + interpolation always on for stable gameplay timing.
-		data.fpsRework = true;
-		var safeFramerate:Int = Std.int(Math.max(30, data.framerate));
-		var drawFramerate:Int = getInterpolatedDrawFramerate(safeFramerate);
+		data.framerateMode = normalizeFramerateMode(data.framerateMode);
+		syncLegacyFpsReworkFlag();
 
-		FlxG.fixedTimestep = true;
-		FlxG.updateFramerate = safeFramerate;
-		FlxG.drawFramerate = drawFramerate;
-		FlxG.maxElapsed = 1 / safeFramerate;
+		var safeFramerate:Int = Std.int(Math.max(30, data.framerate));
+		var drawFramerate:Int = safeFramerate;
+
+		switch (data.framerateMode)
+		{
+			case 'Psych':
+				FlxG.fixedTimestep = false;
+				FlxG.updateFramerate = safeFramerate;
+				FlxG.drawFramerate = safeFramerate;
+				FlxG.maxElapsed = 0.1;
+
+			case 'Fixed':
+				FlxG.fixedTimestep = true;
+				FlxG.updateFramerate = safeFramerate;
+				FlxG.drawFramerate = safeFramerate;
+				FlxG.maxElapsed = 1 / safeFramerate;
+
+			default:
+				drawFramerate = getInterpolatedDrawFramerate(safeFramerate);
+				FlxG.fixedTimestep = true;
+				FlxG.updateFramerate = safeFramerate;
+				FlxG.drawFramerate = drawFramerate;
+				FlxG.maxElapsed = 1 / safeFramerate;
+		}
+
+		drawFramerate = FlxG.drawFramerate;
 
 		#if (!html5 && !switch)
 		try
@@ -459,6 +486,40 @@ class ClientPrefs {
 			// Ignore targets that do not expose window frame rate at runtime.
 		}
 		#end
+	}
+
+	public static function getTargetWindowFramerate():Int
+	{
+		var safeFramerate:Int = Std.int(Math.max(30, data.framerate));
+		return switch (normalizeFramerateMode(data.framerateMode))
+		{
+			case 'Interpolated':
+				getInterpolatedDrawFramerate(safeFramerate);
+			default:
+				safeFramerate;
+		};
+	}
+
+	static function normalizeFramerateMode(mode:String):String
+	{
+		if (mode == null)
+			return 'Interpolated';
+
+		for (allowedMode in FRAMERATE_MODES)
+			if (allowedMode == mode)
+				return allowedMode;
+
+		return switch (mode.toLowerCase())
+		{
+			case 'psych': 'Psych';
+			case 'fixed': 'Fixed';
+			default: 'Interpolated';
+		};
+	}
+
+	static function syncLegacyFpsReworkFlag():Void
+	{
+		data.fpsRework = normalizeFramerateMode(data.framerateMode) != 'Psych';
 	}
 
 	static function getInterpolatedDrawFramerate(safeFramerate:Int):Int

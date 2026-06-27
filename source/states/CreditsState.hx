@@ -336,7 +336,7 @@ class CreditsState extends MusicBeatState
 				FlxTween.tween(linkHint, {alpha: 0}, 0.4, {ease: FlxEase.quadIn});
 				
 				new FlxTimer().start(0.5, function(tmr:FlxTimer) {
-					MusicBeatState.switchState(new MainMenuState());
+					MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
 				});
 			}
 		}

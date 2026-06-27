@@ -145,6 +145,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			'iconBounceType',
 			STRING,
 			['Old', 'D&D', 'NF', 'Default']);
+		addOption(option);
 
 		var option:Option = new Option('Time Text Bump',
 			'If unchecked, disables the time text bump animation on beat.',
@@ -156,6 +157,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			'If checked, shows the version text during gameplay.',
 			'versionTextOnGameplay',
 			BOOL);
+		addOption(option);
 		
 		var option:Option = new Option('Abbreviate Score',
 			'If enabled, the score will be abbreviated (e.g. 10.00K, 1.00M).',
@@ -194,15 +196,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 		option.onChange = onChangeWatermark;
-
-		#if native
-		var option:Option = new Option('VSync',
-			'If checked, Enables VSync fixing any screen tearing at the cost of capping the FPS to screen refresh rate.\n(Must restart the game to have an effect)',
-			'vsync',
-			BOOL);
-		option.onChange = onChangeVSync;
-		addOption(option);
-		#end
 		
 		var option:Option = new Option('Pause Music:',
 			"What song do you prefer for the Pause Screen?",
@@ -211,12 +204,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			['None', 'Tea Time', 'Breakfast', 'Breakfast (Pico)']);
 		addOption(option);
 		option.onChange = onChangePauseMusic;
-
-		var option:Option = new Option('Intro Video',
-		    'Show intro video when starting the game',
-			'showIntroVideo',
-			BOOL);
-		addOption(option);
 		
 		var option:Option = new Option('Vanilla Transition',
 		    'If checked, uses the vanilla Psych Engine transition instead of the custom one.',
@@ -554,9 +541,4 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			PlayState.instance.keyViewer.updateKeyColors();
 		}
 	}
-
-	#if native
-	function onChangeVSync()
-		lime.app.Application.current.window.vsync = ClientPrefs.data.vsync;
-	#end
 }

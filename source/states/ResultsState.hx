@@ -110,29 +110,29 @@ class ResultsState extends MusicBeatState
         var dateStr = LocaleUtils.formatDateTimeAccordingToDevice(now);
         
         var resulText = new FlxText(500, 12, infoWidth, Language.getPhrase('results_title', 'Results'), 60);
-        resulText.setFormat(Paths.font("aller.ttf"), 60, FlxColor.WHITE, "right");
+        resulText.setFormat(Paths.font("NotoSans-Medium.ttf"), 60, FlxColor.WHITE, "right");
         add(resulText);
 
         var topText = new FlxText(10, 5, infoWidth, songAndDiff, 28);
-        topText.setFormat(Paths.font("aller.ttf"), 28, FlxColor.WHITE, "left");
+        topText.setFormat(Paths.font("NotoSans-Medium.ttf"), 28, FlxColor.WHITE, "left");
         add(topText);
 
         var modText = new FlxText(10, 39, infoWidth, modOrGame, 22);
-        modText.setFormat(Paths.font("aller.ttf"), 22, FlxColor.WHITE, "left");
+        modText.setFormat(Paths.font("NotoSans-Medium.ttf"), 22, FlxColor.WHITE, "left");
         add(modText);
 
         var playedText = new FlxText(10, 65, infoWidth, Language.getPhrase('results_played_on', 'Played on') + ' $dateStr', 18);
-        playedText.setFormat(Paths.font("aller.ttf"), 18, FlxColor.WHITE, "left");
+        playedText.setFormat(Paths.font("NotoSans-Medium.ttf"), 18, FlxColor.WHITE, "left");
         add(playedText);
 
         var scoreY = 130;
         var scoreStr = StringTools.lpad("0", "0", 8);
         var scoreLabel = new FlxText(60, scoreY, 400, Language.getPhrase('results_score', 'Score') + ':', 34);
-        scoreLabel.setFormat(Paths.font("aller.ttf"), 34, FlxColor.WHITE, "left");
+        scoreLabel.setFormat(Paths.font("NotoSans-Medium.ttf"), 34, FlxColor.WHITE, "left");
         add(scoreLabel);
 
         scoreText = new FlxText(240, scoreY - 10, 400, scoreStr, 44);
-        scoreText.setFormat(Paths.font("aller.ttf"), 44, FlxColor.WHITE, "left");
+        scoreText.setFormat(Paths.font("NotoSans-Medium.ttf"), 44, FlxColor.WHITE, "left");
         add(scoreText);
 
         var leftX = 30;
@@ -141,35 +141,35 @@ class ResultsState extends MusicBeatState
         var judgSpacing = 90; // Más espacio
 
         flawlesss = new FlxText(leftX, judgY, 340, Language.getPhrase('judgement_flawlesss', 'flawlesss') + ': 0', 32);
-        flawlesss.setFormat(Paths.font("aller.ttf"), 32, 0xFFA17FFF, "left");
+        flawlesss.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, 0xFFA17FFF, "left");
         add(flawlesss);
 
         sicks = new FlxText(rightX, judgY, 340, Language.getPhrase('judgement_sicks', 'Sicks') + ': 0', 32);
-        sicks.setFormat(Paths.font("aller.ttf"), 32, 0xFF7FC9FF, "left");
+        sicks.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, 0xFF7FC9FF, "left");
         add(sicks);
 
         goods = new FlxText(leftX, judgY + judgSpacing, 340, Language.getPhrase('judgement_goods', 'Goods') + ': 0', 32);
-        goods.setFormat(Paths.font("aller.ttf"), 32, 0xFF7FFF8E, "left");
+        goods.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, 0xFF7FFF8E, "left");
         add(goods);
 
         bads = new FlxText(rightX, judgY + judgSpacing, 340, Language.getPhrase('judgement_bads', 'Bads') + ': 0', 32);
-        bads.setFormat(Paths.font("aller.ttf"), 32, 0xFF888888, "left");
+        bads.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, 0xFF888888, "left");
         add(bads);
 
         shits = new FlxText(leftX, judgY + judgSpacing * 2, 340, Language.getPhrase('judgement_shits', 'Shits') + ': 0', 32);
-        shits.setFormat(Paths.font("aller.ttf"), 32, 0xFFFF7F7F, "left");
+        shits.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, 0xFFFF7F7F, "left");
         add(shits);
 
         misses = new FlxText(rightX, judgY + judgSpacing * 2, 340, Language.getPhrase('judgement_misses', 'Misses') + ': 0', 32);
-        misses.setFormat(Paths.font("aller.ttf"), 32, FlxColor.RED, "left");
+        misses.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, FlxColor.RED, "left");
         add(misses);
 
         comboText = new FlxText(leftX, judgY + judgSpacing * 3 - 14, 700, Language.getPhrase('judgement_max_combo', 'Highest Combo') + ': 0', 26);
-        comboText.setFormat(Paths.font("aller.ttf"), 32, FlxColor.WHITE, "left");
+        comboText.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, FlxColor.WHITE, "left");
         add(comboText);
 
         accText = new FlxText(leftX, judgY + judgSpacing * 3 + 20, 700, Language.getPhrase('results_accuracy', 'Accuracy') + ': 0%', 26);
-        accText.setFormat(Paths.font("aller.ttf"), 32, FlxColor.WHITE, "left");
+        accText.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, FlxColor.WHITE, "left");
         add(accText);
 
         var ratingLetter = params.ratingName != null ? params.ratingName : "";
@@ -178,24 +178,24 @@ class ResultsState extends MusicBeatState
         var ratingX = FlxG.width - 525; 
         var ratingY = judgY + 25;
         var ratingText = new FlxText(ratingX, ratingY, ratingW, ratingLetter, 70);
-        ratingText.setFormat(Paths.font("aller.ttf"), 70, FlxColor.YELLOW, "center");
+        ratingText.setFormat(Paths.font("NotoSans-Medium.ttf"), 70, FlxColor.YELLOW, "center");
         add(ratingText);
 
         var fcText = new FlxText(ratingX, ratingY + 90, ratingW, ratingFC, 54); 
-        fcText.setFormat(Paths.font("aller.ttf"), 54, FlxColor.CYAN, "center");
+        fcText.setFormat(Paths.font("NotoSans-Medium.ttf"), 54, FlxColor.CYAN, "center");
         add(fcText);
 
         var yBottom = FlxG.height - 110;
         if (params.isPractice != null && params.isPractice) {
             var practiceText = new FlxText(0, yBottom, FlxG.width, Language.getPhrase('results_practice_mode', 'Played in practice mode'), 22);
-            practiceText.setFormat(Paths.font("aller.ttf"), 22, FlxColor.YELLOW, "center");
+            practiceText.setFormat(Paths.font("NotoSans-Medium.ttf"), 22, FlxColor.YELLOW, "center");
             add(practiceText);
             yBottom += 28;
         }
 
         var engineInfo = Language.getPhrase('psych_engine_version', 'Psych Engine v') + MainMenuState.psychEngineVersion + "\n" + Language.getPhrase('fnf_version', 'Friday Night Funkin\' v') + "0.2.8";
         var engineText = new FlxText(0, FlxG.height - 100, FlxG.width, engineInfo, 25);
-        engineText.setFormat(Paths.font("aller.ttf"), 25, FlxColor.CYAN, "center");
+        engineText.setFormat(Paths.font("NotoSans-Medium.ttf"), 25, FlxColor.CYAN, "center");
         add(engineText);
 
         #if mobile
@@ -203,7 +203,7 @@ class ResultsState extends MusicBeatState
         #else
         var continueText = new FlxText(50, FlxG.height - 75, 0, Language.getPhrase('results_press_enter', 'Press Enter\nto Continue'), 26);
         #end
-        continueText.setFormat(Paths.font("aller.ttf"), 26, FlxColor.WHITE, "center");
+        continueText.setFormat(Paths.font("NotoSans-Medium.ttf"), 26, FlxColor.WHITE, "center");
         add(continueText);
 
         #if mobile
@@ -303,9 +303,9 @@ class ResultsState extends MusicBeatState
             
             // Si es una semana completa, regresar al Story Menu, sino al Freeplay
             if (params.isWeek != null && params.isWeek == true) {
-                MusicBeatState.switchState(new StoryMenuState());
+                MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
             } else {
-                MusicBeatState.switchState(new FreeplayState());
+                MusicBeatState.switchState(backend.ScriptableState.tryCreate('FreeplayState', new FreeplayState()));
             }
         }
     }

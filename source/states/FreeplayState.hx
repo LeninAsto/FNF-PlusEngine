@@ -87,7 +87,14 @@ class FreeplayState extends MusicBeatState
 	private var iconArray:Array<HealthIcon> = [];
 
 	public var bg:FlxSprite;
+	public var bgTransition:FlxSprite;
 	public var intendedColor:Int;
+	var bgSwapTimer:FlxTimer = null;
+	var bgFadeTweenIn:FlxTween = null;
+	var bgFadeTweenOut:FlxTween = null;
+	var currentBgSignature:String = null;
+	var pendingBgSignature:String = null;
+	static inline var BG_SWAP_DELAY:Float = 2.0;
 
 	public var missingTextBG:FlxSprite;
 	public var missingText:FlxText;
@@ -165,6 +172,7 @@ class FreeplayState extends MusicBeatState
 	public var _vizCurrentHeights:Array<Float> = [];
 	public var _vizTargetHeights:Array<Float> = [];
 	public var _vizUpdateAccum:Float = 0;
+	var _cardVisualSignatures:Array<String> = [];
 
 	#if (MODS_ALLOWED && sys && !mobile)
 	var droppedModPath:String = null;
@@ -181,25 +189,133 @@ class FreeplayState extends MusicBeatState
 		return modFolder;
 	}
 
-	function loadSelectedFreeplayBackground():Void
+	function getFreeplayBackgroundSignature(?songIndex:Int = -1):String
+	{
+		if (songIndex < 0)
+			songIndex = curSelected;
+
+		if (songs == null || songIndex < 0 || songIndex >= songs.length || songs[songIndex] == null)
+			return 'default';
+
+		var modFolder:String = songs[songIndex].isStepMania ? null : songs[songIndex].folder;
+		if (modFolder == null || modFolder.length == 0)
+			return 'default';
+		return modFolder;
+	}
+
+	function resolveFreeplayBackgroundGraphic(?songIndex:Int = -1):FlxGraphic
+	{
+		if (songIndex < 0)
+			songIndex = curSelected;
+
+		var bgGraphic:FlxGraphic = null;
+		var signature = getFreeplayBackgroundSignature(songIndex);
+		if (signature != 'default')
+			bgGraphic = Paths.image('menuDesat', signature);
+		if (bgGraphic == null)
+			bgGraphic = Paths.image('menuDesat');
+		return bgGraphic;
+	}
+
+	function applyFreeplayBackgroundGraphic(target:FlxSprite, bgGraphic:FlxGraphic):Void
+	{
+		if (target == null || bgGraphic == null)
+			return;
+
+		target.loadGraphic(bgGraphic);
+		target.antialiasing = ClientPrefs.data.antialiasing;
+		target.setGraphicSize(FlxG.width, FlxG.height);
+		target.updateHitbox();
+		target.screenCenter();
+	}
+
+	function loadSelectedFreeplayBackground(?force:Bool = false):Void
 	{
 		if (bg == null)
 			return;
 
-		var modFolder:String = getSelectedSongModFolder();
-		var bgGraphic:FlxGraphic = null;
-		if (modFolder != null)
-			bgGraphic = Paths.image('menuDesat', modFolder);
-		if (bgGraphic == null)
-			bgGraphic = Paths.image('menuDesat');
+		var signature = getFreeplayBackgroundSignature();
+		if (!force && signature == currentBgSignature)
+			return;
+
+		var bgGraphic = resolveFreeplayBackgroundGraphic();
 		if (bgGraphic == null)
 			return;
 
-		bg.loadGraphic(bgGraphic);
-		bg.antialiasing = ClientPrefs.data.antialiasing;
-		bg.setGraphicSize(FlxG.width, FlxG.height);
-		bg.updateHitbox();
-		bg.screenCenter();
+		applyFreeplayBackgroundGraphic(bg, bgGraphic);
+		bg.alpha = 1;
+		bg.visible = true;
+		if (bgTransition != null)
+		{
+			bgTransition.alpha = 0;
+			bgTransition.visible = false;
+		}
+		currentBgSignature = signature;
+		pendingBgSignature = null;
+	}
+
+	function queueSelectedFreeplayBackgroundSwap():Void
+	{
+		pendingBgSignature = getFreeplayBackgroundSignature();
+		if (pendingBgSignature == currentBgSignature)
+		{
+			if (bgSwapTimer != null)
+			{
+				bgSwapTimer.cancel();
+				bgSwapTimer = null;
+			}
+			return;
+		}
+
+		if (bgSwapTimer != null)
+			bgSwapTimer.cancel();
+
+		bgSwapTimer = new FlxTimer().start(BG_SWAP_DELAY, function(_:FlxTimer)
+		{
+			bgSwapTimer = null;
+			performSelectedFreeplayBackgroundSwap();
+		});
+	}
+
+	function performSelectedFreeplayBackgroundSwap():Void
+	{
+		if (bg == null || bgTransition == null)
+			return;
+
+		var signature = getFreeplayBackgroundSignature();
+		if (signature == currentBgSignature || signature != pendingBgSignature)
+			return;
+
+		var bgGraphic = resolveFreeplayBackgroundGraphic();
+		if (bgGraphic == null)
+			return;
+
+		applyFreeplayBackgroundGraphic(bgTransition, bgGraphic);
+		bgTransition.color = intendedColor;
+		bgTransition.alpha = 0;
+		bgTransition.visible = true;
+
+		if (bgFadeTweenIn != null) bgFadeTweenIn.cancel();
+		if (bgFadeTweenOut != null) bgFadeTweenOut.cancel();
+
+		bgFadeTweenOut = FlxTween.tween(bg, {alpha: 0}, 0.35, {ease: FlxEase.quadOut});
+		bgFadeTweenIn = FlxTween.tween(bgTransition, {alpha: 1}, 0.35, {
+			ease: FlxEase.quadOut,
+			onComplete: function(_:FlxTween)
+			{
+				var previousBg = bg;
+				bg = bgTransition;
+				bgTransition = previousBg;
+				bg.alpha = 1;
+				bg.visible = true;
+				bgTransition.alpha = 0;
+				bgTransition.visible = false;
+				currentBgSignature = signature;
+				pendingBgSignature = null;
+				bgFadeTweenIn = null;
+				bgFadeTweenOut = null;
+			}
+		});
 	}
 
 	function refreshVizBarsLayout():Void
@@ -246,9 +362,9 @@ class FreeplayState extends MusicBeatState
 		{
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
-			MusicBeatState.switchState(new states.ErrorState("NO WEEKS ADDED FOR FREEPLAY\n\nPress " + accept + " to go to the Week Editor Menu.\nPress " + reject + " to return to Main Menu.",
+			MusicBeatState.switchState(backend.ScriptableState.tryCreate('ErrorState', new states.ErrorState("NO WEEKS ADDED FOR FREEPLAY\n\nPress " + accept + " to go to the Week Editor Menu.\nPress " + reject + " to return to Main Menu.",
 				function() MusicBeatState.switchState(new states.editors.WeekEditorState()),
-				function() MusicBeatState.switchState(new states.MainMenuState())));
+				function() MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new states.MainMenuState())))));
 			return;
 		}
 
@@ -288,8 +404,10 @@ class FreeplayState extends MusicBeatState
 		loadStepManiaFiles();
 
 		bg = new FlxSprite();
+		bgTransition = new FlxSprite();
 		add(bg);
-		loadSelectedFreeplayBackground();
+		add(bgTransition);
+		loadSelectedFreeplayBackground(true);
 		bgZoom = defaultBgZoom = 1;
 		
 		blackOverlay = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
@@ -927,6 +1045,12 @@ class FreeplayState extends MusicBeatState
 		bg.scale.set(bgZoom, bgZoom);
 		bg.updateHitbox();
 		bg.screenCenter();
+		if (bgTransition != null)
+		{
+			bgTransition.scale.set(bgZoom, bgZoom);
+			bgTransition.updateHitbox();
+			bgTransition.screenCenter();
+		}
 
 		lerpScore = Math.floor(FlxMath.lerp(intendedScore, lerpScore, Math.exp(-elapsed * 24)));
 		lerpRating = FlxMath.lerp(intendedRating, lerpRating, Math.exp(-elapsed * 12));
@@ -1063,11 +1187,16 @@ class FreeplayState extends MusicBeatState
 			{
 				exitDifficultySelect();
 			}
-			else 
+			else
 			{
 				persistentUpdate = false;
 				FlxG.sound.play(Paths.sound('cancelMenu'));
-				MusicBeatState.switchState(new MainMenuState());
+				stopInstPreview(false);
+				destroyFreeplayVocals();
+				FlxG.sound.music.stop();
+				FlxG.sound.playMusic(Paths.music('freakyMenu'), 0.7, true);
+				stopMusicPlay = true;
+				MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
 			}
 		}
 
@@ -1075,7 +1204,7 @@ class FreeplayState extends MusicBeatState
 		{
 			persistentUpdate = false;
 			removeTouchPad();
-			openSubState(new GameplayChangersSubstate());
+			openSubState(backend.ScriptableSubstate.tryCreate('GameplayChangersSubstate', new GameplayChangersSubstate()));
 		}
 		if(!searchFocused && (FlxG.keys.justPressed.SPACE || (touchPad != null && touchPad.buttonX.justPressed)))
 		{
@@ -1264,7 +1393,7 @@ class FreeplayState extends MusicBeatState
 		{
 		persistentUpdate = false;
 		removeTouchPad();
-		openSubState(new ResetScoreSubState(songs[curSelected].songName, curDifficulty, songs[curSelected].songCharacter));
+		openSubState(backend.ScriptableSubstate.tryCreate('ResetScoreSubState', new ResetScoreSubState(songs[curSelected].songName, curDifficulty, songs[curSelected].songCharacter)));
 		FlxG.sound.play(Paths.sound('scrollMenu'));
 	}
 
@@ -1375,7 +1504,7 @@ class FreeplayState extends MusicBeatState
 		_updateSongLastDifficulty();
 		if(playSound) FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 
-		loadSelectedFreeplayBackground();
+		queueSelectedFreeplayBackgroundSwap();
 
 		var newColor:Int = songs[curSelected].color;
 		if(newColor != intendedColor)
@@ -2117,6 +2246,13 @@ class FreeplayState extends MusicBeatState
 	var _lastVisibles:Array<Int> = [];
 	public function updateTexts(elapsed:Float = 0.0)
 	{
+		var themeSignature = OptionsMenuTheme.signature();
+		if (themeSignature != lastThemeSignature)
+		{
+			lastThemeSignature = themeSignature;
+			_cardVisualSignatures = [];
+		}
+
 		lerpSelected = FlxMath.lerp(curSelected, lerpSelected, Math.exp(-elapsed * 9.6));
 		var query:String = StringTools.trim(songSearchQuery != null ? songSearchQuery.toLowerCase() : "");
 		for (i in _lastVisibles)
@@ -2175,7 +2311,14 @@ class FreeplayState extends MusicBeatState
 			var isSelected = (i == curSelected) && !inDifficultySelect;
 			var cardColor = songs[i].color;
 			var darkestColor = FlxColor.interpolate(cardColor, FlxColor.BLACK, 0.5);
-			MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, isSelected ? 3 : 2, darkestColor, OptionsMenuTheme.cardStroke(isSelected));
+			var cardSignature:String = cardColor + ':' + isSelected;
+			if (i >= _cardVisualSignatures.length)
+				_cardVisualSignatures.resize(i + 1);
+			if (_cardVisualSignatures[i] != cardSignature)
+			{
+				MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, isSelected ? 3 : 2, darkestColor, OptionsMenuTheme.cardStroke(isSelected));
+				_cardVisualSignatures[i] = cardSignature;
+			}
 
 			icon.x = card.x + 340;
 			item.x = card.x + 50;
@@ -2217,7 +2360,7 @@ class FreeplayState extends MusicBeatState
 		WeekData.reloadWeekFiles(false);
 		Mods.loadTopMod();
 		persistentUpdate = false;
-		MusicBeatState.switchState(new FreeplayState());
+		MusicBeatState.switchState(backend.ScriptableState.tryCreate('FreeplayState', new FreeplayState()));
 	}
 
 	function copyModFolderRecursive(source:String, target:String):Void
@@ -2420,6 +2563,21 @@ class FreeplayState extends MusicBeatState
 		{
 			songInfoCardLoadTimer.cancel();
 			songInfoCardLoadTimer = null;
+		}
+		if (bgSwapTimer != null)
+		{
+			bgSwapTimer.cancel();
+			bgSwapTimer = null;
+		}
+		if (bgFadeTweenIn != null)
+		{
+			bgFadeTweenIn.cancel();
+			bgFadeTweenIn = null;
+		}
+		if (bgFadeTweenOut != null)
+		{
+			bgFadeTweenOut.cancel();
+			bgFadeTweenOut = null;
 		}
 		if (songInfoCardTween != null)
 		{

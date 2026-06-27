@@ -347,6 +347,7 @@ class HScript extends Iris
 		#end
 		set('CustomState', psychlua.CustomState);
 		set('ScriptableState', backend.ScriptableState);
+		set('ScriptableSubstate', backend.ScriptableSubstate);
 		set('PlayState', PlayState);
 		set('TitleState', states.TitleState);
 		set('MainMenuState', states.MainMenuState);

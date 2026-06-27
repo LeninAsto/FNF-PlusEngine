@@ -29,7 +29,8 @@ class PauseSubState extends MusicBeatSubstate
 {
     public var grpMenuShit:FlxTypedGroup<Alphabet>;
     public var menuItems:Array<String> = [];
-    public static var menuItemsOG:Array<String> = ['Resume', 'Restart Song', 'Chart Editor', 'Change Difficulty', 'Options', 'Exit to menu'];
+    public static final MENU_ITEMS_BASE:Array<String> = ['Resume', 'Restart Song', 'Chart Editor', 'Change Difficulty', 'Options', 'Exit to menu'];
+    public var menuItemsDefault:Array<String> = [];
     public var difficultyChoices = [];
     public var curSelected:Int = 0;
     public var pauseMusic:FlxSound;
@@ -61,25 +62,26 @@ class PauseSubState extends MusicBeatSubstate
 	function createV()
 	{
 		LocaleUtils.loadDeviceDateTimeSettings();
+		menuItemsDefault = MENU_ITEMS_BASE.copy();
 		
-		if(Difficulty.list.length < 2) menuItemsOG.remove('Change Difficulty'); //No need to change difficulty if there is only one!
+		if(Difficulty.list.length < 2) menuItemsDefault.remove('Change Difficulty'); //No need to change difficulty if there is only one!
 		if(PlayState.chartingMode)
 		{
-			menuItemsOG.insert(2, 'Leave Charting Mode');
+			menuItemsDefault.insert(2, 'Leave Charting Mode');
 			var num:Int = 0;
 			if(!PlayState.instance.startingSong)
 			{
 				num = 1;
-				menuItemsOG.insert(3, 'Skip Time');
+				menuItemsDefault.insert(3, 'Skip Time');
 			}
-			menuItemsOG.insert(3 + num, 'End Song');
-			menuItemsOG.insert(4 + num, 'Toggle Practice Mode');
-			menuItemsOG.insert(5 + num, 'Toggle Botplay');
+			menuItemsDefault.insert(3 + num, 'End Song');
+			menuItemsDefault.insert(4 + num, 'Toggle Practice Mode');
+			menuItemsDefault.insert(5 + num, 'Toggle Botplay');
 		} else if(PlayState.instance.practiceMode && !PlayState.instance.startingSong)
-			menuItemsOG.insert(3, 'Skip Time');
+			menuItemsDefault.insert(3, 'Skip Time');
 		if(PlayState.instance.videoCutscene != null)
-			menuItemsOG.insert(1, 'Skip Video');
-		menuItems = menuItemsOG;
+			menuItemsDefault.insert(1, 'Skip Video');
+		menuItems = menuItemsDefault.copy();
 
 		for (i in 0...Difficulty.list.length) {
 			var diff:String = Difficulty.getString(i);
@@ -280,6 +282,10 @@ class PauseSubState extends MusicBeatSubstate
 
 		if (controls.ACCEPT && (cantUnpause <= 0 || !controls.controllerMode))
 		{
+			var acceptStop = callOnCompanionScript('onAcceptOption', [daSelected, curSelected, menuItems == difficultyChoices]);
+			if (acceptStop == Function_Stop)
+				return;
+
 			if (menuItems == difficultyChoices)
 			{
 				var songLowercase:String = Paths.formatToSongPath(PlayState.SONG.song);
@@ -316,7 +322,7 @@ class PauseSubState extends MusicBeatSubstate
 				}
 
 
-				menuItems = menuItemsOG;
+				menuItems = menuItemsDefault.copy();
 				regenMenu();
 			}
 
@@ -374,7 +380,7 @@ class PauseSubState extends MusicBeatSubstate
 					PlayState.instance.paused = true; // For lua
 					PlayState.instance.vocals.volume = 0;
 					PlayState.instance.canResync = false;
-					MusicBeatState.switchState(new OptionsState());
+					MusicBeatState.switchState(backend.ScriptableState.tryCreate('OptionsState', new OptionsState()));
 					if(ClientPrefs.data.pauseMusic != 'None')
 					{
 						FlxG.sound.playMusic(Paths.music(Paths.formatToSongPath(ClientPrefs.data.pauseMusic)), pauseMusic.volume);
@@ -391,9 +397,9 @@ class PauseSubState extends MusicBeatSubstate
 					
 					Mods.loadTopMod();
 					if(PlayState.isStoryMode)
-						MusicBeatState.switchState(new StoryMenuState());
+						MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
 					else
-						MusicBeatState.switchState(new FreeplayState());
+						MusicBeatState.switchState(backend.ScriptableState.tryCreate('FreeplayState', new FreeplayState()));
 				    
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 					PlayState.changedDifficulty = false;
@@ -449,6 +455,9 @@ class PauseSubState extends MusicBeatSubstate
 	function changeSelection(change:Int = 0):Void
 	{
 		curSelected = FlxMath.wrap(curSelected + change, 0, menuItems.length - 1);
+		var stop = callOnCompanionScript('onChangeSelection', [curSelected, getSelectedMenuItem()]);
+		if (stop == Function_Stop)
+			return;
 		for (num => item in grpMenuShit.members)
 		{
 			item.targetY = num - curSelected;
@@ -498,6 +507,7 @@ class PauseSubState extends MusicBeatSubstate
 		}
 		curSelected = 0;
 		changeSelection();
+		callOnCompanionScript('onRegenMenu', [menuItems]);
 	}
 	
 	function updateSkipTextStuff()
@@ -511,4 +521,86 @@ class PauseSubState extends MusicBeatSubstate
 
 	function updateSkipTimeText()
 		skipTimeText.text = FlxStringUtil.formatTime(Math.max(0, Math.floor(curTime / 1000)), false) + ' / ' + FlxStringUtil.formatTime(Math.max(0, Math.floor(FlxG.sound.music.length / 1000)), false);
+
+	public function getSelectedMenuItem():Null<String>
+		return (curSelected >= 0 && curSelected < menuItems.length) ? menuItems[curSelected] : null;
+
+	public function getMenuItemsCopy():Array<String>
+		return menuItems.copy();
+
+	public function getDefaultMenuItemsCopy():Array<String>
+		return menuItemsDefault.copy();
+
+	public function setMenuItems(newItems:Array<String>, ?regen:Bool = true):Void
+	{
+		menuItems = newItems != null ? newItems.copy() : [];
+		if (regen)
+			regenMenu();
+	}
+
+	public function resetMenuItems(?regen:Bool = true):Void
+	{
+		menuItems = menuItemsDefault.copy();
+		if (regen)
+			regenMenu();
+	}
+
+	public function showDifficultyMenu(?regen:Bool = true):Void
+	{
+		menuItems = difficultyChoices.copy();
+		if (regen)
+			regenMenu();
+	}
+
+	public function addMenuItem(item:String, ?index:Int = -1, ?regen:Bool = true):Void
+	{
+		if (item == null || item.length < 1) return;
+		if (index < 0 || index > menuItems.length)
+			menuItems.push(item);
+		else
+			menuItems.insert(index, item);
+		if (regen)
+			regenMenu();
+	}
+
+	public function removeMenuItem(item:String, ?regen:Bool = true):Bool
+	{
+		var removed = menuItems.remove(item);
+		if (removed && regen)
+			regenMenu();
+		return removed;
+	}
+
+	public function removeMenuItemAt(index:Int, ?regen:Bool = true):Bool
+	{
+		if (index < 0 || index >= menuItems.length) return false;
+		menuItems.splice(index, 1);
+		if (regen)
+			regenMenu();
+		return true;
+	}
+
+	public function hasMenuItem(item:String):Bool
+		return menuItems.contains(item);
+
+	public function selectMenuItem(index:Int, ?playSound:Bool = true):Void
+	{
+		if (menuItems.length < 1) return;
+		curSelected = FlxMath.wrap(index, 0, menuItems.length - 1);
+		var stop = callOnCompanionScript('onChangeSelection', [curSelected, getSelectedMenuItem()]);
+		if (stop == Function_Stop)
+			return;
+		for (num => item in grpMenuShit.members)
+		{
+			item.targetY = num - curSelected;
+			item.alpha = item.targetY == 0 ? 1 : 0.6;
+		}
+		missingText.visible = false;
+		missingTextBG.visible = false;
+		if (playSound)
+			FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+	}
+
+	public function rebuildMenu():Void
+		regenMenu();
 }

@@ -88,6 +88,134 @@ class ScriptableState extends MusicBeatState
 		_fallbackState = fallbackState;
 	}
 
+	public function hasStateMethod(methodName:String):Bool
+	{
+		return _resolveCallableMethodTarget(methodName) != null;
+	}
+
+	public function callStateMethod(methodName:String, ?args:Array<Dynamic>, ?defaultValue:Dynamic = null):Dynamic
+	{
+		if (args == null) args = [];
+
+		try
+		{
+			var resolved = _resolveCallableMethodTarget(methodName);
+			if (resolved == null)
+			{
+				trace('[ScriptableState:$stateName] Tried to call missing state method "$methodName".');
+				return defaultValue;
+			}
+
+			return Reflect.callMethod(resolved.target, resolved.method, args);
+		}
+		catch (e:Dynamic)
+		{
+			trace('[ScriptableState:$stateName] Error calling state method "$methodName": $e');
+		}
+
+		return defaultValue;
+	}
+
+	public function hasStateField(fieldName:String):Bool
+	{
+		return _resolveFieldTarget(fieldName) != null;
+	}
+
+	public function getStateField(fieldName:String, ?defaultValue:Dynamic = null):Dynamic
+	{
+		try
+		{
+			var resolved = _resolveFieldTarget(fieldName);
+			if (resolved == null)
+				return defaultValue;
+
+			return Reflect.field(resolved, fieldName);
+		}
+		catch (e:Dynamic)
+		{
+			trace('[ScriptableState:$stateName] Error reading state field "$fieldName": $e');
+		}
+
+		return defaultValue;
+	}
+
+	public function setStateField(fieldName:String, value:Dynamic):Dynamic
+	{
+		try
+		{
+			var resolved = _resolveFieldTarget(fieldName);
+			if (resolved == null)
+			{
+				trace('[ScriptableState:$stateName] Tried to set missing state field "$fieldName".');
+				return value;
+			}
+
+			Reflect.setField(resolved, fieldName, value);
+		}
+		catch (e:Dynamic)
+		{
+			trace('[ScriptableState:$stateName] Error writing state field "$fieldName": $e');
+		}
+
+		return value;
+	}
+
+	function _addTouchPadScript(d:String, a:String):Void
+	{
+		addTouchPad(d, a);
+		_refreshScriptMobileRefs();
+	}
+
+	function _removeTouchPadScript():Void
+	{
+		removeTouchPad();
+		_refreshScriptMobileRefs();
+	}
+
+	function _addTouchPadCameraScript(?t:Bool = false):Void
+	{
+		addTouchPadCamera(t);
+		_refreshScriptMobileRefs();
+	}
+
+	function _addMobileControlsScript(?t:Bool = false):Void
+	{
+		addMobileControls(t);
+		_refreshScriptMobileRefs();
+	}
+
+	function _removeMobileControlsScript():Void
+	{
+		removeMobileControls();
+		_refreshScriptMobileRefs();
+	}
+
+	function _resolveCallableMethodTarget(methodName:String):Dynamic
+	{
+		if (methodName == null || methodName.length < 1) return null;
+
+		var ownMethod:Dynamic = Reflect.field(this, methodName);
+		if (ownMethod != null && Reflect.isFunction(ownMethod))
+			return {target: this, method: ownMethod};
+
+		if (_fallbackState != null)
+		{
+			var fallbackMethod:Dynamic = Reflect.field(_fallbackState, methodName);
+			if (fallbackMethod != null && Reflect.isFunction(fallbackMethod))
+				return {target: _fallbackState, method: fallbackMethod};
+		}
+
+		return null;
+	}
+
+	function _resolveFieldTarget(fieldName:String):Dynamic
+	{
+		if (fieldName == null || fieldName.length < 1) return null;
+		if (Reflect.hasField(this, fieldName)) return this;
+		if (_fallbackState != null && Reflect.hasField(_fallbackState, fieldName)) return _fallbackState;
+		return null;
+	}
+
 	// ─── Static helpers ────────────────────────────────────────────────────────
 
 	/**
@@ -340,6 +468,16 @@ class ScriptableState extends MusicBeatState
 			_script.set('stateName',     stateName);
 			_script.set('scriptableState', this);
 			_script.set('controls',      backend.Controls.instance);
+			_script.set('hasStateMethod', this.hasStateMethod);
+			_script.set('callStateMethod', this.callStateMethod);
+			_script.set('hasStateField', this.hasStateField);
+			_script.set('getStateField', this.getStateField);
+			_script.set('setStateField', this.setStateField);
+			_script.set('hasGameMethod', this.hasStateMethod);
+			_script.set('callGameMethod', this.callStateMethod);
+			_script.set('hasGameField', this.hasStateField);
+			_script.set('getGameField', this.getStateField);
+			_script.set('setGameField', this.setStateField);
 
 			// Load the shared state preset (defines boilerplate helpers
 			// so individual state scripts don't have to repeat them).
@@ -389,11 +527,11 @@ class ScriptableState extends MusicBeatState
 				return variables.exists(n) ? variables.get(n) : def);
 
 			// Mobile helpers
-			_script.set('addTouchPad',         function(d:String, a:String) addTouchPad(d, a));
-			_script.set('removeTouchPad',       function() removeTouchPad());
-			_script.set('addTouchPadCamera',    function(?t:Bool = false) addTouchPadCamera(t));
-			_script.set('addMobileControls',    function(?t:Bool = false) addMobileControls(t));
-			_script.set('removeMobileControls', function() removeMobileControls());
+			_script.set('addTouchPad',         _addTouchPadScript);
+			_script.set('removeTouchPad',       _removeTouchPadScript);
+			_script.set('addTouchPadCamera',    _addTouchPadCameraScript);
+			_script.set('addMobileControls',    _addMobileControlsScript);
+			_script.set('removeMobileControls', _removeMobileControlsScript);
 
 			// Try to find a class definition named after the state
 			var classDef:ScriptClassHandler = _script.getScriptedClass(stateName);
@@ -419,9 +557,21 @@ class ScriptableState extends MusicBeatState
 						_scriptedObj.__interp.variables.set('stateName',     stateName);
 						_scriptedObj.__interp.variables.set('openSubState',  this.openSubState);
 						_scriptedObj.__interp.variables.set('scriptableState', this);
+						_scriptedObj.__interp.variables.set('hasStateMethod', this.hasStateMethod);
+						_scriptedObj.__interp.variables.set('callStateMethod', this.callStateMethod);
+						_scriptedObj.__interp.variables.set('hasStateField', this.hasStateField);
+						_scriptedObj.__interp.variables.set('getStateField', this.getStateField);
+						_scriptedObj.__interp.variables.set('setStateField', this.setStateField);
+						_scriptedObj.__interp.variables.set('hasGameMethod', this.hasStateMethod);
+						_scriptedObj.__interp.variables.set('callGameMethod', this.callStateMethod);
+						_scriptedObj.__interp.variables.set('hasGameField', this.hasStateField);
+						_scriptedObj.__interp.variables.set('getGameField', this.getStateField);
+						_scriptedObj.__interp.variables.set('setGameField', this.setStateField);
 					}
 				}
 			}
+
+			_refreshScriptMobileRefs();
 
 			return true;
 		}
@@ -513,6 +663,27 @@ class ScriptableState extends MusicBeatState
 			this.persistentUpdate = _script.get('persistentUpdate');
 		if (_script.exists('persistentDraw'))
 			this.persistentDraw = _script.get('persistentDraw');
+	}
+
+	function _refreshScriptMobileRefs():Void
+	{
+		if (_script != null)
+		{
+			_script.set('touchPad', this.touchPad);
+			_script.set('touchPadCam', this.touchPadCam);
+			_script.set('mobileControls', this.mobileControls);
+			_script.set('mobileControlsInstance', this.mobileControls != null ? this.mobileControls.instance : null);
+			_script.set('mobileControlsCam', this.mobileControlsCam);
+		}
+
+		if (_scriptedObj != null && _scriptedObj.__interp != null)
+		{
+			_scriptedObj.__interp.variables.set('touchPad', this.touchPad);
+			_scriptedObj.__interp.variables.set('touchPadCam', this.touchPadCam);
+			_scriptedObj.__interp.variables.set('mobileControls', this.mobileControls);
+			_scriptedObj.__interp.variables.set('mobileControlsInstance', this.mobileControls != null ? this.mobileControls.instance : null);
+			_scriptedObj.__interp.variables.set('mobileControlsCam', this.mobileControlsCam);
+		}
 	}
 	#end
 

@@ -237,7 +237,7 @@ class Note extends FlxSprite
 					gfNote = true;
 			}
 			if (value != null && value.length > 1) NoteTypesConfig.applyNoteTypeData(this, value);
-			if (hitsound != 'hitsound' && hitsoundVolume > 0) Paths.sound(hitsound); //precache new sound for being idiot-proof
+			if (hitsound != 'hitsound' && (ClientPrefs.data.hitSounds != "None" || hitsoundForce) && hitsoundVolume > 0) Paths.sound(hitsound); //precache new sound for being idiot-proof
 			noteType = value;
 		}
 		return value;

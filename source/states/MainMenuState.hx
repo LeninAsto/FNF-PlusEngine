@@ -126,7 +126,7 @@ class MainMenuState extends MusicBeatState
 				substates.OutdatedSubState.updateVersion = CoolUtil.latestVersion;
 			persistentUpdate = false;
 				updateWarningShown = true; // Marcar como mostrado para evitar repeticiones
-			openSubState(new substates.OutdatedSubState());
+			openSubState(backend.ScriptableSubstate.tryCreate('OutdatedSubState', new substates.OutdatedSubState()));
 			}
 		}
 		#end
@@ -270,7 +270,7 @@ class MainMenuState extends MusicBeatState
 				selectedSomethin = true;
 				FlxG.mouse.visible = false;
 				FlxG.sound.play(Paths.sound('cancelMenu'));
-				MusicBeatState.switchState(new TitleState());
+				MusicBeatState.switchState(backend.ScriptableState.tryCreate('TitleState', new TitleState()));
 			}
 
 			if (controls.ACCEPT || (FlxG.mouse.overlaps(menuItems, FlxG.camera) && FlxG.mouse.justPressed && allowMouse))
@@ -304,24 +304,24 @@ class MainMenuState extends MusicBeatState
 					switch (option)
 					{
 						case 'story_mode':
-							MusicBeatState.switchState(new StoryMenuState());
+							MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
 						case 'freeplay':
-							MusicBeatState.switchState(new FreeplayState());
+							MusicBeatState.switchState(backend.ScriptableState.tryCreate('FreeplayState', new FreeplayState()));
 
 						#if MODS_ALLOWED
 						case 'mods':
-							MusicBeatState.switchState(new ModsMenuState());
+							MusicBeatState.switchState(backend.ScriptableState.tryCreate('ModsMenuState', new ModsMenuState()));
 						#end
 
 						#if ACHIEVEMENTS_ALLOWED
 						case 'achievements':
-							MusicBeatState.switchState(new AchievementsMenuState());
+							MusicBeatState.switchState(backend.ScriptableState.tryCreate('AchievementsMenuState', new AchievementsMenuState()));
 						#end
 
 						case 'credits':
-							MusicBeatState.switchState(new CreditsState());
+							MusicBeatState.switchState(backend.ScriptableState.tryCreate('CreditsState', new CreditsState()));
 						case 'options':
-							MusicBeatState.switchState(new OptionsState());
+							MusicBeatState.switchState(backend.ScriptableState.tryCreate('OptionsState', new OptionsState()));
 							OptionsState.onPlayState = false;
 							if (PlayState.SONG != null)
 							{
@@ -352,7 +352,7 @@ class MainMenuState extends MusicBeatState
 			{
 				selectedSomethin = true;
 				FlxG.mouse.visible = false;
-				MusicBeatState.switchState(new MasterEditorMenu());
+				MusicBeatState.switchState(backend.ScriptableState.tryCreate('MasterEditorMenu', new MasterEditorMenu()));
 			}
 
 			#if mobile

@@ -223,6 +223,11 @@ class EsLA
         "description_gpu_caching" => "Si está marcado, permite que la GPU se use para almacenar en caché texturas, reduce el uso de RAM.\nNo actives esto si tienes una Tarjeta Gráfica de la puta mare.",
         "setting_framerate" => "Fotogramas x Segundo",
         "description_framerate" => "Muy explicativo, ¿no?",
+        "setting_framerate_mode" => "Modo de Framerate",
+        "description_framerate_mode" => "Elige cómo maneja el engine los tiempos de actualización y dibujado.\nInterpolado se ve más suave, Fijo consume menos y Base copia la base móvil original.\nReinicia el juego para aplicar los cambios.",
+        "setting_framerate_mode-Interpolated" => "Interpolado",
+        "setting_framerate_mode-Fixed" => "Fijo",
+        "setting_framerate_mode-Psych" => "Base",
         "setting_fps_rework" => "Rework de FPS",
         "description_fps_rework" => "Si está marcado, esto evita que el juego se vuelva \"lento\" y \"suave\" cuando los FPS actuales son más bajos que el límite de FPS.",
 

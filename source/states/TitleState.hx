@@ -133,16 +133,16 @@ class TitleState extends MusicBeatState
 		FlxG.mouse.visible = false;
 		
 		#if FREEPLAY
-		MusicBeatState.switchState(new FreeplayState());
+		MusicBeatState.switchState(backend.ScriptableState.tryCreate('FreeplayState', new FreeplayState()));
 		#elseif CHARTING
-		MusicBeatState.switchState(new ChartingState());
+		MusicBeatState.switchState(backend.ScriptableState.tryCreate('ChartingState', new ChartingState()));
 		#else
 		if(FlxG.save.data.flashing == null && !FlashingState.leftState)
 		{
 			controls.isInSubstate = false; //idfk what's wrong
 			FlxTransitionableState.skipNextTransIn = true;
 			FlxTransitionableState.skipNextTransOut = true;
-			MusicBeatState.switchState(new FlashingState());
+			MusicBeatState.switchState(backend.ScriptableState.tryCreate('FlashingState', new FlashingState()));
 		}
 		else
 		{
@@ -333,7 +333,7 @@ class TitleState extends MusicBeatState
 		{
 			FlxTransitionableState.skipNextTransIn = true;
 			FlxTransitionableState.skipNextTransOut = true;
-			MusicBeatState.switchState(new AndroidPermissionsState());
+			MusicBeatState.switchState(backend.ScriptableState.tryCreate('AndroidPermissionsState', new AndroidPermissionsState()));
 		}, 190, 36);
 		androidToolsButton.scrollFactor.set();
 		add(androidToolsButton);
@@ -497,7 +497,7 @@ class TitleState extends MusicBeatState
 
 					new FlxTimer().start(1, function(tmr:FlxTimer)
 					{
-						MusicBeatState.switchState(new MainMenuState());
+						MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
 						closedState = true;
 					});
 					// FlxG.sound.play(Paths.music('titleShoot'), 0.7);
@@ -534,10 +534,10 @@ class TitleState extends MusicBeatState
 
 								FlxTween.tween(black, {alpha: 1}, 1, {onComplete:
 									function(twn:FlxTween) {
-										FlxTransitionableState.skipNextTransIn = true;
-										FlxTransitionableState.skipNextTransOut = true;
-										MusicBeatState.switchState(new TitleState());
-									}
+									FlxTransitionableState.skipNextTransIn = true;
+									FlxTransitionableState.skipNextTransOut = true;
+									MusicBeatState.switchState(backend.ScriptableState.tryCreate('TitleState', new TitleState()));
+								}
 								});
 								FlxG.sound.music.fadeOut();
 								if(FreeplayState.vocals != null)

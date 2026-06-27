@@ -414,11 +414,11 @@ class FPSCounter extends Sprite
 		}
 		avgFrameTimeMs = sum / frameTimesArray.length;
 
-		if (ClientPrefs.data.fpsRework
-			&& FlxG.stage.window.frameRate != ClientPrefs.data.framerate
+		var targetWindowFramerate:Int = ClientPrefs.getTargetWindowFramerate();
+		if (FlxG.stage.window.frameRate != targetWindowFramerate
 			&& FlxG.stage.window.frameRate != FlxG.game.focusLostFramerate)
 		{
-			FlxG.stage.window.frameRate = ClientPrefs.data.framerate;
+			FlxG.stage.window.frameRate = targetWindowFramerate;
 		}
 
 		final now:Float = Timer.stamp() * 1000;

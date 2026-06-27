@@ -249,7 +249,7 @@ class ModsMenuState extends MusicBeatState
 			var curMod:ModItem = modsGroup.members[curSelectedMod];
 			if(curMod != null && curMod.settings != null && curMod.settings.length > 0)
 			{
-				openSubState(new ModSettingsSubState(curMod.settings, curMod.folder, curMod.name));
+				openSubState(backend.ScriptableSubstate.tryCreate('ModSettingsSubState', new ModSettingsSubState(curMod.settings, curMod.folder, curMod.name)));
 			}
 		}, 54, 54);
 
@@ -366,13 +366,13 @@ class ModsMenuState extends MusicBeatState
 				{
 					FlxTransitionableState.skipNextTransIn = true;
 					FlxTransitionableState.skipNextTransOut = true;
-					MusicBeatState.switchState(new InitialState());
+					MusicBeatState.switchState(backend.ScriptableState.tryCreate('InitialState', new InitialState()));
 				}, false);
 			}
 			else
 			{
 				if(waitingToRestart) Language.reloadPhrases();
-				MusicBeatState.switchState(new MainMenuState());
+				MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
 			}
 
 			persistentUpdate = false;
@@ -891,7 +891,7 @@ class ModsMenuState extends MusicBeatState
 		FlxTransitionableState.skipNextTransIn = true;
 		FlxTransitionableState.skipNextTransOut = true;
 		var curMod:ModItem = modsGroup.members[curSelectedMod];
-		MusicBeatState.switchState(new ModsMenuState(curMod != null ? curMod.folder : null));
+		MusicBeatState.switchState(backend.ScriptableState.tryCreate('ModsMenuState', new ModsMenuState(curMod != null ? curMod.folder : null)));
 	}
 	
 	function saveTxt()

@@ -73,6 +73,7 @@ class StructurePsychOld
 		'GameOverSubstate' => 'substates.GameOverSubstate',
 		'PauseSubState' => 'substates.PauseSubState',
 		'CustomSubstate' => 'psychlua.CustomSubstate',
+		'ScriptableSubstate' => 'backend.ScriptableSubstate',
 		'GameplayChangersSubstate' => 'options.GameplayChangersSubstate',
 		'ResultsScreen' => 'states.ResultsState',
 		'OptionsState' => 'options.OptionsState',

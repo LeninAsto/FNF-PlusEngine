@@ -14,6 +14,8 @@ class Scale extends Modifier {
 	var tinyLaneIDs:Array<Array<Int>>;
 	var miniID:Int;
 	var miniLaneIDs:Array<Int>;
+	var squishID:Int;
+	var squishLaneIDs:Array<Int>;
 	var stretchID:Int;
 	var stretchLaneIDs:Array<Int>;
 
@@ -23,6 +25,7 @@ class Scale extends Modifier {
 		setPercent('scale', 1, -1);
 		setPercent('scaleX', 1, -1);
 		setPercent('scaleY', 1, -1);
+		setPercent('squish', 0, -1);
 		setPercent('stretch', 0, -1);
 
 		final maxKeys = 16;
@@ -32,6 +35,8 @@ class Scale extends Modifier {
 		tinyLaneIDs = [for (a in AXES_S) [for (l in 0...maxKeys) findID('tiny' + a + l)]];
 		miniID = findID('mini');
 		miniLaneIDs = [for (l in 0...maxKeys) findID('mini' + l)];
+		squishID = findID('squish');
+		squishLaneIDs = [for (l in 0...maxKeys) findID('squish' + l)];
 		stretchID = findID('stretch');
 		stretchLaneIDs = [for (l in 0...maxKeys) findID('stretch' + l)];
 	}
@@ -71,6 +76,18 @@ class Scale extends Modifier {
 		if (stretchV != 0) {
 			data.scaleX *= 1.0 - 0.5 * stretchV;
 			data.scaleY *= 1.0 + stretchV;
+		}
+
+		// squish sub-mod: widen X and compress Y, matching NMV's ScaleModifier.
+		var squishV = getUnsafe(squishID, params.player);
+		if (Config.COLUMN_SPECIFIC_MODIFIERS)
+			squishV += getUnsafe(squishLaneIDs[params.lane], params.player);
+		if (squishV != 0) {
+			final squishScale = 1.0 + squishV;
+			if (squishScale != 0) {
+				data.scaleX *= squishScale;
+				data.scaleY /= squishScale;
+			}
 		}
 
 		return data;

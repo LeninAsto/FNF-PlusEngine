@@ -45,9 +45,9 @@ class MobileSettingsSubState extends BaseOptionsMenu
 		option.onChange = () -> lime.system.System.allowScreenTimeout = curOption.getValue();
 		addOption(option);
 
-		option = new Option('Wide Screen Mode',
-			'If checked, The game will stetch to fill your whole screen. (WARNING: Can result in bad visuals & break some mods that resizes the game/cameras)',
-			'wideScreen', BOOL);
+		option = new Option('Infinity Display',
+			'If checked, extends the viewport vertically for taller screens while keeping the classic 16:9 gameplay area.',
+			'infinityDisplay', BOOL);
 		option.onChange = () -> FlxG.scaleMode = new mobile.backend.MobileScaleMode();
 		addOption(option);
 		#end
@@ -64,6 +64,24 @@ class MobileSettingsSubState extends BaseOptionsMenu
 
 		option = new Option('Dynamic Controls Color',
 			'If checked, the mobile controls color will be set to the notes color in your settings.\n(have effect during gameplay only)', 'dynamicColors',
+			BOOL);
+		addOption(option);
+
+		option = new Option('Touch Pointer',
+			'If checked, shows a touch pointer overlay for taps and drags.',
+			'showTouchPointer',
+			BOOL);
+		addOption(option);
+
+		option = new Option('Mobile Debug Buttons',
+			'If checked, shows the debug touch buttons on mobile builds.',
+			'showMobileDebugButtons',
+			BOOL);
+		addOption(option);
+
+		option = new Option('Align Receptors to Hitbox',
+			'If checked, aligns mobile receptors with hitbox lanes. Useful for some layouts, but it can break scripts.',
+			'mobileReceptorAlign',
 			BOOL);
 		addOption(option);
 

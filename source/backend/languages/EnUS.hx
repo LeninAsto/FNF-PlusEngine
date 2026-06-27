@@ -216,6 +216,11 @@ class EnUS
         "description_gpu_caching" => "If checked, allows the GPU to be used for caching textures, decreasing RAM usage.\nDon't turn this on if you have a shitty Graphics Card.",
         "setting_framerate" => "Framerate",
         "description_framerate" => "Pretty self explanatory, isn't it?",
+        "setting_framerate_mode" => "Framerate Mode",
+        "description_framerate_mode" => "Choose how the engine handles update/draw timing.\nInterpolated is smoother, Fixed is lighter, Base matches the original mobile base.\nRestart the game to apply changes.",
+        "setting_framerate_mode-Interpolated" => "Interpolated",
+        "setting_framerate_mode-Fixed" => "Fixed",
+        "setting_framerate_mode-Psych" => "Base",
         "setting_fps_rework" => "FPS Rework",
         "description_fps_rework" => "If checked, this prevents the game from becoming \"slower\" and \"smoother\" when current FPS are lower than the framerate cap.",
 

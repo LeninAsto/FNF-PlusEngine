@@ -24,6 +24,10 @@ class OptionsState extends MusicBeatState
 	public static var onPlayState:Bool = false;
 
 	function openSelectedSubstate(label:String) {
+		var stop = callOnCompanionScript('onOptionsMenuAccept', [label, curSelected]);
+		if (stop == Function_Stop)
+			return;
+
 		if (label != "Adjust Delay and Combo"){
 			removeTouchPad();
 			persistentUpdate = false;
@@ -31,26 +35,26 @@ class OptionsState extends MusicBeatState
 		switch(label)
 		{
 			case 'Note Colors':
-				if(ClientPrefs.data.noteRGB) openSubState(new options.NotesColorSubState());
-				else openSubState(new options.NotesColorLegacySubState());
+				if(ClientPrefs.data.noteRGB) openSubState(ScriptableSubstate.tryCreate('NotesColorSubState', new options.NotesColorSubState()));
+				else openSubState(ScriptableSubstate.tryCreate('NotesColorLegacySubState', new options.NotesColorLegacySubState()));
 			case 'Controls':
-				openSubState(new options.ControlsSubState());
+				openSubState(ScriptableSubstate.tryCreate('ControlsSubState', new options.ControlsSubState()));
 			case 'Graphics':
-				openSubState(new options.GraphicsSettingsSubState());
+				openSubState(ScriptableSubstate.tryCreate('GraphicsSettingsSubState', new options.GraphicsSettingsSubState()));
 			case 'Visuals':
-				openSubState(new options.VisualsSettingsSubState());
+				openSubState(ScriptableSubstate.tryCreate('VisualsSettingsSubState', new options.VisualsSettingsSubState()));
 			case 'Gameplay':
-				openSubState(new options.GameplaySettingsSubState());
+				openSubState(ScriptableSubstate.tryCreate('GameplaySettingsSubState', new options.GameplaySettingsSubState()));
 			case 'Legacy':
-				openSubState(new options.LegacySettingsSubState());
+				openSubState(ScriptableSubstate.tryCreate('LegacySettingsSubState', new options.LegacySettingsSubState()));
 			case 'Modchart':
-				openSubState(new options.ModchartSettingsSubState());
+				openSubState(ScriptableSubstate.tryCreate('ModchartSettingsSubState', new options.ModchartSettingsSubState()));
 			case 'Adjust Delay and Combo':
-				MusicBeatState.switchState(new options.NoteOffsetState());
+				MusicBeatState.switchState(ScriptableState.tryCreate('NoteOffsetState', new options.NoteOffsetState()));
 			case 'Mobile':
-				openSubState(new mobile.options.MobileSettingsSubState());
+				openSubState(ScriptableSubstate.tryCreate('MobileSettingsSubState', new mobile.options.MobileSettingsSubState()));
 			case 'Language':
-				openSubState(new options.LanguageSubState());
+				openSubState(ScriptableSubstate.tryCreate('LanguageSubState', new options.LanguageSubState()));
 		}
 	}
 
@@ -122,6 +126,7 @@ class OptionsState extends MusicBeatState
 		addTouchPad('UP_DOWN', 'A_B_C');
 
 		super.create();
+		callOnCompanionScript('onOptionsMenuCreatePost', [getOptionsCopy()]);
 	}
 
 	override function closeSubState()
@@ -169,11 +174,14 @@ class OptionsState extends MusicBeatState
 			if (touchPad.buttonC.justPressed || FlxG.keys.justPressed.CONTROL && controls.mobileC)
 			{
 				persistentUpdate = false;
-				openSubState(new mobile.substates.MobileControlSelectSubState());
+				openSubState(ScriptableSubstate.tryCreate('MobileControlSelectSubState', new mobile.substates.MobileControlSelectSubState()));
 			}
 
 			if (controls.BACK)
 			{
+				var stop = callOnCompanionScript('onOptionsMenuBack', [curSelected, getSelectedOptionLabel()]);
+				if (stop == Function_Stop)
+					return;
 				exiting = true;
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				if(onPlayState)
@@ -187,12 +195,15 @@ class OptionsState extends MusicBeatState
 					MusicBeatState.switchState(new MainMenuState());
 				}
 			}
-			else if (controls.ACCEPT) openSelectedSubstate(options[curSelected]);
+			else if (controls.ACCEPT && options != null && options.length > 0) openSelectedSubstate(options[curSelected]);
 		}
 	}
 	
 	function changeSelection(change:Int = 0)
 	{
+		if (options == null || options.length == 0)
+			return;
+
 		curSelected = FlxMath.wrap(curSelected + change, 0, options.length - 1);
 
 		for (num => item in grpOptions.members)
@@ -200,7 +211,110 @@ class OptionsState extends MusicBeatState
 			item.targetY = num;
 		}
 		
+		callOnCompanionScript('onOptionsMenuSelectionChange', [curSelected, getSelectedOptionLabel()]);
 		if(change != 0) FlxG.sound.play(Paths.sound('scrollMenu'));
+	}
+
+	public function getOptionsCopy():Array<String>
+		return options != null ? options.copy() : [];
+
+	public function getSelectedOptionIndex():Int
+		return curSelected;
+
+	public function getSelectedOptionLabel():String
+		return (options != null && curSelected >= 0 && curSelected < options.length) ? options[curSelected] : null;
+
+	public function getOptionAt(index:Int):String
+		return (options != null && index >= 0 && index < options.length) ? options[index] : null;
+
+	public function selectOption(index:Int):Void
+	{
+		if (options == null || options.length < 1) return;
+		curSelected = FlxMath.wrap(index, 0, options.length - 1);
+		lerpSelected = curSelected;
+		changeSelection(0);
+	}
+
+	public function selectOptionByLabel(label:String):Bool
+	{
+		if (options == null || label == null) return false;
+		var index = options.indexOf(label);
+		if (index < 0) return false;
+		selectOption(index);
+		return true;
+	}
+
+	public function setOptionsList(newOptions:Array<String>):Void
+	{
+		options = (newOptions != null) ? newOptions.copy() : [];
+		if (curSelected >= options.length)
+			curSelected = Std.int(Math.max(0, options.length - 1));
+		rebuildOptionsVisuals();
+	}
+
+	public function addOption(label:String):Void
+	{
+		if (label == null) return;
+		if (options == null) options = [];
+		options.push(label);
+		rebuildOptionsVisuals();
+	}
+
+	public function removeOption(label:String):Bool
+	{
+		if (options == null || label == null) return false;
+		var index = options.indexOf(label);
+		if (index < 0) return false;
+		options.splice(index, 1);
+		if (curSelected >= options.length)
+			curSelected = Std.int(Math.max(0, options.length - 1));
+		rebuildOptionsVisuals();
+		return true;
+	}
+
+	public function openCurrentOption():Void
+	{
+		var label = getSelectedOptionLabel();
+		if (label != null)
+			openSelectedSubstate(label);
+	}
+
+	public function rebuildOptionsVisuals():Void
+	{
+		if (grpOptions == null) return;
+
+		for (i in 0...grpOptions.members.length)
+		{
+			var item = grpOptions.members[0];
+			item.kill();
+			grpOptions.remove(item, true);
+			item.destroy();
+		}
+
+		if (options == null)
+			options = [];
+
+		for (num => option in options)
+		{
+			var optionText:Alphabet = new Alphabet(0, 0, Language.getPhrase('options_$option', option), true);
+			optionText.targetY = num;
+			optionText.isMenuItem = true;
+			grpOptions.add(optionText);
+		}
+
+		if (options.length > 0)
+		{
+			curSelected = Std.int(FlxMath.bound(curSelected, 0, options.length - 1));
+			lerpSelected = curSelected;
+			changeSelection(0);
+		}
+		else
+		{
+			curSelected = 0;
+			lerpSelected = 0;
+		}
+
+		callOnCompanionScript('onOptionsMenuRebuild', [getOptionsCopy()]);
 	}
 
 	override function destroy()

@@ -767,12 +767,7 @@ class PlayState extends MusicBeatState
 		add(uiGroup);
 		add(noteGroup);
 
-		if (ClientPrefs.data.judgementCounter)
-		{
-			judgementCounter = new JudCounter(10, (FlxG.height / 2) - 100);
-			judgementCounter.setCameras([camHUD]);
-			add(judgementCounter);
-		}
+		initJudgementCounter();
 
 		if (ClientPrefs.data.versionTextOnGameplay)
 		{
@@ -815,12 +810,7 @@ class PlayState extends MusicBeatState
 		}
 
 		generateSong();
-		if (ClientPrefs.data.breakTimer)
-		{
-			breakTimerHud = new BreakTimerHud(camHUD);
-			breakTimerHud.addTo(this);
-			cacheBreakTimerNotes();
-		}
+		initBreakTimerHud();
 
 		noteGroup.add(grpNoteSplashes);
 		noteGroup.add(grpHoldSplashes);
@@ -901,11 +891,7 @@ class PlayState extends MusicBeatState
 	
 		// Detectar si es un chart de StepMania o si usa el stage notitg
 		isStepManiaChart = (customAudioPath != null && (customAudioPath.contains('/sm/') || customAudioPath.contains('sm/'))) || (curStage == 'notitg');
-		if (isStepManiaChart)
-		{
-			scoreTxt.visible = false;
-			stepmaniaHud = new StepmaniaHud(uiGroup, this, camHUD, FlxG.width, FlxG.height, ClientPrefs.data.hideHud);
-		}
+		initStepmaniaHudIfNeeded();
 
 		botplayTxt = new FlxText(400, healthBar.y - 90, FlxG.width - 800, "", 32);
 		botplayTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -931,7 +917,7 @@ class PlayState extends MusicBeatState
 		if(ClientPrefs.data.showKeyViewer) {
 			keyViewer = new objects.KeyViewer(0, 0); // Pasar referencia de PlayState
 			keyViewer.visible = !ClientPrefs.data.hideHud;
-			uiGroup.add(keyViewer);
+			uiGroup.insert(0, keyViewer);
 		}
 
 		uiGroup.cameras = [camHUD];
@@ -1047,7 +1033,7 @@ class PlayState extends MusicBeatState
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, onKeyRelease);
 
 		//PRECACHING THINGS THAT GET USED FREQUENTLY TO AVOID LAGSPIKES
-		if(ClientPrefs.data.hitsoundVolume > 0 && ClientPrefs.data.hitSounds != "None") 
+		if(shouldUseGlobalHitsounds())
 			Paths.sound('hitsounds/' + ClientPrefs.data.hitSounds);
 		if(!ClientPrefs.data.ghostTapping) for (i in 1...4) Paths.sound('missnote$i');
 		Paths.image('alphabet');
@@ -1091,7 +1077,7 @@ class PlayState extends MusicBeatState
 
 		super.create();
 		Paths.clearUnusedMemory();
-		gameplayRuntimeBridge = Main.fpsVar != null ? new GameplayRuntimeBridge(Main.fpsVar) : null;
+		initGameplayRuntimeBridgeIfNeeded();
 		
 		updateScriptStats();
 
@@ -2876,7 +2862,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 
-		// ← OPTIMIZAR ACTUALIZACIÓN DE TIEMPO - Solo cada segundo
+		initGameplayRuntimeBridgeIfNeeded();
 		if (gameplayRuntimeBridge != null)
 			gameplayRuntimeBridge.sync(curStep, curBeat, curSection, songSpeed, Conductor.bpm, health, capitalizeFirst(lastJudName), combo);
 
@@ -3289,7 +3275,7 @@ class PlayState extends MusicBeatState
 					note.resetAnim = 0;
 				}
 		}
-		openSubState(new PauseSubState());
+		openSubState(backend.ScriptableSubstate.tryCreate('PauseSubState', new PauseSubState()));
 
 		#if DISCORD_ALLOWED
 		if(autoUpdateRPC) DiscordClient.changePresence(detailsPausedText, SONG.song + " (" + storyDifficultyText + ")", iconP2.getCharacter());
@@ -3316,7 +3302,7 @@ class PlayState extends MusicBeatState
 		DiscordClient.resetClientID();
 		#end
 
-		MusicBeatState.switchState(new ChartingState());
+		MusicBeatState.switchState(backend.ScriptableState.tryCreate('ChartingState', new ChartingState()));
 	}
 
 	function openCharacterEditor()
@@ -3334,7 +3320,7 @@ class PlayState extends MusicBeatState
 			opponentVocals.pause();
 
 		#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
-		MusicBeatState.switchState(new CharacterEditorState(SONG.player2));
+		MusicBeatState.switchState(backend.ScriptableState.tryCreate('CharacterEditorState', new CharacterEditorState(SONG.player2)));
 	}
 
 	public var isDead:Bool = false; //Don't mess with this on Lua!!!
@@ -3408,7 +3394,7 @@ class PlayState extends MusicBeatState
 						vocals.stop();
 						opponentVocals.stop();
 						FlxG.sound.music.stop();
-						openSubState(new GameOverSubstate(boyfriend));
+						openSubState(backend.ScriptableSubstate.tryCreate('GameOverSubstate', new GameOverSubstate(boyfriend)));
 						gameOverTimer = null;
 					});
 				}
@@ -3417,10 +3403,10 @@ class PlayState extends MusicBeatState
 					vocals.stop();
 					opponentVocals.stop();
 					FlxG.sound.music.stop();
-					openSubState(new GameOverSubstate(boyfriend));
+					openSubState(backend.ScriptableSubstate.tryCreate('GameOverSubstate', new GameOverSubstate(boyfriend)));
 				}
 
-				// MusicBeatState.switchState(new GameOverState(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
+				// MusicBeatState.switchState(backend.ScriptableState.tryCreate('GameOverState', new GameOverState(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y)));
 
 				#if DISCORD_ALLOWED
 				// Game Over doesn't get his its variable because it's only used here
@@ -3902,7 +3888,7 @@ class PlayState extends MusicBeatState
 				// INICIAR FREAKYMENU ANTES DE IR A RESULTSSTATE
 				FlxG.sound.playMusic(Paths.music('freakyMenu'), 0.7, true);
 				
-				MusicBeatState.switchState(new ResultsState({
+				MusicBeatState.switchState(backend.ScriptableState.tryCreate('ResultsState', new ResultsState({
 					score: songScore,
 					prevHighScore: Highscore.getScore(Song.loadedSongName, storyDifficulty),
 					accuracy: ratingPercent,
@@ -3921,7 +3907,7 @@ class PlayState extends MusicBeatState
 					isPractice: practiceMode,
 					ratingName: ratingName,
 					ratingFC: ratingFC
-				}));
+				})));
 			transitioning = true;
 			return true;
 		}
@@ -4020,7 +4006,7 @@ class PlayState extends MusicBeatState
 					changedDifficulty = false;
 					
 					// Ir a ResultsState con las estadísticas de toda la semana
-					MusicBeatState.switchState(new ResultsState({
+					MusicBeatState.switchState(backend.ScriptableState.tryCreate('ResultsState', new ResultsState({
 						score: campaignScore,
 						prevHighScore: Highscore.getWeekScore(WeekData.getWeekFileName(), storyDifficulty),
 						accuracy: weekAccuracy,
@@ -4040,7 +4026,7 @@ class PlayState extends MusicBeatState
 						ratingName: weekRatingName,
 						ratingFC: weekRatingFC,
 						isWeek: true // Indicador de que es una semana completa
-					}));
+					})));
 				}
 				else
 				{
@@ -4073,7 +4059,7 @@ class PlayState extends MusicBeatState
 				#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
 
 				canResync = false;
-				MusicBeatState.switchState(new FreeplayState());
+				MusicBeatState.switchState(backend.ScriptableState.tryCreate('FreeplayState', new FreeplayState()));
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				changedDifficulty = false;
 			}
@@ -4133,6 +4119,9 @@ class PlayState extends MusicBeatState
 	var comboPopupPool:Array<FlxSprite> = [];
 	var numberPopupPool:Array<FlxSprite> = [];
 	var breakPopupPool:Array<FlxSprite> = [];
+	static inline final COMBO_POPUP_SCALE:Float = 0.6;
+	static inline final COMBO_NUMBER_SCALE:Float = 0.45;
+	static inline final BREAK_POPUP_SCALE:Float = 0.55;
 	// Stores HUD Objects in a Group
 	public var uiGroup:FlxSpriteGroup;
 	// Stores Note Objects in a Group
@@ -4149,9 +4138,84 @@ class PlayState extends MusicBeatState
 		for (i in 0...10)
 			Paths.image(uiFolder + 'num' + i + uiPostfix);
 		
-		// Cachear sprites de miss y combo broken
+		// Cache miss popup once. comboBroken now reuses miss for consistency and less clutter.
 		Paths.image(uiFolder + 'miss' + uiPostfix);
-		Paths.image(uiFolder + 'comboBroken' + uiPostfix);
+	}
+
+	inline function shouldUseGameplayRuntimeBridge():Bool
+	{
+		return Main.fpsVar != null && Main.fpsVar.debugLevel >= 3;
+	}
+
+	function initJudgementCounter():Void
+	{
+		if (!ClientPrefs.data.judgementCounter || judgementCounter != null)
+			return;
+
+		judgementCounter = new JudCounter(10, (FlxG.height / 2) - 100);
+		judgementCounter.setCameras([camHUD]);
+		add(judgementCounter);
+	}
+
+	function initBreakTimerHud():Void
+	{
+		if (!ClientPrefs.data.breakTimer || breakTimerHud != null)
+			return;
+
+		breakTimerHud = new BreakTimerHud(camHUD);
+		breakTimerHud.addTo(this);
+		cacheBreakTimerNotes();
+	}
+
+	function initStepmaniaHudIfNeeded():Void
+	{
+		if (!isStepManiaChart || stepmaniaHud != null)
+			return;
+
+		scoreTxt.visible = false;
+		stepmaniaHud = new StepmaniaHud(uiGroup, this, camHUD, FlxG.width, FlxG.height, ClientPrefs.data.hideHud);
+	}
+
+	function initGameplayRuntimeBridgeIfNeeded():Void
+	{
+		if (gameplayRuntimeBridge == null && shouldUseGameplayRuntimeBridge())
+			gameplayRuntimeBridge = new GameplayRuntimeBridge(Main.fpsVar);
+	}
+
+	inline function shouldUseGlobalHitsounds():Bool
+	{
+		return ClientPrefs.data.hitSounds != "None" && ClientPrefs.data.hitsoundVolume > 0;
+	}
+
+	inline function shouldRenderHitPopups():Bool
+	{
+		if (!ClientPrefs.data.popUpRating)
+			return false;
+		if (isStepManiaChart)
+			return true;
+		if (ClientPrefs.data.hideHud)
+			return false;
+		return showRating || showCombo || showComboNum;
+	}
+
+	inline function shouldSpawnHoldSplashFor(note:Note):Bool
+	{
+		if (note == null || curStage == 'notitg' || ClientPrefs.data.hideSustainSplash || ClientPrefs.data.lowQuality)
+			return false;
+
+		#if mobile
+		if (note.hitByOpponent)
+			return false;
+		if (note.noteType != null && note.noteType.length > 0)
+			return false;
+		#end
+
+		return true;
+	}
+
+	function destroyGameplayRuntimeBridge():Void
+	{
+		gameplayRuntimeBridge = null;
 	}
 
 	private inline function releasePopupSprite(sprite:FlxSprite):Void
@@ -4351,6 +4415,9 @@ class PlayState extends MusicBeatState
 			}
 		}
 
+		if (!shouldRenderHitPopups())
+			return;
+
 		var uiFolder:String = "";
 		var antialias:Bool = ClientPrefs.data.antialiasing;
 		if (stageUI != "normal")
@@ -4382,13 +4449,15 @@ class PlayState extends MusicBeatState
 			}
 			rating.updateHitbox();
 			
-			// En charts StepMania, hacer invisible el rating por defecto
-			if (isStepManiaChart) {
+			var showStepmaniaJudgementOnly:Bool = isStepManiaChart;
+			var showRatingSprite:Bool = !showStepmaniaJudgementOnly && !ClientPrefs.data.hideHud && showRating;
+			var showComboSprite:Bool = !ClientPrefs.data.hideHud && showCombo && combo >= 10;
+			var showComboDigits:Bool = !ClientPrefs.data.hideHud && showComboNum && (combo >= 10 || combo == 0);
+			if (showStepmaniaJudgementOnly) {
 				rating.visible = false;
-				// Mostrar judgement de StepMania en su lugar
 				showStepManiaJudgement(daRating.name);
 			} else {
-			rating.visible = (!ClientPrefs.data.hideHud && showRating);
+				rating.visible = showRatingSprite;
 			}
 			
 			rating.x += ClientPrefs.data.comboOffset[0];
@@ -4402,17 +4471,17 @@ class PlayState extends MusicBeatState
 			// Configurar tamaño del combo
 			if (!isPixelStage)
 			{
-				comboSpr.setGraphicSize(Std.int(comboSpr.width * 0.7));
+				comboSpr.setGraphicSize(Std.int(comboSpr.width * COMBO_POPUP_SCALE));
 				comboSpr.antialiasing = antialias;
 			}
 			else
 			{
-				comboSpr.setGraphicSize(Std.int(comboSpr.width * daPixelZoom * 0.85));
+				comboSpr.setGraphicSize(Std.int(comboSpr.width * daPixelZoom * 0.72));
 				comboSpr.antialiasing = false;
 			}
 			comboSpr.updateHitbox();
 			
-			comboSpr.visible = (!ClientPrefs.data.hideHud && showCombo);
+			comboSpr.visible = showComboSprite;
 			comboSpr.x += ClientPrefs.data.comboOffset[2];
 			comboSpr.y += 60;
 			comboSpr.velocity.x += FlxG.random.int(1, 10) * playbackRate;
@@ -4420,32 +4489,33 @@ class PlayState extends MusicBeatState
 
 			var daLoop:Int = 0;
 			var xThing:Float = 0;
-			if (showCombo)
-			if (combo >= 10)
+			if (showComboSprite)
 				comboGroup.add(comboSpr);
 
 			var separatedScore:String = Std.string(combo).lpad('0', 3);
 			for (i in 0...separatedScore.length)
 			{
+				if (!showComboDigits)
+					break;
+
 				var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(uiFolder + 'num' + Std.parseInt(separatedScore.charAt(i)) + uiPostfix));
 				numScore.screenCenter();
 				numScore.x = placement + (43 * daLoop) - 90 + ClientPrefs.data.comboOffset[2];
 				numScore.y += 80 - ClientPrefs.data.comboOffset[3];
 
 				if (!PlayState.isPixelStage)
-					numScore.setGraphicSize(Std.int(numScore.width * 0.5));
+					numScore.setGraphicSize(Std.int(numScore.width * COMBO_NUMBER_SCALE));
 				else
-					numScore.setGraphicSize(Std.int(numScore.width * daPixelZoom));
+					numScore.setGraphicSize(Std.int(numScore.width * daPixelZoom * 0.9));
 				numScore.updateHitbox();
 
 				numScore.acceleration.y = FlxG.random.int(200, 300) * playbackRate * playbackRate;
 				numScore.velocity.y -= FlxG.random.int(140, 160) * playbackRate;
 				numScore.velocity.x = FlxG.random.float(-5, 5) * playbackRate;
-				numScore.visible = !ClientPrefs.data.hideHud;
+				numScore.visible = showComboDigits;
 				numScore.antialiasing = antialias;
 
-				if (combo >= 10 || combo == 0)
-				if(showComboNum)
+				if (showComboDigits)
 				{
 					comboGroup.add(numScore);
 				}
@@ -4499,8 +4569,7 @@ class PlayState extends MusicBeatState
 		var placement:Float = FlxG.width * 0.35;
 		var breakSprite:FlxSprite = new FlxSprite();
 		// Determinar qué imagen usar
-		var imageName:String = ClientPrefs.data.badShitBreakCombo ? 'comboBroken' : 'miss';
-		breakSprite.loadGraphic(Paths.image(uiFolder + imageName + uiPostfix));
+		breakSprite.loadGraphic(Paths.image(uiFolder + 'miss' + uiPostfix));
 		
 		breakSprite.screenCenter();
 		breakSprite.x = placement - 40;
@@ -4515,11 +4584,11 @@ class PlayState extends MusicBeatState
 
 		if (!PlayState.isPixelStage)
 		{
-			breakSprite.setGraphicSize(Std.int(breakSprite.width * 0.7));
+			breakSprite.setGraphicSize(Std.int(breakSprite.width * BREAK_POPUP_SCALE));
 		}
 		else
 		{
-			breakSprite.setGraphicSize(Std.int(breakSprite.width * daPixelZoom * 0.85));
+			breakSprite.setGraphicSize(Std.int(breakSprite.width * daPixelZoom * 0.72));
 		}
 
 		breakSprite.updateHitbox();
@@ -4527,14 +4596,14 @@ class PlayState extends MusicBeatState
 		if (!PlayState.isPixelStage)
 		{
 			breakSprite.scale.set(0.3, 0.3);
-			FlxTween.tween(breakSprite.scale, {x: 0.7, y: 0.7}, 0.08, {
+			FlxTween.tween(breakSprite.scale, {x: BREAK_POPUP_SCALE, y: BREAK_POPUP_SCALE}, 0.08, {
 				ease: FlxEase.circOut
 			});
 		}
 		else
 		{
 			breakSprite.scale.set(1, 1);
-			FlxTween.tween(breakSprite.scale, {x: 4.5, y: 4.5}, 0.08, {
+			FlxTween.tween(breakSprite.scale, {x: 3.8, y: 3.8}, 0.08, {
 				ease: FlxEase.circOut
 			});
 		}
@@ -4575,7 +4644,7 @@ class PlayState extends MusicBeatState
 		if(cpuControlled || paused || inCutscene || key < 0 || key >= playerStrums.length || !generatedMusic || endingSong || controlledChar.stunned) return;
 
 		// Play hitsound on key press if enabled (Keys mode)
-		if (ClientPrefs.data.hitsoundType == 'Keys' && ClientPrefs.data.hitsoundVolume > 0 && ClientPrefs.data.hitSounds != "None")
+		if (ClientPrefs.data.hitsoundType == 'Keys' && shouldUseGlobalHitsounds())
 		{
 			FlxG.sound.play(Paths.sound('hitsounds/' + ClientPrefs.data.hitSounds), ClientPrefs.data.hitsoundVolume).pitch = playbackRate;
 		}
@@ -4830,9 +4899,10 @@ class PlayState extends MusicBeatState
 			end.extraData['holdSplash'].visible = false;
 		}
 
+		var noteIndex:Int = notes.members.indexOf(daNote);
 		noteMissCommon(daNote.noteData, daNote);
 		stagesFunc(function(stage:BaseStage) stage.noteMiss(daNote));
-		var result:Dynamic = callOnLuas('noteMiss', [notes.members.indexOf(daNote), daNote.noteData, daNote.noteType, daNote.isSustainNote]);
+		var result:Dynamic = callOnLuas('noteMiss', [noteIndex, daNote.noteData, daNote.noteType, daNote.isSustainNote]);
 		if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) callOnHScript('noteMiss', [daNote]);
 	}
 
@@ -4957,8 +5027,9 @@ class PlayState extends MusicBeatState
 	{
 		// Opponent Mode: Update the correct character's holdTimer
 		var opponentChar:Character = playOpponent ? boyfriend : dad;
+		var noteIndex:Int = notes.members.indexOf(note);
 		
-		var result:Dynamic = callOnLuas('opponentNoteHitPre', [notes.members.indexOf(note), Math.abs(note.noteData), note.noteType, note.isSustainNote]);
+		var result:Dynamic = callOnLuas('opponentNoteHitPre', [noteIndex, Math.abs(note.noteData), note.noteType, note.isSustainNote]);
 		if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) result = callOnHScript('opponentNoteHitPre', [note]);
 
 		if(result == LuaUtils.Function_Stop) return;
@@ -5004,7 +5075,7 @@ class PlayState extends MusicBeatState
 			health = Math.max(OPPONENT_DRAIN_FLOOR, health - note.hitHealth * healthLoss);
 		
 		stagesFunc(function(stage:BaseStage) stage.opponentNoteHit(note));
-		var result:Dynamic = callOnLuas('opponentNoteHit', [notes.members.indexOf(note), Math.abs(note.noteData), note.noteType, note.isSustainNote]);
+		var result:Dynamic = callOnLuas('opponentNoteHit', [noteIndex, Math.abs(note.noteData), note.noteType, note.isSustainNote]);
 		if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) callOnHScript('opponentNoteHit', [note]);
 
 		spawnHoldSplashOnNote(note);
@@ -5028,8 +5099,9 @@ class PlayState extends MusicBeatState
 		var isSus:Bool = note.isSustainNote; //GET OUT OF MY HEAD, GET OUT OF MY HEAD, GET OUT OF MY HEAD
 		var leData:Int = Math.round(Math.abs(note.noteData));
 		var leType:String = note.noteType;
+		var noteIndex:Int = notes.members.indexOf(note);
 
-		var result:Dynamic = callOnLuas('goodNoteHitPre', [notes.members.indexOf(note), leData, leType, isSus]);
+		var result:Dynamic = callOnLuas('goodNoteHitPre', [noteIndex, leData, leType, isSus]);
 		if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) result = callOnHScript('goodNoteHitPre', [note]);
 
 		if(result == LuaUtils.Function_Stop) return;
@@ -5037,7 +5109,7 @@ class PlayState extends MusicBeatState
 		note.wasGoodHit = true;
 
 		// Play hitsound if enabled (Notes mode) - only for normal notes, not sustains
-		if (!note.isSustainNote && ClientPrefs.data.hitsoundType == 'Notes' && ClientPrefs.data.hitsoundVolume > 0 && ClientPrefs.data.hitSounds != "None")
+		if (!note.isSustainNote && ClientPrefs.data.hitsoundType == 'Notes' && shouldUseGlobalHitsounds())
 			FlxG.sound.play(Paths.sound('hitsounds/' + ClientPrefs.data.hitSounds), ClientPrefs.data.hitsoundVolume);
 
 		if(!note.hitCausesMiss) //Common notes
@@ -5144,7 +5216,7 @@ class PlayState extends MusicBeatState
 		}
 
 		stagesFunc(function(stage:BaseStage) stage.goodNoteHit(note));
-		var result:Dynamic = callOnLuas('goodNoteHit', [notes.members.indexOf(note), note.noteData, note.noteType, note.isSustainNote]);
+		var result:Dynamic = callOnLuas('goodNoteHit', [noteIndex, note.noteData, note.noteType, note.isSustainNote]);
 		if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) callOnHScript('goodNoteHit', [note]);
 		spawnHoldSplashOnNote(note);
 		
@@ -5159,8 +5231,7 @@ class PlayState extends MusicBeatState
 	}
 
 	public function spawnHoldSplashOnNote(note:Note) {
-		// No mostrar hold splashes en niveles de StepMania NotITG
-		if(curStage == 'notitg') return;
+		if (!shouldSpawnHoldSplashFor(note)) return;
 		
 		if (note != null) {
 			var strum:StrumNote = (note.mustPress ? playerStrums : opponentStrums).members[note.noteData];
@@ -5170,8 +5241,7 @@ class PlayState extends MusicBeatState
 	}
 
 	public function spawnHoldSplash(note:Note) {
-		// No mostrar hold splashes en niveles de StepMania NotITG
-		if(curStage == 'notitg') return;
+		if (!shouldSpawnHoldSplashFor(note)) return;
 		
 		var end:Note = note.isSustainNote ? note.parent.tail[note.parent.tail.length - 1] : note.tail[note.tail.length - 1];
 		var splash:SustainSplash = grpHoldSplashes.recycle(SustainSplash);
@@ -5244,6 +5314,7 @@ class PlayState extends MusicBeatState
 			stepmaniaHud.destroyFrom(this, uiGroup);
 			stepmaniaHud = null;
 		}
+		destroyGameplayRuntimeBridge();
 		for (i in 0...botplayKeyReleaseTimers.length)
 		{
 			if (botplayKeyReleaseTimers[i] != null)

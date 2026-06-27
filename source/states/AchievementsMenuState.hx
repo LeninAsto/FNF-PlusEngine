@@ -211,13 +211,13 @@ class AchievementsMenuState extends MusicBeatState
 			if(MusicBeatState.getState().touchPad.buttonC.justPressed || controls.RESET && (options[curSelected].unlocked || options[curSelected].curProgress > 0))
 			{
 				removeTouchPad();
-				openSubState(new ResetAchievementSubstate());
+				openSubState(backend.ScriptableSubstate.tryCreate('ResetAchievementSubstate', new ResetAchievementSubstate()));
 			}
 		}
 
 		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed)) {
 			FlxG.sound.play(Paths.sound('cancelMenu'));
-			MusicBeatState.switchState(new MainMenuState());
+			MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
 			goingBack = true;
 		}
 	}

@@ -56,9 +56,25 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 
+		#if native
+		var option:Option = new Option('VSync',
+			'If checked, enables VSync, fixing screen tearing at the cost of capping FPS to the monitor refresh rate.\nRestart the game to fully apply it.',
+			'vsync',
+			BOOL);
+		option.onChange = onChangeVSync;
+		addOption(option);
+		#end
+
 		#if !html5 //Apparently other framerates isn't correctly supported on Browser? Probably it has some V-Sync shit enabled by default, idk
+		var option:Option = new Option('Framerate Mode',
+			'Choose how the engine handles update/draw timing.\nInterpolated is smoother, Fixed is lighter, Base matches the original mobile base.\nRestart the game to apply changes.',
+			'framerateMode',
+			STRING,
+			ClientPrefs.FRAMERATE_MODES);
+		addOption(option);
+
 		var option:Option = new Option('Framerate',
-			"Pretty self explanatory, isn't it?",
+			"Pretty self explanatory, isn't it?\nRestart the game to apply changes.",
 			'framerate',
 			INT);
 		addOption(option);
@@ -68,7 +84,6 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		option.maxValue = 240;
 		option.defaultValue = Std.int(FlxMath.bound(refreshRate, option.minValue, option.maxValue));
 		option.displayFormat = '%v FPS';
-		option.onChange = onChangeFramerate;
 		#end
 
 		#if windows
@@ -95,10 +110,10 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		}
 	}
 
-	function onChangeFramerate()
-	{
-		ClientPrefs.applyFramePacing();
-	}
+	#if native
+	function onChangeVSync()
+		lime.app.Application.current.window.vsync = ClientPrefs.data.vsync;
+	#end
 
 	override function changeSelection(change:Int = 0)
 	{

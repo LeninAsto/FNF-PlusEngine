@@ -52,18 +52,6 @@ class ModchartSettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 
-		// Arrow Path Quality option
-		var option:Option = new Option('Arrow Path Quality',
-			'Controls path rendering frequency.\nLower = Smoother paths (better quality, worse FPS)\nHigher = Faster rendering (lower quality, better FPS)\n(Recommended: 2-3)',
-			'arrowPathFrameSkip',
-			INT);
-		option.scrollSpeed = 1;
-		option.minValue = 1;
-		option.maxValue = 6;
-		option.changeValue = 1;
-		option.decimals = 0;
-		addOption(option);
-
 		// Arrow Path Boundary option
 		var option:Option = new Option('Arrow Path Boundary',
 			'Pixels outside screen to still render paths.\nLower = Better FPS, Higher = Less pop-in\n(Recommended: 300)',

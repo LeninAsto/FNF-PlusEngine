@@ -71,6 +71,8 @@ import states.LoadingState;
 
 import psychlua.LuaUtils.Function_Stop;
 import psychlua.LuaUtils.Function_Continue;
+import backend.ScriptableState;
+import backend.ScriptableSubstate;
 
 #if flxanimate
 import flxanimate.*;

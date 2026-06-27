@@ -64,9 +64,9 @@ class StoryMenuState extends MusicBeatState
 		{
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
-			MusicBeatState.switchState(new states.ErrorState("NO WEEKS ADDED FOR STORY MODE\n\nPress " + accept + " to go to the Week Editor Menu.\nPress " + reject + " to return to Main Menu.",
+			MusicBeatState.switchState(backend.ScriptableState.tryCreate('ErrorState', new states.ErrorState("NO WEEKS ADDED FOR STORY MODE\n\nPress " + accept + " to go to the Week Editor Menu.\nPress " + reject + " to return to Main Menu.",
 				function() MusicBeatState.switchState(new states.editors.WeekEditorState()),
-				function() MusicBeatState.switchState(new states.MainMenuState())));
+				function() MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new states.MainMenuState())))));
 			return;
 		}
 
@@ -211,7 +211,7 @@ class StoryMenuState extends MusicBeatState
 			{
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				movedBack = true;
-				MusicBeatState.switchState(new MainMenuState());
+				MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
 			}
 			return;
 		}		
@@ -270,13 +270,13 @@ class StoryMenuState extends MusicBeatState
 			if(FlxG.keys.justPressed.CONTROL || touchPad.buttonX.justPressed)
 			{
 				persistentUpdate = false;
-				openSubState(new GameplayChangersSubstate());
+				openSubState(backend.ScriptableSubstate.tryCreate('GameplayChangersSubstate', new GameplayChangersSubstate()));
 				removeTouchPad();
 			}
 			else if(controls.RESET || touchPad.buttonY.justPressed)
 			{
 				persistentUpdate = false;
-				openSubState(new ResetScoreSubState('', curDifficulty, '', curWeek));
+				openSubState(backend.ScriptableSubstate.tryCreate('ResetScoreSubState', new ResetScoreSubState('', curDifficulty, '', curWeek)));
 				removeTouchPad();
 			//FlxG.sound.play(Paths.sound('scrollMenu'));
 		}
@@ -288,7 +288,7 @@ class StoryMenuState extends MusicBeatState
 	{
 		FlxG.sound.play(Paths.sound('cancelMenu'));
 		movedBack = true;
-		MusicBeatState.switchState(new MainMenuState());
+		MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
 	}
 
 	var offY:Float = grpWeekText.members[curWeek].targetY;

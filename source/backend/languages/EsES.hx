@@ -203,6 +203,11 @@ class EsES
         "description_gpu_caching" => "Si está marcado, permite que la GPU se use para almacenar texturas en caché, reduce el uso de RAM.\nNo actives esto si tienes una tarjeta gráfica de mierda.",
         "setting_framerate" => "Fotogramas por segundo",
         "description_framerate" => "Bastante explicativo, ¿no?",
+        "setting_framerate_mode" => "Modo de Framerate",
+        "description_framerate_mode" => "Elige cómo maneja el engine los tiempos de actualización y dibujado.\nInterpolado se ve más suave, Fijo consume menos y Base copia la base móvil original.\nReinicia el juego para aplicar los cambios.",
+        "setting_framerate_mode-Interpolated" => "Interpolado",
+        "setting_framerate_mode-Fixed" => "Fijo",
+        "setting_framerate_mode-Psych" => "Base",
         "setting_fps_rework" => "Revisión de FPS",
         "description_fps_rework" => "Si está activado, evita que el juego se \"ralentice\" y \"vaya más fluido\" cuando los FPS actuales estén por debajo del límite de fotogramas por segundo.",
 
