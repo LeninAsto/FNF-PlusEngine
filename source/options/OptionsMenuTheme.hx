@@ -151,7 +151,7 @@ class OptionsMenuTheme
 	{
 		ClientPrefs.syncThemeModeFlags();
 		var palette = current();
-		MD3Theme.setAccent(palette.accent, isDark());
+		MD3Theme.setAccent(palette.accent, true);
 	}
 
 	static inline function clamp01(value:Float):Float
@@ -213,32 +213,32 @@ class OptionsMenuTheme
 
 	public static inline function backdropColor():Int
 	{
-		return isDark() ? 0xD0090A0C : 0xD2141020;
+		return 0xC0101010;
 	}
 
 	public static inline function menuBackgroundAlpha():Float
 	{
-		return isDark() ? 0.08 : 0.14;
+		return 0.22;
 	}
 
 	public static inline function panelSurfaceColor():Int
 	{
-		return isDark() ? 0xFF111317 : 0xFFF8F4FC;
+		return 0xFF141414;
 	}
 
 	public static inline function panelHeaderColor():Int
 	{
-		return isDark() ? 0xFF181B20 : 0xFFFFFBFF;
+		return 0xFF1B1B1B;
 	}
 
 	public static inline function panelOutlineColor():Int
 	{
-		return isDark() ? 0xFF2A2E36 : 0x24FFFFFF;
+		return blendColor(0xFF1A1A1A, current().accent, 0.18);
 	}
 
 	public static inline function neutralOutlineColor():Int
 	{
-		return isDark() ? 0xFF30343C : 0xFFDCCEEB;
+		return 0xFF343434;
 	}
 
 	public static inline function panelShadowColor():Int
@@ -248,23 +248,23 @@ class OptionsMenuTheme
 
 	public static inline function titleColor():Int
 	{
-		return isDark() ? 0xFFF5F7FA : current().strong;
+		return 0xFFF5F7FA;
 	}
 
 	public static inline function bodyTextColor():Int
 	{
-		return isDark() ? 0xFFC4CBD6 : current().muted;
+		return 0xFFC4CBD6;
 	}
 
 	public static inline function footerTextColor():Int
 	{
-		return isDark() ? 0xFF9BA1AD : 0xFF6D5F82;
+		return 0xFF9BA1AD;
 	}
 
 	public static inline function cardFill(selected:Bool):Int
 	{
-		var base = isDark() ? 0xFF121419 : 0xFFFCF8FF;
-		return selected ? blendColor(base, current().accent, isDark() ? 0.11 : 0.09) : base;
+		var base = selected ? 0xFF1B1B1B : 0xFF121212;
+		return selected ? blendColor(base, current().accent, 0.12) : base;
 	}
 
 	public static inline function cardStroke(selected:Bool):Int
@@ -277,37 +277,37 @@ class OptionsMenuTheme
 		if (selected)
 			return current().accent;
 
-		return isDark() ? blendColor(0xFF3A3F48, current().accent, 0.28) : blendColor(current().pale, current().accent, 0.18);
+		return blendColor(0xFF454545, current().accent, 0.20);
 	}
 
 	public static inline function cardTitleColor(selected:Bool):Int
 	{
-		return isDark() ? (selected ? 0xFFF5F7FA : 0xFFE6EAF0) : (selected ? current().strong : 0xFF402D61);
+		return selected ? 0xFFF5F7FA : 0xFFE6EAF0;
 	}
 
 	public static inline function cardDescriptionColor(selected:Bool):Int
 	{
-		return isDark() ? (selected ? 0xFFC4CBD6 : 0xFF99A1AE) : (selected ? current().muted : 0xFF7B6D93);
+		return selected ? 0xFFC4CBD6 : 0xFF99A1AE;
 	}
 
 	public static inline function cardValueColor(selected:Bool):Int
 	{
-		return isDark() ? (selected ? current().accent : 0xFFB7BEC9) : (selected ? current().accent : 0xFF7B6D93);
+		return selected ? current().accent : 0xFFB7BEC9;
 	}
 
 	public static inline function previewSurfaceColor():Int
 	{
-		return isDark() ? 0xFF171A1F : 0xFFF9F4FC;
+		return 0xFF181818;
 	}
 
 	public static inline function previewTitleColor():Int
 	{
-		return isDark() ? 0xFFF5F7FA : 0xFF2C1E48;
+		return 0xFFF5F7FA;
 	}
 
 	public static inline function previewHintColor(focused:Bool = false):Int
 	{
-		return focused ? titleColor() : (isDark() ? 0xFF9BA1AD : 0xFF76678B);
+		return focused ? titleColor() : 0xFF9BA1AD;
 	}
 
 	public static inline function accentOverlay(alpha:Float):Int
@@ -324,21 +324,17 @@ class OptionsMenuTheme
 
 	public static inline function loadingOverlayPanelColor():Int
 	{
-		return blendColor(panelSurfaceColor(), current().accent, isDark() ? 0.10 : 0.05);
+		return blendColor(0xFF161616, current().accent, 0.08);
 	}
 
 	public static inline function loadingOverlayOutlineColor():Int
 	{
-		return isDark()
-			? blendColor(0xFFF1F5F9, current().accent, 0.18)
-			: blendColor(0xFF6B7280, current().accent, 0.28);
+		return blendColor(0xFF6B7280, current().accent, 0.28);
 	}
 
 	public static inline function loadingOverlayTrackColor():Int
 	{
-		return isDark()
-			? blendColor(0xFF586171, current().accent, 0.34)
-			: blendColor(current().pale, current().accent, 0.38);
+		return blendColor(0xFF586171, current().accent, 0.34);
 	}
 
 	public static inline function loadingOverlayWaveColor():Int
@@ -349,21 +345,21 @@ class OptionsMenuTheme
 	public static inline function interactiveFill(active:Bool, hovered:Bool = false):Int
 	{
 		if (active)
-			return blendColor(isDark() ? 0xFF1A1E24 : 0xFFFCF8FF, current().accent, isDark() ? 0.15 : 0.11);
+			return blendColor(0xFF202020, current().accent, 0.15);
 
 		if (hovered)
-			return blendColor(isDark() ? 0xFF171B21 : 0xFFFFFBFF, current().accent, isDark() ? 0.08 : 0.06);
+			return blendColor(0xFF191919, current().accent, 0.08);
 
 		return 0x00000000;
 	}
 
 	public static inline function optionTitleColor(selected:Bool):Int
 	{
-		return isDark() ? (selected ? titleColor() : 0xFFE6EAF0) : (selected ? current().strong : 0xFF45335E);
+		return selected ? titleColor() : 0xFFE6EAF0;
 	}
 
 	public static inline function optionDescriptionColor(selected:Bool):Int
 	{
-		return isDark() ? (selected ? bodyTextColor() : 0xFF99A1AE) : (selected ? current().muted : 0xFF7E6F95);
+		return selected ? bodyTextColor() : 0xFF99A1AE;
 	}
 }

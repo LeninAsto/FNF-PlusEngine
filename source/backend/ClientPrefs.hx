@@ -28,7 +28,7 @@ import states.TitleState;
 	public var versionTextOnGameplay:Bool = false;
 	public var gameOverVibration:Bool = false;
 	public var fpsRework:Bool = true;
-	public var framerateMode:String = 'Interpolated';
+	public var framerateMode:String = 'Psych';
 	public var mobileReceptorAlign:Bool = false; // Align receptors with hitbox lanes (mobile only, may break scripts)
 	#if windows
 	public var fullscreenMode:String = 'Borderless'; // 'Borderless', 'Borderless Fix', 'Exclusive'

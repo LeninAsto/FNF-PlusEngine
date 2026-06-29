@@ -5,6 +5,9 @@ import openfl.utils.Assets;
 class LanguageSubState extends MusicBeatSubstate
 {
 	#if TRANSLATIONS_ALLOWED
+	private static inline var INTRO_DURATION:Float = 0.32;
+	private static inline var INTRO_DESC_DURATION:Float = 0.24;
+	private static inline var OUTRO_DURATION:Float = 0.26;
 	var grpLanguages:FlxTypedGroup<Alphabet> = new FlxTypedGroup<Alphabet>();
 	var languages:Array<String> = [];
 	var displayLanguages:Map<String, String> = [];
@@ -15,6 +18,9 @@ class LanguageSubState extends MusicBeatSubstate
 	private var descText:FlxText;
 	private var bg:FlxSprite;
 	private var lastThemeSignature:String = "";
+	private var titleText:Alphabet;
+	private var playingIntroTransition:Bool = false;
+	private var closingTransition:Bool = false;
 	
 	public var title:String;
 	public var rpcTitle:String;
@@ -31,7 +37,7 @@ class LanguageSubState extends MusicBeatSubstate
 		#end
 		
 		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
-		bg.color = OptionsMenuTheme.current().accent;
+		bg.alpha = OptionsMenuTheme.menuBackgroundAlpha();
 		bg.screenCenter();
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		add(bg);
@@ -43,7 +49,7 @@ class LanguageSubState extends MusicBeatSubstate
 		descBox.alpha = 0.6;
 		add(descBox);
 
-		var titleText:Alphabet = new Alphabet(75, 45, title, true);
+		titleText = new Alphabet(75, 45, title, true);
 		titleText.setScale(0.6);
 		titleText.alpha = 0.4;
 		add(titleText);
@@ -136,6 +142,7 @@ class LanguageSubState extends MusicBeatSubstate
 		}
 		changeSelected();
 		updateExampleText();
+		setupIntroTransition();
 
 		addTouchPad('LEFT_FULL', 'A_B');
 	}
@@ -147,6 +154,9 @@ class LanguageSubState extends MusicBeatSubstate
 		if (lastThemeSignature != OptionsMenuTheme.signature())
 			refreshThemeVisuals();
 
+		if (playingIntroTransition || closingTransition)
+			return;
+
 		var mult:Int = (FlxG.keys.pressed.SHIFT) ? 4 : 1;
 		if(controls.UI_UP_P)
 			changeSelected(-1 * mult);
@@ -157,14 +167,13 @@ class LanguageSubState extends MusicBeatSubstate
 
 		if(controls.BACK)
 		{
+			FlxG.sound.play(Paths.sound('cancelMenu'));
 			if(changedLanguage)
 			{
-				FlxTransitionableState.skipNextTransIn = true;
-				FlxTransitionableState.skipNextTransOut = true;
-				MusicBeatState.resetState();
+				startCloseTransition(true);
 			}
-			else close();
-			FlxG.sound.play(Paths.sound('cancelMenu'));
+			else startCloseTransition(false);
+			return;
 		}
 
 		if(controls.ACCEPT)
@@ -181,14 +190,95 @@ class LanguageSubState extends MusicBeatSubstate
 	function refreshThemeVisuals():Void
 	{
 		lastThemeSignature = OptionsMenuTheme.signature();
-		if (bg != null) bg.color = OptionsMenuTheme.current().accent;
+		if (bg != null)
+		{
+			bg.alpha = OptionsMenuTheme.menuBackgroundAlpha();
+		}
 		if (descBox != null)
 		{
 			descBox.color = OptionsMenuTheme.cardFill(false);
-			descBox.alpha = OptionsMenuTheme.isDark() ? 0.88 : 0.96;
+			descBox.alpha = 0.84;
 		}
 		if (descText != null)
 			descText.color = OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false));
+	}
+
+	function setupIntroTransition():Void
+	{
+		if (!Std.isOfType(FlxG.state, OptionsState) || !OptionsState.substateVisualActive)
+			return;
+
+		playingIntroTransition = true;
+
+		if (titleText != null)
+		{
+			titleText.visible = false;
+			titleText.active = false;
+			titleText.alpha = 0;
+		}
+
+		for (lang in grpLanguages.members)
+		{
+			if (lang == null) continue;
+			var targetX:Float = lang.x;
+			lang.x = -lang.width - 140;
+			lang.alpha = 0;
+			FlxTween.tween(lang, {x: targetX}, INTRO_DURATION, {ease: FlxEase.cubeInOut, startDelay: 0.02 * Math.max(0, lang.targetY + 1)});
+			FlxTween.tween(lang, {alpha: lang.targetY == 0 ? 1 : 0.6}, INTRO_DURATION, {ease: FlxEase.cubeInOut, startDelay: 0.02 * Math.max(0, lang.targetY + 1)});
+		}
+
+		if (descBox != null)
+		{
+			descBox.alpha = 0;
+			FlxTween.tween(descBox, {alpha: 0.84}, INTRO_DESC_DURATION, {ease: FlxEase.cubeInOut, startDelay: 0.08});
+		}
+
+		if (descText != null)
+		{
+			descText.alpha = 0;
+			FlxTween.tween(descText, {alpha: 1}, INTRO_DESC_DURATION, {ease: FlxEase.cubeInOut, startDelay: 0.1});
+		}
+
+		new FlxTimer().start(0.4, function(_) playingIntroTransition = false);
+	}
+
+	function startCloseTransition(reloadState:Bool):Void
+	{
+		if (closingTransition)
+			return;
+
+		closingTransition = true;
+
+		for (lang in grpLanguages.members)
+		{
+			if (lang == null) continue;
+			FlxTween.cancelTweensOf(lang);
+			FlxTween.tween(lang, {x: -lang.width - 140, alpha: 0}, OUTRO_DURATION, {ease: FlxEase.cubeInOut});
+		}
+
+		if (descBox != null)
+		{
+			FlxTween.cancelTweensOf(descBox);
+			FlxTween.tween(descBox, {alpha: 0}, OUTRO_DURATION - 0.08, {ease: FlxEase.cubeInOut});
+		}
+
+		if (descText != null)
+		{
+			FlxTween.cancelTweensOf(descText);
+			FlxTween.tween(descText, {alpha: 0}, OUTRO_DURATION - 0.08, {ease: FlxEase.cubeInOut});
+		}
+
+		new FlxTimer().start(OUTRO_DURATION + 0.04, function(_)
+		{
+			closingTransition = false;
+			if (reloadState)
+			{
+				FlxTransitionableState.skipNextTransIn = true;
+				FlxTransitionableState.skipNextTransOut = true;
+				MusicBeatState.resetState();
+			}
+			else close();
+		});
 	}
 
 	function changeSelected(change:Int = 0)

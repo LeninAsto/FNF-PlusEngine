@@ -5,6 +5,9 @@ import backend.StageData;
 
 class OptionsState extends MusicBeatState
 {
+	public static inline var SUBSTATE_TITLE_X:Float = 75;
+	public static inline var SUBSTATE_TITLE_Y:Float = 45;
+
 	var options:Array<String> = [
 		'Note Colors',
 		'Controls',
@@ -22,6 +25,79 @@ class OptionsState extends MusicBeatState
 	var lerpSelected:Float = 0;
 	public static var menuBG:FlxSprite;
 	public static var onPlayState:Bool = false;
+	public static var substateVisualActive:Bool = false;
+	public static var substateReturning:Bool = false;
+	public static var substateAnchorX:Float = 0;
+	public static var substateAnchorY:Float = 0;
+	public static var substateAnchorLabel:String = null;
+	public static inline var SUBSTATE_TITLE_SCALE:Float = 0.6;
+	public static inline var SUBSTATE_TITLE_ALPHA:Float = 0.4;
+	public static inline var SUBSTATE_TITLE_SPAWN_OFFSET:Float = 120;
+	public static inline var OPTION_BASE_Y:Float = 274;
+	public static inline var OPTION_SPACING_Y:Float = 90;
+	public static inline var OPTION_INTRO_SPAWN_X:Float = -420;
+	public static inline var OPTION_INTRO_DURATION:Float = 0.46;
+	var optionsIntroActive:Bool = true;
+	var substateInputBlocked:Bool = false;
+
+	public static function clearSubstateTransition():Void
+	{
+		substateVisualActive = false;
+		substateReturning = false;
+		substateAnchorX = 0;
+		substateAnchorY = 0;
+		substateAnchorLabel = null;
+	}
+
+	function getDisplayLabel(label:String):String
+	{
+		return switch (label)
+		{
+			case 'Note Colors': Language.getPhrase('notes', 'Note Colors');
+			case 'Controls': Language.getPhrase('controls', 'Controls');
+			case 'Graphics': Language.getPhrase('graphics_menu', 'Graphics Settings');
+			case 'Visuals': Language.getPhrase('visuals_menu', 'Visual Settings');
+			case 'Gameplay': Language.getPhrase('gameplay_menu', 'Gameplay Settings');
+			case 'Legacy': Language.getPhrase('legacy_menu', 'Legacy Settings');
+			case 'Modchart': Language.getPhrase('modchart_menu', 'Modchart Settings');
+			case 'Language': Language.getPhrase('language_menu', 'Language');
+			case 'Mobile': Language.getPhrase('mobile_settings', 'Mobile Settings');
+			default: Language.getPhrase('options_$label', label);
+		}
+	}
+
+	function restoreOptionTexts():Void
+	{
+		if (grpOptions == null || options == null) return;
+		for (i in 0...grpOptions.members.length)
+		{
+			var item = grpOptions.members[i];
+			if (item != null && i < options.length)
+			{
+				item.text = Language.getPhrase('options_${options[i]}', options[i]);
+				item.setScale(1);
+			}
+		}
+	}
+
+	function beginSubstateTransition(label:String):Void
+	{
+		var item:Alphabet = (grpOptions != null && curSelected >= 0 && curSelected < grpOptions.members.length) ? grpOptions.members[curSelected] : null;
+		substateVisualActive = true;
+		substateReturning = false;
+		substateAnchorLabel = label;
+		substateAnchorX = item != null ? item.x : SUBSTATE_TITLE_X;
+		substateAnchorY = item != null ? item.y : SUBSTATE_TITLE_Y;
+		substateInputBlocked = true;
+		if (item != null)
+		{
+			item.text = getDisplayLabel(label);
+			item.setScale(SUBSTATE_TITLE_SCALE);
+			item.x = SUBSTATE_TITLE_X - SUBSTATE_TITLE_SPAWN_OFFSET;
+			item.y = SUBSTATE_TITLE_Y;
+			item.alpha = 0;
+		}
+	}
 
 	function openSelectedSubstate(label:String) {
 		var stop = callOnCompanionScript('onOptionsMenuAccept', [label, curSelected]);
@@ -30,7 +106,8 @@ class OptionsState extends MusicBeatState
 
 		if (label != "Adjust Delay and Combo"){
 			removeTouchPad();
-			persistentUpdate = false;
+			persistentUpdate = true;
+			beginSubstateTransition(label);
 		}
 		switch(label)
 		{
@@ -50,6 +127,7 @@ class OptionsState extends MusicBeatState
 			case 'Modchart':
 				openSubState(ScriptableSubstate.tryCreate('ModchartSettingsSubState', new options.ModchartSettingsSubState()));
 			case 'Adjust Delay and Combo':
+				clearSubstateTransition();
 				MusicBeatState.switchState(ScriptableState.tryCreate('NoteOffsetState', new options.NoteOffsetState()));
 			case 'Mobile':
 				openSubState(ScriptableSubstate.tryCreate('MobileSettingsSubState', new mobile.options.MobileSettingsSubState()));
@@ -92,7 +170,9 @@ class OptionsState extends MusicBeatState
 		{
 			var optionText:Alphabet = new Alphabet(0, 0, Language.getPhrase('options_$option', option), true);
 			optionText.targetY = num;
-			optionText.isMenuItem = true;
+			optionText.isMenuItem = false;
+			optionText.changeX = false;
+			optionText.changeY = false;
 			grpOptions.add(optionText);
 		}
 
@@ -109,13 +189,12 @@ class OptionsState extends MusicBeatState
 		for (num => item in grpOptions.members)
 		{
 			var targetY:Float = item.targetY - lerpSelected;
-			item.screenCenter(X);
-			item.y = (FlxG.height * 0.2) + (targetY * 50);
-			
-			item.alpha = 0.6;
+			var centeredX:Float = (FlxG.width - item.width) * 0.5;
+			item.x = optionsIntroActive ? Math.min(OPTION_INTRO_SPAWN_X, -item.width - 140) : centeredX;
+			item.y = OPTION_BASE_Y + (targetY * OPTION_SPACING_Y);
+			item.alpha = 0;
 			if (item.targetY == curSelected)
 			{
-				item.alpha = 1;
 				selectorLeft.x = item.x - 63;
 				selectorLeft.y = item.y;
 				selectorRight.x = item.x + item.width + 15;
@@ -127,6 +206,7 @@ class OptionsState extends MusicBeatState
 
 		super.create();
 		callOnCompanionScript('onOptionsMenuCreatePost', [getOptionsCopy()]);
+		new FlxTimer().start(OPTION_INTRO_DURATION + 0.06, function(_) optionsIntroActive = false);
 	}
 
 	override function closeSubState()
@@ -137,6 +217,16 @@ class OptionsState extends MusicBeatState
 		DiscordClient.changePresence("Options Menu", null);
 		#end
 		controls.isInSubstate = false;
+		substateInputBlocked = false;
+		substateVisualActive = false;
+		substateReturning = true;
+		restoreOptionTexts();
+		for (item in grpOptions.members)
+		{
+			if (item == null) continue;
+			item.x -= 180;
+			item.alpha = 0;
+		}
 		removeTouchPad();
 		addTouchPad('UP_DOWN', 'A_B_C');
 		persistentUpdate = true;
@@ -151,13 +241,45 @@ class OptionsState extends MusicBeatState
 		for (num => item in grpOptions.members)
 		{
 			var targetY:Float = item.targetY - lerpSelected;
-			item.screenCenter(X);
-			item.y = FlxMath.lerp((FlxG.height * 0.2) + (targetY * 50), item.y, Math.exp(-elapsed * 10.2));
-			
-			item.alpha = 0.6;
-			if (item.targetY == curSelected)
+			var targetX:Float = (FlxG.width - item.width) * 0.5;
+			var desiredY:Float = OPTION_BASE_Y + (targetY * OPTION_SPACING_Y);
+			var targetScale:Float = 1;
+			var targetAlpha:Float = 0.6;
+
+			if (substateVisualActive)
 			{
-				item.alpha = 1;
+				if (item.targetY == curSelected)
+				{
+					targetX = SUBSTATE_TITLE_X;
+					desiredY = SUBSTATE_TITLE_Y;
+					targetScale = SUBSTATE_TITLE_SCALE;
+					targetAlpha = SUBSTATE_TITLE_ALPHA;
+				}
+				else
+				{
+					targetX = -item.width - 80;
+					desiredY -= 70;
+					targetAlpha = 0;
+				}
+			}
+			else if (substateReturning)
+			{
+				targetX = (FlxG.width - item.width) * 0.5;
+			}
+			else if (optionsIntroActive)
+			{
+				targetX = (FlxG.width - item.width) * 0.5;
+			}
+			if (item.targetY == curSelected && !substateVisualActive)
+				targetAlpha = 1;
+
+			var moveLerp:Float = Math.exp(-elapsed * (optionsIntroActive ? 7.2 : 10.2));
+			item.x = FlxMath.lerp(targetX, item.x, moveLerp);
+			item.y = FlxMath.lerp(desiredY, item.y, moveLerp);
+			item.setScale(FlxMath.lerp(targetScale, item.scale.x, Math.exp(-elapsed * 10.2)));
+			item.alpha = FlxMath.lerp(targetAlpha, item.alpha, moveLerp);
+			if (item.targetY == curSelected && !substateVisualActive)
+			{
 				selectorLeft.x = item.x - 63;
 				selectorLeft.y = item.y;
 				selectorRight.x = item.x + item.width + 15;
@@ -165,7 +287,12 @@ class OptionsState extends MusicBeatState
 			}
 		}
 
-		if(!exiting) {
+		selectorLeft.alpha = substateVisualActive ? 0 : 1;
+		selectorRight.alpha = substateVisualActive ? 0 : 1;
+		if (substateReturning && Math.abs(grpOptions.members[curSelected].x - ((FlxG.width - grpOptions.members[curSelected].width) * 0.5)) < 4)
+			substateReturning = false;
+
+		if(!exiting && !substateInputBlocked) {
 			if (controls.UI_UP_P)
 				changeSelection(-1);
 			if (controls.UI_DOWN_P)
@@ -186,12 +313,14 @@ class OptionsState extends MusicBeatState
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				if(onPlayState)
 				{
+					clearSubstateTransition();
 					StageData.loadDirectory(PlayState.SONG);
 					LoadingState.loadAndSwitchState(new PlayState());
 					FlxG.sound.music.volume = 0;
 				}
 				else 
 				{
+					clearSubstateTransition();
 					MusicBeatState.switchState(new MainMenuState());
 				}
 			}
@@ -298,7 +427,9 @@ class OptionsState extends MusicBeatState
 		{
 			var optionText:Alphabet = new Alphabet(0, 0, Language.getPhrase('options_$option', option), true);
 			optionText.targetY = num;
-			optionText.isMenuItem = true;
+			optionText.isMenuItem = false;
+			optionText.changeX = false;
+			optionText.changeY = false;
 			grpOptions.add(optionText);
 		}
 

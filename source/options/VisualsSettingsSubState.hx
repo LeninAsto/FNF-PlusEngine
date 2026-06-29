@@ -115,16 +115,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		option.onChange = onChangeKeyViewerColor;
 
-		var option:Option = new Option('Theme Mode:',
-			'Choose between light and dark menu themes.',
-			'menuThemeMode',
-			STRING,
-			['Light', 'Dark'],
-			'theme_mode');
-		addOption(option);
-		option.onChange = onChangeThemeMode;
-		themeModeOption = option;
-
 		var option:Option = new Option('Accent Color:',
 			'Choose a preset accent color or open the custom color picker.',
 			'menuAccentColor',
