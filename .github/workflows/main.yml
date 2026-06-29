@@ -564,110 +564,146 @@ jobs:
             }
 
   notify_discord:
-    name: Notify Discord
-    runs-on: ubuntu-24.04
-    needs:
-      - summary
-      - publish_dev_build
-    if: always() && github.event_name != 'pull_request'
+  name: Notify Discord
+  runs-on: ubuntu-24.04
+  needs:
+    - summary
+    - publish_dev_build
+  if: always() && github.event_name != 'pull_request'
 
-    steps:
-      - name: Send Discord notification
-        env:
-          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
-          SUMMARY_RESULT: ${{ needs.summary.result }}
-          PUBLISH_RESULT: ${{ needs.publish_dev_build.result }}
-          REPOSITORY: ${{ github.repository }}
-          RUN_ID: ${{ github.run_id }}
-          RUN_NUMBER: ${{ github.run_number }}
-          REF_NAME: ${{ github.ref_name }}
-          SHA: ${{ github.sha }}
-          SERVER_URL: ${{ github.server_url }}
-          ACTOR: ${{ github.actor }}
-          EVENT_NAME: ${{ github.event_name }}
-          APP_VERSION: ${{ env.APP_VERSION }}
-        run: |
-          if [ -z "$DISCORD_WEBHOOK" ]; then
-            echo "DISCORD_WEBHOOK is not configured, skipping notification."
-            exit 0
-          fi
+  steps:
+    - name: Send Discord notification
+      env:
+        DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+        SUMMARY_RESULT: ${{ needs.summary.result }}
+        PUBLISH_RESULT: ${{ needs.publish_dev_build.result }}
+        REPOSITORY: ${{ github.repository }}
+        RUN_ID: ${{ github.run_id }}
+        RUN_NUMBER: ${{ github.run_number }}
+        REF_NAME: ${{ github.ref_name }}
+        SHA: ${{ github.sha }}
+        SERVER_URL: ${{ github.server_url }}
+        ACTOR: ${{ github.actor }}
+        EVENT_NAME: ${{ github.event_name }}
+        APP_VERSION: ${{ env.APP_VERSION }}
+      run: |
+        if [ -z "$DISCORD_WEBHOOK" ]; then
+          echo "DISCORD_WEBHOOK is not configured, skipping notification."
+          exit 0
+        fi
 
-          RUN_URL="$SERVER_URL/$REPOSITORY/actions/runs/$RUN_ID"
-          RELEASE_URL="$SERVER_URL/$REPOSITORY/releases/tag/dev-build"
-          SHORT_SHA="${SHA::7}"
-          TIMESTAMP_UTC="$(date -u +"%Y-%m-%d %H:%M UTC")"
-          TIMESTAMP_ISO="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+        RUN_URL="$SERVER_URL/$REPOSITORY/actions/runs/$RUN_ID"
+        RELEASE_URL="$SERVER_URL/$REPOSITORY/releases/tag/dev-build"
+        SHORT_SHA="${SHA::7}"
+        TIMESTAMP_UTC="$(date -u +"%Y-%m-%d %H:%M UTC")"
+        TIMESTAMP_ISO="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
 
-          if [ "$SUMMARY_RESULT" = "success" ]; then
-            STATUS="SUCCESS"
-            COLOR=5763719
-            if [ "$PUBLISH_RESULT" = "success" ]; then
-              DOWNLOAD_LABEL="Release"
-              DOWNLOAD_URL="$RELEASE_URL"
-              DESCRIPTION="The workflow completed successfully and the latest dev build is ready to download."
-            else
-              DOWNLOAD_LABEL="Artifacts"
-              DOWNLOAD_URL="$RUN_URL"
-              DESCRIPTION="The workflow completed successfully. The build files are available in this run's artifacts."
-            fi
+        if [ "$SUMMARY_RESULT" = "success" ]; then
+          STATUS="SUCCESS"
+          COLOR=5763719
+          if [ "$PUBLISH_RESULT" = "success" ]; then
+            DOWNLOAD_LABEL="Release"
+            DOWNLOAD_URL="$RELEASE_URL"
+            DESCRIPTION="The workflow completed successfully and the latest dev build is ready to download."
           else
-            STATUS="FAILED"
-            COLOR=15548997
-            DOWNLOAD_LABEL="Workflow Run"
+            DOWNLOAD_LABEL="Artifacts"
             DOWNLOAD_URL="$RUN_URL"
-            DESCRIPTION="The workflow finished with errors. Check the run logs for details."
+            DESCRIPTION="The workflow completed successfully. The build files are available in this run's artifacts."
           fi
+        else
+          STATUS="FAILED"
+          COLOR=15548997
+          DOWNLOAD_LABEL="Workflow Run"
+          DOWNLOAD_URL="$RUN_URL"
+          DESCRIPTION="The workflow finished with errors. Check the run logs for details."
+        fi
 
-          export STATUS COLOR DOWNLOAD_LABEL DOWNLOAD_URL DESCRIPTION TIMESTAMP_UTC TIMESTAMP_ISO
+        export STATUS COLOR DOWNLOAD_LABEL DOWNLOAD_URL DESCRIPTION TIMESTAMP_UTC TIMESTAMP_ISO
 
-          python - <<'PY'
-          import json
-          import os
-          import urllib.request
+        python - <<'PY'
+        import json
+        import os
+        import urllib.request
+        import urllib.error
 
-          webhook = os.environ["DISCORD_WEBHOOK"]
-          repo = os.environ["REPOSITORY"]
-          branch = os.environ["REF_NAME"]
-          short_sha = os.environ["SHA"][:7]
-          run_id = os.environ["RUN_ID"]
-          run_number = os.environ["RUN_NUMBER"]
-          actor = os.environ["ACTOR"]
-          event_name = os.environ["EVENT_NAME"]
-          app_version = os.environ["APP_VERSION"]
-          run_url = f'{os.environ["SERVER_URL"]}/{repo}/actions/runs/{run_id}'
+        webhook = os.environ.get("DISCORD_WEBHOOK")
+        if not webhook:
+            print("No webhook URL provided")
+            exit(0)
 
-          payload = {
-              "embeds": [
-                  {
-                      "title": f'Build Workflow {os.environ["STATUS"]}',
-                      "description": (
-                          f'{os.environ["DESCRIPTION"]}\n\n'
-                          f'[{os.environ["DOWNLOAD_LABEL"]}]({os.environ["DOWNLOAD_URL"]})'
-                      ),
-                      "color": int(os.environ["COLOR"]),
-                      "timestamp": os.environ["TIMESTAMP_ISO"],
-                      "fields": [
-                          {"name": "Repository", "value": repo, "inline": True},
-                          {"name": "Branch", "value": branch, "inline": True},
-                          {"name": "Commit", "value": f'`{short_sha}`', "inline": True},
-                          {"name": "Run", "value": f'#{run_number}', "inline": True},
-                          {"name": "Triggered by", "value": actor, "inline": True},
-                          {"name": "Event", "value": event_name, "inline": True},
-                          {"name": "App Version", "value": f'`{app_version}`', "inline": False},
-                          {"name": "Completed At", "value": os.environ["TIMESTAMP_UTC"], "inline": False},
-                          {"name": "Workflow Logs", "value": run_url, "inline": False},
-                      ],
-                  }
-              ]
-          }
+        repo = os.environ["REPOSITORY"]
+        branch = os.environ["REF_NAME"]
+        short_sha = os.environ["SHA"][:7]
+        run_number = os.environ["RUN_NUMBER"]
+        actor = os.environ["ACTOR"]
+        event_name = os.environ["EVENT_NAME"]
+        app_version = os.environ["APP_VERSION"]
+        run_url = f'{os.environ["SERVER_URL"]}/{repo}/actions/runs/{os.environ["RUN_ID"]}'
 
-          data = json.dumps(payload).encode("utf-8")
-          req = urllib.request.Request(
-              webhook,
-              data=data,
-              headers={"Content-Type": "application/json"},
-              method="POST",
-          )
-          with urllib.request.urlopen(req) as resp:
-              print(f"Discord webhook response: {resp.status}")
-          PY
+        embed = {
+            "title": f'Build Workflow {os.environ["STATUS"]}',
+            "description": (
+                f'{os.environ["DESCRIPTION"]}\n\n'
+                f'**[{os.environ["DOWNLOAD_LABEL"]}]({os.environ["DOWNLOAD_URL"]})**'
+            ),
+            "color": int(os.environ["COLOR"]),
+            "timestamp": os.environ["TIMESTAMP_ISO"],
+            "fields": [
+                {"name": "Repository", "value": repo, "inline": True},
+                {"name": "Branch", "value": branch, "inline": True},
+                {"name": "Commit", "value": f'`{short_sha}`', "inline": True},
+                {"name": "Run", "value": f'#{run_number}', "inline": True},
+                {"name": "Triggered by", "value": actor, "inline": True},
+                {"name": "Event", "value": event_name, "inline": True},
+                {"name": "App Version", "value": f'`{app_version}`', "inline": False},
+                {"name": "Completed At", "value": os.environ["TIMESTAMP_UTC"], "inline": False},
+                {"name": "Workflow Logs", "value": run_url, "inline": False},
+            ],
+        }
+
+        payload = {
+            "content": None,
+            "embeds": [embed]
+        }
+
+        payload = {k: v for k, v in payload.items() if v is not None}
+
+        data = json.dumps(payload).encode("utf-8")
+
+        headers = {
+            "Content-Type": "application/json",
+            "User-Agent": "GitHub-Actions/1.0"
+        }
+
+        req = urllib.request.Request(
+            webhook,
+            data=data,
+            headers=headers,
+            method="POST",
+        )
+
+        try:
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                response_data = resp.read().decode('utf-8')
+                print(f"Discord webhook response: {resp.status} {resp.reason}")
+                if response_data:
+                    print(f"Response body: {response_data}")
+        except urllib.error.HTTPError as e:
+            print(f"HTTP Error {e.code}: {e.reason}")
+            if e.code == 403:
+                print("This usually means:")
+                print("  1. The webhook URL is invalid or has been deleted")
+                print("  2. The webhook doesn't have permission to send messages")
+                print("  3. The webhook requires a specific content-type header")
+            elif e.code == 429:
+                print("Rate limited by Discord. Try again later.")
+            else:
+                print(f"Response headers: {e.headers}")
+            exit(1)
+        except urllib.error.URLError as e:
+            print(f"URL Error: {e.reason}")
+            exit(1)
+        except Exception as e:
+            print(f"Unexpected error: {e}")
+            exit(1)
+        PY
