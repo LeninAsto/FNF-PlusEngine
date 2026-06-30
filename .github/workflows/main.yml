@@ -688,4 +688,3 @@ jobs:
               print("Continuing without failing the workflow.")
               sys.exit(0)
           PY
-v
