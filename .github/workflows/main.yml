@@ -623,6 +623,8 @@ jobs:
           python - <<'PY'
           import json
           import os
+          import sys
+          import urllib.error
           import urllib.request
 
           webhook = os.environ["DISCORD_WEBHOOK"]
@@ -665,9 +667,24 @@ jobs:
           req = urllib.request.Request(
               webhook,
               data=data,
-              headers={"Content-Type": "application/json"},
+              headers={
+                  "Content-Type": "application/json",
+                  "User-Agent": "GitHub-Actions-Discord-Notifier",
+              },
               method="POST",
           )
-          with urllib.request.urlopen(req) as resp:
-              print(f"Discord webhook response: {resp.status}")
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  print(f"Discord webhook response: {resp.status}")
+          except urllib.error.HTTPError as err:
+              body = err.read().decode("utf-8", errors="replace")
+              print(f"Discord webhook HTTP error: {err.code} {err.reason}")
+              if body:
+                  print(body)
+              print("Continuing without failing the workflow.")
+              sys.exit(0)
+          except Exception as err:
+              print(f"Discord webhook unexpected error: {err}")
+              print("Continuing without failing the workflow.")
+              sys.exit(0)
           PY
