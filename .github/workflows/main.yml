@@ -620,11 +620,20 @@ jobs:
 
         export STATUS COLOR DOWNLOAD_LABEL DOWNLOAD_URL DESCRIPTION TIMESTAMP_UTC TIMESTAMP_ISO
 
+<<<<<<< HEAD
         python - <<'PY'
         import json
         import os
         import urllib.request
         import urllib.error
+=======
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          import urllib.error
+          import urllib.request
+>>>>>>> f94b900d8f1ce5e7ba774ec16157814b8411a056
 
         webhook = os.environ.get("DISCORD_WEBHOOK")
         if not webhook:
@@ -640,6 +649,7 @@ jobs:
         app_version = os.environ["APP_VERSION"]
         run_url = f'{os.environ["SERVER_URL"]}/{repo}/actions/runs/{os.environ["RUN_ID"]}'
 
+<<<<<<< HEAD
         embed = {
             "title": f'Build Workflow {os.environ["STATUS"]}',
             "description": (
@@ -707,3 +717,30 @@ jobs:
             print(f"Unexpected error: {e}")
             exit(1)
         PY
+=======
+          data = json.dumps(payload).encode("utf-8")
+          req = urllib.request.Request(
+              webhook,
+              data=data,
+              headers={
+                  "Content-Type": "application/json",
+                  "User-Agent": "GitHub-Actions-Discord-Notifier",
+              },
+              method="POST",
+          )
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  print(f"Discord webhook response: {resp.status}")
+          except urllib.error.HTTPError as err:
+              body = err.read().decode("utf-8", errors="replace")
+              print(f"Discord webhook HTTP error: {err.code} {err.reason}")
+              if body:
+                  print(body)
+              print("Continuing without failing the workflow.")
+              sys.exit(0)
+          except Exception as err:
+              print(f"Discord webhook unexpected error: {err}")
+              print("Continuing without failing the workflow.")
+              sys.exit(0)
+          PY
+>>>>>>> f94b900d8f1ce5e7ba774ec16157814b8411a056
