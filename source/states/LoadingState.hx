@@ -655,14 +655,39 @@ class LoadingState extends MusicBeatState
 
 	public static function clearInvalids()
 	{
+		dedupe(imagesToPrepare);
+		dedupe(soundsToPrepare);
+		dedupe(musicToPrepare);
+		dedupe(songsToPrepare);
+
 		clearInvalidFrom(imagesToPrepare, 'images', '.png', IMAGE);
 		clearInvalidFrom(soundsToPrepare, 'sounds', '.${Paths.SOUND_EXT}', SOUND);
-		clearInvalidFrom(musicToPrepare, 'music',' .${Paths.SOUND_EXT}', SOUND);
+		clearInvalidFrom(musicToPrepare, 'music', '.${Paths.SOUND_EXT}', SOUND);
 		clearInvalidFrom(songsToPrepare, 'songs', '.${Paths.SOUND_EXT}', SOUND, 'songs');
 
 		for (arr in [imagesToPrepare, soundsToPrepare, musicToPrepare, songsToPrepare])
 			while (arr.contains(null))
 				arr.remove(null);
+	}
+
+	static function dedupe(arr:Array<String>):Void
+	{
+		var seen:Map<String, Bool> = [];
+		var i:Int = 0;
+		while (i < arr.length)
+		{
+			var item:String = arr[i];
+			var key:String = item == null ? null : item.trim();
+			if (key == null || seen.exists(key))
+			{
+				arr.splice(i, 1);
+				continue;
+			}
+
+			seen.set(key, true);
+			if (key != item) arr[i] = key;
+			i++;
+		}
 	}
 
 	static function clearInvalidFrom(arr:Array<String>, prefix:String, ext:String, type:AssetType, ?parentFolder:String = null)
@@ -852,9 +877,9 @@ class LoadingState extends MusicBeatState
 			#if TRANSLATIONS_ALLOWED requestKey = Language.getFileTranslation(requestKey); #end
 			if(requestKey.lastIndexOf('.') < 0) requestKey += '.png';
 
-			if (!Paths.currentTrackedAssets.exists(requestKey))
+			var file:String = Paths.getPath(requestKey, IMAGE);
+			if (!Paths.currentTrackedAssets.exists(file))
 			{
-				var file:String = Paths.getPath(requestKey, IMAGE);
 				if (#if sys FileSystem.exists(file) || #end OpenFlAssets.exists(file, IMAGE))
 				{
 					#if sys
@@ -872,7 +897,10 @@ class LoadingState extends MusicBeatState
 				else trace('no such image $key exists');
 			}
 
-			return Paths.currentTrackedAssets.get(requestKey).bitmap;
+			mutex.acquire();
+			Paths.localTrackedAssets.push(file);
+			mutex.release();
+			return Paths.currentTrackedAssets.get(file).bitmap;
 		}
 		catch(e:haxe.Exception)
 		{

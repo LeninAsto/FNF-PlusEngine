@@ -27,8 +27,8 @@ import states.TitleState;
 	public var popUpRating:Bool = true;
 	public var versionTextOnGameplay:Bool = false;
 	public var gameOverVibration:Bool = false;
-	public var fpsRework:Bool = true;
-	public var framerateMode:String = 'Psych';
+	public var fpsRework:Bool = #if mobile false #else true #end;
+	public var framerateMode:String = #if mobile 'Psych' #else 'Interpolated' #end;
 	public var mobileReceptorAlign:Bool = false; // Align receptors with hitbox lanes (mobile only, may break scripts)
 	#if windows
 	public var fullscreenMode:String = 'Borderless'; // 'Borderless', 'Borderless Fix', 'Exclusive'
@@ -365,7 +365,7 @@ class ClientPrefs {
 
 		var storedFramerateMode:Dynamic = Reflect.field(FlxG.save.data, 'framerateMode');
 		if (storedFramerateMode == null)
-			data.framerateMode = (Reflect.field(FlxG.save.data, 'fpsRework') == false) ? 'Psych' : 'Interpolated';
+			data.framerateMode = Reflect.hasField(FlxG.save.data, 'fpsRework') ? ((Reflect.field(FlxG.save.data, 'fpsRework') == false) ? 'Psych' : 'Interpolated') : defaultData.framerateMode;
 		else
 			data.framerateMode = Std.string(storedFramerateMode);
 		data.framerateMode = normalizeFramerateMode(data.framerateMode);

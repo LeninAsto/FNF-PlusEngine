@@ -25,6 +25,7 @@ class StrumNote extends FlxSprite
 
 	public var useRGBShader:Bool = true;
 	public var animateOnBeat:Bool = false; // Para sincronizar animación estática con el beat (NotITG)
+	private var lastCenteredAnim:String = null;
 	
 	public function new(x:Float, y:Float, leData:Int, player:Int) {
 		animation = new PsychAnimationController(this);
@@ -121,6 +122,7 @@ class StrumNote extends FlxSprite
 	{
 		var lastAnim:String = null;
 		if(animation.curAnim != null) lastAnim = animation.curAnim.name;
+		lastCenteredAnim = null;
 
 		if(PlayState.isPixelStage)
 		{
@@ -221,8 +223,13 @@ class StrumNote extends FlxSprite
 		animation.play(anim, force);
 		if(animation.curAnim != null)
 		{
-			centerOffsets();
-			centerOrigin();
+			var curAnimName:String = animation.curAnim.name;
+			if(curAnimName != lastCenteredAnim)
+			{
+				centerOffsets();
+				centerOrigin();
+				lastCenteredAnim = curAnimName;
+			}
 		}
 		// Solo activar shader RGB si useRGBShader está habilitado y no es animación estática
 		// Para NotITG (useRGBShader = false), NUNCA activar el shader
