@@ -620,20 +620,12 @@ jobs:
 
         export STATUS COLOR DOWNLOAD_LABEL DOWNLOAD_URL DESCRIPTION TIMESTAMP_UTC TIMESTAMP_ISO
 
-<<<<<<< HEAD
-        python - <<'PY'
-        import json
-        import os
-        import urllib.request
-        import urllib.error
-=======
           python - <<'PY'
           import json
           import os
           import sys
           import urllib.error
           import urllib.request
->>>>>>> f94b900d8f1ce5e7ba774ec16157814b8411a056
 
         webhook = os.environ.get("DISCORD_WEBHOOK")
         if not webhook:
@@ -649,75 +641,6 @@ jobs:
         app_version = os.environ["APP_VERSION"]
         run_url = f'{os.environ["SERVER_URL"]}/{repo}/actions/runs/{os.environ["RUN_ID"]}'
 
-<<<<<<< HEAD
-        embed = {
-            "title": f'Build Workflow {os.environ["STATUS"]}',
-            "description": (
-                f'{os.environ["DESCRIPTION"]}\n\n'
-                f'**[{os.environ["DOWNLOAD_LABEL"]}]({os.environ["DOWNLOAD_URL"]})**'
-            ),
-            "color": int(os.environ["COLOR"]),
-            "timestamp": os.environ["TIMESTAMP_ISO"],
-            "fields": [
-                {"name": "Repository", "value": repo, "inline": True},
-                {"name": "Branch", "value": branch, "inline": True},
-                {"name": "Commit", "value": f'`{short_sha}`', "inline": True},
-                {"name": "Run", "value": f'#{run_number}', "inline": True},
-                {"name": "Triggered by", "value": actor, "inline": True},
-                {"name": "Event", "value": event_name, "inline": True},
-                {"name": "App Version", "value": f'`{app_version}`', "inline": False},
-                {"name": "Completed At", "value": os.environ["TIMESTAMP_UTC"], "inline": False},
-                {"name": "Workflow Logs", "value": run_url, "inline": False},
-            ],
-        }
-
-        payload = {
-            "content": None,
-            "embeds": [embed]
-        }
-
-        payload = {k: v for k, v in payload.items() if v is not None}
-
-        data = json.dumps(payload).encode("utf-8")
-
-        headers = {
-            "Content-Type": "application/json",
-            "User-Agent": "GitHub-Actions/1.0"
-        }
-
-        req = urllib.request.Request(
-            webhook,
-            data=data,
-            headers=headers,
-            method="POST",
-        )
-
-        try:
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                response_data = resp.read().decode('utf-8')
-                print(f"Discord webhook response: {resp.status} {resp.reason}")
-                if response_data:
-                    print(f"Response body: {response_data}")
-        except urllib.error.HTTPError as e:
-            print(f"HTTP Error {e.code}: {e.reason}")
-            if e.code == 403:
-                print("This usually means:")
-                print("  1. The webhook URL is invalid or has been deleted")
-                print("  2. The webhook doesn't have permission to send messages")
-                print("  3. The webhook requires a specific content-type header")
-            elif e.code == 429:
-                print("Rate limited by Discord. Try again later.")
-            else:
-                print(f"Response headers: {e.headers}")
-            exit(1)
-        except urllib.error.URLError as e:
-            print(f"URL Error: {e.reason}")
-            exit(1)
-        except Exception as e:
-            print(f"Unexpected error: {e}")
-            exit(1)
-        PY
-=======
           data = json.dumps(payload).encode("utf-8")
           req = urllib.request.Request(
               webhook,
@@ -743,4 +666,3 @@ jobs:
               print("Continuing without failing the workflow.")
               sys.exit(0)
           PY
->>>>>>> f94b900d8f1ce5e7ba774ec16157814b8411a056
