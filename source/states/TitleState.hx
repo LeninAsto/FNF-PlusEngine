@@ -9,15 +9,10 @@ import flixel.graphics.frames.FlxFrame;
 import flixel.group.FlxGroup;
 import flixel.input.gamepad.FlxGamepad;
 
-
 import shaders.ColorSwap;
 
 import states.StoryMenuState;
 import states.MainMenuState;
-
-#if VIDEOS_ALLOWED
-import hxvlc.flixel.FlxVideoSprite;
-#end
 
 #if mobile
 import mobile.backend.TouchUtil;
@@ -51,7 +46,6 @@ class TitleState extends MusicBeatState
 	public static var volumeUpKeys:Array<FlxKey> = [FlxKey.NUMPADPLUS, FlxKey.PLUS];
 
 	public static var initialized:Bool = false;
-	public static var fromSubstate:Bool = false; // Variable para detectar si viene del substate
 	
 	public var forceShowIntro:Bool = false; // Si debe forzar mostrar la intro
 
@@ -76,7 +70,6 @@ class TitleState extends MusicBeatState
 	public var easterEggKeysBuffer:String = '';
 	#end
 
-	public var introVideo:FlxVideoSprite;
 	public var showingIntro:Bool = false;
 	public var introFinished:Bool = false;
 	public var skipTimer:Float = 0;
