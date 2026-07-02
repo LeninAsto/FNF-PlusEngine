@@ -3,7 +3,6 @@ package backend;
 import flixel.util.FlxSave;
 import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepadInputID;
-//import funkin.cloud.GoogleCloudSyncNotifier;
 
 import states.TitleState;
 
@@ -123,7 +122,6 @@ import states.TitleState;
 	public var pauseMusic:String = 'Tea Time';
 	public var checkForUpdates:Bool = true;
 	public var comboStacking:Bool = true;
-	public var enablePreloader:Bool = false; // Enable global asset preloader on startup
 	public var gameplaySettings:Map<String, Dynamic> = [
 		'scrollspeed' => 1.0,
 		'scrolltype' => 'multiplicative', 
@@ -166,34 +164,12 @@ import states.TitleState;
 	public var abbreviateScore:Bool = true;
 	public var newfreeplay:Bool = true;
 	public var vanillaTransition:Bool = false; // Use vanilla Psych Engine transition instead of custom
-	public var cloudProvider:String = 'Google';
-	public var cloudSessionStatus:String = 'Not signed in';
-	public var firebaseDesktopLoginUrl:String = 'https://fnf-plus-engine.web.app/auth';
-	public var firebaseApiKey:String = 'AIzaSyBBuMPZbBMLTic9RFKTR-I0b-wmbdPgR-I';
-	public var firebaseProjectId:String = 'fnf-plus-engine';
-	public var firebaseRealtimeDbUrl:String = 'https://fnf-plus-engine-default-rtdb.firebaseio.com';
-	public var googleCloudUid:String = '';
-	public var googleCloudEmail:String = '';
-	public var googleFirebaseIdToken:String = '';
-	public var googleFirebaseRefreshToken:String = '';
-	public var cloudLastLocalSaveAt:String = '';
-	public var cloudLastCloudPushAt:String = '';
-	public var cloudLastCloudPullAt:String = '';
-	public var cloudLastSeenRemoteSnapshotAt:String = '';
-	public var cloudLastSeenRemoteSnapshotHash:String = '';
-	public var cloudDebugTraces:Bool = true;
-	public var gameJoltUsername:String = '';
-	public var gameJoltToken:String = '';
-	public var gameJoltGameId:String = '';
-	public var gameJoltPrivateKey:String = '';
 	public var pauseCountdown:Bool = false; // Enable countdown when resuming from pause
 	public var heyIntro:Bool = false; // Boyfriend and Girlfriend do Hey! animation on countdown Go!
 	public var breakTimer:Bool = false; // Show timer when next notes are approaching
-	public var disableLargeChartGC:Bool = false; // Skip manual GC pass for large charts to reduce loading stutters
 	public var legacyMemoryManagement:Bool = false; // Use Psych 0.7.3 memory management style (no GPU disposal)
 	public var legacyFileSystemAccess:Bool = false; // Allow direct FileSystem.readDirectory access like in Psych 0.7.3
 	public var legacyShaderInit:Bool = false; // Use Psych 0.7.3 shader initialization (glslVersion parameter, direct FlxRuntimeShader)
-	public var autoConvertChartsToV2:Bool = false; // Automatically convert psych_v1 charts to psych_v2 format when loading
 	public var useScriptableCustomStates:Bool = false; // Allow scripted state overrides through ScriptableState and CustomState
 }
 
@@ -331,7 +307,6 @@ class ClientPrefs {
 
 	public static function saveSettings() {
 		syncThemeModeFlags();
-		data.cloudLastLocalSaveAt = Date.now().toString();
 
 		for (key in Reflect.fields(data))
 			Reflect.setField(FlxG.save.data, key, Reflect.field(data, key));
@@ -352,7 +327,6 @@ class ClientPrefs {
 		save.data.gamepad = gamepadBinds;
 		save.data.mobile = mobileBinds;
 		save.flush();
-		//GoogleCloudSyncNotifier.notifySaveEvent();
 		FlxG.log.add("Settings saved!");
 	}
 

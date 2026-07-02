@@ -228,11 +228,7 @@ class Main extends Sprite
 
 		FlxG.fixedTimestep = true;
 		FlxG.game.focusLostFramerate = #if mobile 30 #else 60 #end;
-		#if web
-		FlxG.keys.preventDefaultKeys.push(TAB);
-		#else
 		FlxG.keys.preventDefaultKeys = [TAB];
-		#end
 
 		#if DISCORD_ALLOWED
 		DiscordClient.prepare();

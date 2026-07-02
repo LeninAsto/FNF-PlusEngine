@@ -141,35 +141,47 @@ class Character extends FlxSprite
 	{
 		isAnimateAtlas = false;
 
-		// Detect V-Slice JSON format and convert to engine's expected fields
 		var isVSlice:Bool = (json.assetPath != null) || (json.animations != null && json.animations.length > 0 && json.animations[0].prefix != null);
+		
 		if (isVSlice)
 		{
 			trace('V-Slice character JSON detected and converted');
-			// top-level mappings
-			if (json.assetPath != null) json.image = json.assetPath;
+
+			if (json.assetPath != null) 
+			{
+				var cleanPath:String = json.assetPath;
+				if (cleanPath.startsWith("shared:"))
+					cleanPath = cleanPath.substring(7);
+					
+				json.image = cleanPath;
+			}
+			
 			if (json.flipX != null) json.flip_x = json.flipX;
 			if (json.cameraOffsets != null) json.camera_position = json.cameraOffsets;
 			if (json.singTime != null) json.sing_duration = json.singTime;
 			if (json.isPixel != null) json.no_antialiasing = json.isPixel;
-			if (json.healthIcon != null && json.healthIcon.id != null) json.healthicon = json.healthIcon.id;
+			
+			if (json.healthIcon != null && json.healthIcon.id != null) 
+				json.healthicon = json.healthIcon.id;
+			
 			if (json.offsets != null) json.position = json.offsets;
 
-			// animations mapping: prefix/frameIndices/frameRate/looped -> anim/indices/fps/loop
 			if (json.animations != null)
 			{
 				var anims:Array<Dynamic> = (json.animations : Array<Dynamic>);
 				var newAnims:Array<Dynamic> = new Array<Dynamic>();
+				
 				for (a in anims)
 				{
 					var na:Dynamic = {
-						anim: (a.prefix != null) ? a.prefix : (a.anim != null ? a.anim : ''),
-						name: (a.name != null) ? a.name : '',
+						anim: (a.name != null && a.name != '') ? a.name : (a.anim != null ? a.anim : ''),
+						name: (a.prefix != null && a.prefix != '') ? a.prefix : (a.animation != null ? a.animation : ''),
 						fps: (a.frameRate != null) ? a.frameRate : (a.fps != null ? a.fps : 24),
 						loop: (a.looped != null) ? a.looped : (a.loop != null ? a.loop : false),
 						indices: (a.frameIndices != null) ? a.frameIndices : (a.indices != null ? a.indices : []),
 						offsets: (a.offsets != null) ? a.offsets : [0, 0]
 					};
+					
 					newAnims.push(na);
 				}
 				json.animations = newAnims;

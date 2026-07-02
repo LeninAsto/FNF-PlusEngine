@@ -174,7 +174,7 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 			"Choose the scoring system for note hits",
 			'systemScoreMultiplier',
 			STRING,
-			['Psych', 'Codename']); // No V-Slice here :frowning_face:
+			['Psych', 'Codename']);
 		addOption(option);
 
 		super();
