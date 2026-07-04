@@ -98,6 +98,8 @@ class StorageUtil
 
 		try
 		{
+			ensureDirectory(rootDir);
+
 			if (!FileSystem.exists(storageTypePath))
 			{
 				File.saveContent(storageTypePath, storageType);
@@ -126,6 +128,7 @@ class StorageUtil
 		final normalizedStorageType = normalizeStorageType(storageType);
 		try
 		{
+			ensureDirectory(rootDir);
 			File.saveContent(getStorageTypeFilePath(), normalizedStorageType);
 			ClientPrefs.data.storageType = normalizedStorageType;
 		}
@@ -147,18 +150,25 @@ class StorageUtil
 			force ? getForcedInternalStorageDirectory() : getInternalStorageDirectory();
 		}
 
+		ensureDirectory(path);
 		return Path.addTrailingSlash(path);
 	}
 
 	public static function getInternalStorageDirectory():String
 	{
 		final path = AndroidContext.getExternalFilesDir();
-		return (path != null && path.length > 0) ? path : getForcedInternalStorageDirectory();
+		if (path != null && path.length > 0) {
+			ensureDirectory(path);
+			return path;
+		}
+		return getForcedInternalStorageDirectory();
 	}
 
 	private static function getForcedInternalStorageDirectory():String
 	{
-		return '/storage/emulated/0/Android/data/$androidPackageName/files';
+		final forced = '/storage/emulated/0/Android/data/$androidPackageName/files';
+		ensureDirectory(forced);
+		return forced;
 	}
 
 	public static function getPublicStorageDirectory():String
@@ -167,12 +177,16 @@ class StorageUtil
 		if (basePath == null || basePath == '')
 			basePath = '/storage/emulated/0';
 
-		return Path.join([basePath, publicFolderName]);
+		final dir = Path.join([basePath, publicFolderName]);
+		ensureDirectory(dir);
+		return dir;
 	}
 
 	private static function getForcedPublicStorageDirectory():String
 	{
-		return '/storage/emulated/0/$publicFolderName';
+		final forced = '/storage/emulated/0/$publicFolderName';
+		ensureDirectory(forced);
+		return forced;
 	}
 
 	public static function getExternalStorageDirectory():String
@@ -187,12 +201,16 @@ class StorageUtil
 
 	public static function getPublicModsDirectory():String
 	{
-		return Path.addTrailingSlash(Path.join([getPublicStorageDirectory(), 'mods']));
+		final dir = Path.join([getPublicStorageDirectory(), 'mods']);
+		ensureDirectory(dir);
+		return Path.addTrailingSlash(dir);
 	}
 
 	public static function getScopedModsDirectory():String
 	{
-		return Path.addTrailingSlash(Path.join([getInternalStorageDirectory(), 'mods']));
+		final dir = Path.join([getInternalStorageDirectory(), 'mods']);
+		ensureDirectory(dir);
+		return Path.addTrailingSlash(dir);
 	}
 
 	public static function getPublicModsDirectoryCandidates():Array<String>
@@ -227,6 +245,9 @@ class StorageUtil
 
 	private static function ensureDirectory(path:String):Bool
 	{
+		if (path == null || path.length == 0)
+			return false;
+
 		try
 		{
 			if (!FileSystem.exists(path)) {
@@ -242,10 +263,10 @@ class StorageUtil
 		}
 	}
 
-		public static function hasRequiredPermissions():Bool
-		{
-			if (readStorageType() == 'INTERNAL')
-				return true;
+	public static function hasRequiredPermissions():Bool
+	{
+		if (readStorageType() == 'INTERNAL')
+			return true;
 
 		final granted = AndroidPermissions.getGrantedPermissions();
 		
@@ -310,6 +331,7 @@ class StorageUtil
 	private static function initializeStorageDirectories():Void
 	{
 		final directories = [
+			rootDir,
 			getStorageDirectory(),
 			getScopedModsDirectory(),
 			getSavesDirectory(),
