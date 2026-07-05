@@ -1,7 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<TextureAtlas imagePath="CanImpactParticle.png" width="1342" height="347">
-  <SubTexture name="CanImpactParticle0001" x="761" y="4" width="300" height="246" frameX="-0" frameY="-45" frameWidth="423" frameHeight="339" />
-  <SubTexture name="CanImpactParticle0002" x="389" y="4" width="364" height="327" frameX="-26" frameY="-4" frameWidth="423" frameHeight="339" />
-  <SubTexture name="CanImpactParticle0003" x="4" y="4" width="377" height="339" frameX="-46" frameY="-0" frameWidth="423" frameHeight="339" />
-  <SubTexture name="CanImpactParticle0004" x="1069" y="4" width="269" height="266" rotated="true" frameX="-96" frameY="-63" frameWidth="423" frameHeight="339" />
+<!--
+Created with Funkin Packer v0.1.3 https://shadowengineteam.github.io/Funkin-Packer/
+-->
+<TextureAtlas imagePath="CanImpactParticle.png" width="671" height="947" spritePadding="5" borderPadding="1">
+	<SubTexture name="CanImpactParticle0001" x="1" y="1" width="300" height="246" frameX="0" frameY="-45" frameWidth="377" frameHeight="339"/>
+	<SubTexture name="CanImpactParticle0002" x="306" y="1" width="364" height="327" frameX="-26" frameY="-4" frameWidth="377" frameHeight="339"/>
+	<SubTexture name="CanImpactParticle0003" x="1" y="333" width="377" height="339" frameX="-46" frameY="0" frameWidth="377" frameHeight="339"/>
+	<SubTexture name="CanImpactParticle0004" x="1" y="677" width="266" height="269" frameX="-96" frameY="-63" frameWidth="377" frameHeight="339"/>
 </TextureAtlas>

@@ -1,16 +1,17 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<TextureAtlas imagePath="stupidBlood.png">
-	<!-- Created with Adobe Animate version 21.0.1.37179 -->
-	<!-- http://www.adobe.com/products/animate.html -->
-	<SubTexture name="blood 10000" x="0" y="0" width="75" height="190" pivotX="-442.4" pivotY="180.45" frameX="0" frameY="-108" frameWidth="383" frameHeight="380"/>
-	<SubTexture name="blood 10001" x="75" y="0" width="131" height="200" frameX="-22" frameY="-53" frameWidth="383" frameHeight="380"/>
-	<SubTexture name="blood 10002" x="206" y="0" width="202" height="181" frameX="-46" frameY="-5" frameWidth="383" frameHeight="380"/>
-	<SubTexture name="blood 10003" x="408" y="0" width="210" height="143" frameX="-62" frameY="0" frameWidth="383" frameHeight="380"/>
-	<SubTexture name="blood 10004" x="408" y="0" width="210" height="143" frameX="-62" frameY="0" frameWidth="383" frameHeight="380"/>
-	<SubTexture name="blood 10005" x="618" y="0" width="219" height="135" frameX="-89" frameY="-18" frameWidth="383" frameHeight="380"/>
-	<SubTexture name="blood 10006" x="618" y="0" width="219" height="135" frameX="-89" frameY="-18" frameWidth="383" frameHeight="380"/>
-	<SubTexture name="blood 10007" x="0" y="200" width="224" height="181" frameX="-113" frameY="-35" frameWidth="383" frameHeight="380"/>
-	<SubTexture name="blood 10008" x="224" y="200" width="198" height="179" frameX="-161" frameY="-100" frameWidth="383" frameHeight="380"/>
-	<SubTexture name="blood 10009" x="422" y="200" width="163" height="143" frameX="-217" frameY="-175" frameWidth="383" frameHeight="380"/>
-	<SubTexture name="blood 10010" x="585" y="200" width="152" height="121" frameX="-231" frameY="-259" frameWidth="383" frameHeight="380"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Created with Funkin Packer v0.1.3 https://shadowengineteam.github.io/Funkin-Packer/
+-->
+<TextureAtlas imagePath="stupidBlood.png" width="435" height="684" spritePadding="5" borderPadding="1">
+	<SubTexture name="blood 10000" x="1" y="1" width="75" height="190" frameX="0" frameY="-108" frameWidth="224" frameHeight="200"/>
+	<SubTexture name="blood 10001" x="81" y="1" width="131" height="200" frameX="-22" frameY="-53" frameWidth="224" frameHeight="200"/>
+	<SubTexture name="blood 10002" x="217" y="1" width="202" height="181" frameX="-46" frameY="-5" frameWidth="224" frameHeight="200"/>
+	<SubTexture name="blood 10003" x="1" y="206" width="210" height="143" frameX="-62" frameY="0" frameWidth="224" frameHeight="200"/>
+	<SubTexture name="blood 10004" x="1" y="206" width="210" height="143" frameX="-62" frameY="0" frameWidth="224" frameHeight="200"/>
+	<SubTexture name="blood 10005" x="216" y="206" width="218" height="135" frameX="-90" frameY="-18" frameWidth="224" frameHeight="200"/>
+	<SubTexture name="blood 10006" x="216" y="206" width="218" height="135" frameX="-90" frameY="-18" frameWidth="224" frameHeight="200"/>
+	<SubTexture name="blood 10007" x="1" y="354" width="224" height="181" frameX="-113" frameY="-35" frameWidth="224" frameHeight="200"/>
+	<SubTexture name="blood 10008" x="230" y="354" width="198" height="179" frameX="-161" frameY="-100" frameWidth="224" frameHeight="200"/>
+	<SubTexture name="blood 10009" x="1" y="540" width="162" height="143" frameX="-217" frameY="-175" frameWidth="224" frameHeight="200"/>
+	<SubTexture name="blood 10010" x="168" y="540" width="152" height="121" frameX="-231" frameY="-259" frameWidth="224" frameHeight="200"/>
 </TextureAtlas>

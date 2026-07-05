@@ -1,7 +1,10 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<TextureAtlas imagePath="phillyCars.png">
-	<SubTexture name="car10000" x="2" y="496" width="438" height="197" />
-	<SubTexture name="car20000" x="2" y="698" width="470" height="175" />
-	<SubTexture name="car30000" x="2" y="2" width="463" height="237" />
-	<SubTexture name="car40000" x="2" y="244" width="443" height="247" />
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Created with Funkin Packer v0.1.3 https://shadowengineteam.github.io/Funkin-Packer/
+-->
+<TextureAtlas imagePath="phillyCars.png" width="471" height="873" spritePadding="5" borderPadding="1">
+	<SubTexture name="car10000" x="1" y="1" width="438" height="197" frameX="0" frameY="0" frameWidth="438" frameHeight="197"/>
+	<SubTexture name="car20000" x="1" y="203" width="469" height="175" frameX="0" frameY="0" frameWidth="470" frameHeight="175"/>
+	<SubTexture name="car30000" x="1" y="383" width="463" height="237" frameX="0" frameY="0" frameWidth="463" frameHeight="237"/>
+	<SubTexture name="car40000" x="1" y="625" width="443" height="247" frameX="0" frameY="0" frameWidth="443" frameHeight="247"/>
 </TextureAtlas>
