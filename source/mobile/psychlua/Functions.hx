@@ -6,10 +6,11 @@ import lime.ui.Haptic;
 import psychlua.FunkinLua;
 import psychlua.LuaUtils;
 import mobile.backend.TouchUtil;
-#if android 
-import lime.system.Power;
+#if android
 import mobile.backend.PsychJNI;
 #end
+import hypsystem.net.NetworkInfos;
+import hysystem.system.Device;
 
 /**
  * ...
@@ -283,6 +284,13 @@ class MobileFunctions
 			}
 			return TouchUtil.overlapsComplex(obj, cam);
 		});
+
+		Lua_helper.add_callback(lua, "isConnected", NetworkInfos.isConnected());
+		Lua_helper.add_callback(lua, "getConnectionType", NetworkInfos.getConnectionType());
+		Lua_helper.add_callback(lua, "isWifi", NetworkInfos.isWifi());
+
+		Lua_helper.add_callback(lua, "getName", Device.getName());
+		Lua_helper.add_callback(lua, "isTablet", Device.isTablet());
 	}
 
 	public static function getMobileControlsAsString():String
@@ -315,7 +323,6 @@ class AndroidFunctions
 		Lua_helper.add_callback(lua, "isTablet", AndroidTools.isTablet());
 		Lua_helper.add_callback(lua, "isChromebook", AndroidTools.isChromebook());
 		Lua_helper.add_callback(lua, "isDeXMode", AndroidTools.isDeXMode());
-		Lua_helper.add_callback(lua, "isCharging", Power.getState());
 
 		Lua_helper.add_callback(lua, "backJustPressed", FlxG.android.justPressed.BACK);
 		Lua_helper.add_callback(lua, "backPressed", FlxG.android.pressed.BACK);

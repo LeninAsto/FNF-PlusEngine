@@ -11,6 +11,7 @@ haxelib git flixel https://github.com/Psych-Plus-Team/flixel --quiet
 haxelib install flixel-addons 3.3.2 --quiet
 haxelib install flixel-ui 2.6.2 --quiet
 haxelib install moonchart 0.5.1 --quiet
+haxelib install hyp-system 0.2.1 --quiet
 haxelib install flixel-tools 1.5.1 --quiet
 haxelib git hscript-iris https://github.com/Psych-Plus-Team/hscript-iris --quiet
 haxelib install tjson 1.4.0 --quiet
