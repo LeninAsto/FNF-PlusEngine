@@ -282,13 +282,6 @@ class MobileFunctions
 			}
 			return TouchUtil.overlapsComplex(obj, cam);
 		});
-
-		Lua_helper.add_callback(lua, "isConnected", NetworkInformation.isConnected());
-		Lua_helper.add_callback(lua, "getConnectionType", NetworkInformation.getConnectionType());
-		Lua_helper.add_callback(lua, "isWifi", NetworkInformation.isWifi());
-
-		Lua_helper.add_callback(lua, "getName", DevicePhone.getName());
-		Lua_helper.add_callback(lua, "isTablet", DevicePhone.isTablet());
 	}
 
 	public static function getMobileControlsAsString():String

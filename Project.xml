@@ -114,7 +114,6 @@
 	<haxelib name="flixel-addons" />
 	<haxelib name="tjson" version="1.4.0"/>
 	<haxelib name="moonchart" unless="mac | ios"/>
-	<haxelib name="hyp-system" if="android | ios"/>
 
 	<!--Psych stuff needed-->
 	<haxelib name="linc_luajit" if="LUA_ALLOWED"/>

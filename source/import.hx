@@ -38,10 +38,6 @@ import android.os.Build.VERSION_CODES as AndroidVersionCode;
 import android.os.BatteryManager as AndroidBatteryManager;
 #end
 
-// Both iOS and Android
-import hypsystem.net.NetworkInfos as NetworkInformation;
-import hypsystem.system.Device as DevicePhone;
-
 #if sys
 import sys.*;
 import sys.io.*;
