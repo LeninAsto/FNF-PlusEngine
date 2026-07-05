@@ -9,8 +9,6 @@ import mobile.backend.TouchUtil;
 #if android
 import mobile.backend.PsychJNI;
 #end
-import hypsystem.net.NetworkInfos;
-import hysystem.system.Device;
 
 /**
  * ...
@@ -285,12 +283,12 @@ class MobileFunctions
 			return TouchUtil.overlapsComplex(obj, cam);
 		});
 
-		Lua_helper.add_callback(lua, "isConnected", NetworkInfos.isConnected());
-		Lua_helper.add_callback(lua, "getConnectionType", NetworkInfos.getConnectionType());
-		Lua_helper.add_callback(lua, "isWifi", NetworkInfos.isWifi());
+		Lua_helper.add_callback(lua, "isConnected", NetworkInformation.isConnected());
+		Lua_helper.add_callback(lua, "getConnectionType", NetworkInformation.getConnectionType());
+		Lua_helper.add_callback(lua, "isWifi", NetworkInformation.isWifi());
 
-		Lua_helper.add_callback(lua, "getName", Device.getName());
-		Lua_helper.add_callback(lua, "isTablet", Device.isTablet());
+		Lua_helper.add_callback(lua, "getName", DevicePhone.getName());
+		Lua_helper.add_callback(lua, "isTablet", DevicePhone.isTablet());
 	}
 
 	public static function getMobileControlsAsString():String
