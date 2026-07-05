@@ -9,6 +9,11 @@ import mobile.backend.TouchUtil;
 #if android
 import mobile.backend.PsychJNI;
 #end
+<<<<<<< HEAD
+=======
+import hyp-system.net.NetworkInfos;
+import hyp-system.system.Device;
+>>>>>>> 1536b05a5f3630331e6ed75af516ec1d9e02c4d2
 
 /**
  * ...
