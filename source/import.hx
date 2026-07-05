@@ -39,10 +39,8 @@ import android.os.BatteryManager as AndroidBatteryManager;
 #end
 
 // Both iOS and Android
-#if (android || ios)
 import hypsystem.net.NetworkInfos as NetworkInformation;
 import hypsystem.system.Device as DevicePhone;
-#end
 
 #if sys
 import sys.*;
