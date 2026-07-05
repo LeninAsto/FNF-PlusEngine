@@ -6,7 +6,10 @@ import lime.ui.Haptic;
 import psychlua.FunkinLua;
 import psychlua.LuaUtils;
 import mobile.backend.TouchUtil;
-#if android import mobile.backend.PsychJNI; #end
+#if android 
+import lime.system.Power;
+import mobile.backend.PsychJNI;
+#end
 
 /**
  * ...
@@ -303,17 +306,16 @@ class MobileFunctions
 #if android
 class AndroidFunctions
 {
-	// static var spicyPillow:AndroidBatteryManager = new AndroidBatteryManager();
 	public static function implement(funk:FunkinLua)
 	{
 		var lua:State = funk.lua;
-		// Lua_helper.add_callback(lua, "isRooted", AndroidTools.isRooted());
+		Lua_helper.add_callback(lua, "isRooted", AndroidTools.isRooted());
 		Lua_helper.add_callback(lua, "isDolbyAtmos", AndroidTools.isDolbyAtmos());
 		Lua_helper.add_callback(lua, "isAndroidTV", AndroidTools.isAndroidTV());
 		Lua_helper.add_callback(lua, "isTablet", AndroidTools.isTablet());
 		Lua_helper.add_callback(lua, "isChromebook", AndroidTools.isChromebook());
 		Lua_helper.add_callback(lua, "isDeXMode", AndroidTools.isDeXMode());
-		// Lua_helper.add_callback(lua, "isCharging", spicyPillow.isCharging());
+		Lua_helper.add_callback(lua, "isCharging", Power.getState());
 
 		Lua_helper.add_callback(lua, "backJustPressed", FlxG.android.justPressed.BACK);
 		Lua_helper.add_callback(lua, "backPressed", FlxG.android.pressed.BACK);
