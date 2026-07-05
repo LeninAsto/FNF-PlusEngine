@@ -23,6 +23,7 @@ import backend.Conductor;
 import backend.MusicBeatSubstate;
 import backend.Paths;
 import backend.Language;
+import psychlua.LuaUtils;
 import backend.Controls;
 
 class PauseSubState extends MusicBeatSubstate
@@ -51,7 +52,7 @@ class PauseSubState extends MusicBeatSubstate
 
 		var stop = callOnCompanionScript('onCreate', []);
 
-		if (stop != Function_Stop)
+		if (!LuaUtils.isStop(stop))
 		{
 			createV();
 		}
@@ -79,7 +80,7 @@ class PauseSubState extends MusicBeatSubstate
 			menuItemsDefault.insert(5 + num, 'Toggle Botplay');
 		} else if(PlayState.instance.practiceMode && !PlayState.instance.startingSong)
 			menuItemsDefault.insert(3, 'Skip Time');
-		if(PlayState.instance.videoCutscene != null)
+		if(hasSkippableVideo())
 			menuItemsDefault.insert(1, 'Skip Video');
 		menuItems = menuItemsDefault.copy();
 
@@ -202,7 +203,7 @@ class PauseSubState extends MusicBeatSubstate
 	{
 		var stop = callOnCompanionScript('onUpdate', [elapsed]);
 
-		if (stop != Function_Stop)
+		if (!LuaUtils.isStop(stop))
 		{
 			updateV(elapsed);
 		}
@@ -283,7 +284,7 @@ class PauseSubState extends MusicBeatSubstate
 		if (controls.ACCEPT && (cantUnpause <= 0 || !controls.controllerMode))
 		{
 			var acceptStop = callOnCompanionScript('onAcceptOption', [daSelected, curSelected, menuItems == difficultyChoices]);
-			if (acceptStop == Function_Stop)
+			if (LuaUtils.isStop(acceptStop))
 				return;
 
 			if (menuItems == difficultyChoices)
@@ -332,9 +333,15 @@ class PauseSubState extends MusicBeatSubstate
 					Paths.clearUnusedMemory();
 					close();
 				case 'Skip Video':
-					if(PlayState.instance.videoCutscene != null)
-						PlayState.instance.videoCutscene.onSkip();
-					close();
+					if(skipActiveVideo())
+						close();
+					else
+					{
+						menuItemsDefault.remove('Skip Video');
+						menuItems.remove('Skip Video');
+						regenMenu();
+						FlxG.sound.play(Paths.sound('cancelMenu'), 0.4);
+					}
 				case 'Change Difficulty':
 					menuItems = difficultyChoices;
 					deleteSkipTimeText();
@@ -456,7 +463,7 @@ class PauseSubState extends MusicBeatSubstate
 	{
 		curSelected = FlxMath.wrap(curSelected + change, 0, menuItems.length - 1);
 		var stop = callOnCompanionScript('onChangeSelection', [curSelected, getSelectedMenuItem()]);
-		if (stop == Function_Stop)
+		if (LuaUtils.isStop(stop))
 			return;
 		for (num => item in grpMenuShit.members)
 		{
@@ -521,6 +528,30 @@ class PauseSubState extends MusicBeatSubstate
 
 	function updateSkipTimeText()
 		skipTimeText.text = FlxStringUtil.formatTime(Math.max(0, Math.floor(curTime / 1000)), false) + ' / ' + FlxStringUtil.formatTime(Math.max(0, Math.floor(FlxG.sound.music.length / 1000)), false);
+
+	function hasSkippableVideo():Bool
+	{
+		#if VIDEOS_ALLOWED
+		if (PlayState.instance == null || PlayState.instance.videoCutscene == null)
+			return false;
+
+		return PlayState.instance.videoCutscene.canSkipFromPause();
+		#else
+		return false;
+		#end
+	}
+
+	function skipActiveVideo():Bool
+	{
+		#if VIDEOS_ALLOWED
+		if (!hasSkippableVideo())
+			return false;
+
+		return PlayState.instance.videoCutscene.skipFromPause();
+		#else
+		return false;
+		#end
+	}
 
 	public function getSelectedMenuItem():Null<String>
 		return (curSelected >= 0 && curSelected < menuItems.length) ? menuItems[curSelected] : null;
@@ -588,7 +619,7 @@ class PauseSubState extends MusicBeatSubstate
 		if (menuItems.length < 1) return;
 		curSelected = FlxMath.wrap(index, 0, menuItems.length - 1);
 		var stop = callOnCompanionScript('onChangeSelection', [curSelected, getSelectedMenuItem()]);
-		if (stop == Function_Stop)
+		if (LuaUtils.isStop(stop))
 			return;
 		for (num => item in grpMenuShit.members)
 		{

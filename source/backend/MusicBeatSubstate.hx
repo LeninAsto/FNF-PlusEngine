@@ -192,7 +192,11 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 		}
 		if (luaPath != null)
 		{
-			try { companionLuaScript = new FunkinLua(luaPath); }
+			try
+			{
+				var ctx = new psychlua.LuaHostContext(psychlua.LuaHostKind.SUBSTATE, clsName, this, getParentState(), variables, null);
+				companionLuaScript = new FunkinLua(luaPath, ctx);
+			}
 			catch(e:Dynamic) { trace('[CompanionSubstate] Lua error in $luaPath: $e'); }
 		}
 		#end

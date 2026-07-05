@@ -236,10 +236,13 @@ class ScriptableSubstate extends MusicBeatSubstate
 
 	public static function tryCreate(name:String, ?fallback:FlxSubState):FlxSubState
 	{
-		#if (HSCRIPT_ALLOWED && sys)
 		if (!overridesEnabled()) return fallback;
 		if (_consumeOverrideBypass(name)) return fallback;
+		#if (HSCRIPT_ALLOWED && sys)
 		if (hasScript(name)) return new ScriptableSubstate(name, fallback);
+		#end
+		#if (LUA_ALLOWED && sys)
+		if (psychlua.LuaSubstate.hasScript(name)) return new psychlua.LuaSubstate(name, false, null, fallback);
 		#end
 		return fallback;
 	}

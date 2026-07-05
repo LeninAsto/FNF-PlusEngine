@@ -106,7 +106,7 @@ class MusicBeatState extends BaseMusicBeatState
 			var globalResult = callOnGlobalScript('onFadeIn');
 			
 			// Only use default transition if scripts didn't stop it
-			if(globalResult != LuaUtils.Function_Stop) {
+			if(!LuaUtils.isStop(globalResult)) {
 				openSubState(new CustomFadeTransition(0.7, true));
 			}
 		}
@@ -183,7 +183,7 @@ class MusicBeatState extends BaseMusicBeatState
 		var globalResult = callOnGlobalScript('onSwitchState', [Type.getClassName(Type.getClass(nextState))]);
 		
 		// If scripts stopped the transition, they handle it themselves
-		if(globalResult == LuaUtils.Function_Stop) {
+		if(LuaUtils.isStop(globalResult)) {
 			// Script is handling the transition, just switch without custom transition
 			FlxG.switchState(nextState);
 			return;
@@ -199,7 +199,7 @@ class MusicBeatState extends BaseMusicBeatState
 		var globalResult = callOnGlobalScript('onResetState');
 		
 		// If scripts stopped the transition, they handle it themselves
-		if(globalResult == LuaUtils.Function_Stop) {
+		if(LuaUtils.isStop(globalResult)) {
 			// Script is handling the transition, just reset without custom transition
 			FlxG.switchState(_makeCurrentStateReset());
 			return;
@@ -239,7 +239,7 @@ class MusicBeatState extends BaseMusicBeatState
 		var globalResult = callOnGlobalScript('onStartTransition', [isReset, Type.getClassName(Type.getClass(nextState))]);
 		
 		// If scripts stopped it, they're handling the transition themselves
-		if(globalResult == LuaUtils.Function_Stop) {
+		if(LuaUtils.isStop(globalResult)) {
 			if(isReset)
 				FlxG.switchState(_makeCurrentStateReset());
 			else
@@ -351,7 +351,11 @@ class MusicBeatState extends BaseMusicBeatState
 		}
 		if (luaPath != null)
 		{
-			try { companionLuaScript = new FunkinLua(luaPath); }
+			try
+			{
+				var ctx = new psychlua.LuaHostContext(psychlua.LuaHostKind.STATE, clsName, this, this, variables, null);
+				companionLuaScript = new FunkinLua(luaPath, ctx);
+			}
 			catch(e:Dynamic) { trace('[CompanionScript] Lua error in $luaPath: $e'); }
 		}
 		#end
@@ -498,7 +502,8 @@ class MusicBeatState extends BaseMusicBeatState
 			if(FileSystem.exists(luaPath))
 			{
 				trace('Loading Global Lua Script from: $luaPath');
-				globalLuaScript = new FunkinLua(luaPath);
+				var ctx = new psychlua.LuaHostContext(psychlua.LuaHostKind.GLOBAL, 'GlobalScript', FlxG.state, FlxG.state, globalVariables, null);
+				globalLuaScript = new FunkinLua(luaPath, ctx);
 				trace('GlobalScript (Lua) initialized successfully');
 			}
 		}

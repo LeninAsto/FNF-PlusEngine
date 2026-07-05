@@ -384,6 +384,29 @@ class HScript extends Iris
 		set('NoteOffsetState', options.NoteOffsetState);
 		#if MODCHARTS_NOTITG_ALLOWED
 		set('ModchartSettingsSubState', options.ModchartSettingsSubState);
+		set('Manager', modchart.Manager);
+		set('ModchartManager', modchart.Manager);
+		set('PlayField', modchart.engine.PlayField);
+		set('Modifier', modchart.engine.modifiers.Modifier);
+		set('DynamicModifier', modchart.engine.modifiers.DynamicModifier);
+		set('ScriptedModifier', modchart.engine.modifiers.ScriptedModifier);
+		set('LuaModifier', modchart.engine.modifiers.LuaModifier);
+		set('ModifierGroup', modchart.engine.modifiers.ModifierGroup);
+		set('TransformMode_NONE', (modchart.backend.core.TransformMode.NONE : Int));
+		set('TransformMode_FIELD', (modchart.backend.core.TransformMode.FIELD : Int));
+		set('TransformMode_NOTE', (modchart.backend.core.TransformMode.NOTE : Int));
+		set('TransformMode_RECEPTOR', (modchart.backend.core.TransformMode.RECEPTOR : Int));
+		set('TransformMode_SPLASH', (modchart.backend.core.TransformMode.SPLASH : Int));
+		set('TransformMode_ALL', (modchart.backend.core.TransformMode.ALL : Int));
+		set('ModifierParameters', modchart.backend.core.ModifierParameters);
+		set('VisualParameters', modchart.backend.core.VisualParameters);
+		set('Vector3D', openfl.geom.Vector3D);
+		set('Adapter', modchart.backend.standalone.Adapter);
+		set('ModchartUtil', modchart.backend.util.ModchartUtil);
+		set('instance', modchart.Manager.instance);
+		set('manager', modchart.Manager.instance);
+		set('modManager', modchart.Manager.instance);
+		set('modchartManager', modchart.Manager.instance);
 		#end
 		#if TRANSLATIONS_ALLOWED
 		set('LanguageSubState', options.LanguageSubState);

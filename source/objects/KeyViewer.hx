@@ -13,7 +13,6 @@ import flixel.tweens.FlxEase;
 import openfl.display.BitmapData;
 import openfl.display.Shape;
 import haxe.Timer;
-import flixel.math.FlxRect;
 
 using StringTools;
 
@@ -80,9 +79,7 @@ class KeyViewer extends FlxSpriteGroup
 		
 		for (i in 0...keyCount)
 		{
-			var pressureBar = new PressureBar(i * (keySize + spacing), keys[i].y, keySize, i);
-			pressureBars.push(pressureBar);
-			add(pressureBar);
+			createPressureBarForKey(i, keySize);
 		}
 		
 		kpsText = new FlxText(0, keySize + 10, totalWidth, "KPS: 0", 14);
@@ -126,12 +123,14 @@ class KeyViewer extends FlxSpriteGroup
 	{
 		if (keyIndex >= 0 && keyIndex < keys.length)
 		{
+			refreshPressureBarAnchor(keyIndex);
 			keys[keyIndex].press();
 			var keyColor = CoolUtil.colorFromString(ClientPrefs.data.keyViewerColor);
 			keyTexts[keyIndex].color = keyColor;
 			keyTexts[keyIndex].alpha = 1.0;
 			
-			pressureBars[keyIndex].startGrowing();
+			if (pressureBars[keyIndex] != null)
+				pressureBars[keyIndex].startGrowing();
 			
 			hitArray.push(Timer.stamp());
 			total++;
@@ -143,22 +142,19 @@ class KeyViewer extends FlxSpriteGroup
 	{
 		if (keyIndex >= 0 && keyIndex < keys.length)
 		{
+			refreshPressureBarAnchor(keyIndex);
 			keys[keyIndex].release();
 			keyTexts[keyIndex].color = FlxColor.WHITE;
 			keyTexts[keyIndex].alpha = 0.6;
 			
 			var currentBar = pressureBars[keyIndex];
-			if (currentBar.currentHeight > currentBar.minHeight) {
+			if (currentBar != null && currentBar.currentHeight > currentBar.minHeight) {
 				currentBar.startFlying();
 				flyingBars.push(currentBar);
 				
 				var keySize:Float = 45;
-				var spacing:Float = 6;
-				var keyButton = keys[keyIndex];
-				var newBar = new PressureBar(keyButton.x, keyButton.y, keySize, keyIndex);
-				pressureBars[keyIndex] = newBar;
-				add(newBar);
-			} else {
+				createPressureBarForKey(keyIndex, keySize);
+			} else if (currentBar != null) {
 				currentBar.isGrowing = false;
 				currentBar.alpha = 0;
 				currentBar.visible = false;
@@ -175,6 +171,8 @@ class KeyViewer extends FlxSpriteGroup
 			keyLabelRefreshElapsed = 0;
 			refreshKeyLabels();
 		}
+
+		refreshPressureBarAnchors();
 		
 		var i = flyingBars.length - 1;
 		while (i >= 0)
@@ -308,18 +306,35 @@ class KeyViewer extends FlxSpriteGroup
 	{
 		for (i in 0...pressureBars.length)
 		{
-			if (i < 0 || i >= keys.length)
-				continue;
-
-			var pressureBar = pressureBars[i];
-			var keyButton = keys[i];
-			if (pressureBar == null || keyButton == null)
-				continue;
-
-			pressureBar.x = keyButton.x;
-			pressureBar.baseY = keyButton.y;
-			pressureBar.updateBarVisual();
+			refreshPressureBarAnchor(i);
 		}
+	}
+
+	function createPressureBarForKey(keyIndex:Int, keySize:Float):PressureBar
+	{
+		if (keyIndex < 0 || keyIndex >= keys.length)
+			return null;
+
+		var pressureBar = new PressureBar(0, 0, keySize, keyIndex);
+		pressureBars[keyIndex] = pressureBar;
+		add(pressureBar);
+		refreshPressureBarAnchor(keyIndex);
+		return pressureBar;
+	}
+
+	function refreshPressureBarAnchor(keyIndex:Int):Void
+	{
+		if (keyIndex < 0 || keyIndex >= keys.length || keyIndex >= pressureBars.length)
+			return;
+
+		var pressureBar = pressureBars[keyIndex];
+		var keyButton = keys[keyIndex];
+		if (pressureBar == null || keyButton == null)
+			return;
+
+		pressureBar.x = keyButton.x;
+		pressureBar.baseY = keyButton.y - 10;
+		pressureBar.updateBarVisual();
 	}
 	
 	override function destroy()
@@ -438,6 +453,7 @@ class PressureBar extends FlxSprite
 	public var baseY:Float;
 	public var currentHeight:Float = 0;
 	private var currentColor:FlxColor = FlxColor.WHITE;
+	private var currentGraphicHeight:Int = 0;
 	
 	public function new(x:Float, y:Float, width:Float, keyIndex:Int)
 	{
@@ -446,7 +462,6 @@ class PressureBar extends FlxSprite
 		this.baseWidth = width;
 		this.baseY = y;
 		
-		refreshGradientGraphic();
 		alpha = 0;
 		visible = false;
 		updateBarVisual();
@@ -504,11 +519,13 @@ class PressureBar extends FlxSprite
 	function refreshGradientGraphic():Void
 	{
 		var newColor = CoolUtil.colorFromString(ClientPrefs.data.keyViewerColor);
-		if (pixels != null && currentColor == newColor && pixels.width == Std.int(baseWidth) && pixels.height == Std.int(maxHeight))
+		var graphicHeight:Int = Std.int(Math.max(1, currentHeight));
+		if (pixels != null && currentColor == newColor && currentGraphicHeight == graphicHeight && pixels.width == Std.int(baseWidth))
 			return;
 
 		currentColor = newColor;
-		var bitmap = new BitmapData(Std.int(baseWidth), Std.int(maxHeight), true, 0x00000000);
+		currentGraphicHeight = graphicHeight;
+		var bitmap = new BitmapData(Std.int(baseWidth), graphicHeight, true, 0x00000000);
 		var rgb:Int = currentColor & 0x00FFFFFF;
 		for (row in 0...bitmap.height)
 		{
@@ -523,7 +540,8 @@ class PressureBar extends FlxSprite
 	public inline function updateBarVisual():Void
 	{
 		currentHeight = Math.max(minHeight, Math.min(maxHeight, currentHeight));
-		clipRect = new FlxRect(0, maxHeight - currentHeight, baseWidth, currentHeight);
+		clipRect = null;
+		refreshGradientGraphic();
 		y = baseY - currentHeight;
 	}
 

@@ -131,6 +131,32 @@ class VideoSprite extends FlxSpriteGroup {
 		super.update(elapsed);
 	}
 
+	public function canSkipFromPause():Bool
+	{
+		return canSkip
+			&& !alreadyDestroyed
+			&& videoSprite != null
+			&& videoSprite.bitmap != null;
+	}
+
+	public function skipFromPause():Bool
+	{
+		if (!canSkipFromPause())
+			return false;
+
+		if(onSkip != null)
+			onSkip();
+		finishCallback = null;
+
+		if(videoSprite != null && videoSprite.bitmap != null && videoSprite.bitmap.onEndReached != null)
+			videoSprite.bitmap.onEndReached.dispatch();
+		else
+			destroy();
+
+		trace('Skipped video from pause menu');
+		return true;
+	}
+
 	function set_canSkip(newValue:Bool)
 	{
 		canSkip = newValue;

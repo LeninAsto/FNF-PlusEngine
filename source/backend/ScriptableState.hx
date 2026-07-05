@@ -262,10 +262,13 @@ class ScriptableState extends MusicBeatState
 	 */
 	public static function tryCreate(name:String, ?fallback:flixel.FlxState):flixel.FlxState
 	{
-		#if (HSCRIPT_ALLOWED && sys)
 		if (!overridesEnabled()) return fallback;
 		if (_consumeOverrideBypass(name)) return fallback;
+		#if (HSCRIPT_ALLOWED && sys)
 		if (hasScript(name)) return new ScriptableState(name, fallback);
+		#end
+		#if (LUA_ALLOWED && sys)
+		if (psychlua.LuaState.hasScript(name)) return new psychlua.LuaState(name, fallback);
 		#end
 		return fallback;
 	}

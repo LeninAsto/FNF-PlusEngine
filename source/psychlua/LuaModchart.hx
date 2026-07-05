@@ -4,6 +4,7 @@ import modchart.Manager;
 import modchart.backend.core.ArrowData;
 import modchart.backend.standalone.Adapter;
 import modchart.engine.PlayField;
+import modchart.engine.modifiers.LuaModifier;
 import modchart.engine.modifiers.list.PathModifier;
 import modchart.engine.modifiers.list.PathModifier.PathNode;
 import psychlua.FunkinLua;
@@ -420,6 +421,30 @@ class LuaModchart
                 }
             }
         });
+
+        Lua_helper.add_callback(lua, "createModifier", function(name:String, ?options:Dynamic = null, ?field:Dynamic = -1) {
+            return createLuaModifier(funk, name, options, field);
+        });
+
+        Lua_helper.add_callback(lua, "createLuaModifier", function(name:String, ?options:Dynamic = null, ?field:Dynamic = -1) {
+            return createLuaModifier(funk, name, options, field);
+        });
+
+        Lua_helper.add_callback(lua, "registerMod", function(name:String, ?options:Dynamic = null, ?field:Dynamic = -1) {
+            return createLuaModifier(funk, name, options, field);
+        });
+
+        Lua_helper.add_callback(lua, "registerModifier", function(name:String, ?options:Dynamic = null, ?field:Dynamic = -1) {
+            return createLuaModifier(funk, name, options, field);
+        });
+
+        Lua_helper.add_callback(lua, "quickRegister", function(name:String, ?options:Dynamic = null, ?field:Dynamic = -1) {
+            return createLuaModifier(funk, name, options, field);
+        });
+
+        Lua_helper.add_callback(lua, "makeVector3", function(?x:Float = 0, ?y:Float = 0, ?z:Float = 0, ?w:Float = 0):Dynamic {
+            return new modchart.backend.math.Vector3(x, y, z, w);
+        });
         
         // Create a node: bind inputs and outputs through a function
         Lua_helper.add_callback(lua, "node", function(inputs:Array<String>, outputs:Array<String>, funcName:String, ?field:Dynamic = -1) {
@@ -593,6 +618,67 @@ class LuaModchart
             }
 
             return result;
+        });
+
+        // ===== NMV / legacy compatibility aliases =====
+        Lua_helper.add_callback(lua, "setValue", function(name:String, value:Float, ?player:Int = -1, ?field:Dynamic = -1) {
+            if (Manager.instance == null)
+                return;
+            setRawModifierValue(name, value, player, field);
+        });
+
+        Lua_helper.add_callback(lua, "getValue", function(name:String, ?player:Int = 0, ?field:Dynamic = 0):Float {
+            return getRawModifierValue(name, player, field);
+        });
+
+        Lua_helper.add_callback(lua, "queueSet", function(beat:Float, name:String, value:Float, ?player:Int = -1, ?field:Dynamic = -1) {
+            if (Manager.instance != null)
+                queueSet(name, beat, value, player, field);
+        });
+
+        Lua_helper.add_callback(lua, "queueSetP", function(beat:Float, name:String, value:Float, ?player:Int = -1, ?field:Dynamic = -1) {
+            if (Manager.instance != null)
+                queueSet(name, beat, value, player, field);
+        });
+
+        Lua_helper.add_callback(lua, "queueEase", function(beat:Float, endBeat:Float, name:String, value:Float, ?easeName:String = 'linear', ?player:Int = -1, ?startValue:Dynamic = null, ?field:Dynamic = -1) {
+            if (Manager.instance == null)
+                return;
+            if (startValue != null)
+                queueSet(name, beat, toFloat(startValue), player, field);
+            queueEase(name, beat, endBeat - beat, value, easeName, player, field);
+        });
+
+        Lua_helper.add_callback(lua, "queueEaseP", function(beat:Float, endBeat:Float, name:String, value:Float, ?easeName:String = 'linear', ?player:Int = -1, ?startValue:Dynamic = null, ?field:Dynamic = -1) {
+            if (Manager.instance == null)
+                return;
+            if (startValue != null)
+                queueSet(name, beat, toFloat(startValue), player, field);
+            queueEase(name, beat, endBeat - beat, value, easeName, player, field);
+        });
+
+        Lua_helper.add_callback(lua, "queueFuncOnce", function(beat:Float, funcName:String, ?field:Dynamic = -1) {
+            scheduleLuaCallback(funk, beat, funcName, field);
+        });
+
+        Lua_helper.add_callback(lua, "queueFunc", function(beat:Float, endBeat:Float, funcName:String, ?field:Dynamic = -1) {
+            repeatLuaCallback(funk, beat, endBeat - beat, funcName, field);
+        });
+
+        Lua_helper.add_callback(lua, "getBaseX", function(lane:Int, ?player:Int = 0):Float {
+            return Adapter.instance != null ? Adapter.instance.getDefaultReceptorX(lane, player) : 0;
+        });
+
+        Lua_helper.add_callback(lua, "getBaseY", function(lane:Int, ?player:Int = 0):Float {
+            return Adapter.instance != null ? Adapter.instance.getDefaultReceptorY(lane, player) : 0;
+        });
+
+        Lua_helper.add_callback(lua, "getBaseVisPosD", function(diff:Float, ?songSpeed:Float = 1):Float {
+            return 0.45 * diff * songSpeed;
+        });
+
+        Lua_helper.add_callback(lua, "getVisPos", function(songPosition:Float, strumTime:Float, ?songSpeed:Float = 1):Float {
+            return -(0.45 * (songPosition - strumTime) * songSpeed);
         });
         
         // ===== "NOW" VARIANTS FOR USE IN CALLBACKS =====
@@ -870,6 +956,117 @@ class LuaModchart
         if (playfield == null && reportMissing && PlayState.instance != null)
             PlayState.instance.addTextToDebug(context + ': playfield not found: ' + name, 0xFFFF0000);
         return playfield;
+    }
+
+    private static function createLuaModifier(funk:FunkinLua, name:String, ?options:Dynamic = null, ?field:Dynamic = -1):Bool {
+        if (Manager.instance == null || name == null || name.trim().length <= 0)
+            return false;
+
+        final normalized = name.toLowerCase();
+        if (isNamedPlayfield(field)) {
+            final playfield = requireNamedPlayfield(field, 'createModifier');
+            if (playfield == null)
+                return false;
+
+            playfield.addScriptedModifier(normalized, new LuaModifier(playfield, normalized, funk, options));
+            return true;
+        }
+
+        final fieldIndex = resolveFieldIndex(field, -1);
+        if (fieldIndex == -1) {
+            var added = false;
+            for (playfield in Manager.instance.playfields) {
+                if (playfield == null)
+                    continue;
+                playfield.addScriptedModifier(normalized, new LuaModifier(playfield, normalized, funk, options));
+                added = true;
+            }
+            return added;
+        }
+
+        final playfield = resolvePlayfield(fieldIndex, 0, 'createModifier');
+        if (playfield == null)
+            return false;
+
+        playfield.addScriptedModifier(normalized, new LuaModifier(playfield, normalized, funk, options));
+        return true;
+    }
+
+    private static function setRawModifierValue(name:String, value:Float, player:Int = -1, ?field:Dynamic = -1):Void {
+        if (Manager.instance == null)
+            return;
+
+        if (isNamedPlayfield(field)) {
+            final playfield = requireNamedPlayfield(field, 'setValue');
+            if (playfield != null)
+                playfield.setRawValue(name, value, player);
+            return;
+        }
+
+        Manager.instance.setRawValue(name, value, player, resolveFieldIndex(field, -1));
+    }
+
+    private static function getRawModifierValue(name:String, player:Int = 0, ?field:Dynamic = 0):Float {
+        if (Manager.instance == null)
+            return 0;
+
+        if (isNamedPlayfield(field)) {
+            final playfield = requireNamedPlayfield(field, 'getValue', false);
+            return playfield != null ? playfield.getRawValue(name, player) : 0;
+        }
+
+        return Manager.instance.getRawValue(name, player, resolveFieldIndex(field, 0));
+    }
+
+    private static function queueSet(name:String, beat:Float, value:Float, player:Int = -1, ?field:Dynamic = -1):Void {
+        if (isNamedPlayfield(field)) {
+            final playfield = requireNamedPlayfield(field, 'queueSet');
+            if (playfield != null)
+                playfield.set(name, beat, value, player);
+            return;
+        }
+
+        Manager.instance.set(name, beat, value, player, resolveFieldIndex(field, -1));
+    }
+
+    private static function queueEase(name:String, beat:Float, length:Float, value:Float, ?easeName:String = 'linear', player:Int = -1, ?field:Dynamic = -1):Void {
+        final easeFunc = getEaseFunction(easeName);
+        if (isNamedPlayfield(field)) {
+            final playfield = requireNamedPlayfield(field, 'queueEase');
+            if (playfield != null)
+                playfield.ease(name, beat, length, value, easeFunc, player);
+            return;
+        }
+
+        Manager.instance.ease(name, beat, length, value, easeFunc, player, resolveFieldIndex(field, -1));
+    }
+
+    private static function scheduleLuaCallback(funk:FunkinLua, beat:Float, funcName:String, ?field:Dynamic = -1):Void {
+        if (Manager.instance == null)
+            return;
+
+        if (isNamedPlayfield(field)) {
+            final playfield = requireNamedPlayfield(field, 'queueFuncOnce');
+            if (playfield != null)
+                playfield.scheduleCallback(beat, function(event) funk.call(funcName, []));
+            return;
+        }
+
+        Manager.instance.scheduleCallback(beat, function(event) funk.call(funcName, []), resolveFieldIndex(field, -1));
+    }
+
+    private static function repeatLuaCallback(funk:FunkinLua, beat:Float, length:Float, funcName:String, ?field:Dynamic = -1):Void {
+        if (Manager.instance == null)
+            return;
+
+        if (isNamedPlayfield(field)) {
+            final playfield = requireNamedPlayfield(field, 'queueFunc');
+            if (playfield != null)
+                playfield.repeater(beat, length, function(event) funk.call(funcName, []));
+            return;
+        }
+
+        Manager.instance.repeater(beat, length, function(event) funk.call(funcName, []), resolveFieldIndex(field, -1));
     }
 
     private static function resolvePlayfield(field:Dynamic, defaultField:Int, context:String):Null<PlayField> {

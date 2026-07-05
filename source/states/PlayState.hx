@@ -1276,9 +1276,18 @@ class PlayState extends MusicBeatState
 				add(manager);
 				trace("Modchart Manager initialized successfully");
 			}
+			setOnScripts('instance', Manager.instance);
+			setOnScripts('manager', Manager.instance);
+			setOnScripts('modManager', Manager.instance);
+			setOnScripts('modchartManager', Manager.instance);
+
 			// Wait a frame to ensure Manager is fully initialized
 			var initCallback:Void->Void = null;
 			initCallback = function() {
+				setOnScripts('instance', Manager.instance);
+				setOnScripts('manager', Manager.instance);
+				setOnScripts('modManager', Manager.instance);
+				setOnScripts('modchartManager', Manager.instance);
 				callOnScripts('onInitModchart');
 				FlxG.signals.postUpdate.remove(initCallback);
 			};
