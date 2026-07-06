@@ -499,7 +499,6 @@ class PlayState extends MusicBeatState
 		
 		//trace('Playback Rate: ' + playbackRate);
 		_lastLoadedModDirectory = Mods.currentModDirectory;
-		Paths.clearUnusedMemory();
 		Paths.clearStoredMemory();
 		
 		// Optimización inicial para Android
@@ -2071,9 +2070,9 @@ class PlayState extends MusicBeatState
 
 			var psychScore:String;
 			if(!instakillOnMiss)
-				psychScore = Language.getPhrase('score_text_legacy', 'Score: {1} | Misses: {2} | Rating: {3}', [scoreStr, songMisses, str]);
+				psychScore = Language.getPhrase('score_text', 'Score: {1} | Misses: {2} | Rating: {3}', [scoreStr, songMisses, str]);
 			else
-				psychScore = Language.getPhrase('score_text_instakill_legacy', 'Score: {1} | Rating: {2}', [scoreStr, str]);
+				psychScore = Language.getPhrase('score_text_instakill', 'Score: {1} | Rating: {2}', [scoreStr, str]);
 
 			if (scoreTxt.text != lastScoreTxtContent && scoreTxt.text != psychScore)
 				scoreTxtOverridden = true;
@@ -2095,10 +2094,10 @@ class PlayState extends MusicBeatState
 			var missLabel:String = ClientPrefs.data.badShitBreakCombo ? Language.getPhrase('combo_breaks', 'Combo Breaks') : Language.getPhrase('misses', 'Misses');
 			var missCount:Int = ClientPrefs.data.badShitBreakCombo ? comboBreaks : songMisses;
 			
-			tempScore = Language.getPhrase('score_text', 'Score: {1} | {2}: {3} | Rating: {4} | TPS: {5}/{6}', [scoreStr, missLabel, missCount, str, nps, maxNPS]);
+			tempScore = Language.getPhrase('score_text_new', 'Score: {1} | {2}: {3} | Rating: {4} | TPS: {5}/{6}', [scoreStr, missLabel, missCount, str, nps, maxNPS]);
 		}
 		else
-			tempScore = Language.getPhrase('score_text_instakill', 'Score: {1} | Rating: {2} | TPS: {3}/{4}', [scoreStr, str, nps, maxNPS]);
+			tempScore = Language.getPhrase('score_text_new_instakill', 'Score: {1} | Rating: {2} | TPS: {3}/{4}', [scoreStr, str, nps, maxNPS]);
 		
 		// Detectar si un script modificó el texto externamente
 		if (scoreTxt.text != lastScoreTxtContent && scoreTxt.text != tempScore) {
@@ -2967,10 +2966,11 @@ class PlayState extends MusicBeatState
 		// TPS/NPS System Update
 		{
 			var i = notesHitArray.length - 1;
+			var nowTime:Float = Date.now().getTime();
 			while (i >= 0)
 			{
 				var time:Date = notesHitArray[i];
-				if (time != null && time.getTime() + 1000 < Date.now().getTime())
+				if (time != null && time.getTime() + 1000 < nowTime)
 					notesHitArray.remove(time);
 				else
 					i = -1; // break the loop
@@ -2997,9 +2997,11 @@ class PlayState extends MusicBeatState
 			camHUD.zoom = FlxMath.lerp(1, camHUD.zoom, Math.exp(-elapsed * 3.125 * camZoomingDecay * playbackRate));
 		}
 
+		#if debug
 		FlxG.watch.addQuick("secShit", curSection);
 		FlxG.watch.addQuick("beatShit", curBeat);
 		FlxG.watch.addQuick("stepShit", curStep);
+		#end
 
 		// RESET = Quick Game Over Screen
 		if (!ClientPrefs.data.noReset && controls.RESET && canReset && !inCutscene && startedCountdown && !endingSong)
@@ -4176,7 +4178,7 @@ class PlayState extends MusicBeatState
 
 	inline function shouldTraceGameplayPerformance():Bool
 	{
-		return #if mobile true #else (Main.fpsVar != null && Main.fpsVar.debugLevel >= 2) #end;
+		return Main.fpsVar != null && Main.fpsVar.debugLevel >= 2;
 	}
 
 	function updateGameplayPerformanceTracker(elapsed:Float):Void
@@ -4869,9 +4871,17 @@ class PlayState extends MusicBeatState
 		return -1;
 	}
 
+	private function hasExtraMobileButtonID(button:TouchButton):Bool
+	{
+		for (id in button.IDs)
+			if (id.toString().startsWith("EXTRA"))
+				return true;
+		return false;
+	}
+
 	private function onButtonPress(button:TouchButton):Void
 	{
-		if (button.IDs.filter(id -> id.toString().startsWith("EXTRA")).length > 0)
+		if (hasExtraMobileButtonID(button))
 			return;
 
 		var buttonCode:Int = (button.IDs[0].toString().startsWith('NOTE')) ? button.IDs[0] : button.IDs[1];
@@ -4882,7 +4892,7 @@ class PlayState extends MusicBeatState
 
 	private function onButtonRelease(button:TouchButton):Void
 	{
-		if (button.IDs.filter(id -> id.toString().startsWith("EXTRA")).length > 0)
+		if (hasExtraMobileButtonID(button))
 			return;
 
 		var buttonCode:Int = (button.IDs[0].toString().startsWith('NOTE')) ? button.IDs[0] : button.IDs[1];

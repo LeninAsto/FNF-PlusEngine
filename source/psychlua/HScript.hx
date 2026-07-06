@@ -230,8 +230,49 @@ class HScript extends Iris
 	override function preset() {
 		super.preset();
 
-		// Some very commonly used classes
+		// ===== PSYCH ENGINE 1.0.4 BASE PRESET =====
+		// Keep these first so old Psych scripts see the expected globals before
+		// Plus Engine layers add aliases or extended wrappers below.
 		set('Type', Type);
+		#if sys
+		set('File', File);
+		set('FileSystem', FileSystem);
+		#end
+		set('FlxG', CustomFlxG);
+		set('FlxMath', CustomFlxMath);
+		set('FlxSprite', flixel.FlxSprite);
+		set('FlxText', flixel.text.FlxText);
+		set('FlxCamera', flixel.FlxCamera);
+		set('PsychCamera', backend.PsychCamera);
+		set('FlxTimer', flixel.util.FlxTimer);
+		set('FlxTween', flixel.tweens.FlxTween);
+		set('FlxEase', flixel.tweens.FlxEase);
+		set('FlxColor', CustomFlxColor);
+		set('Countdown', backend.BaseStage.Countdown);
+		set('PlayState', PlayState);
+		set('Paths', Paths);
+		set('StorageUtil', mobile.backend.StorageUtil);
+		set('Conductor', Conductor);
+		set('ClientPrefs', ClientPrefs);
+		#if ACHIEVEMENTS_ALLOWED
+		set('Achievements', backend.Achievements);
+		#end
+		set('Character', objects.Character);
+		set('Alphabet', objects.Alphabet);
+		set('Note', objects.Note);
+		set('CustomSubstate', CustomSubstate);
+		#if (!flash && sys)
+		set('FlxRuntimeShader', flixel.addons.display.FlxRuntimeShader);
+		set('ErrorHandledRuntimeShader', shaders.ErrorHandledShader.ErrorHandledRuntimeShader);
+		#end
+		set('ShaderFilter', flash.filters.ShaderFilter);
+		set('StringTools', StringTools);
+		#if flxanimate
+		set('FlxAnimate', FlxAnimate);
+		#end
+
+		// ===== PLUS ENGINE NEW PRESET =====
+		// Extra Haxe stdlib, UI, mobile, state scripting and modchart helpers.
 		set('Reflect', Reflect);
 		set('Lambda', Lambda);
 		set('Json', haxe.Json);
@@ -245,37 +286,12 @@ class HScript extends Iris
 		set('FlxSave', flixel.util.FlxSave);
 		set('FlxSpriteUtil', flixel.util.FlxSpriteUtil);
 		#if sys
-		set('File', File);
-		set('FileSystem', FileSystem);
 		set('Sys', Sys);
 		#end
-		set('FlxG', CustomFlxG);
-		set('FlxMath', CustomFlxMath);
-		set('FlxSprite', flixel.FlxSprite);
-		set('FlxText', flixel.text.FlxText);
 		set('FlxTextAlign', CustomFlxTextAlign);
 		set('FlxTextBorderStyle', CustomFlxTextBorderStyle);
-		set('FlxCamera', flixel.FlxCamera);
-		set('PsychCamera', backend.PsychCamera);
-		set('FlxTimer', flixel.util.FlxTimer);
-		set('FlxTween', flixel.tweens.FlxTween);
-		set('FlxEase', flixel.tweens.FlxEase);
 		set('FlxSound', flixel.sound.FlxSound);
-
-		// Backwards compatibility: older mods expect a global `modchartTweens` map
-		// that stores tweens by tag. Use the shared PlayState instance so all
-		// scripts access the same map across the game (matches legacy behaviour).
-		#if LUA_ALLOWED
-		set('modchartTweens', PlayState.instance != null ? PlayState.instance.modchartTweens : null);
-		set('modchartSprites', PlayState.instance != null ? PlayState.instance.modchartSprites : null);
-		set('modchartTexts', PlayState.instance != null ? PlayState.instance.modchartTexts : null);
-		#else
-		set('modchartTweens', null);
-		set('modchartSprites', null);
-		set('modchartTexts', null);
-		#end
 		set('FlxFlicker', flixel.effects.FlxFlicker);
-		set('FlxColor', CustomFlxColor);
 		set('FlxAxes', CustomFlxAxes);
 		set('FlxSpriteGroup', flixel.group.FlxSpriteGroup);
 		set('FlxTypedGroup', flixel.group.FlxTypedGroup);

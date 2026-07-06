@@ -43,8 +43,10 @@ class IdID
         "update_controls_mobile" => "Tekan {1} untuk mengunduh versi terbaru\nTekan {2} jika Anda berada di versi engine yang benar\nAnda dapat mematikan peringatan ini di menu Pengaturan",
 
         // Gameplay
-        "score_text" => "Skor: {1} | {2}: {3} | Rating: {4} | TPS: {5}/{6}",
-        "score_text_instakill" => "Skor: {1} | Rating: {2} | TPS: {3}/{4}",
+        "score_text" => "Skor: {1} | Misses: {2} | Rating: {3}",
+        "score_text_instakill" => "Skor: {1} | Rating: {2}",
+        "score_text_new" => "Skor: {1} | {2}: {3} | Rating: {4} | TPS: {5}/{6}",
+        "score_text_new_instakill" => "Skor: {1} | Rating: {2} | TPS: {3}/{4}",
         "botplay" => "Botplay",
         "practice_mode" => "Mode Latihan",
         "perfect_mode" => "Mode Sempurna",

@@ -35,6 +35,9 @@ class RenderInterpolation
 
 	static function onPostDraw():Void
 	{
+		if (!FlxG.fixedTimestep)
+			return;
+
 		for (camera in FlxG.cameras.list)
 			restoreCameraState(camera);
 	}

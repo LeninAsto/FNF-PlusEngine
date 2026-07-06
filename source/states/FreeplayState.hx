@@ -64,6 +64,11 @@ class FreeplayState extends MusicBeatState
 	public var intendedRating:Float = 0;
 
 	private var grpSongs:FlxTypedGroup<FlxText>;
+	private var songTextArray:Array<FlxText> = [];
+	private var cardGroup:FlxTypedGroup<FlxSprite>;
+	private var cardAccentGroup:FlxTypedGroup<FlxSprite>;
+	private var iconGroup:FlxTypedGroup<HealthIcon>;
+	private var modTextGroup:FlxTypedGroup<FlxText>;
 	private var curPlaying:Bool = false;
 	private var searchField:MaterialTextField;
 	private var songSearchQuery:String = "";
@@ -83,6 +88,7 @@ class FreeplayState extends MusicBeatState
 	private var songInfoCardLoadToken:Int = 0;
 	private var songInfoCardLoading:Bool = false;
 	private var songInfoCardData:FreeplaySongCardData = null;
+	private var songInfoCardCache:Map<String, FreeplaySongCardData> = new Map<String, FreeplaySongCardData>();
 
 	private var iconArray:Array<HealthIcon> = [];
 
@@ -230,6 +236,15 @@ class FreeplayState extends MusicBeatState
 		target.screenCenter();
 	}
 
+	inline function centerScaledFreeplayBackground(target:FlxSprite):Void
+	{
+		if (target == null || target.graphic == null)
+			return;
+
+		target.x = (FlxG.width - target.frameWidth * target.scale.x) * 0.5;
+		target.y = (FlxG.height - target.frameHeight * target.scale.y) * 0.5;
+	}
+
 	function loadSelectedFreeplayBackground(?force:Bool = false):Void
 	{
 		if (bg == null)
@@ -341,6 +356,76 @@ class FreeplayState extends MusicBeatState
 		}
 	}
 
+	function ensureSongVisual(index:Int):Void
+	{
+		if (index < 0 || index >= songs.length || songs[index] == null || songs[index].songName == null || songs[index].songName == "")
+			return;
+		if (index < songTextArray.length && songTextArray[index] != null)
+			return;
+
+		if (songTextArray.length < songs.length)
+			songTextArray.resize(songs.length);
+		if (iconArray.length < songs.length)
+			iconArray.resize(songs.length);
+		if (cardArray.length < songs.length)
+			cardArray.resize(songs.length);
+		if (cardAccentArray.length < songs.length)
+			cardAccentArray.resize(songs.length);
+		if (modTextArray.length < songs.length)
+			modTextArray.resize(songs.length);
+		if (_cardVisualSignatures.length < songs.length)
+			_cardVisualSignatures.resize(songs.length);
+
+		var card:FlxSprite = new FlxSprite();
+		var darkestColor = FlxColor.interpolate(songs[index].color, FlxColor.BLACK, 0.5);
+		MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, 2, darkestColor, OptionsMenuTheme.cardStroke(false));
+		card.antialiasing = ClientPrefs.data.antialiasing;
+		card.visible = false;
+		cardArray[index] = card;
+		cardGroup.add(card);
+
+		var accentBar:FlxSprite = new FlxSprite();
+		MD3ShapeTools.fillRoundRect(accentBar, 10, 84, 5);
+		accentBar.visible = false;
+		cardAccentArray[index] = accentBar;
+		cardAccentGroup.add(accentBar);
+
+		var songText:FlxText = new FlxText(90, 320, 400, songs[index].songName, 32);
+		songText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		songText.borderSize = 2;
+		songText.ID = index;
+		songText.visible = songText.active = false;
+		songTextArray[index] = songText;
+		grpSongs.add(songText);
+
+		var previousModDirectory:String = Mods.currentModDirectory;
+		if (!songs[index].isStepMania)
+			Mods.currentModDirectory = songs[index].folder;
+
+		var characterName = songs[index].songCharacter;
+		if (characterName == null || characterName == "")
+			characterName = songs[index].isStepMania ? "stepmania" : "bf";
+
+		var icon:HealthIcon = new HealthIcon(characterName);
+		icon.scale.set(0.8, 0.8);
+		icon.visible = icon.active = false;
+		iconArray[index] = icon;
+		iconGroup.add(icon);
+		Mods.currentModDirectory = previousModDirectory;
+
+		var modName:String = songs[index].folder;
+		if (modName == null || modName == '')
+			modName = songs[index].isStepMania ? "StepMania" : "Friday Night Funkin";
+
+		var modText:FlxText = new FlxText(0, 0, 430, modName, 16);
+		modText.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		modText.borderSize = 1.5;
+		modText.alpha = 0.7;
+		modText.visible = false;
+		modTextArray[index] = modText;
+		modTextGroup.add(modText);
+	}
+
 	override function create()
 	{
 		//Paths.clearStoredMemory();
@@ -450,129 +535,22 @@ class FreeplayState extends MusicBeatState
 		vizBarsGroup.visible = true;
 		OptionsMenuTheme.syncAccent();
 		lastThemeSignature = OptionsMenuTheme.signature();
-
-		// Primero crear y añadir las cards (fondo)
-		for (i in 0...songs.length)
-		{
-			// Validar que la canción tenga datos válidos
-			if (songs[i] == null || songs[i].songName == null || songs[i].songName == "")
-			{
-				trace('Skipping invalid song at index $i');
-				continue;
-			}
-
-			try 
-			{
-				var card:FlxSprite = new FlxSprite();
-				var cardColor:Int = songs[i].color;
-				var darkestColor = FlxColor.interpolate(cardColor, FlxColor.BLACK, 0.5);
-				MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, 2, darkestColor, OptionsMenuTheme.cardStroke(false));
-				if (card != null && card.graphic != null)
-				{
-					card.antialiasing = ClientPrefs.data.antialiasing;
-					card.visible = false;
-					cardArray.push(card);
-					add(card);
-					var accentBar:FlxSprite = new FlxSprite();
-					MD3ShapeTools.fillRoundRect(accentBar, 10, 84, 5);
-					accentBar.visible = false;
-					cardAccentArray.push(accentBar);
-					add(accentBar);
-				}
-				else
-				{
-					// Crear card vacía si falla la carga de imagen
-					var card:FlxSprite = new FlxSprite().makeGraphic(470, 110, FlxColor.GRAY);
-					card.visible = false;
-					cardArray.push(card);
-					add(card);
-					var accentBar:FlxSprite = new FlxSprite();
-					MD3ShapeTools.fillRoundRect(accentBar, 10, 84, 5);
-					accentBar.visible = false;
-					cardAccentArray.push(accentBar);
-					add(accentBar);
-				}
-			}
-			catch (e:Dynamic)
-			{
-				trace('Error creating card for song ${songs[i].songName}: $e');
-				// Crear card de respaldo
-				var card:FlxSprite = new FlxSprite().makeGraphic(470, 110, FlxColor.GRAY);
-				card.visible = false;
-				cardArray.push(card);
-				add(card);
-				var accentBar:FlxSprite = new FlxSprite();
-				MD3ShapeTools.fillRoundRect(accentBar, 10, 84, 5);
-				accentBar.visible = false;
-				cardAccentArray.push(accentBar);
-				add(accentBar);
-			}
-		}
-
-		// Ahora crear los textos y elementos que van encima
+		cardGroup = new FlxTypedGroup<FlxSprite>();
+		add(cardGroup);
+		cardAccentGroup = new FlxTypedGroup<FlxSprite>();
+		add(cardAccentGroup);
 		grpSongs = new FlxTypedGroup<FlxText>();
 		add(grpSongs);
-
-		for (i in 0...songs.length)
-		{
-			// Validar que la canción tenga datos válidos
-			if (songs[i] == null || songs[i].songName == null || songs[i].songName == "")
-			{
-				trace('Skipping invalid song at index $i');
-				continue;
-			}
-			
-			var songText:FlxText = new FlxText(90, 320, 400, songs[i].songName, 32);
-			songText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			songText.borderSize = 2;
-			songText.ID = i;
-			grpSongs.add(songText);
-
-			// Para canciones de StepMania, no cambiar el directorio de mod
-			if (!songs[i].isStepMania)
-			{
-				Mods.currentModDirectory = songs[i].folder;
-			}
-			
-			// Validar el personaje para el icono
-			var characterName = songs[i].songCharacter;
-			if (characterName == null || characterName == "")
-			{
-				characterName = songs[i].isStepMania ? "stepmania" : "bf";
-			}
-			
-			var icon:HealthIcon = new HealthIcon(characterName);
-			icon.scale.set(0.8, 0.8);
-			
-			// too laggy with a lot of songs, so i had to recode the logic for it
-			songText.visible = songText.active = false;
-			icon.visible = icon.active = false;
-		
-			var modName:String = songs[i].folder;
-			if (modName == null || modName == '')
-			{
-				// Verificar si es una canción de StepMania
-				if (songs[i].isStepMania)
-					modName = "StepMania";
-				else
-					modName = "Friday Night Funkin";
-			}
-
-			var modText:FlxText = new FlxText(0, 0, 430, modName, 16);
-			modText.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			modText.borderSize = 1.5;
-			modText.alpha = 0.7;
-			modText.visible = false;
-			modTextArray.push(modText);
-			add(modText);
-
-			// using a FlxGroup is too much fuss!
-			iconArray.push(icon);
-			add(icon);
-			// songText.x += 40;
-			// DONT PUT X IN THE FIRST PARAMETER OF new ALPHABET() !!
-			// songText.screenCenter(X);
-		}
+		modTextGroup = new FlxTypedGroup<FlxText>();
+		add(modTextGroup);
+		iconGroup = new FlxTypedGroup<HealthIcon>();
+		add(iconGroup);
+		songTextArray.resize(songs.length);
+		iconArray.resize(songs.length);
+		cardArray.resize(songs.length);
+		cardAccentArray.resize(songs.length);
+		modTextArray.resize(songs.length);
+		_cardVisualSignatures.resize(songs.length);
 		WeekData.setDirectoryFromWeek();
 
 		// Eliminar scoreText de la esquina ya que ahora se mostrará debajo de cada dificultad
@@ -1060,13 +1038,11 @@ class FreeplayState extends MusicBeatState
 		
 		bgZoom = FlxMath.lerp(defaultBgZoom, bgZoom, Math.exp(-elapsed * 3.125));
 		bg.scale.set(bgZoom, bgZoom);
-		bg.updateHitbox();
-		bg.screenCenter();
+		centerScaledFreeplayBackground(bg);
 		if (bgTransition != null)
 		{
 			bgTransition.scale.set(bgZoom, bgZoom);
-			bgTransition.updateHitbox();
-			bgTransition.screenCenter();
+			centerScaledFreeplayBackground(bgTransition);
 		}
 
 		lerpScore = Math.floor(FlxMath.lerp(intendedScore, lerpScore, Math.exp(-elapsed * 24)));
@@ -1539,18 +1515,6 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 
-		for (num => item in grpSongs.members)
-		{
-			var icon:HealthIcon = iconArray[num];
-			item.alpha = 0.6;
-			icon.alpha = 0.6;
-			if (item.ID == curSelected)
-			{
-			item.alpha = 1;
-			icon.alpha = 1;
-			}
-		}
-
 		// Para canciones de StepMania, no cambiar el directorio de mod
 		if (!songs[curSelected].isStepMania) {
 			Mods.currentModDirectory = songs[curSelected].folder;
@@ -1769,6 +1733,16 @@ class FreeplayState extends MusicBeatState
 		if (songInfoCardLoadingLabel != null) songInfoCardLoadingLabel.visible = active;
 	}
 
+	inline function getSongInfoCardCacheKey(song:SongMetadata):String
+	{
+		return song == null ? '' : getSongInfoCardCacheKeyByName(song.songName);
+	}
+
+	inline function getSongInfoCardCacheKeyByName(songName:String):String
+	{
+		return Paths.formatToSongPath(songName == null ? '' : songName);
+	}
+
 	function queueSongInfoCardLoad():Void
 	{
 		if (songs == null || songs.length == 0 || curSelected < 0 || curSelected >= songs.length)
@@ -1784,15 +1758,22 @@ class FreeplayState extends MusicBeatState
 			songInfoCardLoadTimer = null;
 		}
 
+		var song:SongMetadata = songs[requestIndex];
+		var cacheKey:String = getSongInfoCardCacheKey(song);
+		if (songInfoCardCache.exists(cacheKey))
+		{
+			applySongInfoCardData(songInfoCardCache.get(cacheKey));
+			return;
+		}
+
 		songInfoCardLoading = true;
 		setFreeplayLoadingUi(true);
 
-		songInfoCardLoadTimer = new FlxTimer().start(1.0, function(_:FlxTimer) {
+		songInfoCardLoadTimer = new FlxTimer().start(0.25, function(_:FlxTimer) {
 			songInfoCardLoadTimer = null;
 			if (requestToken != songInfoCardLoadToken || requestIndex != curSelected)
 				return;
 
-			var song:SongMetadata = songs[requestIndex];
 			var diffNames:Array<String> = getSongDifficultyNames(song);
 			var bpmSnapshot:Float = currentBPM;
 
@@ -1846,6 +1827,7 @@ class FreeplayState extends MusicBeatState
 			return;
 
 		songInfoCardData = data;
+		songInfoCardCache.set(getSongInfoCardCacheKeyByName(data.songName), data);
 		songInfoCardLoading = false;
 		setFreeplayLoadingUi(false);
 
@@ -2274,8 +2256,8 @@ class FreeplayState extends MusicBeatState
 		var query:String = StringTools.trim(songSearchQuery != null ? songSearchQuery.toLowerCase() : "");
 		for (i in _lastVisibles)
 		{
-			if (i >= 0 && i < grpSongs.members.length && grpSongs.members[i] != null)
-				grpSongs.members[i].visible = grpSongs.members[i].active = false;
+			if (i >= 0 && i < songTextArray.length && songTextArray[i] != null)
+				songTextArray[i].visible = songTextArray[i].active = false;
 			if (i >= 0 && i < iconArray.length && iconArray[i] != null)
 				iconArray[i].visible = iconArray[i].active = false;
 			if (i >= 0 && i < cardArray.length && cardArray[i] != null)
@@ -2291,12 +2273,13 @@ class FreeplayState extends MusicBeatState
 		var max:Int = Math.round(Math.max(0, Math.min(songs.length, lerpSelected + _drawDistance)));
 		for (i in min...max)
 		{
-			if (i < 0 || i >= grpSongs.members.length || i >= iconArray.length || i >= cardArray.length || i >= cardAccentArray.length || i >= modTextArray.length || songs[i] == null)
+			if (i < 0 || i >= songs.length || songs[i] == null)
 				continue;
 			if (query.length > 0 && !songMatchesFilter(songs[i], query))
 				continue;
 
-			var item:FlxText = grpSongs.members[i];
+			ensureSongVisual(i);
+			var item:FlxText = songTextArray[i];
 			if (item == null)
 				continue;
 			item.visible = item.active = true;
@@ -2318,7 +2301,9 @@ class FreeplayState extends MusicBeatState
 				continue;
 
 			icon.visible = icon.active = true;
-			icon.updateHitbox();
+			var visibleAlpha:Float = (i == curSelected) ? 1 : 0.6;
+			item.alpha = visibleAlpha;
+			icon.alpha = visibleAlpha;
 			icon.y = item.y - 20;
 
 			var card:FlxSprite = cardArray[i];

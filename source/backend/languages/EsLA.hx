@@ -28,8 +28,10 @@ class EsLA
         "update_controls_mobile" => "Presione {1} para descargar la última versión\nPresione {2} si está en la versión correcta del motor\nPuede desactivar esta advertencia en el menú de opciones",
 
         // Gameplay
-        "score_text" => "Puntuación: {1} | {2}: {3} | Clasificación: {4} | TPS: {5}/{6}",
-        "score_text_instakill" => "Fallas: {1} | Clasificación: {2} | TPS: {3}/{4}",
+        "score_text" => "Puntuación: {1} | Fallas: {2} | Clasificación: {3}",
+        "score_text_instakill" => "Puntuación: {1} | Clasificación: {2}",
+        "score_text_new" => "Puntuación: {1} | {2}: {3} | Clasificación: {4} | TPS: {5}/{6}",
+        "score_text_new_instakill" => "Puntuación: {1} | Clasificación: {2} | TPS: {3}/{4}",
         "botplay" => "Automático",
         "misses" => "Fallas",
         "combo_breaks" => "Rupturas de Combo",

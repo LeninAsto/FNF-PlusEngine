@@ -1,6 +1,10 @@
 package backend;
 
 import flixel.FlxSubState;
+import flixel.FlxBasic;
+import flixel.FlxObject;
+import flixel.tweens.FlxTween;
+import flixel.tweens.FlxEase;
 import debug.TraceDisplay;
 
 #if LUA_ALLOWED
@@ -30,6 +34,8 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 {
 	public static inline var Function_Continue:Int = 0;
 	public static inline var Function_Stop:Int = 1;
+	static inline var DEFAULT_INTRO_OFFSET:Float = 1280;
+	static inline var DEFAULT_INTRO_DURATION:Float = 0.28;
 
 	public static var instance:MusicBeatSubstate;
 	
@@ -77,6 +83,7 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 		if (!(this is psychlua.CustomSubstate) && MusicBeatState.stateScriptOverridesEnabled())
 			_loadCompanionScript();
 		#end
+		playDefaultIntroTransition();
 	}
 	public static function getSubstate():MusicBeatSubstate
 	{
@@ -97,6 +104,41 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 		MusicBeatState.callOnGlobalScript('onSubstateUpdate', [elapsed]);
 
 		super.update(elapsed);
+	}
+
+	function shouldPlayDefaultIntroTransition():Bool
+	{
+		var parent = getParentState();
+		if (parent != null && Std.isOfType(parent, states.PlayState))
+			return false;
+		if (Std.isOfType(this, options.BaseOptionsMenu))
+			return false;
+
+		var cls = Type.getClassName(Type.getClass(this));
+		if (cls == 'states.editors.content.EditorPlayState')
+			return false;
+		return true;
+	}
+
+	function playDefaultIntroTransition():Void
+	{
+		if (!shouldPlayDefaultIntroTransition())
+			return;
+
+		for (member in members)
+			animateIntroMember(member);
+	}
+
+	function animateIntroMember(member:FlxBasic):Void
+	{
+		if (member == null || !Std.isOfType(member, FlxObject))
+			return;
+
+		var obj:FlxObject = cast member;
+		var targetX:Float = obj.x;
+		obj.x = targetX - DEFAULT_INTRO_OFFSET;
+		FlxTween.cancelTweensOf(obj);
+		FlxTween.tween(obj, {x: targetX}, DEFAULT_INTRO_DURATION, {ease: FlxEase.cubeOut});
 	}
 
 	override public function stepHit():Void
