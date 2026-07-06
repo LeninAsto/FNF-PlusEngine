@@ -26,8 +26,8 @@ import states.TitleState;
 	public var popUpRating:Bool = true;
 	public var versionTextOnGameplay:Bool = false;
 	public var gameOverVibration:Bool = false;
-	public var fpsRework:Bool = #if mobile false #else true #end;
-	public var framerateMode:String = #if mobile 'Psych' #else 'Interpolated' #end;
+	public var fpsRework:Bool = false;
+	public var framerateMode:String = 'Psych';
 	public var mobileReceptorAlign:Bool = false; // Align receptors with hitbox lanes (mobile only, may break scripts)
 	#if windows
 	public var fullscreenMode:String = 'Borderless'; // 'Borderless', 'Borderless Fix', 'Exclusive'
@@ -177,7 +177,7 @@ class ClientPrefs {
 	public static var data:SaveVariables = {};
 	public static var defaultData:SaveVariables = {};
 	public static var judgementCounter:Bool = false;
-	public static final FRAMERATE_MODES:Array<String> = ['Interpolated', 'Fixed', 'Psych'];
+	public static final FRAMERATE_MODES:Array<String> = ['Psych', 'Fixed', 'Interpolated'];
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [

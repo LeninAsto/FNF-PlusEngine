@@ -18,8 +18,10 @@ class EnUS
         "back" => "Back",
 
         // Gameplay
-        "score_text" => "Score: {1} | {2}: {3} | Rating: {4} | TPS: {5}/{6}",
-        "score_text_instakill" => "Score: {1} | Rating: {2} | TPS: {3}/{4}",
+        "score_text" => "Score: {1} | Misses: {2} | Rating: {3}",
+        "score_text_instakill" => "Score: {1} | Rating: {2}",
+        "score_text_new" => "Score: {1} | {2}: {3} | Rating: {4} | TPS: {5}/{6}",
+        "score_text_new_instakill" => "Score: {1} | Rating: {2} | TPS: {3}/{4}",
         "score_text_legacy" => "Score: {1} | Misses: {2} | Rating: {3}",
         "score_text_instakill_legacy" => "Score: {1} | Rating: {2}",
         "botplay" => "Botplay",
@@ -238,7 +240,7 @@ class EnUS
         "setting_framerate" => "Framerate",
         "description_framerate" => "Pretty self explanatory, isn't it?",
         "setting_framerate_mode" => "Framerate Mode",
-        "description_framerate_mode" => "Choose how the engine handles update/draw timing.\nInterpolated is smoother, Fixed is lighter, Base matches the original mobile base.\nRestart the game to apply changes.",
+        "description_framerate_mode" => "Choose how the engine handles update/draw timing.\nBase matches Psych Engine, Fixed is lighter, Interpolated is smoother.\nRestart the game to apply changes.",
         "setting_framerate_mode-Interpolated" => "Interpolated",
         "setting_framerate_mode-Fixed" => "Fixed",
         "setting_framerate_mode-Psych" => "Base",

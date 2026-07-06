@@ -67,7 +67,7 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 
 		#if !html5 //Apparently other framerates isn't correctly supported on Browser? Probably it has some V-Sync shit enabled by default, idk
 		var option:Option = new Option('Framerate Mode',
-			'Choose how the engine handles update/draw timing.\nInterpolated is smoother, Fixed is lighter, Base matches the original mobile base.\nRestart the game to apply changes.',
+			'Choose how the engine handles update/draw timing.\nBase matches Psych Engine, Fixed is lighter, Interpolated is smoother.\nRestart the game to apply changes.',
 			'framerateMode',
 			STRING,
 			ClientPrefs.FRAMERATE_MODES);
