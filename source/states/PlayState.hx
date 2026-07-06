@@ -292,12 +292,16 @@ class PlayState extends MusicBeatState
 
 	public var iconP1:HealthIcon;
 	public var iconP2:HealthIcon;
+	public var iconGF:HealthIcon;
 	public var camHUD:FlxCamera;
 	public var camGame:FlxCamera;
 	public var camOther:FlxCamera;
 	public var luaTpadCam:FlxCamera;
 	public var cameraSpeed:Float = 1;
 
+	public var gfIconSide:String = '';
+	public var gfIconSwapOnSing:Bool = false;
+	
 	// 3D Curve Effect Shaders
 	public var curveEffectGame:shaders.CurveEffect;
 	public var curveEffectHUD:shaders.CurveEffect;
@@ -858,6 +862,7 @@ class PlayState extends MusicBeatState
 		// Cargar íconos con soporte para animación
 		var bf_animatedIcon:Bool = (boyfriend != null && boyfriend.animatedIcon == true) || (SONG.isAnimated == true);
 		var dad_animatedIcon:Bool = (dad != null && dad.animatedIcon == true) || (SONG.isAnimated == true);
+		var gf_animatedIcon:Bool = (gf != null && gf.animatedIcon == true) || (SONG.isAnimated == true);
 		
 		iconP1 = new HealthIcon(boyfriend != null ? boyfriend.healthIcon : 'bf', true);
 		if(bf_animatedIcon) iconP1.changeIcon(iconP1.getCharacter(), true, true);
@@ -887,6 +892,20 @@ class PlayState extends MusicBeatState
 		iconP2.visible = !ClientPrefs.data.hideHud && !isNotITG;
 		iconP2.alpha = ClientPrefs.data.healthBarAlpha;
 		if (!isNotITG) uiGroup.add(iconP2);
+
+		iconGF = new HealthIcon(gf != null ? gf.healthIcon : 'gf', true, false);
+		if(gf_animatedIcon) iconGF.changeIcon(iconGF.getCharacter(), false, true);
+		if (ClientPrefs.data.iconBounceType == 'Old')
+		{
+			iconGF.y = healthBar.y - (iconGF.height / 2);
+		}
+       else
+		{
+			iconGF.y = healthBar.y - 75;
+		}
+		iconGF.visible = false;
+		iconGF.alpha = ClientPrefs.data.healthBarAlpha;
+		if (!isNotITG) uiGroup.add(iconGF);
 
 		function reloadHealthBarColors() {
 			healthBar.setColors(FlxColor.fromRGB(dad.healthColorArray[0], dad.healthColorArray[1], dad.healthColorArray[2]),
@@ -3120,9 +3139,11 @@ class PlayState extends MusicBeatState
 		{
 			iconP1.setGraphicSize(Std.int(FlxMath.lerp(150, iconP1.width, CoolUtil.boundTo(1 - (elapsed * 30), 0, 1))));
 			iconP2.setGraphicSize(Std.int(FlxMath.lerp(150, iconP2.width, CoolUtil.boundTo(1 - (elapsed * 30), 0, 1))));
+			iconGF.setGraphicSize(Std.int(FlxMath.lerp(150, iconP2.width, CoolUtil.boundTo(1 - (elapsed * 30), 0, 1))));
 
 			iconP1.updateHitbox();
 			iconP2.updateHitbox();
+			iconGF.updateHitbox();
 		}
 
 		setOnScripts('botPlay', cpuControlled);
@@ -3142,6 +3163,10 @@ class PlayState extends MusicBeatState
 			var mult:Float = FlxMath.lerp(1, iconP2.scale.x, FlxMath.bound((1 - (elapsed * 9 * playbackRate)) / 1.1, 0, 1));
 			iconP2.scale.set(mult, mult);
 			iconP2.updateHitbox();
+
+			var mult:Float = FlxMath.lerp(1, iconGF.scale.x, FlxMath.bound((1 - (elapsed * 9 * playbackRate)) / 1.1, 0, 1));
+			iconGF.scale.set(mult, mult);
+			iconGF.updateHitbox();
 		}
 
 		if (ClientPrefs.data.iconBounceType == 'Default' || ClientPrefs.data.iconBounceType == 'D&B')
@@ -3159,14 +3184,40 @@ class PlayState extends MusicBeatState
 				iconP2.scale.set(mult, mult);
 				iconP2.updateHitbox();
 			}
+
+			if (iconGF != null && iconGF.visible) {
+				var mult:Float = FlxMath.lerp(1, iconGF.scale.x, Math.exp(-elapsed * 9 * playbackRate));
+				iconGF.scale.set(mult, mult);
+				iconGF.updateHitbox();
+			}
 		}
 	}
 
 	public dynamic function updateIconsPosition()
 	{
 		var iconOffset:Int = 26;
+		var isGFSinging:Bool = (SONG.notes[curSection] != null && SONG.notes[curSection].gfSection);
+
 		if (iconP1 != null) iconP1.x = healthBar.barCenter + (150 * iconP1.scale.x - 150) / 2 - iconOffset;
 		if (iconP2 != null) iconP2.x = healthBar.barCenter - (150 * iconP2.scale.x) / 2 - iconOffset * 2;
+
+		if (iconGF != null && iconGF.visible) {
+			if (gfIconSwapOnSing && isGFSinging) {
+				if (gfIconSide == 'bf') {
+					iconGF.x = healthBar.barCenter + (150 * iconGF.scale.x - 150) / 2 - iconOffset;
+					iconP1.x = healthBar.barCenter + (150 * iconP1.scale.x - 150) / 2 - iconOffset + 75;
+				} else if (gfIconSide == 'dad') {
+					iconGF.x = healthBar.barCenter - (150 * iconGF.scale.x) / 2 - iconOffset * 2;
+					iconP2.x = healthBar.barCenter - (150 * iconP2.scale.x) / 2 - iconOffset * 2 - 75;
+				}
+			} else {
+				if (gfIconSide == 'bf') {
+					iconGF.x = healthBar.barCenter + (150 * iconGF.scale.x - 150) / 2 - iconOffset + 75;
+				} else if (gfIconSide == 'dad') {
+					iconGF.x = healthBar.barCenter - (150 * iconGF.scale.x) / 2 - iconOffset * 2 - 75;
+				}
+			}
+		}
 	}
 
 	var iconsAnimations:Bool = true;
@@ -3261,6 +3312,9 @@ class PlayState extends MusicBeatState
 		if(iconP2 != null && iconP2.isAnimated) {
 			iconP2.updateIconState(playOpponent ? 1 - healthPercent : healthPercent);
 		}
+		if(iconGF != null && iconGF.visible && iconGF.isAnimated) {
+			iconGF.updateIconState(playOpponent ? healthPercent : 1 - healthPercent);
+		}
 		
 		// Sistema de frames para íconos estáticos (comportamiento original)
 		if(iconP1 != null && !iconP1.isAnimated) {
@@ -3271,6 +3325,16 @@ class PlayState extends MusicBeatState
 			} else {
 				iconP1.animation.curAnim.curFrame = (healthBar.percent < 20) ? 1 : 0; //If health is under 20%, change player icon to frame 1 (losing icon), otherwise, frame 0 (normal)
 				if (iconP2 != null) iconP2.animation.curAnim.curFrame = (healthBar.percent > 80) ? 1 : 0; //If health is over 80%, change opponent icon to frame 1 (losing icon), otherwise, frame 0 (normal)
+			}
+		}
+
+		if(iconGF != null && iconGF.visible && !iconGF.isAnimated) {
+			if (playOpponent) {
+				iconGF.animation.curAnim.curFrame = (healthBar.percent > 80) ? 1 : 0;
+				if (iconP2 != null) iconGF.animation.curAnim.curFrame = (healthBar.percent < 20) ? 1 : 0;
+			} else {
+				iconGF.animation.curAnim.curFrame = (healthBar.percent < 20) ? 1 : 0;
+				if (iconP2 != null) iconGF.animation.curAnim.curFrame = (healthBar.percent > 80) ? 1 : 0;
 			}
 		}
 	}
@@ -3724,7 +3788,6 @@ class PlayState extends MusicBeatState
 					trace('BPM changed to: ' + newBPM + ' at time: ' + strumTime);
 				}
 
-						// ...existing code...
 			case "Set Camera Bopping":
 				// Value 1: frecuencia (en beats), Value 2: intensidad (1 = default)
 				var freq:Float = 1;
@@ -3736,7 +3799,20 @@ class PlayState extends MusicBeatState
 				cameraBopFrequency = freq;
 				cameraBopIntensity = intensity;
 				cameraBopEnabled = true;
-			// ...existing code...
+			
+			case 'Add Secondary Icon':
+				gfIconSide = value1.toLowerCase().trim();
+				gfIconSwapOnSing = (value2.toLowerCase().trim() == 'true');
+				
+				if (iconGF != null) {
+					iconGF.visible = !ClientPrefs.data.hideHud && (gfIconSide == 'dad' || gfIconSide == 'bf');
+
+					if (gfIconSide == 'dad') {
+						iconGF.flipX = false;
+					} else if (gfIconSide == 'bf') {
+						iconGF.flipX = true;
+					}
+				}
 		}
 
 		stagesFunc(function(stage:BaseStage) stage.eventCalled(eventName, value1, value2, flValue1, flValue2, strumTime));
@@ -5600,9 +5676,11 @@ class PlayState extends MusicBeatState
 		{
 			iconP1.scale.set(1.2, 1.2);
 			iconP2.scale.set(1.2, 1.2);
+			iconGF.scale.set(1.2, 1.2);
 
 			iconP1.updateHitbox();
 			iconP2.updateHitbox();
+			iconGF.updateHitbox();
 		}
 
 		if (ClientPrefs.data.iconBounceType == 'NF')
@@ -5610,9 +5688,11 @@ class PlayState extends MusicBeatState
 			// Taken from NovaFlare Engine
 			iconP1.scale.set(1.3, 1.3);
 			iconP2.scale.set(1.3, 1.3);
+			iconGF.scale.set(1.3, 1.3);
 
 			iconP1.updateHitbox();
 			iconP2.updateHitbox();
+			iconGF.updateHitbox();
 		}
 
 		// Taken from Psych Engine 0.4.2
@@ -5620,9 +5700,11 @@ class PlayState extends MusicBeatState
 		{
 			iconP1.setGraphicSize(Std.int(iconP1.width + 30));
 			iconP2.setGraphicSize(Std.int(iconP2.width + 30));
+			iconGF.setGraphicSize(Std.int(iconP2.width + 30));
 
 			iconP1.updateHitbox();
 			iconP2.updateHitbox();
+			iconGF.updateHitbox();
 		}
 
 		if (ClientPrefs.data.iconBounceType == 'D&B')
@@ -5676,55 +5758,72 @@ class PlayState extends MusicBeatState
 
 	public function animateIcons():Void
 	{
-		if (!iconAnimationEnabled) return;
-		
-		// Alternar dirección
-		iconTurnValue = -iconTurnValue;
-		
-		// Animar ícono del jugador (iconP1)
-		if (iconP1 != null) {
-			// Cancelar tweens anteriores usando tags únicos
-			FlxTween.cancelTweensOf(iconP1);
-			FlxTween.cancelTweensOf(iconP1.scale);
-			
-			iconP1.angle = iconTurnValue;
-			iconP1.scale.set(1.2, 0.3); // Mantener el bump horizontal, reducir vertical
-			iconP1.updateHitbox();
-			
-			FlxTween.tween(iconP1, {angle: 0}, Conductor.crochet / 1000, {
-				ease: FlxEase.circOut,
-				type: ONESHOT
-			});
-			FlxTween.tween(iconP1.scale, {x: 1, y: 1}, Conductor.crochet / 1000, {
-				ease: FlxEase.circOut,
-				type: ONESHOT,
-				onComplete: function(twn:FlxTween) {
-					iconP1.updateHitbox();
-				}
-			});
-		}
-		
-		// Animar ícono del oponente (iconP2)
-		if (iconP2 != null) {
-			// Cancelar tweens anteriores usando tags únicos
-			FlxTween.cancelTweensOf(iconP2);
-			FlxTween.cancelTweensOf(iconP2.scale);
-			
-			iconP2.angle = iconTurnValue;
-			iconP2.scale.set(1.2, 0.3); // Mantener el bump horizontal, reducir vertical
-			iconP2.updateHitbox();
-			
-			FlxTween.tween(iconP2, {angle: 0}, Conductor.crochet / 1000, {
-				ease: FlxEase.circOut,
-				type: ONESHOT
-			});
-			FlxTween.tween(iconP2.scale, {x: 1, y: 1}, Conductor.crochet / 1000, {
-				ease: FlxEase.circOut,
-				type: ONESHOT,
-				onComplete: function(twn:FlxTween) {
-					iconP2.updateHitbox();
-				}
-			});
+		if (ClientPrefs.data.iconBounceType == 'D&B')
+		{
+			iconTurnValue = -iconTurnValue;
+
+			if (iconP1 != null) {
+				FlxTween.cancelTweensOf(iconP1);
+				FlxTween.cancelTweensOf(iconP1.scale);
+				
+				iconP1.angle = iconTurnValue;
+				iconP1.scale.set(1.2, 0.3);
+				iconP1.updateHitbox();
+				
+				FlxTween.tween(iconP1, {angle: 0}, Conductor.crochet / 1000, {
+					ease: FlxEase.circOut,
+					type: ONESHOT
+				});
+				FlxTween.tween(iconP1.scale, {x: 1, y: 1}, Conductor.crochet / 1000, {
+					ease: FlxEase.circOut,
+					type: ONESHOT,
+					onComplete: function(twn:FlxTween) {
+						iconP1.updateHitbox();
+					}
+				});
+			}
+
+			if (iconP2 != null) {
+				FlxTween.cancelTweensOf(iconP2);
+				FlxTween.cancelTweensOf(iconP2.scale);
+				
+				iconP2.angle = iconTurnValue;
+				iconP2.scale.set(1.2, 0.3);
+				iconP2.updateHitbox();
+				
+				FlxTween.tween(iconP2, {angle: 0}, Conductor.crochet / 1000, {
+					ease: FlxEase.circOut,
+					type: ONESHOT
+				});
+				FlxTween.tween(iconP2.scale, {x: 1, y: 1}, Conductor.crochet / 1000, {
+					ease: FlxEase.circOut,
+					type: ONESHOT,
+					onComplete: function(twn:FlxTween) {
+						iconP2.updateHitbox();
+					}
+				});
+			}
+
+			if (iconGF != null) {
+				FlxTween.cancelTweensOf(iconGF);
+				FlxTween.cancelTweensOf(iconGF.scale);
+				
+				iconGF.angle = iconTurnValue;
+				iconGF.scale.set(1.2, 0.3);
+				iconGF.updateHitbox();
+				
+				FlxTween.tween(iconGF, {angle: 0}, Conductor.crochet / 1000, {
+					ease: FlxEase.circOut,
+					type: ONESHOT
+				});
+				FlxTween.tween(iconGF.scale, {x: 1, y: 1}, Conductor.crochet / 1000, {
+					ease: FlxEase.circOut,
+					type: ONESHOT,
+					onComplete: function(twn:FlxTween) {
+						iconGF.updateHitbox();
+					}
+				});
+			}
 		}
 	}
 
