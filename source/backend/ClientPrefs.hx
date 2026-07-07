@@ -144,6 +144,7 @@ import states.TitleState;
 		'opponentdrain' => false, // JS Engine-style: opponent note hits drain player health
 		'opponentplay' => false,
 		'perfect' => false, // Perfect Mode - insta-kill on any judgement below Sick
+		'littletimmy' => false, // Little Timmy Mode - still generate score, ratings and TPS with auto-hit note
 		'nodroppenalty' => false // Hold drops don't cause misses
 	];
 

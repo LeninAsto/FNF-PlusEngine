@@ -27,6 +27,7 @@ class EnUS
         "botplay" => "Botplay",
         "perfect_mode" => "Perfect Mode",
         "opponent_mode" => "Opponent Mode",
+        "little_timmy_mode" => "Little Timmy Mode",
         "misses" => "Misses",
         "combo_breaks" => "Combo Breaks",
 

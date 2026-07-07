@@ -281,6 +281,7 @@ class PlayState extends MusicBeatState
 	public var cpuControlled:Bool = false;
 	public var practiceMode:Bool = false;
 	public var perfectMode:Bool = false; // Perfect Mode - miss on anything below Sick
+	public var littleTimmyMode:Bool = false; // Little Timmy Mode - like botplay but still generate score, ratings and TPS
 	public var playOpponent:Bool = false; // Opponent Mode - play as opponent
 	public var noDropPenalty:Bool = false; // Hold drops don't cause misses
 	public var opponentDrain:Bool = false; // Opponent notes drain player health
@@ -548,6 +549,7 @@ class PlayState extends MusicBeatState
 		instakillOnMiss = ClientPrefs.getGameplaySetting('instakill');
 		practiceMode = ClientPrefs.getGameplaySetting('practice');
 		perfectMode = ClientPrefs.getGameplaySetting('perfect');
+		littleTimmyMode = ClientPrefs.getGameplaySetting('littletimmy');
 		playOpponent = ClientPrefs.getGameplaySetting('opponentplay');
 		noDropPenalty = ClientPrefs.getGameplaySetting('nodroppenalty');
 		opponentDrain = ClientPrefs.getGameplaySetting('opponentdrain');
@@ -936,10 +938,12 @@ class PlayState extends MusicBeatState
 			botplayTxt.text = Language.getPhrase("Practice Mode").toUpperCase();
 		else if (perfectMode)
 			botplayTxt.text = Language.getPhrase("Perfect Mode").toUpperCase();
+		else if (littleTimmyMode)
+            botplayTxt.text = Language.getPhrase("Little Timmy Mode").toUpperCase()
 		else if (playOpponent)
 			botplayTxt.text = Language.getPhrase("Opponent Mode").toUpperCase();
 		
-		botplayTxt.visible = (cpuControlled || practiceMode || perfectMode || playOpponent);
+		botplayTxt.visible = (cpuControlled || practiceMode || perfectMode || littleTimmyMode || playOpponent);
 		uiGroup.add(botplayTxt);
 		if(ClientPrefs.data.downScroll)
 			botplayTxt.y = healthBar.y + 70;
@@ -3121,6 +3125,33 @@ class PlayState extends MusicBeatState
 			}
 
 			checkEventNote();
+
+			if(littleTimmyMode && !cpuControlled && startedCountdown && !inCutscene && !paused && generatedMusic)
+			{
+				var controlledChar:Character = playOpponent ? dad : boyfriend;
+				if(!controlledChar.stunned)
+				{
+					for (note in notes.members)
+					{
+						if (note != null && note.mustPress && !note.wasGoodHit && !note.blockHit && !note.ignoreNote && !note.tooLate && note.canBeHit)
+						{
+							var timeDiff:Float = Math.abs(note.strumTime - Conductor.songPosition);
+							if (timeDiff < 15)
+							{
+								notesHitArray.unshift(Date.now());
+								goodNoteHit(note);
+								
+								var spr:StrumNote = playerStrums.members[note.noteData];
+								if(spr != null && strumsBlocked[note.noteData] != true)
+								{
+									spr.playAnim('confirm', true);
+									spr.resetAnim = Conductor.stepCrochet * 1.25 / 1000 / playbackRate;
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 
 		#if debug

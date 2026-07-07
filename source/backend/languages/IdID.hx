@@ -5,20 +5,17 @@ class IdID
     public static var languageName:String = "Indonesian (Bahasa Ind.)";
     public static var languageCode:String = "id-ID";
     
-    // IntroTexts localizados untuk layar judul
+    // IntroTexts dilokalisasi untuk layar judul
     public static var introTexts:Array<Array<String>> = [
-        ["shoutouts to tom fulp", "lol"],
         ["Ludum dare", "luar biasa"],
         ["cyberzone", "gratis"],
         ["game ini bukan", "mod"],
         ["banyak ritme", "untuk kamu"],
         ["game ritme", "keren banget"],
         ["kesulitan sedang", "oke lah"],
-        ["funkin", "deluxe"],
         ["jangan berhenti", "funkin"],
         ["hampir selesai", "ceritanya"],
         ["dua pemain", "segera hadir"],
-        ["Psych Engine", "Plus Edition"],
         ["engine ini", "keren"],
         ["banyak not", "dimana-mana"],
         ["ingat latihan", "bikin kamu lebih baik"],
@@ -26,7 +23,6 @@ class IdID
         ["versi plus oleh", "Lenin Asto"],
         ["nikmati", "permainannya"],
         ["tekan Enter", "untuk mulai"],
-        ["friday night", "funkin"],
         ["stecu stecu", "konoha"],
         ["jiwa yang", "bersedih"],
         ["sial sialnya", "ku bertemu dengan cinta semu"],
@@ -47,11 +43,10 @@ class IdID
         "score_text_instakill" => "Skor: {1} | Rating: {2}",
         "score_text_new" => "Skor: {1} | {2}: {3} | Rating: {4} | TPS: {5}/{6}",
         "score_text_new_instakill" => "Skor: {1} | Rating: {2} | TPS: {3}/{4}",
-        "botplay" => "Botplay",
         "practice_mode" => "Mode Latihan",
         "perfect_mode" => "Mode Sempurna",
         "opponent_mode" => "Mode Lawan",
-        "misses" => "Misses",
+        "little_timmy_mode" => "Mode Little Timmy",
         "combo_breaks" => "Kombo Istirahat",
 
         // Ratings
@@ -239,7 +234,6 @@ class IdID
         "setting_perfect_mode" => "Mode Sempurna",
         "setting_opponent_mode" => "Mode Lawan",
         "setting_no_drop_penalty" => "Tidak Ada Denda",
-        "setting_botplay" => "Botplay",
 
         // Graphics Settings
         "setting_low_quality" => "Kualitas Rendah",

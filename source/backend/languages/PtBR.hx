@@ -19,6 +19,7 @@ class PtBR
         "score_text_new" => "Pontos: {1} | {2}: {3} | Avaliação: {4} | TPS: {5}/{6}",
         "score_text_new_instakill" => "Pontos: {1} | Avaliação: {2} | TPS: {3}/{4}",
         "botplay" => "Automático",
+        "little_timmy_mode" => "Modo Pequenino Timmy",
         "misses" => "Erros",
         "combo_breaks" => "Quebras de Combo",
 
