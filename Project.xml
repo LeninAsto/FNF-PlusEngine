@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project>
+<project xmlns:config="http://lime.openfl.org/config">
 	<!-- _________________________ Application Settings _________________________ -->
 
 	<app title="Friday Night Funkin': Plus Engine" file="PlusEngine" packageName="com.leninasto.plusengine" package="com.leninasto.plusengine" main="Main" version="1.0" company="LeninAsto" />
@@ -48,17 +48,11 @@
 	<!--These window settings apply to all targets-->
 	<window width="1280" height="720" fps="60" background="#000000" hardware="true" vsync="false" allow-high-dpi="true" />
 
-	<!--HTML5-specific-->
-	<window if="html5" resizable="true" />
-
 	<!--Desktop-specific-->
 	<window if="desktop" orientation="landscape" fullscreen="false" resizable="true" vsync="false"/>
 
 	<!--Mobile-specific-->
 	<window if="mobile" orientation="landscape" fullscreen="true" resizable="false" allow-shaders="true" require-shaders="true" />
-
-	<!--Switch-specific-->
-	<window if="switch" orientation="landscape" fullscreen="true" width="0" height="0" resizable="true" />
 
 	<!-- _____________________________ Path Settings ____________________________ -->
 
