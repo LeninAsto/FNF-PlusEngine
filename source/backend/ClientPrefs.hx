@@ -152,7 +152,6 @@ import states.TitleState;
 	public var keyViewerOffset:Array<Int> = [0, 0]; // X, Y offset for key viewer
 	public var keyViewerColor:String = 'Gray'; // Color name for key viewer
 	public var ratingOffset:Int = 0;
-	public var flawlessRating:Bool = true;
 	public var flawlessWindow:Float = 20.0;
 	public var sickWindow:Float = 45.0;
 	public var goodWindow:Float = 90.0;

@@ -291,11 +291,11 @@ class StoryMenuState extends MusicBeatState
 		}
 
 		var offY:Float = grpWeekText.members[curWeek].targetY;
-		for (num => item in grpWeekText.members)
-			item.y = FlxMath.lerp(item.targetY - offY + 480, item.y, Math.exp(-elapsed * 10.2));
+			for (num => item in grpWeekText.members)
+				item.y = FlxMath.lerp(item.targetY - offY + 480, item.y, Math.exp(-elapsed * 10.2));
 
-		for (num => lock in grpLocks.members)
-			lock.y = grpWeekText.members[lock.ID].y + grpWeekText.members[lock.ID].height/2 - lock.height/2;
+			for (num => lock in grpLocks.members)
+				lock.y = grpWeekText.members[lock.ID].y + grpWeekText.members[lock.ID].height/2 - lock.height/2;
 	}
 
 	var movedBack:Bool = false;

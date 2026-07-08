@@ -4634,8 +4634,8 @@ class PlayState extends MusicBeatState
 		{
 			var showStepmaniaJudgementOnly:Bool = isStepManiaChart;
 			var showRatingSprite:Bool = !showStepmaniaJudgementOnly && !ClientPrefs.data.hideHud && showRating;
-			var showComboSprite:Bool = !ClientPrefs.data.hideHud && showCombo && combo >= 10;
-			var showComboDigits:Bool = !ClientPrefs.data.hideHud && showComboNum && (combo >= 10 || combo == 0);
+			var showComboSprite:Bool = !ClientPrefs.data.hideHud && showCombo;
+			var showComboDigits:Bool = !ClientPrefs.data.hideHud && showComboNum;
 			if (showStepmaniaJudgementOnly)
 				showStepManiaJudgement(daRating.name);
 			if (!showStepmaniaJudgementOnly && !showRatingSprite && !showComboSprite && !showComboDigits)
