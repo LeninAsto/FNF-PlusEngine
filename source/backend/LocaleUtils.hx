@@ -9,6 +9,8 @@ class LocaleUtils
     public static var dateFormat:String = "MM/DD/YYYY";
     
     private static var initialized:Bool = false;
+    private static var cachedDayNames:Array<String> = null;
+    private static var cachedMonthNames:Array<String> = null;
     
     public static function init()
     {
@@ -66,12 +68,7 @@ class LocaleUtils
         fmt = ~/[M]+/g.replace(fmt, "MM");
         fmt = ~/[d]+/g.replace(fmt, "DD");
         fmt = ~/[y]+/g.replace(fmt, "YYYY");
-
-        if (fmt.indexOf("MM/DD/YYYY") != -1) return "MM/DD/YYYY";
-        if (fmt.indexOf("DD/MM/YYYY") != -1) return "DD/MM/YYYY";
-        if (fmt.indexOf("YYYY/MM/DD") != -1 || fmt.indexOf("YYYY-MM-DD") != -1) return "YYYY-MM-DD";
-        if (fmt.indexOf("DD.MM.YYYY") != -1) return "DD.MM.YYYY";
-        return "MM/DD/YYYY";
+        return normalizeDateFormat(fmt, "MM/DD/YYYY");
     }
     #end
     
@@ -131,11 +128,7 @@ class LocaleUtils
         fmt = ~/%e/g.replace(fmt, "D");
         fmt = fmt.replace("\"", "").trim();
         
-        if (fmt.indexOf("DD/MM/YYYY") != -1) return "DD/MM/YYYY";
-        if (fmt.indexOf("MM/DD/YYYY") != -1) return "MM/DD/YYYY";
-        if (fmt.indexOf("YYYY-MM-DD") != -1 || fmt.indexOf("YYYY/MM/DD") != -1) return "YYYY-MM-DD";
-        if (fmt.indexOf("DD.MM.YYYY") != -1) return "DD.MM.YYYY";
-        return "MM/DD/YYYY";
+        return normalizeDateFormat(fmt, "MM/DD/YYYY");
     }
     #end
     
@@ -191,11 +184,7 @@ class LocaleUtils
         fmt = ~/y{2}/g.replace(fmt, "YY");
         fmt = fmt.replace("\"", "").trim();
         
-        if (fmt.indexOf("MM/DD/YYYY") != -1) return "MM/DD/YYYY";
-        if (fmt.indexOf("DD/MM/YYYY") != -1) return "DD/MM/YYYY";
-        if (fmt.indexOf("YYYY-MM-DD") != -1 || fmt.indexOf("YYYY/MM/DD") != -1) return "YYYY-MM-DD";
-        if (fmt.indexOf("DD.MM.YYYY") != -1) return "DD.MM.YYYY";
-        return "MM/DD/YYYY";
+        return normalizeDateFormat(fmt, "MM/DD/YYYY");
     }
     #end
     
@@ -248,6 +237,35 @@ class LocaleUtils
             locale.indexOf("cs_") != -1) return "DD.MM.YYYY";
         return "MM/DD/YYYY";
     }
+
+    private static function normalizeDateFormat(format:String, fallback:String):String
+    {
+        if (format == null || format.length == 0)
+            return fallback;
+
+        var fmt:String = format;
+        fmt = fmt.split(" ").join("");
+        fmt = fmt.split("'").join("");
+        fmt = fmt.split("\"").join("");
+        fmt = fmt.split("年").join("-");
+        fmt = fmt.split("月").join("-");
+        fmt = fmt.split("日").join("");
+        fmt = fmt.toUpperCase();
+
+        var candidates:Array<String> = [
+            "MM/DD/YYYY", "DD/MM/YYYY", "YYYY/MM/DD",
+            "MM-DD-YYYY", "DD-MM-YYYY", "YYYY-MM-DD",
+            "MM.DD.YYYY", "DD.MM.YYYY", "YYYY.MM.DD"
+        ];
+
+        for (candidate in candidates)
+        {
+            if (fmt.indexOf(candidate) != -1)
+                return candidate;
+        }
+
+        return fallback;
+    }
     
     private static function getDefaultTimeFormatForLocale(locale:String):Bool
     {
@@ -262,12 +280,25 @@ class LocaleUtils
     public static function formatDateTime(date:Date):String
     {
         init();
-
-        var dt = DateTime.make(date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
+        cacheLocalizedNames();
         
-        var tz = Timezone.local();
+        var dayName = cachedDayNames[date.getDay()];
+        var day = date.getDate();
+        var month = date.getMonth() + 1;
+        var year = date.getFullYear();
+        var datePart = '$dayName, ${formatDatePattern(dateFormat, day, month, year)}';
 
-        var dayNames = [
+        var timePart = use24HourFormat ? format24Hour(date) : format12Hour(date);
+        
+        return '$datePart - $timePart';
+    }
+
+    private static function cacheLocalizedNames():Void
+    {
+        if (cachedDayNames != null && cachedMonthNames != null)
+            return;
+
+        cachedDayNames = [
             Language.getPhrase("day_sunday", "Sunday"),
             Language.getPhrase("day_monday", "Monday"),
             Language.getPhrase("day_tuesday", "Tuesday"),
@@ -276,7 +307,7 @@ class LocaleUtils
             Language.getPhrase("day_friday", "Friday"),
             Language.getPhrase("day_saturday", "Saturday")
         ];
-        var monthNames = [
+        cachedMonthNames = [
             Language.getPhrase("month_january", "January"),
             Language.getPhrase("month_february", "February"),
             Language.getPhrase("month_march", "March"),
@@ -290,31 +321,32 @@ class LocaleUtils
             Language.getPhrase("month_november", "November"),
             Language.getPhrase("month_december", "December")
         ];
-        
-        var dayName = dayNames[date.getDay()];
-        var monthName = monthNames[date.getMonth()];
-        var day = dt.getDate();
-        var month = dt.getMonth();
-        var year = dt.getYear();
+    }
 
-        var datePart = "";
-        switch (dateFormat.toUpperCase()) {
-            case "MM/DD/YYYY":
-                datePart = '$dayName, $monthName $day $year';
-            case "DD/MM/YYYY":
-                datePart = '$dayName, $day $monthName $year';
-            case "YYYY-MM-DD":
-                datePart = '$dayName, $year-$month-$day';
-            case "DD.MM.YYYY":
-                datePart = '$dayName, $day.$month.$year';
-            default:
-                datePart = '$dayName, $monthName $day $year';
-        }
+    inline private static function pad2(value:Int):String
+        return value < 10 ? '0$value' : Std.string(value);
 
-        var timeFormat = use24HourFormat ? "%H:%M" : "%I:%M %p";
-        var timePart = tz.format(dt, timeFormat);
-        
-        return '$datePart - $timePart';
+    private static function formatDatePattern(pattern:String, day:Int, month:Int, year:Int):String
+    {
+        var fmt:String = normalizeDateFormat(pattern, "MM/DD/YYYY");
+        return fmt
+            .split("YYYY").join(Std.string(year))
+            .split("YY").join(Std.string(year).substr(2))
+            .split("MM").join(pad2(month))
+            .split("DD").join(pad2(day));
+    }
+
+    inline private static function format24Hour(date:Date):String
+        return '${pad2(date.getHours())}:${pad2(date.getMinutes())}';
+
+    private static function format12Hour(date:Date):String
+    {
+        var hour:Int = date.getHours();
+        var suffix:String = hour >= 12 ? 'PM' : 'AM';
+        hour %= 12;
+        if (hour == 0)
+            hour = 12;
+        return '${pad2(hour)}:${pad2(date.getMinutes())} $suffix';
     }
     
     public static function loadDeviceDateTimeSettings():Void { init(); }

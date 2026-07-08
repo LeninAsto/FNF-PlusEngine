@@ -112,7 +112,6 @@
 
 	<haxelib name="flixel"/>
 	<haxelib name="flixel-addons" />
-	<haxelib name="datetime" />
 	<haxelib name="tjson" version="1.4.0"/>
 	<haxelib name="moonchart" unless="mac | ios"/>
 

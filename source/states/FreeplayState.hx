@@ -89,6 +89,8 @@ class FreeplayState extends MusicBeatState
 	private var songInfoCardLoading:Bool = false;
 	private var songInfoCardData:FreeplaySongCardData = null;
 	private var songInfoCardCache:Map<String, FreeplaySongCardData> = new Map<String, FreeplaySongCardData>();
+	private var selectedSongDataTimer:FlxTimer = null;
+	private var selectedSongDataLoadToken:Int = 0;
 
 	private var iconArray:Array<HealthIcon> = [];
 
@@ -160,6 +162,7 @@ class FreeplayState extends MusicBeatState
 	public var previewTimer:FlxTimer = null;
 	public var previewLoadToken:Int = 0;
 	public var previewLoadTimer:FlxTimer = null;
+	static inline var SELECTED_DATA_LOAD_DELAY:Float = 2.0;
 	static inline var PREVIEW_LOAD_DELAY:Float = 0.12;
 	public static var instSound:FlxSound = null;
 
@@ -233,7 +236,8 @@ class FreeplayState extends MusicBeatState
 		target.antialiasing = ClientPrefs.data.antialiasing;
 		target.setGraphicSize(FlxG.width, FlxG.height);
 		target.updateHitbox();
-		target.screenCenter();
+		target.origin.set(target.frameWidth * 0.5, target.frameHeight * 0.5);
+		centerScaledFreeplayBackground(target);
 	}
 
 	inline function centerScaledFreeplayBackground(target:FlxSprite):Void
@@ -241,8 +245,8 @@ class FreeplayState extends MusicBeatState
 		if (target == null || target.graphic == null)
 			return;
 
-		target.x = (FlxG.width - target.frameWidth * target.scale.x) * 0.5;
-		target.y = (FlxG.height - target.frameHeight * target.scale.y) * 0.5;
+		target.x = (FlxG.width - target.frameWidth) * 0.5;
+		target.y = (FlxG.height - target.frameHeight) * 0.5;
 	}
 
 	function loadSelectedFreeplayBackground(?force:Bool = false):Void
@@ -800,8 +804,7 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 
-		updateCurrentBpmFromSelection();
-		queueSongInfoCardLoad();
+		queueSelectedSongDataLoad();
 		updateTexts();
 	}
 
@@ -827,9 +830,9 @@ class FreeplayState extends MusicBeatState
 					: 'normal';
 				var smDir:String = #if mobile StorageUtil.getSMDirectory() #else './sm/' #end;
 				var smPath:String = smDir + selectedSong.smFolder + '/' + smDiffName + '.json';
-				if (sys.FileSystem.exists(smPath))
+				var rawJson:String = AssetLoader.loadText(smPath);
+				if (rawJson != null && rawJson.length > 0)
 				{
-					var rawJson:String = sys.io.File.getContent(smPath);
 					var chart:SwagSong = Song.parseJSON(rawJson, selectedSong.songName);
 					if (chart != null && chart.bpm > 0)
 						resolvedBpm = chart.bpm;
@@ -1218,6 +1221,11 @@ class FreeplayState extends MusicBeatState
 				
 				var poop:String = Highscore.formatSong(songs[curSelected].songName.toLowerCase(), curDifficulty);
 				Song.loadFromJson(poop, songs[curSelected].songName.toLowerCase());
+				if (PlayState.SONG == null)
+				{
+					showMissingCard('No chart is available for this difficulty!');
+					return;
+				}
 				if (PlayState.SONG.needsVoices)
 				{
 					vocals = new FlxSound();
@@ -1316,10 +1324,12 @@ class FreeplayState extends MusicBeatState
 					var smPath:String = smDir + songs[curSelected].smFolder + '/' + smDiffName + '.json';
 					trace('Loading SM chart from: $smPath');
 					
-					if (sys.FileSystem.exists(smPath))
+					var rawJson:String = AssetLoader.loadText(smPath);
+					if (rawJson != null && rawJson.length > 0)
 					{
-						var rawJson:String = sys.io.File.getContent(smPath);
 						PlayState.SONG = Song.parseJSON(rawJson, songLowercase);
+						if (PlayState.SONG == null)
+							throw 'SM chart failed to parse: $smPath';
 						Song.loadedSongName = songLowercase;
 						Song.chartPath = smPath;
 						
@@ -1344,6 +1354,8 @@ class FreeplayState extends MusicBeatState
 					{
 						PlayState.customAudioPath = null; // Limpiar ruta personalizada
 						Song.loadFromJson(poop, songLowercase);
+						if (PlayState.SONG == null)
+							throw 'Chart failed to load: $poop';
 					}
 					
 					PlayState.isStoryMode = false;
@@ -1494,7 +1506,6 @@ class FreeplayState extends MusicBeatState
 		hideMissingCard();
 
 		curSelected = FlxMath.wrap(curSelected + change, 0, songs.length-1);
-		_updateSongLastDifficulty();
 		if(playSound) FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 
 		queueSelectedFreeplayBackgroundSwap();
@@ -1525,12 +1536,9 @@ class FreeplayState extends MusicBeatState
 		PlayState.storyWeek = songs[curSelected].week;
 		
 		// Solo cargar dificultades desde semana si NO es StepMania
-		if (!songs[curSelected].isStepMania) {
-			Difficulty.loadFromWeek();
-		}
+		loadBaseDifficultiesForSelection();
 		
-		// Detect all available difficulties for this song
-		detectAndLoadAllDifficulties();
+		// Heavy difficulty detection runs after the selection settles.
 		
 		
 		// Protección para canciones de StepMania o sin dificultades
@@ -1542,37 +1550,133 @@ class FreeplayState extends MusicBeatState
 		
 		var lastDiff:Int = Difficulty.list.indexOf(lastDifficultyName);
 		
-		if(savedDiff != null && !Difficulty.list.contains(savedDiff) && Difficulty.list.contains(savedDiff))
+		if(savedDiff != null && Difficulty.list.contains(savedDiff))
 			curDifficulty = Math.round(Math.max(0, Difficulty.list.indexOf(savedDiff)));
 		else if(lastDiff > -1)
 			curDifficulty = lastDiff;
 		else if(Difficulty.list.contains(Difficulty.getDefault()))
-			curDifficulty = Math.round(Math.max(0, Difficulty.defaultList.indexOf(Difficulty.getDefault())));
+			curDifficulty = Math.round(Math.max(0, Difficulty.list.indexOf(Difficulty.getDefault())));
 		else
 			curDifficulty = 0;
 
 		changeDiff();
 		_updateSongLastDifficulty();
+		queueSelectedSongDataLoad();
+	}
 
-		if(previewTimer != null) {
-            previewTimer.cancel();
-            previewTimer = null;
-        }
-        
+	function loadBaseDifficultiesForSelection():Void
+	{
+		if (songs == null || songs.length == 0 || curSelected < 0 || curSelected >= songs.length || songs[curSelected] == null)
+		{
+			Difficulty.list = ['Normal'];
+			return;
+		}
+
+		if (songs[curSelected].isStepMania)
+		{
+			if (songs[curSelected].smDifficulties != null && songs[curSelected].smDifficulties.length > 0)
+				Difficulty.list = songs[curSelected].smDifficulties.copy();
+			else
+				Difficulty.list = ['Normal'];
+		}
+		else
+		{
+			Difficulty.loadFromWeek();
+			if (Difficulty.list == null || Difficulty.list.length == 0)
+				Difficulty.list = [Difficulty.getDefault()];
+		}
+	}
+
+	function queueSelectedSongDataLoad(?delay:Float = SELECTED_DATA_LOAD_DELAY):Void
+	{
+		selectedSongDataLoadToken++;
+		songInfoCardLoadToken++;
+		previewLoadToken++;
+
+		if (selectedSongDataTimer != null)
+		{
+			selectedSongDataTimer.cancel();
+			selectedSongDataTimer = null;
+		}
+
+		if (songInfoCardLoadTimer != null)
+		{
+			songInfoCardLoadTimer.cancel();
+			songInfoCardLoadTimer = null;
+		}
+
+		if (previewTimer != null)
+		{
+			previewTimer.cancel();
+			previewTimer = null;
+		}
+
+		if (previewLoadTimer != null)
+		{
+			previewLoadTimer.cancel();
+			previewLoadTimer = null;
+		}
+
+		#if (target.threaded && sys)
+		_instLoadMutex.acquire();
+		_pendingInstSound = null;
+		_instLoadMutex.release();
+
+		_songCardMutex.acquire();
+		_pendingSongCardData = null;
+		_songCardMutex.release();
+		#end
+
 		if (instPlaying != -1 || instSound != null || _prevInstSongName != null)
-            stopInstPreview(false);
+			stopInstPreview(false);
 
+		var requestToken:Int = selectedSongDataLoadToken;
+		var requestIndex:Int = curSelected;
+		selectedSongDataTimer = new FlxTimer().start(delay, function(_:FlxTimer) {
+			selectedSongDataTimer = null;
+			if (requestToken != selectedSongDataLoadToken || requestIndex != curSelected || songs == null || requestIndex < 0 || requestIndex >= songs.length)
+				return;
+
+			loadStableSelectedSongData(requestIndex);
+		});
+	}
+
+	function loadStableSelectedSongData(requestIndex:Int):Void
+	{
+		if (songs == null || requestIndex < 0 || requestIndex >= songs.length || songs[requestIndex] == null)
+			return;
+
+		loadBaseDifficultiesForSelection();
+		detectAndLoadAllDifficulties();
+
+		if (Difficulty.list == null || Difficulty.list.length == 0)
+			Difficulty.list = ['Normal'];
+
+		var savedDiff:String = songs[requestIndex].lastDifficulty;
+		var savedDiffIndex:Int = (savedDiff != null && Difficulty.list.contains(savedDiff)) ? Difficulty.list.indexOf(savedDiff) : -1;
+		var lastDiff:Int = Difficulty.list.indexOf(lastDifficultyName);
+
+		if (savedDiffIndex > -1)
+			curDifficulty = savedDiffIndex;
+		else if (lastDiff > -1)
+			curDifficulty = lastDiff;
+		else if (Difficulty.list.contains(Difficulty.getDefault()))
+			curDifficulty = Difficulty.list.indexOf(Difficulty.getDefault());
+		else
+			curDifficulty = 0;
+
+		changeDiff();
+		_updateSongLastDifficulty();
 		updateCurrentBpmFromSelection();
-		queueSongInfoCardLoad();
+		queueSongInfoCardLoad(0.05);
 
-		if (songs[curSelected].isStepMania) {
-            // StepMania songs don't use the regular inst preview loader.
-        } else {
-            previewTimer = new FlxTimer().start(0.5, function(tmr:FlxTimer) {
-                playInstPreview();
-                previewTimer = null;
-            });
-        }
+		if (!songs[requestIndex].isStepMania)
+		{
+			previewTimer = new FlxTimer().start(0.5, function(_:FlxTimer) {
+				playInstPreview();
+				previewTimer = null;
+			});
+		}
 	}
 	
 	public function detectAndLoadAllDifficulties():Void
@@ -1686,7 +1790,6 @@ class FreeplayState extends MusicBeatState
 		add(songInfoCardLoadingLabel);
 
 		updateSongInfoCardLayout();
-		queueSongInfoCardLoad();
 	}
 
 	function hideSongInfoCard():Void
@@ -1743,7 +1846,7 @@ class FreeplayState extends MusicBeatState
 		return Paths.formatToSongPath(songName == null ? '' : songName);
 	}
 
-	function queueSongInfoCardLoad():Void
+	function queueSongInfoCardLoad(?delay:Float = 0.25):Void
 	{
 		if (songs == null || songs.length == 0 || curSelected < 0 || curSelected >= songs.length)
 			return;
@@ -1769,7 +1872,7 @@ class FreeplayState extends MusicBeatState
 		songInfoCardLoading = true;
 		setFreeplayLoadingUi(true);
 
-		songInfoCardLoadTimer = new FlxTimer().start(0.25, function(_:FlxTimer) {
+		songInfoCardLoadTimer = new FlxTimer().start(delay, function(_:FlxTimer) {
 			songInfoCardLoadTimer = null;
 			if (requestToken != songInfoCardLoadToken || requestIndex != curSelected)
 				return;
@@ -2581,6 +2684,11 @@ class FreeplayState extends MusicBeatState
 		{
 			songInfoCardLoadTimer.cancel();
 			songInfoCardLoadTimer = null;
+		}
+		if (selectedSongDataTimer != null)
+		{
+			selectedSongDataTimer.cancel();
+			selectedSongDataTimer = null;
 		}
 		if (bgSwapTimer != null)
 		{

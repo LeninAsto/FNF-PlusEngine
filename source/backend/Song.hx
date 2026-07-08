@@ -172,6 +172,11 @@ class Song
 		PlayState.SONG = getChart(jsonInput, folder);
 		loadedSongName = folder;
 		chartPath = _lastPath;
+		if (PlayState.SONG == null)
+		{
+			trace('Failed to load chart "$jsonInput" from folder "$folder"');
+			return null;
+		}
 		#if windows
 		// prevent any saving errors by fixing the path on Windows (being the only OS to ever use backslashes instead of forward slashes for paths)
 		chartPath = chartPath.replace('/', '\\');
@@ -268,13 +273,32 @@ class Song
 	public static function parseJSON(rawData:String, ?nameForError:String = null, ?convertTo:String = 'psych_v1'):SwagSong
 	{
 		lastDetectedSourceFormat = '';
-		var songJson:SwagSong = cast Json.parse(rawData);
+		if (rawData == null || rawData.length == 0)
+			return null;
+
+		var songJson:SwagSong = null;
+		try
+		{
+			songJson = cast Json.parse(rawData);
+		}
+		catch (e:Dynamic)
+		{
+			trace('Failed to parse chart ${nameForError != null ? nameForError : ""}: $e');
+			return null;
+		}
+
+		if (songJson == null)
+			return null;
+
 		if(Reflect.hasField(songJson, 'song'))
 		{
 			var subSong:SwagSong = Reflect.field(songJson, 'song');
 			if(subSong != null && Type.typeof(subSong) == TObject)
 				songJson = subSong;
 		}
+
+		if (songJson == null)
+			return null;
 
 		// Detect if the chart is not formatted (single line with no line breaks)
 		var fmt:String = songJson.format;
