@@ -3072,11 +3072,6 @@ class PlayState extends MusicBeatState
 					
 				if(notes.length > 0)
 				{
-					var littleTimmyAutoHit:Bool = littleTimmyMode && !cpuControlled && startedCountdown && !paused && generatedMusic;
-					var littleTimmyChar:Character = littleTimmyAutoHit ? (playOpponent ? dad : boyfriend) : null;
-					if (littleTimmyChar != null && littleTimmyChar.stunned)
-						littleTimmyAutoHit = false;
-
 					if(startedCountdown)
 					{
 						var fakeCrochet:Float = (60 / SONG.bpm) * 1000;
@@ -3100,19 +3095,8 @@ class PlayState extends MusicBeatState
 							{
 								if(cpuControlled && !daNote.blockHit && daNote.canBeHit && (daNote.isSustainNote || daNote.strumTime <= Conductor.songPosition))
 									goodNoteHit(daNote);
-								else if(littleTimmyAutoHit && !daNote.wasGoodHit && !daNote.blockHit && !daNote.ignoreNote && !daNote.tooLate && daNote.canBeHit)
-								{
-									var timeDiff:Float = Math.abs(daNote.strumTime - Conductor.songPosition);
-									if (timeDiff < 15)
-									{
-										notesHitArray.unshift(Date.now());
-										goodNoteHit(daNote);
-
-										var spr:StrumNote = playerStrums.members[daNote.noteData];
-										if(spr != null && strumsBlocked[daNote.noteData] != true)
-											spr.resetAnim = Conductor.stepCrochet * 1.25 / 1000 / playbackRate;
-									}
-								}
+								else if(littleTimmyMode && !daNote.blockHit && daNote.canBeHit && (daNote.isSustainNote || daNote.strumTime <= Conductor.songPosition))
+									goodNoteHit(daNote);
 							}
 							else if (!daNote.hitByOpponent && !daNote.ignoreNote && daNote.strumTime <= Conductor.songPosition)
 							{
@@ -3389,7 +3373,7 @@ class PlayState extends MusicBeatState
 		psychlua.LuaVideo.pauseAll();
 		#end
 		
-		if(!cpuControlled)
+		if(!cpuControlled && !littleTimmyMode)
 		{
 			for (note in playerStrums)
 				if(note.animation.curAnim != null && note.animation.curAnim.name != 'static')
@@ -4869,7 +4853,7 @@ class PlayState extends MusicBeatState
 	{
 		// Opponent Mode: Check the correct character's stunned state
 		var controlledChar:Character = playOpponent ? dad : boyfriend;
-		if(cpuControlled || paused || inCutscene || key < 0 || key >= playerStrums.length || !generatedMusic || endingSong || controlledChar.stunned) return;
+		if(cpuControlled || littleTimmyMode || paused || inCutscene || key < 0 || key >= playerStrums.length || !generatedMusic || endingSong || controlledChar.stunned) return;
 
 		// Play hitsound on key press if enabled (Keys mode)
 		if (ClientPrefs.data.hitsoundType == 'Keys' && shouldUseGlobalHitsounds())
@@ -4938,7 +4922,7 @@ class PlayState extends MusicBeatState
 
 	private function keyReleased(key:Int)
 	{
-		if(cpuControlled || !startedCountdown || paused || key < 0 || key >= playerStrums.length) return;
+		if(cpuControlled || littleTimmyMode || !startedCountdown || paused || key < 0 || key >= playerStrums.length) return;
 
 		// Key Viewer
 		if(keyViewer != null) {
@@ -5401,6 +5385,26 @@ class PlayState extends MusicBeatState
 			{
 				var spr = playerStrums.members[note.noteData];
 				if(spr != null) spr.playAnim('confirm', true);
+			}
+			else if(littleTimmyMode)
+			{
+				strumPlayAnim(false, Std.int(Math.abs(note.noteData)), Conductor.stepCrochet * 1.25 / 1000 / playbackRate);
+				
+				// Registrar tecla en KeyViewer cuando está en botplay (solo notas no-sustain)
+				if(keyViewer != null && !note.isSustainNote) {
+					var keyIndex:Int = note.noteData % 4;
+					keyViewer.keyPressed(keyIndex);
+					// Programar release automático después de un corto tiempo usando un timer reutilizable
+					if(botplayKeyReleaseTimers[keyIndex] != null)
+					{
+						botplayKeyReleaseTimers[keyIndex].cancel();
+						botplayKeyReleaseTimers[keyIndex] = null;
+					}
+					botplayKeyReleaseTimers[keyIndex] = new FlxTimer().start(0.1, function(tmr:FlxTimer) {
+						if(keyViewer != null) keyViewer.keyReleased(keyIndex);
+						botplayKeyReleaseTimers[keyIndex] = null;
+					});
+				}
 			}
 			else 
 			{

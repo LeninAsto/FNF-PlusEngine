@@ -160,7 +160,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			"Changes the way the health icons bounce.",
 			'iconBounceType',
 			STRING,
-			['Old', 'D&D', 'NF', 'Default']);
+			['Old', 'D&B', 'NF', 'Default']);
 		addOption(option);
 
 		var option:Option = new Option('Time Text Bump',
