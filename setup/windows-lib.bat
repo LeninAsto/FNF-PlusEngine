@@ -16,7 +16,7 @@ echo [2/16] lime
 haxelib git lime https://github.com/Psych-Plus-Team/lime.git --quiet    
 
 echo [3/16] openfl
-haxelib install openfl 9.5.0 --quiet
+haxelib install openfl 9.5.2 --quiet
 
 echo [4/16] datetime
 haxelib install datetime 3.1.4 --quiet
