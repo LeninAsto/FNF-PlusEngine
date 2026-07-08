@@ -563,7 +563,11 @@ class EnUS
         // so translators can work with a stable, explicit preset.
         
         // Language example text
-        "language_example_text" => "This is an example text in English United States language"
+        "controls" => "Controls",
+        "mobile_settings" => "Mobile Settings",
+        "notes" => "Note Colors",
+        "language_font" => "vcr.ttf",
+        "language_example_text" => "This is a sample text for English (United States)."
     ];
 }
 

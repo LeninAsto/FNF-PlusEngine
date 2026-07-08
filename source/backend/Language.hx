@@ -22,9 +22,9 @@ class Language
         ItIT,    // Italiano (Italia)
         DeDE,    // Deutsch (Deutschland)
         NlNL,    // Nederlands (Nederland)
-        //ZhCN,    // Chinese (Mainland) - needs more support
-        //ZhHK,    // Chinese (Hong Kong) - needs more support
-        //JpJP,     // Japanese (Japan) - needs more support
+        ZhCN,    // Chinese (Mainland)
+        ZhHK,    // Chinese (Hong Kong)
+        JpJP,     // Japanese (Japan)
 		IdID      // Indonesian (Bahasa Indonesia)
     ];
 
@@ -183,6 +183,35 @@ class Language
 				str = str.replace('{${num+1}}', value);
 
 		return str;
+	}
+
+	public static function getPhraseForLanguage(langCode:String, key:String, ?defaultPhrase:String, values:Array<Dynamic> = null):String
+	{
+		#if TRANSLATIONS_ALLOWED
+		var formattedKey:String = formatKey(key);
+		for (langClass in hardcodedLanguages)
+		{
+			var languageCode:String = Reflect.field(langClass, 'languageCode');
+			if (languageCode != langCode)
+				continue;
+
+			var translations:Map<String, String> = Reflect.field(langClass, 'translations');
+			if (translations != null)
+			{
+				var str:String = translations.get(formattedKey);
+				if(str == null) str = defaultPhrase;
+				if(str == null) str = key;
+
+				if(values != null && values.length > 0)
+					for (num => value in values)
+						str = str.replace('{${num+1}}', value);
+
+				return str;
+			}
+		}
+		#end
+
+		return getPhrase(key, defaultPhrase, values);
 	}
 
 	// More optimized for file loading

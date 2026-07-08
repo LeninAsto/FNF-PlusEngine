@@ -301,7 +301,9 @@ class LanguageSubState extends MusicBeatSubstate
 		if (languages.length > 0 && curSelected >= 0 && curSelected < languages.length)
 		{
 			var currentLang = languages[curSelected];
-			var exampleString = getExampleTextForLanguage(currentLang);
+			var exampleString = Language.getPhraseForLanguage(currentLang, 'language_example_text', getExampleTextForLanguage(currentLang));
+			var fontName = Language.getPhraseForLanguage(currentLang, 'language_font', getFontForLanguage(currentLang));
+			descText.setFormat(Paths.font(fontName), 32, OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false)), CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			descText.text = exampleString;
 			
 			// Centrar el texto como en BaseOptionsMenu
@@ -317,28 +319,19 @@ class LanguageSubState extends MusicBeatSubstate
 
 	function getExampleTextForLanguage(langCode:String):String
 	{
-		// Definir textos de ejemplo hardcodeados para cada idioma
-		var exampleTexts:Map<String, String> = [
-			'en-US' => 'This is an example text in English United States language',
-			'es-LA' => 'Este es un ejemplo de texto en el idioma Español Latinoamérica',
-			'es-ES' => 'Este es un ejemplo de texto en el idioma Español de España',
-			'fr-FR' => 'Ceci est un exemple de texte en langue Française France',
-			'pt-BR' => 'Este é um exemplo de texto no idioma Português Brasil',
-			'it-IT' => 'Questo è un esempio di testo nella lingua Italiana Italia',
-			'de-DE' => 'Dies ist ein Beispieltext in deutscher Sprache Deutschland',
-			'ja-JP' => 'これは日本語での例文テキストです',
-			'nl-NL' => 'Dit is een voorbeeldtekst in de Nederlandse taal Nederland',
-			'zh-CN' => '这是中文（简体）语言的示例文本',
-			'zh-HK' => '這是中文（香港）語言的示例文本',
-			"id-ID" => 'Ini adalah teks contoh dalam bahasa Indonesia Nusantara'
-		];
-		
-		// Buscar por código de idioma exacto primero
-		if (exampleTexts.exists(langCode))
-			return exampleTexts.get(langCode);
-		
-		// Fallback a texto en inglés
 		return 'This is an example text in the selected language';
+	}
+
+	function getFontForLanguage(langCode:String):String
+	{
+		return switch (langCode)
+		{
+			case 'ja-JP': 'NotoSansJP-Medium.ttf';
+			case 'ko-KR': 'NotoSansKR-Medium.ttf';
+			case 'zh-CN': 'NotoSansSC-Medium.ttf';
+			case 'zh-HK' | 'zh-TW': 'NotoSansTC-Medium.ttf';
+			default: 'vcr.ttf';
+		}
 	}
 	#end
 }
