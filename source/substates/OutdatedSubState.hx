@@ -5,6 +5,8 @@ import flixel.tweens.FlxEase;
 import haxe.Http;
 
 import states.MainMenuState;
+import backend.ThreadUtil;
+import backend.ui.md3.NetworkCheckToast;
 
 class OutdatedSubState extends MusicBeatSubstate
 {
@@ -13,6 +15,7 @@ class OutdatedSubState extends MusicBeatSubstate
 	public var leftState:Bool = false;
     public var changelogLoaded:Bool = false;
     public var changelog:String = "";
+	var pendingChangelog:String = null;
 
 	public var bg:FlxSprite;
     public var titleText:FlxText;
@@ -99,21 +102,37 @@ class OutdatedSubState extends MusicBeatSubstate
 
     function loadChangelog():Void
     {
+		NetworkCheckToast.requestShow('Checking changelog');
+		#if (target.threaded && sys)
+		ThreadUtil.execAsync(loadChangelogBlocking);
+		#else
+		loadChangelogBlocking();
+		#end
+    }
+
+    function loadChangelogBlocking():Void
+    {
+		var loaded:Bool = false;
         var http = new Http("https://raw.githubusercontent.com/LeninAsto/FNF-PlusEngine/refs/heads/main/gitChangelog.txt");
         
         http.onData = function(data:String) {
-            changelog = data;
-            changelogLoaded = true;
-            updateChangelogDisplay();
+			loaded = true;
+            pendingChangelog = data;
         };
         
         http.onError = function(error:String) {
-            changelog = Language.getPhrase('changelog_error', "Error loading changelog: {1}", [error]);
-            changelogLoaded = true;
-            updateChangelogDisplay();
+            pendingChangelog = Language.getPhrase('changelog_error', "Error loading changelog: {1}", [error]);
         };
         
-        http.request();
+		try
+		{
+			http.request();
+		}
+		catch (e:Dynamic)
+		{
+			pendingChangelog = Language.getPhrase('changelog_error', "Error loading changelog: {1}", [Std.string(e)]);
+		}
+		NetworkCheckToast.requestDone(loaded ? 'Obtenido' : 'Sin conexion');
     }
 
     function updateChangelogDisplay():Void
@@ -125,6 +144,14 @@ class OutdatedSubState extends MusicBeatSubstate
 
 	override function update(elapsed:Float)
 	{
+		if (pendingChangelog != null)
+		{
+			changelog = pendingChangelog;
+			pendingChangelog = null;
+			changelogLoaded = true;
+			updateChangelogDisplay();
+		}
+
 		if(!leftState) {
 			if (controls.ACCEPT) {
 				leftState = true;

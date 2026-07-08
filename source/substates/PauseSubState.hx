@@ -42,6 +42,7 @@ class PauseSubState extends MusicBeatSubstate
     public var missingTextBG:FlxSprite;
     public var missingText:FlxText;
     public var dateTimeText:FlxText;
+    private var lastDateTimeMinute:Int = -1;
     public static var songName:String = null;
     public var holdTime:Float = 0;
     public var cantUnpause:Float = 0.1;
@@ -109,8 +110,9 @@ class PauseSubState extends MusicBeatSubstate
 		bg.scrollFactor.set();
 		add(bg);
 
-		var now:Date = DateTime.local();
+		var now:Date = Date.now();
 		var dateTimeStr:String = LocaleUtils.formatDateTimeAccordingToDevice(now);
+		lastDateTimeMinute = getDateTimeMinuteKey(now);
 		dateTimeText = new FlxText(0, 5, FlxG.width, dateTimeStr, 32);
 		dateTimeText.scrollFactor.set();
 		dateTimeText.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, CENTER);
@@ -219,12 +221,8 @@ class PauseSubState extends MusicBeatSubstate
 		if (pauseMusic.volume < 0.5)
 			pauseMusic.volume += 0.01 * elapsed;
 		
-		//The time and date live yippee
-		if (dateTimeText != null) {
-            var now:Date = DateTime.local();
-
-            dateTimeText.text = LocaleUtils.formatDateTimeAccordingToDevice(now);
-        }
+		if (dateTimeText != null)
+			updateDateTimeText();
 
 		if(controls.BACK)
 		{
@@ -420,6 +418,20 @@ class PauseSubState extends MusicBeatSubstate
 			addTouchPad(PlayState.chartingMode ? 'LEFT_FULL' : 'UP_DOWN', 'A');
 			addTouchPadCamera();
 		}
+	}
+
+	inline function getDateTimeMinuteKey(date:Date):Int
+		return Std.int(date.getTime() / 60000);
+
+	function updateDateTimeText():Void
+	{
+		var now:Date = Date.now();
+		var minuteKey:Int = getDateTimeMinuteKey(now);
+		if (minuteKey == lastDateTimeMinute)
+			return;
+
+		lastDateTimeMinute = minuteKey;
+		dateTimeText.text = LocaleUtils.formatDateTimeAccordingToDevice(now);
 	}
 
 	function deleteSkipTimeText()

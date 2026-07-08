@@ -14,6 +14,8 @@ import openfl.display.Sprite;
 import haxe.Http;
 import haxe.Json;
 import states.MainMenuState;
+import backend.ThreadUtil;
+import backend.ui.md3.NetworkCheckToast;
 #if windows
 import slushithings.windows.WindowsCPP;
 #end
@@ -503,6 +505,21 @@ class FPSCounter extends Sprite
 	private function getLastCommit():Void
 	{
 		#if sys
+		NetworkCheckToast.requestShow('Checking commit');
+		#if (target.threaded && sys)
+		ThreadUtil.execAsync(loadLastCommitBlocking);
+		#else
+		loadLastCommitBlocking();
+		#end
+		#else
+		lastCommit = "Build version";
+		#end
+	}
+
+	private function loadLastCommitBlocking():Void
+	{
+		#if sys
+		var loaded:Bool = false;
 		// Intentar obtener información desde la API de GitHub
 		var http = new Http('https://api.github.com/repos/Psych-Plus-Team/FNF-PlusEngine/commits?per_page=1');
 		http.addHeader('User-Agent', 'FNF-PlusEngine');
@@ -514,6 +531,7 @@ class FPSCounter extends Sprite
 				var commits:Array<Dynamic> = Json.parse(data);
 				if (commits != null && commits.length > 0)
 				{
+					loaded = true;
 					var latestCommit = commits[0];
 					var sha:String = latestCommit.sha.substr(0, 7);
 					var message:String = latestCommit.commit.message;
@@ -574,7 +592,17 @@ class FPSCounter extends Sprite
 			lastCommit = "Build version";
 		};
 
-		http.request(false);
+		try
+		{
+			http.request(false);
+		}
+		catch (e:Dynamic)
+		{
+			lastCommit = "Build version";
+			commitTime = "";
+			commitDate = "";
+		}
+		NetworkCheckToast.requestDone(loaded ? 'Obtenido' : 'Sin conexion');
 		#else
 		lastCommit = "Build version";
 		#end

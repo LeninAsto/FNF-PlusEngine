@@ -120,21 +120,29 @@ class MainMenuState extends MusicBeatState
 		#end
 
 		#if CHECK_FOR_UPDATES
-		if (showOutdatedWarning && ClientPrefs.data.checkForUpdates && !updateWarningShown) {
-			// Solo mostrar aviso si ya se detectó una actualización disponible y no se ha mostrado antes
-			if (CoolUtil.hasUpdate && CoolUtil.latestVersion != plusEngineVersion) {
-				substates.OutdatedSubState.updateVersion = CoolUtil.latestVersion;
-			persistentUpdate = false;
-				updateWarningShown = true; // Marcar como mostrado para evitar repeticiones
-			openSubState(backend.ScriptableSubstate.tryCreate('OutdatedSubState', new substates.OutdatedSubState()));
-			}
-		}
+		tryShowOutdatedWarning();
 		#end
 
 		FlxG.camera.follow(camFollow, null, 0.15);
 
 		addTouchPad('NONE', 'E_X');
 	}
+
+	#if CHECK_FOR_UPDATES
+	function tryShowOutdatedWarning():Void
+	{
+		if (!showOutdatedWarning || !ClientPrefs.data.checkForUpdates || updateWarningShown || selectedSomethin)
+			return;
+
+		if (CoolUtil.hasUpdate && CoolUtil.latestVersion != plusEngineVersion)
+		{
+			substates.OutdatedSubState.updateVersion = CoolUtil.latestVersion;
+			persistentUpdate = false;
+			updateWarningShown = true;
+			openSubState(backend.ScriptableSubstate.tryCreate('OutdatedSubState', new substates.OutdatedSubState()));
+		}
+	}
+	#end
 
 	function createMenuItem(name:String, x:Float, y:Float):FlxSprite
 	{
@@ -158,6 +166,10 @@ class MainMenuState extends MusicBeatState
 	{
 		if (FlxG.sound.music.volume < 0.8)
 			FlxG.sound.music.volume = Math.min(FlxG.sound.music.volume + 0.5 * elapsed, 0.8);
+
+		#if CHECK_FOR_UPDATES
+		tryShowOutdatedWarning();
+		#end
 
 		if (!selectedSomethin)
 		{

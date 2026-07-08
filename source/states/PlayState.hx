@@ -1439,17 +1439,21 @@ class PlayState extends MusicBeatState
 
 	#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
 	public function addTextToDebug(text:String, color:FlxColor) {
-		var newText:psychlua.DebugLuaText = luaDebugGroup.recycle(psychlua.DebugLuaText);
-		newText.text = text;
-		newText.color = color;
-		newText.disableTime = 6;
-		newText.alpha = 1;
-		newText.setPosition(10, 8 - newText.height);
-
-		luaDebugGroup.forEachAlive(function(spr:psychlua.DebugLuaText) {
-			spr.y += newText.height + 2;
-		});
-		luaDebugGroup.add(newText);
+		var debugPanel:psychlua.DebugLuaText = null;
+		for (spr in luaDebugGroup.members)
+		{
+			if (spr != null)
+			{
+				debugPanel = spr;
+				break;
+			}
+		}
+		if (debugPanel == null)
+		{
+			debugPanel = new psychlua.DebugLuaText();
+			luaDebugGroup.add(debugPanel);
+		}
+		debugPanel.pushMessage(text, color);
 
 		Sys.println(text);
 	}
@@ -3068,6 +3072,11 @@ class PlayState extends MusicBeatState
 					
 				if(notes.length > 0)
 				{
+					var littleTimmyAutoHit:Bool = littleTimmyMode && !cpuControlled && startedCountdown && !paused && generatedMusic;
+					var littleTimmyChar:Character = littleTimmyAutoHit ? (playOpponent ? dad : boyfriend) : null;
+					if (littleTimmyChar != null && littleTimmyChar.stunned)
+						littleTimmyAutoHit = false;
+
 					if(startedCountdown)
 					{
 						var fakeCrochet:Float = (60 / SONG.bpm) * 1000;
@@ -3075,7 +3084,11 @@ class PlayState extends MusicBeatState
 						while(i < notes.length)
 						{
 							var daNote:Note = notes.members[i];
-							if(daNote == null) continue;
+							if(daNote == null)
+							{
+								i++;
+								continue;
+							}
 
 							var strumGroup:FlxTypedGroup<StrumNote> = playerStrums;
 							if(!daNote.mustPress) strumGroup = opponentStrums;
@@ -3087,6 +3100,19 @@ class PlayState extends MusicBeatState
 							{
 								if(cpuControlled && !daNote.blockHit && daNote.canBeHit && (daNote.isSustainNote || daNote.strumTime <= Conductor.songPosition))
 									goodNoteHit(daNote);
+								else if(littleTimmyAutoHit && !daNote.wasGoodHit && !daNote.blockHit && !daNote.ignoreNote && !daNote.tooLate && daNote.canBeHit)
+								{
+									var timeDiff:Float = Math.abs(daNote.strumTime - Conductor.songPosition);
+									if (timeDiff < 15)
+									{
+										notesHitArray.unshift(Date.now());
+										goodNoteHit(daNote);
+
+										var spr:StrumNote = playerStrums.members[daNote.noteData];
+										if(spr != null && strumsBlocked[daNote.noteData] != true)
+											spr.resetAnim = Conductor.stepCrochet * 1.25 / 1000 / playbackRate;
+									}
+								}
 							}
 							else if (!daNote.hitByOpponent && !daNote.ignoreNote && daNote.strumTime <= Conductor.songPosition)
 							{
@@ -3125,33 +3151,6 @@ class PlayState extends MusicBeatState
 			}
 
 			checkEventNote();
-
-			if(littleTimmyMode && !cpuControlled && startedCountdown && !inCutscene && !paused && generatedMusic)
-			{
-				var controlledChar:Character = playOpponent ? dad : boyfriend;
-				if(!controlledChar.stunned)
-				{
-					for (note in notes.members)
-					{
-						if (note != null && note.mustPress && !note.wasGoodHit && !note.blockHit && !note.ignoreNote && !note.tooLate && note.canBeHit)
-						{
-							var timeDiff:Float = Math.abs(note.strumTime - Conductor.songPosition);
-							if (timeDiff < 15)
-							{
-								notesHitArray.unshift(Date.now());
-								goodNoteHit(note);
-								
-								var spr:StrumNote = playerStrums.members[note.noteData];
-								if(spr != null && strumsBlocked[note.noteData] != true)
-								{
-									spr.playAnim('confirm', true);
-									spr.resetAnim = Conductor.stepCrochet * 1.25 / 1000 / playbackRate;
-								}
-							}
-						}
-					}
-				}
-			}
 		}
 
 		#if debug

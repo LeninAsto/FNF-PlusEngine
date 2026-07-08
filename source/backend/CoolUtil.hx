@@ -1,6 +1,7 @@
 package backend;
 
 import backend.AssetLoader;
+import backend.ui.md3.NetworkCheckToast;
 import openfl.utils.AssetType;
 import openfl.utils.Assets;
 import lime.utils.Assets as LimeAssets;
@@ -24,9 +25,28 @@ class CoolUtil
 		
 		if(ClientPrefs.data.checkForUpdates) {
 			trace('checking for updates...');
+			NetworkCheckToast.requestShow('Checking version');
+			#if (target.threaded && sys)
+			ThreadUtil.execAsync(function()
+			{
+				checkForUpdatesBlocking(url, currentVersion);
+			});
+			#else
+			checkForUpdatesBlocking(url, currentVersion);
+			#end
+		}
+		return currentVersion;
+	}
+
+	static function checkForUpdatesBlocking(url:String, currentVersion:String):Void
+	{
+		var loaded:Bool = false;
+		try
+		{
 			var http = new haxe.Http(url);
 			http.onData = function (data:String)
 			{
+				loaded = true;
 				var remoteVersion:String = data.split('\n')[0].trim();
 				trace('version online: $remoteVersion, your version: $currentVersion');
 				
@@ -53,7 +73,12 @@ class CoolUtil
 			}
 			http.request();
 		}
-		return currentVersion;
+		catch (e:Dynamic)
+		{
+			trace('error checking for updates: $e');
+			hasUpdate = false;
+		}
+		NetworkCheckToast.requestDone(loaded ? 'Obtenido' : 'Sin conexion');
 	}
 
 	private static function compareVersions(version1:String, version2:String):Int
@@ -274,11 +299,24 @@ class CoolUtil
 
 	public static function showPopUp(message:String, title:String):Void
 	{
-		/*#if android
-		AndroidTools.showAlertDialog(title, message, {name: "OK", func: null}, null);
-		#else*/
-		FlxG.stage.window.alert(message, title);
-		//#end
+		#if android
+		if (mobile.backend.AndroidNative.showAlert(title, message))
+			return;
+		#end
+
+		if (FlxG.stage != null && FlxG.stage.window != null)
+			FlxG.stage.window.alert(message, title);
+	}
+
+	public static function showToast(message:String, ?long:Bool = false):Void
+	{
+		if (message == null || message.length == 0)
+			return;
+
+		#if android
+		if (mobile.backend.AndroidNative.showToast(message, long))
+			return;
+		#end
 	}
 
 	#if cpp

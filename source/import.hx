@@ -96,9 +96,5 @@ import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.addons.transition.FlxTransitionableState;
 import shaders.flixel.system.FlxShader;
 
-// Date formatting
-import datetime.DateTime;
-import datetime.Timezone;
-
 using StringTools;
 #end

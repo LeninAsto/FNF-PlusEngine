@@ -22,6 +22,7 @@ typedef TraceInfo = {
     var color:Int;
     var type:TraceType;
     var timestamp:Float;
+    var count:Int;
 }
 
 /**
@@ -201,11 +202,23 @@ class TraceDisplay extends Sprite
      */
     public function addTraceDirectly(text:String, type:TraceType = NORMAL, color:Int = 0xFFFFFF):Void
     {
+        for (trace in traces) {
+            if (trace.text == text && trace.type == type && trace.color == color) {
+                trace.count++;
+                trace.timestamp = haxe.Timer.stamp();
+                if (isVisible) {
+                    updateDisplay();
+                }
+                return;
+            }
+        }
+
         var traceInfo:TraceInfo = {
             text: text,
             color: color,
             type: type,
-            timestamp: haxe.Timer.stamp()
+            timestamp: haxe.Timer.stamp(),
+            count: 1
         };
         
         traces.push(traceInfo);
@@ -334,6 +347,7 @@ class TraceDisplay extends Sprite
                     case NORMAL: "";
                 }
                 displayText += prefix + trace.text;
+                if (trace.count > 1) displayText += ' x${trace.count}';
                 if (i < traces.length - 1) displayText += "\n";
             }
         }

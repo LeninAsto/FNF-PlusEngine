@@ -104,7 +104,7 @@ class ResultsState extends MusicBeatState
         var infoWidth = 700;
         var songAndDiff = '${params.songName} [${params.difficulty}]';
         var modOrGame = params.isMod && params.modFolder != null && params.modFolder != "" ? params.modFolder : "Friday Night Funkin'";
-        var now = DateTime.local();
+        var now = Date.now();
 
         var dateStr = LocaleUtils.formatDateTimeAccordingToDevice(now);
         

@@ -3,6 +3,7 @@ package backend;
 import debug.TraceDisplay;
 import flixel.FlxState;
 import objects.GlobalLoadingOverlay;
+import backend.ui.md3.NetworkCheckToast;
 
 #if LUA_ALLOWED
 import psychlua.FunkinLua;
@@ -127,6 +128,8 @@ class MusicBeatState extends BaseMusicBeatState
 	public static var timePassedOnState:Float = 0;
 	override function update(elapsed:Float)
 	{
+		NetworkCheckToast.updateRequests();
+
 		//everyStep();
 		var oldStep:Int = curStep;
 		timePassedOnState += elapsed;

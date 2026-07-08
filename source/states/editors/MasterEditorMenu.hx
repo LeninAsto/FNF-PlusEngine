@@ -6,13 +6,9 @@ import objects.Character;
 
 import states.MainMenuState;
 import states.FreeplayState;
-import flixel.tweens.FlxTween;
-import flixel.tweens.FlxEase;
 
 class MasterEditorMenu extends MusicBeatState
 {
-	static inline var OPTION_SPAWN_X:Float = -420;
-	static inline var INTRO_DURATION:Float = 0.32;
     // ← CAMBIO: Usar índices en lugar de strings traducidos
     var options:Array<String> = [];
     
@@ -34,7 +30,6 @@ class MasterEditorMenu extends MusicBeatState
 	private var curSelected = 0;
 	private var curDirectory = 0;
 	private var directoryTxt:FlxText;
-	private var playingIntroTransition:Bool = false;
 
 	override function create()
 	{
@@ -84,7 +79,6 @@ class MasterEditorMenu extends MusicBeatState
 		changeDirectory();
 		#end
 		changeSelection();
-		setupIntroTransition();
 
 		FlxG.mouse.visible = false;
 
@@ -112,9 +106,6 @@ class MasterEditorMenu extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		if (playingIntroTransition)
-			return;
-		
 		if (controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed))
 		{
 			changeSelection(-1);
@@ -181,21 +172,6 @@ class MasterEditorMenu extends MusicBeatState
 		curSelected = FlxMath.wrap(curSelected + change, 0, options.length - 1);
 	}
 
-	function setupIntroTransition():Void
-	{
-		playingIntroTransition = true;
-		for (item in grpTexts.members)
-		{
-			if (item == null) continue;
-			var targetX:Float = item.x;
-			item.x = Math.min(OPTION_SPAWN_X, -item.width - 140);
-			item.alpha = 0;
-			FlxTween.tween(item, {x: targetX}, INTRO_DURATION, {ease: FlxEase.cubeInOut, startDelay: 0.02 * Math.max(0, item.targetY + 1)});
-			FlxTween.tween(item, {alpha: item.targetY == 0 ? 1 : 0.6}, INTRO_DURATION, {ease: FlxEase.cubeInOut, startDelay: 0.02 * Math.max(0, item.targetY + 1)});
-		}
-		new FlxTimer().start(0.4, function(_) playingIntroTransition = false);
-	}
-	
 	#if MODS_ALLOWED
 	function changeDirectory(change:Int = 0)
 	{
