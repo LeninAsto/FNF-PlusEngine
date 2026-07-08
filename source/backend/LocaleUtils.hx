@@ -263,8 +263,8 @@ class LocaleUtils
     {
         init();
 
-        var dt = DateTime.make(date.getYear(), date.getMonth() + Month(1), date.getDay(),
-                               date.getHour(), date.getMinute(), date.getSecond());
+        var dt = DateTime.make(date.getFullYear(), date.getMonth() + 1, date.getDate(), date.getHours(), date.getMinutes(), date.getSeconds());
+        
         var tz = Timezone.local();
 
         var dayNames = [
