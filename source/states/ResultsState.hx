@@ -57,7 +57,6 @@ class ResultsState extends MusicBeatState
 
     public static var use24HourFormat:Null<Bool> = true;
     public static var dateFormat:String = "MM/DD/YYYY";
-    public static var timeFormat:String = "HH:mm";
 
     public function new(params:Dynamic)
     {
@@ -105,7 +104,7 @@ class ResultsState extends MusicBeatState
         var infoWidth = 700;
         var songAndDiff = '${params.songName} [${params.difficulty}]';
         var modOrGame = params.isMod && params.modFolder != null && params.modFolder != "" ? params.modFolder : "Friday Night Funkin'";
-        var now = Date.now();
+        var now = DateTime.local();
 
         var dateStr = LocaleUtils.formatDateTimeAccordingToDevice(now);
         

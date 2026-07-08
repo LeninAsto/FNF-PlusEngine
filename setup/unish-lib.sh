@@ -7,6 +7,7 @@ haxelib setup ~/haxelib
 haxelib git hxcpp https://github.com/Psych-Plus-Team/hxcpp --quiet
 haxelib git lime https://github.com/Psych-Plus-Team/lime --quiet
 haxelib install openfl 9.5.0 --quiet
+haxelib install datetime 3.1.4 --quiet
 haxelib git flixel https://github.com/Psych-Plus-Team/flixel --quiet
 haxelib install flixel-addons 3.3.2 --quiet
 haxelib install flixel-ui 2.6.2 --quiet

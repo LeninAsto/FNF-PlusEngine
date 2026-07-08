@@ -109,7 +109,7 @@ class PauseSubState extends MusicBeatSubstate
 		bg.scrollFactor.set();
 		add(bg);
 
-		var now:Date = Date.now();
+		var now:Date = DateTime.local();
 		var dateTimeStr:String = LocaleUtils.formatDateTimeAccordingToDevice(now);
 		dateTimeText = new FlxText(0, 5, FlxG.width, dateTimeStr, 32);
 		dateTimeText.scrollFactor.set();
@@ -221,7 +221,7 @@ class PauseSubState extends MusicBeatSubstate
 		
 		//The time and date live yippee
 		if (dateTimeText != null) {
-            var now:Date = Date.now();
+            var now:Date = DateTime.local();
 
             dateTimeText.text = LocaleUtils.formatDateTimeAccordingToDevice(now);
         }

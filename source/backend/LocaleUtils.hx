@@ -1,7 +1,5 @@
 package backend;
 
-import haxe.Json;
-import sys.io.File;
 import sys.io.Process;
 import sys.FileSystem;
 
@@ -28,7 +26,7 @@ class LocaleUtils
         loadAndroidLocaleSettings();
         #end
         
-        if (dateFormat == null) dateFormat = "MM/DD/YYYY";
+        if (dateFormat == null || dateFormat == "") dateFormat = "MM/DD/YYYY";
         if (use24HourFormat == null) use24HourFormat = true;
         
         initialized = true;
@@ -41,39 +39,39 @@ class LocaleUtils
             var process = new Process("reg", ["query", "HKCU\\Control Panel\\International", "/v", "sShortDate"]);
             var output = process.stdout.readAll().toString();
             process.close();
-            
-            if (output.indexOf("sShortDate") != -1) {
-                var lines = output.split("\n");
-                for (line in lines) {
-                    if (line.indexOf("sShortDate") != -1) {
-                        var parts = line.split("REG_SZ");
-                        if (parts.length > 1) {
-                            dateFormat = StringTools.trim(parts[1]);
-                            break;
-                        }
-                    }
-                }
+
+            var regex = ~/sShortDate\s+REG_SZ\s+(.+)/i;
+            if (regex.match(output)) {
+                var raw = StringTools.trim(regex.matched(1));
+                dateFormat = convertWindowsDateFormat(raw);
             }
-            
+
             var process2 = new Process("reg", ["query", "HKCU\\Control Panel\\International", "/v", "iTime"]);
             var output2 = process2.stdout.readAll().toString();
             process2.close();
             
-            if (output2.indexOf("iTime") != -1) {
-                var lines = output2.split("\n");
-                for (line in lines) {
-                    if (line.indexOf("iTime") != -1) {
-                        var parts = line.split("REG_SZ");
-                        if (parts.length > 1) {
-                            use24HourFormat = (StringTools.trim(parts[1]) == "1");
-                            break;
-                        }
-                    }
-                }
+            var regex2 = ~/iTime\s+REG_SZ\s+(.+)/i;
+            if (regex2.match(output2)) {
+                var raw = StringTools.trim(regex2.matched(1));
+                use24HourFormat = (raw == "1");
             }
         } catch(e:Dynamic) {
-            trace("Could not read Windows registry, using defaults: " + e);
+            trace("Windows registry read failed: " + e);
         }
+    }
+    
+    private static function convertWindowsDateFormat(winFormat:String):String
+    {
+        var fmt = winFormat;
+        fmt = ~/[M]+/g.replace(fmt, "MM");
+        fmt = ~/[d]+/g.replace(fmt, "DD");
+        fmt = ~/[y]+/g.replace(fmt, "YYYY");
+
+        if (fmt.indexOf("MM/DD/YYYY") != -1) return "MM/DD/YYYY";
+        if (fmt.indexOf("DD/MM/YYYY") != -1) return "DD/MM/YYYY";
+        if (fmt.indexOf("YYYY/MM/DD") != -1 || fmt.indexOf("YYYY-MM-DD") != -1) return "YYYY-MM-DD";
+        if (fmt.indexOf("DD.MM.YYYY") != -1) return "DD.MM.YYYY";
+        return "MM/DD/YYYY";
     }
     #end
     
@@ -81,57 +79,63 @@ class LocaleUtils
     private static function loadLinuxLocaleSettings()
     {
         try {
-            var lang = Sys.getEnv("LANG");
-            if (lang != null && lang.length > 0) {
-                var locale = lang.split(".")[0];
-                
+            var locale = Sys.getEnv("LC_ALL");
+            if (locale == null || locale == "") locale = Sys.getEnv("LC_TIME");
+            if (locale == null || locale == "") locale = Sys.getEnv("LANG");
+            if (locale != null) {
+                locale = locale.split(".")[0];
+            }
+
+            try {
                 var process = new Process("locale", ["-k", "d_fmt"]);
                 var output = process.stdout.readAll().toString();
                 process.close();
                 
-                if (output.indexOf("d_fmt") != -1) {
-                    var lines = output.split("\n");
-                    for (line in lines) {
-                        if (line.indexOf("d_fmt") != -1) {
-                            var parts = line.split("=");
-                            if (parts.length > 1) {
-                                var fmt = StringTools.trim(parts[1]).replace("\"", "");
-                                dateFormat = convertLocaleDateFormat(fmt);
-                                break;
-                            }
-                        }
-                    }
+                var regex = ~/d_fmt\s*=\s*"([^"]+)"/;
+                if (regex.match(output)) {
+                    var fmt = regex.matched(1);
+                    dateFormat = convertLinuxDateFormat(fmt);
                 }
-                
+            } catch(e:Dynamic) {}
+
+            try {
                 var process2 = new Process("locale", ["-k", "t_fmt"]);
                 var output2 = process2.stdout.readAll().toString();
                 process2.close();
                 
-                if (output2.indexOf("t_fmt") != -1) {
-                    var lines = output2.split("\n");
-                    for (line in lines) {
-                        if (line.indexOf("t_fmt") != -1) {
-                            var parts = line.split("=");
-                            if (parts.length > 1) {
-                                var fmt = StringTools.trim(parts[1]).replace("\"", "");
-                                use24HourFormat = (fmt.indexOf("%H") != -1);
-                                break;
-                            }
-                        }
-                    }
+                var regex2 = ~/t_fmt\s*=\s*"([^"]+)"/;
+                if (regex2.match(output2)) {
+                    var fmt = regex2.matched(1);
+                    use24HourFormat = (fmt.indexOf("%H") != -1);
                 }
-                
-                if (dateFormat == null) {
-                    dateFormat = getDefaultDateFormatForLocale(locale);
-                }
-                
-                if (use24HourFormat == null) {
-                    use24HourFormat = getDefaultTimeFormatForLocale(locale);
-                }
+            } catch(e:Dynamic) {}
+
+            if (dateFormat == null && locale != null) {
+                dateFormat = getDefaultDateFormatForLocale(locale);
+            }
+            if (use24HourFormat == null && locale != null) {
+                use24HourFormat = getDefaultTimeFormatForLocale(locale);
             }
         } catch(e:Dynamic) {
-            trace("Could not read Linux locale settings, using defaults: " + e);
+            trace("Linux locale detection failed: " + e);
         }
+    }
+    
+    private static function convertLinuxDateFormat(linuxFormat:String):String
+    {
+        var fmt = linuxFormat;
+        fmt = ~/%d/g.replace(fmt, "DD");
+        fmt = ~/%m/g.replace(fmt, "MM");
+        fmt = ~/%Y/g.replace(fmt, "YYYY");
+        fmt = ~/%y/g.replace(fmt, "YY");
+        fmt = ~/%e/g.replace(fmt, "D");
+        fmt = fmt.replace("\"", "").trim();
+        
+        if (fmt.indexOf("DD/MM/YYYY") != -1) return "DD/MM/YYYY";
+        if (fmt.indexOf("MM/DD/YYYY") != -1) return "MM/DD/YYYY";
+        if (fmt.indexOf("YYYY-MM-DD") != -1 || fmt.indexOf("YYYY/MM/DD") != -1) return "YYYY-MM-DD";
+        if (fmt.indexOf("DD.MM.YYYY") != -1) return "DD.MM.YYYY";
+        return "MM/DD/YYYY";
     }
     #end
     
@@ -142,55 +146,56 @@ class LocaleUtils
             var process = new Process("defaults", ["read", "-g", "AppleLocale"]);
             var locale = process.stdout.readAll().toString().trim();
             process.close();
-            
-            if (locale.length > 0) {
+
+            try {
                 var process2 = new Process("defaults", ["read", "-g", "AppleICUDateFormatStrings"]);
                 var output2 = process2.stdout.readAll().toString();
                 process2.close();
-                
-                if (output2.indexOf("1") != -1) {
-                    var lines = output2.split("\n");
-                    for (line in lines) {
-                        if (line.indexOf("1") != -1) {
-                            var parts = line.split("=");
-                            if (parts.length > 1) {
-                                var fmt = StringTools.trim(parts[1]).replace("\"", "").replace(";", "");
-                                dateFormat = convertLocaleDateFormat(fmt);
-                                break;
-                            }
-                        }
-                    }
+
+                var regex = ~/1\s*=\s*"([^"]+)"/;
+                if (regex.match(output2)) {
+                    var fmt = regex.matched(1);
+                    dateFormat = convertMacDateFormat(fmt);
                 }
-                
+            } catch(e:Dynamic) {}
+
+            try {
                 var process3 = new Process("defaults", ["read", "-g", "AppleICUTimeFormatStrings"]);
                 var output3 = process3.stdout.readAll().toString();
                 process3.close();
                 
-                if (output3.indexOf("1") != -1) {
-                    var lines = output3.split("\n");
-                    for (line in lines) {
-                        if (line.indexOf("1") != -1) {
-                            var parts = line.split("=");
-                            if (parts.length > 1) {
-                                var fmt = StringTools.trim(parts[1]).replace("\"", "").replace(";", "");
-                                use24HourFormat = (fmt.indexOf("HH") != -1);
-                                break;
-                            }
-                        }
-                    }
+                var regex2 = ~/1\s*=\s*"([^"]+)"/;
+                if (regex2.match(output3)) {
+                    var fmt = regex2.matched(1);
+                    use24HourFormat = (fmt.indexOf("H") != -1);
                 }
-                
-                if (dateFormat == null) {
-                    dateFormat = getDefaultDateFormatForLocale(locale);
-                }
-                
-                if (use24HourFormat == null) {
-                    use24HourFormat = getDefaultTimeFormatForLocale(locale);
-                }
+            } catch(e:Dynamic) {}
+            
+            if (dateFormat == null && locale != null && locale.length > 0) {
+                dateFormat = getDefaultDateFormatForLocale(locale);
+            }
+            if (use24HourFormat == null && locale != null && locale.length > 0) {
+                use24HourFormat = getDefaultTimeFormatForLocale(locale);
             }
         } catch(e:Dynamic) {
-            trace("Could not read macOS settings, using defaults: " + e);
+            trace("macOS defaults read failed: " + e);
         }
+    }
+    
+    private static function convertMacDateFormat(macFormat:String):String
+    {
+        var fmt = macFormat;
+        fmt = ~/M{1,2}/g.replace(fmt, "MM");
+        fmt = ~/d{1,2}/g.replace(fmt, "DD");
+        fmt = ~/y{4}/g.replace(fmt, "YYYY");
+        fmt = ~/y{2}/g.replace(fmt, "YY");
+        fmt = fmt.replace("\"", "").trim();
+        
+        if (fmt.indexOf("MM/DD/YYYY") != -1) return "MM/DD/YYYY";
+        if (fmt.indexOf("DD/MM/YYYY") != -1) return "DD/MM/YYYY";
+        if (fmt.indexOf("YYYY-MM-DD") != -1 || fmt.indexOf("YYYY/MM/DD") != -1) return "YYYY-MM-DD";
+        if (fmt.indexOf("DD.MM.YYYY") != -1) return "DD.MM.YYYY";
+        return "MM/DD/YYYY";
     }
     #end
     
@@ -201,12 +206,11 @@ class LocaleUtils
             var lang = Sys.getEnv("AppleLanguages");
             if (lang != null && lang.length > 0) {
                 var locale = lang.split(",")[0].replace("\"", "").replace("[", "").replace("]", "");
-                
                 dateFormat = getDefaultDateFormatForLocale(locale);
                 use24HourFormat = getDefaultTimeFormatForLocale(locale);
             }
         } catch(e:Dynamic) {
-            trace("Could not read iOS settings, using defaults: " + e);
+            trace("iOS settings read failed: " + e);
         }
     }
     #end
@@ -215,113 +219,63 @@ class LocaleUtils
     private static function loadAndroidLocaleSettings()
     {
         try {
-            var lang = Sys.getEnv("LANG");
-            if (lang == null || lang == "") {
-                lang = Sys.getEnv("LC_ALL");
-            }
-            if (lang == null || lang == "") {
-                lang = Sys.getEnv("LC_TIME");
-            }
-            if (lang == null || lang == "") {
-                lang = Sys.getEnv("LC_MESSAGES");
-            }
-            
-            if (lang != null && lang != "") {
-                var localeParts = lang.split(".");
-                var localeStr = localeParts[0];
-                
-                trace("Android locale detected via env: " + localeStr);
-                
-                dateFormat = getDefaultDateFormatForLocale(localeStr);
-                use24HourFormat = getDefaultTimeFormatForLocale(localeStr);
-            } else {
-                dateFormat = "MM/DD/YYYY";
-                use24HourFormat = true;
+            var locale = Sys.getEnv("LANG");
+            if (locale == null || locale == "") locale = Sys.getEnv("LC_ALL");
+            if (locale == null || locale == "") locale = Sys.getEnv("LC_TIME");
+            if (locale != null && locale != "") {
+                locale = locale.split(".")[0];
+                dateFormat = getDefaultDateFormatForLocale(locale);
+                use24HourFormat = getDefaultTimeFormatForLocale(locale);
             }
         } catch(e:Dynamic) {
-            trace("Could not detect Android locale via env, using defaults: " + e);
-            dateFormat = "MM/DD/YYYY";
-            use24HourFormat = true;
+            trace("Android locale detection failed: " + e);
         }
     }
     #end
-    
+
     private static function getDefaultDateFormatForLocale(locale:String):String
     {
         if (locale == null) return "MM/DD/YYYY";
-        
-        if (locale.indexOf("en_US") != -1) {
-            return "MM/DD/YYYY";
-        } else if (locale.indexOf("en_GB") != -1 || locale.indexOf("en_AU") != -1 || 
-                  locale.indexOf("en_CA") != -1 || locale.indexOf("fr_") != -1 ||
-                  locale.indexOf("de_") != -1 || locale.indexOf("it_") != -1 ||
-                  locale.indexOf("es_") != -1 || locale.indexOf("pt_") != -1 ||
-                  locale.indexOf("id_") != -1) {
-            return "DD/MM/YYYY";
-        } else if (locale.indexOf("ja_") != -1 || locale.indexOf("ko_") != -1 ||
-                  locale.indexOf("zh_") != -1) {
-            return "YYYY-MM-DD";
-        } else if (locale.indexOf("ru_") != -1 || locale.indexOf("pl_") != -1 ||
-                  locale.indexOf("cs_") != -1) {
-            return "DD.MM.YYYY";
-        }
-        
+        if (locale.indexOf("en_US") != -1) return "MM/DD/YYYY";
+        if (locale.indexOf("en_GB") != -1 || locale.indexOf("en_AU") != -1 ||
+            locale.indexOf("en_CA") != -1 || locale.indexOf("fr_") != -1 ||
+            locale.indexOf("de_") != -1 || locale.indexOf("it_") != -1 ||
+            locale.indexOf("es_") != -1 || locale.indexOf("pt_") != -1 ||
+            locale.indexOf("id_") != -1) return "DD/MM/YYYY";
+        if (locale.indexOf("ja_") != -1 || locale.indexOf("ko_") != -1 ||
+            locale.indexOf("zh_") != -1) return "YYYY-MM-DD";
+        if (locale.indexOf("ru_") != -1 || locale.indexOf("pl_") != -1 ||
+            locale.indexOf("cs_") != -1) return "DD.MM.YYYY";
         return "MM/DD/YYYY";
     }
     
     private static function getDefaultTimeFormatForLocale(locale:String):Bool
     {
         if (locale == null) return true;
-        
-        if (locale.indexOf("en_US") != -1 || locale.indexOf("en_CA") != -1 || 
+        if (locale.indexOf("en_US") != -1 || locale.indexOf("en_CA") != -1 ||
             locale.indexOf("en_PH") != -1 || locale.indexOf("en_IN") != -1) {
             return false;
         }
-        
         return true;
     }
-    
-    public static function convertLocaleDateFormat(localeFormat:String):String
-    {
-        if (localeFormat == null) return "MM/DD/YYYY";
-        
-        var format = localeFormat;
-        format = format.replace("%d", "DD");
-        format = format.replace("%m", "MM");
-        format = format.replace("%Y", "YYYY");
-        format = format.replace("%y", "YY");
-        format = format.replace("%e", "D");
-        format = format.replace("\"", "").trim();
-        
-        if (format.indexOf("DD/MM/YYYY") != -1 || format.indexOf("D/M/YYYY") != -1) {
-            return "DD/MM/YYYY";
-        } else if (format.indexOf("MM/DD/YYYY") != -1 || format.indexOf("M/D/YYYY") != -1) {
-            return "MM/DD/YYYY";
-        } else if (format.indexOf("YYYY-MM-DD") != -1) {
-            return "YYYY-MM-DD";
-        } else if (format.indexOf("DD.MM.YYYY") != -1 || format.indexOf("D.M.YYYY") != -1) {
-            return "DD.MM.YYYY";
-        } else if (format.indexOf("YYYY/MM/DD") != -1) {
-            return "YYYY-MM-DD";
-        }
-        
-        return "MM/DD/YYYY";
-    }
-    
+
     public static function formatDateTime(date:Date):String
     {
         init();
-        
+
+        var dt = DateTime.make(date.getYear(), date.getMonth() + Month(1), date.getDay(),
+                               date.getHour(), date.getMinute(), date.getSecond());
+        var tz = Timezone.local();
+
         var dayNames = [
             Language.getPhrase("day_sunday", "Sunday"),
-            Language.getPhrase("day_monday", "Monday"), 
+            Language.getPhrase("day_monday", "Monday"),
             Language.getPhrase("day_tuesday", "Tuesday"),
             Language.getPhrase("day_wednesday", "Wednesday"),
             Language.getPhrase("day_thursday", "Thursday"),
             Language.getPhrase("day_friday", "Friday"),
             Language.getPhrase("day_saturday", "Saturday")
         ];
-        
         var monthNames = [
             Language.getPhrase("month_january", "January"),
             Language.getPhrase("month_february", "February"),
@@ -339,50 +293,30 @@ class LocaleUtils
         
         var dayName = dayNames[date.getDay()];
         var monthName = monthNames[date.getMonth()];
-        var day = date.getDate();
-        var month = date.getMonth() + 1;
-        var year = date.getFullYear();
-        var hours = date.getHours();
-        var minutes = date.getMinutes();
-        
-        var minutesStr = (minutes < 10) ? "0" + minutes : Std.string(minutes);
-        
-        var timeStr = "";
-        if (use24HourFormat) {
-            timeStr = '$hours:$minutesStr';
-        } else {
-            var amPm = hours >= 12 ? "PM" : "AM";
-            var hour12 = hours % 12;
-            if (hour12 == 0) hour12 = 12;
-            timeStr = '$hour12:$minutesStr $amPm';
-        }
-        
-        var dateStr = "";
+        var day = dt.getDate();
+        var month = dt.getMonth();
+        var year = dt.getYear();
+
+        var datePart = "";
         switch (dateFormat.toUpperCase()) {
             case "MM/DD/YYYY":
-                dateStr = '$dayName, $monthName $day $year';
+                datePart = '$dayName, $monthName $day $year';
             case "DD/MM/YYYY":
-                dateStr = '$dayName, $day $monthName $year';
+                datePart = '$dayName, $day $monthName $year';
             case "YYYY-MM-DD":
-                dateStr = '$dayName, $year-$month-$day';
+                datePart = '$dayName, $year-$month-$day';
             case "DD.MM.YYYY":
-                dateStr = '$dayName, $day.$month.$year';
+                datePart = '$dayName, $day.$month.$year';
             default:
-                dateStr = '$dayName, $monthName $day $year';
+                datePart = '$dayName, $monthName $day $year';
         }
+
+        var timeFormat = use24HourFormat ? "%H:%M" : "%I:%M %p";
+        var timePart = tz.format(dt, timeFormat);
         
-        return '$dateStr - $timeStr';
+        return '$datePart - $timePart';
     }
-
-    // Backwards-compatible wrapper used by older codepaths
-    public static function loadDeviceDateTimeSettings():Void
-    {
-        init();
-    }
-
-    // Backwards-compatible name used across the codebase
-    public static function formatDateTimeAccordingToDevice(date:Date):String
-    {
-        return formatDateTime(date);
-    }
+    
+    public static function loadDeviceDateTimeSettings():Void { init(); }
+    public static function formatDateTimeAccordingToDevice(date:Date):String { return formatDateTime(date); }
 }
