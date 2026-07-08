@@ -22,6 +22,7 @@ class MenuCharacter extends FlxSprite
 	public function new(x:Float, character:String = 'bf')
 	{
 		super(x);
+
 		changeCharacter(character);
 	}
 
@@ -38,23 +39,23 @@ class MenuCharacter extends FlxSprite
 		
 		color = FlxColor.WHITE;
 		alpha = 1;
-		hasConfirmAnimation = false;
 
+		hasConfirmAnimation = false;
 		switch(character) {
 			case '':
 				visible = false;
 				dontPlayAnim = true;
 			default:
-				var characterPath:String = 'menucharacters/' + character + '.json';
-				var path:String = Paths.getPath(characterPath, TEXT);
+				var characterPath:String = 'images/menucharacters/' + character + '.json';
 
+				var path:String = Paths.getPath(characterPath, TEXT);
 				#if MODS_ALLOWED
 				if (!FileSystem.exists(path))
 				#else
 				if (!Assets.exists(path))
 				#end
 				{
-					path = Paths.getPath('menucharacters/' + DEFAULT_CHARACTER + '.json', TEXT);
+					path = Paths.getSharedPath('characters/' + DEFAULT_CHARACTER + '.json'); //If a character couldn't be found, change him to BF just to prevent a crash
 					color = FlxColor.BLACK;
 					alpha = 0.6;
 				}
@@ -73,11 +74,6 @@ class MenuCharacter extends FlxSprite
 					trace('Error loading menu character file of "$character": $e');
 				}
 
-				if (charFile == null) {
-					visible = false;
-					return;
-				}
-
 				frames = Paths.getSparrowAtlas('menucharacters/' + charFile.image);
 				animation.addByPrefix('idle', charFile.idle_anim, 24);
 
@@ -85,7 +81,7 @@ class MenuCharacter extends FlxSprite
 				if(confirmAnim != null && confirmAnim.length > 0 && confirmAnim != charFile.idle_anim)
 				{
 					animation.addByPrefix('confirm', confirmAnim, 24, false);
-					if (animation.getByName('confirm') != null)
+					if (animation.getByName('confirm') != null) //check for invalid animation
 						hasConfirmAnimation = true;
 				}
 				flipX = (charFile.flipX == true);
