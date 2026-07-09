@@ -6778,4 +6778,3 @@ class PlayState extends MusicBeatState
 			FlxG.signals.preUpdate.add(checkForResync);
 	}
 }
-
