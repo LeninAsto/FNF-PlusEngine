@@ -57,7 +57,7 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 
-		var option:Option - new Option('Disable Hold Animations',
+		var option:Option = new Option('Disable Hold Animations',
 		    "If checked, it does not trigger the hold animation when pressing a sustain note\nsimilar to how it works in V-Slice.",
 			'noHoldAnimations',
 			BOOL);
