@@ -30,8 +30,8 @@
 	<android target-sdk-version="36" minimum-sdk-version="23" build-tools-version="36.0.0" />
 	
 	<!-- Gradle and Build Configuration for Android 16 -->
-	<config:android gradle-version="9.4.1" />
-	<config:android gradle-plugin="9.2.0" />
+	<config:android gradle-version="8.13" />
+	<config:android gradle-plugin="8.13.0" />
 	<config:android useAndroidX="true" />
 	<config:android enableJetifier="true" />
 	
