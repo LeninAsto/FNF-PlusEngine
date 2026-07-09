@@ -72,8 +72,6 @@ import states.TitleState;
 	public var showCombo:Bool = true;
 	public var showComboNum:Bool = true;
 	public var comboInGame:Bool = false;
-	public var useFreakyFont:Bool = false;
-	public var showStateInFPS:Bool = true;
 	public var showEndCountdown:Bool = false; // Enables/disables the end countdown
 	public var endCountdownSeconds:Int = 10;  // End countdown seconds (10-30)
 	public var camera3dEnabled:Bool = true; // Enables 3D camera transformations
@@ -160,9 +158,9 @@ import states.TitleState;
 	public var safeFrames:Float = 10.0;
 	public var guitarHeroSustains:Bool = false;
 	public var discordRPC:Bool = true;
-	public var loadingScreen:Bool = true;
 	public var language:String = 'en-US';
 	public var abbreviateScore:Bool = true;
+	public var dynamicComboDigits:Bool = false;
 	public var newfreeplay:Bool = true;
 	public var vanillaTransition:Bool = false; // Use vanilla Psych Engine transition instead of custom
 	public var pauseCountdown:Bool = false; // Enable countdown when resuming from pause

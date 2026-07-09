@@ -290,6 +290,8 @@ class EnUS
         "description_score_text_grow_on_hit" => "If unchecked, disables the Score text growing\nevery time you hit a note.",
         "setting_abbreviate_score" => "Abbreviate Score",
         "description_abbreviate_score" => "If checked, the score will be abbreviated (ex. 10.00K, 1.00M).",
+        "setting_dynamic_combo_digits" => "Dynamic Combo Digits",
+        "description_dynamic_combo_digits" => "If checked, the combo will appear with two digits, and only\nwhen it reaches 100 will it become three digits.",
         "setting_debug_data" => "Debug Data",
         "description_debug_data" => "Shows chart information like scroll speed, BPM, health; also the steps, beats, etc.\nThe latter will be available if you are in Chart mode.",
         "setting_health_bar_opacity" => "Health Bar Opacity",

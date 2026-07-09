@@ -182,6 +182,12 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		);
 		addOption(option);
 
+		var option:Option = new Option('Dynamic Combo Digits',
+		    'If checked, the combo will appear with two digits in first combo, and only\nwhen it reaches 100 combo will it become three digits.',
+			'dynamicComboDigits',
+			BOOL);
+		addOption(option);
+
 		var option:Option = new Option('Health Bar Opacity',
 			'How much transparent should the health bar and icons be.',
 			'healthBarAlpha',

@@ -259,6 +259,9 @@ class PlayState extends MusicBeatState
 	public var health(default, set):Float = 1;
 	public var combo:Int = 0;
 
+	var comboStr:String;
+	var digitCount:Int;
+
 	public var healthBar:Bar;
 	public var timeBar:Bar;
 	var songPercent:Float = 0;
@@ -4746,46 +4749,72 @@ class PlayState extends MusicBeatState
 			if (showComboSprite)
 				comboGroup.add(comboSpr);
 
-			var separatedScore:String = Std.string(combo).lpad('0', 3);
-			for (i in 0...separatedScore.length)
-			{
-				if (!showComboDigits)
-					break;
-
-				var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(uiFolder + 'num' + Std.parseInt(separatedScore.charAt(i)) + uiPostfix));
-				numScore.screenCenter();
-				numScore.x = placement + (43 * daLoop) - 90 + ClientPrefs.data.comboOffset[2];
-				numScore.y += 80 - ClientPrefs.data.comboOffset[3];
-
-				if (!PlayState.isPixelStage)
-					numScore.setGraphicSize(Std.int(numScore.width * COMBO_NUMBER_SCALE));
-				else
-					numScore.setGraphicSize(Std.int(numScore.width * daPixelZoom * 0.9));
-				numScore.updateHitbox();
-
-				numScore.acceleration.y = FlxG.random.int(200, 300) * playbackRate * playbackRate;
-				numScore.velocity.y -= FlxG.random.int(140, 160) * playbackRate;
-				numScore.velocity.x = FlxG.random.float(-5, 5) * playbackRate;
-				numScore.visible = showComboDigits;
-				numScore.antialiasing = antialias;
-
-				if (showComboDigits)
+			if (ClientPrefs.data.dynamicComboDigits)
 				{
-					comboGroup.add(numScore);
+					if (combo < 100)
+					{
+						comboStr = Std.string(combo);
+						digitCount = comboStr.length;
+					}
+					else
+					{
+						comboStr = Std.string(combo);
+						digitCount = comboStr.length;
+					}
+				}
+				else
+				{
+					comboStr = Std.string(combo).lpad('0', 3);
+					digitCount = 3;
 				}
 
-				FlxTween.tween(numScore, {alpha: 0}, 0.2 / playbackRate, {
-					onComplete: function(tween:FlxTween)
-					{
-						comboGroup.remove(numScore, true);
-						numScore.destroy();
-					},
-					startDelay: Conductor.crochet * 0.002 / playbackRate
-				});
+				var startX:Float = placement + ClientPrefs.data.comboOffset[2];
+				if (ClientPrefs.data.dynamicComboDigits && combo < 100)
+				{
+					startX -= (3 - digitCount) * 21.5;
+				}
 
-				daLoop++;
-				if (numScore.x > xThing)
-					xThing = numScore.x;
+				for (i in 0...digitCount)
+				{
+					if (!showComboDigits)
+						break;
+
+					var digit:Int = Std.parseInt(comboStr.charAt(i));
+					var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(uiFolder + 'num' + digit + uiPostfix));
+					numScore.screenCenter();
+					numScore.x = startX + (43 * i) - 90 + (ClientPrefs.data.dynamicComboDigits ? 0 : 0);
+					numScore.y += 80 - ClientPrefs.data.comboOffset[3];
+
+					if (!PlayState.isPixelStage)
+						numScore.setGraphicSize(Std.int(numScore.width * COMBO_NUMBER_SCALE));
+					else
+						numScore.setGraphicSize(Std.int(numScore.width * daPixelZoom * 0.9));
+					numScore.updateHitbox();
+
+					numScore.acceleration.y = FlxG.random.int(200, 300) * playbackRate * playbackRate;
+					numScore.velocity.y -= FlxG.random.int(140, 160) * playbackRate;
+					numScore.velocity.x = FlxG.random.float(-5, 5) * playbackRate;
+					numScore.visible = showComboDigits;
+					numScore.antialiasing = antialias;
+
+					if (showComboDigits)
+					{
+						comboGroup.add(numScore);
+					}
+
+					FlxTween.tween(numScore, {alpha: 0}, 0.2 / playbackRate, {
+						onComplete: function(tween:FlxTween)
+						{
+							comboGroup.remove(numScore, true);
+							numScore.destroy();
+						},
+						startDelay: Conductor.crochet * 0.002 / playbackRate
+					});
+
+					daLoop++;
+					if (numScore.x > xThing)
+						xThing = numScore.x;
+				}
 			}
 			comboSpr.x = xThing + 50;
 			FlxTween.tween(rating, {alpha: 0}, 0.2 / playbackRate, {
