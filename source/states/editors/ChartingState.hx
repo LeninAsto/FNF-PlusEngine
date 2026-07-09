@@ -86,6 +86,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		['Set Property', "Value 1: Variable name\nValue 2: New value"],
 		['Play Sound', "Value 1: Sound file name\nValue 2: Volume (Default: 1), ranges from 0 to 1"],
 		['Set Camera Bopping', "Sets how camera should bop.\nValue 1: Frequency (in beats)\nValue 2: Intensity scale (1 for default)"],
+		['Lyric Event', "Displays a lyric text in the middle of the screen.\nValue 1: Text to display (leave blank to fade out).\nValue 2: Text color name or hex (leave blank for white)."],
 		['Add Secondary Icon', "Value 1: Side of Health Bar (Dad, BF)\nValue 2: Swap position of BF and GF icons when GF Sing (true, false)"]
 	];
 	

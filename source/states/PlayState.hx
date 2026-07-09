@@ -320,6 +320,10 @@ class PlayState extends MusicBeatState
 	var timeTxt:FlxText;
 	var scoreTxtTween:FlxTween;
 	var timeTxtTween:FlxTween;
+
+	public var lyricText:FlxText;
+	var lyricTween:FlxTween;
+
 	var versionTextTween:FlxTween;
 	var judgementCounter:JudCounter;
 	
@@ -818,6 +822,14 @@ class PlayState extends MusicBeatState
 		timeBar.visible = showTime;
 		uiGroup.add(timeBar);
 		uiGroup.add(timeTxt);
+
+		lyricText = new FlxText(0, FlxG.height * 0.75, FlxG.width, "", 32);
+		lyricText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		lyricText.scrollFactor.set();
+		lyricText.borderSize = 2;
+		lyricText.alpha = 0;
+		lyricText.cameras = [camHUD];
+		add(lyricText);
 
 		noteGroup.add(strumLineNotes);
 
@@ -3815,6 +3827,37 @@ class PlayState extends MusicBeatState
 				cameraBopFrequency = freq;
 				cameraBopIntensity = intensity;
 				cameraBopEnabled = true;
+
+			case 'Lyric Event':
+				if (lyricText != null)
+				{
+					if (lyricTween != null) { lyricTween.cancel(); lyricTween = null; }
+					var lyricStr:String = value1.trim();
+					if (lyricStr.length > 0)
+					{
+						var lyricColor:FlxColor = FlxColor.WHITE;
+						var colorStr:String = value2.trim().toLowerCase();
+						if (colorStr.length > 0)
+						{
+							try { lyricColor = FlxColor.fromString(colorStr); }
+							catch (e:Dynamic) { lyricColor = FlxColor.WHITE; }
+						}
+						lyricText.text = lyricStr;
+						lyricText.color = lyricColor;
+						lyricText.alpha = 0;
+						lyricTween = FlxTween.tween(lyricText, {alpha: 1}, 0.25, {
+							ease: FlxEase.cubeOut,
+							onComplete: function(t:FlxTween) { lyricTween = null; }
+						});
+					}
+					else
+					{
+						lyricTween = FlxTween.tween(lyricText, {alpha: 0}, 0.4, {
+							ease: FlxEase.cubeIn,
+							onComplete: function(t:FlxTween) { lyricText.text = ""; lyricTween = null; }
+						});
+					}
+				}
 			
 			case 'Add Secondary Icon':
 				gfIconSide = value1.toLowerCase().trim();
