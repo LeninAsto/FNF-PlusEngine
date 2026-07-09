@@ -355,6 +355,8 @@ class PlayState extends MusicBeatState
 	// ← VARIABLES DE OPTIMIZACIÓN
 	var missSpritesPool:Array<FlxSprite> = [];
 	var MAX_MISS_SPRITES:Int = 3;
+	var missedHoldParent:Note = null;
+	var missedHoldEndTime:Float = -1;
 	var endCountdownText:FlxText = null;
 	var lastEndCountdown:Int = -1;
 	var lastJudName:String = "None";
@@ -5129,23 +5131,41 @@ class PlayState extends MusicBeatState
 					keyReleased(i);
 	}
 
-	function noteMiss(daNote:Note):Void { //You didn't hit the key and let it go offscreen, also used by Hurt Notes
-		//Dupe note remove
+	function noteMiss(daNote:Note):Void 
+	{
 		notes.forEachAlive(function(note:Note) {
-			if (daNote != note && daNote.mustPress && daNote.noteData == note.noteData && daNote.isSustainNote == note.isSustainNote && Math.abs(daNote.strumTime - note.strumTime) < 1)
+			if (daNote != note && daNote.mustPress && daNote.noteData == note.noteData && daNote.isSustainNote == note.isSustainNote && Math.abs(daNote.strumTime - note.strumTime) < 1) {
 				invalidateNote(note);
+			}
 		});
+
+		var shouldApplyMiss = true;
+		if (daNote.isSustainNote && daNote.parent != null) {
+			var parent = daNote.parent;
+			if (!parent.holdMissed) {
+				parent.holdMissed = true;
+				var lastTail = parent.tail[parent.tail.length - 1];
+				missedHoldEndTime = lastTail.strumTime;
+				missedHoldParent = parent;
+			} else {
+				shouldApplyMiss = false;
+			}
+		}
 
 		final end:Note = daNote.isSustainNote ? daNote.parent.tail[daNote.parent.tail.length - 1] : daNote.tail[daNote.tail.length - 1];
 		if (end != null && end.extraData['holdSplash'] != null) {
 			end.extraData['holdSplash'].visible = false;
 		}
 
+		if (shouldApplyMiss) {
+			noteMissCommon(daNote.noteData, daNote, true);
+		}
+
 		var noteIndex:Int = notes.members.indexOf(daNote);
-		noteMissCommon(daNote.noteData, daNote);
 		stagesFunc(function(stage:BaseStage) stage.noteMiss(daNote));
 		var result:Dynamic = callOnLuas('noteMiss', [noteIndex, daNote.noteData, daNote.noteType, daNote.isSustainNote]);
-		if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) callOnHScript('noteMiss', [daNote]);
+		if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll)
+			callOnHScript('noteMiss', [daNote]);
 	}
 
 	function noteMissPress(direction:Int = 1):Void //You pressed a key when there was no notes to press for this key
@@ -5158,7 +5178,7 @@ class PlayState extends MusicBeatState
 		callOnScripts('noteMissPress', [direction]);
 	}
 
-	function noteMissCommon(direction:Int, note:Note = null)
+	function noteMissCommon(direction:Int, note:Note = null, playAnim:Bool = true)
 	{
 		// score and data
 		var subtract:Float = pressMissDamage;
@@ -5243,23 +5263,26 @@ class PlayState extends MusicBeatState
 			judgementCounter.doMissBump();
 		}
 
-		// play character anims
-		// Opponent Mode: El jugador controla a dad, así que dad hace la animación de miss, no boyfriend
-		var char:Character = playOpponent ? dad : boyfriend;
-		if((note != null && note.gfNote) || (SONG.notes[curSection] != null && SONG.notes[curSection].gfSection)) char = gf;
-
-		if(char != null && (note == null || !note.noMissAnimation) && char.hasMissAnimations)
+		if (playAnim) 
 		{
-			var postfix:String = '';
-			if(note != null) postfix = note.animSuffix;
+			var char:Character = playOpponent ? dad : boyfriend;
+			if ((note != null && note.gfNote) || (SONG.notes[curSection] != null && SONG.notes[curSection].gfSection)) {
+				char = gf;
+			}
 
-			var animToPlay:String = singAnimations[Std.int(Math.abs(Math.min(singAnimations.length-1, direction)))] + 'miss' + postfix;
-			char.playAnim(animToPlay, true);
-
-			if(char != gf && lastCombo > 5 && gf != null && gf.hasAnimation('sad'))
+			if(char != null && (note == null || !note.noMissAnimation) && char.hasMissAnimations)
 			{
-				gf.playAnim('sad');
-				gf.specialAnim = true;
+				var postfix:String = '';
+				if(note != null) postfix = note.animSuffix;
+
+				var animToPlay:String = singAnimations[Std.int(Math.abs(Math.min(singAnimations.length-1, direction)))] + 'miss' + postfix;
+				char.playAnim(animToPlay, true);
+
+				if(char != gf && lastCombo > 5 && gf != null && gf.hasAnimation('sad'))
+				{
+					gf.playAnim('sad');
+					gf.specialAnim = true;
+				}
 			}
 		}
 		vocals.volume = 0;
@@ -5291,20 +5314,29 @@ class PlayState extends MusicBeatState
 		else if(!note.noAnimation)
 		{
 			var char:Character = playOpponent ? boyfriend : dad;
-			var animToPlay:String = singAnimations[Std.int(Math.abs(Math.min(singAnimations.length-1, note.noteData)))] + note.animSuffix;
-			if(note.gfNote) char = gf;
+			var animToPlay = singAnimations[Std.int(Math.abs(Math.min(singAnimations.length - 1, note.noteData)))] + note.animSuffix;
+			if (note.gfNote) char = gf;
 
-			if(char != null)
+			if (char != null)
 			{
-				var canPlay:Bool = true;
-				if(note.isSustainNote)
+				var canPlay = true;
+
+				if (note.isSustainNote)
 				{
-					var holdAnim:String = animToPlay + '-hold';
-					if(char.animation.exists(holdAnim)) animToPlay = holdAnim;
-					if(char.getAnimationName() == holdAnim || char.getAnimationName() == holdAnim + '-loop') canPlay = false;
+					if (!ClientPrefs.data.noHoldAnimations)
+					{
+						var holdAnim = animToPlay + '-hold';
+						if (char.animation.exists(holdAnim))
+							animToPlay = holdAnim;
+					}
+
+					if (char.getAnimationName() == animToPlay)
+						canPlay = false;
 				}
 
-				if(canPlay) char.playAnim(animToPlay, true);
+				if (canPlay)
+					char.playAnim(animToPlay, true);
+
 				char.holdTimer = 0;
 			}
 		}
@@ -5380,40 +5412,44 @@ class PlayState extends MusicBeatState
 		if(!note.hitCausesMiss) //Common notes
 		{
 			var commonStart:Float = profileHit ? Timer.stamp() : 0;
-			if(!note.noAnimation)
+			if (!note.noAnimation)
 			{
-				var animToPlay:String = singAnimations[Std.int(Math.abs(Math.min(singAnimations.length-1, note.noteData)))] + note.animSuffix;
-
-				// Opponent Mode: Invertir personajes (dad es controlado por el jugador)
+				var animToPlay = singAnimations[Std.int(Math.abs(Math.min(singAnimations.length - 1, note.noteData)))] + note.animSuffix;
 				var char:Character = playOpponent ? dad : boyfriend;
 				var animCheck:String = 'hey';
-				if(note.gfNote)
+				if (note.gfNote)
 				{
 					char = gf;
 					animCheck = 'cheer';
 				}
 
-				if(char != null)
+				if (char != null)
 				{
-					var canPlay:Bool = true;
-					if(note.isSustainNote)
+					var canPlay = true;
+
+					if (note.isSustainNote)
 					{
-						var holdAnim:String = animToPlay + '-hold';
-						if(char.animation.exists(holdAnim)) animToPlay = holdAnim;
-						if(char.getAnimationName() == holdAnim || char.getAnimationName() == holdAnim + '-loop') canPlay = false;
+						if (!ClientPrefs.data.noHoldAnimations)
+						{
+							var holdAnim = animToPlay + '-hold';
+							if (char.animation.exists(holdAnim))
+								animToPlay = holdAnim;
+						}
+
+						if (char.getAnimationName() == animToPlay)
+							canPlay = false;
 					}
-	
-					if(canPlay) char.playAnim(animToPlay, true);
+
+					if (canPlay)
+						char.playAnim(animToPlay, true);
+
 					char.holdTimer = 0;
 
-					if(note.noteType == 'Hey!')
+					if (note.noteType == 'Hey!' && char.hasAnimation(animCheck))
 					{
-						if(char.hasAnimation(animCheck))
-						{
-							char.playAnim(animCheck, true);
-							char.specialAnim = true;
-							char.heyTimer = 0.6;
-						}
+						char.playAnim(animCheck, true);
+						char.specialAnim = true;
+						char.heyTimer = 0.6;
 					}
 				}
 			}
@@ -5916,6 +5952,20 @@ class PlayState extends MusicBeatState
 
 	public function playerDance():Void
 	{
+		if (missedHoldParent != null) 
+		{
+			if (Conductor.songPosition < missedHoldEndTime) {
+				return;
+			} else {
+				missedHoldParent = null;
+				missedHoldEndTime = -1;
+				var playerChar:Character = playOpponent ? dad : boyfriend;
+				if (playerChar != null && !playerChar.stunned) {
+					playerChar.dance();
+				}
+			}
+		}
+
 		// Opponent Mode: The player controls dad, so dad should dance when not singing
 		var playerChar:Character = playOpponent ? dad : boyfriend;
 		if(playerChar == null) return;
@@ -5927,6 +5977,20 @@ class PlayState extends MusicBeatState
 	
 	public function opponentDance():Void
 	{
+		if (missedHoldParent != null) 
+		{
+			if (Conductor.songPosition < missedHoldEndTime) {
+				return;
+			} else {
+				missedHoldParent = null;
+				missedHoldEndTime = -1;
+				var opponentChar:Character = playOpponent ? dad : boyfriend;
+				if (opponentChar != null && !opponentChar.stunned) {
+					opponentChar.dance();
+				}
+			}
+		}
+
 		// Opponent Mode: The opponent is boyfriend (AI), in normal mode it's dad (AI)
 		var opponentChar:Character = playOpponent ? boyfriend : dad;
 		if(opponentChar == null) return;

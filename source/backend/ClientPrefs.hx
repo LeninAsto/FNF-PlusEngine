@@ -112,6 +112,7 @@ import states.TitleState;
 	public var scoreZoom:Bool = true;
 	public var timeBump:Bool = false;
 	public var noReset:Bool = false;
+	public var noHoldAnimations:Bool = false;
 	public var healthBarAlpha:Float = 1;
 	public var smoothHealthBar:Bool = true;
 	public var smoothHPBug:Bool = false;

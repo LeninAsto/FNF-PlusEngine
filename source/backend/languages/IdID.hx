@@ -349,7 +349,7 @@ class IdID
         "setting_disable_reset_button" => "Nonaktifkan Tombol Reset",
         "description_disable_reset_button" => "Jika dicentang, menekan tombol Reset tidak akan melakukan apa-apa.",
         "setting_disable_hold_animations" => "Nonaktifkan Animasi Hold",
-        "description_disable_hold_animations" => "Jika dicentang, note holds tidak akan memicu animasi karakter,\nmemungkinkan gameplay yang lebih lancar pada note yang banyak menggunakan menyusut.",
+        "description_disable_hold_animations" => "Jika dicentang, tidak memicu animasi hold pada saat menekan sustain note mirip seperti halnya di V-Slice.",
         "setting_game_over_vibration" => "Getar Game Over",
         "description_game_over_vibration" => "Jika dicentang, perangkat Anda akan bergetar saat kalah.",
         "setting_hitsound_volume" => "Hitsound Volume",
