@@ -65,7 +65,7 @@ class Note extends FlxSprite
 
 	public var wasGoodHit:Bool = false;
 	public var missed:Bool = false;
-	public var holdMissed:Bool = false
+	public var holdMissed:Bool = false;
 	public var isOpponentMode:Bool = false; // Flag para detectar Opponent Mode
 
 	public var ignoreNote:Bool = false;
