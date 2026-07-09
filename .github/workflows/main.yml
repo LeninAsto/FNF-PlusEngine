@@ -151,10 +151,10 @@ jobs:
             "platforms;android-36" \
             "build-tools;36.0.0" \
             "cmdline-tools;latest" \
-            "ndk;27.2.12479018"
+            "ndk;27.3.13750724"
           {
-            echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.2.12479018"
-            echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/27.2.12479018"
+            echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.3.13750724"
+            echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/27.3.13750724"
           } >> "$GITHUB_ENV"
 
       - name: Install libraries
@@ -166,7 +166,7 @@ jobs:
         run: |
           haxelib run lime setup android
           haxelib run lime config ANDROID_SDK "$ANDROID_SDK_ROOT"
-          haxelib run lime config ANDROID_NDK_ROOT "$ANDROID_SDK_ROOT/ndk/27.2.12479018"
+          haxelib run lime config ANDROID_NDK_ROOT "$ANDROID_SDK_ROOT/ndk/27.3.13750724"
           haxelib run lime config JAVA_HOME "$JAVA_HOME"
 
       - name: Prepare build
