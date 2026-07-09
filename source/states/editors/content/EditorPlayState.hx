@@ -621,34 +621,34 @@ class EditorPlayState extends MusicBeatSubstate
 			comboGroup.add(comboSpr);
 
 		if (ClientPrefs.data.dynamicComboDigits)
+			{
+				if (combo < 100)
 				{
-					if (combo < 100)
-					{
-						comboStr = Std.string(combo);
-						digitCount = comboStr.length;
-					}
-					else
-					{
-						comboStr = Std.string(combo);
-						digitCount = comboStr.length;
-					}
+					comboStr = Std.string(combo);
+					digitCount = comboStr.length;
 				}
 				else
 				{
-					comboStr = Std.string(combo).lpad('0', 3);
-					digitCount = 3;
+					comboStr = Std.string(combo);
+					digitCount = comboStr.length;
 				}
+			}
+			else
+			{
+				comboStr = Std.string(combo).lpad('0', 3);
+				digitCount = 3;
+			}
 
-				var startX:Float = placement + ClientPrefs.data.comboOffset[2];
-				if (ClientPrefs.data.dynamicComboDigits && combo < 100)
-				{
-					startX -= (3 - digitCount) * 21.5;
-				}
+			var startX:Float = placement + ClientPrefs.data.comboOffset[2];
+			if (ClientPrefs.data.dynamicComboDigits && combo < 100)
+			{
+				startX -= (3 - digitCount) * 21.5;
+			}
 
-				for (i in 0...digitCount)
-				{
-					if (!showComboDigits)
-						break;
+			for (i in 0...digitCount)
+			{
+				if (!showComboDigits)
+					break;
 
 					var digit:Int = Std.parseInt(comboStr.charAt(i));
 					var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(uiFolder + 'num' + digit + uiPostfix));
@@ -683,9 +683,6 @@ class EditorPlayState extends MusicBeatSubstate
 					});
 
 					daLoop++;
-					if (numScore.x > xThing)
-						xThing = numScore.x;
-				}
 			}
 		comboSpr.x = xThing + 50;
 		FlxTween.tween(rating, {alpha: 0}, 0.2 / playbackRate, {

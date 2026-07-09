@@ -4812,10 +4812,7 @@ class PlayState extends MusicBeatState
 					});
 
 					daLoop++;
-					if (numScore.x > xThing)
-						xThing = numScore.x;
 				}
-			}
 			comboSpr.x = xThing + 50;
 			FlxTween.tween(rating, {alpha: 0}, 0.2 / playbackRate, {
 				startDelay: Conductor.crochet * 0.001 / playbackRate
