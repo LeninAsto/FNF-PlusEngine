@@ -514,7 +514,6 @@ class ZhCN
         "mobile_warning" => "Warning",
         "mobile_error" => "Error",
         "mobile_success" => "Success",
-        "permissions_message" => "Storage permissions are required to save or export files correctly.",
         "create_directory_error" => "Could not create the required directory:\n{1}",
         "file_save_success" => "File saved successfully:\n{1}",
         "file_save_fail" => "Could not save the file:\n{1}",

@@ -1,6 +1,7 @@
 package mobile.backend;
 
 import lime.system.System as LimeSystem;
+import lime.utils.Timer;
 import haxe.io.Path;
 
 /**
@@ -297,16 +298,33 @@ class StorageUtil
 			}
 		}
 
-		if (!hasRequiredPermissions()) {
-			CoolUtil.showPopUp(
-				Language.getPhrase('permissions_message', 
-					'Storage permissions are required for public mods and external saves.\n' +
-					'Please grant the requested permissions when prompted.'),
-				Language.getPhrase('mobile_notice', "Notice!")
-			);
-		}
+		Timer.delay(function() {
+			var attempts = 0;
+			var maxAttempts = 15;
 
-		initializeStorageDirectories();
+			function checkAndCreate():Void
+			{
+				if (hasRequiredPermissions())
+				{
+					initializeStorageDirectories();
+					return;
+				}
+				attempts++;
+				if (attempts < maxAttempts)
+				{
+					Timer.delay(checkAndCreate, 1000);
+				}
+				else
+				{
+					CoolUtil.showPopUp(
+						Language.getPhrase('permission_timeout',
+							'Permissions were not granted. Please grant them manually and restart the app.'),
+						Language.getPhrase('mobile_error', 'Error!')
+					);
+				}
+			}
+			checkAndCreate();
+		}, 2000);
 	}
 
 	public static function getPermissionStatus():String
