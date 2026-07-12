@@ -1,0 +1,23 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="holdCover.png">
+	<!-- Created with Adobe Animate version 22.0.5.191 -->
+	<!-- MC07 is awesome and cool. -->
+	<SubTexture name="holdCoverEndPurple0000" x="0" y="0" width="13" height="11" rotated="false" frameX="-18" frameY="-19" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndPurple0001" x="17" y="0" width="20" height="18" rotated="false" frameX="-14" frameY="-14" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndPurple0002" x="41" y="0" width="28" height="25" rotated="false" frameX="-10" frameY="-9" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndPurple0003" x="73" y="0" width="36" height="29" rotated="false" frameX="-6" frameY="-5" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndPurple0004" x="113" y="0" width="39" height="35" rotated="false" frameX="-6" frameY="-2" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndPurple0005" x="156" y="0" width="44" height="36" rotated="false" frameX="-2" frameY="0" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndPurple0006" x="204" y="0" width="46" height="33" rotated="false" frameX="0" frameY="0" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndPurple0007" x="0" y="40" width="42" height="32" rotated="false" frameX="-3" frameY="-1" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndPurple0008" x="46" y="40" width="1" height="1" rotated="false" frameX="-18" frameY="-19" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverStartPurple0001" x="50" y="40" width="14" height="9" rotated="false" frameX="-1" frameY="-1" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverPurple0000" x="68" y="40" width="14" height="9" rotated="false" frameX="-1" frameY="-1" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverPurple0001" x="86" y="40" width="14" height="10" rotated="false" frameX="-1" frameY="0" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverPurple0002" x="104" y="40" width="14" height="9" rotated="false" frameX="-1" frameY="0" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverPurple0003" x="122" y="40" width="16" height="8" rotated="false" frameX="0" frameY="-1" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverPurple0004" x="142" y="40" width="16" height="9" rotated="false" frameX="0" frameY="-1" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverPurple0005" x="162" y="40" width="16" height="9" rotated="false" frameX="0" frameY="-1" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverPurple0006" x="182" y="40" width="15" height="8" rotated="false" frameX="0" frameY="-1" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverPurple0007" x="50" y="40" width="14" height="9" rotated="false" frameX="-1" frameY="-1" frameWidth="16" frameHeight="10"/>
+</TextureAtlas>

@@ -1,0 +1,37 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="noteSplashes-ronathertdthertd.png">
+	<!-- Created with Adobe Animate version 21.0.1.37179 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="ronathertd splash blue 10000" x="5" y="5" width="217" height="178" frameX="-79" frameY="-71" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash blue 10001" x="227" y="5" width="301" height="268" frameX="-34" frameY="-21" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash blue 10002" x="533" y="5" width="359" height="313" frameX="-8" frameY="0" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash blue 10003" x="5" y="323" width="374" height="299" frameX="0" frameY="-7" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash blue 20000" x="384" y="323" width="217" height="178" frameX="-78" frameY="-71" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash blue 20001" x="606" y="323" width="302" height="268" frameX="-38" frameY="-21" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash blue 20002" x="5" y="627" width="359" height="313" frameX="-7" frameY="0" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash blue 20003" x="369" y="627" width="374" height="299" frameX="0" frameY="-7" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash green 10000" x="5" y="5" width="217" height="178" frameX="-79" frameY="-71" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash green 10001" x="227" y="5" width="301" height="268" frameX="-34" frameY="-21" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash green 10002" x="533" y="5" width="359" height="313" frameX="-8" frameY="0" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash green 10003" x="5" y="323" width="374" height="299" frameX="0" frameY="-7" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash green 20000" x="384" y="323" width="217" height="178" frameX="-78" frameY="-71" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash green 20001" x="606" y="323" width="302" height="268" frameX="-38" frameY="-21" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash green 20002" x="5" y="627" width="359" height="313" frameX="-7" frameY="0" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash green 20003" x="369" y="627" width="374" height="299" frameX="0" frameY="-7" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash purple 10000" x="5" y="5" width="217" height="178" frameX="-79" frameY="-71" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash purple 10001" x="227" y="5" width="301" height="268" frameX="-34" frameY="-21" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash purple 10002" x="533" y="5" width="359" height="313" frameX="-8" frameY="0" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash purple 10003" x="5" y="323" width="374" height="299" frameX="0" frameY="-7" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash purple 20000" x="384" y="323" width="217" height="178" frameX="-78" frameY="-71" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash purple 20001" x="606" y="323" width="302" height="268" frameX="-38" frameY="-21" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash purple 20002" x="5" y="627" width="359" height="313" frameX="-7" frameY="0" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash purple 20003" x="369" y="627" width="374" height="299" frameX="0" frameY="-7" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash red 10000" x="5" y="5" width="217" height="178" frameX="-79" frameY="-71" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash red 10001" x="227" y="5" width="301" height="268" frameX="-34" frameY="-21" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash red 10002" x="533" y="5" width="359" height="313" frameX="-8" frameY="0" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash red 10003" x="5" y="323" width="374" height="299" frameX="0" frameY="-7" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash red 20000" x="384" y="323" width="217" height="178" frameX="-78" frameY="-71" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash red 20001" x="606" y="323" width="302" height="268" frameX="-38" frameY="-21" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash red 20002" x="5" y="627" width="359" height="313" frameX="-7" frameY="0" frameWidth="374" frameHeight="313"/>
+	<SubTexture name="ronathertd splash red 20003" x="369" y="627" width="374" height="299" frameX="0" frameY="-7" frameWidth="374" frameHeight="313"/>
+</TextureAtlas>

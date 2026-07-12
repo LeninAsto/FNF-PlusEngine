@@ -1,0 +1,44 @@
+name: New feature request
+description: Suggest new features or improvements for the port here
+labels: [enhancement]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Describe your feature request here."
+    validations:
+      required: true
+
+  - type: dropdown
+    id: btarget
+    attributes:
+      label: "What is your build target?"
+      options:
+        - "Desktop (Linux, Windows or Mac)"
+        - "Android"
+        - "iOS"
+        - "HashLink"
+        - "Flash/AIR"
+        - "Other/Unknown/I don't know"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: psychver
+    attributes:
+      label: "Which plus engine version you're on?"
+      options:
+        - "DevBuild"
+        - "1.0.5"
+        - "1.0"
+        - "0.8.5 / older"
+    validations:
+      required: true
+
+  - type: input
+    id: buildsummary
+    attributes:
+      label: "Did you edit anything in this build? If so, mention or summarize your changes."
+      placeholder: "Yes, I edited ClientPrefs.hx and tried to add a new setting"
+    validations:
+      required: false

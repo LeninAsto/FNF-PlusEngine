@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<project>
+    <!-- Enable Content Provider to share files with other apps -->
+	<define name="SHARE_MOBILE_FILES" />
+	<define name="ANDROID_USE_ANDROIDX" />
+	
+	<!-- Force adaptive launcher icon from our Android res template -->
+	<config:android>
+		<application android:icon="@mipmap/ic_launcher" android:roundIcon="@mipmap/ic_launcher" />
+	</config:android>
+	<!-- Copy our custom launcher icon resources into the generated Gradle project -->
+	
+	<!-- Copy Kotlin source files to Android project -->
+	<template path="FileManagerActivity.kt" rename="app/src/main/java/com/leninasto/plusengine/FileManagerActivity.kt" />
+	<template path="PlusEngineExtension.kt" rename="app/src/main/java/com/leninasto/plusengine/PlusEngineExtension.kt" />
+	<template path="FileUtil.kt" rename="app/src/main/java/com/leninasto/plusengine/FileUtil.kt" />
+	<template path="NativeUI.kt" rename="app/src/main/java/com/leninasto/plusengine/NativeUI.kt" />
+	<template path="NativeCrashHandler.kt" rename="app/src/main/java/com/leninasto/plusengine/NativeCrashHandler.kt" />
+	<template path="NativeCrashActivity.kt" rename="app/src/main/java/com/leninasto/plusengine/NativeCrashActivity.kt" />
+	<template path="components/DropDown.kt" rename="app/src/main/java/com/leninasto/plusengine/components/DropDown.kt" />
+	<template path="languages/Language.kt" rename="app/src/main/java/com/leninasto/plusengine/languages/Language.kt" />
+	<template path="languages/English.kt" rename="app/src/main/java/com/leninasto/plusengine/languages/English.kt" />
+	<template path="languages/Spanish.kt" rename="app/src/main/java/com/leninasto/plusengine/languages/Spanish.kt" />
+        <template path="languages/Indonesia.kt" rename="app/src/main/java/com/leninasto/plusengine/languages/Indonesia.kt" />
+	
+	<!-- Android Permissions -->
+	<config:android permission="android.permission.INTERNET" />
+	<config:android permission="android.permission.ACCESS_NETWORK_STATE" />
+	
+	<!-- Storage Permissions - Legacy (Android 12 and below) -->
+	<config:android permission="android.permission.READ_EXTERNAL_STORAGE" />
+	<config:android permission="android.permission.WRITE_EXTERNAL_STORAGE" />
+	
+	<!-- Storage Permissions - Modern (Android 13+) -->
+	<config:android permission="android.permission.MANAGE_EXTERNAL_STORAGE" />
+	<config:android permission="android.permission.READ_MEDIA_IMAGES" />
+	<config:android permission="android.permission.READ_MEDIA_VIDEO" />
+	<config:android permission="android.permission.READ_MEDIA_AUDIO" />
+	<config:android permission="android.permission.READ_MEDIA_VISUAL_USER_SELECTED" />
+	
+	<!-- Android SDK versions | From Android 6 - 16 -->
+	<android target-sdk-version="36.1" minimum-sdk-version="23" build-tools-version="36.0.0" />
+	
+	<!-- Gradle and Build Configuration for Android 16 -->
+	<config:android gradle-version="8.13" />
+	<config:android gradle-plugin="8.13.0" />
+	<config:android useAndroidX="true" />
+	<config:android enableJetifier="true" />
+	
+	<!-- NDK Configuration -->
+	<setenv name="ANDROID_NDK_VERSION" value="27.2.12479018" />
+	
+	<!-- Scoped Storage Configuration -->
+	<!-- Android 10 (API 29): Use legacy external storage for compatibility -->
+	<config:android>
+		<application android:requestLegacyExternalStorage="true" />
+	</config:android>
+	
+	<!-- Android 11+ (API 30+): Enable preserveLegacyExternalStorage for app updates -->
+	<config:android>
+		<application android:preserveLegacyExternalStorage="true" />
+	</config:android>
+</project>

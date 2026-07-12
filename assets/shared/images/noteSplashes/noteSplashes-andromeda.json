@@ -1,0 +1,63 @@
+{
+	"animations": {
+		"purple": {
+			"prefix": "andromeda splash purple 1",
+			"fps": [
+				22,
+				26
+			],
+			"offsets": [
+				43,
+				52
+			],
+			"indices": [],
+			"name": "purple",
+			"noteData": 0
+		},
+		"red": {
+			"prefix": "andromeda splash red 1",
+			"fps": [
+				22,
+				26
+			],
+			"offsets": [
+				43,
+				52
+			],
+			"indices": [],
+			"name": "red",
+			"noteData": 3
+		},
+		"blue": {
+			"prefix": "andromeda splash blue 1",
+			"fps": [
+				22,
+				26
+			],
+			"offsets": [
+				43,
+				52
+			],
+			"indices": [],
+			"name": "blue",
+			"noteData": 1
+		},
+		"green": {
+			"prefix": "andromeda splash green 1",
+			"fps": [
+				22,
+				26
+			],
+			"offsets": [
+				43,
+				52
+			],
+			"indices": [],
+			"name": "green",
+			"noteData": 2
+		}
+	},
+	"allowRGB": true,
+	"allowPixel": true,
+	"scale": 1
+}

@@ -1,0 +1,61 @@
+name: VirusTotal Scan
+
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+  push:
+    branches: [ main ]
+    paths:
+      - 'export/release/**'
+
+jobs:
+  scan-windows:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Download Windows Build
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: main.yml
+          name: windowsBuild
+          path: ./windows-build
+          
+      - name: Zip Windows Build
+        run: |
+          cd ./windows-build
+          zip -r ../FNF-PlusEngine-Windows.zip *
+          cd ..
+          
+      - name: VirusTotal Scan Windows
+        uses: crazy-max/ghaction-virustotal@v4
+        with:
+          vt_api_key: ${{ secrets.VIRUSTOTAL_API_KEY }}
+          files: |
+            ./FNF-PlusEngine-Windows.zip
+          
+  scan-android:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'release' || github.event_name == 'workflow_dispatch'
+    
+    steps:
+      - name: Download Android Build
+        uses: dawidd6/action-download-artifact@v3
+        with:
+          workflow: main.yml
+          name: androidBuild
+          path: ./android-build
+          
+      - name: Find APK
+        id: find-apk
+        run: |
+          APK_FILE=$(find ./android-build -name "*.apk" | head -n 1)
+          echo "apk_path=$APK_FILE" >> $GITHUB_OUTPUT
+          
+      - name: VirusTotal Scan Android
+        uses: crazy-max/ghaction-virustotal@v4
+        with:
+          vt_api_key: ${{ secrets.VIRUSTOTAL_API_KEY }}
+          files: |
+            ${{ steps.find-apk.outputs.apk_path }}

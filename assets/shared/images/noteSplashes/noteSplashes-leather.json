@@ -1,0 +1,63 @@
+{
+	"animations": {
+		"purple": {
+			"prefix": "leather splash purple 1",
+			"fps": [
+				22,
+				26
+			],
+			"offsets": [
+				-85,
+				-68
+			],
+			"indices": [],
+			"name": "purple",
+			"noteData": 0
+		},
+		"red": {
+			"prefix": "leather splash red 1",
+			"fps": [
+				22,
+				26
+			],
+			"offsets": [
+				-85,
+				-68
+			],
+			"indices": [],
+			"name": "red",
+			"noteData": 3
+		},
+		"blue": {
+			"prefix": "leather splash blue 1",
+			"fps": [
+				22,
+				26
+			],
+			"offsets": [
+				-85,
+				-68
+			],
+			"indices": [],
+			"name": "blue",
+			"noteData": 1
+		},
+		"green": {
+			"prefix": "leather splash green 1",
+			"fps": [
+				22,
+				26
+			],
+			"offsets": [
+				-85,
+				-68
+			],
+			"indices": [],
+			"name": "green",
+			"noteData": 2
+		}
+	},
+	"allowRGB": true,
+	"allowPixel": true,
+	"scale": 1
+}

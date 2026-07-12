@@ -1,0 +1,76 @@
+name: Bug report
+description: Report bugs with the port here
+labels: [bug]
+body:
+  - type: textarea
+    id: description
+    attributes:
+      label: "Describe your bug here."
+    validations:
+      required: true
+
+  - type: textarea
+    id: terminal
+    attributes:
+      label: "Crash Log or logcat logs (if existing)"
+      render: bash
+    validations:
+      required: false
+
+  - type: dropdown
+    id: modding
+    attributes:
+      label: "Are you modding a build from source or with Lua?"
+      options:
+        - Lua
+        - Source
+        - Lua and Source
+        - I am not modding
+    validations:
+      required: true
+
+  - type: dropdown
+    id: btarget
+    attributes:
+      label: "What is your build target?"
+      options:
+        - "Desktop (Linux, Windows or Mac)"
+        - "Android"
+        - "iOS"
+        - "HashLink"
+        - "Flash/AIR"
+        - "Other/Unknown/I don't know"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: psychver
+    attributes:
+      label: "Which plus engine version you're on?"
+      options:
+        - "DevBuild"
+        - "1.0.5"
+        - "1.0"
+        - "0.8.5 / older"
+    validations:
+      required: true
+
+  - type: dropdown
+    id: modver
+    attributes:
+      label: "Which version of Psych is the mod made for? (if you're using one)"
+      options:
+        - "Psych Engine 1.0.5+"
+        - "Psych Engine 1.0 - 1.0.4"
+        - "Psych Engine 0.7.x"
+        - "Psych Engine 0.6.x"
+        - "Psych Engine older"
+        - "Not using a mod"
+
+  - type: input
+    id: buildsummary
+    attributes:
+      label: "Did you edit anything in this build? If so, mention or summarize your changes."
+      placeholder: "Yes, I edited ClientPrefs.hx and tried to add a new setting"
+    validations:
+      required: true

@@ -1,0 +1,63 @@
+{
+	"animations": {
+		"purple": {
+			"prefix": "hope old splash purple 1",
+			"fps": [
+				22,
+				26
+			],
+			"offsets": [
+				-74,
+				-77
+			],
+			"indices": [],
+			"name": "purple",
+			"noteData": 0
+		},
+		"red": {
+			"prefix": "hope old splash red 1",
+			"fps": [
+				22,
+				26
+			],
+			"offsets": [
+				-74,
+				-77
+			],
+			"indices": [],
+			"name": "red",
+			"noteData": 3
+		},
+		"blue": {
+			"prefix": "hope old splash blue 1",
+			"fps": [
+				22,
+				26
+			],
+			"offsets": [
+				-74,
+				-77
+			],
+			"indices": [],
+			"name": "blue",
+			"noteData": 1
+		},
+		"green": {
+			"prefix": "hope old splash green 1",
+			"fps": [
+				22,
+				26
+			],
+			"offsets": [
+				-74,
+				-77
+			],
+			"indices": [],
+			"name": "green",
+			"noteData": 2
+		}
+	},
+	"allowRGB": true,
+	"allowPixel": true,
+	"scale": 1
+}

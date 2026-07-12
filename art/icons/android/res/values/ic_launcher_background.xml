@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 
+        Transparent background allows Material You to use dynamic palette colors
+        The monochrome icon will be colored according to user's theme
+        Fallback to colorful foreground on devices without Material You support
+    -->
+    <color name="ic_launcher_background">@android:color/transparent</color>
+</resources>
