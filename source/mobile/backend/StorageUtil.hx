@@ -1,7 +1,7 @@
 package mobile.backend;
 
 import lime.system.System as LimeSystem;
-import lime.utils.Timer;
+import haxe.Timer;
 import haxe.io.Path;
 
 /**
