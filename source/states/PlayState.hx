@@ -3084,6 +3084,10 @@ class PlayState extends MusicBeatState
 					keysCheck();
 					opponentDance(); // El oponente (IA) también debe hacer idle
 				}
+				else if(littleTimmyMode)
+				{
+					playerDance();
+				}
 				else
 					playerDance();
 					
@@ -3125,7 +3129,7 @@ class PlayState extends MusicBeatState
 							if (Conductor.songPosition - daNote.strumTime > noteKillOffset)
 							{
 								// No Drop Penalty: Solo causa miss en sustains si la opción está desactivada
-								var shouldMiss:Bool = daNote.mustPress && !cpuControlled && !daNote.ignoreNote && !endingSong && (daNote.tooLate || !daNote.wasGoodHit);
+								var shouldMiss:Bool = daNote.mustPress && !cpuControlled && !littleTimmyMode && !daNote.ignoreNote && !endingSong && (daNote.tooLate || !daNote.wasGoodHit);
 								
 								// Si noDropPenalty está activo, no penalizar sustains soltadas
 								if (shouldMiss && daNote.isSustainNote && noDropPenalty)
@@ -5395,6 +5399,7 @@ class PlayState extends MusicBeatState
 
 		if(note.wasGoodHit) return;
 		if(cpuControlled && note.ignoreNote) return;
+		if(littleTimmyMode && note.ignoreNote) return;
 
 		var isSus:Bool = note.isSustainNote; //GET OUT OF MY HEAD, GET OUT OF MY HEAD, GET OUT OF MY HEAD
 		var leData:Int = Math.round(Math.abs(note.noteData));
