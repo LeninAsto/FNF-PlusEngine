@@ -53,6 +53,9 @@ class TraceDisplay extends Sprite
      * Máximo número de traces a mostrar
      */
     public var maxTraces:Int = 80;
+    public var maxStoredLines:Int = 80;
+    public var maxVisibleLines:Int = 18;
+    private static inline final TEXT_PADDING:Int = 8;
     
     /**
      * Si el display está visible o no
@@ -118,6 +121,8 @@ class TraceDisplay extends Sprite
         textDisplay.autoSize = openfl.text.TextFieldAutoSize.LEFT;
         textDisplay.multiline = true;
         textDisplay.wordWrap = false;
+        textDisplay.x = TEXT_PADDING;
+        textDisplay.y = TEXT_PADDING;
         
         // Crear fondo
         backgroundShape = new Shape();
@@ -230,11 +235,7 @@ class TraceDisplay extends Sprite
         };
         
         traces.push(traceInfo);
-        
-        // Limitar el número de traces
-        if (traces.length > maxTraces) {
-            traces.shift();
-        }
+        enforceTraceLimits();
         
         // Actualizar display si está visible
         if (isVisible) {
@@ -379,6 +380,62 @@ class TraceDisplay extends Sprite
             case NORMAL: color & 0x00FFFFFF;
         };
     }
+
+    private function enforceTraceLimits():Void
+    {
+        while (traces.length > maxTraces)
+            traces.shift();
+
+        var totalLines = 0;
+        for (trace in traces)
+            totalLines += getTraceLineCount(trace);
+
+        while (traces.length > 0 && totalLines > maxStoredLines)
+            totalLines -= getTraceLineCount(traces.shift());
+    }
+
+    private function getTraceLineCount(trace:TraceInfo):Int
+    {
+        if (trace == null || trace.text == null || trace.text.length <= 0)
+            return 1;
+        return trace.text.split("\n").length;
+    }
+
+    private function formatTraceLine(trace:TraceInfo):String
+    {
+        var prefix = switch(trace.type) {
+            case ERROR: "[ERROR] ";
+            case LUA_ERROR: "[LUA-ERR] ";
+            case HSCRIPT_ERROR: "[HSC-ERR] ";
+            case SSCRIPT_ERROR: "[SSCR-ERR] ";
+            case WARNING: "[WARN] ";
+            case INFO: "[INFO] ";
+            case NORMAL: "";
+        }
+
+        var text = prefix + trace.text;
+        if (trace.count > 1)
+            text += ' x${trace.count}';
+        return text;
+    }
+
+    private function getVisibleTraceLines():Array<String>
+    {
+        final lines:Array<String> = [];
+        var traceIndex = traces.length - 1;
+
+        while (traceIndex >= 0 && lines.length < maxVisibleLines) {
+            final traceLines = formatTraceLine(traces[traceIndex]).split("\n");
+            var lineIndex = traceLines.length - 1;
+            while (lineIndex >= 0 && lines.length < maxVisibleLines) {
+                lines.unshift(traceLines[lineIndex]);
+                lineIndex--;
+            }
+            traceIndex--;
+        }
+
+        return lines;
+    }
     
     /**
      * Actualizar el contenido mostrado
@@ -392,21 +449,7 @@ class TraceDisplay extends Sprite
         if (traces.length == 0) {
             displayText += "Nothing for now...";
         } else {
-            for (i in 0...traces.length) {
-                var trace = traces[i];
-                var prefix = switch(trace.type) {
-                    case ERROR: "[ERROR] ";
-                    case LUA_ERROR: "[LUA-ERR] ";
-                    case HSCRIPT_ERROR: "[HSC-ERR] ";
-                    case SSCRIPT_ERROR: "[SSCR-ERR] ";
-                    case WARNING: "[WARN] ";
-                    case INFO: "[INFO] ";
-                    case NORMAL: "";
-                }
-                displayText += prefix + trace.text;
-                if (trace.count > 1) displayText += ' x${trace.count}';
-                if (i < traces.length - 1) displayText += "\n";
-            }
+            displayText += getVisibleTraceLines().join("\n");
         }
         
         textDisplay.text = displayText;
@@ -421,8 +464,8 @@ class TraceDisplay extends Sprite
         if (!isVisible || backgroundShape == null) return;
         
         final INNER_DIFF:Int = 3;
-        var bgWidth = textDisplay.textWidth + 10;
-        var bgHeight = textDisplay.textHeight + 10;
+        var bgWidth = textDisplay.textWidth + (TEXT_PADDING * 2);
+        var bgHeight = textDisplay.textHeight + (TEXT_PADDING * 2);
         
         backgroundShape.graphics.clear();
         

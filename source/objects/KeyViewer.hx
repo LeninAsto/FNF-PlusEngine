@@ -6,6 +6,7 @@ import backend.CoolUtil;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
+import flixel.input.keyboard.FlxKey;
 import flixel.text.FlxText;
 import flixel.util.FlxColor;
 import flixel.tweens.FlxTween;
@@ -35,6 +36,8 @@ class KeyViewer extends FlxSpriteGroup
 	public var kps:Int = 0;
 	public var total:Int = 0;
 	var keyLabelRefreshElapsed:Float = 0;
+	var lastKeyboardBindVersion:Int = -1;
+	var lastControlContext:String = "";
 	static inline final KEY_LABEL_REFRESH_INTERVAL:Float = 0.5;
 	
 	// Referencia a PlayState para acceder a cpuControlled
@@ -98,7 +101,7 @@ class KeyViewer extends FlxSpriteGroup
 		var keysArray = ['note_left', 'note_down', 'note_up', 'note_right'];
 		
 		if (keyIndex < keysArray.length) {
-			var keyBind = Controls.instance.getKeyboardBind(keysArray[keyIndex]);
+			var keyBind = getDisplayKeyboardBind(keysArray[keyIndex]);
 			if (keyBind != null && keyBind.length > 0) {
 				var names:Array<String> = [];
 				for (boundKey in keyBind) {
@@ -117,6 +120,30 @@ class KeyViewer extends FlxSpriteGroup
 		}
 		
 		return "?";
+	}
+
+	function getDisplayKeyboardBind(controlName:String):Array<FlxKey>
+	{
+		if (Controls.instance == null)
+			return null;
+
+		if (shouldUseTemporaryGameplayBinds())
+			return Controls.instance.getKeyboardBind(controlName);
+
+		return Controls.instance.keyboardBinds.get(controlName);
+	}
+
+	function shouldUseTemporaryGameplayBinds():Bool
+	{
+		if (playState == null)
+			return true;
+
+		return !isPlayStateFlagEnabled("cpuControlled") && !isPlayStateFlagEnabled("littleTimmyMode");
+	}
+
+	function isPlayStateFlagEnabled(fieldName:String):Bool
+	{
+		return playState != null && Reflect.field(playState, fieldName) == true;
 	}
 	
 	public function keyPressed(keyIndex:Int)
@@ -166,10 +193,19 @@ class KeyViewer extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 		keyLabelRefreshElapsed += elapsed;
-		if (keyLabelRefreshElapsed >= KEY_LABEL_REFRESH_INTERVAL)
+		final bindVersion = Controls.instance != null ? Controls.instance.keyboardBindVersion : -1;
+		final controlContext = getControlContext();
+		if (controlContext != lastControlContext)
 		{
+			lastControlContext = controlContext;
+			releaseAllKeys();
+			refreshKeyLabels(true);
+		}
+		else if (bindVersion != lastKeyboardBindVersion || keyLabelRefreshElapsed >= KEY_LABEL_REFRESH_INTERVAL)
+		{
+			lastKeyboardBindVersion = bindVersion;
 			keyLabelRefreshElapsed = 0;
-			refreshKeyLabels();
+			refreshKeyLabels(false);
 		}
 
 		refreshPressureBarAnchors();
@@ -202,14 +238,39 @@ class KeyViewer extends FlxSpriteGroup
 		keyText.y = keyButton.y + (keySize - keyText.height) / 2;
 	}
 
-	function refreshKeyLabels():Void
+	function getControlContext():String
+	{
+		if (playState == null)
+			return "free";
+		return [
+			Std.string(isPlayStateFlagEnabled("cpuControlled")),
+			Std.string(isPlayStateFlagEnabled("littleTimmyMode")),
+			Std.string(isPlayStateFlagEnabled("playOpponent"))
+		].join(":");
+	}
+
+	function releaseAllKeys():Void
+	{
+		for (i in 0...keys.length)
+		{
+			if (keys[i] != null && keys[i].isPressed)
+				keys[i].release();
+			if (i < keyTexts.length && keyTexts[i] != null)
+			{
+				keyTexts[i].color = FlxColor.WHITE;
+				keyTexts[i].alpha = 0.6;
+			}
+		}
+	}
+
+	function refreshKeyLabels(force:Bool = false):Void
 	{
 		final keySize:Float = 45;
 
 		for (i in 0...keyTexts.length)
 		{
 			final newLabel = getKeyName(i);
-			if (keyTextLabels[i] == newLabel)
+			if (!force && keyTextLabels[i] == newLabel)
 				continue;
 
 			keyTextLabels[i] = newLabel;

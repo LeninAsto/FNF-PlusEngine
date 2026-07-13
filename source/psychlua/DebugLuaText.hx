@@ -232,12 +232,12 @@ class DebugLuaText extends FlxSpriteGroup
 					widest = rowWidth;
 			}
 		}
-		return Std.int(Math.min(FlxG.width - PANEL_MARGIN * 2, Math.max(MIN_PANEL_WIDTH, Math.ceil(widest + PADDING * 2 + 14))));
+		return Std.int(Math.min(viewWidth() - PANEL_MARGIN * 2, Math.max(MIN_PANEL_WIDTH, Math.ceil(widest + PADDING * 2 + 14))));
 	}
 
 	function maxTextWidth():Int
 	{
-		return Std.int(Math.max(120, FlxG.width - PANEL_MARGIN * 2 - PADDING * 2));
+		return Std.int(Math.max(120, viewWidth() - PANEL_MARGIN * 2 - PADDING * 2));
 	}
 
 	function displayEntry(entry:DebugLuaEntry):String
@@ -276,7 +276,7 @@ class DebugLuaText extends FlxSpriteGroup
 		visible = true;
 		active = true;
 		x = targetX();
-		y = ClientPrefs.data.downScroll ? -panelHeight - PANEL_MARGIN : FlxG.height + PANEL_MARGIN;
+		y = offscreenY();
 		showTween = FlxTween.tween(this, {x: targetX(), y: targetY(), alpha: 1}, TWEEN_TIME, {ease: FlxEase.quadOut});
 	}
 
@@ -291,7 +291,7 @@ class DebugLuaText extends FlxSpriteGroup
 			hideTween.cancel();
 
 		hiding = true;
-		hideTween = FlxTween.tween(this, {y: ClientPrefs.data.downScroll ? -panelHeight - PANEL_MARGIN : FlxG.height + PANEL_MARGIN, alpha: 0}, TWEEN_TIME, {
+		hideTween = FlxTween.tween(this, {y: offscreenY(), alpha: 0}, TWEEN_TIME, {
 			ease: FlxEase.quadIn,
 			onComplete: function(_)
 			{
@@ -308,10 +308,19 @@ class DebugLuaText extends FlxSpriteGroup
 	}
 
 	inline function targetX():Float
-		return (FlxG.width - panelWidth) * 0.5;
+		return (viewWidth() - panelWidth) * 0.5;
 
 	inline function targetY():Float
-		return ClientPrefs.data.downScroll ? PANEL_MARGIN : FlxG.height - panelHeight - PANEL_MARGIN;
+		return ClientPrefs.data.downScroll ? PANEL_MARGIN : viewHeight() - panelHeight - PANEL_MARGIN;
+
+	inline function offscreenY():Float
+		return ClientPrefs.data.downScroll ? -panelHeight - PANEL_MARGIN : viewHeight() + PANEL_MARGIN;
+
+	inline function viewWidth():Float
+		return cameras != null && cameras.length > 0 && cameras[0] != null ? cameras[0].width : FlxG.width;
+
+	inline function viewHeight():Float
+		return cameras != null && cameras.length > 0 && cameras[0] != null ? cameras[0].height : FlxG.height;
 
 	function updatePanelTargetPosition():Void
 	{

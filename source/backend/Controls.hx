@@ -87,6 +87,7 @@ class Controls
 	public var gamepadBinds:Map<String, Array<FlxGamepadInputID>>;
 	public var mobileBinds:Map<String, Array<MobileInputID>>;
 	private var temporaryKeyboardBinds:Map<String, Array<FlxKey>> = [];
+	public var keyboardBindVersion(default, null):Int = 0;
 	public static final GAMEPLAY_KEY_NAMES:Array<String> = ['note_left', 'note_down', 'note_up', 'note_right'];
 
 	public inline function getKeyboardBind(key:String):Array<FlxKey>
@@ -100,19 +101,25 @@ class Controls
 		if (keys == null || keys.length <= 0)
 		{
 			temporaryKeyboardBinds.remove(key);
+			keyboardBindVersion++;
 			return;
 		}
 
 		temporaryKeyboardBinds.set(key, keys.copy());
+		keyboardBindVersion++;
 	}
 
-	public inline function clearTemporaryKeyboardBind(key:String):Void
+	public function clearTemporaryKeyboardBind(key:String):Void
+	{
 		temporaryKeyboardBinds.remove(key);
+		keyboardBindVersion++;
+	}
 
 	public function clearTemporaryGameplayBinds():Void
 	{
 		for (key in GAMEPLAY_KEY_NAMES)
 			temporaryKeyboardBinds.remove(key);
+		keyboardBindVersion++;
 	}
 
 	public function justPressed(key:String)

@@ -577,31 +577,14 @@ class LuaModchart
 		});
 
         Lua_helper.add_callback(lua, "changeControls", function(bindings:Dynamic) {
-            if (PlayState.instance == null || Controls.instance == null || bindings == null)
-                return;
-
-            for (fieldName in Reflect.fields(bindings)) {
-                final controlName = normalizeGameplayControlName(fieldName);
-                if (controlName == null) {
-                    PlayState.instance.addTextToDebug('changeControls: invalid control "' + fieldName + '"', 0xFFFF0000);
-                    continue;
-                }
-
-                final parsedKeys = parseLuaKeyList(Reflect.field(bindings, fieldName), fieldName);
-                if (parsedKeys == null)
-                    continue;
-
-                if (parsedKeys.length <= 0)
-                    Controls.instance.clearTemporaryKeyboardBind(controlName);
-                else
-                    Controls.instance.setTemporaryKeyboardBind(controlName, parsedKeys);
-            }
+            applyGameplayControlsSafe(bindings, 'changeControls');
+        });
+        Lua_helper.add_callback(lua, "applyGameplayControls", function(bindings:Dynamic) {
+            applyGameplayControlsSafe(bindings, 'applyGameplayControls');
         });
 
-        Lua_helper.add_callback(lua, "restoreControls", function() {
-            if (Controls.instance != null)
-                Controls.instance.clearTemporaryGameplayBinds();
-        });
+        Lua_helper.add_callback(lua, "restoreControls", restoreGameplayControlsSafe);
+        Lua_helper.add_callback(lua, "restoreGameplayControls", restoreGameplayControlsSafe);
 
         Lua_helper.add_callback(lua, "getGameplayControls", function():Dynamic {
             final result:Dynamic = {};
@@ -1116,11 +1099,76 @@ class LuaModchart
         }
     }
 
-    private static function parseLuaKeyList(rawValue:Dynamic, fieldName:String):Null<Array<FlxKey>> {
+    private static function applyGameplayControlsSafe(bindings:Dynamic, context:String):Void {
+        if (PlayState.instance == null || Controls.instance == null || bindings == null)
+            return;
+
+        try {
+            final fields = Reflect.fields(bindings);
+            if (fields == null || fields.length <= 0) {
+                PlayState.instance.addTextToDebug(context + ': expected a table/object with left/down/up/right bindings', 0xFFFFAA00);
+                return;
+            }
+
+            for (fieldName in fields) {
+                final controlName = normalizeGameplayControlName(fieldName);
+                if (controlName == null) {
+                    PlayState.instance.addTextToDebug(context + ': invalid control "' + fieldName + '"', 0xFFFF0000);
+                    continue;
+                }
+
+                final parsedKeys = parseLuaKeyList(Reflect.field(bindings, fieldName), fieldName, context);
+                if (parsedKeys == null)
+                    continue;
+
+                if (parsedKeys.length <= 0)
+                    Controls.instance.clearTemporaryKeyboardBind(controlName);
+                else
+                    Controls.instance.setTemporaryKeyboardBind(controlName, parsedKeys);
+            }
+        } catch (e:Dynamic) {
+            if (PlayState.instance != null)
+                PlayState.instance.addTextToDebug(context + ': failed to apply controls: ' + Std.string(e), 0xFFFF0000);
+        }
+    }
+
+    private static function restoreGameplayControlsSafe():Void {
+        try {
+            if (Controls.instance != null)
+                Controls.instance.clearTemporaryGameplayBinds();
+        } catch (e:Dynamic) {
+            if (PlayState.instance != null)
+                PlayState.instance.addTextToDebug('restoreGameplayControls: failed to restore controls: ' + Std.string(e), 0xFFFF0000);
+        }
+    }
+
+    private static function collectLuaKeyValues(rawValue:Dynamic):Array<Dynamic> {
+        if (rawValue == null)
+            return [];
+        if (Std.isOfType(rawValue, Array))
+            return cast rawValue;
+
+        final fields = Reflect.fields(rawValue);
+        if (fields != null && fields.length > 0) {
+            fields.sort(function(a:String, b:String):Int {
+                final ai = Std.parseInt(a);
+                final bi = Std.parseInt(b);
+                if (ai != null && bi != null)
+                    return ai - bi;
+                return Reflect.compare(a, b);
+            });
+
+            return [for (field in fields) Reflect.field(rawValue, field)];
+        }
+
+        return [rawValue];
+    }
+
+    private static function parseLuaKeyList(rawValue:Dynamic, fieldName:String, context:String = 'changeControls'):Null<Array<FlxKey>> {
         if (rawValue == null)
             return [];
 
-        final values:Array<Dynamic> = Std.isOfType(rawValue, Array) ? cast rawValue : [rawValue];
+        final values:Array<Dynamic> = collectLuaKeyValues(rawValue);
         final parsed:Array<FlxKey> = [];
 
         for (value in values) {
@@ -1130,11 +1178,24 @@ class LuaModchart
             final text = Std.string(value).trim();
             if (text.length <= 0)
                 continue;
+            if (!isValidLuaKeyNameText(text)) {
+                if (PlayState.instance != null)
+                    PlayState.instance.addTextToDebug(context + ': ignored corrupt key value for ' + fieldName, 0xFFFFAA00);
+                return null;
+            }
 
-            final key = FlxKey.fromString(text.toUpperCase());
+            var key:FlxKey = NONE;
+            try {
+                key = FlxKey.fromString(text.toUpperCase());
+            } catch (e:Dynamic) {
+                if (PlayState.instance != null)
+                    PlayState.instance.addTextToDebug(context + ': invalid key "' + text + '" for ' + fieldName + ' (' + Std.string(e) + ')', 0xFFFF0000);
+                return null;
+            }
+
             if (key == NONE) {
                 if (PlayState.instance != null)
-                    PlayState.instance.addTextToDebug('changeControls: invalid key "' + text + '" for ' + fieldName, 0xFFFF0000);
+                    PlayState.instance.addTextToDebug(context + ': invalid key "' + text + '" for ' + fieldName, 0xFFFF0000);
                 return null;
             }
 
@@ -1143,6 +1204,18 @@ class LuaModchart
         }
 
         return parsed;
+    }
+
+    private static function isValidLuaKeyNameText(text:String):Bool {
+        if (text == null || text.length <= 0 || text.length > 32)
+            return false;
+
+        for (i in 0...text.length) {
+            final code = text.fastCodeAt(i);
+            if (code < 32 || code > 126)
+                return false;
+        }
+        return true;
     }
 
     private static function parsePathNodes(nodes:Array<Dynamic>):Array<PathNode> {

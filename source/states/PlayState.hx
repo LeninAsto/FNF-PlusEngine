@@ -969,7 +969,7 @@ class PlayState extends MusicBeatState
 
 		// Key Viewer
 		if(ClientPrefs.data.showKeyViewer) {
-			keyViewer = new objects.KeyViewer(0, 0); // Pasar referencia de PlayState
+			keyViewer = new objects.KeyViewer(0, 0, this);
 			keyViewer.visible = !ClientPrefs.data.hideHud;
 			uiGroup.insert(0, keyViewer);
 		}
@@ -1444,8 +1444,6 @@ class PlayState extends MusicBeatState
 		final drawsPerFrame = stats != null ? stats.dbgDrawCmds : 0;
 		final drawsPerSecond = Std.int(Math.round(drawsPerFrame * averageFPS));
 		final memoryText = Main.fpsVar != null ? Std.int(Math.round(Main.fpsVar.memoryMegas / 1048576)) + " MB" : "0 MB";
-		final songPosition = modchart.backend.standalone.Adapter.instance != null ? modchart.backend.standalone.Adapter.instance.getSongPosition() : Conductor.songPosition;
-		final currentBeat = modchart.backend.standalone.Adapter.instance != null ? modchart.backend.standalone.Adapter.instance.getCurrentBeat() : curBeat;
 		final activeHolds = stats != null ? stats.dbgActiveHolds : 0;
 		final holdCmds = stats != null ? stats.dbgHoldCmds : 0;
 		final pathCmds = stats != null ? stats.dbgPathCmds : 0;
@@ -1457,8 +1455,6 @@ class PlayState extends MusicBeatState
 		modchartDebugTxt.text =
 			'${currentFPS} FPS / ${Std.int(Math.round(averageFPS))} AVG' +
 			'\n${formatFloatLocal(frameTimeFromFPS(currentFPS), 1)} ms frame' +
-			'\nBeat ${formatFloatLocal(currentBeat, 2)} | Step ${curStep}' +
-			'\nSong ${Std.int(songPosition)} ms' +
 			'\nPF ${Manager.instance.activePlayfieldCount} | Mods ${Manager.instance.totalModifierCount} | Events ${Manager.instance.totalEventCount}' +
 			'\nItems ${itemText}' +
 			'\nVerts ${verticesPerFrame} | Draws ${drawsPerFrame} (${drawsPerSecond}/s)' +
@@ -4419,7 +4415,6 @@ class PlayState extends MusicBeatState
 		{
 			var avgFPS:Float = gameplayPerfFrames / gameplayPerfTimer;
 			var counterFPS:Int = Main.fpsVar != null ? Main.fpsVar.currentFPS : Std.int(Math.round(avgFPS));
-			trace('[FPS TRACK] avg=${Std.int(Math.round(avgFPS))} counter=$counterFPS min=${Std.int(Math.round(gameplayPerfMinFPS))} worstMs=' + FlxStringUtil.formatMoney(gameplayPerfWorstFrameMS, false, true) + ' lowFrames=$gameplayPerfLowFrames slowHits=$gameplayPerfSlowHits notes=${notes != null ? notes.length : 0} unspawn=${unspawnNotes != null ? unspawnNotes.length : 0} mode=${ClientPrefs.data.framerateMode} fixed=${FlxG.fixedTimestep} update=${FlxG.updateFramerate} draw=${FlxG.drawFramerate}');
 			gameplayPerfTimer = 0;
 			gameplayPerfFrames = 0;
 			gameplayPerfLowFrames = 0;
@@ -5106,10 +5101,11 @@ class PlayState extends MusicBeatState
 		{
 			for (i in 0...arr.length)
 			{
-				var note:Array<FlxKey> = Controls.instance.keyboardBinds[arr[i]];
-				for (noteKey in note)
-					if(key == noteKey)
-						return i;
+				var note:Array<FlxKey> = Controls.instance != null ? Controls.instance.getKeyboardBind(arr[i]) : null;
+				if (note != null)
+					for (noteKey in note)
+						if(key == noteKey)
+							return i;
 			}
 		}
 		return -1;
