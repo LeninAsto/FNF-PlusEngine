@@ -37,7 +37,7 @@ typedef SwagSong =
 
 	@:optional var arrowSkin:String;
 	@:optional var splashSkin:String;
-	@:optional var isAnimated:Bool; // Soporte para íconos animados en el chart
+	@:optional var isAnimated:Bool; // Support for animated icons in the chart
 	@:optional var useModcharts:Bool;
 }
 
@@ -223,12 +223,12 @@ class Song
 		_lastPath = Paths.json('$formattedFolder/$formattedSong');
 
 		#if MODS_ALLOWED
-		// Compatibilidad con Psych 0.7.3: Si el chart no existe,
-		// intenta cargar con sufijo "-normal" para mods antiguos
+		// Compatibility with Psych 0.7.3: If the chart doesn't exist,
+        // try loading it with the suffix “-normal” for older mods
 		var pathExists:Bool = AssetLoader.exists(_lastPath, TEXT);
 		if(!pathExists)
 		{
-			// Verifica si el jsonInput ya tiene un sufijo de dificultad
+			// Check if jsonInput already has a difficulty suffix
 			var hasDifficultySuffix:Bool = false;
 			for(diff in Difficulty.list)
 			{
@@ -240,7 +240,7 @@ class Song
 				}
 			}
 			
-			// Si no tiene sufijo, intenta con "-normal" (compatibilidad 0.7.3)
+			// If there is no suffix, try “-normal” (compatibility 0.7.3)
 			if(!hasDifficultySuffix)
 			{
 				var normalDiff:String = Paths.formatToSongPath(Difficulty.getDefault()); // "normal"

@@ -8,9 +8,9 @@ class Rating
 	public var image:String = '';
 	public var hitWindow:Null<Float> = 0.0; //ms
 	
-	// NOTA: ratingMod ya no se usa con el sistema Wife3 Accuracy
-	// Wife3 calcula el accuracy basado en la desviación de timing (ms) en lugar de valores fijos
-	// Este valor se mantiene por compatibilidad con scripts y el sistema antiguo (comentado)
+	// NOTE: ratingMod is no longer used with the Wife3 Accuracy system
+    // Wife3 calculates accuracy based on timing deviation (ms) rather than fixed values
+    // This value is retained for compatibility with scripts and the old system (commented out)
 	public var ratingMod:Float = 1;
 	
 	public var score:Int = 500;
@@ -33,7 +33,7 @@ class Rating
 
 	public static function loadDefault():Array<Rating>
 	{
-		var ratingsData:Array<Rating> = [new Rating('flawless')]; // flawlesss primero
+		var ratingsData:Array<Rating> = [new Rating('flawless')]; // flawlesss first
 
 		var isCodenameSystem:Bool = (ClientPrefs.data.systemScoreMultiplier == 'Codename'); // Check if it the System Score Multiplier was Codename
 

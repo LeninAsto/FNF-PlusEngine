@@ -11,8 +11,8 @@ import backend.Paths;
 import backend.ClientPrefs;
 
 /**
- * TraceButton - Botón pequeño táctil para Android que abre/cierra el TraceDisplay
- * Se posiciona en la esquina superior derecha
+ * TraceButton - Small touch button for Android that opens/closes the TraceDisplay
+ * It is positioned in the upper-right corner
  */
 class TraceButton extends Sprite
 {
@@ -26,7 +26,7 @@ class TraceButton extends Sprite
 	{
 		super();
 		
-		// Crear el fondo del botón
+		// Create the button background
 		buttonShape = new Shape();
 		buttonShape.graphics.beginFill(0x4488FF, 0.7);
 		buttonShape.graphics.drawRect(0, 0, buttonSize, buttonSize);
@@ -35,7 +35,7 @@ class TraceButton extends Sprite
 		buttonShape.graphics.endFill();
 		addChild(buttonShape);
 		
-		// Crear el texto del botón
+		// Create the button text
 		buttonText = new TextField();
 		buttonText.text = "T";
 		buttonText.selectable = false;
@@ -46,25 +46,25 @@ class TraceButton extends Sprite
 		buttonText.x = 0;
 		buttonText.y = (buttonSize - 20) / 2;
 		
-		// Centrar texto horizontalmente
+		// Align text horizontally
 		var fmt = new TextFormat();
 		fmt.align = openfl.text.TextFormatAlign.CENTER;
 		buttonText.setTextFormat(fmt);
 		
 		addChild(buttonText);
 		
-		// Posicionar en la esquina superior derecha
+		// Position in the upper-right corner
 		positionButton();
 		
-		// Hacer visible solo en mobile
+		// Make visible only on mobile
 		#if mobile
 		visible = ClientPrefs.data.showMobileDebugButtons;
 		
-		// Agregar listeners táctiles
+		// Add touch listeners
 		this.addEventListener(TouchEvent.TOUCH_BEGIN, onTouchBegin);
 		this.addEventListener(TouchEvent.TOUCH_END, onTouchEnd);
 		
-		// También soportar mouse para testing en escritorio
+		// It should also support a mouse for desktop testing
 		#if debug
 		this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 		this.addEventListener(MouseEvent.MOUSE_UP, onMouseUp);
@@ -77,7 +77,7 @@ class TraceButton extends Sprite
 	private function onTouchBegin(event:TouchEvent):Void {
 		isPressed = true;
 		buttonShape.graphics.clear();
-		buttonShape.graphics.beginFill(0x2244FF, 0.9); // Más oscuro cuando está presionado
+		buttonShape.graphics.beginFill(0x2244FF, 0.9); // Darker when pressed
 		buttonShape.graphics.drawRect(0, 0, buttonSize, buttonSize);
 		buttonShape.graphics.lineStyle(2, 0xFFFFFF, 1.0);
 		buttonShape.graphics.drawRect(0, 0, buttonSize, buttonSize);

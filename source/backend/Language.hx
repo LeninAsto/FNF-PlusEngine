@@ -1,6 +1,6 @@
 package backend;
 
-// Importar todos los idiomas
+// Import all languages
 import backend.languages.*;
 
 class Language
@@ -8,14 +8,14 @@ class Language
 	public static var defaultLangName:String = 'English (US)'; //en-US
 	#if TRANSLATIONS_ALLOWED
 	private static var phrases:Map<String, String> = [];
-    // ← NUEVO CACHE PARA KEYS FORMATEADAS
+    // ← NEW CACHE FOR FORMATTED KEYS
     private static var keyCache:Map<String, String> = [];
     #end
 
-    // ← NUEVO: Lista de idiomas hardcodeados disponibles
+    // ← NEW: List of available hardcoded languages
     private static var hardcodedLanguages:Array<Class<Dynamic>> = [
-        EnUS,    // Inglés (Estados Unidos)
-        EsLA,    // Español (Latinoamérica)
+        EnUS,    // English (United States)
+        EsLA,    // Español (Latin America)
         EsES,    // Español (España)
         PtBR,    // Português (Brasil)
         FrFR,    // Français (France)
@@ -33,10 +33,10 @@ class Language
 		#if TRANSLATIONS_ALLOWED
 		var langFile:String = ClientPrefs.data.language;
 		phrases.clear();
-        keyCache.clear(); // ← LIMPIAR CACHE DE KEYS AL RECARGAR
+        keyCache.clear(); // ← CLEAR THE KEY CACHE WHEN RECHARGING
 		var hasPhrases:Bool = false;
         
-        // ← NUEVO: Intentar cargar desde archivos .hx hardcodeados primero
+        // ← NEW: Try loading from hardcoded .hx files first
         for (langClass in hardcodedLanguages) {
             // "9-Code-Name" wow cool word uh
             var languageCode:String = Reflect.field(langClass, 'languageCode');
@@ -44,10 +44,10 @@ class Language
             var translations:Map<String, String> = Reflect.field(langClass, 'translations');
             
             if (languageCode == langFile && translations != null) {
-                // Cargar nombre del idioma
+                // Load language name
                 phrases.set('language_name', languageName);
                 
-                // Cargar todas las traducciones
+                // Load all translations
                 for (key => value in translations) {
                     phrases.set(key.toLowerCase(), value);
                 }
@@ -56,7 +56,7 @@ class Language
             }
         }
         
-        // ← FALLBACK: Si no se encuentra hardcodeado, intentar cargar desde archivo .lang
+        // ← FALLBACK: If it is not hardcoded, try loading it from the .lang file
         if (!hasPhrases) {
             var loadedText:Array<String> = Mods.mergeAllTextsNamed('data/$langFile.lang');
             
@@ -97,12 +97,12 @@ class Language
 		#end
 	}
 
-    // ← NUEVO: Función para obtener idiomas disponibles
+    // ← NEW: Function to retrieve available languages
     public static function getAvailableLanguages():Array<{code:String, name:String}> {
         var languages:Array<{code:String, name:String}> = [];
         
         #if TRANSLATIONS_ALLOWED
-        // Agregar idiomas hardcodeados
+        // Add hard-coded languages
         for (langClass in hardcodedLanguages) {
             var code:String = Reflect.field(langClass, 'languageCode');
             var name:String = Reflect.field(langClass, 'languageName');
@@ -117,7 +117,7 @@ class Language
         return languages;
     }
 
-    // ← NUEVA FUNCIÓN OPTIMIZADA PARA MÚLTIPLES TRADUCCIONES
+    // ← NEW OPTIMIZED FEATURE FOR MULTIPLE TRANSLATIONS
     public static function getPhrases(keys:Array<String>, defaultPhrases:Array<String> = null):Array<String> {
         var results:Array<String> = [];
         
@@ -148,7 +148,7 @@ class Language
         return results;
     }
 
-    // ← NUEVA FUNCIÓN PARA CACHE ESPECÍFICO (usado por JudCounter)
+    // ← NEW FUNCTION FOR SPECIFIC CACHE (used by JudCounter)
     public static function cacheSpecificPhrases(keys:Array<String>, defaults:Array<String>):Array<String> {
         var cached:Array<String> = [];
         for (i in 0...keys.length) {
@@ -161,7 +161,7 @@ class Language
 	inline public static function getPhrase(key:String, ?defaultPhrase:String, values:Array<Dynamic> = null):String
 	{
 		#if TRANSLATIONS_ALLOWED
-        // ← OPTIMIZACIÓN: Cache de keys formateadas para evitar formatKey() repetitivo
+        // ← OPTIMIZATION: Cache of formatted keys to avoid repetitive calls to formatKey()
         var formattedKey:String = keyCache.get(key);
         if (formattedKey == null) {
             formattedKey = formatKey(key);
@@ -177,7 +177,7 @@ class Language
 		if(str == null)
 			str = key;
 		
-        // ← OPTIMIZACIÓN: Solo procesar valores si realmente existen
+        // ← OPTIMIZATION: Process values only if they actually exist
         if(values != null && values.length > 0)
 			for (num => value in values)
 				str = str.replace('{${num+1}}', value);
@@ -218,7 +218,7 @@ class Language
 	inline public static function getFileTranslation(key:String)
 	{
 		#if TRANSLATIONS_ALLOWED
-        // ← OPTIMIZACIÓN: Cache directo para file translations (más comunes)
+        // ← OPTIMIZATION: Direct cache for file translations (most common)
         var lowerKey = key.trim().toLowerCase();
         var str:String = phrases.get(lowerKey);
 		if(str != null) key = str;
@@ -227,7 +227,7 @@ class Language
 	}
 	
 	#if TRANSLATIONS_ALLOWED
-    // ← OPTIMIZACIÓN: Regex como variable estática para evitar recrearlo
+    // ← OPTIMIZATION: Use a regex as a static variable to avoid recreating it
     static final hideCharsRegex = ~/[~&\\\/;:<>#.,'"%?!]/g;
     
 	inline static private function formatKey(key:String)
@@ -236,13 +236,13 @@ class Language
 	}
 	#end
 
-	// Función para obtener introTexts localizados
+	// Function to retrieve localized introTexts
 	public static function getLocalizedIntroTexts():Array<Array<String>>
 	{
 		#if TRANSLATIONS_ALLOWED
 		var langFile:String = ClientPrefs.data.language;
 		
-		// Buscar en idiomas hardcodeados
+		// Search in hard-coded languages
 		for (langClass in hardcodedLanguages) {
 			var languageCode:String = Reflect.field(langClass, 'languageCode');
 			if (languageCode == langFile) {
@@ -255,7 +255,7 @@ class Language
 		}
 		#end
 		
-		// Si no hay introTexts localizados, devolver null para usar el archivo default
+		// If there are no localized introTexts, return null to use the default file
 		return null;
 	}
 

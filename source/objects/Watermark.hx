@@ -16,7 +16,7 @@ class Watermark extends Sprite {
      */
     public function new(xPos:Float = 0, yPos:Float = 0, alpha:Float = 1) {
         super();
-        var flxGraphic = Paths.image("marca"); // Usa tu sistema de assets
+        var flxGraphic = Paths.image("lenin"); // Usa tu sistema de assets
         if (flxGraphic != null) {
             bitmapData = flxGraphic.bitmap;
             bmp = new Bitmap(bitmapData);

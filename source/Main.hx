@@ -432,7 +432,7 @@ class Main extends Sprite
 		}
 		#end
 		
-		var flxGraphic = backend.Paths.image("marca");
+		var flxGraphic = backend.Paths.image("lenin");
 		if (flxGraphic != null) {
 			var bmpData:openfl.display.BitmapData = flxGraphic.bitmap;
 			if (watermarkSprite != null && watermarkSprite.parent != null) {
@@ -450,10 +450,10 @@ class Main extends Sprite
 			watermarkSprite.visible = ClientPrefs.data.showWatermark;
 			openfl.Lib.current.stage.addChild(watermarkSprite);
 		} else {
-			trace('No se pudo cargar la marca de agua con backend.Paths.image("marca").');
+			trace('The watermark could not be loaded using backend.Paths.image("lenin").');
 		}
 
-		var imagePath = backend.Paths.getPath('images/marca.png', IMAGE);
+		var imagePath = backend.Paths.getPath('images/lenin.png', IMAGE);
 		if (sys.FileSystem.exists(imagePath)) {
 		    if (watermark != null && watermark.parent != null)
 		        removeChild(watermark);
