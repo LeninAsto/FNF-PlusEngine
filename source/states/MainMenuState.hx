@@ -15,8 +15,8 @@ enum MainMenuColumn {
 class MainMenuState extends MusicBeatState
 {
 	public static var fnfVersion:String = '0.2.8';
-    public static var plusEngineVersion:String = '1.3'; // Nothing interesting =)
-	public static var psychEngineVersion:String = "1.0.4 (" + plusEngineVersion + ")"; // This is also used for Discord RPC
+    public static var deepEngineVersion:String = '1.0'; // Nothing interesting =)
+	public static var psychEngineVersion:String = "1.0.4 (" + deepEngineVersion + ")"; // This is also used for Discord RPC
 	public static var curSelected:Int = 0;
 	public static var curColumn:MainMenuColumn = CENTER;
 	public var allowMouse:Bool = true; //Turn this off to block mouse movement in menus
@@ -122,7 +122,7 @@ class MainMenuState extends MusicBeatState
 		#if CHECK_FOR_UPDATES
 		if (showOutdatedWarning && ClientPrefs.data.checkForUpdates && !updateWarningShown) {
 			// Solo mostrar aviso si ya se detectó una actualización disponible y no se ha mostrado antes
-			if (CoolUtil.hasUpdate && CoolUtil.latestVersion != plusEngineVersion) {
+			if (CoolUtil.hasUpdate && CoolUtil.latestVersion != deepEngineVersion) {
 				substates.OutdatedSubState.updateVersion = CoolUtil.latestVersion;
 			persistentUpdate = false;
 				updateWarningShown = true; // Marcar como mostrado para evitar repeticiones

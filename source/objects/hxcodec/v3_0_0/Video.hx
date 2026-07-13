@@ -36,15 +36,15 @@ class Video extends HxvlcVideo
 		});
 	}
 
-	override public function load(location:hxvlc.util.Location, ?options:Array<String>):Bool
-	{
-		if ((location is String))
-			_location = cast(location, String);
-		else
-			_location = null;
+    override public function load(location:hxvlc.openfl.Location, ?options:Array<String>):Bool
+{
+    if ((location is String))
+        _location = cast location;
+    else
+        _location = null;
 
-		return super.load(location, options);
-	}
+    return super.load(location, options);
+}
 
 	// hxvlc already has most methods compatible:
 	// - load(location):Bool

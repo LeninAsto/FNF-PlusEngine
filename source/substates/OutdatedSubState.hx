@@ -45,7 +45,7 @@ class OutdatedSubState extends MusicBeatSubstate
         // Version comparison text
         versionText = new FlxText(0, 120, FlxG.width,
             Language.getPhrase('version_comparison', "Current Version: {1} => New Version: {2}", 
-                [MainMenuState.plusEngineVersion, updateVersion])
+                [MainMenuState.deepEngineVersion, updateVersion])
         );
         versionText.setFormat(Paths.font('vcr.ttf'), 24, FlxColor.WHITE, CENTER);
         versionText.scrollFactor.set();
@@ -99,7 +99,7 @@ class OutdatedSubState extends MusicBeatSubstate
 
     function loadChangelog():Void
     {
-        var http = new Http("https://raw.githubusercontent.com/LeninAsto/FNF-PlusEngine/refs/heads/main/gitChangelog.txt");
+        var http = new Http("https://raw.githubusercontent.com/Sebas1002502/Deep-Engine-RB/refs/heads/main/gitChangelog.txt");
         
         http.onData = function(data:String) {
             changelog = data;
@@ -128,7 +128,7 @@ class OutdatedSubState extends MusicBeatSubstate
 		if(!leftState) {
 			if (controls.ACCEPT) {
 				leftState = true;
-                CoolUtil.browserLoad("https://github.com/LeninAsto/FNF-PlusEngine/releases");
+                CoolUtil.browserLoad("https://github.com/Sebas1002502/Deep-Engine-RB/releases");
 			}
 			else if(controls.BACK) {
 				leftState = true;

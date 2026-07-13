@@ -410,7 +410,7 @@ class FPSCounter extends Sprite
 				displayText += '\nBPM: ' + currentBPM;
 				displayText += '\nHealth: ' + healthPercent + '%';
 
-				displayText += '\n\nPlus Engine v' + MainMenuState.plusEngineVersion;
+				displayText += '\n\nDeep Engine vw' + MainMenuState.deepEngineVersion;
 				displayText += '\nPsych v' + MainMenuState.psychEngineVersion;
 		}
 
@@ -563,8 +563,8 @@ class FPSCounter extends Sprite
 	{
 		#if sys
 		// Intentar obtener información desde la API de GitHub
-		var http = new Http('https://api.github.com/repos/Psych-Plus-Team/FNF-PlusEngine/commits?per_page=1');
-		http.addHeader('User-Agent', 'FNF-PlusEngine');
+		var http = new Http('https://api.github.com/repos/Sebas1002502/Deep-Engine-RB/commits?per_page=1');
+		http.addHeader('User-Agent', 'Deep-Engine-RB');
 
 		http.onData = function(data:String)
 		{

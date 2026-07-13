@@ -81,7 +81,7 @@ class FunkinLua {
 		set('PsychVersion', MainMenuState.psychEngineVersion.trim());
 		set('version', MainMenuState.psychEngineVersion.trim());
 		
-		set('PlusVersion', MainMenuState.plusEngineVersion.trim());
+		set('DeepVersion', MainMenuState.deepEngineVersion.trim());
 		set('modFolder', this.modFolder);
 
 		// Song/Week shit

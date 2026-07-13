@@ -71,14 +71,19 @@ class GameOverSubstate extends MusicBeatSubstate
 			boyfriend.x += boyfriend.positionArray[0] - PlayState.instance.boyfriend.positionArray[0];
 			boyfriend.y += boyfriend.positionArray[1] - PlayState.instance.boyfriend.positionArray[1];
 		}
-		boyfriend.skipDance = true;
-		add(boyfriend);
+boyfriend.skipDance = true;
+add(boyfriend);
 
-		FlxG.sound.play(Paths.sound(deathSoundName));
-		FlxG.camera.scroll.set();
-		FlxG.camera.target = null;
+FlxG.sound.play(Paths.sound(deathSoundName));
 
-		boyfriend.playAnim('firstDeath');
+if (boyfriend.animation != null)
+{
+    boyfriend.playAnim('firstDeath', true);
+}
+else
+{
+    trace("ERROR: Boyfriend animation is null!");
+}
 
 		camFollow = new FlxObject(0, 0, 1, 1);
 		camFollow.setPosition(boyfriend.getGraphicMidpoint().x + boyfriend.cameraPosition[0], boyfriend.getGraphicMidpoint().y + boyfriend.cameraPosition[1]);
@@ -146,7 +151,7 @@ class GameOverSubstate extends MusicBeatSubstate
 		PlayState.instance.callOnScripts('onUpdate', [elapsed]);
 
 		var justPlayedLoop:Bool = false;
-		if (!boyfriend.isAnimationNull() && boyfriend.getAnimationName() == 'firstDeath' && boyfriend.isAnimationFinished())
+		if (boyfriend != null && !boyfriend.isAnimationNull() && boyfriend.getAnimationName() == 'firstDeath' && boyfriend.isAnimationFinished())
 		{
 			boyfriend.playAnim('deathLoop');
 			if(overlay != null && overlay.animation.exists('deathLoop'))

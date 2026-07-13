@@ -794,7 +794,7 @@ class PlayState extends MusicBeatState
 		judgementCounter.setCameras([camHUD]);
 		add(judgementCounter);
 
-		var versionStr = "PlE v" + MainMenuState.plusEngineVersion + " | " + SONG.song + " (" + Difficulty.getString() + ")";
+		var versionStr = "PlE v" + MainMenuState.deepEngineVersion + " | " + SONG.song + " (" + Difficulty.getString() + ")";
 		versionText = new FlxText(0, -50, FlxG.width, versionStr, 14);
 		versionText.setFormat(Paths.font("vcr.ttf"), 14, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		versionText.scrollFactor.set();
@@ -3624,7 +3624,7 @@ class PlayState extends MusicBeatState
 				persistentDraw = false;
 				FlxTimer.globalManager.clear();
 				FlxTween.globalManager.clear();
-				FlxG.camera.setFilters([]);
+				FlxG.camera.filters = [];
 
 				#if LUA_ALLOWED
 				modchartTweens.clear();
@@ -5529,7 +5529,7 @@ class PlayState extends MusicBeatState
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyPress);
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyRelease);
 
-		FlxG.camera.setFilters([]);
+		FlxG.camera.filters = [];
 
 		#if FLX_PITCH FlxG.sound.music.pitch = 1; #end
 		FlxG.animationTimeScale = 1;

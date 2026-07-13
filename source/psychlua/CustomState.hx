@@ -95,7 +95,7 @@ class CustomState extends MusicBeatState
 
 		callOnScripts('onCreate');
 
-		var plusVer:FlxText = new FlxText(12, FlxG.height - 24, 0, "Plus Engine v" + MainMenuState.plusEngineVersion, 12);
+		var plusVer:FlxText = new FlxText(12, FlxG.height - 24, 0, "Plus Engine v" + MainMenuState.deepEngineVersion, 12);
 		plusVer.scrollFactor.set();
 		plusVer.alpha = 0.8;
 		plusVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);

@@ -145,7 +145,7 @@ class LoadingState extends MusicBeatState
 		var bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		bg.setGraphicSize(Std.int(FlxG.width));
-		bg.color = 0xFFD16FFF;
+		bg.color = 0xFF0051FF;
 		bg.updateHitbox();
 		addBehindBar(bg);
 	
@@ -154,7 +154,7 @@ class LoadingState extends MusicBeatState
 		loadingText.borderSize = 2;
 		addBehindBar(loadingText);
 	
-		logo = new FlxSprite(0, 0).loadGraphic(Paths.image('loading_screen/icon'));
+		logo = new FlxSprite(0, 0).loadGraphic(Paths.image('loading_screen/iconfake'));
 		logo.antialiasing = ClientPrefs.data.antialiasing;
 		logo.scale.set(0.75, 0.75);
 		logo.updateHitbox();
