@@ -8,6 +8,7 @@ import openfl.text.TextFormat;
 import openfl.events.TouchEvent;
 import openfl.events.MouseEvent;
 import backend.Paths;
+import backend.ClientPrefs;
 
 /**
  * TraceButton - Botón pequeño táctil para Android que abre/cierra el TraceDisplay
@@ -57,7 +58,7 @@ class TraceButton extends Sprite
 		
 		// Hacer visible solo en mobile
 		#if mobile
-		visible = true;
+		visible = ClientPrefs.data.showMobileDebugButtons;
 		
 		// Agregar listeners táctiles
 		this.addEventListener(TouchEvent.TOUCH_BEGIN, onTouchBegin);
@@ -125,6 +126,9 @@ class TraceButton extends Sprite
 	
 	public function updatePosition():Void {
 		positionButton();
+		#if mobile
+		visible = ClientPrefs.data.showMobileDebugButtons;
+		#end
 	}
 	
 	public function destroy():Void {

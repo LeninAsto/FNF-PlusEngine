@@ -56,6 +56,14 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 
+		var option:Option = new Option('FPS Counter Mode',
+			'Choose how much performance info is shown in the top-left overlay.',
+			'fpsCounterMode',
+			STRING,
+			['Hidden', 'Visible No Background', 'Visible with Background', 'Basic Debug', 'Extended Debug']);
+		option.onChange = onChangeFPSCounterMode;
+		addOption(option);
+
 		#if native
 		var option:Option = new Option('VSync',
 			'If checked, enables VSync, fixing screen tearing at the cost of capping FPS to the monitor refresh rate.\nRestart the game to fully apply it.',
@@ -114,6 +122,13 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 	function onChangeVSync()
 		lime.app.Application.current.window.vsync = ClientPrefs.data.vsync;
 	#end
+
+	function onChangeFPSCounterMode()
+	{
+		ClientPrefs.normalizeFPSCounterPrefs();
+		if (Main.fpsVar != null)
+			Main.fpsVar.applyPrefs();
+	}
 
 	override function changeSelection(change:Int = 0)
 	{

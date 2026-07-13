@@ -23,6 +23,7 @@ class CtxRenderer {
 	 * 1.0 = full quality, lower values reduce path divisions to protect FPS.
 	 */
 	public static var pathQualityScale:Float = 1.0;
+	public var collectDebugStats:Bool = false;
 
 	var ctx:Context;
 
@@ -37,6 +38,14 @@ class CtxRenderer {
 	public var dbgVertices:Int = 0;
 	public var dbgEmitMs:Float = 0.0;
 	public var dbgActiveHolds:Int = 0;
+	public var dbgPlayfields:Int = 0;
+	public var dbgReceptors:Int = 0;
+	public var dbgArrows:Int = 0;
+	public var dbgHolds:Int = 0;
+	public var dbgAttachments:Int = 0;
+	public var dbgPathCmds:Int = 0;
+	public var dbgHoldSubdivisions:Int = 0;
+	public var dbgPathQuality:Float = 1.0;
 
 	public function alloc(n:Int) {
 		queue = new Vector<DrawCommand>(n);
@@ -54,7 +63,8 @@ class CtxRenderer {
 		final dc = ctx.holdRenderer.prepare(item);
 		if (dc != null) {
 			dc.zIndex = Std.int(item._z * 1000);
-			dbgHoldCmds++;
+			if (collectDebugStats)
+				dbgHoldCmds++;
 		}
 		return dc;
 	}
@@ -108,7 +118,7 @@ class CtxRenderer {
 	}
 
 	public function emit(items:Array<Array<Array<FlxSprite>>>, playfields:Array<PlayField>) {
-		final __emitStart = haxe.Timer.stamp();
+		final __emitStart = collectDebugStats ? haxe.Timer.stamp() : 0.0;
 
 		// Adaptively throttle hold subdivisions when FPS is consistently low.
 		updateAdaptiveSubdivisions();
@@ -145,11 +155,21 @@ class CtxRenderer {
 
 		pathCount = receptorCount;
 
-		// Reset per-frame debug stats
-		dbgDrawCmds = 0;
-		dbgHoldCmds = 0;
-		dbgVertices = 0;
-		dbgActiveHolds = holdCount * playfieldCount;
+		if (collectDebugStats)
+		{
+			dbgDrawCmds = 0;
+			dbgHoldCmds = 0;
+			dbgVertices = 0;
+			dbgActiveHolds = holdCount * playfieldCount;
+			dbgPlayfields = playfieldCount;
+			dbgReceptors = receptorCount;
+			dbgArrows = arrowCount;
+			dbgHolds = holdCount;
+			dbgAttachments = attachmentCount;
+			dbgPathCmds = 0;
+			dbgHoldSubdivisions = Adapter.instance.getHoldSubdivisions(null);
+			dbgPathQuality = pathQualityScale;
+		}
 
 		alloc((arrowCount + receptorCount + attachmentCount + holdCount + pathCount) * playfieldCount);
 
@@ -174,8 +194,11 @@ class CtxRenderer {
 						if (!getVisibility(receptor))
 							continue;
 						var _ = emitPathCmd(receptor);
-						if (_ != null)
+						if (_ != null) {
+							if (collectDebugStats)
+								dbgPathCmds++;
 							this.append(_);
+						}
 					}
 				}
 
@@ -274,14 +297,18 @@ class CtxRenderer {
 			}
 			i++;
 		}
-		dbgEmitMs = (haxe.Timer.stamp() - __emitStart) * 1000.0;
+		if (collectDebugStats)
+			dbgEmitMs = (haxe.Timer.stamp() - __emitStart) * 1000.0;
 	}
 
 	public function append(dc:DrawCommand) {
 		@:privateAccess
 		queue[count++] = ctx.parent.transformCmd(dc);
-		dbgDrawCmds++;
-		dbgVertices += dc.vertices != null ? Std.int(dc.vertices.length / 2) : 0;
+		if (collectDebugStats)
+		{
+			dbgDrawCmds++;
+			dbgVertices += dc.vertices != null ? Std.int(dc.vertices.length / 2) : 0;
+		}
 	}
 
 	private function getVisibility(obj:flixel.FlxObject) {

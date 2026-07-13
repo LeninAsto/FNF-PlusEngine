@@ -185,9 +185,8 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		final reverseModifier = parent.modifiers.modifiers.get('reverse');
 		if (reverseModifier != null && Std.isOfType(reverseModifier, Reverse)) {
 			final spawnTimeMs = cast(reverseModifier, Reverse).getSpawnTime(player);
-			// Use the exact spawn window as the visual bound instead of multiplying it
-			// by scroll speed, which makes the path feel longer than the note timing.
-			return Math.max(spawnTimeMs, DEFAULT_PATH_BOUND);
+			final pathPadding = Math.max(0, Config.ARROW_PATHS_CONFIG.LENGTH);
+			return Math.max(spawnTimeMs + pathPadding, DEFAULT_PATH_BOUND);
 		}
 
 		return DEFAULT_PATH_BOUND;
@@ -207,22 +206,14 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		final lane = Adapter.instance.getLaneFromArrow(item);
 		final fn = Adapter.instance.getPlayerFromArrow(item);
 
-		final canUseLast = fn == __lastPlayer && lane == __lastLane;
-
-		final pathAlpha = canUseLast ? __lastAlpha : getPathAlpha(fn, lane);
-		final pathThickness = canUseLast ? __lastThickness : getPathThickness(fn, lane);
-		final pathBound = canUseLast ? __lastBound : getPathBound(fn, lane);
+		final pathAlpha = getPathAlpha(fn, lane);
+		final pathThickness = getPathThickness(fn, lane);
+		final pathBound = getPathBound(fn, lane);
 
 		if (pathAlpha <= 0 || pathThickness <= 0 || pathBound <= 0)
 			return null;
 
-		__lastAlpha = pathAlpha;
-		__lastThickness = pathThickness;
-		__lastBound = pathBound;
-		__lastPlayer = fn;
-		__lastLane = lane;
-
-		final limit = 1800 + pathBound;
+		final limit = pathBound;
 		final divisions = getAdaptiveDivisions(limit);
 		final interval = limit / (divisions - 1); // max point distance = limit (receptor → furthest sample)
 		final songPos = Adapter.instance.getSongPosition();

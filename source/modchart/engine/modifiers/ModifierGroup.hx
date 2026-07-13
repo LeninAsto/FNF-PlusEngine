@@ -75,6 +75,8 @@ final class ModifierGroup {
 	@:noCompletion private var __modifierCount:Int = 0;
 	@:noCompletion private var __sortedIDs:Vector<String> = new Vector<String>(32);
 	@:noCompletion private var __idCount:Int = 0;
+	public var modifierCount(get, never):Int;
+	inline function get_modifierCount():Int return __modifierCount;
 
 	inline private function __loadModifiers() {
 		for (cls in COMPILED_MODIFIERS) {

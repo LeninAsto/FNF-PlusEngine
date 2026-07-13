@@ -14,7 +14,7 @@ import states.TitleState;
 	public var dynamicColors:Bool = true; // yes cause its cool -Karim
 	public var controlsAlpha:Float = FlxG.onMobile ? 0.6 : 0;
 	public var showTouchPointer:Bool = true; // show touch pointer indicator (like Android dev option)
-	public var showMobileDebugButtons:Bool = false; // show T and D debug buttons on mobile
+	public var showMobileDebugButtons:Bool = false; // show the trace button on mobile
 	public var screensaver:Bool = false;
 	public var infinityDisplay:Bool = false; // Extend viewport vertically for modern screens while keeping game at 16:9
 	#if android
@@ -40,7 +40,8 @@ import states.TitleState;
 	public var opponentStrums:Bool = true;
 	public var showFPS:Bool = true;
 	public var vsync:Bool = false;
-	public var fpsDebugLevel:Int = 0; // FPSCounter debug level (persistent)
+	public var fpsCounterMode:String = #if mobile 'Hidden' #else 'Visible with Background' #end; // FPS counter visibility/detail mode
+	public var fpsDebugLevel:Int = #if mobile 0 #else 2 #end; // Legacy FPSCounter debug level (persistent)
 	public var showWatermark:Bool = false;
 	public var flashing:Bool = true;
 	public var autoPause:Bool = true;
@@ -85,6 +86,7 @@ import states.TitleState;
 	public var holdCacheEnabled:Bool = true; // Hold graphics cache for performance
 	public var holdAlphaDivisions:Int = 20; // Pre-calculated alpha variants (10-30)
 	public var columnSpecificModifiers:Bool = true; // Enables per-lane modifier calculations
+	public var modchartDebug:Bool = false; // Shows the NotITG-style modchart debug overlay
 	
 	public var noteOffset:Int = 0;
 	public var arrowRGB:Array<Array<FlxColor>> = [
@@ -306,6 +308,7 @@ class ClientPrefs {
 
 	public static function saveSettings() {
 		syncThemeModeFlags();
+		normalizeFPSCounterPrefs();
 
 		for (key in Reflect.fields(data))
 			Reflect.setField(FlxG.save.data, key, Reflect.field(data, key));
@@ -336,6 +339,15 @@ class ClientPrefs {
 			if (key != 'gameplaySettings' && Reflect.hasField(FlxG.save.data, key))
 				Reflect.setField(data, key, Reflect.field(FlxG.save.data, key));
 
+		if (!Reflect.hasField(FlxG.save.data, 'fpsCounterMode'))
+		{
+			if (Reflect.hasField(FlxG.save.data, 'showFPS') && Reflect.field(FlxG.save.data, 'showFPS') == false)
+				data.fpsCounterMode = 'Hidden';
+			else if (Reflect.hasField(FlxG.save.data, 'fpsDebugLevel'))
+				data.fpsCounterMode = fpsModeFromLegacy(Std.int(Reflect.field(FlxG.save.data, 'fpsDebugLevel')));
+		}
+		normalizeFPSCounterPrefs();
+
 		var storedFramerateMode:Dynamic = Reflect.field(FlxG.save.data, 'framerateMode');
 		if (storedFramerateMode == null)
 			data.framerateMode = Reflect.hasField(FlxG.save.data, 'fpsRework') ? ((Reflect.field(FlxG.save.data, 'fpsRework') == false) ? 'Psych' : 'Interpolated') : defaultData.framerateMode;
@@ -348,7 +360,7 @@ class ClientPrefs {
 		syncThemeModeFlags();
 		
 		if(Main.fpsVar != null)
-			Main.fpsVar.visible = data.showFPS;
+			Main.fpsVar.applyPrefs();
 
 		#if (!html5 && !switch)
 		FlxG.autoPause = ClientPrefs.data.autoPause;
@@ -465,6 +477,36 @@ class ClientPrefs {
 			// Ignore targets that do not expose window frame rate at runtime.
 		}
 		#end
+	}
+
+	public static function normalizeFPSCounterPrefs():Void
+	{
+		final modes:Array<String> = ['Hidden', 'Visible No Background', 'Visible with Background', 'Basic Debug', 'Extended Debug'];
+		if (data.fpsCounterMode == null || !modes.contains(data.fpsCounterMode))
+			data.fpsCounterMode = #if mobile 'Hidden' #else 'Visible with Background' #end;
+
+		data.fpsDebugLevel = switch (data.fpsCounterMode)
+		{
+			case 'Hidden': 0;
+			case 'Visible No Background': 1;
+			case 'Visible with Background': 2;
+			case 'Basic Debug': 3;
+			case 'Extended Debug': 4;
+			default: 2;
+		}
+		data.showFPS = data.fpsCounterMode != 'Hidden';
+	}
+
+	static function fpsModeFromLegacy(level:Int):String
+	{
+		return switch (level)
+		{
+			case 0: 'Visible No Background';
+			case 1: 'Visible with Background';
+			case 2: 'Basic Debug';
+			case 3: 'Extended Debug';
+			default: #if mobile 'Hidden' #else 'Visible with Background' #end;
+		}
 	}
 
 	public static function getTargetWindowFramerate():Int

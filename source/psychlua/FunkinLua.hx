@@ -1835,7 +1835,11 @@ class FunkinLua {
 		if(lua == null) {
 			return;
 		}
-		Lua.close(lua);
+		try {
+			Lua.close(lua);
+		} catch(e:Dynamic) {
+			trace('Failed to close Lua script "$scriptName": $e');
+		}
 		lua = null;
 		#if HSCRIPT_ALLOWED
 		if(hscript != null)
@@ -1968,11 +1972,13 @@ class FunkinLua {
 				return;
 			}
 			if(PlayState.instance != null) PlayState.instance.addTextToDebug(text, color);
-			else FlxG.log.warn(text);
+			else {
+				FlxG.log.warn(text);
+				TraceDisplay.addLuaTrace(text, color, deprecated);
+			}
 			
 			// También enviar al TraceDisplay si es un error
 			if(color == FlxColor.RED) {
-				TraceDisplay.addLuaError(text);
 				// Incrementar contador de errores para estadísticas
 				lua_Errors++;
 			}

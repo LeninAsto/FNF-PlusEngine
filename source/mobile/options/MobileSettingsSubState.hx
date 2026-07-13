@@ -73,10 +73,15 @@ class MobileSettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 
-		option = new Option('Mobile Debug Buttons',
-			'If checked, shows the debug touch buttons on mobile builds.',
+		option = new Option('Mobile Trace Button',
+			'If checked, shows the trace touch button on mobile builds.',
 			'showMobileDebugButtons',
 			BOOL);
+		option.onChange = () ->
+		{
+			if (Main.traceButton != null)
+				Main.traceButton.updatePosition();
+		};
 		addOption(option);
 
 		option = new Option('Align Receptors to Hitbox',

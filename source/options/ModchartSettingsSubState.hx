@@ -12,8 +12,14 @@ class ModchartSettingsSubState extends BaseOptionsMenu
 		title = Language.getPhrase('modchart_menu', 'Modchart Settings');
 		rpcTitle = 'Modchart Options Menu'; // for Discord Rich Presence
 
+		var option:Option = new Option('Modchart Debug Overlay',
+			'Shows NotITG-style modchart renderer stats.\nDisabled by default because it has a performance cost.',
+			'modchartDebug',
+			BOOL);
+		addOption(option);
+
 		// 3D Camera option
-		var option:Option = new Option('Enable 3D Cameras',
+		option = new Option('Enable 3D Cameras',
 			'Enables or disables 3D camera functionality.\nDisabling this may improve performance by skipping 3D transformations.',
 			'camera3dEnabled',
 			BOOL);

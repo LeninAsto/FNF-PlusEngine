@@ -65,6 +65,33 @@ final class Manager extends FlxBasic {
 	/** Exposes renderer stats for debug overlays. */
 	public var rendererStats(get, never):CtxRenderer;
 	inline function get_rendererStats() return renderer;
+	public var activePlayfieldCount(get, never):Int;
+	public var totalModifierCount(get, never):Int;
+	public var totalEventCount(get, never):Int;
+
+	function get_activePlayfieldCount():Int {
+		var count = 0;
+		for (playfield in playfields)
+			if (playfield != null)
+				count++;
+		return count;
+	}
+
+	function get_totalModifierCount():Int {
+		var count = 0;
+		for (playfield in playfields)
+			if (playfield != null)
+				count += playfield.modifiers.modifierCount;
+		return count;
+	}
+
+	function get_totalEventCount():Int {
+		var count = 0;
+		for (playfield in playfields)
+			if (playfield != null)
+				count += playfield.events.totalEvents;
+		return count;
+	}
 
 	public function new() {
 		super();
@@ -408,6 +435,11 @@ final class Manager extends FlxBasic {
 		}
 		__namedPlayfields = new StringMap();
 		__scheduledPlayfieldOps.resize(0);
+		if (renderer != null)
+			renderer.dispose();
+		renderer = null;
+		if (instance == this)
+			instance = null;
 	}
 
 	private inline function __normalizePlayfieldName(name:Null<String>):Null<String> {

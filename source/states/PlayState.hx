@@ -387,6 +387,8 @@ class PlayState extends MusicBeatState
 	var modchartDebugAccum:Float = 0;
 	var modchartDebugSamples:Int = 0;
 	var modchartAverageFPS:Float = 0;
+	var modchartDebugRefresh:Float = 0;
+	var modchartInitCallback:Void->Void = null;
 	#end
 	
 	// Variables para mantener animación hold
@@ -1103,7 +1105,7 @@ class PlayState extends MusicBeatState
 		// Initialize modcharts after all scripts are loaded
 		initModchart();
 		#if MODCHARTS_NOTITG_ALLOWED
-		if (Manager.instance != null)
+		if (Manager.instance != null && ClientPrefs.data.modchartDebug)
 			createModchartDebugOverlay();
 		#end
 		
@@ -1321,16 +1323,21 @@ class PlayState extends MusicBeatState
 			setOnScripts('modchartManager', Manager.instance);
 
 			// Wait a frame to ensure Manager is fully initialized
-			var initCallback:Void->Void = null;
-			initCallback = function() {
+			modchartInitCallback = function() {
+				if (PlayState.instance != this || Manager.instance == null || luaArray == null) {
+					FlxG.signals.postUpdate.remove(modchartInitCallback);
+					modchartInitCallback = null;
+					return;
+				}
 				setOnScripts('instance', Manager.instance);
 				setOnScripts('manager', Manager.instance);
 				setOnScripts('modManager', Manager.instance);
 				setOnScripts('modchartManager', Manager.instance);
 				callOnScripts('onInitModchart');
-				FlxG.signals.postUpdate.remove(initCallback);
+				FlxG.signals.postUpdate.remove(modchartInitCallback);
+				modchartInitCallback = null;
 			};
-			FlxG.signals.postUpdate.add(initCallback);
+			FlxG.signals.postUpdate.add(modchartInitCallback);
 		} catch (e:Dynamic) {
 			trace("Error initializing modcharts: " + e);
 		}
@@ -1346,10 +1353,12 @@ class PlayState extends MusicBeatState
 		modchartDebugEnabled = true;
 		modchartDebugAccum = 0;
 		modchartDebugSamples = 0;
+		modchartDebugRefresh = 999;
 		modchartAverageFPS = ClientPrefs.data.framerate;
+		Manager.instance.rendererStats.collectDebugStats = true;
 
-		modchartDebugTxt = new FlxText(0, 10, 240, "", 20);
-		modchartDebugTxt.setFormat(Paths.font("NotoSans-Medium.ttf"), 20, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.SHADOW, FlxColor.BLACK);
+		modchartDebugTxt = new FlxText(0, 10, 360, "", 18);
+		modchartDebugTxt.setFormat(Paths.font("NotoSans-Medium.ttf"), 18, FlxColor.WHITE, RIGHT, FlxTextBorderStyle.SHADOW, FlxColor.BLACK);
 		modchartDebugTxt.scrollFactor.set();
 		modchartDebugTxt.borderSize = 1.2;
 		modchartDebugTxt.alpha = 0.7;
@@ -1359,6 +1368,40 @@ class PlayState extends MusicBeatState
 
 		positionModchartDebugOverlay();
 		updateModchartDebugOverlay(0);
+	}
+
+	function destroyModchartDebugOverlay():Void
+	{
+		modchartDebugEnabled = false;
+		modchartDebugRefresh = 0;
+		if (Manager.instance != null)
+			Manager.instance.rendererStats.collectDebugStats = false;
+		if (modchartDebugTxt != null)
+		{
+			remove(modchartDebugTxt);
+			modchartDebugTxt.destroy();
+			modchartDebugTxt = null;
+		}
+	}
+
+	function syncModchartDebugOverlay(elapsed:Float):Void
+	{
+		if (Manager.instance == null)
+		{
+			destroyModchartDebugOverlay();
+			return;
+		}
+
+		if (!ClientPrefs.data.modchartDebug)
+		{
+			destroyModchartDebugOverlay();
+			return;
+		}
+
+		if (modchartDebugTxt == null)
+			createModchartDebugOverlay();
+
+		updateModchartDebugOverlay(elapsed);
 	}
 
 	inline function positionModchartDebugOverlay():Void
@@ -1375,6 +1418,8 @@ class PlayState extends MusicBeatState
 		if (!modchartDebugEnabled || modchartDebugTxt == null || Manager.instance == null)
 			return;
 
+		Manager.instance.rendererStats.collectDebugStats = true;
+
 		if (elapsed > 0)
 		{
 			modchartDebugAccum += elapsed;
@@ -1385,6 +1430,11 @@ class PlayState extends MusicBeatState
 				modchartDebugAccum = 0;
 				modchartDebugSamples = 0;
 			}
+
+			modchartDebugRefresh += elapsed;
+			if (modchartDebugRefresh < 0.12)
+				return;
+			modchartDebugRefresh = 0;
 		}
 
 		final stats = Manager.instance.rendererStats;
@@ -1394,17 +1444,45 @@ class PlayState extends MusicBeatState
 		final drawsPerFrame = stats != null ? stats.dbgDrawCmds : 0;
 		final drawsPerSecond = Std.int(Math.round(drawsPerFrame * averageFPS));
 		final memoryText = Main.fpsVar != null ? Std.int(Math.round(Main.fpsVar.memoryMegas / 1048576)) + " MB" : "0 MB";
+		final songPosition = modchart.backend.standalone.Adapter.instance != null ? modchart.backend.standalone.Adapter.instance.getSongPosition() : Conductor.songPosition;
+		final currentBeat = modchart.backend.standalone.Adapter.instance != null ? modchart.backend.standalone.Adapter.instance.getCurrentBeat() : curBeat;
+		final activeHolds = stats != null ? stats.dbgActiveHolds : 0;
+		final holdCmds = stats != null ? stats.dbgHoldCmds : 0;
+		final pathCmds = stats != null ? stats.dbgPathCmds : 0;
+		final emitMs = stats != null ? stats.dbgEmitMs : 0.0;
+		final holdSubdivisions = stats != null ? stats.dbgHoldSubdivisions : 0;
+		final pathQuality = stats != null ? stats.dbgPathQuality : 1.0;
+		final itemText = stats != null ? '${stats.dbgArrows}N/${stats.dbgHolds}H/${stats.dbgReceptors}R/${stats.dbgAttachments}A' : '0N/0H/0R/0A';
 
 		modchartDebugTxt.text =
-			'${currentFPS} FPS' +
-			'\n${Std.int(Math.round(averageFPS))} av FPS' +
-			'\n${verticesPerFrame} VPF' +
-			'\n${drawsPerFrame} DPF' +
-			'\n${drawsPerSecond} DPS' +
-			'\n${memoryText}' +
-			'\nOpenFL';
+			'${currentFPS} FPS / ${Std.int(Math.round(averageFPS))} AVG' +
+			'\n${formatFloatLocal(frameTimeFromFPS(currentFPS), 1)} ms frame' +
+			'\nBeat ${formatFloatLocal(currentBeat, 2)} | Step ${curStep}' +
+			'\nSong ${Std.int(songPosition)} ms' +
+			'\nPF ${Manager.instance.activePlayfieldCount} | Mods ${Manager.instance.totalModifierCount} | Events ${Manager.instance.totalEventCount}' +
+			'\nItems ${itemText}' +
+			'\nVerts ${verticesPerFrame} | Draws ${drawsPerFrame} (${drawsPerSecond}/s)' +
+			'\nHolds ${holdCmds}/${activeHolds} | Paths ${pathCmds}' +
+			'\nEmit ${formatFloatLocal(emitMs, 2)} ms | Subdiv ${holdSubdivisions} | Q ${formatFloatLocal(pathQuality, 2)}' +
+			'\nGC ${memoryText} | OpenFL';
 
 		positionModchartDebugOverlay();
+	}
+
+	inline function frameTimeFromFPS(fps:Int):Float
+		return fps > 0 ? 1000 / fps : 0;
+
+	function formatFloatLocal(value:Float, decimals:Int):String
+	{
+		var multiplier = Math.pow(10, decimals);
+		var rounded = Math.round(value * multiplier) / multiplier;
+		var str = Std.string(rounded);
+		if (str.indexOf('.') == -1)
+			str += '.';
+		var parts = str.split('.');
+		while (parts[1].length < decimals)
+			parts[1] += '0';
+		return parts[0] + '.' + parts[1];
 	}
 	#end
 
@@ -1471,6 +1549,7 @@ class PlayState extends MusicBeatState
 			luaDebugGroup.add(debugPanel);
 		}
 		debugPanel.pushMessage(text, color);
+		debug.TraceDisplay.addDebugText(Std.string(text), color);
 
 		Sys.println(text);
 	}
@@ -2937,7 +3016,7 @@ class PlayState extends MusicBeatState
 			gameplayRuntimeBridge.sync(curStep, curBeat, curSection, songSpeed, Conductor.bpm, health, capitalizeFirst(lastJudName), combo);
 
 		#if MODCHARTS_NOTITG_ALLOWED
-		updateModchartDebugOverlay(elapsed);
+		syncModchartDebugOverlay(elapsed);
 		#end
 
 		if (judgementCounter != null)
@@ -5717,6 +5796,14 @@ class PlayState extends MusicBeatState
 			stepmaniaHud = null;
 		}
 		destroyGameplayRuntimeBridge();
+		#if MODCHARTS_NOTITG_ALLOWED
+		if (modchartInitCallback != null)
+		{
+			FlxG.signals.postUpdate.remove(modchartInitCallback);
+			modchartInitCallback = null;
+		}
+		destroyModchartDebugOverlay();
+		#end
 		for (i in 0...botplayKeyReleaseTimers.length)
 		{
 			if (botplayKeyReleaseTimers[i] != null)
@@ -5727,24 +5814,30 @@ class PlayState extends MusicBeatState
 		}
 
 		#if LUA_ALLOWED
-		for (lua in luaArray)
+		var luaScripts = luaArray != null ? luaArray.copy() : [];
+		for (lua in luaScripts)
 		{
-			lua.call('onDestroy', []);
-			lua.stop();
+			if (lua != null)
+			{
+				if (!lua.closed)
+					lua.call('onDestroy', []);
+				lua.stop();
+			}
 		}
-		luaArray = null;
+		luaArray = [];
 		FunkinLua.customFunctions.clear();
 		#end
 
 		#if HSCRIPT_ALLOWED
 		// Destroy all HScript arrays
-		for (script in hscriptArray)
+		var hscriptScripts = hscriptArray != null ? hscriptArray.copy() : [];
+		for (script in hscriptScripts)
 			if(script != null)
 			{
 				if(script.exists('onDestroy')) script.call('onDestroy');
 				script.destroy();
 			}
-		hscriptArray = null;
+		hscriptArray = [];
 		#end
 		stagesFunc(function(stage:BaseStage) stage.destroy());
 
@@ -5771,8 +5864,11 @@ class PlayState extends MusicBeatState
 		NoteSplash.clearCache();
 		
 		// Limpiar Manager de modchart
-		#if LUA_ALLOWED
+		#if MODCHARTS_NOTITG_ALLOWED
 		if (modchart.Manager.instance != null) {
+			var manager = modchart.Manager.instance;
+			remove(manager, true);
+			manager.destroy();
 			modchart.Manager.instance = null;
 		}
 		#end
@@ -6182,10 +6278,14 @@ class PlayState extends MusicBeatState
 		if(args == null) args = [];
 		if(exclusions == null) exclusions = [];
 		if(excludeValues == null) excludeValues = [LuaUtils.Function_Continue];
+		if(luaArray == null || luaArray.length < 1)
+			return returnVal;
 
 		var arr:Array<FunkinLua> = [];
-		for (script in luaArray)
+		for (script in luaArray.copy())
 		{
+			if(script == null)
+				continue;
 			if(script.closed)
 			{
 				arr.push(script);
@@ -6210,7 +6310,7 @@ class PlayState extends MusicBeatState
 
 		if(arr.length > 0)
 			for (script in arr)
-				luaArray.remove(script);
+				if(luaArray != null) luaArray.remove(script);
 		#end
 		return returnVal;
 	}
@@ -6222,12 +6322,14 @@ class PlayState extends MusicBeatState
 		if(exclusions == null) exclusions = new Array();
 		if(excludeValues == null) excludeValues = new Array();
 		excludeValues.push(LuaUtils.Function_Continue);
+		if(hscriptArray == null || hscriptArray.length < 1)
+			return returnVal;
 
 		var len:Int = hscriptArray.length;
 		if (len < 1)
 			return returnVal;
 
-		for(script in hscriptArray)
+		for(script in hscriptArray.copy())
 		{
 			@:privateAccess
 			if(script == null || !script.exists(funcToCall) || exclusions.contains(script.origin))
@@ -6262,7 +6364,11 @@ class PlayState extends MusicBeatState
 	public function setOnLuas(variable:String, arg:Dynamic, exclusions:Array<String> = null) {
 		#if LUA_ALLOWED
 		if(exclusions == null) exclusions = [];
-		for (script in luaArray) {
+		if(luaArray == null)
+			return;
+		for (script in luaArray.copy()) {
+			if(script == null || script.closed)
+				continue;
 			if(exclusions.contains(script.scriptName))
 				continue;
 
@@ -6274,7 +6380,11 @@ class PlayState extends MusicBeatState
 	public function setOnHScript(variable:String, arg:Dynamic, exclusions:Array<String> = null) {
 		#if HSCRIPT_ALLOWED
 		if(exclusions == null) exclusions = [];
-		for (script in hscriptArray) {
+		if(hscriptArray == null)
+			return;
+		for (script in hscriptArray.copy()) {
+			if(script == null)
+				continue;
 			if(exclusions.contains(script.origin))
 				continue;
 
