@@ -34,6 +34,7 @@ class DebugLuaText extends FlxSpriteGroup
 	static inline var MAX_STORED_ENTRIES:Int = 80;
 	static inline var TWEEN_TIME:Float = 0.22;
 	static inline var MAX_ROWS:Int = 16;
+	static inline var BACKGROUND_ALPHA:Float = 0.5;
 
 	public var disableTime:Float = MESSAGE_TIME;
 
@@ -43,6 +44,8 @@ class DebugLuaText extends FlxSpriteGroup
 	var entries:Array<DebugLuaEntry> = [];
 	var panelHeight:Int = MIN_PANEL_HEIGHT;
 	var panelWidth:Int = MIN_PANEL_WIDTH;
+	var panelX:Float = 0;
+	var panelY:Float = 0;
 	var showTween:FlxTween;
 	var hideTween:FlxTween;
 	var hiding:Bool = false;
@@ -54,7 +57,7 @@ class DebugLuaText extends FlxSpriteGroup
 
 		background = new FlxSprite();
 		background.antialiasing = ClientPrefs.data.antialiasing;
-		background.alpha = 0.72;
+		background.alpha = BACKGROUND_ALPHA;
 		add(background);
 
 		titleText = new FlxText(PADDING, TITLE_Y, 10000, 'Debug', 16);
@@ -89,10 +92,8 @@ class DebugLuaText extends FlxSpriteGroup
 		if (text.length == 0)
 			return;
 
-		if (!exists || !visible || hiding)
-			showPanel();
-		alpha = 1;
 		disableTime = MESSAGE_TIME;
+		var shouldShow = !exists || !visible || hiding;
 
 		var entry = findEntry(text, color);
 		if (entry != null)
@@ -108,6 +109,13 @@ class DebugLuaText extends FlxSpriteGroup
 		}
 
 		layoutEntries();
+		if (shouldShow)
+			showPanel();
+		else
+		{
+			alpha = 1;
+			updatePanelTargetPosition();
+		}
 	}
 
 	function findEntry(text:String, color:FlxColor):DebugLuaEntry
@@ -130,26 +138,12 @@ class DebugLuaText extends FlxSpriteGroup
 			return;
 		}
 
-		var changed = false;
-		var i = entries.length - 1;
-		while (i >= 0)
-		{
-			entries[i].time -= elapsed;
-			if (entries[i].time <= 0)
-			{
-				entries.splice(i, 1);
-				changed = true;
-			}
-			i--;
-		}
-
-		if (entries.length == 0)
+		disableTime = Math.max(0, disableTime - elapsed);
+		if (disableTime <= 0)
 		{
 			startHide();
 			return;
 		}
-
-		disableTime = Math.max(0, disableTime - elapsed);
 
 		layoutEntries();
 	}
@@ -180,16 +174,6 @@ class DebugLuaText extends FlxSpriteGroup
 			i--;
 		}
 
-		var nextHeight = Std.int(Math.min(MAX_PANEL_HEIGHT, Math.max(MIN_PANEL_HEIGHT, Math.ceil(usedHeight))));
-		var nextWidth = calculatePanelWidth();
-		if (nextHeight != panelHeight || nextWidth != panelWidth)
-		{
-			panelHeight = nextHeight;
-			panelWidth = nextWidth;
-			redrawPanel();
-		}
-		updatePanelTargetPosition();
-
 		for (i in 0...rows.length)
 		{
 			var row = rows[i];
@@ -202,20 +186,37 @@ class DebugLuaText extends FlxSpriteGroup
 			var entry = chosen[i];
 			row.visible = true;
 			row.color = entry.color;
-			row.alpha = entry.time < 1 ? Math.max(0, entry.time) : 1;
+			row.alpha = 1;
 			row.text = displayEntry(entry);
 		}
 
+		var nextHeight = Std.int(Math.min(MAX_PANEL_HEIGHT, Math.max(MIN_PANEL_HEIGHT, Math.ceil(usedHeight))));
+		var nextWidth = calculatePanelWidth();
+		if (nextHeight != panelHeight || nextWidth != panelWidth)
+		{
+			panelHeight = nextHeight;
+			panelWidth = nextWidth;
+			redrawPanel();
+		}
+		else
+			background.alpha = BACKGROUND_ALPHA;
+		updatePanelTargetPosition();
+
 		var yPos:Float = messageStartY();
 		var finalTextWidth = Math.max(80, panelWidth - PADDING * 2);
+		background.x = panelX;
+		background.y = panelY;
+		titleText.x = panelX + PADDING;
+		titleText.y = panelY + TITLE_Y;
 		titleText.fieldWidth = finalTextWidth;
 		for (row in rows)
 		{
 			if (!row.visible)
 				continue;
 
+			row.x = panelX + PADDING;
 			row.fieldWidth = finalTextWidth;
-			row.y = yPos;
+			row.y = panelY + yPos;
 			yPos += measuredRowHeight(row) + ROW_GAP;
 		}
 	}
@@ -275,9 +276,16 @@ class DebugLuaText extends FlxSpriteGroup
 		revive();
 		visible = true;
 		active = true;
-		x = targetX();
-		y = offscreenY();
-		showTween = FlxTween.tween(this, {x: targetX(), y: targetY(), alpha: 1}, TWEEN_TIME, {ease: FlxEase.quadOut});
+		alpha = 0;
+		x = 0;
+		y = 0;
+		panelX = targetX();
+		panelY = enterY();
+		showTween = FlxTween.tween(this, {panelY: targetY(), alpha: 1}, TWEEN_TIME, {
+			ease: FlxEase.quadOut,
+			onUpdate: function(_) layoutEntries()
+		});
+		layoutEntries();
 	}
 
 	function startHide():Void
@@ -291,10 +299,14 @@ class DebugLuaText extends FlxSpriteGroup
 			hideTween.cancel();
 
 		hiding = true;
-		hideTween = FlxTween.tween(this, {y: offscreenY(), alpha: 0}, TWEEN_TIME, {
+		hideTween = FlxTween.tween(this, {panelY: exitY(), alpha: 0}, TWEEN_TIME, {
 			ease: FlxEase.quadIn,
+			onUpdate: function(_) layoutEntries(),
 			onComplete: function(_)
 			{
+				entries.resize(0);
+				for (row in rows)
+					row.visible = false;
 				hiding = false;
 				kill();
 			}
@@ -304,7 +316,7 @@ class DebugLuaText extends FlxSpriteGroup
 	function redrawPanel():Void
 	{
 		MD3ShapeTools.fillAndStrokeRoundRect(background, panelWidth, panelHeight, 22, 2, MD3Theme.surfaceContainerHigh, MD3Theme.outlineVariant);
-		background.alpha = 0.72;
+		background.alpha = BACKGROUND_ALPHA;
 	}
 
 	inline function targetX():Float
@@ -313,7 +325,10 @@ class DebugLuaText extends FlxSpriteGroup
 	inline function targetY():Float
 		return ClientPrefs.data.downScroll ? PANEL_MARGIN : viewHeight() - panelHeight - PANEL_MARGIN;
 
-	inline function offscreenY():Float
+	inline function enterY():Float
+		return ClientPrefs.data.downScroll ? -panelHeight - PANEL_MARGIN : viewHeight() + PANEL_MARGIN;
+
+	inline function exitY():Float
 		return ClientPrefs.data.downScroll ? -panelHeight - PANEL_MARGIN : viewHeight() + PANEL_MARGIN;
 
 	inline function viewWidth():Float
@@ -327,8 +342,8 @@ class DebugLuaText extends FlxSpriteGroup
 		if (!visible || hiding || showTween != null && !showTween.finished)
 			return;
 
-		x = targetX();
-		y = targetY();
+		panelX = targetX();
+		panelY = targetY();
 	}
 
 	override function destroy():Void
