@@ -285,6 +285,7 @@ touchpad_dpadmode_throw: "O touchPad dpadMode \"{1}\" não existe."
 touchpad_actionmode_throw: "O touchPad actionMode \"{1}\" não existe."
 file_save_success: "{1} foi salvo."
 file_save_fail: "{1} não pode ser salvo.\n({2})"
+permissions_message: "Se você aceitou as permissões você está pronto!\nlf se você não as aceitou espere um fechamento\nPressione OK para ver o que acontece"
 create_directory_error: "Por Favor crie um diretório para\n{1}\nPressione OK para fechar o jogo"
 
 // Mobile Control Select Menu

@@ -1,24 +1,23 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-Created with Funkin Packer v0.1.3 https://shadowengineteam.github.io/Funkin-Packer/
--->
-<TextureAtlas imagePath="holdCover-Blue.png" width="399" height="30" spritePadding="5" borderPadding="1">
-	<SubTexture name="holdCoverEndBlue0000" x="128" y="1" width="9" height="7" frameX="-20" frameY="-21" frameWidth="46" frameHeight="36"/>
-	<SubTexture name="holdCoverEndBlue0001" x="142" y="1" width="16" height="14" frameX="-16" frameY="-16" frameWidth="46" frameHeight="36"/>
-	<SubTexture name="holdCoverEndBlue0002" x="163" y="1" width="24" height="21" frameX="-12" frameY="-11" frameWidth="46" frameHeight="36"/>
-	<SubTexture name="holdCoverEndBlue0003" x="192" y="1" width="32" height="25" frameX="-8" frameY="-7" frameWidth="46" frameHeight="36"/>
-	<SubTexture name="holdCoverEndBlue0004" x="229" y="1" width="35" height="27" frameX="-7" frameY="-5" frameWidth="46" frameHeight="36"/>
-	<SubTexture name="holdCoverEndBlue0005" x="269" y="1" width="37" height="28" frameX="-6" frameY="-4" frameWidth="46" frameHeight="36"/>
-	<SubTexture name="holdCoverEndBlue0006" x="311" y="1" width="38" height="28" frameX="-5" frameY="-3" frameWidth="46" frameHeight="36"/>
-	<SubTexture name="holdCoverEndBlue0007" x="354" y="1" width="38" height="27" frameX="-5" frameY="-4" frameWidth="46" frameHeight="36"/>
-	<SubTexture name="holdCoverEndBlue0008" x="397" y="1" width="1" height="1" frameX="-18" frameY="-19" frameWidth="46" frameHeight="36"/>
-	<SubTexture name="holdCoverStartBlue0001" x="113" y="1" width="10" height="5" frameX="-3" frameY="-3" frameWidth="14" frameHeight="9"/>
-	<SubTexture name="holdCoverBlue0000" x="1" y="1" width="10" height="5" frameX="-3" frameY="-3" frameWidth="16" frameHeight="10"/>
-	<SubTexture name="holdCoverBlue0001" x="16" y="1" width="10" height="6" frameX="-3" frameY="-2" frameWidth="16" frameHeight="10"/>
-	<SubTexture name="holdCoverBlue0002" x="31" y="1" width="10" height="5" frameX="-3" frameY="-2" frameWidth="16" frameHeight="10"/>
-	<SubTexture name="holdCoverBlue0003" x="46" y="1" width="12" height="4" frameX="-2" frameY="-3" frameWidth="16" frameHeight="10"/>
-	<SubTexture name="holdCoverBlue0004" x="63" y="1" width="12" height="5" frameX="-2" frameY="-3" frameWidth="16" frameHeight="10"/>
-	<SubTexture name="holdCoverBlue0005" x="80" y="1" width="12" height="5" frameX="-2" frameY="-3" frameWidth="16" frameHeight="10"/>
-	<SubTexture name="holdCoverBlue0006" x="97" y="1" width="11" height="4" frameX="-2" frameY="-3" frameWidth="16" frameHeight="10"/>
-	<SubTexture name="holdCoverBlue0007" x="113" y="1" width="10" height="5" frameX="-3" frameY="-3" frameWidth="16" frameHeight="10"/>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="holdCover.png">
+	<!-- Created with Adobe Animate version 22.0.5.191 -->
+	<!-- MC07 is awesome and cool. -->
+	<SubTexture name="holdCoverEndBlue0000" x="0" y="0" width="13" height="11" rotated="false" frameX="-18" frameY="-19" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndBlue0001" x="17" y="0" width="20" height="18" rotated="false" frameX="-14" frameY="-14" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndBlue0002" x="41" y="0" width="28" height="25" rotated="false" frameX="-10" frameY="-9" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndBlue0003" x="73" y="0" width="36" height="29" rotated="false" frameX="-6" frameY="-5" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndBlue0004" x="113" y="0" width="39" height="35" rotated="false" frameX="-6" frameY="-2" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndBlue0005" x="156" y="0" width="44" height="36" rotated="false" frameX="-2" frameY="0" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndBlue0006" x="204" y="0" width="46" height="33" rotated="false" frameX="0" frameY="0" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndBlue0007" x="0" y="40" width="42" height="32" rotated="false" frameX="-3" frameY="-1" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverEndBlue0008" x="46" y="40" width="1" height="1" rotated="false" frameX="-18" frameY="-19" frameWidth="46" frameHeight="37"/>
+	<SubTexture name="holdCoverStartBlue0001" x="50" y="40" width="14" height="9" rotated="false" frameX="-1" frameY="-1" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverBlue0000" x="68" y="40" width="14" height="9" rotated="false" frameX="-1" frameY="-1" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverBlue0001" x="86" y="40" width="14" height="10" rotated="false" frameX="-1" frameY="0" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverBlue0002" x="104" y="40" width="14" height="9" rotated="false" frameX="-1" frameY="0" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverBlue0003" x="122" y="40" width="16" height="8" rotated="false" frameX="0" frameY="-1" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverBlue0004" x="142" y="40" width="16" height="9" rotated="false" frameX="0" frameY="-1" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverBlue0005" x="162" y="40" width="16" height="9" rotated="false" frameX="0" frameY="-1" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverBlue0006" x="182" y="40" width="15" height="8" rotated="false" frameX="0" frameY="-1" frameWidth="16" frameHeight="10"/>
+	<SubTexture name="holdCoverBlue0007" x="50" y="40" width="14" height="9" rotated="false" frameX="-1" frameY="-1" frameWidth="16" frameHeight="10"/>
 </TextureAtlas>

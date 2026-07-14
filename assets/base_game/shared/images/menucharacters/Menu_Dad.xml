@@ -1,20 +1,19 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-Created with Funkin Packer v0.1.3 https://shadowengineteam.github.io/Funkin-Packer/
--->
-<TextureAtlas imagePath="Menu_Dad.png" width="832" height="741" spritePadding="5" borderPadding="1">
-	<SubTexture name="M Dad Idle0000" x="1" y="1" width="206" height="364" frameX="0" frameY="-3" frameWidth="206" frameHeight="367"/>
-	<SubTexture name="M Dad Idle0001" x="1" y="1" width="206" height="364" frameX="0" frameY="-3" frameWidth="206" frameHeight="367"/>
-	<SubTexture name="M Dad Idle0002" x="212" y="1" width="205" height="363" frameX="0" frameY="-4" frameWidth="206" frameHeight="367"/>
-	<SubTexture name="M Dad Idle0003" x="212" y="1" width="205" height="363" frameX="0" frameY="-4" frameWidth="206" frameHeight="367"/>
-	<SubTexture name="M Dad Idle0004" x="422" y="1" width="203" height="364" frameX="-1" frameY="-3" frameWidth="206" frameHeight="367"/>
-	<SubTexture name="M Dad Idle0005" x="422" y="1" width="203" height="364" frameX="-1" frameY="-3" frameWidth="206" frameHeight="367"/>
-	<SubTexture name="M Dad Idle0006" x="630" y="1" width="201" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
-	<SubTexture name="M Dad Idle0007" x="630" y="1" width="201" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
-	<SubTexture name="M Dad Idle0008" x="1" y="373" width="202" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
-	<SubTexture name="M Dad Idle0009" x="1" y="373" width="202" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
-	<SubTexture name="M Dad Idle0010" x="208" y="373" width="202" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
-	<SubTexture name="M Dad Idle0011" x="208" y="373" width="202" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
-	<SubTexture name="M Dad Idle0012" x="208" y="373" width="202" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
-	<SubTexture name="M Dad Idle0013" x="208" y="373" width="202" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="Menu_Dad.png">
+	<!-- Created with Adobe Animate version 21.0.1.37179 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="M Dad Idle0000" x="4" y="4" width="206" height="364" pivotX="0" pivotY="3.8" frameX="0" frameY="-3" frameWidth="206" frameHeight="367"/>
+	<SubTexture name="M Dad Idle0001" x="4" y="4" width="206" height="364" frameX="0" frameY="-3" frameWidth="206" frameHeight="367"/>
+	<SubTexture name="M Dad Idle0002" x="210" y="4" width="205" height="364" frameX="0" frameY="-3" frameWidth="206" frameHeight="367"/>
+	<SubTexture name="M Dad Idle0003" x="210" y="4" width="205" height="364" frameX="0" frameY="-3" frameWidth="206" frameHeight="367"/>
+	<SubTexture name="M Dad Idle0004" x="415" y="4" width="204" height="364" frameX="-1" frameY="-3" frameWidth="206" frameHeight="367"/>
+	<SubTexture name="M Dad Idle0005" x="415" y="4" width="204" height="364" frameX="-1" frameY="-3" frameWidth="206" frameHeight="367"/>
+	<SubTexture name="M Dad Idle0006" x="619" y="4" width="202" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
+	<SubTexture name="M Dad Idle0007" x="619" y="4" width="202" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
+	<SubTexture name="M Dad Idle0008" x="4" y="371" width="202" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
+	<SubTexture name="M Dad Idle0009" x="4" y="371" width="202" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
+	<SubTexture name="M Dad Idle0010" x="206" y="371" width="202" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
+	<SubTexture name="M Dad Idle0011" x="206" y="371" width="202" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
+	<SubTexture name="M Dad Idle0012" x="206" y="371" width="202" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
+	<SubTexture name="M Dad Idle0013" x="206" y="371" width="202" height="367" frameX="-2" frameY="0" frameWidth="206" frameHeight="367"/>
 </TextureAtlas>

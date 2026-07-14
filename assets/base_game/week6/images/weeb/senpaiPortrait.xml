@@ -1,15 +1,14 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<!--
-Created with Funkin Packer v0.1.3 https://shadowengineteam.github.io/Funkin-Packer/
--->
-<TextureAtlas imagePath="senpaiPortrait.png" width="53" height="245" spritePadding="5" borderPadding="1">
-	<SubTexture name="Senpai Portrait Enter instance 10000" x="1" y="1" width="51" height="57" frameX="-38" frameY="-17" frameWidth="249" frameHeight="145"/>
-	<SubTexture name="Senpai Portrait Enter instance 10001" x="1" y="63" width="51" height="57" frameX="-45" frameY="-17" frameWidth="249" frameHeight="145"/>
-	<SubTexture name="Senpai Portrait Enter instance 10002" x="1" y="63" width="51" height="57" frameX="-45" frameY="-17" frameWidth="249" frameHeight="145"/>
-	<SubTexture name="Senpai Portrait Enter instance 10003" x="1" y="125" width="51" height="57" frameX="-48" frameY="-17" frameWidth="249" frameHeight="145"/>
-	<SubTexture name="Senpai Portrait Enter instance 10004" x="1" y="125" width="51" height="57" frameX="-48" frameY="-17" frameWidth="249" frameHeight="145"/>
-	<SubTexture name="Senpai Portrait Enter instance 10005" x="1" y="187" width="51" height="57" frameX="-49" frameY="-17" frameWidth="249" frameHeight="145"/>
-	<SubTexture name="Senpai Portrait Enter instance 10006" x="1" y="187" width="51" height="57" frameX="-49" frameY="-17" frameWidth="249" frameHeight="145"/>
-	<SubTexture name="Senpai Portrait Enter instance 10007" x="1" y="187" width="51" height="57" frameX="-49" frameY="-17" frameWidth="249" frameHeight="145"/>
-	<SubTexture name="Senpai Portrait Enter instance 10008" x="1" y="187" width="51" height="57" frameX="-49" frameY="-17" frameWidth="249" frameHeight="145"/>
+﻿<?xml version="1.0" encoding="utf-8"?>
+<TextureAtlas imagePath="senpaiPortrait.png">
+	<!-- Created with Adobe Animate version 20.0.0.17400 -->
+	<!-- http://www.adobe.com/products/animate.html -->
+	<SubTexture name="Senpai Portrait Enter instance 10000" x="0" y="0" width="249" height="145"/>
+	<SubTexture name="Senpai Portrait Enter instance 10001" x="259" y="0" width="249" height="145"/>
+	<SubTexture name="Senpai Portrait Enter instance 10002" x="259" y="0" width="249" height="145"/>
+	<SubTexture name="Senpai Portrait Enter instance 10003" x="0" y="155" width="249" height="145"/>
+	<SubTexture name="Senpai Portrait Enter instance 10004" x="0" y="155" width="249" height="145"/>
+	<SubTexture name="Senpai Portrait Enter instance 10005" x="259" y="155" width="249" height="145"/>
+	<SubTexture name="Senpai Portrait Enter instance 10006" x="259" y="155" width="249" height="145"/>
+	<SubTexture name="Senpai Portrait Enter instance 10007" x="259" y="155" width="249" height="145"/>
+	<SubTexture name="Senpai Portrait Enter instance 10008" x="259" y="155" width="249" height="145"/>
 </TextureAtlas>
