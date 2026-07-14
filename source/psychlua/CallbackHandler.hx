@@ -8,7 +8,7 @@ class CallbackHandler
 		try
 		{
 			//trace('calling $fname');
-			var cbf:Dynamic = Lua_helper.callbacks.get(fname);
+			var cbf:Dynamic = Lua_helper.get_callback(l, fname);
 
 			//Local functions have the lowest priority
 			//This is to prevent a "for" loop being called in every single operation,
@@ -19,14 +19,9 @@ class CallbackHandler
 				var last:FunkinLua = FunkinLua.lastCalledScript;
 				if(last == null || last.lua != l)
 				{
-					//trace('looping thru scripts');
-					for (script in PlayState.instance.luaArray)
-						if(script != FunkinLua.lastCalledScript && script != null && script.lua == l)
-						{
-							//trace('found script');
-							cbf = script.callbacks.get(fname);
-							break;
-						}
+					var script:FunkinLua = FunkinLua.getScriptFromState(l);
+					if(script != null)
+						cbf = script.callbacks.get(fname);
 				}
 				else cbf = last.callbacks.get(fname);
 			}
@@ -54,11 +49,12 @@ class CallbackHandler
 				return 1;
 			}
 		}
-		catch(e:haxe.Exception)
+		catch(e:Dynamic)
 		{
 			if(Lua_helper.sendErrorsToLua)
 			{
-				LuaL.error(l, 'CALLBACK ERROR! ${e.details()}');
+				var errorText:String = Std.isOfType(e, haxe.Exception) ? cast(e, haxe.Exception).details() : Std.string(e);
+				LuaL.error(l, 'CALLBACK ERROR! $errorText');
 				return 0;
 			}
 			throw e;

@@ -89,6 +89,7 @@ class FreeplayState extends MusicBeatState
 	private var songInfoCardLoading:Bool = false;
 	private var songInfoCardData:FreeplaySongCardData = null;
 	private var songInfoCardCache:Map<String, FreeplaySongCardData> = new Map<String, FreeplaySongCardData>();
+	private var songInfoCardCacheOrder:Array<String> = [];
 	private var selectedSongDataTimer:FlxTimer = null;
 	private var selectedSongDataLoadToken:Int = 0;
 
@@ -102,7 +103,7 @@ class FreeplayState extends MusicBeatState
 	var bgFadeTweenOut:FlxTween = null;
 	var currentBgSignature:String = null;
 	var pendingBgSignature:String = null;
-	static inline var BG_SWAP_DELAY:Float = 2.0;
+	static inline var BG_SWAP_DELAY:Float = 1.0;
 
 	public var missingTextBG:FlxSprite;
 	public var missingText:FlxText;
@@ -162,8 +163,9 @@ class FreeplayState extends MusicBeatState
 	public var previewTimer:FlxTimer = null;
 	public var previewLoadToken:Int = 0;
 	public var previewLoadTimer:FlxTimer = null;
-	static inline var SELECTED_DATA_LOAD_DELAY:Float = 2.0;
+	static inline var SELECTED_DATA_LOAD_DELAY:Float = 1.0;
 	static inline var PREVIEW_LOAD_DELAY:Float = 0.12;
+	static inline var SONG_INFO_CARD_CACHE_LIMIT:Int = 32;
 	public static var instSound:FlxSound = null;
 
 	#if mobile
@@ -280,19 +282,17 @@ class FreeplayState extends MusicBeatState
 		if (pendingBgSignature == currentBgSignature)
 		{
 			if (bgSwapTimer != null)
-			{
 				bgSwapTimer.cancel();
-				bgSwapTimer = null;
-			}
 			return;
 		}
 
 		if (bgSwapTimer != null)
 			bgSwapTimer.cancel();
 
-		bgSwapTimer = new FlxTimer().start(BG_SWAP_DELAY, function(_:FlxTimer)
+		if (bgSwapTimer == null)
+			bgSwapTimer = new FlxTimer();
+		bgSwapTimer.start(BG_SWAP_DELAY, function(_:FlxTimer)
 		{
-			bgSwapTimer = null;
 			performSelectedFreeplayBackgroundSwap();
 		});
 	}
@@ -1594,28 +1594,16 @@ class FreeplayState extends MusicBeatState
 		previewLoadToken++;
 
 		if (selectedSongDataTimer != null)
-		{
 			selectedSongDataTimer.cancel();
-			selectedSongDataTimer = null;
-		}
 
 		if (songInfoCardLoadTimer != null)
-		{
 			songInfoCardLoadTimer.cancel();
-			songInfoCardLoadTimer = null;
-		}
 
 		if (previewTimer != null)
-		{
 			previewTimer.cancel();
-			previewTimer = null;
-		}
 
 		if (previewLoadTimer != null)
-		{
 			previewLoadTimer.cancel();
-			previewLoadTimer = null;
-		}
 
 		#if (target.threaded && sys)
 		_instLoadMutex.acquire();
@@ -1630,10 +1618,18 @@ class FreeplayState extends MusicBeatState
 		if (instPlaying != -1 || instSound != null || _prevInstSongName != null)
 			stopInstPreview(false);
 
+		var selectedSong:SongMetadata = (songs != null && curSelected >= 0 && curSelected < songs.length) ? songs[curSelected] : null;
+		if (selectedSong != null && !songInfoCardCache.exists(getSongInfoCardCacheKey(selectedSong)))
+		{
+			songInfoCardLoading = true;
+			setFreeplayLoadingUi(true);
+		}
+
 		var requestToken:Int = selectedSongDataLoadToken;
 		var requestIndex:Int = curSelected;
-		selectedSongDataTimer = new FlxTimer().start(delay, function(_:FlxTimer) {
-			selectedSongDataTimer = null;
+		if (selectedSongDataTimer == null)
+			selectedSongDataTimer = new FlxTimer();
+		selectedSongDataTimer.start(delay, function(_:FlxTimer) {
 			if (requestToken != selectedSongDataLoadToken || requestIndex != curSelected || songs == null || requestIndex < 0 || requestIndex >= songs.length)
 				return;
 
@@ -1672,9 +1668,10 @@ class FreeplayState extends MusicBeatState
 
 		if (!songs[requestIndex].isStepMania)
 		{
-			previewTimer = new FlxTimer().start(0.5, function(_:FlxTimer) {
+			if (previewTimer == null)
+				previewTimer = new FlxTimer();
+			previewTimer.start(0.5, function(_:FlxTimer) {
 				playInstPreview();
-				previewTimer = null;
 			});
 		}
 	}
@@ -1856,10 +1853,7 @@ class FreeplayState extends MusicBeatState
 		var requestIndex:Int = curSelected;
 
 		if (songInfoCardLoadTimer != null)
-		{
 			songInfoCardLoadTimer.cancel();
-			songInfoCardLoadTimer = null;
-		}
 
 		var song:SongMetadata = songs[requestIndex];
 		var cacheKey:String = getSongInfoCardCacheKey(song);
@@ -1872,8 +1866,9 @@ class FreeplayState extends MusicBeatState
 		songInfoCardLoading = true;
 		setFreeplayLoadingUi(true);
 
-		songInfoCardLoadTimer = new FlxTimer().start(delay, function(_:FlxTimer) {
-			songInfoCardLoadTimer = null;
+		if (songInfoCardLoadTimer == null)
+			songInfoCardLoadTimer = new FlxTimer();
+		songInfoCardLoadTimer.start(delay, function(_:FlxTimer) {
 			if (requestToken != songInfoCardLoadToken || requestIndex != curSelected)
 				return;
 
@@ -1930,7 +1925,14 @@ class FreeplayState extends MusicBeatState
 			return;
 
 		songInfoCardData = data;
-		songInfoCardCache.set(getSongInfoCardCacheKeyByName(data.songName), data);
+		var cacheKey:String = getSongInfoCardCacheKeyByName(data.songName);
+		if (!songInfoCardCache.exists(cacheKey))
+		{
+			songInfoCardCacheOrder.push(cacheKey);
+			while (songInfoCardCacheOrder.length > SONG_INFO_CARD_CACHE_LIMIT)
+				songInfoCardCache.remove(songInfoCardCacheOrder.shift());
+		}
+		songInfoCardCache.set(cacheKey, data);
 		songInfoCardLoading = false;
 		setFreeplayLoadingUi(false);
 
@@ -2219,14 +2221,12 @@ class FreeplayState extends MusicBeatState
         var requestedIndex:Int = curSelected;
         var songName:String = Paths.formatToSongPath(songs[requestedIndex].songName);
 
-        if(previewLoadTimer != null) {
+        if(previewLoadTimer != null)
             previewLoadTimer.cancel();
-            previewLoadTimer = null;
-        }
 
-        previewLoadTimer = new FlxTimer().start(PREVIEW_LOAD_DELAY, function(_:FlxTimer) {
-            previewLoadTimer = null;
-
+        if(previewLoadTimer == null)
+            previewLoadTimer = new FlxTimer();
+        previewLoadTimer.start(PREVIEW_LOAD_DELAY, function(_:FlxTimer) {
             if(requestToken != previewLoadToken || songs.length == 0 || requestedIndex != curSelected)
                 return;
 
@@ -2303,10 +2303,8 @@ class FreeplayState extends MusicBeatState
      */
     function stopInstPreview(?restoreMenuMusic:Bool = true):Void {
         previewLoadToken++;
-        if(previewLoadTimer != null) {
+        if(previewLoadTimer != null)
             previewLoadTimer.cancel();
-            previewLoadTimer = null;
-        }
 
         instPlaying = -1;
         instSound = null;
@@ -2689,6 +2687,16 @@ class FreeplayState extends MusicBeatState
 		{
 			selectedSongDataTimer.cancel();
 			selectedSongDataTimer = null;
+		}
+		if (previewTimer != null)
+		{
+			previewTimer.cancel();
+			previewTimer = null;
+		}
+		if (previewLoadTimer != null)
+		{
+			previewLoadTimer.cancel();
+			previewLoadTimer = null;
 		}
 		if (bgSwapTimer != null)
 		{

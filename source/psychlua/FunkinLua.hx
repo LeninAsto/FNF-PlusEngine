@@ -51,10 +51,12 @@ class FunkinLua {
 
 	public var callbacks:Map<String, Dynamic> = new Map<String, Dynamic>();
 	public static var customFunctions:Map<String, Dynamic> = new Map<String, Dynamic>();
+	static var scriptsByState:Array<FunkinLua> = [];
 
 	public function new(scriptName:String, ?context:LuaHostContext = null, ?autoCallOnCreate:Bool = true) {
 		lua = LuaL.newstate();
 		LuaL.openlibs(lua);
+		scriptsByState.push(this);
 
 		//trace('Lua version: ' + Lua.version());
 		//trace("LuaJIT version: " + Lua.versionJIT());
@@ -1761,12 +1763,14 @@ class FunkinLua {
 				#else
 				luaTrace('$scriptName\n$resultStr', true, false, FlxColor.RED);
 				#end
+				scriptsByState.remove(this);
 				lua = null;
 				return;
 			}
 			if(isString) scriptName = 'unknown';
 		} catch(e:Dynamic) {
 			trace(e);
+			scriptsByState.remove(this);
 			return;
 		}
 		trace('Lua file loaded succesfully:' + scriptName);
@@ -1832,6 +1836,8 @@ class FunkinLua {
 	public function stop() {
 		closed = true;
 
+		scriptsByState.remove(this);
+
 		if(lua == null) {
 			return;
 		}
@@ -1848,6 +1854,16 @@ class FunkinLua {
 			hscript = null;
 		}
 		#end
+	}
+
+	public static function getScriptFromState(luaState:State):FunkinLua
+	{
+		if(luaState == null) return null;
+
+		for(script in scriptsByState)
+			if(script != null && script.lua == luaState)
+				return script;
+		return null;
 	}
 
 	function getSiblingScripts():Array<FunkinLua>
