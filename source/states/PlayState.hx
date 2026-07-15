@@ -4879,6 +4879,8 @@ class PlayState extends MusicBeatState
 					{
 						comboGroup.add(numScore);
 					}
+					if (numScore.x > xThing)
+						xThing = numScore.x;
 
 					FlxTween.tween(numScore, {alpha: 0}, 0.2 / playbackRate, {
 						onComplete: function(tween:FlxTween)

@@ -205,6 +205,7 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 	override public function prepare(item:FlxSprite):Null<DrawCommand> {
 		final lane = Adapter.instance.getLaneFromArrow(item);
 		final fn = Adapter.instance.getPlayerFromArrow(item);
+		final laneSlot = lane >= 0 ? ((fn * 8) + lane) % MAX_LANES : 0;
 
 		final pathAlpha = getPathAlpha(fn, lane);
 		final pathThickness = getPathThickness(fn, lane);
@@ -288,8 +289,8 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		}
 
 		// --- Phase 3: Build quads using smooth per-endpoint normals ---
-		final laneVerts = _perLaneVertices[lane];
-		final laneTrans = _perLaneTransforms[lane];
+		final laneVerts = _perLaneVertices[laneSlot];
+		final laneTrans = _perLaneTransforms[laneSlot];
 
 		var vi = 0;
 		var hasC = false;

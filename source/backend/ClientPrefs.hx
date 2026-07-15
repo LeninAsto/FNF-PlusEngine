@@ -70,7 +70,7 @@ import states.TitleState;
 	public var iconBounceType:String = 'Default';
 	public var judgementCounter:Bool = false;
 	public var showRating:Bool = true;
-	public var showCombo:Bool = true;
+	public var showCombo:Bool = false;
 	public var showComboNum:Bool = true;
 	public var comboInGame:Bool = false;
 	public var showEndCountdown:Bool = false; // Enables/disables the end countdown
