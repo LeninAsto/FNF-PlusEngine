@@ -88,7 +88,7 @@ class Reverse extends Modifier {
 		if (dir >= first && dir <= last)
 			val = val + getUnsafe(_crossID, player);
 
-		val = val + getUnsafe(_reverseID, player) + getUnsafe(_reverseIDs[dir], player);
+		val = val + getUnsafeLaneOverride(_reverseID, _reverseIDs[dir], player);
 
 		if (getUnsafe(_unboundedReverseID, player) == 0) {
 			val %= 2;
@@ -141,7 +141,7 @@ class Reverse extends Modifier {
 		var angleZ = 0.;
 
 		// Speed (no string allocation)
-		scroll.y = scroll.y * (getUnsafe(_xmodID, player) + getUnsafe(_xmodIDs[lane], player));
+		scroll.y = scroll.y * getUnsafeLaneOverride(_xmodID, _xmodIDs[lane], player);
 
 		final randomSpeed = Math.max(0, getUnsafe(_randomSpeedID, player));
 		if (randomSpeed > 0 && params.distance > 0)
@@ -152,16 +152,16 @@ class Reverse extends Modifier {
 		}
 
 		// Main
-		angleX = angleX + getUnsafe(_scrollAngleXID, player) + getUnsafe(_scrollAngleXIDs[lane], player);
-		angleY = angleY + getUnsafe(_scrollAngleYID, player) + getUnsafe(_scrollAngleYIDs[lane], player);
-		angleZ = angleZ + getUnsafe(_scrollAngleZID, player) + getUnsafe(_scrollAngleZIDs[lane], player);
+		angleX = angleX + getUnsafeLaneOverride(_scrollAngleXID, _scrollAngleXIDs[lane], player);
+		angleY = angleY + getUnsafeLaneOverride(_scrollAngleYID, _scrollAngleYIDs[lane], player);
+		angleZ = angleZ + getUnsafeLaneOverride(_scrollAngleZID, _scrollAngleZIDs[lane], player);
 
 		// Curved
 		final shiftCurved:Float = params.distance * 0.25 * (1 + getUnsafe(_curvedScrollPeriodID, player));
 
-		angleX = angleX + shiftCurved * (getUnsafe(_curvedScrollXID, player) + getUnsafe(_curvedScrollXIDs[lane], player));
-		angleY = angleY + shiftCurved * (getUnsafe(_curvedScrollYID, player) + getUnsafe(_curvedScrollYIDs[lane], player));
-		angleZ = angleZ + shiftCurved * (getUnsafe(_curvedScrollZID, player) + getUnsafe(_curvedScrollZIDs[lane], player));
+		angleX = angleX + shiftCurved * getUnsafeLaneOverride(_curvedScrollXID, _curvedScrollXIDs[lane], player);
+		angleY = angleY + shiftCurved * getUnsafeLaneOverride(_curvedScrollYID, _curvedScrollYIDs[lane], player);
+		angleZ = angleZ + shiftCurved * getUnsafeLaneOverride(_curvedScrollZID, _curvedScrollZIDs[lane], player);
 
 		// angleY doesnt do anything if angleX and angleZ are disabled
 		if (angleX == 0 && angleZ == 0)

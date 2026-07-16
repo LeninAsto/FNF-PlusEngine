@@ -4797,6 +4797,7 @@ class PlayState extends MusicBeatState
 			
 			rating.x += ClientPrefs.data.comboOffset[0];
 			rating.y -= ClientPrefs.data.comboOffset[1];
+
 			var comboSpr:FlxSprite = new FlxSprite().loadGraphic(Paths.image(uiFolder + 'combo' + uiPostfix));
 			comboSpr.screenCenter();
 			comboSpr.x = placement;

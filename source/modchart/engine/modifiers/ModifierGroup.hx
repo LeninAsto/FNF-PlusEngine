@@ -186,7 +186,7 @@ final class ModifierGroup {
 		__addModifier(name, instance);
 
 	public inline function addModifier(name:String) {
-		var lowerName = name.toLowerCase();
+		var lowerName = __normalizeModifierName(name);
 		if (modifiers.exists(lowerName))
 			return;
 
@@ -198,6 +198,14 @@ final class ModifierGroup {
 		}
 		var newModifier = Type.createInstance(modifierClass, [playfield]);
 		__addModifier(lowerName, newModifier);
+	}
+
+	inline function __normalizeModifierName(name:String):String {
+		final lowerName = name.toLowerCase();
+		return switch (lowerName) {
+			case 'fieldrotate': 'field';
+			default: lowerName;
+		}
 	}
 
 	// Note: __hashKey in PercentArray is now case-insensitive, so no toLowerCase() needed.
@@ -236,6 +244,9 @@ final class ModifierGroup {
 			return percs[player];
 		return 0;
 	}
+
+	inline private function __hasUnsafe(id:Int):Bool
+		return percents.getUnsafe(id) != null;
 
 	inline private function __setUnsafe(id:Int, value:Float, player:Int = -1) {
 		var possiblePercs = percents.getUnsafe(id);

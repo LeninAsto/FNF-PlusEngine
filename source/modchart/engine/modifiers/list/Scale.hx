@@ -50,9 +50,9 @@ class Scale extends Modifier {
 		var tinyV = getUnsafe(tinyIDs[axisIdx], player);
 		var miniV = getUnsafe(miniID, player);
 		if (Config.COLUMN_SPECIFIC_MODIFIERS) {
-			scaleV += getUnsafe(scaleLaneIDs[axisIdx][lane], player);
-			tinyV += getUnsafe(tinyLaneIDs[axisIdx][lane], player);
-			miniV += getUnsafe(miniLaneIDs[lane], player);
+			scaleV = getUnsafeLaneOverride(scaleIDs[axisIdx], scaleLaneIDs[axisIdx][lane], player);
+			tinyV = getUnsafeLaneOverride(tinyIDs[axisIdx], tinyLaneIDs[axisIdx][lane], player);
+			miniV = getUnsafeLaneOverride(miniID, miniLaneIDs[lane], player);
 		}
 
 		var scale = scaleV;
@@ -72,7 +72,7 @@ class Scale extends Modifier {
 		// stretch sub-mod: compress X and elongate Y
 		var stretchV = getUnsafe(stretchID, params.player);
 		if (Config.COLUMN_SPECIFIC_MODIFIERS)
-			stretchV += getUnsafe(stretchLaneIDs[params.lane], params.player);
+			stretchV = getUnsafeLaneOverride(stretchID, stretchLaneIDs[params.lane], params.player);
 		if (stretchV != 0) {
 			data.scaleX *= 1.0 - 0.5 * stretchV;
 			data.scaleY *= 1.0 + stretchV;
@@ -81,7 +81,7 @@ class Scale extends Modifier {
 		// squish sub-mod: widen X and compress Y, matching NMV's ScaleModifier.
 		var squishV = getUnsafe(squishID, params.player);
 		if (Config.COLUMN_SPECIFIC_MODIFIERS)
-			squishV += getUnsafe(squishLaneIDs[params.lane], params.player);
+			squishV = getUnsafeLaneOverride(squishID, squishLaneIDs[params.lane], params.player);
 		if (squishV != 0) {
 			final squishScale = 1.0 + squishV;
 			if (squishScale != 0) {

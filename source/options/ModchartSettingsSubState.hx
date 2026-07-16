@@ -44,58 +44,6 @@ class ModchartSettingsSubState extends BaseOptionsMenu
 		option.decimals = 1;
 		addOption(option);
 
-		// Render Arrow Paths option
-		var option:Option = new Option('Render Arrow Paths',
-			'Renders the trajectory lines of arrows.\nWARNING: This affects performance due to path computation.',
-			'renderArrowPaths',
-			BOOL);
-		addOption(option);
-
-		// Styled Arrow Paths option
-		var option:Option = new Option('Styled Arrow Paths',
-			'Applies visual styles to arrow paths (color, scale, alpha).\nOnly works when "Render Arrow Paths" is enabled.',
-			'styledArrowPaths',
-			BOOL);
-		addOption(option);
-
-		// Arrow Path Boundary option
-		var option:Option = new Option('Arrow Path Boundary',
-			'Pixels outside screen to still render paths.\nLower = Better FPS, Higher = Less pop-in\n(Recommended: 300)',
-			'arrowPathBoundary',
-			INT);
-		option.scrollSpeed = 10;
-		option.minValue = 0;
-		option.maxValue = 1000;
-		option.changeValue = 50;
-		option.decimals = 0;
-		addOption(option);
-
-		// Hold End Scale option
-		var option:Option = new Option('Hold End Scale',
-			'Scales the size of hold note endings.\nAdjust for visual preference.',
-			'holdEndScale',
-			FLOAT);
-		option.scrollSpeed = 10;
-		option.minValue = 0.1;
-		option.maxValue = 3.0;
-		option.changeValue = 0.1;
-		option.decimals = 1;
-		addOption(option);
-
-		// Column Specific Modifiers option
-		var option:Option = new Option('Column Specific Modifiers',
-			'Enables column-specific modifiers.\nDisabling may improve performance by reducing calculations.',
-			'columnSpecificModifiers',
-			BOOL);
-		addOption(option);
-
-		// Holds Behind Strum option
-		var option:Option = new Option('Holds Behind Strums',
-			'Shows sustain notes behind the strum line.\nVisual preference option.',
-			'holdsBehindStrum',
-			BOOL);
-		addOption(option);
-
 		super();
 	}
 }

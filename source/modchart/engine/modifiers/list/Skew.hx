@@ -59,8 +59,8 @@ class Skew extends Modifier {
 		final lane = params.lane;
 		final player = params.player;
 
-		data.skewX += getUnsafe(xID, player) + getUnsafe(xLaneIDs[lane], player);
-		data.skewY += getUnsafe(yID, player) + getUnsafe(yLaneIDs[lane], player);
+		data.skewX += getUnsafeLaneOverride(xID, xLaneIDs[lane], player);
+		data.skewY += getUnsafeLaneOverride(yID, yLaneIDs[lane], player);
 
 		return data;
 	}

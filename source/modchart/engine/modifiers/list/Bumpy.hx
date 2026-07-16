@@ -63,10 +63,10 @@ class Bumpy extends Modifier {
 		var mult = getUnsafe(_bumpyMultID[axisIdx], player);
 		var amt = getUnsafe(_bumpyAmtID[axisIdx], player);
 		if (Config.COLUMN_SPECIFIC_MODIFIERS) {
-			offset += getUnsafe(_bumpyOffLaneIDs[axisIdx][lane], player);
-			period += getUnsafe(_bumpyPeriodLaneIDs[axisIdx][lane], player);
-			mult += getUnsafe(_bumpyMultLaneIDs[axisIdx][lane], player);
-			amt += getUnsafe(_bumpyAmtLaneIDs[axisIdx][lane], player);
+			offset = getUnsafeLaneOverride(_bumpyOffID[axisIdx], _bumpyOffLaneIDs[axisIdx][lane], player);
+			period = getUnsafeLaneOverride(_bumpyPeriodID[axisIdx], _bumpyPeriodLaneIDs[axisIdx][lane], player);
+			mult = getUnsafeLaneOverride(_bumpyMultID[axisIdx], _bumpyMultLaneIDs[axisIdx][lane], player);
+			amt = getUnsafeLaneOverride(_bumpyAmtID[axisIdx], _bumpyAmtLaneIDs[axisIdx][lane], player);
 		}
 
 		if (amt == 0)
@@ -93,10 +93,10 @@ class Bumpy extends Modifier {
 		var mult = getUnsafe(_angMultID[axisIdx], player);
 		var amt = getUnsafe(_angAmtID[axisIdx], player);
 		if (Config.COLUMN_SPECIFIC_MODIFIERS) {
-			offset += getUnsafe(_angOffLaneIDs[axisIdx][lane], player);
-			period += getUnsafe(_angPeriodLaneIDs[axisIdx][lane], player);
-			mult += getUnsafe(_angMultLaneIDs[axisIdx][lane], player);
-			amt += getUnsafe(_angAmtLaneIDs[axisIdx][lane], player);
+			offset = getUnsafeLaneOverride(_angOffID[axisIdx], _angOffLaneIDs[axisIdx][lane], player);
+			period = getUnsafeLaneOverride(_angPeriodID[axisIdx], _angPeriodLaneIDs[axisIdx][lane], player);
+			mult = getUnsafeLaneOverride(_angMultID[axisIdx], _angMultLaneIDs[axisIdx][lane], player);
+			amt = getUnsafeLaneOverride(_angAmtID[axisIdx], _angAmtLaneIDs[axisIdx][lane], player);
 		}
 
 		if (amt == 0)

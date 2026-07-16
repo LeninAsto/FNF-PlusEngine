@@ -96,10 +96,10 @@ class Stealth extends Modifier {
 		final lane = params.lane;
 
 		// Use pre-computed IDs to avoid Std.string(lane) + string concat allocations
-		final stealthVal = getUnsafe(_stealthID, player) + getUnsafe(_stealthIDs[lane], player);
-		final darkVal = getUnsafe(_darkID, player) + getUnsafe(_darkIDs[lane], player);
+		final stealthVal = getUnsafeLaneOverride(_stealthID, _stealthIDs[lane], player);
+		final darkVal = getUnsafeLaneOverride(_darkID, _darkIDs[lane], player);
 		final visibility = params.isTapArrow ? stealthVal : darkVal;
-		data.alpha = ((getUnsafe(_alphaID, player) + getUnsafe(_alphaIDs[lane], player)) * (1 - ((Math.max(0.5, visibility) - 0.5) * 2)));
+		data.alpha = (getUnsafeLaneOverride(_alphaID, _alphaIDs[lane], player) * (1 - ((Math.max(0.5, visibility) - 0.5) * 2)));
 		data.glow += visibility * 2;
 
 		// sudden & hidden
