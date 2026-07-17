@@ -24,6 +24,7 @@ class EnUS
         "score_text_new_instakill" => "Score: {1} | Rating: {2} | TPS: {3}/{4}",
         "score_text_legacy" => "Score: {1} | Misses: {2} | Rating: {3}",
         "score_text_instakill_legacy" => "Score: {1} | Rating: {2}",
+        "freeplay_song_time" => "Time: {1}",
         "botplay" => "Botplay",
         "perfect_mode" => "Perfect Mode",
         "opponent_mode" => "Opponent Mode",

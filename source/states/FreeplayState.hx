@@ -919,7 +919,7 @@ class FreeplayState extends MusicBeatState
 				{
 					songInfoCardData.durationMs = pendingSound.length;
 					if (songInfoCardStats != null)
-						songInfoCardStats.text = 'Weather: ${formatDuration(songInfoCardData.durationMs)}\nBPM: ${formatFloat(songInfoCardData.bpm)}';
+						songInfoCardStats.text = Language.getPhrase("freeplay_song_time", "Time: {1}", [formatDuration(songInfoCardData.durationMs)]) + '\nBPM: ${formatFloat(songInfoCardData.bpm)}';
 				}
 
 				Conductor.bpm = pendingBpm;
@@ -1940,7 +1940,7 @@ class FreeplayState extends MusicBeatState
 			songInfoCardTitle.text = data.songName;
 
 		if (songInfoCardStats != null)
-			songInfoCardStats.text = 'Weather: ${formatDuration(data.durationMs)}\nBPM: ${formatFloat(data.bpm)}';
+			songInfoCardStats.text = Language.getPhrase("freeplay_song_time", "Time: {1}", [formatDuration(data.durationMs)]) + '\nBPM: ${formatFloat(data.bpm)}';
 
 		var diffList:Array<String> = data.difficultyNames != null ? data.difficultyNames.copy() : [];
 		var diffLabel:String = diffList.length > 0 ? diffList.join(', ') : 'Normal';

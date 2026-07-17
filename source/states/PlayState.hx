@@ -5219,9 +5219,9 @@ class PlayState extends MusicBeatState
 				nfRateSprite.setGraphicSize(Std.int(nfRateSprite.width * daPixelZoom * 0.85));
 			}
 			nfRateSprite.updateHitbox();
-			nfRateSprite.x += nfRateSprite.width / 2;
-			nfRateSprite.y += nfRateSprite.height / 2;
-			nfRateSprite.updateHitbox();
+			nfRateSprite.screenCenter();
+			nfRateSprite.x = placement - 40 + ClientPrefs.data.comboOffset[0];
+			nfRateSprite.y -= 60 + ClientPrefs.data.comboOffset[1];
 		}
 
 		if (nfComboSprite != null) {
@@ -5235,6 +5235,9 @@ class PlayState extends MusicBeatState
 				nfComboSprite.setGraphicSize(Std.int(nfComboSprite.width * daPixelZoom * 0.85));
 			}
 			nfComboSprite.updateHitbox();
+			nfComboSprite.screenCenter();
+			nfComboSprite.x = placement + ClientPrefs.data.comboOffset[2];
+			nfComboSprite.y += 60 - ClientPrefs.data.comboOffset[3];
 		}
 
 		var scale:Float = 0;
@@ -5268,6 +5271,7 @@ class PlayState extends MusicBeatState
 		}
 		nfComboNumTweenScaleY = [];
 
+		var xThing:Float = placement + ClientPrefs.data.comboOffset[2];
 		for (i in 0...digitCount) {
 			if (nfNumItems == null || i >= nfNumItems.members.length) continue;
 			
@@ -5276,15 +5280,16 @@ class PlayState extends MusicBeatState
 			numScore.visible = ClientPrefs.data.showComboNum && showComboNum;
 			numScore.loadGraphic(Paths.image(uiPrefix + 'num' + digit + uiSuffix));
 
-			numScore.x = startX + (43 * i) - 90;
-			numScore.y += 80 - ClientPrefs.data.comboOffset[3];
-			
 			if (!PlayState.isPixelStage) {
 				numScore.setGraphicSize(Std.int(numScore.width * numScale));
 			} else {
 				numScore.setGraphicSize(Std.int(numScore.width * daPixelZoom * 0.9));
 			}
 			numScore.updateHitbox();
+			numScore.screenCenter();
+			numScore.x = startX + (43 * i) - 90;
+			numScore.y += 80 - ClientPrefs.data.comboOffset[3];
+			numScore.offset.set(0, 0);
 			numScore.antialiasing = antialias;
 
 			nfComboNumTween[i] = FlxTween.tween(numScore, {alpha: 0}, 0.4 / playbackRate, {
@@ -5302,7 +5307,13 @@ class PlayState extends MusicBeatState
 				numScore.offset.x -= nfComboOffsetFix[digit][0] * 0.5;
 				numScore.offset.y += nfComboOffsetFix[digit][1] * 0.5;
 			}
+
+			if (numScore.x > xThing)
+				xThing = numScore.x;
 		}
+
+		if (nfComboSprite != null)
+			nfComboSprite.x = xThing + 50;
 
 		for (i in digitCount...nfNumItems.members.length) {
 			if (nfNumItems.members[i] != null) {

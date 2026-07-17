@@ -18,6 +18,7 @@ class EsES
         "score_text_instakill" => "Puntuación: {1} | Clasificación: {2}",
         "score_text_new" => "Puntuación: {1} | {2}: {3} | Clasificación: {4} | TPS: {5}/{6}",
         "score_text_new_instakill" => "Puntuación: {1} | Clasificación: {2} | TPS: {3}/{4}",
+        "freeplay_song_time" => "Tiempo: {1}",
         "botplay" => "Automático",
         "little_timmy_mode" => "Modo Pequeño Timmy",
         "misses" => "Fallos",
