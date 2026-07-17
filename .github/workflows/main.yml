@@ -103,7 +103,7 @@ jobs:
           printf '%s\n' "${{ github.run_id }}" > VERSION
 
       - name: Build
-        run: haxelib run lime build linux --app-version="${APP_VERSION}" -D officialBuild
+        run: haxelib run lime build Project.xml linux --app-version="${APP_VERSION}" -D officialBuild
 
       - name: Package artifact
         run: |
@@ -173,7 +173,7 @@ jobs:
           rm -rf export build ~/.gradle
 
       - name: Build
-        run: haxelib run lime build android --app-version="${APP_VERSION}" -D officialBuild -D HXCPP_IGNORE_WARNINGS
+        run: haxelib run lime build Project.xml android --app-version="${APP_VERSION}" -D officialBuild -D HXCPP_IGNORE_WARNINGS
 
       - name: Package artifact
         run: |
@@ -212,7 +212,7 @@ jobs:
           Set-Content -Path VERSION -Value "${{ github.run_id }}"
 
       - name: Build
-        run: haxelib run lime build windows --app-version="${env:APP_VERSION}" -D officialBuild
+        run: haxelib run lime build Project.xml windows --app-version="${env:APP_VERSION}" -D officialBuild
 
       - name: Package artifact
         run: |
@@ -249,7 +249,7 @@ jobs:
           printf '%s\n' "${{ github.run_id }}" > VERSION
 
       - name: Build
-        run: haxelib run lime build mac --app-version="${APP_VERSION}" -D officialBuild
+        run: haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -D officialBuild
 
       - name: Package artifact
         run: |
@@ -286,7 +286,7 @@ jobs:
           printf '%s\n' "${{ github.run_id }}" > VERSION
 
       - name: Build
-        run: haxelib run lime build mac --app-version="${APP_VERSION}" -D officialBuild
+        run: haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -D officialBuild
 
       - name: Package artifact
         run: |
@@ -323,7 +323,7 @@ jobs:
           printf '%s\n' "${{ github.run_id }}" > VERSION
 
       - name: Build
-        run: haxelib run lime build ios -nosign --app-version="${APP_VERSION}" -D officialBuild
+        run: haxelib run lime build Project.xml ios -nosign --app-version="${APP_VERSION}" -D officialBuild
 
       - name: Package artifact
         run: |

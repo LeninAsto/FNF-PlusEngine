@@ -229,6 +229,6 @@
 
 	<section if="android">
 		<assets path="art/icons/android/res" rename="app/src/main/res" type="template" />
-		<include path="Android.xml" />
+		<include path="include_android.xml" />
 	</section>
 </project>
