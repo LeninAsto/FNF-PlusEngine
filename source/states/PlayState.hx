@@ -5028,6 +5028,8 @@ class PlayState extends MusicBeatState
 
 	private function popUpScoreNf(note:Note = null):Void
 	{
+		var placement:Float = FlxG.width * 0.35;
+		
 		var noteDiff:Float = Math.abs(note.strumTime - Conductor.songPosition + ClientPrefs.data.ratingOffset);
 		vocals.volume = 1;
 
