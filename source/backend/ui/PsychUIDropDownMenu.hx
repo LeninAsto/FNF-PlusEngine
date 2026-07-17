@@ -132,7 +132,7 @@ class PsychUIDropDownMenu extends PsychUIInputText
 		if (s == null || !s.visible)
 			return false;
 			
-		FlxG.mouse.getViewPosition(cam, _tmpMouse);
+		_tmpMouse = FlxG.mouse.getScreenPosition(cam);
 		s.getScreenPosition(_tmpBg, cam);
 		
 		return _tmpMouse.x >= _tmpBg.x
@@ -146,7 +146,7 @@ class PsychUIDropDownMenu extends PsychUIInputText
 		if (!FlxG.mouse.overlaps(bg, cam))
 			return -1;
 			
-		FlxG.mouse.getViewPosition(cam, _tmpMouse);
+		_tmpMouse = FlxG.mouse.getScreenPosition(cam);
 		bg.getScreenPosition(_tmpBg, cam);
 		
 		var localX:Float = _tmpMouse.x - _tmpBg.x;
@@ -375,7 +375,7 @@ class PsychUIDropDownMenu extends PsychUIInputText
 					
 					if (usable > 0 && maxScroll > 0)
 					{
-						FlxG.mouse.getViewPosition(cam, _tmpMouse);
+						_tmpMouse = FlxG.mouse.getScreenPosition(cam);
 						var dy:Float = _tmpMouse.y - _scrollDragStartY;
 						var newIndex:Int = Std.int(Math.round(_scrollDragStartIndex + dy / usable * maxScroll));
 						newIndex = Std.int(Math.max(0, Math.min(maxScroll, newIndex)));
@@ -423,7 +423,7 @@ class PsychUIDropDownMenu extends PsychUIInputText
 
 			_hasScrollbar = totalItems > _maxVisibleItems;
 			var startIdx:Int = _hasScrollbar ? curScroll : 0;
-			var endIdx:Int = _hasScrollbar ? Math.min(startIdx + _maxVisibleItems, totalItems) : totalItems;
+			var endIdx:Int = _hasScrollbar ? Std.int(Math.min(startIdx + _maxVisibleItems, totalItems)) : totalItems;
 
 			for (item in _items)
 			{
