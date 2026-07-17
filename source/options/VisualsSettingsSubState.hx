@@ -95,6 +95,12 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 
+		var option:Option = new Option('NF HUD System',
+		    'If checked, it will use an NF-style HUD system.',
+			'nfStyleSystem',
+			BOOL);
+		addOption(option);
+
 		var option:Option = new Option('Hide Sustain Splash',
 			'If checked, hides Sustain Splash',
 			'hideSustainSplash',
@@ -210,7 +216,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			'smoothHPBug',
 			BOOL);
 		addOption(option);
-		
 
 		var option:Option = new Option('Show Watermark',
 			'If checked, shows the watermark on screen.',

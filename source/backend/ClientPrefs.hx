@@ -65,6 +65,7 @@ import states.TitleState;
 	public var framerate:Int = 60;
 	public var camZooms:Bool = true;
 	public var hideHud:Bool = false;
+	public var nfStyleSystem:Bool = false;
 	public var hideSustainSplash:Bool = true;
 	public var showKeyViewer:Bool = false;
 	public var iconBounceType:String = 'Default';
