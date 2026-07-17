@@ -42,7 +42,6 @@ permissions:
 env:
   APP_VERSION: 4.0.0-${{ github.run_id }}
   HAXE_VERSION: 4.3.7
-  SSCRIPT_SETTINGS: oy9:showMacroty8:loopCosti25y10:includeAllfg
   DEV_BUILD_TAG: dev-build
 
 jobs:
@@ -101,7 +100,6 @@ jobs:
 
       - name: Prepare build
         run: |
-          printf '%s' "$SSCRIPT_SETTINGS" > ~/settings.cocoa
           printf '%s\n' "${{ github.run_id }}" > VERSION
 
       - name: Build
@@ -171,7 +169,6 @@ jobs:
 
       - name: Prepare build
         run: |
-          printf '%s' "$SSCRIPT_SETTINGS" > ~/settings.cocoa
           printf '%s\n' "${{ github.run_id }}" > VERSION
           rm -rf export build ~/.gradle
 
@@ -212,7 +209,6 @@ jobs:
 
       - name: Prepare build
         run: |
-          Set-Content -Path "$env:USERPROFILE\settings.cocoa" -Value $env:SSCRIPT_SETTINGS -NoNewline
           Set-Content -Path VERSION -Value "${{ github.run_id }}"
 
       - name: Build
@@ -250,7 +246,6 @@ jobs:
 
       - name: Prepare build
         run: |
-          printf '%s' "$SSCRIPT_SETTINGS" > ~/settings.cocoa
           printf '%s\n' "${{ github.run_id }}" > VERSION
 
       - name: Build
@@ -288,7 +283,6 @@ jobs:
 
       - name: Prepare build
         run: |
-          printf '%s' "$SSCRIPT_SETTINGS" > ~/settings.cocoa
           printf '%s\n' "${{ github.run_id }}" > VERSION
 
       - name: Build
@@ -326,7 +320,6 @@ jobs:
 
       - name: Prepare build
         run: |
-          printf '%s' "$SSCRIPT_SETTINGS" > ~/settings.cocoa
           printf '%s\n' "${{ github.run_id }}" > VERSION
 
       - name: Build
