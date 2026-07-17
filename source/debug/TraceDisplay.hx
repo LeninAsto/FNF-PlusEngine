@@ -33,7 +33,6 @@ enum TraceType {
     ERROR;
     LUA_ERROR;
     HSCRIPT_ERROR;
-    SSCRIPT_ERROR;
     WARNING;
     INFO;
 }
@@ -312,30 +311,7 @@ class TraceDisplay extends Sprite
             instance.addTraceDirectly(errorText, HSCRIPT_ERROR, 0xFF4444);
         }
     }
-    
-    /**
-     * Función pública para agregar errores de SScript
-     */
-    public static function addSScriptError(text:String, ?origin:String):Void
-    {
-        if (instance != null) {
-            var errorText = 'SSCRIPT ERROR: $text';
-            if (origin != null && origin.length > 0) {
-                var name = instance.extractFileName(origin);
-                errorText = 'SSCRIPT ERROR in $name: $text';
-            }
-            instance.addTraceDirectly(errorText, SSCRIPT_ERROR, 0xFF4444);
-        }
-        
-        // Incrementar contador en FPSCounter
-        #if !flash
-        try {
-            if (debug.FPSCounter.instance != null) {
-                debug.FPSCounter.instance.sscriptsErrors++;
-            }
-        } catch(e) {}
-        #end
-    }
+
     
     /**
      * Función pública para agregar warnings
@@ -374,7 +350,7 @@ class TraceDisplay extends Sprite
     {
         return switch (type) {
             case LUA_ERROR | ERROR: 0xFF6666;
-            case HSCRIPT_ERROR | SSCRIPT_ERROR: 0xFF4444;
+            case HSCRIPT_ERROR: 0xFF4444;
             case WARNING: 0xFFAA00;
             case INFO: 0x00AAFF;
             case NORMAL: color & 0x00FFFFFF;
@@ -407,7 +383,6 @@ class TraceDisplay extends Sprite
             case ERROR: "[ERROR] ";
             case LUA_ERROR: "[LUA-ERR] ";
             case HSCRIPT_ERROR: "[HSC-ERR] ";
-            case SSCRIPT_ERROR: "[SSCR-ERR] ";
             case WARNING: "[WARN] ";
             case INFO: "[INFO] ";
             case NORMAL: "";

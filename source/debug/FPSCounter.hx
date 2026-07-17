@@ -113,7 +113,6 @@ class FPSCounter extends Sprite
 	public var luaScriptsFailed:Int = 0;
 	public var hscriptsLoaded:Int = 0;
 	public var hscriptsFailed:Int = 0;
-	public var sscriptsErrors:Int = 0;
 
 	/**
 		Singleton instance for global access.
@@ -297,8 +296,6 @@ class FPSCounter extends Sprite
 			var scriptDebug:String = 'Scripts: ' + totalScripts;
 			if (totalFailed > 0)
 				scriptDebug += ' (Failed: ' + totalFailed + ')';
-			if (sscriptsErrors > 0)
-				scriptDebug += ' (SScript Errors: ' + sscriptsErrors + ')';
 			if (totalScripts > 0)
 				scriptDebug += '\nLua: ' + luaScriptsLoaded + ' | HScript: ' + hscriptsLoaded;
 			setBox(index++, scriptDebug, true);
