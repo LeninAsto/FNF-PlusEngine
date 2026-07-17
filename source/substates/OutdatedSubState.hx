@@ -132,7 +132,7 @@ class OutdatedSubState extends MusicBeatSubstate
 		{
 			pendingChangelog = Language.getPhrase('changelog_error', "Error loading changelog: {1}", [Std.string(e)]);
 		}
-		NetworkCheckToast.requestDone(loaded ? 'Obtenido' : 'Sin conexion');
+		NetworkCheckToast.requestDone(loaded ? 'Retrieved' : 'No connection');
     }
 
     function updateChangelogDisplay():Void

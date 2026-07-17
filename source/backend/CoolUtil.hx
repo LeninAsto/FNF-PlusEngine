@@ -78,7 +78,7 @@ class CoolUtil
 			trace('error checking for updates: $e');
 			hasUpdate = false;
 		}
-		NetworkCheckToast.requestDone(loaded ? 'Obtenido' : 'Sin conexion');
+		NetworkCheckToast.requestDone(loaded ? 'Retrieved' : 'No connection');
 	}
 
 	private static function compareVersions(version1:String, version2:String):Int
