@@ -16,6 +16,8 @@ class StorageUtil
 	private static final legacyPublicFolderName:String = 'PlusEngine';
 	private static final androidPackageName:String = 'com.leninasto.plusengine';
 
+	public static var onStorageReady:Void->Void = null;
+
 	public static function getStorageDirectory(?force:Bool = false):String
 	{
 		return #if android
@@ -307,6 +309,10 @@ class StorageUtil
 				if (hasRequiredPermissions())
 				{
 					initializeStorageDirectories();
+
+					if (onStorageReady != null) {
+						onStorageReady();
+					}
 					return;
 				}
 				attempts++;
@@ -382,6 +388,50 @@ class StorageUtil
 			
 			CoolUtil.showPopUp(errorMsg, Language.getPhrase('mobile_warning', "Warning!"));
 		}
+
+		copyDefaultFiles();
+	}
+
+	public static function copyAssetIfMissing(assetPath:String, destFileName:String, targetDir:String):Bool {
+		var destPath = Path.join([targetDir, destFileName]);
+
+		if (FileSystem.exists(destPath)) {
+			trace('File already exists: $destPath');
+			return true;
+		}
+		
+		try {
+			var bytes = openfl.utils.Assets.getBytes(assetPath);
+			if (bytes == null) {
+				bytes = lime.utils.Assets.getBytes(assetPath);
+			}
+			
+			if (bytes == null) {
+				trace('Asset not found: $assetPath');
+				return false;
+			}
+
+			ensureDirectory(targetDir);
+
+			File.saveBytes(destPath, bytes);
+			trace('Copied $assetPath to $destPath');
+			return true;
+		} catch (e:Dynamic) {
+			trace('Failed to copy $assetPath: ${Std.string(e)}');
+			return false;
+		}
+	}
+
+	public static function copyDefaultFiles():Void {
+		var rootDir = getStorageDirectory();
+		copyAssetIfMissing('assets/readme.txt', 'readme.txt', rootDir);
+
+		var modsDir = useExternalModsStorage() 
+					? getPublicModsDirectory() 
+					: getScopedModsDirectory();
+		copyAssetIfMissing('assets/modTemplate.zip', 'modTemplate.zip', modsDir);
+		
+		trace('Default files copy process completed.');
 	}
 	#end
 	#end
