@@ -35,6 +35,10 @@ on:
         description: 'Publish to all platforms (dev build)'
         type: boolean
         default: true
+      dev_build:
+        description: 'Show GitHub commit build info in-game'
+        type: boolean
+        default: true
 
 permissions:
   contents: read
@@ -56,6 +60,7 @@ jobs:
       build_macos_intel: ${{ steps.set_outputs.outputs.build_macos_intel }}
       build_ios: ${{ steps.set_outputs.outputs.build_ios }}
       publish_all: ${{ steps.set_outputs.outputs.publish_all }}
+      dev_build: ${{ steps.set_outputs.outputs.dev_build }}
     steps:
       - id: set_outputs
         run: |
@@ -67,6 +72,11 @@ jobs:
             echo "build_macos_intel=true" >> $GITHUB_OUTPUT
             echo "build_ios=true" >> $GITHUB_OUTPUT
             echo "publish_all=true" >> $GITHUB_OUTPUT
+            if [[ "${{ github.ref_name }}" == "dev" ]]; then
+              echo "dev_build=true" >> $GITHUB_OUTPUT
+            else
+              echo "dev_build=false" >> $GITHUB_OUTPUT
+            fi
           else
             echo "build_linux=${{ github.event.inputs.build_linux }}" >> $GITHUB_OUTPUT
             echo "build_android=${{ github.event.inputs.build_android }}" >> $GITHUB_OUTPUT
@@ -75,6 +85,7 @@ jobs:
             echo "build_macos_intel=${{ github.event.inputs.build_macos_intel }}" >> $GITHUB_OUTPUT
             echo "build_ios=${{ github.event.inputs.build_ios }}" >> $GITHUB_OUTPUT
             echo "publish_all=${{ github.event.inputs.publish_all }}" >> $GITHUB_OUTPUT
+            echo "dev_build=${{ github.event.inputs.dev_build }}" >> $GITHUB_OUTPUT
           fi
 
   build_linux_x64:
@@ -101,9 +112,19 @@ jobs:
       - name: Prepare build
         run: |
           printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
 
       - name: Build
-        run: haxelib run lime build Project.xml linux --app-version="${APP_VERSION}" -D officialBuild
+        run: haxelib run lime build Project.xml linux --app-version="${APP_VERSION}" -DofficialBuild
 
       - name: Package artifact
         run: |
@@ -170,10 +191,20 @@ jobs:
       - name: Prepare build
         run: |
           printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
           rm -rf export build ~/.gradle
 
       - name: Build
-        run: haxelib run lime build Project.xml android --app-version="${APP_VERSION}" -D officialBuild -D HXCPP_IGNORE_WARNINGS
+        run: haxelib run lime build Project.xml android --app-version="${APP_VERSION}" -DofficialBuild -DHXCPP_IGNORE_WARNINGS
 
       - name: Package artifact
         run: |
@@ -210,9 +241,19 @@ jobs:
       - name: Prepare build
         run: |
           Set-Content -Path VERSION -Value "${{ github.run_id }}"
+          @'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          '@ | Set-Content -Path source/backend/BuildInfoGenerated.hx
 
       - name: Build
-        run: haxelib run lime build Project.xml windows --app-version="${env:APP_VERSION}" -D officialBuild
+        run: haxelib run lime build Project.xml windows --app-version="${env:APP_VERSION}" -DofficialBuild
 
       - name: Package artifact
         run: |
@@ -247,9 +288,19 @@ jobs:
       - name: Prepare build
         run: |
           printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
 
       - name: Build
-        run: haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -D officialBuild
+        run: haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -DofficialBuild
 
       - name: Package artifact
         run: |
@@ -284,9 +335,19 @@ jobs:
       - name: Prepare build
         run: |
           printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
 
       - name: Build
-        run: haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -D officialBuild
+        run: haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -DofficialBuild
 
       - name: Package artifact
         run: |
@@ -321,9 +382,19 @@ jobs:
       - name: Prepare build
         run: |
           printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
 
       - name: Build
-        run: haxelib run lime build Project.xml ios -nosign --app-version="${APP_VERSION}" -D officialBuild
+        run: haxelib run lime build Project.xml ios -nosign --app-version="${APP_VERSION}" -DofficialBuild
 
       - name: Package artifact
         run: |

@@ -56,6 +56,7 @@ import backend.BaseStage;
 import backend.Difficulty;
 import backend.Mods;
 import backend.Language;
+import backend.BuildInfo;
 import backend.StructurePsychOld;
 import mobile.backend.StorageUtil;
 

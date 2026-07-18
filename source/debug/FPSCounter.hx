@@ -14,6 +14,7 @@ import openfl.display.Sprite;
 import haxe.Http;
 import haxe.Json;
 import states.MainMenuState;
+import backend.BuildInfo;
 import backend.ThreadUtil;
 import backend.ui.md3.NetworkCheckToast;
 #if windows
@@ -276,7 +277,10 @@ class FPSCounter extends Sprite
 				memoryDebug += '\nTask Memory: ' + flixel.util.FlxStringUtil.formatBytes(taskMemory);
 			setBox(index++, memoryDebug, true);
 
-			var buildDebug:String = os.substring(1) + '\nCommit: ' + lastCommit;
+			var commitText:String = BuildInfo.githubDevBuild && BuildInfo.commit.length > 0 ? BuildInfo.shortCommit() : lastCommit;
+			var buildDebug:String = os.substring(1) + '\nCommit: ' + commitText;
+			if (BuildInfo.githubDevBuild && BuildInfo.runId.length > 0)
+				buildDebug += '\nBuild: #' + BuildInfo.runId;
 			if (debugLevel >= 4)
 			{
 				if (commitDate != null && commitDate.length > 0)
@@ -436,6 +440,12 @@ class FPSCounter extends Sprite
 	// Función para obtener información del último commit
 	private function getLastCommit():Void
 	{
+		if (BuildInfo.githubDevBuild && BuildInfo.commit.length > 0)
+		{
+			lastCommit = BuildInfo.shortCommit();
+			return;
+		}
+
 		#if sys
 		NetworkCheckToast.requestShow('Checking commit');
 		#if (target.threaded && sys)

@@ -8,6 +8,7 @@ import flixel.FlxCamera;
 class PsychUIDropDownMenu extends PsychUIInputText
 {
 	public static final CLICK_EVENT = "dropdown_click";
+	static var _pointerOwner:PsychUIDropDownMenu = null;
 
 	public var list(default, set):Array<String> = [];
 	public var button:FlxSprite;
@@ -25,6 +26,12 @@ class PsychUIDropDownMenu extends PsychUIInputText
 	var _scrollDragging:Bool = false;
 	var _scrollDragStartY:Float = 0;
 	var _scrollDragStartIndex:Int = 0;
+	var _listDragging:Bool = false;
+	var _listDragStartY:Float = 0;
+	var _listDragStartIndex:Int = 0;
+	var _suppressItemRelease:Bool = false;
+	var _ignoreNextUnfocus:Bool = false;
+	var _lastScrollbarTheme:String = null;
 
 	var _scrollUpBtn:FlxSprite;
 	var _scrollDownBtn:FlxSprite;
@@ -33,6 +40,8 @@ class PsychUIDropDownMenu extends PsychUIInputText
 	
 	static inline var SCROLLBAR_W:Int = 16;
 	static inline var SCROLL_BTN_H:Int = 18;
+	static inline var ITEM_H:Int = 20;
+	static inline var DRAG_DEADZONE:Float = 6;
 	
 	var _tmpMouse:FlxPoint = new FlxPoint();
 	var _tmpBg:FlxPoint = new FlxPoint();
@@ -69,6 +78,11 @@ class PsychUIDropDownMenu extends PsychUIInputText
 		}
 		unfocus = function()
 		{
+			if (_ignoreNextUnfocus)
+			{
+				_ignoreNextUnfocus = false;
+				return;
+			}
 			showDropDownClickFix();
 			showDropDown(false);
 		}
@@ -108,10 +122,31 @@ class PsychUIDropDownMenu extends PsychUIInputText
 		_scrollThumb.active = false;
 		add(_scrollThumb);
 	}
+
+	function refreshScrollbarTheme(force:Bool = false):Void
+	{
+		var signature:String = OptionsMenuTheme.signature();
+		if (!force && _lastScrollbarTheme == signature)
+			return;
+
+		_lastScrollbarTheme = signature;
+		drawScrollButton(_scrollUpBtn, true);
+		drawScrollButton(_scrollDownBtn, false);
+
+		if (_scrollTrack != null && _scrollTrack.height > 0)
+			_scrollTrack.makeGraphic(SCROLLBAR_W, Std.int(_scrollTrack.height), OptionsMenuTheme.cardFill(false));
+		if (_scrollThumb != null && _scrollThumb.height > 0)
+			_scrollThumb.makeGraphic(SCROLLBAR_W - 2, Std.int(_scrollThumb.height), OptionsMenuTheme.current().accent);
+	}
 	
 	function drawScrollButton(s:FlxSprite, up:Bool):Void
 	{
-		s.makeGraphic(SCROLLBAR_W, SCROLL_BTN_H, FlxColor.GRAY, true);
+		if (s == null)
+			return;
+
+		var buttonColor:Int = OptionsMenuTheme.difficultyCardFill(OptionsMenuTheme.current().accent, false);
+		var arrowColor:Int = OptionsMenuTheme.readableTextOn(buttonColor);
+		s.makeGraphic(SCROLLBAR_W, SCROLL_BTN_H, buttonColor, true);
 		var cx:Int = Std.int(SCROLLBAR_W / 2);
 		var cy:Int = Std.int(SCROLL_BTN_H / 2);
 		var dir:Int = up ? 1 : -1;
@@ -122,7 +157,7 @@ class PsychUIDropDownMenu extends PsychUIInputText
 				var px:Int = cx - row + col;
 				var py:Int = cy + dir * (row - 1);
 				if (px >= 0 && px < SCROLLBAR_W && py >= 0 && py < SCROLL_BTN_H)
-					s.pixels.setPixel32(px, py, FlxColor.WHITE);
+					s.pixels.setPixel32(px, py, arrowColor);
 			}
 		}
 	}
@@ -188,8 +223,9 @@ class PsychUIDropDownMenu extends PsychUIInputText
 	
 	function scrollListBy(delta:Int):Void
 	{
-		var visibleCount:Int = Std.int(Math.min(list.length, _maxVisibleItems));
-		var maxScroll:Int = Std.int(Math.max(0, list.length - visibleCount));
+		var totalItems:Int = getVisibleSourceLength();
+		var visibleCount:Int = Std.int(Math.min(totalItems, _maxVisibleItems));
+		var maxScroll:Int = Std.int(Math.max(0, totalItems - visibleCount));
 		var newIndex:Int = Std.int(Math.max(0, Math.min(maxScroll, _scrollIndex + delta)));
 		if (newIndex != _scrollIndex)
 		{
@@ -197,9 +233,151 @@ class PsychUIDropDownMenu extends PsychUIInputText
 			showDropDown(true, _scrollIndex, _curFilter);
 		}
 	}
+
+	function getVisibleSourceLength():Int
+	{
+		return _curFilter != null ? _curFilter.length : list.length;
+	}
+
+	function mouseOverVisibleList(cam:FlxCamera):Bool
+	{
+		for (item in _items)
+		{
+			if (item != null && item.visible && FlxG.mouse.overlaps(item.bg, cam))
+				return true;
+		}
+		return false;
+	}
+
+	function mouseOverScrollbar(cam:FlxCamera):Bool
+	{
+		return _hasScrollbar
+			&& (mouseOverSpriteScreenRect(_scrollUpBtn, cam)
+				|| mouseOverSpriteScreenRect(_scrollDownBtn, cam)
+				|| mouseOverSpriteScreenRect(_scrollTrack, cam)
+				|| mouseOverSpriteScreenRect(_scrollThumb, cam));
+	}
+
+	function mouseOverDropdownSurface(cam:FlxCamera):Bool
+	{
+		return mouseOverVisibleList(cam) || mouseOverScrollbar(cam);
+	}
+
+	function blocksOtherDropDownInput():Bool
+	{
+		var cam:FlxCamera = camera != null ? camera : FlxG.camera;
+		return PsychUIInputText.focusOn == this && (mouseOverDropdownSurface(cam) || _scrollDragging || _listDragging);
+	}
+
+	function blockedByOpenDropDown():Bool
+	{
+		if (_pointerOwner != null && _pointerOwner != this && (FlxG.mouse.pressed || FlxG.mouse.justPressed || FlxG.mouse.justReleased))
+			return true;
+
+		if (Std.isOfType(PsychUIInputText.focusOn, PsychUIDropDownMenu))
+		{
+			var openDropDown:PsychUIDropDownMenu = cast PsychUIInputText.focusOn;
+			if (openDropDown != this && FlxG.mouse.justPressed && openDropDown.blocksOtherDropDownInput())
+			{
+				_pointerOwner = openDropDown;
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	function handleScrollbarInput(cam:FlxCamera):Bool
+	{
+		if (!_hasScrollbar || (PsychUIInputText.focusOn != this && !_scrollDragging))
+			return false;
+
+		if (FlxG.mouse.justPressed)
+		{
+			_tmpMouse = FlxG.mouse.getScreenPosition(cam);
+			var visibleCount:Int = Std.int(Math.min(getVisibleSourceLength(), _maxVisibleItems));
+
+			if (mouseOverSpriteScreenRect(_scrollUpBtn, cam))
+			{
+				_pointerOwner = this;
+				_suppressItemRelease = true;
+				scrollListBy(-1);
+				return true;
+			}
+			else if (mouseOverSpriteScreenRect(_scrollDownBtn, cam))
+			{
+				_pointerOwner = this;
+				_suppressItemRelease = true;
+				scrollListBy(1);
+				return true;
+			}
+			else if (mouseOverSpriteScreenRect(_scrollThumb, cam))
+			{
+				_pointerOwner = this;
+				_suppressItemRelease = true;
+				_scrollDragging = true;
+				_scrollDragStartY = _tmpMouse.y;
+				_scrollDragStartIndex = _scrollIndex;
+				return true;
+			}
+			else if (mouseOverSpriteScreenRect(_scrollTrack, cam))
+			{
+				_pointerOwner = this;
+				_suppressItemRelease = true;
+				scrollListBy(_tmpMouse.y < _scrollThumb.y ? -visibleCount : visibleCount);
+				return true;
+			}
+		}
+
+		if (_scrollDragging)
+		{
+			_pointerOwner = this;
+			_suppressItemRelease = true;
+			if (FlxG.mouse.pressed)
+			{
+				var totalItems:Int = getVisibleSourceLength();
+				var visibleCount:Int = Std.int(Math.min(totalItems, _maxVisibleItems));
+				var maxScroll:Int = Std.int(Math.max(0, totalItems - visibleCount));
+				var usable:Float = _scrollTrack.height - _scrollThumb.height;
+
+				if (usable > 0 && maxScroll > 0)
+				{
+					_tmpMouse = FlxG.mouse.getScreenPosition(cam);
+					var dy:Float = _tmpMouse.y - _scrollDragStartY;
+					var newIndex:Int = Std.int(Math.round(_scrollDragStartIndex + dy / usable * maxScroll));
+					newIndex = Std.int(Math.max(0, Math.min(maxScroll, newIndex)));
+					if (newIndex != _scrollIndex)
+					{
+						_scrollIndex = newIndex;
+						showDropDown(true, _scrollIndex, _curFilter);
+					}
+				}
+			}
+			return true;
+		}
+
+		return false;
+	}
+
+	function bringScrollbarToFront():Void
+	{
+		if (_scrollUpBtn == null)
+			return;
+
+		remove(_scrollUpBtn, true);
+		remove(_scrollDownBtn, true);
+		remove(_scrollTrack, true);
+		remove(_scrollThumb, true);
+		add(_scrollTrack);
+		add(_scrollUpBtn);
+		add(_scrollDownBtn);
+		add(_scrollThumb);
+	}
 	
 	function updateScrollbar():Void
 	{
+		refreshScrollbarTheme();
+
 		if (!_hasScrollbar || _scrollUpBtn == null)
 		{
 			if (_scrollUpBtn != null) _scrollUpBtn.visible = false;
@@ -209,10 +387,11 @@ class PsychUIDropDownMenu extends PsychUIInputText
 			return;
 		}
 		
-		var visibleCount:Int = Std.int(Math.min(list.length, _maxVisibleItems));
-		var listHeight:Int = visibleCount * 20;
+		var totalItems:Int = getVisibleSourceLength();
+		var visibleCount:Int = Std.int(Math.min(totalItems, _maxVisibleItems));
+		var listHeight:Int = Std.int(Math.max(visibleCount * ITEM_H, SCROLL_BTN_H * 2 + 10));
 
-		var scrollX:Float = x + _itemWidth - SCROLLBAR_W;
+		var scrollX:Float = behindText.x + _itemWidth + 1;
 		var scrollY:Float = behindText.y + behindText.height + 1;
 		
 		_scrollUpBtn.x = scrollX;
@@ -227,22 +406,23 @@ class PsychUIDropDownMenu extends PsychUIInputText
 		
 		_scrollTrack.x = scrollX;
 		_scrollTrack.y = scrollY + SCROLL_BTN_H;
-		_scrollTrack.makeGraphic(SCROLLBAR_W, listHeight - SCROLL_BTN_H * 2, FlxColor.GRAY);
+		_scrollTrack.makeGraphic(SCROLLBAR_W, Std.int(Math.max(1, listHeight - SCROLL_BTN_H * 2)), OptionsMenuTheme.cardFill(false));
 		_scrollTrack.visible = true;
 		_scrollTrack.active = true;
 		
-		var maxScroll:Int = Std.int(Math.max(0, list.length - visibleCount));
+		var maxScroll:Int = Std.int(Math.max(0, totalItems - visibleCount));
 		var trackH:Float = _scrollTrack.height;
-		var thumbH:Float = Math.max(10, trackH * (visibleCount / list.length));
+		var thumbH:Float = totalItems > 0 ? Math.max(10, trackH * (visibleCount / totalItems)) : trackH;
 		
 		if (Std.int(_scrollThumb.height) != Std.int(thumbH))
-			_scrollThumb.makeGraphic(SCROLLBAR_W - 2, Std.int(thumbH), FlxColor.WHITE);
+			_scrollThumb.makeGraphic(SCROLLBAR_W - 2, Std.int(thumbH), OptionsMenuTheme.current().accent);
 			
 		var ratio:Float = maxScroll > 0 ? _scrollIndex / maxScroll : 0;
 		_scrollThumb.x = scrollX + 1;
 		_scrollThumb.y = _scrollTrack.y + ratio * (trackH - thumbH);
 		_scrollThumb.visible = true;
 		_scrollThumb.active = true;
+		bringScrollbarToFront();
 	}
 
 	function set_selectedIndex(v:Int)
@@ -280,14 +460,29 @@ class PsychUIDropDownMenu extends PsychUIInputText
 
 	override function update(elapsed:Float)
 	{
+		if (_pointerOwner != null && !FlxG.mouse.pressed && !FlxG.mouse.justPressed && !FlxG.mouse.justReleased)
+			_pointerOwner = null;
+		if (blockedByOpenDropDown())
+			return;
+
+		var cam = camera != null ? camera : FlxG.camera;
 		var lastFocus = PsychUIInputText.focusOn;
+		var keepFocusFromDropdown:Bool = PsychUIInputText.focusOn == this && FlxG.mouse.justPressed && (mouseOverVisibleList(cam) || mouseOverScrollbar(cam));
+		var handledScrollbarInput:Bool = handleScrollbarInput(cam);
+
+		if (keepFocusFromDropdown || handledScrollbarInput)
+			_ignoreNextUnfocus = true;
+
 		super.update(elapsed);
+
+		if (keepFocusFromDropdown || handledScrollbarInput)
+			PsychUIInputText.focusOn = this;
 		
 		if(FlxG.mouse.justPressed)
 		{
 			var mouseOverButton = FlxG.mouse.overlaps(button, camera);
 			var mouseOverDropdown = false;
-			var mouseOverScrollbar = false;
+			var overScrollbar = false;
 
 			if(PsychUIInputText.focusOn == this)
 			{
@@ -300,25 +495,15 @@ class PsychUIDropDownMenu extends PsychUIInputText
 					}
 				}
 
-				if (!mouseOverDropdown && _hasScrollbar)
-				{
-					var cam = camera != null ? camera : FlxG.camera;
-					
-					if (mouseOverSpriteScreenRect(_scrollUpBtn, cam) ||
-						mouseOverSpriteScreenRect(_scrollDownBtn, cam) ||
-						mouseOverSpriteScreenRect(_scrollTrack, cam) ||
-						mouseOverSpriteScreenRect(_scrollThumb, cam))
-					{
-						mouseOverScrollbar = true;
-					}
-				}
+				if (!mouseOverDropdown)
+					overScrollbar = mouseOverScrollbar(cam);
 			}
 			
-			if(mouseOverButton || mouseOverDropdown || mouseOverScrollbar)
+			if(mouseOverButton || mouseOverDropdown || overScrollbar)
 			{
 				button.animation.play('pressed', true);
 
-				if(mouseOverButton || mouseOverDropdown || mouseOverScrollbar)
+				if(mouseOverButton || mouseOverDropdown || overScrollbar)
 				{
 					PsychUIInputText.focusOn = this;
 				}
@@ -330,7 +515,6 @@ class PsychUIDropDownMenu extends PsychUIInputText
 			}
 			else if(PsychUIInputText.focusOn == this && !FlxG.mouse.overlaps(this, camera))
 			{
-				var cam = camera != null ? camera : FlxG.camera;
 				if (!mouseOverSpriteScreenRect(_scrollUpBtn, cam) &&
 					!mouseOverSpriteScreenRect(_scrollDownBtn, cam) &&
 					!mouseOverSpriteScreenRect(_scrollTrack, cam) &&
@@ -351,6 +535,19 @@ class PsychUIDropDownMenu extends PsychUIInputText
 		}
 		else if(PsychUIInputText.focusOn == this)
 		{
+			if (_hasScrollbar && FlxG.mouse.justPressed && !handledScrollbarInput)
+			{
+				_tmpMouse = FlxG.mouse.getScreenPosition(cam);
+				if (mouseOverVisibleList(cam))
+				{
+					_pointerOwner = this;
+					_listDragging = true;
+					_listDragStartY = _tmpMouse.y;
+					_listDragStartIndex = _scrollIndex;
+					_suppressItemRelease = false;
+				}
+			}
+
 			var wheel:Int = FlxG.mouse.wheel;
 			if(FlxG.keys.justPressed.UP) wheel++;
 			if(FlxG.keys.justPressed.DOWN) wheel--;
@@ -360,25 +557,23 @@ class PsychUIDropDownMenu extends PsychUIInputText
 				scrollListBy(-wheel);
 			}
 
-			if (_scrollDragging)
+			if (_listDragging)
 			{
 				if (!FlxG.mouse.pressed)
 				{
-					_scrollDragging = false;
+					_listDragging = false;
 				}
 				else if (_hasScrollbar)
 				{
-					var cam = camera != null ? camera : FlxG.camera;
-					var visibleCount:Int = Std.int(Math.min(list.length, _maxVisibleItems));
-					var maxScroll:Int = Std.int(Math.max(0, list.length - visibleCount));
-					var usable:Float = _scrollTrack.height - _scrollThumb.height;
-					
-					if (usable > 0 && maxScroll > 0)
+					_tmpMouse = FlxG.mouse.getScreenPosition(cam);
+					var dy:Float = _tmpMouse.y - _listDragStartY;
+					if (Math.abs(dy) > DRAG_DEADZONE)
 					{
-						_tmpMouse = FlxG.mouse.getScreenPosition(cam);
-						var dy:Float = _tmpMouse.y - _scrollDragStartY;
-						var newIndex:Int = Std.int(Math.round(_scrollDragStartIndex + dy / usable * maxScroll));
-						newIndex = Std.int(Math.max(0, Math.min(maxScroll, newIndex)));
+						_suppressItemRelease = true;
+						var totalItems:Int = getVisibleSourceLength();
+						var visibleCount:Int = Std.int(Math.min(totalItems, _maxVisibleItems));
+						var maxScroll:Int = Std.int(Math.max(0, totalItems - visibleCount));
+						var newIndex:Int = Std.int(Math.max(0, Math.min(maxScroll, Math.round(_listDragStartIndex - dy / ITEM_H))));
 						if (newIndex != _scrollIndex)
 						{
 							_scrollIndex = newIndex;
@@ -386,6 +581,14 @@ class PsychUIDropDownMenu extends PsychUIInputText
 						}
 					}
 				}
+			}
+
+			if (FlxG.mouse.justReleased)
+			{
+				if (_pointerOwner == this)
+					_pointerOwner = null;
+				_scrollDragging = false;
+				_listDragging = false;
 			}
 		}
 	}
@@ -404,9 +607,13 @@ class PsychUIDropDownMenu extends PsychUIInputText
 	{
 		if(!vis)
 		{
+			if (_pointerOwner == this)
+				_pointerOwner = null;
 			text = selectedLabel;
 			_curFilter = null;
 			_scrollDragging = false;
+			_listDragging = false;
+			_suppressItemRelease = false;
 
 			if (_scrollUpBtn != null) _scrollUpBtn.visible = false;
 			if (_scrollDownBtn != null) _scrollDownBtn.visible = false;
@@ -414,7 +621,10 @@ class PsychUIDropDownMenu extends PsychUIInputText
 			if (_scrollThumb != null) _scrollThumb.visible = false;
 		}
 
-		curScroll = Std.int(Math.max(0, Math.min(onlyAllowed != null ? (onlyAllowed.length - 1) : (list.length - 1), scroll)));
+		var totalForScroll:Int = onlyAllowed != null ? onlyAllowed.length : list.length;
+		var maxScroll:Int = Std.int(Math.max(0, totalForScroll - _maxVisibleItems));
+		curScroll = Std.int(Math.max(0, Math.min(maxScroll, scroll)));
+		_scrollIndex = curScroll;
 		if(vis)
 		{
 			var n:Int = 0;
@@ -459,7 +669,7 @@ class PsychUIDropDownMenu extends PsychUIInputText
 			}
 
 			var txtY:Float = behindText.y + behindText.height + 1;
-			var itemHeight:Float = 20;
+			var itemHeight:Float = ITEM_H;
 
 			var shownNum:Int = 0;
 			for (item in _items)
@@ -524,11 +734,17 @@ class PsychUIDropDownMenu extends PsychUIInputText
 		return false;
 	}
 
+	public function shouldSuppressItemRelease():Bool
+	{
+		return _suppressItemRelease || _scrollDragging || _listDragging;
+	}
+
 	function addOption(option:String)
 	{
 		@:bypassAccessor list.push(option);
 		var curID:Int = list.length - 1;
 		var item:PsychUIDropDownItem = cast recycle(PsychUIDropDownItem, () -> new PsychUIDropDownItem(1, 1, this._itemWidth), true);
+		item.parentDropDown = this;
 		item.cameras = cameras;
 		item.label = option;
 		item.visible = item.active = false;
@@ -559,6 +775,8 @@ class PsychUIDropDownMenu extends PsychUIInputText
 	override function destroy()
 	{
 		super.destroy();
+		if (_pointerOwner == this)
+			_pointerOwner = null;
 
 		if (_scrollUpBtn != null) _scrollUpBtn.destroy();
 		if (_scrollDownBtn != null) _scrollDownBtn.destroy();
@@ -569,6 +787,7 @@ class PsychUIDropDownMenu extends PsychUIInputText
 
 class PsychUIDropDownItem extends FlxSpriteGroup
 {
+	public var parentDropDown:PsychUIDropDownMenu;
 	public var hoverStyle:UIStyleData = {
 		bgColor: 0xFF0066FF,
 		textColor: FlxColor.WHITE,
@@ -616,7 +835,7 @@ class PsychUIDropDownItem extends FlxSpriteGroup
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		if(FlxG.mouse.justMoved || FlxG.mouse.justPressed || forceNextUpdate)
+		if(FlxG.mouse.justMoved || FlxG.mouse.justPressed || FlxG.mouse.justReleased || forceNextUpdate)
 		{
 			var overlapped:Bool = (FlxG.mouse.overlaps(bg, camera));
 
@@ -626,7 +845,7 @@ class PsychUIDropDownItem extends FlxSpriteGroup
 			bg.alpha = style.bgAlpha;
 			forceNextUpdate = false;
 
-			if(overlapped && FlxG.mouse.justPressed)
+			if(overlapped && FlxG.mouse.justReleased && (parentDropDown == null || !parentDropDown.shouldSuppressItemRelease()))
 				onClick();
 		}
 		

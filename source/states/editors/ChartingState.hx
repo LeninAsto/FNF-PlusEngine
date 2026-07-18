@@ -2112,21 +2112,43 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		if(selectedNotes.length == 1 && selectedNotes[0].isEvent)
 		{
 			var eventNote:EventMetaNote = cast selectedNotes[0];
+			var stackedNotes:Array<EventMetaNote> = getEventsAtSameTime(eventNote);
+			var totalEvents:Int = 0;
+			for(note in stackedNotes)
+				if(note != null && note.events != null) totalEvents += note.events.length;
+
 			var lines:Array<String> = [];
 			lines.push('Time: ' + FlxMath.roundDecimal(eventNote.strumTime, 2) + ' ms');
-			lines.push('Total: ' + eventNote.events.length);
+			lines.push('Total: ' + totalEvents);
+			if(stackedNotes.length > 1)
+				lines.push('Event Notes: ' + stackedNotes.length);
 			lines.push('');
 
-			for(i in 0...eventNote.events.length)
+			for(noteIndex in 0...stackedNotes.length)
 			{
-				var eventData:Array<String> = eventNote.events[i];
-				var marker:String = (i == curEventSelected) ? '>' : '-';
-				var name:String = (eventData != null && eventData[0] != null && eventData[0].length > 0) ? eventData[0] : '(Empty)';
-				var value1:String = (eventData != null && eventData.length > 1 && eventData[1] != null && eventData[1].length > 0) ? eventData[1] : '(blank)';
-				var value2:String = (eventData != null && eventData.length > 2 && eventData[2] != null && eventData[2].length > 0) ? eventData[2] : '(blank)';
-				lines.push('$marker ${i + 1}. $name');
-				lines.push('   v1: $value1');
-				lines.push('   v2: $value2');
+				var note:EventMetaNote = stackedNotes[noteIndex];
+				if(note == null || note.events == null) continue;
+
+				if(stackedNotes.length > 1)
+				{
+					var noteMarker:String = (note == eventNote) ? '>' : '-';
+					lines.push('$noteMarker Event Note ${noteIndex + 1}');
+				}
+
+				for(i in 0...note.events.length)
+				{
+					var eventData:Array<String> = note.events[i];
+					var marker:String = (note == eventNote && i == curEventSelected) ? '>' : '-';
+					var name:String = (eventData != null && eventData[0] != null && eventData[0].length > 0) ? eventData[0] : '(Empty)';
+					var value1:String = (eventData != null && eventData.length > 1 && eventData[1] != null && eventData[1].length > 0) ? eventData[1] : '(blank)';
+					var value2:String = (eventData != null && eventData.length > 2 && eventData[2] != null && eventData[2].length > 0) ? eventData[2] : '(blank)';
+					lines.push('$marker ${i + 1}. $name');
+					lines.push('   v1: $value1');
+					lines.push('   v2: $value2');
+				}
+
+				if(noteIndex < stackedNotes.length - 1)
+					lines.push('');
 			}
 
 			selectedEventPanelText.text = lines.join('\n');
@@ -2144,6 +2166,24 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		}
 		else
 			selectedEventPanelText.text = 'Select an event to inspect its stacked values.';
+	}
+
+	function getEventsAtSameTime(target:EventMetaNote):Array<EventMetaNote>
+	{
+		var stacked:Array<EventMetaNote> = [];
+		if(target == null)
+			return stacked;
+
+		stacked.push(target);
+		for(event in events)
+		{
+			if(event == null || event == target)
+				continue;
+
+			if(Math.abs(event.strumTime - target.strumTime) <= 0.01)
+				stacked.push(event);
+		}
+		return stacked;
 	}
 
 	function createGrids()
