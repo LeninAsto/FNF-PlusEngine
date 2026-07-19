@@ -17,6 +17,26 @@ class StorageUtil
 	private static final legacyPublicFolderName:String = 'PlusEngine';
 	private static final androidPackageName:String = 'com.leninasto.plusengine';
 
+	private static function ensureDirectory(path:String):Bool
+	{
+		if (path == null || path.length == 0)
+			return false;
+
+		try
+		{
+			if (!FileSystem.exists(path)) {
+				FileSystem.createDirectory(path);
+				trace('Created directory: $path');
+			}
+			return true;
+		}
+		catch (e:Dynamic)
+		{
+			trace('Failed to create directory $path: ${Std.string(e)}');
+			return false;
+		}
+	}
+
 	public static function getStorageDirectory(?force:Bool = false):String
 	{
 		return #if android
@@ -352,26 +372,8 @@ class StorageUtil
 			list.push(normalizedPath);
 	}
 
-	private static function ensureDirectory(path:String):Bool
-	{
-		if (path == null || path.length == 0)
-			return false;
-
-		try
-		{
-			if (!FileSystem.exists(path)) {
-				FileSystem.createDirectory(path);
-				trace('Created directory: $path');
-			}
-			return true;
-		}
-		catch (e:Dynamic)
-		{
-			trace('Failed to create directory $path: ${Std.string(e)}');
-			return false;
-		}
-	}
-
+	// The ensureDirectory function has been moved outside this block
+	
 	public static function hasRequiredPermissions():Bool
 	{
 		if (readStorageType() == 'INTERNAL')
