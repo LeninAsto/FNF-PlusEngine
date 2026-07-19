@@ -3,6 +3,7 @@ package mobile.backend;
 import lime.system.System as LimeSystem;
 import haxe.Timer;
 import haxe.io.Path;
+import lime.utils.Assets;
 
 /**
  * A storage class for mobile.
@@ -74,6 +75,113 @@ class StorageUtil
 			else
 				trace('$fileName couldn\'t be saved. ($errorMsg)');
 		}
+	}
+
+	public static function copyAssetsToStorage(sourcePath:String, targetPath:String, ?overwrite:Bool = false):Bool
+	{
+		try
+		{
+			ensureDirectory(targetPath);
+
+			var assetFiles:Array<String> = Assets.list();
+			var filesCopied = 0;
+
+			var normalizedSourcePath = sourcePath.replace('\\', '/');
+			if (normalizedSourcePath.startsWith('/'))
+				normalizedSourcePath = normalizedSourcePath.substring(1);
+			if (!normalizedSourcePath.endsWith('/'))
+				normalizedSourcePath += '/';
+
+			for (asset in assetFiles)
+			{
+				var normalizedAsset = asset.replace('\\', '/');
+				if (normalizedAsset.startsWith(normalizedSourcePath))
+				{
+					var relativePath = normalizedAsset.substring(normalizedSourcePath.length);
+					if (relativePath == '' || relativePath == null)
+						continue;
+					
+					var targetFile = Path.join([targetPath, relativePath]);
+					var targetDir = Path.directory(targetFile);
+
+					ensureDirectory(targetDir);
+
+					if (FileSystem.exists(targetFile) && !overwrite)
+						continue;
+
+					var content = Assets.getText(asset);
+					if (content != null)
+					{
+						File.saveContent(targetFile, content);
+						filesCopied++;
+					}
+					else
+					{
+						var bytes = Assets.getBytes(asset);
+						if (bytes != null)
+						{
+							File.saveBytes(targetFile, bytes);
+							filesCopied++;
+						}
+						else
+						{
+							trace('Failed to read asset: $asset');
+						}
+					}
+				}
+			}
+			
+			if (filesCopied > 0)
+				trace('Copied $filesCopied files from $sourcePath to $targetPath');
+			else
+				trace('No files found to copy from $sourcePath');
+			
+			return true;
+		}
+		catch (e:Dynamic)
+		{
+			trace('Failed to copy assets from $sourcePath to $targetPath: ${Std.string(e)}');
+			return false;
+		}
+	}
+
+	public static function copyAllAssetsToStorage():Void
+	{
+		var storageDir = getStorageDirectory();
+
+		var foldersToCopy = [
+			{ source: "assets/mods", target: Path.join([storageDir, "mods"]) },
+			{ source: "assets/sm", target: Path.join([storageDir, "sm"]) }
+		];
+		
+		trace("Copying assets to storage...");
+		
+		for (folder in foldersToCopy)
+		{
+			var hasContent = false;
+			try {
+				if (FileSystem.exists(folder.target)) {
+					var contents = FileSystem.readDirectory(folder.target);
+					hasContent = contents.length > 0;
+				}
+			} catch (e:Dynamic) {
+				hasContent = false;
+			}
+
+			if (!hasContent)
+			{
+				copyAssetsToStorage(folder.source, folder.target, false);
+			}
+			else
+			{
+				trace('Folder already has content, skipping copy: ${folder.target}');
+			}
+		}
+	}
+
+	public static function copyAssetFolderToStorage(assetPath:String, storagePath:String, ?overwrite:Bool = false):Bool
+	{
+		return copyAssetsToStorage(assetPath, storagePath, overwrite);
 	}
 
 	#if android
@@ -348,7 +456,7 @@ class StorageUtil
 
 	private static function initializeStorageDirectories():Void
 	{
-		final directories = [
+		var directories = [
 			rootDir,
 			getStorageDirectory(),
 			getScopedModsDirectory(),
@@ -373,8 +481,17 @@ class StorageUtil
 			}
 		}
 
-		if (!allDirectoriesCreated) {
-			final errorMsg = Language.getPhrase('create_directory_error', 
+		if (allDirectoriesCreated)
+		{
+			#if android
+			Timer.delay(function() {
+				copyAllAssetsToStorage();
+			}, 100);
+			#end
+		}
+		else
+		{
+			var errorMsg = Language.getPhrase('create_directory_error', 
 				'Failed to create the following directories:\n{1}\n' +
 				'Please check storage permissions or available space.\n' +
 				'The app may not function correctly without these directories.',
