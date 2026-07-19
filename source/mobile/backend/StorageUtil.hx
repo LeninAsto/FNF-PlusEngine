@@ -371,8 +371,6 @@ class StorageUtil
 		if (!list.contains(normalizedPath))
 			list.push(normalizedPath);
 	}
-
-	// The ensureDirectory function has been moved outside this block
 	
 	public static function hasRequiredPermissions():Bool
 	{
