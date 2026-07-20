@@ -1,22 +1,12 @@
 package states;
 
-import flixel.FlxG;
-import flixel.FlxSprite;
-import flixel.text.FlxText;
-import flixel.util.FlxColor;
-import flixel.util.FlxStringUtil;
 import backend.MusicBeatState;
 import backend.Paths;
 import backend.LocaleUtils;
 import backend.Language;
-import backend.Controls;
-import backend.Difficulty;
-import backend.Mods;
 import states.FreeplayState;
 import states.StoryMenuState;
 import states.MainMenuState;
-import sys.io.File;
-import sys.FileSystem;
 
 #if mobile
 import mobile.backend.TouchUtil;
@@ -72,7 +62,7 @@ class ResultsState extends MusicBeatState
 
         #if MODS_ALLOWED
         if (params.isMod && params.modFolder != null && params.modFolder != "") {
-            backend.Mods.currentModDirectory = params.modFolder;
+            Mods.currentModDirectory = params.modFolder;
         }
         #end
 
@@ -84,14 +74,14 @@ class ResultsState extends MusicBeatState
         add(menuBG);
 
         backdropImage = new FlxSprite();
-        backdropImage.loadGraphic(Paths.image('ui/backdrop'));
+        backdropImage.loadGraphic(Paths.image('ui/results/backdrop'));
         backdropImage.setGraphicSize(FlxG.width, FlxG.height + 1);
         backdropImage.updateHitbox();
         backdropImage.alpha = 0.8;
         add(backdropImage);
 
         flxGroupImage = new FlxSprite();
-        flxGroupImage.loadGraphic(Paths.image('ui/flxgroup'));
+        flxGroupImage.loadGraphic(Paths.image('ui/results/flxgroup'));
         flxGroupImage.setGraphicSize(FlxG.width, FlxG.height + 1);
         flxGroupImage.updateHitbox();
         flxGroupImage.alpha = 0.4;
@@ -137,7 +127,7 @@ class ResultsState extends MusicBeatState
         var leftX = 30;
         var rightX = 300;
         var judgY = 235;
-        var judgSpacing = 90; // Más espacio
+        var judgSpacing = 90; // More space
 
         flawlesss = new FlxText(leftX, judgY, 340, Language.getPhrase('judgement_flawlesss', 'flawlesss') + ': 0', 32);
         flawlesss.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, 0xFFA17FFF, "left");
@@ -297,10 +287,10 @@ class ResultsState extends MusicBeatState
         if (shouldContinue)
         {
             #if MODS_ALLOWED
-            backend.Mods.currentModDirectory = '';
+            Mods.currentModDirectory = '';
             #end
             
-            // Si es una semana completa, regresar al Story Menu, sino al Freeplay
+            // If it's a full week, return to the Story Menu; otherwise, return to Freeplay
             if (params.isWeek != null && params.isWeek == true) {
                 MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
             } else {
