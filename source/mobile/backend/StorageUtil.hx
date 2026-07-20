@@ -563,7 +563,7 @@ class StorageUtil
 					trace('Failed to get bytes for asset: $assetPath');
 					return false;
 				}
-				File.saveBytes(fullPath, bytes.getData());
+				File.saveBytes(fullPath, bytes);
 			}
 
 			return true;
