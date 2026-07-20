@@ -5254,8 +5254,17 @@ class PlayState extends MusicBeatState
 		var digitCount:Int = comboStr.length;
 
 		var startX:Float = placement + ClientPrefs.data.comboOffset[2];
-		if (ClientPrefs.data.dynamicComboDigits) {
-			startX -= (3 - digitCount) * 21.5;
+		if (ClientPrefs.data.dynamicComboDigits)
+		{
+
+			if (combo < 100)
+			{
+				startX -= (3 - digitCount) * 21.5;
+			}
+		}
+		else
+		{
+			// LOLLLLLLLL
 		}
 
 		for (tween in nfComboNumTween) {
@@ -5287,8 +5296,10 @@ class PlayState extends MusicBeatState
 			}
 			numScore.updateHitbox();
 			numScore.screenCenter();
+
 			numScore.x = startX + (43 * i) - 90;
 			numScore.y += 80 - ClientPrefs.data.comboOffset[3];
+			
 			numScore.offset.set(0, 0);
 			numScore.antialiasing = antialias;
 
