@@ -6082,21 +6082,15 @@ class PlayState extends MusicBeatState
 			}
 			else if(littleTimmyMode)
 			{
-				strumPlayAnim(false, Std.int(Math.abs(note.noteData)), Conductor.stepCrochet * 1.25 / 1000 / playbackRate);
-				
-				// Registrar tecla en KeyViewer cuando está en botplay (solo notas no-sustain)
-				if(keyViewer != null && !note.isSustainNote) {
-					var keyIndex:Int = note.noteData % 4;
-					keyViewer.keyPressed(keyIndex);
-					// Programar release automático después de un corto tiempo usando un timer reutilizable
-					if(botplayKeyReleaseTimers[keyIndex] != null)
-					{
-						botplayKeyReleaseTimers[keyIndex].cancel();
-						botplayKeyReleaseTimers[keyIndex] = null;
-					}
-					botplayKeyReleaseTimers[keyIndex] = new FlxTimer().start(0.1, function(tmr:FlxTimer) {
-						if(keyViewer != null) keyViewer.keyReleased(keyIndex);
-						botplayKeyReleaseTimers[keyIndex] = null;
+				var strum:StrumNote = playerStrums.members[note.noteData];
+				if(strum != null) {
+					strum.playAnim('confirm', true);
+					var resetDelay:Float = Conductor.stepCrochet * 1.25 / 1000 / playbackRate;
+
+					new FlxTimer().start(resetDelay, function(tmr:FlxTimer) {
+						if(strum != null && strum.exists) {
+							strum.playAnim('static');
+						}
 					});
 				}
 			}
