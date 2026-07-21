@@ -27,6 +27,12 @@ class ShaderFunctions
 			if(!ClientPrefs.data.shaders) return false;
 
 			#if (!flash && sys)
+			if(shaders.ErrorHandledShader.isBroken(shader))
+			{
+				FunkinLua.luaTrace('setSpriteShader: Shader $shader failed before, skipping it for this session.', false, false, FlxColor.RED);
+				return false;
+			}
+
 			if(!funk.runtimeShaders.exists(shader) && !funk.initLuaShader(shader))
 			{
 				FunkinLua.luaTrace('setSpriteShader: Shader $shader is missing!', false, false, FlxColor.RED);
@@ -46,7 +52,21 @@ class ShaderFunctions
 					? [arr[0], arr[1]]
 					: shaders.ShaderCompatibility.adaptShaderCode(arr[0], arr[1]);
 				
-				leObj.shader = new shaders.ErrorHandledShader.ErrorHandledRuntimeShader(shader, adapted[0], adapted[1]);
+				var runtimeShader:shaders.ErrorHandledShader.ErrorHandledRuntimeShader = new shaders.ErrorHandledShader.ErrorHandledRuntimeShader(shader, adapted[0], adapted[1]);
+				runtimeShader.onError = function(error:Dynamic)
+				{
+					if(leObj != null && leObj.shader == runtimeShader)
+						leObj.shader = null;
+				};
+
+				if(runtimeShader.failed || shaders.ErrorHandledShader.isBroken(shader))
+				{
+					leObj.shader = null;
+					FunkinLua.luaTrace('setSpriteShader: Shader $shader failed to compile and was removed.', false, false, FlxColor.RED);
+					return false;
+				}
+
+				leObj.shader = runtimeShader;
 				return true;
 			}
 			#else

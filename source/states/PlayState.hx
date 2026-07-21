@@ -4421,11 +4421,11 @@ class PlayState extends MusicBeatState
 
 	function cacheNfPopUpScore()
 	{
-		var uiPrefix:String = '';
+		var uiFolder:String = '';
 		var uiSuffix:String = '';
 		if (stageUI != "normal")
 		{
-			uiPrefix = uiPrefix + "UI/";
+			uiFolder = PlayState.uiPrefix + "UI/";
 			if (PlayState.isPixelStage) uiSuffix = '-pixel';
 		}
 
@@ -4433,7 +4433,7 @@ class PlayState extends MusicBeatState
 		var placement:Float = FlxG.width * 0.35;
 
 		nfRateSprite = new FlxSprite();
-		nfRateSprite.loadGraphic(Paths.image(uiPrefix + ratingsData[0].image + uiSuffix));
+		nfRateSprite.loadGraphic(Paths.image(uiFolder + ratingsData[0].image + uiSuffix));
 		nfRateSprite.cameras = [camHUD];
 		nfRateSprite.screenCenter();
 		nfRateSprite.x = placement - 40;
@@ -4457,7 +4457,7 @@ class PlayState extends MusicBeatState
 		comboGroup.add(nfRateSprite);
 
 		nfComboSprite = new FlxSprite();
-		nfComboSprite.loadGraphic(Paths.image(uiPrefix + 'combo' + uiSuffix));
+		nfComboSprite.loadGraphic(Paths.image(uiFolder + 'combo' + uiSuffix));
 		nfComboSprite.cameras = [camHUD];
 		nfComboSprite.screenCenter();
 		nfComboSprite.x = placement;
@@ -4478,7 +4478,7 @@ class PlayState extends MusicBeatState
 		var xThing:Float = 0;
 		for (comboNum in 0...maxDigits) {
 			var numScore:FlxSprite = new FlxSprite();
-			numScore.loadGraphic(Paths.image(uiPrefix + 'num' + 0 + uiSuffix));
+			numScore.loadGraphic(Paths.image(uiFolder + 'num' + 0 + uiSuffix));
 			numScore.screenCenter();
 			numScore.x = placement + (50 * (comboNum - 1)) - 90 + ClientPrefs.data.comboOffset[2];
 			numScore.y += 80 - ClientPrefs.data.comboOffset[3];
@@ -4575,6 +4575,9 @@ class PlayState extends MusicBeatState
 
 	function clearComboGroupSprites():Void
 	{
+		if (ClientPrefs.data.nfStyleSystem)
+			return;
+
 		if (comboGroup == null || comboGroup.members == null || comboGroup.members.length < 1)
 			return;
 
@@ -5190,16 +5193,13 @@ class PlayState extends MusicBeatState
 		if (!shouldRenderHitPopups())
 			return;
 
-		if (!ClientPrefs.data.comboStacking)
-			clearComboGroupSprites();
-
-		var uiPrefix:String = "";
+		var uiFolder:String = "";
 		var uiSuffix:String = '';
 		var antialias:Bool = ClientPrefs.data.antialiasing;
 
 		if (stageUI != "normal")
 		{
-			uiPrefix = uiPrefix + "UI/";
+			uiFolder = PlayState.uiPrefix + "UI/";
 			if (PlayState.isPixelStage) uiSuffix = '-pixel';
 			antialias = !isPixelStage;
 		}
@@ -5210,7 +5210,7 @@ class PlayState extends MusicBeatState
 
 		if (nfRateSprite != null) {
 			nfRateSprite.visible = ClientPrefs.data.showRating && showRating;
-			nfRateSprite.loadGraphic(Paths.image(uiPrefix + daRating.image + uiSuffix));
+			nfRateSprite.loadGraphic(Paths.image(uiFolder + daRating.image + uiSuffix));
 			nfRateSprite.antialiasing = antialias;
 			
 			if (!PlayState.isPixelStage) {
@@ -5226,7 +5226,7 @@ class PlayState extends MusicBeatState
 
 		if (nfComboSprite != null) {
 			nfComboSprite.visible = ClientPrefs.data.showCombo && showCombo;
-			nfComboSprite.loadGraphic(Paths.image(uiPrefix + 'combo' + uiSuffix));
+			nfComboSprite.loadGraphic(Paths.image(uiFolder + 'combo' + uiSuffix));
 			nfComboSprite.antialiasing = antialias;
 			
 			if (!PlayState.isPixelStage) {
@@ -5247,11 +5247,12 @@ class PlayState extends MusicBeatState
 			numScale = 0.5;
 		} else {
 			scale = 0.85 * daPixelZoom;
-			numScale = daPixelZoom;
+			numScale = daPixelZoom * 0.9;
 		}
 
 		var comboStr:String = Std.string(combo);
 		var digitCount:Int = comboStr.length;
+		var digitSpacing:Float = 43;
 
 		var startX:Float = placement + ClientPrefs.data.comboOffset[2];
 		if (ClientPrefs.data.dynamicComboDigits)
@@ -5259,7 +5260,7 @@ class PlayState extends MusicBeatState
 
 			if (combo < 100)
 			{
-				startX -= (3 - digitCount) * 21.5;
+				startX -= (3 - digitCount) * (digitSpacing * 0.5);
 			}
 		}
 		else
@@ -5287,17 +5288,13 @@ class PlayState extends MusicBeatState
 			var digit:Int = Std.parseInt(comboStr.charAt(i));
 			var numScore:FlxSprite = nfNumItems.members[i];
 			numScore.visible = ClientPrefs.data.showComboNum && showComboNum;
-			numScore.loadGraphic(Paths.image(uiPrefix + 'num' + digit + uiSuffix));
+			numScore.loadGraphic(Paths.image(uiFolder + 'num' + digit + uiSuffix));
 
-			if (!PlayState.isPixelStage) {
-				numScore.setGraphicSize(Std.int(numScore.width * numScale));
-			} else {
-				numScore.setGraphicSize(Std.int(numScore.width * daPixelZoom * 0.9));
-			}
+			numScore.setGraphicSize(Std.int(numScore.width * numScale));
 			numScore.updateHitbox();
 			numScore.screenCenter();
 
-			numScore.x = startX + (43 * i) - 90;
+			numScore.x = startX + (digitSpacing * i) - 90;
 			numScore.y += 80 - ClientPrefs.data.comboOffset[3];
 			
 			numScore.offset.set(0, 0);
@@ -5313,11 +5310,6 @@ class PlayState extends MusicBeatState
 			
 			numScore.scale.y = numScale + 0.07;
 			nfComboNumTweenScaleY[i] = FlxTween.tween(numScore.scale, {y: numScale}, 0.2 / playbackRate);
-
-			if (digit >= 0 && digit < nfComboOffsetFix.length) {
-				numScore.offset.x -= nfComboOffsetFix[digit][0] * 0.5;
-				numScore.offset.y += nfComboOffsetFix[digit][1] * 0.5;
-			}
 
 			if (numScore.x > xThing)
 				xThing = numScore.x;
@@ -7218,19 +7210,27 @@ class PlayState extends MusicBeatState
 	#if (!flash && sys)
 	public var runtimeShaders:Map<String, Array<String>> = new Map<String, Array<String>>();
 	#end
-	public function createRuntimeShader(shaderName:String):ErrorHandledRuntimeShader
+	public function createRuntimeShader(shaderName:String):Null<ErrorHandledRuntimeShader>
 	{
 		#if (!flash && sys)
-		if(!ClientPrefs.data.shaders) return new ErrorHandledRuntimeShader(shaderName);
+		if(!ClientPrefs.data.shaders) return null;
+		if(ErrorHandledShader.isBroken(shaderName))
+		{
+			FlxG.log.warn('Shader $shaderName failed before, skipping it for this session.');
+			return null;
+		}
 
 		if(!runtimeShaders.exists(shaderName) && !initLuaShader(shaderName))
 		{
 			FlxG.log.warn('Shader $shaderName is missing!');
-			return new ErrorHandledRuntimeShader(shaderName);
+			return null;
 		}
 
 		var arr:Array<String> = runtimeShaders.get(shaderName);
-		return new ErrorHandledRuntimeShader(shaderName, arr[0], arr[1]);
+		var shader:ErrorHandledRuntimeShader = new ErrorHandledRuntimeShader(shaderName, arr[0], arr[1]);
+		if(shader.failed || ErrorHandledShader.isBroken(shaderName))
+			return null;
+		return shader;
 		#else
 		FlxG.log.warn("Platform unsupported for Runtime Shaders!");
 		return null;

@@ -6,7 +6,10 @@ import lime.app.Application;
 
 class ErrorHandledShader extends FlxShader implements IErrorHandler
 {
+	public static var brokenShaders:Map<String, Bool> = new Map<String, Bool>();
 	public var shaderName:String = '';
+	public var failed:Bool = false;
+	public var lastError:Dynamic = null;
 	public dynamic function onError(error:Dynamic):Void {}
 	public function new(?shaderName:String)
 	{
@@ -23,14 +26,20 @@ class ErrorHandledShader extends FlxShader implements IErrorHandler
 		}
 		catch (error)
 		{
+			failed = true;
+			lastError = error;
 			ErrorHandledShader.crashSave(this.shaderName, error, onError);
 			return null;
 		}
 	}
+
+	public static function isBroken(shaderName:String):Bool
+		return shaderName != null && brokenShaders.exists(shaderName) && brokenShaders.get(shaderName);
 	
 	public static function crashSave(shaderName:String, error:Dynamic, onError:Dynamic) // prevent the app from dying immediately
 	{
 		if(shaderName == null) shaderName = 'unnamed';
+		brokenShaders.set(shaderName, true);
 		var alertTitle:String = 'Error on Shader: "$shaderName"';
 
 		trace(error);
@@ -57,6 +66,8 @@ class ErrorHandledShader extends FlxShader implements IErrorHandler
 class ErrorHandledRuntimeShader extends FlxRuntimeShader implements IErrorHandler
 {
 	public var shaderName:String = '';
+	public var failed:Bool = false;
+	public var lastError:Dynamic = null;
 	public dynamic function onError(error:Dynamic):Void {}
 	public function new(?shaderName:String, ?fragmentSource:String, ?vertexSource:String)
 	{
@@ -73,6 +84,8 @@ class ErrorHandledRuntimeShader extends FlxRuntimeShader implements IErrorHandle
 		}
 		catch (error)
 		{
+			failed = true;
+			lastError = error;
 			ErrorHandledShader.crashSave(this.shaderName, error, onError);
 			return null;
 		}

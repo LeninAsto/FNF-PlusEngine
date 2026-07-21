@@ -27,6 +27,7 @@ class ScriptableSubstate extends MusicBeatSubstate
 	public var substateName:String;
 	var _fallbackSubstate:FlxSubState;
 	var _fallbackTriggered:Bool = false;
+	var _closing:Bool = false;
 
 	#if HSCRIPT_ALLOWED
 	var _script:HScript;
@@ -286,6 +287,9 @@ class ScriptableSubstate extends MusicBeatSubstate
 
 	override function update(elapsed:Float):Void
 	{
+		if (_closing)
+			return;
+
 		if (_inScriptUpdate)
 		{
 			super.update(elapsed);
@@ -294,8 +298,8 @@ class ScriptableSubstate extends MusicBeatSubstate
 		}
 
 		_inScriptUpdate = true;
-		_callOnScript('update', [elapsed]);
-		if (_inScriptUpdate)
+		var ret:Dynamic = _callOnScript('update', [elapsed]);
+		if (_inScriptUpdate && !_closing && !LuaUtils.isStop(ret))
 			super.update(elapsed);
 		_inScriptUpdate = false;
 	}
@@ -337,7 +341,17 @@ class ScriptableSubstate extends MusicBeatSubstate
 
 	override function close():Void
 	{
-		_callOnScript('close', []);
+		if (_closing)
+			return;
+
+		_closing = true;
+		var stop = _callOnScript('close', []);
+		if (LuaUtils.isStop(stop))
+		{
+			_closing = false;
+			return;
+		}
+
 		_syncScriptFields();
 		super.close();
 	}
@@ -366,6 +380,8 @@ class ScriptableSubstate extends MusicBeatSubstate
 			_script.set('remove', this.remove);
 			_script.set('insert', this.insert);
 			_script.set('close', this.close);
+			_script.set('requestClose', this.close);
+			_script.set('closeSubstate', this.close);
 			_script.set('substateName', substateName);
 			_script.set('scriptableSubstate', this);
 			_script.set('parentState', getParentState());
@@ -442,6 +458,8 @@ class ScriptableSubstate extends MusicBeatSubstate
 						_scriptedObj.__interp.variables.set('remove', this.remove);
 						_scriptedObj.__interp.variables.set('insert', this.insert);
 						_scriptedObj.__interp.variables.set('close', this.close);
+						_scriptedObj.__interp.variables.set('requestClose', this.close);
+						_scriptedObj.__interp.variables.set('closeSubstate', this.close);
 						_scriptedObj.__interp.variables.set('substateName', substateName);
 						_scriptedObj.__interp.variables.set('scriptableSubstate', this);
 						_scriptedObj.__interp.variables.set('parentState', getParentState());
@@ -508,7 +526,7 @@ class ScriptableSubstate extends MusicBeatSubstate
 	}
 	#end
 
-	function _callOnScript(method:String, args:Array<Dynamic>):Void
+	function _callOnScript(method:String, args:Array<Dynamic>):Dynamic
 	{
 		#if HSCRIPT_ALLOWED
 		if (args == null) args = [];
@@ -517,16 +535,24 @@ class ScriptableSubstate extends MusicBeatSubstate
 		{
 			if (_scriptedObj != null)
 			{
-				if (_scriptedObj.hasMethod(method))
-					_scriptedObj.callMethod(method, args);
+				if (method == 'close' && _scriptedObj.hasMethod('onClose'))
+					return _scriptedObj.callMethod('onClose', args);
+				if (method != 'close' && _scriptedObj.hasMethod(method))
+					return _scriptedObj.callMethod(method, args);
 			}
 			else if (_script != null)
 			{
 				var cbName:String = 'on' + method.charAt(0).toUpperCase() + method.substr(1);
 				if (_script.exists(cbName))
-					_script.call(cbName, args);
-				else if (_script.exists(method))
-					_script.call(method, args);
+				{
+					var cbCall = _script.call(cbName, args);
+					return cbCall != null ? cbCall.returnValue : null;
+				}
+				else if (method != 'close' && _script.exists(method))
+				{
+					var methodCall = _script.call(method, args);
+					return methodCall != null ? methodCall.returnValue : null;
+				}
 			}
 		}
 		catch (e:Dynamic)
@@ -534,6 +560,8 @@ class ScriptableSubstate extends MusicBeatSubstate
 			trace('[ScriptableSubstate:$substateName] Error in $method(): $e');
 		}
 		#end
+
+		return null;
 	}
 
 	#if HSCRIPT_ALLOWED

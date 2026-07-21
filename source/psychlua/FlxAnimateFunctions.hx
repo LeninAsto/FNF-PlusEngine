@@ -28,6 +28,30 @@ class FlxAnimateFunctions
 			var spr:FlxAnimate = MusicBeatState.getVariables().get(tag);
 			if(spr != null) Paths.loadAnimateAtlas(spr, folderOrImg, spriteJson, animationJson);
 		});
+
+		Lua_helper.add_callback(lua, "setFlxAnimateAutoDeactivate", function(tag:String, ?enabled:Bool = true, ?destroyOnFinish:Bool = false) {
+			var obj:Dynamic = MusicBeatState.getVariables().get(tag);
+			if(obj != null && Std.isOfType(obj, ModchartAnimateSprite))
+			{
+				var spr:ModchartAnimateSprite = cast obj;
+				spr.autoDeactivateOnFinish = enabled;
+				spr.destroyOnFinish = destroyOnFinish;
+				return true;
+			}
+			return false;
+		});
+
+		Lua_helper.add_callback(lua, "deactivateFlxAnimateSprite", function(tag:String, ?hide:Bool = true) {
+			var obj:Dynamic = MusicBeatState.getVariables().get(tag);
+			if(obj != null && Std.isOfType(obj, FlxAnimate))
+			{
+				var spr:FlxAnimate = cast obj;
+				spr.active = false;
+				if(hide) spr.visible = false;
+				return true;
+			}
+			return false;
+		});
 		
 		Lua_helper.add_callback(lua, "addAnimationBySymbol", function(tag:String, name:String, symbol:String, ?framerate:Float = 24, ?loop:Bool = false, ?matX:Float = 0, ?matY:Float = 0)
 		{

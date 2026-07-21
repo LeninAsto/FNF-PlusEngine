@@ -23,8 +23,6 @@ import backend.Conductor;
 import backend.MusicBeatSubstate;
 import backend.Paths;
 import backend.Language;
-import psychlua.LuaUtils;
-import backend.Controls;
 
 class PauseSubState extends MusicBeatSubstate
 {
@@ -48,20 +46,6 @@ class PauseSubState extends MusicBeatSubstate
     public var cantUnpause:Float = 0.1;
 
 	override function create()
-	{
-		super.create();
-
-		var stop = callOnCompanionScript('onCreate', []);
-
-		if (!LuaUtils.isStop(stop))
-		{
-			createV();
-		}
-		
-		callOnCompanionScript('onCreatePost', []);
-	}
-
-	function createV()
 	{
 		LocaleUtils.loadDeviceDateTimeSettings();
 		menuItemsDefault = MENU_ITEMS_BASE.copy();
@@ -190,6 +174,8 @@ class PauseSubState extends MusicBeatSubstate
 
 		addTouchPad(menuItems.contains('Skip Time') ? 'LEFT_FULL' : 'UP_DOWN', 'A');
 		addTouchPadCamera();
+
+		super.create();
 	}
 
 	function getPauseSong()
@@ -203,26 +189,14 @@ class PauseSubState extends MusicBeatSubstate
 
 	override function update(elapsed:Float)
 	{
-		var stop = callOnCompanionScript('onUpdate', [elapsed]);
-
-		if (!LuaUtils.isStop(stop))
-		{
-			updateV(elapsed);
-		}
-
-		super.update(elapsed);
-
-		callOnCompanionScript('onUpdatePost', [elapsed]);
-	}
-
-	function updateV(elapsed:Float)
-	{
 		cantUnpause -= elapsed;
 		if (pauseMusic.volume < 0.5)
 			pauseMusic.volume += 0.01 * elapsed;
 		
 		if (dateTimeText != null)
 			updateDateTimeText();
+
+		super.update(elapsed);
 
 		if(controls.BACK)
 		{
@@ -281,10 +255,6 @@ class PauseSubState extends MusicBeatSubstate
 
 		if (controls.ACCEPT && (cantUnpause <= 0 || !controls.controllerMode))
 		{
-			var acceptStop = callOnCompanionScript('onAcceptOption', [daSelected, curSelected, menuItems == difficultyChoices]);
-			if (LuaUtils.isStop(acceptStop))
-				return;
-
 			if (menuItems == difficultyChoices)
 			{
 				var songLowercase:String = Paths.formatToSongPath(PlayState.SONG.song);
@@ -468,15 +438,11 @@ class PauseSubState extends MusicBeatSubstate
 			pauseMusic = null;
 		}
 		super.destroy();
-		callOnCompanionScript('onDestroy', []);
 	}
 
 	function changeSelection(change:Int = 0):Void
 	{
 		curSelected = FlxMath.wrap(curSelected + change, 0, menuItems.length - 1);
-		var stop = callOnCompanionScript('onChangeSelection', [curSelected, getSelectedMenuItem()]);
-		if (LuaUtils.isStop(stop))
-			return;
 		for (num => item in grpMenuShit.members)
 		{
 			item.targetY = num - curSelected;
@@ -526,7 +492,6 @@ class PauseSubState extends MusicBeatSubstate
 		}
 		curSelected = 0;
 		changeSelection();
-		callOnCompanionScript('onRegenMenu', [menuItems]);
 	}
 	
 	function updateSkipTextStuff()
@@ -630,9 +595,6 @@ class PauseSubState extends MusicBeatSubstate
 	{
 		if (menuItems.length < 1) return;
 		curSelected = FlxMath.wrap(index, 0, menuItems.length - 1);
-		var stop = callOnCompanionScript('onChangeSelection', [curSelected, getSelectedMenuItem()]);
-		if (LuaUtils.isStop(stop))
-			return;
 		for (num => item in grpMenuShit.members)
 		{
 			item.targetY = num - curSelected;
