@@ -52,8 +52,17 @@ class Modifier {
 	public inline function hasUnsafe(id:Int)
 		return @:privateAccess pf.modifiers.__hasUnsafe(id);
 
+	public inline function hasUnsafeForPlayer(id:Int, player:Int)
+		return @:privateAccess pf.modifiers.__hasUnsafeForPlayer(id, player);
+
 	public inline function getUnsafeLaneOverride(globalID:Int, laneID:Int, player:Int):Float
-		return hasUnsafe(laneID) ? getUnsafe(laneID, player) : getUnsafe(globalID, player);
+		return hasUnsafeForPlayer(laneID, player) ? getUnsafe(laneID, player) : getUnsafe(globalID, player);
+
+	public inline function getUnsafeLaneAdd(globalID:Int, laneID:Int, player:Int):Float
+		return getUnsafe(globalID, player) + (hasUnsafeForPlayer(laneID, player) ? getUnsafe(laneID, player) : 0);
+
+	public inline function getUnsafeLaneMultiply(globalID:Int, laneID:Int, player:Int):Float
+		return getUnsafe(globalID, player) * (hasUnsafeForPlayer(laneID, player) ? getUnsafe(laneID, player) : 1);
 
 	public inline function setUnsafe(id:Int, value:Float, player:Int = -1)
 		return @:privateAccess pf.modifiers.__setUnsafe(id, value, player);

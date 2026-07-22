@@ -41,9 +41,9 @@ class Confusion extends Modifier {
 		var angVal = getUnsafe(angleIDs[axisIdx], player);
 		var offVal = getUnsafe(confusionOffIDs[axisIdx], player);
 		if (Config.COLUMN_SPECIFIC_MODIFIERS) {
-			confVal = getUnsafeLaneOverride(confusionIDs[axisIdx], confusionLaneIDs[axisIdx][lane], player);
-			angVal = getUnsafeLaneOverride(angleIDs[axisIdx], angleLaneIDs[axisIdx][lane], player);
-			offVal = getUnsafeLaneOverride(confusionOffIDs[axisIdx], confusionOffLaneIDs[axisIdx][lane], player);
+			confVal = getUnsafeLaneAdd(confusionIDs[axisIdx], confusionLaneIDs[axisIdx][lane], player);
+			angVal = getUnsafeLaneAdd(angleIDs[axisIdx], angleLaneIDs[axisIdx][lane], player);
+			offVal = getUnsafeLaneAdd(confusionOffIDs[axisIdx], confusionOffLaneIDs[axisIdx][lane], player);
 		}
 
 		var angle = 0.;

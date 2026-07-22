@@ -44,9 +44,7 @@ class EaseEvent extends Event {
 			fired = false;
 		} else if (curBeat >= endBeat) {
 			fired = true;
-
-			// we're using the ease function bc it may dont return 1
-			setModPercent(name, ease(1) * target, player);
+			setModPercent(name, target, player);
 		}
 	}
 }

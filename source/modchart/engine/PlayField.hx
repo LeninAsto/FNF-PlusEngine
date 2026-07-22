@@ -146,7 +146,7 @@ final class PlayField extends FlxSprite {
 			return;
 		}
 
-		addEvent(new EaseEvent(name, beat, length, value, easeFunc, player, events));
+		addEvent(new EaseEvent(name.toLowerCase(), beat, length, value, easeFunc, player, events));
 	}
 
 	public inline function add(name:String, beat:Float, length:Float, addition:Float = 1, easeFunc:EaseFunction, player:Int = -1):Void {
@@ -156,7 +156,7 @@ final class PlayField extends FlxSprite {
 			return;
 		}
 
-		addEvent(new AddEvent(name, beat, length, addition, easeFunc, player, events));
+		addEvent(new AddEvent(name.toLowerCase(), beat, length, addition, easeFunc, player, events));
 	}
 
 	public inline function setAdd(name:String, beat:Float, valueToAdd:Float, player:Int = -1):Void {

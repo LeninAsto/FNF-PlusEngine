@@ -27,9 +27,10 @@ class AddEvent extends EaseEvent {
 			fired = false;
 		} else if (curBeat >= endBeat) {
 			fired = true;
+			if (entryPerc == null)
+				entryPerc = ModchartUtil.findEntryFrom(this);
 
-			// we're using the ease function bc it may dont return 1
-			setModPercent(name, entryPerc + ease(1) * addAmount, player);
+			setModPercent(name, entryPerc + addAmount, player);
 		}
 	}
 }

@@ -6,7 +6,9 @@ class ModchartAnimateSprite extends FlxAnimate
 	public var animOffsets:Map<String, Array<Float>> = new Map<String, Array<Float>>();
 	public var autoDeactivateOnFinish:Bool = true;
 	public var destroyOnFinish:Bool = false;
+	public var luaTag:String = null;
 	var _finishHandled:Bool = false;
+	var _finishPending:Bool = false;
 
 	public function new(?x:Float = 0, ?y:Float = 0)
 	{
@@ -18,6 +20,7 @@ class ModchartAnimateSprite extends FlxAnimate
 	public function playAnim(name:String, forced:Bool = false, ?reverse:Bool = false, ?startFrame:Int = 0)
 	{
 		_finishHandled = false;
+		_finishPending = false;
 		active = true;
 		visible = true;
 		anim.play(name, forced, reverse, startFrame);
@@ -37,12 +40,35 @@ class ModchartAnimateSprite extends FlxAnimate
 			return;
 
 		_finishHandled = true;
+		_finishPending = true;
+	}
+
+	override function update(elapsed:Float):Void
+	{
+		super.update(elapsed);
+
+		if (_finishPending)
+			handleAnimationFinish();
+	}
+
+	function handleAnimationFinish():Void
+	{
+		if (!_finishPending)
+			return;
+
+		_finishPending = false;
 		active = false;
 
 		if (destroyOnFinish)
 		{
 			visible = false;
 			kill();
+			if (luaTag != null)
+			{
+				var variables = MusicBeatState.getVariables();
+				if (variables.get(luaTag) == this)
+					variables.remove(luaTag);
+			}
 			destroy();
 			return;
 		}
@@ -52,6 +78,7 @@ class ModchartAnimateSprite extends FlxAnimate
 
 	override function destroy():Void
 	{
+		_finishPending = false;
 		if (anim != null)
 			anim.onComplete.remove(_onAnimComplete);
 		super.destroy();

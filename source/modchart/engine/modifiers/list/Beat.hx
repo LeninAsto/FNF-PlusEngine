@@ -66,7 +66,7 @@ class Beat extends Modifier {
 		final player = params.player;
 
 		var amount = Config.COLUMN_SPECIFIC_MODIFIERS
-			? getUnsafeLaneOverride(beatAmtIDs[axisIdx], beatAmtLaneIDs[axisIdx][lane], player)
+			? getUnsafeLaneAdd(beatAmtIDs[axisIdx], beatAmtLaneIDs[axisIdx][lane], player)
 			: getUnsafe(beatAmtIDs[axisIdx], player);
 
 		if (amount == 0)

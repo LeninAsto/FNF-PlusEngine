@@ -43,6 +43,7 @@ final class ModifierGroup {
 	 * - This ensures efficient storage and retrieval while avoiding direct string key lookups.
 	 */
 	public var percents(default, never):PercentArray = new PercentArray();
+	@:noCompletion private var __explicitPercentPlayers:Vector<Int> = new Vector<Int>(Std.int(Math.pow(2, 16)));
 
 	/**
 	 * A `StringMap` that maps modifier names/identifiers to their corresponding `Modifier` class.
@@ -88,6 +89,8 @@ final class ModifierGroup {
 
 	public function new(playfield:PlayField) {
 		this.playfield = playfield;
+		for (i in 0...__explicitPercentPlayers.length)
+			__explicitPercentPlayers[i] = 0;
 
 		// Pre-allocate reusable args struct to avoid 1 heap alloc per getPath() call
 		__cachedArgs = {songTime: 0, hitTime: 0, distance: 0, sourceTime: 0, curBeat: 0};
@@ -210,7 +213,8 @@ final class ModifierGroup {
 
 	// Note: __hashKey in PercentArray is now case-insensitive, so no toLowerCase() needed.
 	public inline function setPercent(name:String, value:Float, player:Int = -1) {
-		final possiblePercs = percents.get(name);
+		final id = @:privateAccess percents.__hashKey(name);
+		final possiblePercs = percents.getUnsafe(id);
 		final generate = possiblePercs == null;
 		final percs = generate ? __getPercentTemplate() : possiblePercs;
 
@@ -220,9 +224,11 @@ final class ModifierGroup {
 		else
 			percs[player] = value;
 
+		__markExplicit(id, player);
+
 		// if the percent list already was generated, we dont need to set it again
 		if (generate)
-			percents.set(name, percs);
+			percents.setUnsafe(id, percs);
 	}
 
 	public inline function getPercent(name:String, player:Int):Float {
@@ -248,6 +254,9 @@ final class ModifierGroup {
 	inline private function __hasUnsafe(id:Int):Bool
 		return percents.getUnsafe(id) != null;
 
+	inline private function __hasUnsafeForPlayer(id:Int, player:Int):Bool
+		return (percents.getUnsafe(id) != null) && ((__explicitPercentPlayers[id] & __playerMask(player)) != 0);
+
 	inline private function __setUnsafe(id:Int, value:Float, player:Int = -1) {
 		var possiblePercs = percents.getUnsafe(id);
 		var generate = possiblePercs == null;
@@ -259,8 +268,25 @@ final class ModifierGroup {
 		else
 			percs[player] = value;
 
+		__markExplicit(id, player);
+
 		if (generate)
 			percents.setUnsafe(id, percs);
+	}
+
+	inline private function __markExplicit(id:Int, player:Int):Void {
+		__explicitPercentPlayers[id] = __explicitPercentPlayers[id] | __playerMask(player);
+	}
+
+	inline private function __playerMask(player:Int):Int {
+		if (player == -1) {
+			var mask = 0;
+			for (i in 0...Adapter.instance.getPlayerCount())
+				mask = mask | (1 << i);
+			return mask;
+		}
+
+		return (player >= 0 && player < 31) ? (1 << player) : 0;
 	}
 
 	@:noCompletion
