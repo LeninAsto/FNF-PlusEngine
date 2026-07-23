@@ -41,6 +41,7 @@ class NoteSplash extends FlxSprite
 
 	var spawned:Bool = false;
 	var noteDataMap:Map<Int, String> = new Map();
+	var reusableRGBPalette:RGBPalette = new RGBPalette();
 
 	public static var defaultNoteSplash(default, never):String = "noteSplashes/noteSplashes";
 	public static var noRgbNoteSplash(default, never):String = "noteSplashesNoRGB/noteSplashes";
@@ -296,7 +297,8 @@ class NoteSplash extends FlxSprite
 			Note.initializeGlobalRGBShader(noteData % Note.colArray.length);
 			if (inEditor || (note == null || note.noteSplashData.useRGBShader) && (PlayState.SONG == null || !PlayState.SONG.disableNoteRGB))
 			{
-				tempShader = new RGBPalette();
+				tempShader = reusableRGBPalette;
+				tempShader.mult = 1.0;
 				// If Note RGB is enabled:
 				if ((note == null || !note.noteSplashData.useGlobalShader) || inEditor)
 				{

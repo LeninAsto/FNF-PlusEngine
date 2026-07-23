@@ -995,6 +995,10 @@ class CustomFlxG {
 	public static var gamepads(get, never):Dynamic;
 	public static var width(get, never):Int;
 	public static var height(get, never):Int;
+	public static var displayWidth(get, never):Int;
+	public static var displayHeight(get, never):Int;
+	public static var screenOffsetX(get, never):Float;
+	public static var screenOffsetY(get, never):Float;
 	public static var autoPause(get, set):Bool;
 	public static var signals(get, never):Dynamic;
 	public static var random(get, never):Dynamic;
@@ -1018,8 +1022,36 @@ class CustomFlxG {
 	static function get_keys():Dynamic return FlxG.keys;
 	static function get_mouse():Dynamic return FlxG.mouse;
 	static function get_gamepads():Dynamic return FlxG.gamepads;
-	static function get_width():Int return FlxG.width;
-	static function get_height():Int return FlxG.height;
+	static function get_width():Int {
+		#if mobile
+		return Std.int(mobile.backend.MobileScaleMode.getSafeWidth());
+		#else
+		return FlxG.width;
+		#end
+	}
+	static function get_height():Int {
+		#if mobile
+		return Std.int(mobile.backend.MobileScaleMode.getSafeHeight());
+		#else
+		return FlxG.height;
+		#end
+	}
+	static function get_displayWidth():Int return FlxG.width;
+	static function get_displayHeight():Int return FlxG.height;
+	static function get_screenOffsetX():Float {
+		#if mobile
+		return mobile.backend.MobileScaleMode.getHorizontalOffset();
+		#else
+		return 0;
+		#end
+	}
+	static function get_screenOffsetY():Float {
+		#if mobile
+		return mobile.backend.MobileScaleMode.getVerticalOffset();
+		#else
+		return 0;
+		#end
+	}
 	static function get_autoPause():Bool return FlxG.autoPause;
 	static function set_autoPause(value:Bool):Bool return FlxG.autoPause = value;
 	static function get_signals():Dynamic return FlxG.signals;

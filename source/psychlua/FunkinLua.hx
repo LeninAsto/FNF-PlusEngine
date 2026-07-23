@@ -32,6 +32,9 @@ import psychlua.HScript;
 import psychlua.ModchartSprite;
 
 import mobile.psychlua.Functions;
+#if mobile
+import mobile.backend.MobileScaleMode;
+#end
 
 class FunkinLua {
 	public var lua:State = null;
@@ -132,8 +135,21 @@ class FunkinLua {
 		set('hasVocals', hasSong ? PlayState.SONG.needsVoices : false);
 
 		// Screen stuff
+		#if mobile
+		set('screenWidth', MobileScaleMode.getSafeWidth());
+		set('screenHeight', MobileScaleMode.getSafeHeight());
+		set('displayWidth', MobileScaleMode.getScreenWidth());
+		set('displayHeight', MobileScaleMode.getScreenHeight());
+		set('screenOffsetX', MobileScaleMode.getHorizontalOffset());
+		set('screenOffsetY', MobileScaleMode.getVerticalOffset());
+		#else
 		set('screenWidth', FlxG.width);
 		set('screenHeight', FlxG.height);
+		set('displayWidth', FlxG.width);
+		set('displayHeight', FlxG.height);
+		set('screenOffsetX', 0);
+		set('screenOffsetY', 0);
+		#end
 
 
 		// PlayState-only variables
@@ -936,15 +952,33 @@ class FunkinLua {
 			}
 		});
 
-		Lua_helper.add_callback(lua, "setCameraScroll", function(x:Float, y:Float) FlxG.camera.scroll.set(x - FlxG.width/2, y - FlxG.height/2));
+		Lua_helper.add_callback(lua, "setCameraScroll", function(x:Float, y:Float) {
+			#if mobile
+			FlxG.camera.scroll.set(x - MobileScaleMode.getSafeWidth() / 2, y - MobileScaleMode.getSafeHeight() / 2);
+			#else
+			FlxG.camera.scroll.set(x - FlxG.width / 2, y - FlxG.height / 2);
+			#end
+		});
 		Lua_helper.add_callback(lua, "setCameraFollowPoint", function(x:Float, y:Float) game.camFollow.setPosition(x, y));
 		Lua_helper.add_callback(lua, "addCameraScroll", function(?x:Float = 0, ?y:Float = 0) FlxG.camera.scroll.add(x, y));
 		Lua_helper.add_callback(lua, "addCameraFollowPoint", function(?x:Float = 0, ?y:Float = 0) {
 			game.camFollow.x += x;
 			game.camFollow.y += y;
 		});
-		Lua_helper.add_callback(lua, "getCameraScrollX", () -> FlxG.camera.scroll.x + FlxG.width/2);
-		Lua_helper.add_callback(lua, "getCameraScrollY", () -> FlxG.camera.scroll.y + FlxG.height/2);
+		Lua_helper.add_callback(lua, "getCameraScrollX", () -> {
+			#if mobile
+			return FlxG.camera.scroll.x + MobileScaleMode.getSafeWidth() / 2;
+			#else
+			return FlxG.camera.scroll.x + FlxG.width / 2;
+			#end
+		});
+		Lua_helper.add_callback(lua, "getCameraScrollY", () -> {
+			#if mobile
+			return FlxG.camera.scroll.y + MobileScaleMode.getSafeHeight() / 2;
+			#else
+			return FlxG.camera.scroll.y + FlxG.height / 2;
+			#end
+		});
 		Lua_helper.add_callback(lua, "getCameraFollowX", () -> game.camFollow.x);
 		Lua_helper.add_callback(lua, "getCameraFollowY", () -> game.camFollow.y);
 

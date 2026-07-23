@@ -11,6 +11,7 @@ class MobileSettingsSubState extends BaseOptionsMenu
 {
 	final exControlTypes:Array<String> = ["NONE", "SINGLE", "DOUBLE"];
 	final hintOptions:Array<String> = ["No Gradient", "No Gradient (Old)", "Gradient", "Hidden"];
+	final fpsCounterOptions:Array<String> = ['Hidden', 'Visible No Background', 'Visible with Background', 'Basic Debug', 'Extended Debug'];
 	#if android
 	final storageOptions:Array<String> = ["INTERNAL", "EXTERNAL"];
 	#end
@@ -81,6 +82,22 @@ class MobileSettingsSubState extends BaseOptionsMenu
 		{
 			if (Main.traceButton != null)
 				Main.traceButton.updatePosition();
+		};
+		addOption(option);
+
+		option = new Option('FPS Counter Mode',
+			'Choose how much performance info is shown in the top-left overlay.',
+			'fpsCounterMode',
+			STRING,
+			fpsCounterOptions);
+		option.onChange = () ->
+		{
+			ClientPrefs.normalizeFPSCounterPrefs();
+			if (Main.fpsVar != null)
+			{
+				Main.fpsVar.applyPrefs();
+				Main.fpsVar.positionFPS(10, 3, 1.0);
+			}
 		};
 		addOption(option);
 

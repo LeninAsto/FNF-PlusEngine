@@ -40,8 +40,8 @@ import states.TitleState;
 	public var opponentStrums:Bool = true;
 	public var showFPS:Bool = true;
 	public var vsync:Bool = false;
-	public var fpsCounterMode:String = #if mobile 'Hidden' #else 'Visible with Background' #end; // FPS counter visibility/detail mode
-	public var fpsDebugLevel:Int = #if mobile 0 #else 2 #end; // Legacy FPSCounter debug level (persistent)
+	public var fpsCounterMode:String = #if mobile 'Visible No Background' #else 'Visible with Background' #end; // FPS counter visibility/detail mode
+	public var fpsDebugLevel:Int = #if mobile 1 #else 2 #end; // Legacy FPSCounter debug level (persistent)
 	public var showWatermark:Bool = false;
 	public var flashing:Bool = true;
 	public var autoPause:Bool = true;
@@ -368,7 +368,7 @@ class ClientPrefs {
 
 		if(FlxG.save.data.framerate == null) {
 			final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
-			data.framerate = Std.int(FlxMath.bound(refreshRate, 60, 240));
+			data.framerate = Std.int(FlxMath.bound(refreshRate, #if mobile 30 #else 60 #end, 240));
 		}
 		#end
 
@@ -484,7 +484,7 @@ class ClientPrefs {
 	{
 		final modes:Array<String> = ['Hidden', 'Visible No Background', 'Visible with Background', 'Basic Debug', 'Extended Debug'];
 		if (data.fpsCounterMode == null || !modes.contains(data.fpsCounterMode))
-			data.fpsCounterMode = #if mobile 'Hidden' #else 'Visible with Background' #end;
+			data.fpsCounterMode = #if mobile 'Visible No Background' #else 'Visible with Background' #end;
 
 		data.fpsDebugLevel = switch (data.fpsCounterMode)
 		{

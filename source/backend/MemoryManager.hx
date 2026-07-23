@@ -4,6 +4,7 @@ import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
 import openfl.utils.Assets;
 import openfl.system.System;
+import haxe.Timer;
 
 #if sys
 import sys.FileSystem;
@@ -15,6 +16,9 @@ import sys.FileSystem;
  */
 class MemoryManager
 {
+    private static inline final AGGRESSIVE_CLEANUP_COOLDOWN:Float = 2.0;
+    private static var lastAggressiveCleanupTime:Float = -9999;
+
     #if android
     private static var isAndroid:Bool = true;
     #else
@@ -179,6 +183,14 @@ class MemoryManager
     public static function aggressiveCleanup():Void
     {
         #if android
+        var now:Float = Timer.stamp();
+        if (now - lastAggressiveCleanupTime < AGGRESSIVE_CLEANUP_COOLDOWN)
+        {
+            trace('MemoryManager: Skipping duplicate aggressive cleanup');
+            return;
+        }
+        lastAggressiveCleanupTime = now;
+
         trace('MemoryManager: Performing aggressive memory cleanup...');
         
         // Clear Paths caches

@@ -4,6 +4,10 @@ import backend.animation.PsychAnimationController;
 
 import shaders.RGBPalette.RGBShaderReference;
 
+#if mobile
+import mobile.backend.MobileScaleMode;
+#end
+
 class StrumNote extends FlxSprite
 {
 	public var rgbShader:RGBShaderReference;
@@ -205,7 +209,12 @@ class StrumNote extends FlxSprite
 		var playerValue:Int = overridePlayer != null ? overridePlayer : player;
 		x += Note.swagWidth * noteData;
 		x += 50;
+		#if mobile
+		x += MobileScaleMode.getHorizontalOffset();
+		x += ((MobileScaleMode.getSafeWidth() / 2) * playerValue);
+		#else
 		x += ((FlxG.width / 2) * playerValue);
+		#end
 	}
 
 	override function update(elapsed:Float) {

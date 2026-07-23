@@ -204,11 +204,7 @@ class Main extends Sprite
 			   // Posicionamiento inicial con márgenes constantes
 			   var marginX = 10;
 			   var marginY = 3;
-			   #if mobile
-			   fpsVar.positionFPS(FlxG.game.x + marginX, FlxG.game.y + marginY, 1.0);
-			   #else
 			   fpsVar.positionFPS(marginX, marginY, 1.0);
-			   #end
 		   }
 
 		#if (linux || mac) // fix the app icon not showing up on the Linux Panel / Mac Dock
@@ -259,11 +255,7 @@ class Main extends Sprite
 			if(fpsVar != null) {
 				var marginX = 10;
 				var marginY = 3;
-				#if mobile
-				fpsVar.positionFPS(FlxG.game.x + marginX, FlxG.game.y + marginY, 1.0);
-				#else
 				fpsVar.positionFPS(marginX, marginY, 1.0);
-				#end
 			}
 			
 			// Reposition TraceDisplay button.

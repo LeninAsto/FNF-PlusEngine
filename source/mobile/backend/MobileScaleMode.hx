@@ -13,9 +13,8 @@ class MobileScaleMode extends BaseScaleMode
 	public static final BASE_GAME_WIDTH:Int = 1280;
 	public static final BASE_GAME_HEIGHT:Int = 720;
 
-	// Maximum aspect ratio before black bars reappear (20:9).
-	static inline final MAX_RATIO_W:Float = 20;
-	static inline final MAX_RATIO_H:Float = 9;
+	static inline final MAX_RATIO_W:Float = 100;
+	static inline final MAX_RATIO_H:Float = 1;
 
 	// Logical game dimensions after the last onMeasure, used by the helpers.
 	static var currentGameWidth:Int = BASE_GAME_WIDTH;
@@ -52,6 +51,18 @@ class MobileScaleMode extends BaseScaleMode
 	 */
 	public static inline function getVerticalOffset():Float
 		return (currentGameHeight - BASE_GAME_HEIGHT) / 2;
+
+	public static inline function safeX(x:Float):Float
+		return getHorizontalOffset() + x;
+
+	public static inline function safeY(y:Float):Float
+		return getVerticalOffset() + y;
+
+	public static inline function safeCenterX(width:Float):Float
+		return getHorizontalOffset() + ((BASE_GAME_WIDTH - width) / 2);
+
+	public static inline function safeCenterY(height:Float):Float
+		return getVerticalOffset() + ((BASE_GAME_HEIGHT - height) / 2);
 
 	override public function onMeasure(Width:Int, Height:Int):Void
 	{

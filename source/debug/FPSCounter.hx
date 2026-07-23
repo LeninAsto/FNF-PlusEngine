@@ -214,6 +214,12 @@ class FPSCounter extends Sprite
 	public dynamic function updateText():Void // so people can override it in hscript
 	{
 		applyPrefs(false);
+		if (debugLevel <= 0)
+		{
+			hideUnusedBoxes(0);
+			layoutBoxes();
+			return;
+		}
 
 		// Get current real memory
 		var currentMemory = memoryMegas;
@@ -232,7 +238,7 @@ class FPSCounter extends Sprite
 		var peakMemoryStr = flixel.util.FlxStringUtil.formatBytes(displayedMemoryPeak);
 
 		// White or red color based on FPS
-		var targetFPS = #if (ClientPrefs && ClientPrefs.data && ClientPrefs.data.framerate) ClientPrefs.data.framerate #else FlxG.stage.window.frameRate #end;
+		var targetFPS = ClientPrefs.data.framerate;
 		var halfFPS = targetFPS * 0.5;
 		var textColorValue:Int;
 
@@ -360,11 +366,10 @@ class FPSCounter extends Sprite
 		if (event.keyCode == Keyboard.F2)
 		{
 			debugLevel = (debugLevel + 1) % 5; // Cycle: hidden, no bg, bg, basic debug, extended debug
-			#if (ClientPrefs && ClientPrefs.data)
 			ClientPrefs.data.fpsDebugLevel = debugLevel;
 			ClientPrefs.data.fpsCounterMode = modeFromLevel(debugLevel);
 			ClientPrefs.saveSettings();
-			#end
+			visible = debugLevel > 0;
 			updateText();
 		}
 	}
@@ -372,7 +377,6 @@ class FPSCounter extends Sprite
 	// Función para actualizar el fondo
 	public function applyPrefs(?refresh:Bool = true):Void
 	{
-		#if (ClientPrefs && ClientPrefs.data)
 		ClientPrefs.normalizeFPSCounterPrefs();
 		var newLevel:Int = ClientPrefs.data.fpsDebugLevel;
 		if (newLevel != debugLevel)
@@ -380,8 +384,7 @@ class FPSCounter extends Sprite
 			debugLevel = newLevel;
 			pendingLayoutRefresh = true;
 		}
-		visible = true;
-		#end
+		visible = debugLevel > 0;
 
 		if (refresh)
 			updateText();

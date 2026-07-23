@@ -68,6 +68,7 @@ import psychlua.HScript;
 
 #if mobile
 import mobile.backend.StorageUtil;
+import mobile.backend.MobileScaleMode;
 #end
 
 #if LUA_ALLOWED
@@ -827,7 +828,7 @@ class PlayState extends MusicBeatState
 		if (ClientPrefs.data.versionTextOnGameplay)
 		{
 			var versionStr = "PlE v" + MainMenuState.plusEngineVersion + " | " + SONG.song + " (" + Difficulty.getString() + ")";
-			versionText = new FlxText(0, -50, FlxG.width, versionStr, 14);
+			versionText = new FlxText(getGameplaySafeX(), -50, getGameplaySafeWidth(), versionStr, 14);
 			versionText.setFormat(Paths.font("vcr.ttf"), 14, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			versionText.scrollFactor.set();
 			versionText.alpha = 1.0;
@@ -838,25 +839,25 @@ class PlayState extends MusicBeatState
 
 		Conductor.songPosition = -Conductor.crochet * 5 + Conductor.offset;
 		var showTime:Bool = (ClientPrefs.data.timeBarType != 'Disabled');
-		timeTxt = new FlxText(STRUM_X + (FlxG.width / 2) - 248, 19, 400, "", 32);
+		timeTxt = new FlxText(getGameplaySafeX() + STRUM_X + (getGameplaySafeWidth() / 2) - 248, 19, 400, "", 32);
 		timeTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		timeTxt.scrollFactor.set();
 		timeTxt.alpha = 1; // Alpha siempre visible
 		timeTxt.borderSize = 2;
 		timeTxt.visible = updateTime = showTime;
-		if(ClientPrefs.data.downScroll) timeTxt.y = FlxG.height - 44;
+		if(ClientPrefs.data.downScroll) timeTxt.y = getGameplaySafeY() + getGameplaySafeHeight() - 44;
 		if(ClientPrefs.data.timeBarType == 'Song Name') timeTxt.text = SONG.song;
 
 		timeBar = new Bar(0, timeTxt.y + (timeTxt.height / 4), 'timeBar', function() return songPercent, 0, 1);
 		timeBar.scrollFactor.set();
-		timeBar.screenCenter(X);
+		timeBar.x = getGameplaySafeX() + (getGameplaySafeWidth() - timeBar.width) / 2;
 		timeBar.alpha = 1; // Alpha siempre visible
 		timeBar.scale.x = 0; // Inicia con escala X en 0
 		timeBar.visible = showTime;
 		uiGroup.add(timeBar);
 		uiGroup.add(timeTxt);
 
-		lyricText = new FlxText(0, FlxG.height * 0.75, FlxG.width, "", 32);
+		lyricText = new FlxText(getGameplaySafeX(), getGameplaySafeY() + getGameplaySafeHeight() * 0.75, getGameplaySafeWidth(), "", 32);
 		lyricText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		lyricText.scrollFactor.set();
 		lyricText.borderSize = 2;
@@ -896,8 +897,8 @@ class PlayState extends MusicBeatState
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 		moveCameraSection();
 
-		healthBar = new Bar(0, FlxG.height * (!ClientPrefs.data.downScroll ? 0.89 : 0.11), 'healthBar', function() return health, 0, 2);
-		healthBar.screenCenter(X);
+		healthBar = new Bar(0, getGameplaySafeY() + getGameplaySafeHeight() * (!ClientPrefs.data.downScroll ? 0.89 : 0.11), 'healthBar', function() return health, 0, 2);
+		healthBar.x = getGameplaySafeX() + (getGameplaySafeWidth() - healthBar.width) / 2;
 		healthBar.leftToRight = playOpponent ? true : false;
 		healthBar.scrollFactor.set();
 		healthBar.visible = !ClientPrefs.data.hideHud && !isNotITG;
@@ -960,7 +961,7 @@ class PlayState extends MusicBeatState
 			reloadGradientColors();
 		}
 		
-		scoreTxt = new FlxText(0, healthBar.y + 40, FlxG.width, "", 20);
+		scoreTxt = new FlxText(getGameplaySafeX(), healthBar.y + 40, getGameplaySafeWidth(), "", 20);
 		scoreTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		scoreTxt.scrollFactor.set();
 		scoreTxt.borderSize = 1.25;
@@ -971,7 +972,7 @@ class PlayState extends MusicBeatState
 		isStepManiaChart = (customAudioPath != null && (customAudioPath.contains('/sm/') || customAudioPath.contains('sm/'))) || (curStage == 'notitg');
 		initStepmaniaHudIfNeeded();
 
-		botplayTxt = new FlxText(400, healthBar.y - 90, FlxG.width - 800, "", 32);
+		botplayTxt = new FlxText(getGameplaySafeX() + 400, healthBar.y - 90, getGameplaySafeWidth() - 800, "", 32);
 		botplayTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		botplayTxt.scrollFactor.set();
 		botplayTxt.borderSize = 1.25;
@@ -1219,7 +1220,7 @@ class PlayState extends MusicBeatState
 		add(blackBG);
 		
 		// Texto "EVENT MODE" estilo NotITG
-		var warningText:FlxText = new FlxText(0, 0, FlxG.width, "EVENTS MODE!");
+		var warningText:FlxText = new FlxText(getGameplaySafeX(), 0, getGameplaySafeWidth(), "EVENTS MODE!");
 		warningText.setFormat(Paths.font("aller.ttf"), 72, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		warningText.borderSize = 4;
 		warningText.screenCenter();
@@ -1230,7 +1231,7 @@ class PlayState extends MusicBeatState
 		add(warningText);
 		
 		// Texto secundario
-		var subText:FlxText = new FlxText(0, 0, FlxG.width, "Modcharts Enabled");
+		var subText:FlxText = new FlxText(getGameplaySafeX(), 0, getGameplaySafeWidth(), "Modcharts Enabled");
 		subText.setFormat(Paths.font("aller.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		subText.borderSize = 2;
 		subText.screenCenter();
@@ -1257,8 +1258,8 @@ class PlayState extends MusicBeatState
 					subText.color = FlxColor.LIME;
 					
 					// Crear partículas de explosión desde el centro
-					var centerX:Float = FlxG.width / 2;
-					var centerY:Float = FlxG.height / 2;
+					var centerX:Float = getGameplaySafeX() + getGameplaySafeWidth() / 2;
+					var centerY:Float = getGameplaySafeY() + getGameplaySafeHeight() / 2;
 					
 					for (i in 0...16) {
 						var angle:Float = (360 / 16) * i;
@@ -2107,6 +2108,52 @@ class PlayState extends MusicBeatState
 		return strum.y;
 	}
 
+	inline function getMobileAlignedReceptorX(noteData:Int, strumWidth:Float):Float
+	{
+		#if mobile
+		var laneWidth:Float = getGameplaySafeWidth() / 4;
+		return getGameplaySafeX() + laneWidth * noteData + (laneWidth - strumWidth) / 2;
+		#else
+		return 0;
+		#end
+	}
+
+	inline function getGameplaySafeX():Float
+	{
+		#if mobile
+		return MobileScaleMode.getHorizontalOffset();
+		#else
+		return 0;
+		#end
+	}
+
+	inline function getGameplaySafeY():Float
+	{
+		#if mobile
+		return MobileScaleMode.getVerticalOffset();
+		#else
+		return 0;
+		#end
+	}
+
+	inline function getGameplaySafeWidth():Float
+	{
+		#if mobile
+		return MobileScaleMode.getSafeWidth();
+		#else
+		return FlxG.width;
+		#end
+	}
+
+	inline function getGameplaySafeHeight():Float
+	{
+		#if mobile
+		return MobileScaleMode.getSafeHeight();
+		#else
+		return FlxG.height;
+		#end
+	}
+
 	public function addBehindGF(obj:FlxBasic)
 	{
 		insert(members.indexOf(gfGroup), obj);
@@ -2629,26 +2676,32 @@ class PlayState extends MusicBeatState
 							oldNote.resizeByRatio(curStepCrochet / Conductor.stepCrochet);
 						}
 
-						if (sustainNote.mustPress) sustainNote.x += FlxG.width / 2; // general offset
+						sustainNote.x += getGameplaySafeX();
+						if (sustainNote.mustPress) sustainNote.x += getGameplaySafeWidth() / 2; // general offset
 						else if(ClientPrefs.data.middleScroll)
 						{
 							sustainNote.x += 310;
 							if(noteColumn > 1) //Up and Right
-								sustainNote.x += FlxG.width / 2 + 25;
+								sustainNote.x += getGameplaySafeWidth() / 2 + 25;
 						}
 					}
 				}
 
 				if (swagNote.mustPress)
 				{
-					swagNote.x += FlxG.width / 2; // general offset
+					swagNote.x += getGameplaySafeX();
+					swagNote.x += getGameplaySafeWidth() / 2; // general offset
 				}
-				else if(ClientPrefs.data.middleScroll)
+				else
 				{
-					swagNote.x += 310;
-					if(noteColumn > 1) //Up and Right
+					swagNote.x += getGameplaySafeX();
+					if(ClientPrefs.data.middleScroll)
 					{
-						swagNote.x += FlxG.width / 2 + 25;
+						swagNote.x += 310;
+						if(noteColumn > 1) //Up and Right
+						{
+							swagNote.x += getGameplaySafeWidth() / 2 + 25;
+						}
 					}
 				}
 				if(!noteTypes.contains(swagNote.noteType))
@@ -2744,7 +2797,7 @@ class PlayState extends MusicBeatState
 	{
 		// Para charts de StepMania, centrar strums del jugador y ocultar del oponente
 		var strumLineX:Float = ClientPrefs.data.middleScroll ? STRUM_X_MIDDLESCROLL : STRUM_X;
-		var strumLineY:Float = ClientPrefs.data.downScroll ? (FlxG.height - 150) : 50;
+		var strumLineY:Float = getGameplaySafeY() + (ClientPrefs.data.downScroll ? (getGameplaySafeHeight() - 150) : 50);
 		
 		// En StepMania, siempre centrar los strums del jugador
 		if (isStepManiaChart) {
@@ -2792,7 +2845,7 @@ class PlayState extends MusicBeatState
 				{
 					babyArrow.x += 310;
 					if(i > 1) { //Up and Right
-						babyArrow.x += FlxG.width / 2 + 25;
+						babyArrow.x += getGameplaySafeWidth() / 2 + 25;
 					}
 				}
 				opponentStrums.add(babyArrow);
@@ -2804,6 +2857,10 @@ class PlayState extends MusicBeatState
 			// En opponent mode, el player visual es el inverso del original
 			var visualPlayer:Int = isPlayerStrum ? 1 : 0;
 			babyArrow.playerPosition(visualPlayer);
+			#if mobile
+			if (isPlayerStrum && ClientPrefs.data.mobileReceptorAlign)
+				babyArrow.x = getMobileAlignedReceptorX(i, babyArrow.width);
+			#end
 		}
 	}
 
@@ -3084,8 +3141,8 @@ class PlayState extends MusicBeatState
 						endCountdownText.scrollFactor.set();
 						endCountdownText.alpha = 1;
 						endCountdownText.borderSize = 3;
-						endCountdownText.x = FlxG.width / 2 - endCountdownText.width / 2;
-						endCountdownText.y = FlxG.height / 2 - 150;
+						endCountdownText.x = getGameplaySafeX() + getGameplaySafeWidth() / 2 - endCountdownText.width / 2;
+						endCountdownText.y = getGameplaySafeY() + getGameplaySafeHeight() / 2 - 150;
 						
 						add(endCountdownText);
 					}
@@ -4355,6 +4412,8 @@ class PlayState extends MusicBeatState
 	public var totalNotesHit:Float = 0.0;
 
 	public var wife3Scores:Array<Float> = [];
+	var wife3ScoreTotal:Float = 0.0;
+	var lastExtendedRatingScriptSync:Float = -9999;
 	public var wife3_maxms:Float = 180.0;
 	
 	public var notesHitSimple:Int = 0;
@@ -4430,7 +4489,7 @@ class PlayState extends MusicBeatState
 		}
 
 		var antialias:Bool = ClientPrefs.data.antialiasing;
-		var placement:Float = FlxG.width * 0.35;
+		var placement:Float = getGameplaySafeX() + getGameplaySafeWidth() * 0.35;
 
 		nfRateSprite = new FlxSprite();
 		nfRateSprite.loadGraphic(Paths.image(uiFolder + ratingsData[0].image + uiSuffix));
@@ -4559,7 +4618,7 @@ class PlayState extends MusicBeatState
 			return;
 
 		scoreTxt.visible = false;
-		stepmaniaHud = new StepmaniaHud(uiGroup, this, camHUD, FlxG.width, FlxG.height, ClientPrefs.data.hideHud);
+		stepmaniaHud = new StepmaniaHud(uiGroup, this, camHUD, getGameplaySafeWidth(), getGameplaySafeHeight(), ClientPrefs.data.hideHud);
 	}
 
 	function initGameplayRuntimeBridgeIfNeeded():Void
@@ -4700,7 +4759,9 @@ class PlayState extends MusicBeatState
 		{
 			case 'Wife3':
 				var noteDiff_ms:Float = Math.abs(noteDiff / playbackRate);
-				wife3Scores.push(calculateWife3Score(noteDiff_ms));
+				var wifeScore:Float = calculateWife3Score(noteDiff_ms);
+				wife3Scores.push(wifeScore);
+				wife3ScoreTotal += wifeScore;
 			case 'Psych':
 				totalNotesHit += daRating.ratingMod;
 			case 'Simple':
@@ -4864,7 +4925,7 @@ class PlayState extends MusicBeatState
 		if (!ClientPrefs.data.comboStacking)
 			clearComboGroupSprites();
 
-		var placement:Float = FlxG.width * 0.35;
+		var placement:Float = getGameplaySafeX() + getGameplaySafeWidth() * 0.35;
 		var uiFolder:String = "";
 		var antialias:Bool = ClientPrefs.data.antialiasing;
 		if (stageUI != "normal")
@@ -5031,7 +5092,7 @@ class PlayState extends MusicBeatState
 
 	private function popUpScoreNf(note:Note = null):Void
 	{
-		var placement:Float = FlxG.width * 0.35;
+		var placement:Float = getGameplaySafeX() + getGameplaySafeWidth() * 0.35;
 		
 		var noteDiff:Float = Math.abs(note.strumTime - Conductor.songPosition + ClientPrefs.data.ratingOffset);
 		vocals.volume = 1;
@@ -5045,7 +5106,9 @@ class PlayState extends MusicBeatState
 		{
 			case 'Wife3':
 				var noteDiff_ms:Float = Math.abs(noteDiff / playbackRate);
-				wife3Scores.push(calculateWife3Score(noteDiff_ms));
+				var wifeScore:Float = calculateWife3Score(noteDiff_ms);
+				wife3Scores.push(wifeScore);
+				wife3ScoreTotal += wifeScore;
 			case 'Psych':
 				totalNotesHit += daRating.ratingMod;
 			case 'Simple':
@@ -5380,7 +5443,7 @@ class PlayState extends MusicBeatState
 			antialias = !isPixelStage;
 		}
 
-		var placement:Float = FlxG.width * 0.35;
+		var placement:Float = getGameplaySafeX() + getGameplaySafeWidth() * 0.35;
 		var breakSprite:FlxSprite = new FlxSprite();
 		// Determinar qué imagen usar
 		breakSprite.loadGraphic(Paths.image(uiFolder + 'miss' + uiPostfix));
@@ -5443,7 +5506,7 @@ class PlayState extends MusicBeatState
 			antialias = !isPixelStage;
 		}
 
-		var placement:Float = FlxG.width * 0.35;
+		var placement:Float = getGameplaySafeX() + getGameplaySafeWidth() * 0.35;
 		var breakSprite:FlxSprite = new FlxSprite();
 		breakSprite.loadGraphic(Paths.image(uiFolder + 'miss' + uiPostfix));
 		breakSprite.color = FlxColor.WHITE;
@@ -5850,6 +5913,7 @@ class PlayState extends MusicBeatState
 		{
 			case 'Wife3':
 				wife3Scores.push(-8.0);
+				wife3ScoreTotal -= 8.0;
 			case 'Psych':
 				totalNotesHit += 0;
 			case 'Simple':
@@ -5898,7 +5962,14 @@ class PlayState extends MusicBeatState
 	{
 		// Opponent Mode: Update the correct character's holdTimer
 		var opponentChar:Character = playOpponent ? boyfriend : dad;
-		var noteIndex:Int = notes.members.indexOf(note);
+		var needsNoteIndex:Bool = false;
+		#if LUA_ALLOWED
+		needsNoteIndex = needsNoteIndex || (luaArray != null && luaArray.length > 0);
+		#end
+		#if HSCRIPT_ALLOWED
+		needsNoteIndex = needsNoteIndex || (hscriptArray != null && hscriptArray.length > 0);
+		#end
+		var noteIndex:Int = needsNoteIndex ? notes.members.indexOf(note) : -1;
 		
 		var result:Dynamic = callOnLuas('opponentNoteHitPre', [noteIndex, Math.abs(note.noteData), note.noteType, note.isSustainNote]);
 		if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) result = callOnHScript('opponentNoteHitPre', [note]);
@@ -6423,7 +6494,9 @@ class PlayState extends MusicBeatState
 	super.destroy();
 	
 	// Ahora sí es seguro limpiar memoria (todos los objetos ya fueron destruidos)
+	#if !android
 	Paths.clearUnusedMemory();
+	#end
 }	var lastStepHit:Int = -1;
 	override function stepHit()
 	{
@@ -6892,7 +6965,7 @@ class PlayState extends MusicBeatState
 		if(exclusions == null) exclusions = [];
 		if(luaArray == null)
 			return;
-		for (script in luaArray.copy()) {
+		for (script in luaArray) {
 			if(script == null || script.closed)
 				continue;
 			if(exclusions.contains(script.scriptName))
@@ -6908,7 +6981,7 @@ class PlayState extends MusicBeatState
 		if(exclusions == null) exclusions = [];
 		if(hscriptArray == null)
 			return;
-		for (script in hscriptArray.copy()) {
+		for (script in hscriptArray) {
 			if(script == null)
 				continue;
 			if(exclusions.contains(script.origin))
@@ -6956,16 +7029,10 @@ class PlayState extends MusicBeatState
 				// === WIFE3 ACCURACY SYSTEM (STEPMANIA) ===
 				if(wife3Scores.length > 0)
 				{
-					var totalPoints:Float = 0.0;
-					for(score in wife3Scores)
-					{
-						totalPoints += score;
-					}
-					
 					var maxPossiblePoints:Float = wife3Scores.length * 2.0;
 					
 					// Calcular porcentaje base
-					var rawPercent:Float = totalPoints / maxPossiblePoints;
+					var rawPercent:Float = wife3ScoreTotal / maxPossiblePoints;
 					
 					// CLAMPEAR entre 0% y 100% (estándar Wife3)
 					ratingPercent = Math.max(0.0, Math.min(1.0, rawPercent));
@@ -7073,6 +7140,13 @@ class PlayState extends MusicBeatState
 		setOnScripts('ratingFC', ratingFC);
 		setOnScripts('totalPlayed', totalPlayed);
 		setOnScripts('totalNotesHit', totalNotesHit);
+		var syncExtendedRatingStats:Bool = badHit || (Timer.stamp() - lastExtendedRatingScriptSync) >= 0.1;
+		if (!syncExtendedRatingStats)
+		{
+			updateScore(badHit, scoreBop);
+			return;
+		}
+		lastExtendedRatingScriptSync = Timer.stamp();
 		setOnScripts('accuracySystem', ClientPrefs.data.accuracySystem);
 		
 		switch (ClientPrefs.data.accuracySystem)
@@ -7080,11 +7154,7 @@ class PlayState extends MusicBeatState
 			case 'Wife3':
 				var wife3Percent:Float = 0.0;
 				if (wife3Scores.length > 0)
-				{
-					var totalPoints:Float = 0.0;
-					for (score in wife3Scores) totalPoints += score;
-					wife3Percent = Math.max(0.0, Math.min(1.0, totalPoints / (wife3Scores.length * 2.0)));
-				}
+					wife3Percent = Math.max(0.0, Math.min(1.0, wife3ScoreTotal / (wife3Scores.length * 2.0)));
 				setOnScripts('ratingWife3', wife3Percent);
 				setOnScripts('wife3Scores', wife3Scores);
 				

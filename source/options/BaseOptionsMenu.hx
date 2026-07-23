@@ -9,6 +9,10 @@ import objects.AttachedText;
 import options.Option;
 import backend.InputFormatter;
 
+#if mobile
+import mobile.backend.MobileScaleMode;
+#end
+
 class BaseOptionsMenu extends MusicBeatSubstate
 {
 	private static inline var OPTION_SPAWN_X:Float = -420;
@@ -30,6 +34,15 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	private var playingIntroTransition:Bool = false;
 	private var closingTransition:Bool = false;
 	private var openedFromOptionsState:Bool = false;
+
+	inline function safeOffsetX():Float
+	{
+		#if mobile
+		return MobileScaleMode.getHorizontalOffset();
+		#else
+		return 0;
+		#end
+	}
 
 	public var title:String;
 	public var rpcTitle:String;
@@ -67,12 +80,12 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		descBox.alpha = 0.6;
 		add(descBox);
 
-		titleText = new Alphabet(75, 45, title, true);
+		titleText = new Alphabet(safeOffsetX() + 75, 45, title, true);
 		titleText.setScale(0.6);
 		titleText.alpha = 0.4;
 		add(titleText);
 
-		descText = new FlxText(50, 600, 1180, "", 32);
+		descText = new FlxText(safeOffsetX() + 50, 600, 1180, "", 32);
 		descText.setFormat(Paths.font("vcr.ttf"), 32, OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false)), CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		descText.scrollFactor.set();
 		descText.borderSize = 2.4;
@@ -81,7 +94,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 		for (i in 0...optionsArray.length)
 		{
-			var optionText:Alphabet = new Alphabet(220, 260, optionsArray[i].name, false);
+			var optionText:Alphabet = new Alphabet(safeOffsetX() + 220, 260, optionsArray[i].name, false);
 			optionText.isMenuItem = true;
 			/*optionText.forceX = 300;
 			optionText.yMult = 90;*/
@@ -779,7 +792,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 		for (i in 0...optionsArray.length)
 		{
-			var optionText:Alphabet = new Alphabet(220, 260, optionsArray[i].name, false);
+			var optionText:Alphabet = new Alphabet(safeOffsetX() + 220, 260, optionsArray[i].name, false);
 			optionText.isMenuItem = true;
 			optionText.targetY = i;
 			grpOptions.add(optionText);

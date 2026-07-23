@@ -6,6 +6,10 @@ import states.editors.MasterEditorMenu;
 import options.OptionsState;
 import flixel.text.FlxText;
 
+#if mobile
+import mobile.backend.MobileScaleMode;
+#end
+
 enum MainMenuColumn {
 	LEFT;
 	CENTER;
@@ -24,6 +28,24 @@ class MainMenuState extends MusicBeatState
 	public var menuItems:FlxTypedGroup<FlxSprite>;
 	public var leftItem:FlxSprite;
 	public var rightItem:FlxSprite;
+
+	inline function safeX(x:Float):Float
+	{
+		#if mobile
+		return MobileScaleMode.getHorizontalOffset() + x;
+		#else
+		return x;
+		#end
+	}
+
+	inline function safeWidth():Float
+	{
+		#if mobile
+		return MobileScaleMode.getSafeWidth();
+		#else
+		return FlxG.width;
+		#end
+	}
 
 	//Centered/Text options
 	public var optionShit:Array<String> = [
@@ -91,26 +113,26 @@ class MainMenuState extends MusicBeatState
 		}
 
 		if (leftOption != null)
-			leftItem = createMenuItem(leftOption, 60, 490);
+			leftItem = createMenuItem(leftOption, safeX(60), 490);
 		if (rightOption != null)
 		{
-			rightItem = createMenuItem(rightOption, FlxG.width - 60, 490);
+			rightItem = createMenuItem(rightOption, safeX(safeWidth() - 60), 490);
 			rightItem.x -= rightItem.width;
 		}
 
 		var buildLine:String = BuildInfo.versionLine();
 		var hasBuildLine:Bool = buildLine.length > 0;
-		var psychVer:FlxText = new FlxText(12, FlxG.height - (hasBuildLine ? 64 : 44), 0, "Psych Engine v" + psychEngineVersion, 12);
+		var psychVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 64 : 44), 0, "Psych Engine v" + psychEngineVersion, 12);
 		psychVer.scrollFactor.set();
 		psychVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(psychVer);
-		var fnfVer:FlxText = new FlxText(12, FlxG.height - (hasBuildLine ? 44 : 24), 0, "Friday Night Funkin' v" + fnfVersion, 12);
+		var fnfVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 44 : 24), 0, "Friday Night Funkin' v" + fnfVersion, 12);
 		fnfVer.scrollFactor.set();
 		fnfVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(fnfVer);
 		if (hasBuildLine)
 		{
-			var buildVer:FlxText = new FlxText(12, FlxG.height - 24, 0, buildLine, 12);
+			var buildVer:FlxText = new FlxText(safeX(12), FlxG.height - 24, 0, buildLine, 12);
 			buildVer.scrollFactor.set();
 			buildVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			add(buildVer);
