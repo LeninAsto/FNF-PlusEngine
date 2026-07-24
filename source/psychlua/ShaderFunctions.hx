@@ -8,6 +8,8 @@ import flixel.addons.display.FlxRuntimeShader;
 
 class ShaderFunctions
 {
+	static var shaderDebugSetCount:Int = 0;
+
 	public static function implement(funk:FunkinLua)
 	{
 		var lua = funk.lua;
@@ -47,12 +49,9 @@ class ShaderFunctions
 
 			if(leObj != null) {
 				var arr:Array<String> = funk.runtimeShaders.get(shader);
-				
-				var adapted = ClientPrefs.data.legacyShaderInit
-					? [arr[0], arr[1]]
-					: shaders.ShaderCompatibility.adaptShaderCode(arr[0], arr[1]);
-				
-				var runtimeShader:shaders.ErrorHandledShader.ErrorHandledRuntimeShader = new shaders.ErrorHandledShader.ErrorHandledRuntimeShader(shader, adapted[0], adapted[1]);
+				var runtimeShader:shaders.ErrorHandledShader.ErrorHandledRuntimeShader = new shaders.ErrorHandledShader.ErrorHandledRuntimeShader(shader, arr[0], arr[1]);
+				shaderDebugSetCount++;
+				trace('[ShaderDebug][Lua] setSpriteShader #$shaderDebugSetCount obj=$obj shader=$shader frag=${arr[0] == null ? 0 : arr[0].length} vert=${arr[1] == null ? 0 : arr[1].length}');
 				runtimeShader.onError = function(error:Dynamic)
 				{
 					if(leObj != null && leObj.shader == runtimeShader)

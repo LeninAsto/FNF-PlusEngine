@@ -29,9 +29,9 @@ body:
       label: "Which plus engine version you're on?"
       options:
         - "DevBuild"
+        - "1.2"
+        - "1.1"
         - "1.0.5"
-        - "1.0"
-        - "0.8.5 / older"
     validations:
       required: true
 
