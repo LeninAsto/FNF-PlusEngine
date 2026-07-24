@@ -9,6 +9,7 @@ import openfl.net.FileReference;
 import openfl.events.Event;
 import openfl.events.IOErrorEvent;
 import openfl.events.MouseEvent;
+import openfl.events.TouchEvent;
 import openfl.geom.Point;
 
 import objects.Character;
@@ -59,6 +60,9 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 	var cameraPosition:Point = new Point();
 	var isDragging:Bool = false;
+	var isDraggingChar:Bool = false;
+	var dragStartTouch:FlxPoint = FlxPoint.get();
+	var dragStartPos:Array<Float> = [0, 0];
 
 	public function new(char:String = null, goToPlayState:Bool = true)
 	{
@@ -173,6 +177,10 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			FlxG.stage.addEventListener(MouseEvent.MOUSE_DOWN, onMouseEvent);
 			FlxG.stage.addEventListener(MouseEvent.MOUSE_MOVE, onMouseEvent);
 			FlxG.stage.addEventListener(MouseEvent.MOUSE_UP, onMouseEvent);
+
+			FlxG.stage.addEventListener(TouchEvent.TOUCH_BEGIN, onTouchEvent);
+			FlxG.stage.addEventListener(TouchEvent.TOUCH_MOVE, onTouchEvent);
+			FlxG.stage.addEventListener(TouchEvent.TOUCH_END, onTouchEvent);
 		}
 
 		if(ClientPrefs.data.cacheOnGPU) Paths.clearUnusedMemory();
@@ -646,7 +654,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 	var flipXCheckBox:PsychUICheckBox;
 	var noAntialiasingCheckBox:PsychUICheckBox;
-	var animatedIconCheckBox:PsychUICheckBox; // Checkbox para íconos animados
+	var animatedIconCheckBox:PsychUICheckBox;
 
 	var healthColorStepperR:PsychUINumericStepper;
 	var healthColorStepperG:PsychUINumericStepper;
@@ -681,7 +689,6 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		animatedIconCheckBox.checked = character.animatedIcon == true;
 		animatedIconCheckBox.onClick = function() {
 		character.animatedIcon = animatedIconCheckBox.checked;
-		// Recargar el ícono con el nuevo estado
 		healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon);
 	};
 
@@ -735,7 +742,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		tab_group.add(reloadImage);
 		tab_group.add(decideIconColor);
 		tab_group.add(healthIconInputText);
-		tab_group.add(animatedIconCheckBox); // Agregar checkbox de ícono animado
+		tab_group.add(animatedIconCheckBox);
 		tab_group.add(vocalsInputText);
 		tab_group.add(singDurationStepper);
 		tab_group.add(scaleStepper);
@@ -918,6 +925,45 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			return;
 		}
 		ClientPrefs.toggleVolumeKeys(true);
+
+		if (ClientPrefs.data.dragCharacterToMove)
+		{
+			if (FlxG.mouse.justPressed && !isMouseOverUI() && !controls.mobileC)
+			{
+				var mouseWorld:FlxPoint = FlxG.mouse.getWorldPosition();
+				if (character.overlapsPoint(mouseWorld))
+				{
+					isDraggingChar = true;
+					dragStartTouch.set(mouseWorld.x, mouseWorld.y);
+					dragStartPos[0] = character.positionArray[0];
+					dragStartPos[1] = character.positionArray[1];
+				}
+			}
+
+			if (isDraggingChar && !controls.mobileC)
+			{
+				if (FlxG.mouse.justReleased)
+				{
+					isDraggingChar = false;
+				}
+				else
+				{
+					var mouseWorld:FlxPoint = FlxG.mouse.getWorldPosition();
+					var deltaX:Float = mouseWorld.x - dragStartTouch.x;
+					var deltaY:Float = mouseWorld.y - dragStartTouch.y;
+
+					character.positionArray[0] = dragStartPos[0] + deltaX;
+					character.positionArray[1] = dragStartPos[1] + deltaY;
+
+					updateCharacterPositions();
+
+					if (positionXStepper != null) positionXStepper.value = character.positionArray[0];
+					if (positionYStepper != null) positionYStepper.value = character.positionArray[1];
+
+					unsavedProgress = true;
+				}
+			}
+		}
 
 		var shiftMult:Float = 1;
 		var ctrlMult:Float = 1;
@@ -1427,6 +1473,8 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		if (!controls.mobileC || FlxG.stage == null || UI_box == null || UI_characterbox == null)
 			return;
 
+		if (isDraggingChar) return;
+
 		switch (e.type)
 		{
 			case MouseEvent.MOUSE_DOWN:
@@ -1448,6 +1496,49 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		}
     }
 
+	function onTouchEvent(e:TouchEvent):Void
+	{
+		if (!controls.mobileC || FlxG.stage == null || !ClientPrefs.data.dragCharacterToMove)
+			return;
+
+		var touchX:Float = e.stageX;
+		var touchY:Float = e.stageY;
+
+		switch (e.type)
+		{
+			case TouchEvent.TOUCH_BEGIN:
+				var mouseWorld:FlxPoint = FlxG.camera.getScreenPosition(new FlxPoint(touchX, touchY));
+				if (character.overlapsPoint(mouseWorld) && !isMouseOverUI())
+				{
+					isDraggingChar = true;
+					dragStartTouch.set(mouseWorld.x, mouseWorld.y);
+					dragStartPos[0] = character.positionArray[0];
+					dragStartPos[1] = character.positionArray[1];
+				}
+
+			case TouchEvent.TOUCH_MOVE:
+				if (isDraggingChar)
+				{
+					var mouseWorld:FlxPoint = FlxG.camera.getScreenPosition(new FlxPoint(touchX, touchY));
+					var deltaX:Float = mouseWorld.x - dragStartTouch.x;
+					var deltaY:Float = mouseWorld.y - dragStartTouch.y;
+
+					character.positionArray[0] = dragStartPos[0] + deltaX;
+					character.positionArray[1] = dragStartPos[1] + deltaY;
+
+					updateCharacterPositions();
+
+					if (positionXStepper != null) positionXStepper.value = character.positionArray[0];
+					if (positionYStepper != null) positionYStepper.value = character.positionArray[1];
+
+					unsavedProgress = true;
+				}
+
+			case TouchEvent.TOUCH_END:
+				isDraggingChar = false;
+		}
+	}
+
 	override function destroy()
 	{
 		if (controls.mobileC && FlxG.stage != null)
@@ -1455,8 +1546,15 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			FlxG.stage.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseEvent);
 			FlxG.stage.removeEventListener(MouseEvent.MOUSE_MOVE, onMouseEvent);
 			FlxG.stage.removeEventListener(MouseEvent.MOUSE_UP, onMouseEvent);
+
+			FlxG.stage.removeEventListener(TouchEvent.TOUCH_BEGIN, onTouchEvent);
+			FlxG.stage.removeEventListener(TouchEvent.TOUCH_MOVE, onTouchEvent);
+			FlxG.stage.removeEventListener(TouchEvent.TOUCH_END, onTouchEvent);
 		}
+
+		if (dragStartTouch != null) dragStartTouch.put();
 		isDragging = false;
+		isDraggingChar = false;
 		super.destroy();
 	}
 }
