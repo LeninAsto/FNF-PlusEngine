@@ -18,7 +18,6 @@ class SustainSplash extends FlxSprite
 
 		x = -50000;
 
-		// Verificar si el archivo existe antes de cargarlo
 		var atlasPath = getHoldCoverPath();
 		if (Paths.fileExists('images/$atlasPath.png', IMAGE) && Paths.fileExists('images/$atlasPath.xml', TEXT))
 		{
@@ -37,9 +36,8 @@ class SustainSplash extends FlxSprite
 		}
 		else
 		{
-			// Usar un atlas por defecto o crear frames vacíos
 			trace('Hold splash atlas not found: $atlasPath');
-			makeGraphic(1, 1, 0x00000000); // Crear una imagen transparente
+			makeGraphic(1, 1, 0x00000000);
 		}
 	}
 

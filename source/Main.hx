@@ -424,7 +424,7 @@ class Main extends Sprite
 		}
 		#end
 		
-		var flxGraphic = backend.Paths.image("lenin");
+		var flxGraphic = backend.Paths.image("watermark");
 		if (flxGraphic != null) {
 			var bmpData:openfl.display.BitmapData = flxGraphic.bitmap;
 			if (watermarkSprite != null && watermarkSprite.parent != null) {
@@ -442,10 +442,10 @@ class Main extends Sprite
 			watermarkSprite.visible = ClientPrefs.data.showWatermark;
 			openfl.Lib.current.stage.addChild(watermarkSprite);
 		} else {
-			trace('The watermark could not be loaded using backend.Paths.image("lenin").');
+			trace('The watermark could not be loaded using backend.Paths.image("watermark").');
 		}
 
-		var imagePath = backend.Paths.getPath('images/lenin.png', IMAGE);
+		var imagePath = backend.Paths.getPath('images/watermark.png', IMAGE);
 		if (sys.FileSystem.exists(imagePath)) {
 		    if (watermark != null && watermark.parent != null)
 		        removeChild(watermark);

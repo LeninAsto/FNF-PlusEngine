@@ -13,7 +13,7 @@ import openfl.Assets;
 
 /**
  * ...
- * @author: Karim Akra (rewor by Lenin)
+ * @author: Karim Akra (rework by Lenin)
  */
 class MobileData
 {
