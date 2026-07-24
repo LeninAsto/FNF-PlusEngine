@@ -73,11 +73,13 @@ class FreeplayState extends MusicBeatState
 	private var searchField:MaterialTextField;
 	private var songSearchQuery:String = "";
 	private var songInfoCardBg:FlxSprite;
+	private var songInfoAlbumBg:FlxSprite;
 	private var songInfoCardCover:FlxSprite;
 	private var songInfoCardTitle:FlxText;
 	private var songInfoCardStats:FlxText;
 	private var songInfoCardDifficulty:FlxText;
 	private var songInfoCardScores:FlxText;
+	private var songInfoPlatformIcons:Array<FlxSprite> = [];
 	private var songInfoCardLoadingLabel:FlxText;
 	private var songInfoCardSpinner:MaterialWavyProgressIndicator;
 	private var songInfoCardY:Float = 0;
@@ -166,6 +168,30 @@ class FreeplayState extends MusicBeatState
 	static inline var SELECTED_DATA_LOAD_DELAY:Float = 1.0;
 	static inline var PREVIEW_LOAD_DELAY:Float = 0.12;
 	static inline var SONG_INFO_CARD_CACHE_LIMIT:Int = 32;
+	static inline var SONG_INFO_CARD_WIDTH:Int = 402;
+	static inline var SONG_INFO_ALBUM_SIZE:Int = 224;
+	static inline var SONG_INFO_COVER_SIZE:Int = 184;
+	static inline var SONG_INFO_CARD_GAP:Int = 16;
+	static inline var SONG_INFO_DATA_HEIGHT:Int = 284;
+	static inline var SONG_INFO_CARD_HEIGHT:Int = 524;
+	static inline var SONG_INFO_SOCIAL_ICON_SIZE:Int = 24;
+	static final FREEPLAY_LINK_PLATFORMS:Array<String> = [
+		'audius',
+		'bandcamp',
+		'bluesky', 
+		'buymeacoffe',
+		'discord', 
+		'facebook', 
+		'instagram', 
+		'ko-fi', 
+		'newgrounds', 
+		'patreon', 
+		'soundcloud', 
+		'spotify', 
+		'tiktok', 
+		'x', 
+		'youtube', 
+		'yt-music'];
 	public static var instSound:FlxSound = null;
 
 	#if mobile
@@ -381,8 +407,22 @@ class FreeplayState extends MusicBeatState
 			_cardVisualSignatures.resize(songs.length);
 
 		var card:FlxSprite = new FlxSprite();
-		var darkestColor = FlxColor.interpolate(songs[index].color, FlxColor.BLACK, 0.5);
-		MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, 2, darkestColor, OptionsMenuTheme.cardStroke(false));
+		var meta:FreeplaySongMeta = loadSongMeta(songs[index]);
+		var songKey:String = Paths.formatToSongPath(songs[index].songName);
+		var listCardKey:String = meta != null && meta.cardKey != null ? meta.cardKey : 'albumRoll/cards/$songKey';
+		var customListCard:FlxGraphic = getOptionalImage(listCardKey);
+		if (customListCard != null)
+		{
+			card.loadGraphic(customListCard);
+			card.setGraphicSize(470, 110);
+			card.updateHitbox();
+			_cardVisualSignatures[index] = 'custom:$listCardKey';
+		}
+		else
+		{
+			var darkestColor = FlxColor.interpolate(songs[index].color, FlxColor.BLACK, 0.5);
+			MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, 2, darkestColor, OptionsMenuTheme.cardStroke(false));
+		}
 		card.antialiasing = ClientPrefs.data.antialiasing;
 		card.visible = false;
 		cardArray[index] = card;
@@ -919,7 +959,7 @@ class FreeplayState extends MusicBeatState
 				{
 					songInfoCardData.durationMs = pendingSound.length;
 					if (songInfoCardStats != null)
-						songInfoCardStats.text = Language.getPhrase("freeplay_song_time", "Time: {1}", [formatDuration(songInfoCardData.durationMs)]) + '\nBPM: ${formatFloat(songInfoCardData.bpm)}';
+						songInfoCardStats.text = formatSongInfoStats(songInfoCardData);
 				}
 
 				Conductor.bpm = pendingBpm;
@@ -1729,50 +1769,65 @@ class FreeplayState extends MusicBeatState
 
 	function createSongInfoCard():Void
 	{
-		var cardW:Int = 402;
-		var cardH:Int = 418;
+		var cardW:Int = SONG_INFO_CARD_WIDTH;
+		var cardH:Int = SONG_INFO_CARD_HEIGHT;
 		songInfoCardShownY = Math.max(56, (FlxG.height - cardH) * 0.5);
 		songInfoCardHiddenY = FlxG.height + 60;
 		songInfoCardY = songInfoCardShownY;
 
 		var cardX:Float = FlxG.width - cardW - 58;
 
-		songInfoCardBg = new FlxSprite(cardX, songInfoCardY);
-		MD3ShapeTools.fillAndStrokeRoundRect(songInfoCardBg, cardW, cardH, 24, 3, OptionsMenuTheme.cardFill(true), intendedColor);
+		var albumX:Float = cardX + (cardW - SONG_INFO_ALBUM_SIZE) * 0.5;
+		songInfoAlbumBg = new FlxSprite(albumX, songInfoCardY);
+		MD3ShapeTools.fillAndStrokeRoundRect(songInfoAlbumBg, SONG_INFO_ALBUM_SIZE, SONG_INFO_ALBUM_SIZE, 24, 3, OptionsMenuTheme.cardFill(true), intendedColor);
+		songInfoAlbumBg.alpha = 0.94;
+		add(songInfoAlbumBg);
+
+		songInfoCardBg = new FlxSprite(cardX, songInfoCardY + SONG_INFO_ALBUM_SIZE + SONG_INFO_CARD_GAP);
+		MD3ShapeTools.fillAndStrokeRoundRect(songInfoCardBg, cardW, SONG_INFO_DATA_HEIGHT, 24, 3, OptionsMenuTheme.cardFill(true), intendedColor);
 		songInfoCardBg.alpha = 0.94;
 		add(songInfoCardBg);
 
-		songInfoCardCover = new FlxSprite(cardX + (cardW - 128) * 0.5, songInfoCardY + 18);
+		songInfoCardCover = new FlxSprite(albumX + (SONG_INFO_ALBUM_SIZE - SONG_INFO_COVER_SIZE) * 0.5, songInfoCardY + 20);
 		songInfoCardCover.antialiasing = ClientPrefs.data.antialiasing;
 		var fallbackCover = Paths.image('albumRoll/example');
 		if (fallbackCover != null)
 			songInfoCardCover.loadGraphic(fallbackCover);
-		songInfoCardCover.setGraphicSize(128, 128);
+		songInfoCardCover.setGraphicSize(SONG_INFO_COVER_SIZE, SONG_INFO_COVER_SIZE);
 		songInfoCardCover.updateHitbox();
 		add(songInfoCardCover);
 
-		songInfoCardTitle = new FlxText(cardX + 18, songInfoCardY + 160, cardW - 36, "", 26);
-		songInfoCardTitle.setFormat(Paths.font('NotoSans-Medium.ttf'), 26, FlxColor.WHITE, CENTER);
+		songInfoCardTitle = new FlxText(cardX + 20, songInfoCardY + SONG_INFO_ALBUM_SIZE + SONG_INFO_CARD_GAP + 18, cardW - 76, "", 24);
+		songInfoCardTitle.setFormat(Paths.font('NotoSans-Medium.ttf'), 24, FlxColor.WHITE, LEFT);
 		songInfoCardTitle.borderSize = 0;
 		songInfoCardTitle.alpha = 0.95;
 		add(songInfoCardTitle);
 
-		songInfoCardStats = new FlxText(cardX + 18, songInfoCardY + 206, cardW - 36, "", 16);
-		songInfoCardStats.setFormat(Paths.font('NotoSans-Medium.ttf'), 16, FlxColor.WHITE, LEFT);
+		songInfoCardStats = new FlxText(cardX + 20, songInfoCardY + SONG_INFO_ALBUM_SIZE + SONG_INFO_CARD_GAP + 58, cardW - 76, "", 15);
+		songInfoCardStats.setFormat(Paths.font('NotoSans-Medium.ttf'), 15, FlxColor.WHITE, LEFT);
 		songInfoCardStats.alpha = 0.9;
 		add(songInfoCardStats);
 
-		songInfoCardDifficulty = new FlxText(cardX + 18, songInfoCardY + 258, cardW - 36, "", 13);
+		songInfoCardDifficulty = new FlxText(cardX + 20, songInfoCardY + SONG_INFO_ALBUM_SIZE + SONG_INFO_CARD_GAP + 128, cardW - 76, "", 13);
 		songInfoCardDifficulty.setFormat(Paths.font('NotoSans-Medium.ttf'), 13, FlxColor.WHITE, LEFT);
 		songInfoCardDifficulty.alpha = 0.88;
 		songInfoCardDifficulty.wordWrap = true;
 		add(songInfoCardDifficulty);
 
-		songInfoCardScores = new FlxText(cardX + 18, songInfoCardY + 294, cardW - 36, "", 13);
+		songInfoCardScores = new FlxText(cardX + 20, songInfoCardY + SONG_INFO_ALBUM_SIZE + SONG_INFO_CARD_GAP + 182, cardW - 76, "", 13);
 		songInfoCardScores.setFormat(Paths.font('NotoSans-Medium.ttf'), 13, FlxColor.WHITE, LEFT);
 		songInfoCardScores.alpha = 0.88;
 		songInfoCardScores.wordWrap = true;
 		add(songInfoCardScores);
+
+		for (i in 0...FREEPLAY_LINK_PLATFORMS.length)
+		{
+			var icon = new FlxSprite();
+			icon.antialiasing = ClientPrefs.data.antialiasing;
+			icon.visible = false;
+			songInfoPlatformIcons.push(icon);
+			add(icon);
+		}
 
 		songInfoCardSpinner = new MaterialWavyProgressIndicator(FlxG.width * 0.5 - 28, FlxG.height * 0.5 - 28, CIRCULAR, 56);
 		songInfoCardSpinner.indeterminate = true;
@@ -1829,6 +1884,8 @@ class FreeplayState extends MusicBeatState
 		if (songInfoCardStats != null) songInfoCardStats.visible = !active;
 		if (songInfoCardDifficulty != null) songInfoCardDifficulty.visible = !active;
 		if (songInfoCardScores != null) songInfoCardScores.visible = !active;
+		for (icon in songInfoPlatformIcons)
+			if (icon != null) icon.visible = !active && icon.exists;
 		if (songInfoCardSpinner != null) songInfoCardSpinner.visible = active;
 		if (songInfoCardLoadingLabel != null) songInfoCardLoadingLabel.visible = active;
 	}
@@ -1902,6 +1959,10 @@ class FreeplayState extends MusicBeatState
 						_pendingSongCardData = {
 							songName: song.songName,
 							coverKey: 'albumRoll/${Paths.formatToSongPath(song.songName)}',
+							cardKey: 'albumRoll/cards/${Paths.formatToSongPath(song.songName)}',
+							cardMode: 'background',
+							author: null,
+							links: null,
 							bpm: bpmSnapshot > 0 ? bpmSnapshot : 102,
 							durationMs: 0,
 							noteCount: 0,
@@ -1940,7 +2001,7 @@ class FreeplayState extends MusicBeatState
 			songInfoCardTitle.text = data.songName;
 
 		if (songInfoCardStats != null)
-			songInfoCardStats.text = Language.getPhrase("freeplay_song_time", "Time: {1}", [formatDuration(data.durationMs)]) + '\nBPM: ${formatFloat(data.bpm)}';
+			songInfoCardStats.text = formatSongInfoStats(data);
 
 		var diffList:Array<String> = data.difficultyNames != null ? data.difficultyNames.copy() : [];
 		var diffLabel:String = diffList.length > 0 ? diffList.join(', ') : 'Normal';
@@ -1968,12 +2029,114 @@ class FreeplayState extends MusicBeatState
 		if (coverGraphic != null && songInfoCardCover != null)
 		{
 			songInfoCardCover.loadGraphic(coverGraphic);
-			songInfoCardCover.setGraphicSize(128, 128);
+			songInfoCardCover.setGraphicSize(SONG_INFO_COVER_SIZE, SONG_INFO_COVER_SIZE);
 			songInfoCardCover.updateHitbox();
 		}
 
+		updateSongInfoPlatformIcons(data.links);
+
 		if (!inDifficultySelect)
 			showSongInfoCard();
+	}
+
+	function formatSongInfoStats(data:FreeplaySongCardData):String
+	{
+		var statsLines:Array<String> = [
+			Language.getPhrase("freeplay_song_time", "Time: {1}", [formatDuration(data.durationMs)]),
+			'BPM: ${formatFloat(data.bpm)}'
+		];
+		if (data.author != null && data.author.length > 0)
+			statsLines.push('By: ${data.author}');
+		return statsLines.join('\n');
+	}
+
+	function getOptionalImage(key:String):FlxGraphic
+	{
+		if (key == null || key.length == 0)
+			return null;
+
+		var imagePath:String = Paths.getPath('images/$key.png', IMAGE, null, true);
+		if (!AssetLoader.exists(imagePath, IMAGE))
+			return null;
+
+		return Paths.image(key);
+	}
+
+	function updateSongInfoPlatformIcons(links:Dynamic):Void
+	{
+		for (i in 0...songInfoPlatformIcons.length)
+		{
+			var icon = songInfoPlatformIcons[i];
+			if (icon == null)
+				continue;
+
+			icon.exists = false;
+			icon.visible = false;
+			if (i >= FREEPLAY_LINK_PLATFORMS.length || links == null)
+				continue;
+
+			var platform:String = FREEPLAY_LINK_PLATFORMS[i];
+			var link:String = stringOrNull(getLinkValue(links, platform));
+			if (link == null)
+				continue;
+
+			var graphic:FlxGraphic = getOptionalImage('albumRoll/platformIcons/${platform}');
+			if (graphic == null)
+				continue;
+
+			icon.loadGraphic(graphic);
+			icon.setGraphicSize(SONG_INFO_SOCIAL_ICON_SIZE, SONG_INFO_SOCIAL_ICON_SIZE);
+			icon.updateHitbox();
+			icon.alpha = 0.88;
+			icon.exists = true;
+			icon.visible = !songInfoCardLoading;
+		}
+
+		updateSongInfoCardLayout();
+	}
+
+	function getLinkValue(links:Dynamic, platform:String):Dynamic
+	{
+		var aliases:Array<String> = switch (platform)
+		{
+			case 'youtube': ['youtube', 'yt'];
+			case 'youtube-music': ['youtubeMusic', 'youtube-music', 'ytMusic', 'yt-music'];
+			case 'instagram': ['instagram', 'ig'];
+			case 'x': ['x', 'twitter'];
+			case 'newgrounds': ['newgrounds', 'ng'];
+			case 'facebook': ['facebook', 'fb'];
+			default: [platform];
+		}
+
+		for (alias in aliases)
+		{
+			if (Reflect.hasField(links, alias))
+				return Reflect.field(links, alias);
+		}
+		return null;
+	}
+
+	function layoutSongInfoPlatformIcons(x:Float, y:Float, height:Float):Void
+	{
+		var visibleIcons:Array<FlxSprite> = [];
+		for (icon in songInfoPlatformIcons)
+		{
+			if (icon != null && icon.exists)
+				visibleIcons.push(icon);
+		}
+
+		if (visibleIcons.length == 0)
+			return;
+
+		var gap:Float = 10;
+		var iconSize:Float = SONG_INFO_SOCIAL_ICON_SIZE;
+		var totalHeight:Float = visibleIcons.length * iconSize + (visibleIcons.length - 1) * gap;
+		var startY:Float = y + Math.max(0, (height - totalHeight) * 0.5);
+		for (i in 0...visibleIcons.length)
+		{
+			visibleIcons[i].x = x;
+			visibleIcons[i].y = startY + i * (iconSize + gap);
+		}
 	}
 
 	function updateSongInfoCardLayout():Void
@@ -1981,26 +2144,48 @@ class FreeplayState extends MusicBeatState
 		if (songInfoCardBg == null)
 			return;
 
-		var cardW:Int = 402;
-		var cardH:Int = 418;
+		var cardW:Int = SONG_INFO_CARD_WIDTH;
+		var cardH:Int = SONG_INFO_CARD_HEIGHT;
+		var albumSize:Int = SONG_INFO_ALBUM_SIZE;
+		var coverSize:Int = SONG_INFO_COVER_SIZE;
+		var gap:Int = SONG_INFO_CARD_GAP;
+		var dataH:Int = SONG_INFO_DATA_HEIGHT;
+		var dataY:Float = songInfoCardY + albumSize + gap;
 		var cardX:Float = FlxG.width - cardW - 58;
+		var albumX:Float = cardX + (cardW - albumSize) * 0.5;
 		var baseY:Float = songInfoCardY;
+		var padX:Float = 20;
+		var iconColumnW:Float = 44;
+		var textW:Float = cardW - (padX * 2) - iconColumnW;
+
+		if (songInfoAlbumBg != null)
+		{
+			songInfoAlbumBg.x = albumX;
+			songInfoAlbumBg.y = baseY;
+			MD3ShapeTools.fillAndStrokeRoundRect(songInfoAlbumBg, albumSize, albumSize, 24, 3, OptionsMenuTheme.cardFill(true), intendedColor);
+			songInfoAlbumBg.alpha = 0.94;
+		}
 
 		songInfoCardBg.x = cardX;
-		songInfoCardBg.y = baseY;
-		MD3ShapeTools.fillAndStrokeRoundRect(songInfoCardBg, cardW, cardH, 24, 3, OptionsMenuTheme.cardFill(true), intendedColor);
+		songInfoCardBg.y = dataY;
+		MD3ShapeTools.fillAndStrokeRoundRect(songInfoCardBg, cardW, dataH, 24, 3, OptionsMenuTheme.cardFill(true), intendedColor);
 		songInfoCardBg.alpha = 0.94;
 
-		songInfoCardCover.x = cardX + (cardW - 128) * 0.5;
-		songInfoCardCover.y = baseY + 18;
-		songInfoCardTitle.x = cardX + 18;
-		songInfoCardTitle.y = baseY + 160;
-		songInfoCardStats.x = cardX + 18;
-		songInfoCardStats.y = baseY + 206;
-		songInfoCardDifficulty.x = cardX + 18;
-		songInfoCardDifficulty.y = baseY + 258;
-		songInfoCardScores.x = cardX + 18;
-		songInfoCardScores.y = baseY + 294;
+		songInfoCardCover.x = albumX + (albumSize - coverSize) * 0.5;
+		songInfoCardCover.y = baseY + (albumSize - coverSize) * 0.5;
+		songInfoCardTitle.x = cardX + padX;
+		songInfoCardTitle.y = dataY + 18;
+		songInfoCardTitle.fieldWidth = textW;
+		songInfoCardStats.x = cardX + padX;
+		songInfoCardStats.y = dataY + 62;
+		songInfoCardStats.fieldWidth = textW;
+		songInfoCardDifficulty.x = cardX + padX;
+		songInfoCardDifficulty.y = dataY + 132;
+		songInfoCardDifficulty.fieldWidth = textW;
+		songInfoCardScores.x = cardX + padX;
+		songInfoCardScores.y = dataY + 184;
+		songInfoCardScores.fieldWidth = textW;
+		layoutSongInfoPlatformIcons(cardX + cardW - padX - SONG_INFO_SOCIAL_ICON_SIZE, dataY + 22, dataH - 44);
 		if (songInfoCardSpinner != null)
 		{
 			if (songInfoCardLoading)
@@ -2052,6 +2237,7 @@ class FreeplayState extends MusicBeatState
 		var totalNotes:Int = 0;
 		var longestDuration:Float = 0;
 		var songKey:String = Paths.formatToSongPath(song.songName);
+		var meta:FreeplaySongMeta = loadSongMeta(song);
 
 		if (diffNames != null)
 		{
@@ -2074,12 +2260,89 @@ class FreeplayState extends MusicBeatState
 
 		return {
 			songName: song.songName,
-			coverKey: 'albumRoll/$songKey',
+			coverKey: meta != null && meta.coverKey != null ? meta.coverKey : 'albumRoll/$songKey',
+			cardKey: meta != null && meta.cardKey != null ? meta.cardKey : 'albumRoll/cards/$songKey',
+			cardMode: meta != null && meta.cardMode != null ? meta.cardMode : 'background',
+			author: meta != null ? meta.author : null,
+			links: meta != null ? meta.links : null,
 			bpm: capturedBpm > 0 ? capturedBpm : 102,
 			durationMs: longestDuration,
 			noteCount: totalNotes,
 			difficultyNames: diffNames != null ? diffNames.copy() : []
 		};
+	}
+
+	function loadSongMeta(song:SongMetadata):FreeplaySongMeta
+	{
+		if (song == null || song.isStepMania)
+			return null;
+
+		var songKey:String = Paths.formatToSongPath(song.songName);
+		var rawMeta:String = AssetLoader.loadText(Paths.json('$songKey/song_meta'));
+		if (rawMeta == null || rawMeta.length == 0)
+			return null;
+
+		try
+		{
+			var parsed:Dynamic = Json.parse(rawMeta);
+			var coverValue:Dynamic = firstMetaValue(parsed, ['cover', 'coverAlbum', 'coverImage', 'albumCover']);
+			var cardValue:Dynamic = firstMetaValue(parsed, ['card', 'cardImage', 'cardKey', 'infoCard']);
+			var authorValue:Dynamic = firstMetaValue(parsed, ['songAuthor', 'songAutor', 'author', 'artist', 'composer']);
+			var cardModeValue:Dynamic = firstMetaValue(parsed, ['cardMode']);
+
+			return {
+				coverKey: normalizeAlbumRollKey(coverValue, 'albumRoll/$songKey'),
+				cardKey: normalizeAlbumRollKey(cardValue, 'albumRoll/cards/$songKey', 'cards'),
+				cardMode: stringOrNull(cardModeValue),
+				author: stringOrNull(authorValue),
+				links: Reflect.hasField(parsed, 'links') ? Reflect.field(parsed, 'links') : null
+			};
+		}
+		catch (e:Dynamic)
+		{
+			trace('[FreePlay] Invalid song_meta.json for ${song.songName}: $e');
+		}
+
+		return null;
+	}
+
+	function firstMetaValue(meta:Dynamic, names:Array<String>):Dynamic
+	{
+		if (meta == null || names == null)
+			return null;
+
+		for (name in names)
+		{
+			if (Reflect.hasField(meta, name))
+				return Reflect.field(meta, name);
+		}
+		return null;
+	}
+
+	function stringOrNull(value:Dynamic):String
+	{
+		if (value == null)
+			return null;
+		var text:String = Std.string(value).trim();
+		return text.length > 0 ? text : null;
+	}
+
+	function normalizeAlbumRollKey(value:Dynamic, defaultKey:String, ?subFolder:String):String
+	{
+		var text:String = stringOrNull(value);
+		if (text == null)
+			return defaultKey;
+
+		text = StringTools.replace(text, '\\', '/');
+		if (text.endsWith('.png'))
+			text = text.substr(0, text.length - 4);
+		if (text.startsWith('images/'))
+			text = text.substr('images/'.length);
+		if (text.startsWith('albumRoll/'))
+			return text;
+		if (text.indexOf('/') >= 0)
+			return text;
+		return subFolder != null && subFolder.length > 0 ? 'albumRoll/$subFolder/$text' : 'albumRoll/$text';
 	}
 
 	function resolveSongChartPath(song:SongMetadata, diffIndex:Int, diffName:String):String
@@ -2417,19 +2680,23 @@ class FreeplayState extends MusicBeatState
 			var cardColor = songs[i].color;
 			var cardFillColor = OptionsMenuTheme.difficultyCardFill(cardColor, isSelected);
 			var cardStrokeColor = OptionsMenuTheme.difficultyCardStroke(cardColor, isSelected);
-			var cardSignature:String = cardColor + ':' + isSelected;
 			if (i >= _cardVisualSignatures.length)
 				_cardVisualSignatures.resize(i + 1);
-			if (_cardVisualSignatures[i] != cardSignature)
+			var usesCustomListCard:Bool = _cardVisualSignatures[i] != null && _cardVisualSignatures[i].startsWith('custom:');
+			if (!usesCustomListCard)
 			{
-				MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, isSelected ? 3 : 2, cardFillColor, cardStrokeColor);
-				_cardVisualSignatures[i] = cardSignature;
+				var cardSignature:String = cardColor + ':' + isSelected;
+				if (_cardVisualSignatures[i] != cardSignature)
+				{
+					MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, isSelected ? 3 : 2, cardFillColor, cardStrokeColor);
+					_cardVisualSignatures[i] = cardSignature;
+				}
 			}
 
 			var accentBar:FlxSprite = cardAccentArray[i];
 			if (accentBar != null)
 			{
-				accentBar.visible = true;
+				accentBar.visible = !usesCustomListCard;
 				accentBar.x = card.x + 12;
 				accentBar.y = card.y + 13;
 				accentBar.color = OptionsMenuTheme.cardAccent(isSelected);
@@ -2438,7 +2705,7 @@ class FreeplayState extends MusicBeatState
 
 			icon.x = card.x + 340;
 			item.x = card.x + 50;
-			item.color = OptionsMenuTheme.readableTextOn(cardFillColor);
+			item.color = usesCustomListCard ? FlxColor.WHITE : OptionsMenuTheme.readableTextOn(cardFillColor);
 
 			var modText:FlxText = modTextArray[i];
 			if (modText == null)
@@ -2450,7 +2717,7 @@ class FreeplayState extends MusicBeatState
 			modText.x = item.x;
 			modText.y = item.y + item.height + 4;
 			modText.alpha = (i == curSelected) ? 0.82 : 0.58;
-			modText.color = OptionsMenuTheme.readableMetaTextOn(cardFillColor);
+			modText.color = usesCustomListCard ? 0xFFD8DEE9 : OptionsMenuTheme.readableMetaTextOn(cardFillColor);
 
 			_lastVisibles.push(i);
 		}
@@ -2774,10 +3041,23 @@ typedef FreeplaySongCardData =
 {
 	var songName:String;
 	var coverKey:String;
+	var cardKey:String;
+	var cardMode:String;
+	var author:String;
+	var links:Dynamic;
 	var bpm:Float;
 	var durationMs:Float;
 	var noteCount:Int;
 	var difficultyNames:Array<String>;
+}
+
+typedef FreeplaySongMeta =
+{
+	var ?coverKey:String;
+	var ?cardKey:String;
+	var ?cardMode:String;
+	var ?author:String;
+	var ?links:Dynamic;
 }
 
 class DifficultySelector
