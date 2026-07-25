@@ -1496,6 +1496,15 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		}
     }
 
+	function getWorldFromScreen(screenX:Float, screenY:Float):FlxPoint 
+	{
+		var cam = FlxG.camera;
+		return FlxPoint.get(
+			(screenX - cam.x) / cam.zoom + cam.scroll.x,
+			(screenY - cam.y) / cam.zoom + cam.scroll.y
+		);
+	}
+
 	function onTouchEvent(e:TouchEvent):Void 
 	{
 		if (!controls.mobileC || FlxG.stage == null || !ClientPrefs.data.dragCharacterToMove)
