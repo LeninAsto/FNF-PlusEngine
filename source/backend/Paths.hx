@@ -689,46 +689,9 @@ class Paths
 		return roots;
 	}
 
-	public static function getLegacyModsRootDirectories():Array<String>
-	{
-		var roots:Array<String> = getModsRootDirectories();
-		#if MODS_ALLOWED
-		var legacyRoots:Array<String> = [];
-		#if android
-		if (StorageUtil.useExternalModsStorage())
-		{
-			for (modsRoot in StorageUtil.getPublicModsDirectoryCandidates())
-				addUniqueModsRoot(legacyRoots, modsRoot);
-			addUniqueModsRoot(legacyRoots, StorageUtil.getStorageDirectory() + 'PsychEngine/mods/');
-			addUniqueModsRoot(legacyRoots, StorageUtil.getStorageDirectory() + 'mods/');
-		}
-		else
-			addUniqueModsRoot(legacyRoots, StorageUtil.getStorageDirectory() + 'PsychEngine/mods/');
-		#else
-		addUniqueModsRoot(legacyRoots, Sys.getCwd() + 'PsychEngine/mods/');
-		addUniqueModsRoot(legacyRoots, Sys.getCwd() + 'mods/');
-		#end
-		for (root in legacyRoots)
-			if (!roots.contains(root)) roots.push(root);
-		#end
-		return roots;
-	}
-
-	static function shouldSearchLegacyModsRoot(key:String):Bool
-	{
-		if (key == null || key.length == 0)
-			return false;
-
-		var firstSegment:String = normalizeModKey(key).split('/')[0];
-		if (firstSegment == null || firstSegment.length == 0)
-			return false;
-
-		return !Mods.ignoreModFolders.contains(firstSegment.toLowerCase());
-	}
-
 	public static function getModsSearchRoots(?key:String):Array<String>
 	{
-		return ClientPrefs.data.legacyFileSystemAccess && shouldSearchLegacyModsRoot(key) ? getLegacyModsRootDirectories() : getModsRootDirectories();
+		return getModsRootDirectories();
 	}
 
 	public static function getPrimaryModsRoot():String
@@ -1106,9 +1069,6 @@ class Paths
 		var files:Array<String> = safeReadDirectory(directory);
 		if (files.length > 0)
 			return files;
-
-		if (ClientPrefs.data.legacyFileSystemAccess)
-			return [];
 
 		#if android
 		var prefix:String = directory.endsWith('/') ? directory : directory + '/';

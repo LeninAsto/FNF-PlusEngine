@@ -3,7 +3,6 @@ package backend;
 import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
 import openfl.utils.Assets;
-import openfl.system.System;
 import haxe.Timer;
 
 #if sys
@@ -177,8 +176,8 @@ class MemoryManager
     }
 
     /**
-     * Aggressive memory cleanup for Android
-     * Combines all cleanup functions and forces the garbage collector to run
+     * Aggressive memory cleanup for Android.
+     * Avoids forced GC during gameplay transitions because it causes visible frame spikes.
      */
     public static function aggressiveCleanup():Void
     {
@@ -202,12 +201,6 @@ class MemoryManager
         // Clear Preloaded Characters
         clearPreloadedCharacters();
         
-        // Force garbage collection
-        System.gc();
-        #if cpp
-        cpp.NativeGc.run(true);
-        #end
-        
         trace('MemoryManager: Cleaning complete');
         #end
     }
@@ -218,7 +211,7 @@ class MemoryManager
     public static function getMemoryUsage():Float
     {
         #if cpp
-        return System.totalMemory / 1024 / 1024;
+        return openfl.system.System.totalMemoryNumber / 1024 / 1024;
         #else
         return 0;
         #end

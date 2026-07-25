@@ -151,7 +151,7 @@ class MusicBeatState extends BaseMusicBeatState
 			}
 		}
 
-		if(FlxG.save.data != null) FlxG.save.data.fullscreen = backend.WindowMode.borderlessFullscreen;
+		if(FlxG.save.data != null) FlxG.save.data.fullscreen = backend.WindowMode.isFullscreen();
 		
 		// Screenshot support with F5
 		#if desktop

@@ -1127,7 +1127,6 @@ class PlayState extends MusicBeatState
 		#end
 
 		super.create();
-		Paths.clearUnusedMemory();
 		initGameplayRuntimeBridgeIfNeeded();
 		
 		updateScriptStats();
@@ -4352,7 +4351,7 @@ class PlayState extends MusicBeatState
 				#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
 
 				canResync = false;
-				MusicBeatState.switchState(backend.ScriptableState.tryCreate('FreeplayState', new FreeplayState()));
+				MusicBeatState.switchState(FreeplayStateSelector.create());
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				changedDifficulty = false;
 			}
@@ -4818,14 +4817,21 @@ class PlayState extends MusicBeatState
 			if (!showStepmaniaJudgementOnly && !showRatingSprite && !showComboSprite && !showComboDigits)
 				return;
 
+			var useNfPopupStyle:Bool = ClientPrefs.data.nfRatingStyle;
+			if (useNfPopupStyle)
+				clearComboGroupSprites();
+
 			var rating:FlxSprite = new FlxSprite();
 			rating.loadGraphic(Paths.image(uiFolder + daRating.image + uiPostfix));
 			rating.screenCenter();
 			rating.x = placement - 40;
 			rating.y -= 60;
-			rating.acceleration.y = 550 * playbackRate * playbackRate;
-			rating.velocity.y -= FlxG.random.int(140, 175) * playbackRate;
-			rating.velocity.x -= FlxG.random.int(0, 10) * playbackRate;
+			if (!useNfPopupStyle)
+			{
+				rating.acceleration.y = 550 * playbackRate * playbackRate;
+				rating.velocity.y -= FlxG.random.int(140, 175) * playbackRate;
+				rating.velocity.x -= FlxG.random.int(0, 10) * playbackRate;
+			}
 			
 			// Configurar tamaño del rating
 			if (!isPixelStage)
@@ -4848,12 +4854,20 @@ class PlayState extends MusicBeatState
 			
 			rating.x += ClientPrefs.data.comboOffset[0];
 			rating.y -= ClientPrefs.data.comboOffset[1];
+			if (useNfPopupStyle)
+			{
+				rating.scale.scale(1.16);
+				rating.updateHitbox();
+			}
 
 			var comboSpr:FlxSprite = new FlxSprite().loadGraphic(Paths.image(uiFolder + 'combo' + uiPostfix));
 			comboSpr.screenCenter();
 			comboSpr.x = placement;
-			comboSpr.acceleration.y = FlxG.random.int(200, 300) * playbackRate * playbackRate;
-			comboSpr.velocity.y -= FlxG.random.int(140, 160) * playbackRate;
+			if (!useNfPopupStyle)
+			{
+				comboSpr.acceleration.y = FlxG.random.int(200, 300) * playbackRate * playbackRate;
+				comboSpr.velocity.y -= FlxG.random.int(140, 160) * playbackRate;
+			}
 			
 			// Configurar tamaño del combo
 			if (!isPixelStage)
@@ -4871,7 +4885,8 @@ class PlayState extends MusicBeatState
 			comboSpr.visible = showComboSprite;
 			comboSpr.x += ClientPrefs.data.comboOffset[2];
 			comboSpr.y += 60;
-			comboSpr.velocity.x += FlxG.random.int(1, 10) * playbackRate;
+			if (!useNfPopupStyle)
+				comboSpr.velocity.x += FlxG.random.int(1, 10) * playbackRate;
 			comboGroup.add(rating);
 
 			var daLoop:Int = 0;
@@ -4880,29 +4895,18 @@ class PlayState extends MusicBeatState
 				comboGroup.add(comboSpr);
 
 			if (ClientPrefs.data.dynamicComboDigits)
-				{
-					if (combo < 100)
-					{
-						comboStr = Std.string(combo);
-						digitCount = comboStr.length;
-					}
-					else
-					{
-						comboStr = Std.string(combo);
-						digitCount = comboStr.length;
-					}
-				}
-				else
-				{
-					comboStr = Std.string(combo).lpad('0', 3);
-					digitCount = 3;
-				}
+			{
+				comboStr = Std.string(combo);
+				digitCount = comboStr.length;
+			}
+			else
+			{
+				comboStr = Std.string(combo).lpad('0', 3);
+				digitCount = 3;
+			}
 
 				var startX:Float = placement + ClientPrefs.data.comboOffset[2];
-				if (ClientPrefs.data.dynamicComboDigits && combo < 100)
-				{
-					startX -= (3 - digitCount) * 21.5;
-				}
+				startX += (3 - digitCount) * 21.5;
 
 				for (i in 0...digitCount)
 				{
@@ -4921,9 +4925,12 @@ class PlayState extends MusicBeatState
 						numScore.setGraphicSize(Std.int(numScore.width * daPixelZoom * 0.9));
 					numScore.updateHitbox();
 
-					numScore.acceleration.y = FlxG.random.int(200, 300) * playbackRate * playbackRate;
-					numScore.velocity.y -= FlxG.random.int(140, 160) * playbackRate;
-					numScore.velocity.x = FlxG.random.float(-5, 5) * playbackRate;
+					if (!useNfPopupStyle)
+					{
+						numScore.acceleration.y = FlxG.random.int(200, 300) * playbackRate * playbackRate;
+						numScore.velocity.y -= FlxG.random.int(140, 160) * playbackRate;
+						numScore.velocity.x = FlxG.random.float(-5, 5) * playbackRate;
+					}
 					numScore.visible = showComboDigits;
 					numScore.antialiasing = antialias;
 
@@ -4934,32 +4941,66 @@ class PlayState extends MusicBeatState
 					if (numScore.x > xThing)
 						xThing = numScore.x;
 
-					FlxTween.tween(numScore, {alpha: 0}, 0.2 / playbackRate, {
-						onComplete: function(tween:FlxTween)
+					if (useNfPopupStyle)
+					{
+						numScore.scale.scale(1.12);
+						FlxTween.tween(numScore.scale, {x: numScore.scale.x / 1.12, y: numScore.scale.y / 1.12}, 0.12 / playbackRate, {ease: FlxEase.quadOut});
+						new FlxTimer().start(Conductor.crochet * 0.0016 / playbackRate, function(_)
 						{
 							comboGroup.remove(numScore, true);
 							numScore.destroy();
-						},
-						startDelay: Conductor.crochet * 0.002 / playbackRate
-					});
+						});
+					}
+					else
+					{
+						FlxTween.tween(numScore, {alpha: 0}, 0.2 / playbackRate, {
+							onComplete: function(tween:FlxTween)
+							{
+								comboGroup.remove(numScore, true);
+								numScore.destroy();
+							},
+							startDelay: Conductor.crochet * 0.002 / playbackRate
+						});
+					}
 
 					daLoop++;
 				}
-			comboSpr.x = xThing + 50;
-			FlxTween.tween(rating, {alpha: 0}, 0.2 / playbackRate, {
-				startDelay: Conductor.crochet * 0.001 / playbackRate
-			});
+			if (!useNfPopupStyle)
+				comboSpr.x = xThing + 50;
 
-			FlxTween.tween(comboSpr, {alpha: 0}, 0.2 / playbackRate, {
-				onComplete: function(tween:FlxTween)
+			if (useNfPopupStyle)
+			{
+				FlxTween.tween(rating.scale, {x: rating.scale.x / 1.16, y: rating.scale.y / 1.16}, 0.12 / playbackRate, {ease: FlxEase.quadOut});
+				if (showComboSprite)
+				{
+					comboSpr.scale.scale(1.1);
+					FlxTween.tween(comboSpr.scale, {x: comboSpr.scale.x / 1.1, y: comboSpr.scale.y / 1.1}, 0.12 / playbackRate, {ease: FlxEase.quadOut});
+				}
+				new FlxTimer().start(Conductor.crochet * 0.0016 / playbackRate, function(_)
 				{
 					comboGroup.remove(comboSpr, true);
 					comboGroup.remove(rating, true);
 					comboSpr.destroy();
 					rating.destroy();
-				},
-				startDelay: Conductor.crochet * 0.002 / playbackRate
-			});
+				});
+			}
+			else
+			{
+				FlxTween.tween(rating, {alpha: 0}, 0.2 / playbackRate, {
+					startDelay: Conductor.crochet * 0.001 / playbackRate
+				});
+
+				FlxTween.tween(comboSpr, {alpha: 0}, 0.2 / playbackRate, {
+					onComplete: function(tween:FlxTween)
+					{
+						comboGroup.remove(comboSpr, true);
+						comboGroup.remove(rating, true);
+						comboSpr.destroy();
+						rating.destroy();
+					},
+					startDelay: Conductor.crochet * 0.002 / playbackRate
+				});
+			}
 		}
 	}
 
@@ -5490,12 +5531,9 @@ class PlayState extends MusicBeatState
 
 				if (note.isSustainNote)
 				{
-					if (!ClientPrefs.data.noHoldAnimations)
-					{
-						var holdAnim = animToPlay + '-hold';
-						if (char.animation.exists(holdAnim))
-							animToPlay = holdAnim;
-					}
+					var holdAnim = animToPlay + '-hold';
+					if (char.animation.exists(holdAnim))
+						animToPlay = holdAnim;
 
 					if (char.getAnimationName() == animToPlay)
 						canPlay = false;
@@ -5596,12 +5634,9 @@ class PlayState extends MusicBeatState
 
 					if (note.isSustainNote)
 					{
-						if (!ClientPrefs.data.noHoldAnimations)
-						{
-							var holdAnim = animToPlay + '-hold';
-							if (char.animation.exists(holdAnim))
-								animToPlay = holdAnim;
-						}
+						var holdAnim = animToPlay + '-hold';
+						if (char.animation.exists(holdAnim))
+							animToPlay = holdAnim;
 
 						if (char.getAnimationName() == animToPlay)
 							canPlay = false;
@@ -5789,12 +5824,6 @@ class PlayState extends MusicBeatState
 	}
 
 	override function destroy() {
-		// Limpieza agresiva de memoria antes de destruir (Android)
-		#if android
-		backend.MemoryManager.aggressiveCleanup();
-		backend.MemoryManager.reportMemoryUsage();
-		#end
-		
 		// Limpiar todos los videos de Lua
 		#if LUA_ALLOWED
 		psychlua.LuaVideo.clearAll();
@@ -5930,13 +5959,8 @@ class PlayState extends MusicBeatState
 	shutdownThread = true;
 	FlxG.signals.preUpdate.remove(checkForResync);
 	
-	// Limpiar memoria AL FINAL del destroy, después de super.destroy()
 	super.destroy();
 	
-	// Ahora sí es seguro limpiar memoria (todos los objetos ya fueron destruidos)
-	#if !android
-	Paths.clearUnusedMemory();
-	#end
 }	var lastStepHit:Int = -1;
 	override function stepHit()
 	{

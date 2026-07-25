@@ -22,16 +22,28 @@ class WindowMode
 	public static function toggleFullscreen():Void
 	{
 		#if desktop
+		applyFullscreenPreference(!isFullscreen());
+		#end
+	}
+
+	public static inline function isFullscreen():Bool
+	{
+		return borderlessFullscreen || exclusiveFullscreen;
+	}
+
+	public static function applyFullscreenPreference(enable:Bool):Void
+	{
+		#if desktop
 		#if windows
 		var mode = ClientPrefs.data.fullscreenMode;
 		if (mode == 'Exclusive')
-			setExclusiveFullscreen(!exclusiveFullscreen);
+			setExclusiveFullscreen(enable);
 		else if (mode == 'Borderless Fix')
-			setBorderlessFullscreenFix(!borderlessFullscreen);
+			setBorderlessFullscreenFix(enable);
 		else
-			setBorderlessFullscreen(!borderlessFullscreen);
+			setBorderlessFullscreen(enable);
 		#else
-		setBorderlessFullscreen(!borderlessFullscreen);
+		setBorderlessFullscreen(enable);
 		#end
 		#end
 	}

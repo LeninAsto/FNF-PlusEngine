@@ -374,6 +374,7 @@ class Main extends Sprite
 	function onWindowFocusOut():Void
 	{
 		focused = false;
+		if (!ClientPrefs.data.lowerVolumeOnFocusLost) return;
 
 		oldVol = FlxG.sound.volume;
 		if (oldVol > 0.3)
@@ -393,7 +394,10 @@ class Main extends Sprite
 		}
 
 		if (focusMusicTween != null) focusMusicTween.cancel();
-		focusMusicTween = FlxTween.tween(FlxG.sound, {volume: newVol}, 0.5);
+		restoringFocusVolume = true;
+		focusMusicTween = FlxTween.tween(FlxG.sound, {volume: newVol}, 0.5, {
+			onComplete: function(_) focusMusicTween = null
+		});
 	}
 
 	function onWindowFocusIn():Void
@@ -402,10 +406,17 @@ class Main extends Sprite
 			focused = true;
 		});
 
+		if (!restoringFocusVolume) return;
+
 		// Normal global volume when focused
 		if (focusMusicTween != null) focusMusicTween.cancel();
 
-		focusMusicTween = FlxTween.tween(FlxG.sound, {volume: oldVol}, 0.5);
+		focusMusicTween = FlxTween.tween(FlxG.sound, {volume: oldVol}, 0.5, {
+			onComplete: function(_) {
+				focusMusicTween = null;
+				restoringFocusVolume = false;
+			}
+		});
 	}
 	#end
 

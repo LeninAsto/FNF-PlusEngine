@@ -188,6 +188,12 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 
+		var option:Option = new Option('NF Rating Style',
+			'If checked, ratings and combo numbers bop in place instead of flying/fading.',
+			'nfRatingStyle',
+			BOOL);
+		addOption(option);
+
 		var option:Option = new Option('Health Bar Opacity',
 			'How much transparent should the health bar and icons be.',
 			'healthBarAlpha',
@@ -225,12 +231,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			['None', 'Tea Time', 'Breakfast', 'Breakfast (Pico)']);
 		addOption(option);
 		option.onChange = onChangePauseMusic;
-		
-		var option:Option = new Option('Vanilla Transition',
-		    'If checked, uses the vanilla Psych Engine transition instead of the custom one.',
-			'vanillaTransition',
-			BOOL);
-		addOption(option);
 		
 		#if CHECK_FOR_UPDATES
 		var option:Option = new Option('Check for Updates',

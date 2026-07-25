@@ -110,7 +110,7 @@ class TitleState extends MusicBeatState
 		{
 			if(FlxG.save.data != null && FlxG.save.data.fullscreen)
 			{
-				backend.WindowMode.setBorderlessFullscreen(FlxG.save.data.fullscreen);
+				backend.WindowMode.applyFullscreenPreference(FlxG.save.data.fullscreen);
 				//trace('LOADED FULLSCREEN SETTING!!');
 			}
 			persistentUpdate = true;
@@ -126,7 +126,7 @@ class TitleState extends MusicBeatState
 		FlxG.mouse.visible = false;
 		
 		#if FREEPLAY
-		MusicBeatState.switchState(backend.ScriptableState.tryCreate('FreeplayState', new FreeplayState()));
+		MusicBeatState.switchState(FreeplayStateSelector.create());
 		#elseif CHARTING
 		MusicBeatState.switchState(backend.ScriptableState.tryCreate('ChartingState', new ChartingState()));
 		#else

@@ -965,8 +965,8 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 					var deltaX:Float = mouseWorld.x - dragStartTouch.x;
 					var deltaY:Float = mouseWorld.y - dragStartTouch.y;
 
-					character.offset.x = dragStartPos[0] + deltaX;
-					character.offset.y = dragStartPos[1] + deltaY;
+					character.offset.x = dragStartPos[0] - deltaX;
+					character.offset.y = dragStartPos[1] - deltaY;
 
 					var anim = anims[curAnim];
 					if (anim != null && anim.offsets != null)
@@ -1561,8 +1561,8 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 					var deltaX = mouseWorld.x - dragStartTouch.x;
 					var deltaY = mouseWorld.y - dragStartTouch.y;
 
-					character.offset.x = dragStartPos[0] + deltaX;
-					character.offset.y = dragStartPos[1] + deltaY;
+					character.offset.x = dragStartPos[0] - deltaX;
+					character.offset.y = dragStartPos[1] - deltaY;
 
 					var anim = anims[curAnim];
 					if (anim != null && anim.offsets != null)

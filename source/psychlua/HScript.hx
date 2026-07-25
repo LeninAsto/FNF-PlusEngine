@@ -369,6 +369,7 @@ class HScript extends Iris
 		set('MainMenuState', states.MainMenuState);
 		set('GameOverSubstate', substates.GameOverSubstate);
 		set('FreeplayState', states.FreeplayState);
+		set('FreeplayState_Psych', states.FreeplayState_Psych);
 		set('StoryMenuState', states.StoryMenuState);
 		set('LoadingState', states.LoadingState);
 		set('CreditsState', states.CreditsState);

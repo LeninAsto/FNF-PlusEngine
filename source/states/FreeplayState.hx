@@ -1443,7 +1443,7 @@ class FreeplayState extends MusicBeatState
 				Paths.freeGraphicsFromMemory();
 			}
 			LoadingState.prepareToSong();
-			LoadingState.returnState = new FreeplayState(); // Establecer estado de retorno
+			LoadingState.returnState = FreeplayStateSelector.create(); // Establecer estado de retorno
 			LoadingState.loadAndSwitchState(new PlayState());
 			#if !SHOW_LOADING_SCREEN FlxG.sound.music.stop(); #end
 			stopMusicPlay = true;				destroyFreeplayVocals();
@@ -3210,7 +3210,7 @@ class FreeplayState extends MusicBeatState
 		WeekData.reloadWeekFiles(false);
 		Mods.loadTopMod();
 		persistentUpdate = false;
-		MusicBeatState.switchState(backend.ScriptableState.tryCreate('FreeplayState', new FreeplayState()));
+		MusicBeatState.switchState(FreeplayStateSelector.create());
 	}
 
 	function copyModFolderRecursive(source:String, target:String):Void
@@ -3462,6 +3462,7 @@ class FreeplayState extends MusicBeatState
 		#end
 
 		Conductor.bpm = 102;
+		FlxG.mouse.visible = false;
 
 		super.destroy();
 

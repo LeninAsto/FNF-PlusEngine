@@ -45,6 +45,7 @@ import states.TitleState;
 	public var showWatermark:Bool = false;
 	public var flashing:Bool = true;
 	public var autoPause:Bool = true;
+	public var lowerVolumeOnFocusLost:Bool = false;
 	public var antialiasing:Bool = true;
 	#if windows
 	public var changeWindowBorderColorWithNoteHit:Bool = false; // Changes window border color on note hit (Windows 11 only)
@@ -73,6 +74,7 @@ import states.TitleState;
 	public var showCombo:Bool = false;
 	public var showComboNum:Bool = true;
 	public var comboInGame:Bool = false;
+	public var nfRatingStyle:Bool = false;
 	public var showEndCountdown:Bool = false; // Enables/disables the end countdown
 	public var endCountdownSeconds:Int = 10;  // End countdown seconds (10-30)
 	public var camera3dEnabled:Bool = true; // Enables 3D camera transformations
@@ -112,7 +114,6 @@ import states.TitleState;
 	public var scoreZoom:Bool = true;
 	public var timeBump:Bool = false;
 	public var noReset:Bool = false;
-	public var noHoldAnimations:Bool = false;
 	public var healthBarAlpha:Float = 1;
 	public var smoothHealthBar:Bool = true;
 	public var smoothHPBug:Bool = false;
@@ -167,9 +168,7 @@ import states.TitleState;
 	public var pauseCountdown:Bool = false; // Enable countdown when resuming from pause
 	public var heyIntro:Bool = false; // Boyfriend and Girlfriend do Hey! animation on countdown Go!
 	public var breakTimer:Bool = false; // Show timer when next notes are approaching
-	public var legacyMemoryManagement:Bool = false; // Use Psych 0.7.3 memory management style (no GPU disposal)
-	public var legacyFileSystemAccess:Bool = false; // Allow direct FileSystem.readDirectory access like in Psych 0.7.3
-	public var legacyShaderInit:Bool = false; // Use Psych 0.7.3 shader initialization (glslVersion parameter, direct FlxRuntimeShader)
+	public var usePsychFreeplay:Bool = true; // Use Psych-style legacy Freeplay instead of PlusEngine Freeplay
 	public var useScriptableCustomStates:Bool = false; // Allow scripted state overrides through ScriptableState and CustomState
 	public var dragCharacterToMove:Bool = false; // Allow to drag position character with cursor like in Codename Engine
 }

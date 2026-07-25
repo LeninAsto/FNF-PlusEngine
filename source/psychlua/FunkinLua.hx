@@ -18,6 +18,7 @@ import debug.TraceDisplay;
 import states.MainMenuState;
 import states.StoryMenuState;
 import states.FreeplayState;
+import states.FreeplayStateSelector;
 
 import substates.PauseSubState;
 import substates.GameOverSubstate;
@@ -872,7 +873,7 @@ class FunkinLua {
 			if(PlayState.isStoryMode)
 				MusicBeatState.switchState(new StoryMenuState());
 			else
-				MusicBeatState.switchState(new FreeplayState());
+				MusicBeatState.switchState(FreeplayStateSelector.create());
 
 			#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
 

@@ -13,21 +13,21 @@ class LegacySettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Legacy Memory Management',
-			'If checked, keeps more cached assets around like older Psych versions. Safer for old mods, heavier on RAM.',
-			'legacyMemoryManagement',
+		var option:Option = new Option('Vanilla Transition',
+		    'If checked, uses the vanilla Psych Engine transition instead of the custom one.',
+			'vanillaTransition',
 			BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Legacy File System Access',
-			'If checked, prefers raw filesystem reads for directory scans and old mod layouts.',
-			'legacyFileSystemAccess',
+		var option:Option = new Option('Lower Volume When Window Loses Focus',
+			'If checked, lowers the game volume while the window is not focused.',
+			'lowerVolumeOnFocusLost',
 			BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Legacy Shader Init',
-			'If checked, keeps shader setup closer to old Psych behavior instead of auto-adapting shader code.',
-			'legacyShaderInit',
+		var option:Option = new Option('Use Psych Freeplay',
+			'If checked, uses the classic Psych Engine Freeplay state instead of the PlusEngine Freeplay.',
+			'usePsychFreeplay',
 			BOOL);
 		addOption(option);
 

@@ -404,7 +404,6 @@ class PauseSubState extends MusicBeatSubstate
 			switch (daSelected)
 			{
 				case "Resume":
-					Paths.clearUnusedMemory();
 					close();
 				case 'Skip Video':
 					if(skipActiveVideo())
@@ -480,7 +479,7 @@ class PauseSubState extends MusicBeatSubstate
 					if(PlayState.isStoryMode)
 						MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
 					else
-						MusicBeatState.switchState(backend.ScriptableState.tryCreate('FreeplayState', new FreeplayState()));
+						MusicBeatState.switchState(states.FreeplayStateSelector.create());
 				    
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 					PlayState.changedDifficulty = false;

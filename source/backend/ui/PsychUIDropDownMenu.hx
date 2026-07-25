@@ -554,6 +554,7 @@ class PsychUIDropDownMenu extends PsychUIInputText
 			
 			if(wheel != 0) 
 			{
+				_suppressItemRelease = false;
 				scrollListBy(-wheel);
 			}
 
@@ -589,6 +590,7 @@ class PsychUIDropDownMenu extends PsychUIInputText
 					_pointerOwner = null;
 				_scrollDragging = false;
 				_listDragging = false;
+				_suppressItemRelease = false;
 			}
 		}
 	}
@@ -736,7 +738,7 @@ class PsychUIDropDownMenu extends PsychUIInputText
 
 	public function shouldSuppressItemRelease():Bool
 	{
-		return _suppressItemRelease || _scrollDragging || _listDragging;
+		return _suppressItemRelease || _scrollDragging;
 	}
 
 	function addOption(option:String)

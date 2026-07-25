@@ -294,7 +294,7 @@ class ResultsState extends MusicBeatState
             if (params.isWeek != null && params.isWeek == true) {
                 MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
             } else {
-                MusicBeatState.switchState(backend.ScriptableState.tryCreate('FreeplayState', new FreeplayState()));
+                MusicBeatState.switchState(FreeplayStateSelector.create());
             }
         }
     }

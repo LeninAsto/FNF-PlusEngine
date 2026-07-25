@@ -349,7 +349,7 @@ class MainMenuState extends MusicBeatState
 						case 'story_mode':
 							MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
 						case 'freeplay':
-							MusicBeatState.switchState(backend.ScriptableState.tryCreate('FreeplayState', new FreeplayState()));
+							MusicBeatState.switchState(FreeplayStateSelector.create());
 
 						#if MODS_ALLOWED
 						case 'mods':
