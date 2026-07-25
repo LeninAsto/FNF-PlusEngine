@@ -18,6 +18,7 @@ import backend.StageData;
 
 import sys.thread.Mutex;
 
+import objects.GlobalLoadingOverlay;
 import objects.Note;
 import objects.NoteSplash;
 
@@ -188,6 +189,7 @@ class LoadingState extends MusicBeatState
 		addTouchPad('NONE', 'B');
 		
 		super.create();
+		GlobalLoadingOverlay.showPersistent();
 
 		if (stateChangeDelay <= 0 && checkLoaded())
 		{
@@ -206,6 +208,7 @@ class LoadingState extends MusicBeatState
 	{
 		super.update(elapsed);
 		if (dontUpdate) return;
+		GlobalLoadingOverlay.showPersistent();
 		
 		// Timeout system - incrementar el temporizador
 		if (!transitioning && !finishedLoading)
@@ -368,6 +371,7 @@ class LoadingState extends MusicBeatState
 	function onLoad()
 	{
 		_loaded();
+		GlobalLoadingOverlay.showPersistent();
 
 		if (stopMusic && FlxG.sound.music != null)
 			FlxG.sound.music.stop();

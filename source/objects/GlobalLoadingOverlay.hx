@@ -155,33 +155,16 @@ private class GlobalLoadingOverlayDisplay extends Sprite
 		if (Lib.current == null || Lib.current.stage == null)
 			return;
 
-		if (FlxG.game != null)
+		var stageHost:Dynamic = Lib.current.stage;
+		if (parent != stageHost)
 		{
-			var gameHost:Sprite = cast FlxG.game;
-			if (parent != gameHost)
-			{
-				if (parent != null)
-					parent.removeChild(this);
-				gameHost.addChild(this);
-			}
-			else
-			{
-				gameHost.setChildIndex(this, gameHost.numChildren - 1);
-			}
+			if (parent != null)
+				parent.removeChild(this);
+			stageHost.addChild(this);
 		}
 		else
 		{
-			var stageHost:Dynamic = Lib.current.stage;
-			if (parent != stageHost)
-			{
-				if (parent != null)
-					parent.removeChild(this);
-				stageHost.addChild(this);
-			}
-			else
-			{
-				stageHost.setChildIndex(this, stageHost.numChildren - 1);
-			}
+			stageHost.setChildIndex(this, stageHost.numChildren - 1);
 		}
 
 		resize();
@@ -248,6 +231,9 @@ private class GlobalLoadingOverlayDisplay extends Sprite
 		if (stage == null)
 			return;
 
+		if (parent != null && parent.numChildren > 0 && parent.getChildIndex(this) != parent.numChildren - 1)
+			parent.setChildIndex(this, parent.numChildren - 1);
+
 		refreshThemeIfNeeded();
 
 		var now = nowSeconds();
@@ -283,10 +269,7 @@ private class GlobalLoadingOverlayDisplay extends Sprite
 	{
 		if (stage == null)
 			return;
-		if (FlxG.game != null && parent == FlxG.game)
-			x = Math.round(((stage.stageWidth - PANEL_WIDTH) * 0.5) - FlxG.game.x);
-		else
-			x = Math.round((stage.stageWidth - PANEL_WIDTH) * 0.5);
+		x = Math.round((stage.stageWidth - PANEL_WIDTH) * 0.5);
 		y = 0;
 	}
 

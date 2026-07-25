@@ -21,6 +21,8 @@ import flixel.math.FlxMath;
 import flixel.graphics.FlxGraphic;
 import flixel.util.FlxDestroyUtil;
 
+import openfl.display.BitmapData;
+import openfl.geom.Matrix;
 import openfl.utils.AssetType;
 import openfl.utils.Assets;
 
@@ -80,6 +82,8 @@ class FreeplayState extends MusicBeatState
 	private var songInfoCardDifficulty:FlxText;
 	private var songInfoCardScores:FlxText;
 	private var songInfoPlatformIcons:Array<FlxSprite> = [];
+	private var songInfoLicenseIcons:Array<FlxSprite> = [];
+	private var songInfoLicenseText:FlxText;
 	private var songInfoCardLoadingLabel:FlxText;
 	private var songInfoCardSpinner:MaterialWavyProgressIndicator;
 	private var songInfoCardY:Float = 0;
@@ -88,8 +92,10 @@ class FreeplayState extends MusicBeatState
 	private var songInfoCardTween:FlxTween = null;
 	private var songInfoCardLoadTimer:FlxTimer = null;
 	private var songInfoCardLoadToken:Int = 0;
+	private static var roundedImageCache:Map<String, FlxGraphic> = [];
 	private var songInfoCardLoading:Bool = false;
 	private var songInfoCardData:FreeplaySongCardData = null;
+	private var songInfoPlatformLinks:Array<String> = [];
 	private var songInfoCardCache:Map<String, FreeplaySongCardData> = new Map<String, FreeplaySongCardData>();
 	private var songInfoCardCacheOrder:Array<String> = [];
 	private var selectedSongDataTimer:FlxTimer = null;
@@ -165,6 +171,8 @@ class FreeplayState extends MusicBeatState
 	public var previewTimer:FlxTimer = null;
 	public var previewLoadToken:Int = 0;
 	public var previewLoadTimer:FlxTimer = null;
+	private var currentPreviewStartMs:Float = 0;
+	private var currentPreviewEndMs:Float = 0;
 	static inline var SELECTED_DATA_LOAD_DELAY:Float = 1.0;
 	static inline var PREVIEW_LOAD_DELAY:Float = 0.12;
 	static inline var SONG_INFO_CARD_CACHE_LIMIT:Int = 32;
@@ -172,9 +180,10 @@ class FreeplayState extends MusicBeatState
 	static inline var SONG_INFO_ALBUM_SIZE:Int = 224;
 	static inline var SONG_INFO_COVER_SIZE:Int = 184;
 	static inline var SONG_INFO_CARD_GAP:Int = 16;
-	static inline var SONG_INFO_DATA_HEIGHT:Int = 284;
-	static inline var SONG_INFO_CARD_HEIGHT:Int = 524;
+	static inline var SONG_INFO_DATA_HEIGHT:Int = 330;
+	static inline var SONG_INFO_CARD_HEIGHT:Int = 570;
 	static inline var SONG_INFO_SOCIAL_ICON_SIZE:Int = 24;
+	static inline var SONG_INFO_LICENSE_ICON_SIZE:Int = 32;
 	static final FREEPLAY_LINK_PLATFORMS:Array<String> = [
 		'audius',
 		'bandcamp',
@@ -411,10 +420,8 @@ class FreeplayState extends MusicBeatState
 		var songKey:String = Paths.formatToSongPath(songs[index].songName);
 		var listCardKey:String = meta != null && meta.cardKey != null ? meta.cardKey : 'albumRoll/cards/$songKey';
 		var customListCard:FlxGraphic = getOptionalImage(listCardKey);
-		if (customListCard != null)
+		if (loadRoundedGraphic(card, customListCard, 470, 110, 22, 'listCard:$listCardKey'))
 		{
-			card.loadGraphic(customListCard);
-			card.setGraphicSize(470, 110);
 			card.updateHitbox();
 			_cardVisualSignatures[index] = 'custom:$listCardKey';
 		}
@@ -474,6 +481,7 @@ class FreeplayState extends MusicBeatState
 	{
 		//Paths.clearStoredMemory();
 		//Paths.clearUnusedMemory();
+		FlxG.mouse.visible = true;
 		
 		instance = this;
 		persistentUpdate = true;
@@ -928,6 +936,13 @@ class FreeplayState extends MusicBeatState
 			return;
 		}
 
+		if (handleSongInfoLinkMouse())
+		{
+			updateTexts(elapsed);
+			return;
+		}
+		enforceSongPreviewWindow();
+
 		 #if (target.threaded && sys)
         // Dispatch a pending inst sound loaded by the background thread.
         // playMusic() and all OpenAL calls must happen on the main thread.
@@ -951,6 +966,7 @@ class FreeplayState extends MusicBeatState
                 Paths.localTrackedAssets.push(cacheKey);
 
 				FlxG.sound.playMusic(pendingSound, 0, true);
+				applySongPreviewStart(songs[pendingIndex]);
 				FlxG.sound.music.fadeIn(1.0, 0, 0.7);
 				instSound = FlxG.sound.music;
 				instPlaying = pendingIndex;
@@ -1791,9 +1807,8 @@ class FreeplayState extends MusicBeatState
 		songInfoCardCover = new FlxSprite(albumX + (SONG_INFO_ALBUM_SIZE - SONG_INFO_COVER_SIZE) * 0.5, songInfoCardY + 20);
 		songInfoCardCover.antialiasing = ClientPrefs.data.antialiasing;
 		var fallbackCover = Paths.image('albumRoll/example');
-		if (fallbackCover != null)
-			songInfoCardCover.loadGraphic(fallbackCover);
-		songInfoCardCover.setGraphicSize(SONG_INFO_COVER_SIZE, SONG_INFO_COVER_SIZE);
+		if (!loadRoundedGraphic(songInfoCardCover, fallbackCover, SONG_INFO_COVER_SIZE, SONG_INFO_COVER_SIZE, 22, 'cover:fallback'))
+			songInfoCardCover.makeGraphic(SONG_INFO_COVER_SIZE, SONG_INFO_COVER_SIZE, 0x00000000);
 		songInfoCardCover.updateHitbox();
 		add(songInfoCardCover);
 
@@ -1811,6 +1826,7 @@ class FreeplayState extends MusicBeatState
 		songInfoCardDifficulty = new FlxText(cardX + 20, songInfoCardY + SONG_INFO_ALBUM_SIZE + SONG_INFO_CARD_GAP + 128, cardW - 76, "", 13);
 		songInfoCardDifficulty.setFormat(Paths.font('NotoSans-Medium.ttf'), 13, FlxColor.WHITE, LEFT);
 		songInfoCardDifficulty.alpha = 0.88;
+		songInfoCardDifficulty.visible = false;
 		songInfoCardDifficulty.wordWrap = true;
 		add(songInfoCardDifficulty);
 
@@ -1826,8 +1842,24 @@ class FreeplayState extends MusicBeatState
 			icon.antialiasing = ClientPrefs.data.antialiasing;
 			icon.visible = false;
 			songInfoPlatformIcons.push(icon);
+			songInfoPlatformLinks.push(null);
 			add(icon);
 		}
+
+		for (i in 0...6)
+		{
+			var icon = new FlxSprite();
+			icon.antialiasing = ClientPrefs.data.antialiasing;
+			icon.visible = false;
+			songInfoLicenseIcons.push(icon);
+			add(icon);
+		}
+
+		songInfoLicenseText = new FlxText(cardX + 20, songInfoCardY + SONG_INFO_ALBUM_SIZE + SONG_INFO_CARD_GAP + 284, cardW - 40, "", 12);
+		songInfoLicenseText.setFormat(Paths.font('NotoSans-Medium.ttf'), 12, 0xFFE8EEF7, CENTER);
+		songInfoLicenseText.alpha = 0.86;
+		songInfoLicenseText.wordWrap = true;
+		add(songInfoLicenseText);
 
 		songInfoCardSpinner = new MaterialWavyProgressIndicator(FlxG.width * 0.5 - 28, FlxG.height * 0.5 - 28, CIRCULAR, 56);
 		songInfoCardSpinner.indeterminate = true;
@@ -1882,10 +1914,13 @@ class FreeplayState extends MusicBeatState
 		if (songInfoCardCover != null) songInfoCardCover.visible = !active;
 		if (songInfoCardTitle != null) songInfoCardTitle.visible = !active;
 		if (songInfoCardStats != null) songInfoCardStats.visible = !active;
-		if (songInfoCardDifficulty != null) songInfoCardDifficulty.visible = !active;
+		if (songInfoCardDifficulty != null) songInfoCardDifficulty.visible = false;
 		if (songInfoCardScores != null) songInfoCardScores.visible = !active;
 		for (icon in songInfoPlatformIcons)
 			if (icon != null) icon.visible = !active && icon.exists;
+		for (icon in songInfoLicenseIcons)
+			if (icon != null) icon.visible = !active && icon.exists;
+		if (songInfoLicenseText != null) songInfoLicenseText.visible = !active;
 		if (songInfoCardSpinner != null) songInfoCardSpinner.visible = active;
 		if (songInfoCardLoadingLabel != null) songInfoCardLoadingLabel.visible = active;
 	}
@@ -1963,6 +1998,8 @@ class FreeplayState extends MusicBeatState
 							cardMode: 'background',
 							author: null,
 							links: null,
+							licenses: ['no-licenses'],
+							licenseText: null,
 							bpm: bpmSnapshot > 0 ? bpmSnapshot : 102,
 							durationMs: 0,
 							noteCount: 0,
@@ -2003,13 +2040,15 @@ class FreeplayState extends MusicBeatState
 		if (songInfoCardStats != null)
 			songInfoCardStats.text = formatSongInfoStats(data);
 
-		var diffList:Array<String> = data.difficultyNames != null ? data.difficultyNames.copy() : [];
-		var diffLabel:String = diffList.length > 0 ? diffList.join(', ') : 'Normal';
 		if (songInfoCardDifficulty != null)
-			songInfoCardDifficulty.text = 'Difficulties: $diffLabel';
+			songInfoCardDifficulty.text = '';
 
 		if (songInfoCardScores != null)
 		{
+			var diffList:Array<String> = data.difficultyNames != null ? data.difficultyNames.copy() : [];
+			if (diffList.length == 0)
+				diffList.push('Normal');
+
 			var scoreLines:Array<String> = [];
 			for (i in 0...diffList.length)
 			{
@@ -2020,20 +2059,21 @@ class FreeplayState extends MusicBeatState
 					accuracySystem = ClientPrefs.data.accuracySystem;
 				scoreLines.push('${diffName}: ${score} [$accuracySystem]');
 			}
-			songInfoCardScores.text = 'Scores:\n' + scoreLines.join('\n');
+			songInfoCardScores.text = 'Diff and Scores:\n' + scoreLines.join('\n');
 		}
 
 		var coverGraphic:FlxGraphic = Paths.image(data.coverKey);
 		if (coverGraphic == null)
 			coverGraphic = Paths.image('albumRoll/example');
-		if (coverGraphic != null && songInfoCardCover != null)
+		if (songInfoCardCover != null)
 		{
-			songInfoCardCover.loadGraphic(coverGraphic);
-			songInfoCardCover.setGraphicSize(SONG_INFO_COVER_SIZE, SONG_INFO_COVER_SIZE);
+			if (!loadRoundedGraphic(songInfoCardCover, coverGraphic, SONG_INFO_COVER_SIZE, SONG_INFO_COVER_SIZE, 22, 'cover:${data.coverKey}'))
+				songInfoCardCover.makeGraphic(SONG_INFO_COVER_SIZE, SONG_INFO_COVER_SIZE, 0x00000000);
 			songInfoCardCover.updateHitbox();
 		}
 
 		updateSongInfoPlatformIcons(data.links);
+		updateSongInfoLicenses(data.licenses, data.licenseText);
 
 		if (!inDifficultySelect)
 			showSongInfoCard();
@@ -2062,6 +2102,170 @@ class FreeplayState extends MusicBeatState
 		return Paths.image(key);
 	}
 
+	function getLicenseImage(id:String):FlxGraphic
+	{
+		if (id == null || id.length == 0)
+			return null;
+
+		var graphic:FlxGraphic = getOptionalImage('albumRoll/licenses/$id');
+		if (graphic == null)
+			graphic = getOptionalImage('albumRoll/licences/$id');
+		return graphic;
+	}
+
+	function updateSongInfoLicenses(licenses:Array<String>, ?licenseText:String):Void
+	{
+		var list:Array<String> = licenses != null && licenses.length > 0 ? licenses.copy() : ['no-licenses'];
+		if (list.length == 0)
+			list.push('no-licenses');
+
+		for (i in 0...songInfoLicenseIcons.length)
+		{
+			var icon = songInfoLicenseIcons[i];
+			if (icon == null)
+				continue;
+
+			icon.exists = false;
+			icon.visible = false;
+			if (i >= list.length)
+				continue;
+
+			var id:String = list[i];
+			var graphic:FlxGraphic = getLicenseImage(id);
+			if (graphic == null)
+				continue;
+
+			icon.loadGraphic(graphic);
+			icon.setGraphicSize(SONG_INFO_LICENSE_ICON_SIZE, SONG_INFO_LICENSE_ICON_SIZE);
+			icon.updateHitbox();
+			icon.alpha = 0.88;
+			icon.exists = true;
+			icon.visible = !songInfoCardLoading;
+		}
+
+		if (songInfoLicenseText != null)
+		{
+			songInfoLicenseText.text = licenseText != null && licenseText.length > 0 ? licenseText : list.map(formatLicenseLabel).join('  +  ');
+			songInfoLicenseText.visible = !songInfoCardLoading;
+		}
+
+		updateSongInfoCardLayout();
+	}
+
+	function formatLicenseLabel(id:String):String
+	{
+		return switch (id)
+		{
+			case 'no-licenses': 'No License';
+			case 'creative-commons': 'Creative Commons';
+			case 'cc-by': 'CC BY';
+			case 'cc-by-sa': 'CC BY-SA';
+			case 'cc-by-nd': 'CC BY-ND';
+			case 'cc-by-nc': 'CC BY-NC';
+			case 'cc-by-nc-sa': 'CC BY-NC-SA';
+			case 'cc-by-nc-nd': 'CC BY-NC-ND';
+			case 'public-domain': 'Public Domain';
+			case 'royalty-free': 'Royalty Free';
+			case 'copyright': 'Copyright';
+			case 'permission-required': 'Permission Required';
+			case 'comercial-use': 'Commercial Use';
+			case 'no-comercial': 'Non-Commercial';
+			case 'no-derivatives': 'No Derivatives';
+			case 'share-alike': 'Share Alike';
+			case 'atribution-required': 'Attribution Required';
+			case 'redistribution-allow': 'Redistribution Allowed';
+			case 'modify-allow': 'Modification Allowed';
+			case 'streaming-allow': 'Streaming Allowed';
+			case 'public-access': 'Public Access';
+			case 'public-execution': 'Public Performance';
+			case 'sync': 'Sync';
+			default: id.split('-').map((part) -> part.length > 0 ? part.charAt(0).toUpperCase() + part.substr(1) : part).join(' ');
+		}
+	}
+
+	function loadRoundedGraphic(target:FlxSprite, graphic:FlxGraphic, width:Int, height:Int, radius:Float, cacheTag:String):Bool
+	{
+		if (target == null || graphic == null || graphic.bitmap == null || graphic.bitmap.width <= 0 || graphic.bitmap.height <= 0 || width <= 0 || height <= 0)
+			return false;
+
+		var rounded:FlxGraphic = getRoundedImage(graphic, width, height, radius, cacheTag);
+		if (rounded == null || rounded.bitmap == null)
+			return false;
+
+		try
+		{
+			target.loadGraphic(rounded);
+			return true;
+		}
+		catch (e:Dynamic)
+		{
+			trace('[FreePlay] Failed to load rounded graphic "$cacheTag": $e');
+		}
+
+		try
+		{
+			target.loadGraphic(rounded.bitmap);
+			return true;
+		}
+		catch (e:Dynamic)
+		{
+			trace('[FreePlay] Failed to load rounded bitmap fallback "$cacheTag": $e');
+		}
+
+		return false;
+	}
+
+	function getRoundedImage(graphic:FlxGraphic, width:Int, height:Int, radius:Float, cacheTag:String):FlxGraphic
+	{
+		if (graphic == null || graphic.bitmap == null || graphic.bitmap.width <= 0 || graphic.bitmap.height <= 0 || width <= 0 || height <= 0)
+			return null;
+
+		var sourceKey:String = graphic.key != null ? graphic.key : Std.string(graphic);
+		var cacheKey:String = 'freeplayRounded:${cacheTag}:${width}x${height}:${radius}:${sourceKey}';
+		if (roundedImageCache.exists(cacheKey))
+			return roundedImageCache.get(cacheKey);
+
+		var source:BitmapData = graphic.bitmap;
+		var output:BitmapData = new BitmapData(width, height, true, 0x00000000);
+		var scale:Float = Math.max(width / source.width, height / source.height);
+		var matrix:Matrix = new Matrix();
+		matrix.scale(scale, scale);
+		matrix.translate((width - source.width * scale) * 0.5, (height - source.height * scale) * 0.5);
+		output.draw(source, matrix, null, null, null, true);
+
+		var feather:Float = 1.25;
+		var maxX:Float = width - 1;
+		var maxY:Float = height - 1;
+		var r:Float = Math.max(0, Math.min(radius, Math.min(width, height) * 0.5));
+		for (py in 0...height)
+		{
+			for (px in 0...width)
+			{
+				var cx:Float = px < r ? r : (px > maxX - r ? maxX - r : px);
+				var cy:Float = py < r ? r : (py > maxY - r ? maxY - r : py);
+				var dx:Float = px - cx;
+				var dy:Float = py - cy;
+				var distance:Float = Math.sqrt(dx * dx + dy * dy);
+				if (distance >= r)
+				{
+					output.setPixel32(px, py, 0x00000000);
+				}
+				else if (distance > r - feather)
+				{
+					var pixel:Int = output.getPixel32(px, py);
+					var alpha:Int = (pixel >>> 24) & 0xFF;
+					var edgeAlpha:Float = (r - distance) / feather;
+					output.setPixel32(px, py, (Std.int(alpha * edgeAlpha) << 24) | (pixel & 0x00FFFFFF));
+				}
+			}
+		}
+
+		var roundedGraphic:FlxGraphic = FlxGraphic.fromBitmapData(output, false, cacheKey);
+		roundedGraphic.persist = true;
+		roundedImageCache.set(cacheKey, roundedGraphic);
+		return roundedGraphic;
+	}
+
 	function updateSongInfoPlatformIcons(links:Dynamic):Void
 	{
 		for (i in 0...songInfoPlatformIcons.length)
@@ -2070,6 +2274,8 @@ class FreeplayState extends MusicBeatState
 			if (icon == null)
 				continue;
 
+			if (i < songInfoPlatformLinks.length)
+				songInfoPlatformLinks[i] = null;
 			icon.exists = false;
 			icon.visible = false;
 			if (i >= FREEPLAY_LINK_PLATFORMS.length || links == null)
@@ -2090,9 +2296,61 @@ class FreeplayState extends MusicBeatState
 			icon.alpha = 0.88;
 			icon.exists = true;
 			icon.visible = !songInfoCardLoading;
+			if (i < songInfoPlatformLinks.length)
+				songInfoPlatformLinks[i] = link;
 		}
 
 		updateSongInfoCardLayout();
+	}
+
+	function handleSongInfoLinkMouse():Bool
+	{
+		if (songInfoCardLoading || songInfoPlatformIcons == null || songInfoPlatformLinks == null)
+			return false;
+
+		var clicked:Bool = FlxG.mouse.justReleased;
+		var hovered:Bool = false;
+		for (i in 0...songInfoPlatformIcons.length)
+		{
+			var icon = songInfoPlatformIcons[i];
+			if (icon == null || !icon.exists || !icon.visible)
+				continue;
+
+			var link:String = i < songInfoPlatformLinks.length ? songInfoPlatformLinks[i] : null;
+			if (link == null || link.length == 0)
+				continue;
+
+			if (FlxG.mouse.overlaps(icon))
+			{
+				hovered = true;
+				icon.alpha = 1.0;
+				if (clicked)
+				{
+					FlxG.sound.play(Paths.sound('scrollMenu'), 0.2);
+					FlxG.openURL(normalizeExternalLink(link));
+					return true;
+				}
+			}
+			else
+			{
+				icon.alpha = 0.88;
+			}
+		}
+
+		if (hovered)
+			FlxG.mouse.visible = true;
+		return false;
+	}
+
+	function normalizeExternalLink(link:String):String
+	{
+		var trimmed:String = StringTools.trim(link);
+		if (trimmed.length == 0)
+			return trimmed;
+		var lower:String = trimmed.toLowerCase();
+		if (lower.startsWith('http://') || lower.startsWith('https://') || lower.startsWith('mailto:') || lower.indexOf('://') > 0)
+			return trimmed;
+		return 'https://$trimmed';
 	}
 
 	function getLinkValue(links:Dynamic, platform:String):Dynamic
@@ -2139,6 +2397,38 @@ class FreeplayState extends MusicBeatState
 		}
 	}
 
+	function layoutSongInfoLicenseIcons(cardX:Float, dataY:Float, cardW:Float, dataH:Float):Void
+	{
+		var visibleIcons:Array<FlxSprite> = [];
+		for (icon in songInfoLicenseIcons)
+		{
+			if (icon != null && icon.exists)
+				visibleIcons.push(icon);
+		}
+
+		var iconY:Float = dataY + dataH - SONG_INFO_LICENSE_ICON_SIZE - 26;
+		var labelY:Float = iconY + SONG_INFO_LICENSE_ICON_SIZE + 4;
+		if (songInfoLicenseText != null)
+		{
+			songInfoLicenseText.x = cardX + 24;
+			songInfoLicenseText.y = labelY;
+			songInfoLicenseText.fieldWidth = cardW - 48;
+		}
+
+		if (visibleIcons.length == 0)
+			return;
+
+		var gap:Float = 6;
+		var iconSize:Float = SONG_INFO_LICENSE_ICON_SIZE;
+		var totalWidth:Float = visibleIcons.length * iconSize + (visibleIcons.length - 1) * gap;
+		var startX:Float = cardX + (cardW - totalWidth) * 0.5;
+		for (i in 0...visibleIcons.length)
+		{
+			visibleIcons[i].x = startX + i * (iconSize + gap);
+			visibleIcons[i].y = iconY;
+		}
+	}
+
 	function updateSongInfoCardLayout():Void
 	{
 		if (songInfoCardBg == null)
@@ -2182,10 +2472,12 @@ class FreeplayState extends MusicBeatState
 		songInfoCardDifficulty.x = cardX + padX;
 		songInfoCardDifficulty.y = dataY + 132;
 		songInfoCardDifficulty.fieldWidth = textW;
+		songInfoCardDifficulty.visible = false;
 		songInfoCardScores.x = cardX + padX;
-		songInfoCardScores.y = dataY + 184;
+		songInfoCardScores.y = dataY + 138;
 		songInfoCardScores.fieldWidth = textW;
 		layoutSongInfoPlatformIcons(cardX + cardW - padX - SONG_INFO_SOCIAL_ICON_SIZE, dataY + 22, dataH - 44);
+		layoutSongInfoLicenseIcons(cardX, dataY, cardW, dataH);
 		if (songInfoCardSpinner != null)
 		{
 			if (songInfoCardLoading)
@@ -2238,6 +2530,9 @@ class FreeplayState extends MusicBeatState
 		var longestDuration:Float = 0;
 		var songKey:String = Paths.formatToSongPath(song.songName);
 		var meta:FreeplaySongMeta = loadSongMeta(song);
+		var metaDurationMs:Float = meta != null && meta.durationSeconds != null && meta.durationSeconds > 0 ? meta.durationSeconds * 1000 : 0;
+		if (metaDurationMs > 0)
+			longestDuration = metaDurationMs;
 
 		if (diffNames != null)
 		{
@@ -2251,7 +2546,7 @@ class FreeplayState extends MusicBeatState
 
 				var summary:FreeplayChartSummary = summarizeChart(rawChart);
 				totalNotes += summary.noteCount;
-				if (summary.durationMs > longestDuration)
+				if (metaDurationMs <= 0 && summary.durationMs > longestDuration)
 					longestDuration = summary.durationMs;
 				if (capturedBpm <= 0 && summary.bpm > 0)
 					capturedBpm = summary.bpm;
@@ -2265,6 +2560,8 @@ class FreeplayState extends MusicBeatState
 			cardMode: meta != null && meta.cardMode != null ? meta.cardMode : 'background',
 			author: meta != null ? meta.author : null,
 			links: meta != null ? meta.links : null,
+			licenses: meta != null && meta.licenses != null && meta.licenses.length > 0 ? meta.licenses.copy() : ['no-licenses'],
+			licenseText: meta != null ? meta.licenseText : null,
 			bpm: capturedBpm > 0 ? capturedBpm : 102,
 			durationMs: longestDuration,
 			noteCount: totalNotes,
@@ -2278,24 +2575,35 @@ class FreeplayState extends MusicBeatState
 			return null;
 
 		var songKey:String = Paths.formatToSongPath(song.songName);
-		var rawMeta:String = AssetLoader.loadText(Paths.json('$songKey/song_meta'));
+		var rawMeta:String = cleanJsonText(AssetLoader.loadText(Paths.json('$songKey/song_meta')));
 		if (rawMeta == null || rawMeta.length == 0)
 			return null;
 
 		try
 		{
 			var parsed:Dynamic = Json.parse(rawMeta);
-			var coverValue:Dynamic = firstMetaValue(parsed, ['cover', 'coverAlbum', 'coverImage', 'albumCover']);
+			var coverValue:Dynamic = firstMetaValue(parsed, ['cover', 'coverAlbum', 'albumId', 'coverImage', 'albumCover']);
 			var cardValue:Dynamic = firstMetaValue(parsed, ['card', 'cardImage', 'cardKey', 'infoCard']);
-			var authorValue:Dynamic = firstMetaValue(parsed, ['songAuthor', 'songAutor', 'author', 'artist', 'composer']);
+			var authorValue:Dynamic = firstMetaValue(parsed, ['songAuthor', 'songAutor', 'author', 'artist', 'composer', 'musicArtist']);
 			var cardModeValue:Dynamic = firstMetaValue(parsed, ['cardMode']);
+			var linksValue:Dynamic = firstMetaValue(parsed, ['links', 'artistLinks', 'platformLinks', 'socials']);
+			var durationValue:Dynamic = firstMetaValue(parsed, ['freeplaySongLength', 'songLength', 'length', 'duration', 'durationSeconds']);
+			var licensesValue:Dynamic = firstMetaValue(parsed, ['licenses', 'licences', 'musicLicenses', 'musicLicences', 'license', 'licence']);
+			var licenseTextValue:Dynamic = firstMetaValue(parsed, ['licenseText', 'licenceText', 'musicLicenseText', 'musicLicenceText']);
+			var previewStartValue:Dynamic = firstMetaValue(parsed, ['freeplayPrevStart', 'previewStart', 'songPreviewStart']);
+			var previewEndValue:Dynamic = firstMetaValue(parsed, ['freeplayPrevEnd', 'previewEnd', 'songPreviewEnd']);
 
 			return {
 				coverKey: normalizeAlbumRollKey(coverValue, 'albumRoll/$songKey'),
 				cardKey: normalizeAlbumRollKey(cardValue, 'albumRoll/cards/$songKey', 'cards'),
 				cardMode: stringOrNull(cardModeValue),
 				author: stringOrNull(authorValue),
-				links: Reflect.hasField(parsed, 'links') ? Reflect.field(parsed, 'links') : null
+				links: linksValue,
+				durationSeconds: positiveFloatOrNull(durationValue),
+				licenses: normalizeLicenseList(licensesValue),
+				licenseText: stringOrNull(licenseTextValue),
+				previewStartSeconds: nonNegativeFloatOrNull(previewStartValue),
+				previewEndSeconds: nonNegativeFloatOrNull(previewEndValue)
 			};
 		}
 		catch (e:Dynamic)
@@ -2319,12 +2627,75 @@ class FreeplayState extends MusicBeatState
 		return null;
 	}
 
+	function cleanJsonText(raw:String):String
+	{
+		if (raw == null)
+			return null;
+		var text:String = StringTools.trim(raw);
+		if (text.length > 0 && text.charCodeAt(0) == 0xFEFF)
+			text = text.substr(1);
+		return text;
+	}
+
 	function stringOrNull(value:Dynamic):String
 	{
 		if (value == null)
 			return null;
 		var text:String = Std.string(value).trim();
 		return text.length > 0 ? text : null;
+	}
+
+	function positiveFloatOrNull(value:Dynamic):Null<Float>
+	{
+		if (value == null)
+			return null;
+		var parsed:Float = Std.parseFloat(Std.string(value));
+		return !Math.isNaN(parsed) && parsed > 0 ? parsed : null;
+	}
+
+	function nonNegativeFloatOrNull(value:Dynamic):Null<Float>
+	{
+		if (value == null)
+			return null;
+		var parsed:Float = Std.parseFloat(Std.string(value));
+		return !Math.isNaN(parsed) && parsed >= 0 ? parsed : null;
+	}
+
+	function normalizeLicenseList(value:Dynamic):Array<String>
+	{
+		var licenses:Array<String> = [];
+		if (value != null)
+		{
+			if (Std.isOfType(value, Array))
+			{
+				for (item in (value:Array<Dynamic>))
+					addNormalizedLicense(licenses, item);
+			}
+			else
+			{
+				var raw:String = Std.string(value);
+				for (part in raw.split(','))
+					addNormalizedLicense(licenses, part);
+			}
+		}
+
+		if (licenses.length == 0)
+			licenses.push('no-licenses');
+		return licenses;
+	}
+
+	function addNormalizedLicense(licenses:Array<String>, value:Dynamic):Void
+	{
+		var text:String = stringOrNull(value);
+		if (text == null)
+			return;
+
+		text = Paths.formatToSongPath(text);
+		text = StringTools.replace(text, '_', '-');
+		if (text == 'cc')
+			text = 'creative-commons';
+		if (!licenses.contains(text))
+			licenses.push(text);
 	}
 
 	function normalizeAlbumRollKey(value:Dynamic, defaultKey:String, ?subFolder:String):String
@@ -2361,7 +2732,19 @@ class FreeplayState extends MusicBeatState
 		}
 
 		var songKey:String = Paths.formatToSongPath(song.songName);
-		return Paths.json('$songKey/${songKey}-${Paths.formatToSongPath(diffName)}');
+		var diffKey:String = Paths.formatToSongPath(diffName);
+		var chartPath:String = Paths.json('$songKey/${songKey}-$diffKey');
+		if (AssetLoader.exists(chartPath, TEXT))
+			return chartPath;
+
+		if (diffKey == Paths.formatToSongPath(Difficulty.getDefault()))
+		{
+			var normalFallback:String = Paths.json('$songKey/$songKey');
+			if (AssetLoader.exists(normalFallback, TEXT))
+				return normalFallback;
+		}
+
+		return chartPath;
 	}
 
 	function summarizeChart(rawChart:String):FreeplayChartSummary
@@ -2476,6 +2859,36 @@ class FreeplayState extends MusicBeatState
 		return StringTools.lpad(Std.string(minutes), '0', 1) + ':' + StringTools.lpad(Std.string(seconds), '0', 2);
 	}
 
+	function applySongPreviewStart(song:SongMetadata):Void
+	{
+		currentPreviewStartMs = 0;
+		currentPreviewEndMs = 0;
+		if (song == null || FlxG.sound.music == null)
+			return;
+
+		var meta:FreeplaySongMeta = loadSongMeta(song);
+		if (meta == null)
+			return;
+
+		var startMs:Float = meta.previewStartSeconds != null ? meta.previewStartSeconds * 1000 : 0;
+		var endMs:Float = meta.previewEndSeconds != null ? meta.previewEndSeconds * 1000 : 0;
+		if (!Math.isNaN(startMs) && FlxG.sound.music.length > 0)
+		{
+			currentPreviewStartMs = Math.min(startMs, Math.max(0, FlxG.sound.music.length - 100));
+			currentPreviewEndMs = (!Math.isNaN(endMs) && endMs > currentPreviewStartMs) ? Math.min(endMs, FlxG.sound.music.length) : 0;
+			FlxG.sound.music.time = currentPreviewStartMs;
+		}
+	}
+
+	function enforceSongPreviewWindow():Void
+	{
+		if (instPlaying < 0 || FlxG.sound.music == null || currentPreviewEndMs <= currentPreviewStartMs)
+			return;
+
+		if (FlxG.sound.music.time >= currentPreviewEndMs)
+			FlxG.sound.music.time = currentPreviewStartMs;
+	}
+
 	 function playInstPreview():Void {
         if(songs.length == 0 || curSelected >= songs.length) return;
 
@@ -2542,6 +2955,7 @@ class FreeplayState extends MusicBeatState
             // Fallback for single-threaded targets (web, etc.): load synchronously.
             try {
                 FlxG.sound.playMusic(Paths.inst(songName), 0, true);
+                applySongPreviewStart(songs[requestedIndex]);
                 FlxG.sound.music.fadeIn(1.0, 0, 0.7);
                 instSound = FlxG.sound.music;
                 instPlaying = requestedIndex;
@@ -3045,6 +3459,8 @@ typedef FreeplaySongCardData =
 	var cardMode:String;
 	var author:String;
 	var links:Dynamic;
+	var licenses:Array<String>;
+	var licenseText:String;
 	var bpm:Float;
 	var durationMs:Float;
 	var noteCount:Int;
@@ -3058,6 +3474,11 @@ typedef FreeplaySongMeta =
 	var ?cardMode:String;
 	var ?author:String;
 	var ?links:Dynamic;
+	var ?durationSeconds:Float;
+	var ?licenses:Array<String>;
+	var ?licenseText:String;
+	var ?previewStartSeconds:Float;
+	var ?previewEndSeconds:Float;
 }
 
 class DifficultySelector

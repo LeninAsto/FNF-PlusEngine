@@ -43,6 +43,10 @@ class LegacySettingsSubState extends BaseOptionsMenu
 		    'If checked, the character position can be dragged with the cursor, just like in Codename Engine.',
 			'dragCharacterToMove',
 			BOOL);
+		option.onChange = function()
+		{
+			ClientPrefs.saveSettings();
+		};
 		addOption(option);
 
 		super();

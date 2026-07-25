@@ -926,7 +926,11 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		}
 		ClientPrefs.toggleVolumeKeys(true);
 
-		if (ClientPrefs.data.dragCharacterToMove)
+		if (!ClientPrefs.data.dragCharacterToMove)
+		{
+			isDraggingChar = false;
+		}
+		else
 		{
 			if (FlxG.mouse.justPressed && !isMouseOverUI() && !controls.mobileC)
 			{
@@ -1507,8 +1511,14 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 	function onTouchEvent(e:TouchEvent):Void 
 	{
-		if (!controls.mobileC || FlxG.stage == null || !ClientPrefs.data.dragCharacterToMove)
+		if (!controls.mobileC || FlxG.stage == null)
 			return;
+
+		if (!ClientPrefs.data.dragCharacterToMove)
+		{
+			isDraggingChar = false;
+			return;
+		}
 
 		var touchX:Float = e.stageX;
 		var touchY:Float = e.stageY;

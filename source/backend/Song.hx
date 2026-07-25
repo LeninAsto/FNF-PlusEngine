@@ -241,15 +241,26 @@ class Song
 			}
 			
 			// If there is no suffix, try “-normal” (compatibility 0.7.3)
+			var normalDiff:String = Paths.formatToSongPath(Difficulty.getDefault()); // "normal"
 			if(!hasDifficultySuffix)
 			{
-				var normalDiff:String = Paths.formatToSongPath(Difficulty.getDefault()); // "normal"
 				var altPath:String = Paths.json('$formattedFolder/$formattedSong-$normalDiff');
 				if(AssetLoader.exists(altPath, TEXT))
 				{
 					_lastPath = altPath;
 					pathExists = true;
 					trace('Psych 0.7.3 Compatibility: Using "$formattedSong-$normalDiff" chart');
+				}
+			}
+			else if(formattedSong.endsWith('-$normalDiff'))
+			{
+				var baseSong:String = formattedSong.substr(0, formattedSong.length - normalDiff.length - 1);
+				var altPath:String = Paths.json('$formattedFolder/$baseSong');
+				if(AssetLoader.exists(altPath, TEXT))
+				{
+					_lastPath = altPath;
+					pathExists = true;
+					trace('Normal chart compatibility: Using "$baseSong" chart');
 				}
 			}
 		}

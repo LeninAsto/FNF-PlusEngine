@@ -27,11 +27,16 @@ import backend.Song;
 import backend.StageData;
 import backend.Difficulty;
 import backend.Highscore;
+import backend.AssetLoader;
 
 import objects.Character;
 import objects.HealthIcon;
 import objects.Note;
 import objects.StrumNote;
+
+#if mobile
+import mobile.backend.StorageUtil;
+#end
 
 using DateTools;
 
@@ -423,7 +428,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		selectedEventPanelText.scrollFactor.set();
 		selectedEventBox.getTab('Events').menu.add(selectedEventPanelText);
 
-		mainBox = new PsychUIBox(mainBoxPosition.x, mainBoxPosition.y, 300, 280, ['Charting', 'Data', 'Events', 'Note', 'Section', 'Song']);
+		mainBox = new PsychUIBox(mainBoxPosition.x, mainBoxPosition.y, 340, 280, ['Charting', 'Data', 'Events', 'Note', 'Section', 'Song', 'Meta']);
 		mainBox.selectedName = 'Song';
 		mainBox.scrollFactor.set();
 		mainBox.cameras = [camUI];
@@ -501,6 +506,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		addNoteTab();
 		addSectionTab();
 		addSongTab();
+		addMetaTab();
 		
 		////// for upper box
 		addFileTab();
@@ -728,6 +734,8 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		girlfriendDropDown.selectedLabel = PlayState.SONG.gfVersion;
 		stageDropDown.selectedLabel = PlayState.SONG.stage;
 		StageData.loadDirectory(PlayState.SONG);
+		loadSongMetaForEditor();
+		updateSongMetaInputs();
 
 		// DATA TAB
 		gameOverCharDropDown.selectedLabel = PlayState.SONG.gameOverChar;
@@ -3630,6 +3638,14 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	var playerDropDown:PsychUIDropDownMenu;
 	var opponentDropDown:PsychUIDropDownMenu;
 	var girlfriendDropDown:PsychUIDropDownMenu;
+	var licenseDropDown:PsychUIDropDownMenu;
+	var selectedLicensesText:FlxText;
+	var metaAuthorInputText:PsychUIInputText;
+	var metaAlbumInputText:PsychUIInputText;
+	var metaCardInputText:PsychUIInputText;
+	var metaPreviewStartStepper:PsychUINumericStepper;
+	var metaPreviewEndStepper:PsychUINumericStepper;
+	var chartSongMeta:Dynamic = null;
 	
 	function addSongTab()
 	{
@@ -3768,6 +3784,330 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		tab_group.add(girlfriendDropDown);
 		tab_group.add(opponentDropDown);
 		tab_group.add(playerDropDown);
+	}
+
+	function addMetaTab()
+	{
+		var tab_group = mainBox.getTab('Meta').menu;
+		var objX = 10;
+		var objY = 25;
+
+		metaAuthorInputText = new PsychUIInputText(objX, objY, 120, '', 8);
+		metaAuthorInputText.onChange = function(old:String, cur:String)
+		{
+			ensureSongMeta();
+			setOrDeleteMetaField('songAuthor', cur);
+			setOrDeleteMetaField('artist', cur);
+		}
+
+		metaAlbumInputText = new PsychUIInputText(objX + 150, objY, 120, '', 8);
+		metaAlbumInputText.onChange = function(old:String, cur:String)
+		{
+			ensureSongMeta();
+			setOrDeleteMetaField('coverAlbum', cur);
+			setOrDeleteMetaField('albumId', cur);
+		}
+
+		objY += 45;
+		metaCardInputText = new PsychUIInputText(objX, objY, 120, '', 8);
+		metaCardInputText.onChange = function(old:String, cur:String)
+		{
+			ensureSongMeta();
+			setOrDeleteMetaField('card', cur);
+		}
+
+		metaPreviewStartStepper = new PsychUINumericStepper(objX + 150, objY, 1, 0, 0, 9999, 2, 58);
+		metaPreviewStartStepper.onValueChange = function()
+		{
+			ensureSongMeta();
+			Reflect.setField(chartSongMeta, 'freeplayPrevStart', metaPreviewStartStepper.value);
+		}
+
+		metaPreviewEndStepper = new PsychUINumericStepper(objX + 220, objY, 1, 20, 0, 9999, 2, 58);
+		metaPreviewEndStepper.onValueChange = function()
+		{
+			ensureSongMeta();
+			Reflect.setField(chartSongMeta, 'freeplayPrevEnd', metaPreviewEndStepper.value);
+		}
+
+		objY += 55;
+		var licenseList:Array<String> = getEditorLicenseList();
+		licenseDropDown = new PsychUIDropDownMenu(objX, objY, licenseList, function(id:Int, selected:String)
+		{
+			if (licenseDropDown != null)
+				licenseDropDown.selectedLabel = selected;
+		});
+		licenseDropDown.selectedLabel = licenseList.length > 0 ? licenseList[0] : 'no-licenses';
+
+		var addLicenseButton:PsychUIButton = new PsychUIButton(objX + 170, objY - 2, 'Add', function()
+		{
+			addSongMetaLicense(licenseDropDown != null ? licenseDropDown.selectedLabel : 'no-licenses');
+		}, 52);
+		var clearLicenseButton:PsychUIButton = new PsychUIButton(objX + 226, objY - 2, 'Clear', function()
+		{
+			ensureSongMeta();
+			Reflect.setField(chartSongMeta, 'licenses', ['no-licenses']);
+			updateSongMetaInputs();
+		}, 58);
+		selectedLicensesText = new FlxText(objX, objY + 25, 280, '', 11);
+		selectedLicensesText.wordWrap = true;
+
+		tab_group.add(new FlxText(metaAuthorInputText.x, metaAuthorInputText.y - 15, 120, 'Song Author:'));
+		tab_group.add(new FlxText(metaAlbumInputText.x, metaAlbumInputText.y - 15, 120, 'Album Roll:'));
+		tab_group.add(new FlxText(metaCardInputText.x, metaCardInputText.y - 15, 120, 'Card:'));
+		tab_group.add(new FlxText(metaPreviewStartStepper.x, metaPreviewStartStepper.y - 15, 60, 'Preview:'));
+		tab_group.add(new FlxText(metaPreviewEndStepper.x, metaPreviewEndStepper.y - 15, 60, 'End:'));
+		tab_group.add(metaAuthorInputText);
+		tab_group.add(metaAlbumInputText);
+		tab_group.add(metaCardInputText);
+		tab_group.add(metaPreviewStartStepper);
+		tab_group.add(metaPreviewEndStepper);
+		tab_group.add(new FlxText(licenseDropDown.x, licenseDropDown.y - 15, 130, 'Music License:'));
+		tab_group.add(licenseDropDown);
+		tab_group.add(addLicenseButton);
+		tab_group.add(clearLicenseButton);
+		tab_group.add(selectedLicensesText);
+	}
+
+	function getEditorLicenseList():Array<String>
+	{
+		var list:Array<String> = ['no-licenses'];
+		var folders:Array<String> = ['images/albumRoll/licenses', 'images/albumRoll/licences'];
+		for (folder in folders)
+		{
+			for (license in loadFileList(folder, null, ['.png']))
+			{
+				license = normalizeLicenseId(license);
+				if (license.length > 0 && !list.contains(license))
+					list.push(license);
+			}
+		}
+
+		var fallback:Array<String> = [
+			'creative-commons', 'cc-by', 'cc-by-sa', 'cc-by-nd', 'cc-by-nc', 'cc-by-nc-sa', 'cc-by-nc-nd',
+			'copyright', 'royalty-free', 'public-domain', 'permission-required', 'atribution-required',
+			'no-comercial', 'comercial-use', 'no-derivatives', 'share-alike', 'modify-allow',
+			'redistribution-allow', 'streaming-allow', 'public-access', 'public-execution', 'sync'
+		];
+		for (license in fallback)
+			if (!list.contains(license))
+				list.push(license);
+		return list;
+	}
+
+	function ensureSongMeta():Dynamic
+	{
+		if (chartSongMeta == null)
+			chartSongMeta = {};
+		if (!Reflect.hasField(chartSongMeta, 'licenses'))
+			Reflect.setField(chartSongMeta, 'licenses', ['no-licenses']);
+		return chartSongMeta;
+	}
+
+	function loadSongMetaForEditor():Void
+	{
+		chartSongMeta = {};
+		var songKey:String = Paths.formatToSongPath(PlayState.SONG != null ? PlayState.SONG.song : '');
+		if (songKey.length == 0)
+		{
+			ensureSongMeta();
+			return;
+		}
+
+		var rawMeta:String = null;
+		#if MODS_ALLOWED
+		var metaPath:String = getSongMetaSavePath();
+		if (metaPath != null && FileSystem.exists(metaPath))
+			rawMeta = File.getContent(metaPath);
+		#end
+		if (rawMeta == null || rawMeta.length == 0)
+			rawMeta = AssetLoader.loadText(Paths.json('$songKey/song_meta'));
+		rawMeta = cleanJsonText(rawMeta);
+
+		if (rawMeta != null && rawMeta.length > 0)
+		{
+			try
+				chartSongMeta = Json.parse(rawMeta)
+			catch (e:Dynamic)
+				trace('[Chart Editor] Invalid song_meta.json for $songKey: $e');
+		}
+
+		ensureSongMeta();
+	}
+
+	function updateSongMetaInputs():Void
+	{
+		ensureSongMeta();
+		if (metaAuthorInputText != null)
+			metaAuthorInputText.text = metaString(firstSongMetaValue(['songAuthor', 'songAutor', 'author', 'artist', 'composer', 'musicArtist']));
+		if (metaAlbumInputText != null)
+			metaAlbumInputText.text = metaString(firstSongMetaValue(['coverAlbum', 'albumId', 'cover', 'coverImage', 'albumCover']));
+		if (metaCardInputText != null)
+			metaCardInputText.text = metaString(firstSongMetaValue(['card', 'cardImage', 'cardKey', 'infoCard']));
+		if (metaPreviewStartStepper != null)
+			metaPreviewStartStepper.value = metaFloat(firstSongMetaValue(['freeplayPrevStart', 'previewStart', 'songPreviewStart']), 0);
+		if (metaPreviewEndStepper != null)
+			metaPreviewEndStepper.value = metaFloat(firstSongMetaValue(['freeplayPrevEnd', 'previewEnd', 'songPreviewEnd']), 20);
+
+		if (selectedLicensesText == null)
+			return;
+
+		var licenses:Array<String> = getSongMetaLicenses();
+		selectedLicensesText.text = 'Selected: ' + licenses.join(', ');
+		if (licenseDropDown != null)
+			licenseDropDown.selectedLabel = licenses.length > 0 ? licenses[licenses.length - 1] : 'no-licenses';
+	}
+
+	function setOrDeleteMetaField(field:String, value:String):Void
+	{
+		var text:String = value != null ? value.trim() : '';
+		if (text.length > 0)
+			Reflect.setField(chartSongMeta, field, text);
+		else
+			Reflect.deleteField(chartSongMeta, field);
+	}
+
+	function firstSongMetaValue(names:Array<String>):Dynamic
+	{
+		if (chartSongMeta == null || names == null)
+			return null;
+		for (name in names)
+		{
+			if (Reflect.hasField(chartSongMeta, name))
+				return Reflect.field(chartSongMeta, name);
+		}
+		return null;
+	}
+
+	function metaString(value:Dynamic):String
+	{
+		if (value == null)
+			return '';
+		var text:String = Std.string(value).trim();
+		return text.length > 0 ? text : '';
+	}
+
+	function metaFloat(value:Dynamic, fallback:Float):Float
+	{
+		if (value == null)
+			return fallback;
+		var parsed:Float = Std.parseFloat(Std.string(value));
+		return Math.isNaN(parsed) ? fallback : parsed;
+	}
+
+	function getSongMetaLicenses():Array<String>
+	{
+		ensureSongMeta();
+		var output:Array<String> = [];
+		var raw:Dynamic = Reflect.field(chartSongMeta, 'licenses');
+		if (raw == null)
+			raw = Reflect.field(chartSongMeta, 'licences');
+
+		if (Std.isOfType(raw, Array))
+		{
+			for (item in (raw:Array<Dynamic>))
+				pushSongMetaLicense(output, item);
+		}
+		else if (raw != null)
+		{
+			for (part in Std.string(raw).split(','))
+				pushSongMetaLicense(output, part);
+		}
+
+		if (output.length == 0)
+			output.push('no-licenses');
+		Reflect.setField(chartSongMeta, 'licenses', output);
+		Reflect.deleteField(chartSongMeta, 'licences');
+		return output;
+	}
+
+	function addSongMetaLicense(value:String):Void
+	{
+		ensureSongMeta();
+		var licenses:Array<String> = getSongMetaLicenses();
+		var normalized:String = normalizeLicenseId(value);
+		if (normalized.length == 0)
+			return;
+
+		if (normalized == 'no-licenses')
+			licenses = ['no-licenses'];
+		else
+		{
+			while (licenses.remove('no-licenses')) {}
+			if (!licenses.contains(normalized))
+				licenses.push(normalized);
+		}
+		Reflect.setField(chartSongMeta, 'licenses', licenses);
+		updateSongMetaInputs();
+	}
+
+	function pushSongMetaLicense(output:Array<String>, value:Dynamic):Void
+	{
+		var normalized:String = normalizeLicenseId(value);
+		if (normalized.length > 0 && !output.contains(normalized))
+			output.push(normalized);
+	}
+
+	function normalizeLicenseId(value:Dynamic):String
+	{
+		if (value == null)
+			return '';
+		var text:String = Std.string(value).trim();
+		if (text.length == 0)
+			return '';
+		text = StringTools.replace(text, '\\', '/');
+		if (text.indexOf('/') >= 0)
+			text = text.substring(text.lastIndexOf('/') + 1);
+		if (text.endsWith('.png'))
+			text = text.substr(0, text.length - 4);
+		text = Paths.formatToSongPath(text);
+		text = StringTools.replace(text, '_', '-');
+		return text == 'cc' ? 'creative-commons' : text;
+	}
+
+	function getSongMetaSavePath():String
+	{
+		#if MODS_ALLOWED
+		if (Song.chartPath == null || Song.chartPath.length == 0)
+			return null;
+		var normalizedPath:String = Song.chartPath.replace('\\', '/');
+		var slash:Int = normalizedPath.lastIndexOf('/');
+		if (slash < 0)
+			return null;
+		return normalizedPath.substr(0, slash + 1) + 'song_meta.json';
+		#else
+		return null;
+		#end
+	}
+
+	function saveSongMetaForEditor():Void
+	{
+		ensureSongMeta();
+		getSongMetaLicenses();
+
+		var data:String = PsychJsonPrinter.print(chartSongMeta);
+		#if mobile
+		StorageUtil.saveContent('song_meta.json', data);
+		#elseif MODS_ALLOWED
+		var metaPath:String = getSongMetaSavePath();
+		if (metaPath != null)
+			saveTextNoBom(metaPath, data);
+		#end
+	}
+
+	function cleanJsonText(raw:String):String
+	{
+		if (raw == null)
+			return null;
+		var text:String = StringTools.trim(raw);
+		if (text.length > 0 && text.charCodeAt(0) == 0xFEFF)
+			text = text.substr(1);
+		return text;
+	}
+
+	function saveTextNoBom(path:String, data:String):Void
+	{
+		File.saveBytes(path, Bytes.ofString(data));
 	}
 
 	function addFileTab()
@@ -5068,8 +5408,10 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			#if mobile
 			var chartName:String = Paths.formatToSongPath(PlayState.SONG.song) + '.json';
 			StorageUtil.saveContent(chartName, chartData);
+			saveSongMetaForEditor();
 			#else
 			File.saveContent(Song.chartPath, chartData);
+			saveSongMetaForEditor();
 			showOutput('Chart saved successfully to: ${Song.chartPath}');
 			#end
 		}
@@ -5079,12 +5421,14 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			if(Song.chartPath != null) chartName = Song.chartPath.substr(Song.chartPath.lastIndexOf('/')).trim();
 			#if mobile
 			StorageUtil.saveContent(chartName, chartData);
+			saveSongMetaForEditor();
 			#else
 			fileDialog.save(chartName, chartData,
 				function()
 				{
 					var newPath:String = fileDialog.path;
 					Song.chartPath = newPath.replace('\\', '/');
+					saveSongMetaForEditor();
 					reloadNotesDropdowns();
 					showOutput('Chart saved successfully to: $newPath');
 
