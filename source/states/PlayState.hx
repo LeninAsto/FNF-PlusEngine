@@ -263,32 +263,6 @@ class PlayState extends MusicBeatState
 	var comboStr:String;
 	var digitCount:Int;
 
-	public var nfRateSprite:FlxSprite;
-	public var nfComboSprite:FlxSprite;
-	public var nfNumItems:FlxTypedGroup<FlxSprite>;
-	public var nfRateTween:FlxTween;
-	public var nfComboTween:FlxTween;
-	public var nfRateTweenScaleX:FlxTween;
-	public var nfRateTweenScaleY:FlxTween;
-	public var nfComboTweenScaleX:FlxTween;
-	public var nfComboTweenScaleY:FlxTween;
-	public var nfComboNumTween:Array<FlxTween> = [];
-	public var nfComboNumTweenScaleX:Array<FlxTween> = [];
-	public var nfComboNumTweenScaleY:Array<FlxTween> = [];
-	public var nfComboOffsetFix:Array<Array<Int>> = [
-		[0, 0],
-		[-2, -1],
-		[-6, 6],
-		[-4, 6],
-		[-2, 9],
-		[-12, 12],
-		[-11, 8],
-		[1, -2],
-		[2, -2],
-		[1, -1]
-	];
-	public var nfSeperatedScore:Array<Int> = [];
-
 	public var healthBar:Bar;
 	public var timeBar:Bar;
 	var songPercent:Float = 0;
@@ -311,7 +285,6 @@ class PlayState extends MusicBeatState
 	public var cpuControlled:Bool = false;
 	public var practiceMode:Bool = false;
 	public var perfectMode:Bool = false; // Perfect Mode - miss on anything below Sick
-	public var littleTimmyMode:Bool = false; // Little Timmy Mode - like botplay but still generate score, ratings and TPS
 	public var playOpponent:Bool = false; // Opponent Mode - play as opponent
 	public var noDropPenalty:Bool = false; // Hold drops don't cause misses
 	public var opponentDrain:Bool = false; // Opponent notes drain player health
@@ -587,7 +560,6 @@ class PlayState extends MusicBeatState
 		instakillOnMiss = ClientPrefs.getGameplaySetting('instakill');
 		practiceMode = ClientPrefs.getGameplaySetting('practice');
 		perfectMode = ClientPrefs.getGameplaySetting('perfect');
-		littleTimmyMode = ClientPrefs.getGameplaySetting('littletimmy');
 		playOpponent = ClientPrefs.getGameplaySetting('opponentplay');
 		noDropPenalty = ClientPrefs.getGameplaySetting('nodroppenalty');
 		opponentDrain = ClientPrefs.getGameplaySetting('opponentdrain');
@@ -782,12 +754,7 @@ class PlayState extends MusicBeatState
 			{
 				#if LUA_ALLOWED
 				if(file.toLowerCase().endsWith('.lua'))
-				{
-					if(!littleTimmyMode)
-						new FunkinLua(folder + file);
-					else
-						new FunkinLua(folder + 'modes/' + file);
-				}
+					new FunkinLua(folder + file);
 				#end
 
 				#if HSCRIPT_ALLOWED
@@ -3245,10 +3212,6 @@ class PlayState extends MusicBeatState
 					keysCheck();
 					opponentDance(); // El oponente (IA) también debe hacer idle
 				}
-				else if(littleTimmyMode)
-				{
-					playerDance();
-				}
 				else
 					playerDance();
 					
@@ -4469,92 +4432,9 @@ class PlayState extends MusicBeatState
 			Paths.image(uiFolder + rating.image + uiPostfix);
 		for (i in 0...10)
 			Paths.image(uiFolder + 'num' + i + uiPostfix);
-
-		if (ClientPrefs.data.nfStyleSystem) {
-			cacheNfPopUpScore();
-			return;
-		}
 		
 		// Cache miss popup once. comboBroken now reuses miss for consistency and less clutter.
 		Paths.image(uiFolder + 'miss' + uiPostfix);
-	}
-
-	function cacheNfPopUpScore()
-	{
-		var uiFolder:String = '';
-		var uiSuffix:String = '';
-		if (stageUI != "normal")
-		{
-			uiFolder = PlayState.uiPrefix + "UI/";
-			if (PlayState.isPixelStage) uiSuffix = '-pixel';
-		}
-
-		var antialias:Bool = ClientPrefs.data.antialiasing;
-		var placement:Float = getGameplaySafeX() + getGameplaySafeWidth() * 0.35;
-
-		nfRateSprite = new FlxSprite();
-		nfRateSprite.loadGraphic(Paths.image(uiFolder + ratingsData[0].image + uiSuffix));
-		nfRateSprite.cameras = [camHUD];
-		nfRateSprite.screenCenter();
-		nfRateSprite.x = placement - 40;
-		nfRateSprite.y -= 60;
-		nfRateSprite.x += ClientPrefs.data.comboOffset[0];
-		nfRateSprite.y -= ClientPrefs.data.comboOffset[1];
-		
-		if (!PlayState.isPixelStage) {
-			nfRateSprite.setGraphicSize(Std.int(nfRateSprite.width * 0.7));
-			nfRateSprite.antialiasing = antialias;
-		} else {
-			nfRateSprite.setGraphicSize(Std.int(nfRateSprite.width * daPixelZoom * 0.85));
-			nfRateSprite.antialiasing = false;
-		}
-		nfRateSprite.updateHitbox();
-		nfRateSprite.x += nfRateSprite.width / 2;
-		nfRateSprite.y += nfRateSprite.height / 2;
-		nfRateSprite.updateHitbox();
-		nfRateSprite.alpha = 0.000001;
-		nfRateSprite.visible = ClientPrefs.data.showRating;
-		comboGroup.add(nfRateSprite);
-
-		nfComboSprite = new FlxSprite();
-		nfComboSprite.loadGraphic(Paths.image(uiFolder + 'combo' + uiSuffix));
-		nfComboSprite.cameras = [camHUD];
-		nfComboSprite.screenCenter();
-		nfComboSprite.x = placement;
-		nfComboSprite.x += ClientPrefs.data.comboOffset[0];
-		nfComboSprite.y -= ClientPrefs.data.comboOffset[1];
-		nfComboSprite.antialiasing = antialias;
-		nfComboSprite.y += 60;
-		nfComboSprite.alpha = 0.000001;
-		nfComboSprite.visible = ClientPrefs.data.showCombo;
-		comboGroup.add(nfComboSprite);
-
-		nfNumItems = new FlxTypedGroup<FlxSprite>();
-		nfNumItems.visible = ClientPrefs.data.showComboNum;
-		add(nfNumItems);
-		nfNumItems.cameras = [camHUD];
-		
-		var maxDigits:Int = 6;
-		var xThing:Float = 0;
-		for (comboNum in 0...maxDigits) {
-			var numScore:FlxSprite = new FlxSprite();
-			numScore.loadGraphic(Paths.image(uiFolder + 'num' + 0 + uiSuffix));
-			numScore.screenCenter();
-			numScore.x = placement + (50 * (comboNum - 1)) - 90 + ClientPrefs.data.comboOffset[2];
-			numScore.y += 80 - ClientPrefs.data.comboOffset[3];
-			numScore.setGraphicSize(Std.int(numScore.width * 0.5));
-			numScore.updateHitbox();
-			numScore.y += numScore.width * 0.5;
-			numScore.antialiasing = antialias;
-			numScore.alpha = 0.000001;
-			
-			comboGroup.add(numScore);
-			nfNumItems.add(numScore);
-			
-			if (numScore.x > xThing) xThing = numScore.x;
-		}
-		
-		nfComboSprite.x = xThing + 50 * 2;
 	}
 
 	inline function shouldUseGameplayRuntimeBridge():Bool
@@ -4635,9 +4515,6 @@ class PlayState extends MusicBeatState
 
 	function clearComboGroupSprites():Void
 	{
-		if (ClientPrefs.data.nfStyleSystem)
-			return;
-
 		if (comboGroup == null || comboGroup.members == null || comboGroup.members.length < 1)
 			return;
 
@@ -4738,11 +4615,6 @@ class PlayState extends MusicBeatState
 
 	private function popUpScore(note:Note = null):Void
 	{
-		if (ClientPrefs.data.nfStyleSystem) {
-			popUpScoreNf(note);
-			return;
-		}
-
 		var noteDiff:Float = Math.abs(note.strumTime - Conductor.songPosition + ClientPrefs.data.ratingOffset);
 		vocals.volume = 1;
 
@@ -5091,336 +4963,6 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	private function popUpScoreNf(note:Note = null):Void
-	{
-		var placement:Float = getGameplaySafeX() + getGameplaySafeWidth() * 0.35;
-		
-		var noteDiff:Float = Math.abs(note.strumTime - Conductor.songPosition + ClientPrefs.data.ratingOffset);
-		vocals.volume = 1;
-
-		var score:Int = if (ClientPrefs.data.systemScoreMultiplier == 'Codename') 300 else 350;
-
-		var daRating:Rating = Conductor.judgeNote(ratingsData, noteDiff / playbackRate);
-		lastJudName = daRating.name;
-
-		switch (ClientPrefs.data.accuracySystem)
-		{
-			case 'Wife3':
-				var noteDiff_ms:Float = Math.abs(noteDiff / playbackRate);
-				var wifeScore:Float = calculateWife3Score(noteDiff_ms);
-				wife3Scores.push(wifeScore);
-				wife3ScoreTotal += wifeScore;
-			case 'Psych':
-				totalNotesHit += daRating.ratingMod;
-			case 'Simple':
-				if (daRating.name == 'flawless' || daRating.name == 'sick' || daRating.name == 'good')
-					notesHitSimple++;
-			case 'osu!mania':
-				switch(daRating.name) {
-					case 'flawless' | 'sick': osuMania_n300++;
-					case 'good': osuMania_n200++;
-					case 'bad': osuMania_n100++;
-					case 'shit': osuMania_n50++;
-				}
-			case 'DJMAX':
-				switch(daRating.name) {
-					case 'flawless': djmax_maxPerfect++;
-					case 'sick': djmax_perfect++;
-					case 'good': djmax_great++;
-					case 'bad': djmax_good++;
-					case 'shit': djmax_bad++;
-				}
-			case 'ITG':
-				switch(daRating.name) {
-					case 'flawless':
-						itg_FantasticPlus++;
-						itg_DP += 10;
-					case 'sick':
-						itg_Fantastic++;
-						itg_DP += 10;
-					case 'good':
-						itg_Excellent++;
-						itg_DP += 9;
-					case 'bad':
-						itg_Great++;
-						itg_DP += 5;
-					case 'shit':
-						itg_Decent++;
-						itg_DP += 2;
-				}
-		}
-		
-		note.ratingMod = daRating.ratingMod;
-		if(!note.ratingDisabled) daRating.hits++;
-		note.rating = daRating.name;
-		score = daRating.score;
-		if(daRating.noteSplash && !note.noteSplashData.disabled)
-			spawnNoteSplashOnNote(note);
-
-		if (judgementCounter != null) {
-			var ratingIndex = -1;
-			for (i in 0...ratingsData.length) {
-				if (ratingsData[i] == daRating) {
-					ratingIndex = i;
-					break;
-				}
-			}
-			if (ratingIndex >= 0) {
-				judgementCounter.doBump(ratingIndex);
-			}
-		}
-
-		#if windows
-		if (ClientPrefs.data.changeWindowBorderColorWithNoteHit && !cpuControlled) {
-			var noteColor:FlxColor = FlxColor.WHITE;
-			var noteData:Int = note.noteData % 4;
-
-			if (note.rgbShader != null && note.rgbShader.enabled) {
-				noteColor = note.rgbShader.r;
-			} else {
-				var colorArray:Array<FlxColor> = isPixelStage ? ClientPrefs.data.arrowRGBPixel[noteData] : ClientPrefs.data.arrowRGB[noteData];
-				if (colorArray != null && colorArray.length > 0) {
-					noteColor = colorArray[0];
-				}
-			}
-
-			if (windowBorderColorTween != null) {
-				windowBorderColorTween.cancel();
-				windowBorderColorTween = null;
-			}
-
-			var noteRGB:Array<Int> = [noteColor.red, noteColor.green, noteColor.blue];
-
-			windowBorderColorTween = FlxTween.num(0, 1, 0.1, {
-				ease: FlxEase.cubeOut,
-				onComplete: function(twn:FlxTween) {
-					windowBorderColorTween = FlxTween.num(0, 1, 0.2, {
-						ease: FlxEase.cubeInOut,
-						onComplete: function(twn:FlxTween) {
-							windowBorderColorTween = null;
-						}
-					});
-					
-					windowBorderColorTween.onUpdate = function(twn:FlxTween) {
-						var interpolatedColor:Array<Int> = [];
-						for (i in 0...3) {
-							var newValue:Int = noteRGB[i] + Std.int((defaultBorderColor[i] - noteRGB[i]) * windowBorderColorTween.value);
-							newValue = Std.int(Math.max(0, Math.min(255, newValue)));
-							interpolatedColor.push(newValue);
-						}
-						WindowsAPI.setWindowBorderColor(interpolatedColor[0], interpolatedColor[1], interpolatedColor[2]);
-					};
-				}
-			});
-			
-			windowBorderColorTween.onUpdate = function(twn:FlxTween) {
-				var interpolatedColor:Array<Int> = [];
-				for (i in 0...3) {
-					var newValue:Int = defaultBorderColor[i] + Std.int((noteRGB[i] - defaultBorderColor[i]) * windowBorderColorTween.value);
-					newValue = Std.int(Math.max(0, Math.min(255, newValue)));
-					interpolatedColor.push(newValue);
-				}
-				WindowsAPI.setWindowBorderColor(interpolatedColor[0], interpolatedColor[1], interpolatedColor[2]);
-			};
-		}
-		#end
-
-		if(!cpuControlled) {
-			songScore += score;
-			if(!note.ratingDisabled)
-			{
-				songHits++;
-				totalPlayed++;
-				RecalculateRating(false);
-				
-				if (perfectMode && !practiceMode && daRating.name != 'flawless' && daRating.name != 'sick')
-				{
-					doDeathCheck(true);
-				}
-			}
-			
-			if (ClientPrefs.data.badShitBreakCombo && (daRating.name == 'bad' || daRating.name == 'shit'))
-			{
-				combo = 0;
-				comboBreaks++;
-				showComboBreak();
-			}
-
-			if (judgementCounter != null) {
-				judgementCounter.doComboBump();
-				if (combo > maxCombo) {
-					judgementCounter.doMaxComboBump();
-				}
-			}
-		}
-
-		if (!shouldRenderHitPopups())
-			return;
-
-		var uiFolder:String = "";
-		var uiSuffix:String = '';
-		var antialias:Bool = ClientPrefs.data.antialiasing;
-
-		if (stageUI != "normal")
-		{
-			uiFolder = PlayState.uiPrefix + "UI/";
-			if (PlayState.isPixelStage) uiSuffix = '-pixel';
-			antialias = !isPixelStage;
-		}
-
-		if (isStepManiaChart) {
-			showStepManiaJudgement(daRating.name);
-		}
-
-		if (nfRateSprite != null) {
-			nfRateSprite.visible = ClientPrefs.data.showRating && showRating;
-			nfRateSprite.loadGraphic(Paths.image(uiFolder + daRating.image + uiSuffix));
-			nfRateSprite.antialiasing = antialias;
-			
-			if (!PlayState.isPixelStage) {
-				nfRateSprite.setGraphicSize(Std.int(nfRateSprite.width * 0.7));
-			} else {
-				nfRateSprite.setGraphicSize(Std.int(nfRateSprite.width * daPixelZoom * 0.85));
-			}
-			nfRateSprite.updateHitbox();
-			nfRateSprite.screenCenter();
-			nfRateSprite.x = placement - 40 + ClientPrefs.data.comboOffset[0];
-			nfRateSprite.y -= 60 + ClientPrefs.data.comboOffset[1];
-		}
-
-		if (nfComboSprite != null) {
-			nfComboSprite.visible = ClientPrefs.data.showCombo && showCombo;
-			nfComboSprite.loadGraphic(Paths.image(uiFolder + 'combo' + uiSuffix));
-			nfComboSprite.antialiasing = antialias;
-			
-			if (!PlayState.isPixelStage) {
-				nfComboSprite.setGraphicSize(Std.int(nfComboSprite.width * 0.6));
-			} else {
-				nfComboSprite.setGraphicSize(Std.int(nfComboSprite.width * daPixelZoom * 0.85));
-			}
-			nfComboSprite.updateHitbox();
-			nfComboSprite.screenCenter();
-			nfComboSprite.x = placement + ClientPrefs.data.comboOffset[2];
-			nfComboSprite.y += 60 - ClientPrefs.data.comboOffset[3];
-		}
-
-		var scale:Float = 0;
-		var numScale:Float = 0;
-		if (!PlayState.isPixelStage) {
-			scale = 0.7;
-			numScale = 0.5;
-		} else {
-			scale = 0.85 * daPixelZoom;
-			numScale = daPixelZoom * 0.9;
-		}
-
-		var comboStr:String = Std.string(combo);
-		var digitCount:Int = comboStr.length;
-		var digitSpacing:Float = 43;
-
-		var startX:Float = placement + ClientPrefs.data.comboOffset[2];
-		if (ClientPrefs.data.dynamicComboDigits)
-		{
-
-			if (combo < 100)
-			{
-				startX -= (3 - digitCount) * (digitSpacing * 0.5);
-			}
-		}
-		else
-		{
-			// LOLLLLLLLL
-		}
-
-		for (tween in nfComboNumTween) {
-			if (tween != null) tween.cancel();
-		}
-		nfComboNumTween = [];
-		for (tween in nfComboNumTweenScaleX) {
-			if (tween != null) tween.cancel();
-		}
-		nfComboNumTweenScaleX = [];
-		for (tween in nfComboNumTweenScaleY) {
-			if (tween != null) tween.cancel();
-		}
-		nfComboNumTweenScaleY = [];
-
-		var xThing:Float = placement + ClientPrefs.data.comboOffset[2];
-		for (i in 0...digitCount) {
-			if (nfNumItems == null || i >= nfNumItems.members.length) continue;
-			
-			var digit:Int = Std.parseInt(comboStr.charAt(i));
-			var numScore:FlxSprite = nfNumItems.members[i];
-			numScore.visible = ClientPrefs.data.showComboNum && showComboNum;
-			numScore.loadGraphic(Paths.image(uiFolder + 'num' + digit + uiSuffix));
-
-			numScore.setGraphicSize(Std.int(numScore.width * numScale));
-			numScore.updateHitbox();
-			numScore.screenCenter();
-
-			numScore.x = startX + (digitSpacing * i) - 90;
-			numScore.y += 80 - ClientPrefs.data.comboOffset[3];
-			
-			numScore.offset.set(0, 0);
-			numScore.antialiasing = antialias;
-
-			nfComboNumTween[i] = FlxTween.tween(numScore, {alpha: 0}, 0.4 / playbackRate, {
-				startDelay: 0.6 / playbackRate
-			});
-			numScore.alpha = 1;
-
-			numScore.scale.x = numScale + 0.07;
-			nfComboNumTweenScaleX[i] = FlxTween.tween(numScore.scale, {x: numScale}, 0.2 / playbackRate);
-			
-			numScore.scale.y = numScale + 0.07;
-			nfComboNumTweenScaleY[i] = FlxTween.tween(numScore.scale, {y: numScale}, 0.2 / playbackRate);
-
-			if (numScore.x > xThing)
-				xThing = numScore.x;
-		}
-
-		if (nfComboSprite != null)
-			nfComboSprite.x = xThing + 50;
-
-		for (i in digitCount...nfNumItems.members.length) {
-			if (nfNumItems.members[i] != null) {
-				nfNumItems.members[i].alpha = 0.00001;
-			}
-		}
-
-		if (nfRateSprite != null) {
-			if (nfRateTween != null) nfRateTween.cancel();
-			nfRateSprite.alpha = 1;
-			nfRateTween = FlxTween.tween(nfRateSprite, {alpha: 0}, 0.4 / playbackRate, {
-				startDelay: 0.6 / playbackRate
-			});
-			
-			if (nfRateTweenScaleX != null) nfRateTweenScaleX.cancel();
-			nfRateSprite.scale.x = scale + 0.07;
-			nfRateTweenScaleX = FlxTween.tween(nfRateSprite.scale, {x: scale}, 0.2 / playbackRate);
-			
-			if (nfRateTweenScaleY != null) nfRateTweenScaleY.cancel();
-			nfRateSprite.scale.y = scale + 0.07;
-			nfRateTweenScaleY = FlxTween.tween(nfRateSprite.scale, {y: scale}, 0.2 / playbackRate);
-		}
-
-		if (nfComboSprite != null) {
-			if (nfComboTween != null) nfComboTween.cancel();
-			nfComboSprite.alpha = 1;
-			nfComboTween = FlxTween.tween(nfComboSprite, {alpha: 0}, 0.4 / playbackRate, {
-				startDelay: 0.6 / playbackRate
-			});
-			
-			if (nfComboTweenScaleX != null) nfComboTweenScaleX.cancel();
-			nfComboSprite.scale.x = scale + 0.07;
-			nfComboTweenScaleX = FlxTween.tween(nfComboSprite.scale, {x: scale}, 0.2 / playbackRate);
-			
-			if (nfComboTweenScaleY != null) nfComboTweenScaleY.cancel();
-			nfComboSprite.scale.y = scale + 0.07;
-			nfComboTweenScaleY = FlxTween.tween(nfComboSprite.scale, {y: scale}, 0.2 / playbackRate);
-		}
-	}
-
 	private function showComboBreak():Void
 	{
 		if (!ClientPrefs.data.popUpRating) return;
@@ -5428,11 +4970,6 @@ class PlayState extends MusicBeatState
 		// Si es chart StepMania, usar el sistema SM para el miss
 		if (isStepManiaChart) {
 			showStepManiaJudgement('miss');
-			return;
-		}
-
-		if (ClientPrefs.data.nfStyleSystem) {
-			showComboBreakNf();
 			return;
 		}
 
@@ -5497,54 +5034,6 @@ class PlayState extends MusicBeatState
 		});
 	}
 
-	function showComboBreakNf():Void
-	{
-		var uiFolder:String = "";
-		var antialias:Bool = ClientPrefs.data.antialiasing;
-		if (stageUI != "normal")
-		{
-			uiFolder = uiPrefix + "UI/";
-			antialias = !isPixelStage;
-		}
-
-		var placement:Float = getGameplaySafeX() + getGameplaySafeWidth() * 0.35;
-		var breakSprite:FlxSprite = new FlxSprite();
-		breakSprite.loadGraphic(Paths.image(uiFolder + 'miss' + uiPostfix));
-		breakSprite.color = FlxColor.WHITE;
-		
-		breakSprite.screenCenter();
-		breakSprite.x = placement - 40;
-		breakSprite.y -= 60;
-
-		breakSprite.visible = !ClientPrefs.data.hideHud;
-		breakSprite.x += ClientPrefs.data.comboOffset[0];
-		breakSprite.y -= ClientPrefs.data.comboOffset[1];
-		breakSprite.antialiasing = antialias;
-
-		if (!PlayState.isPixelStage) {
-			breakSprite.setGraphicSize(Std.int(breakSprite.width * BREAK_POPUP_SCALE));
-			breakSprite.scale.set(0.3, 0.3);
-			FlxTween.tween(breakSprite.scale, {x: BREAK_POPUP_SCALE, y: BREAK_POPUP_SCALE}, 0.08, {
-				ease: FlxEase.circOut
-			});
-		} else {
-			breakSprite.setGraphicSize(Std.int(breakSprite.width * daPixelZoom * 0.72));
-			breakSprite.scale.set(1, 1);
-			FlxTween.tween(breakSprite.scale, {x: 3.8, y: 3.8}, 0.08, {
-				ease: FlxEase.circOut
-			});
-		}
-		breakSprite.updateHitbox();
-
-		comboGroup.add(breakSprite);
-		FlxTween.tween(breakSprite, {alpha: 0}, 0.2 / playbackRate, {
-			onComplete: function(tween:FlxTween) {
-				breakSprite.destroy();
-			},
-			startDelay: Conductor.crochet * 0.002 / playbackRate
-		});
-	}
-
 	public var strumsBlocked:Array<Bool> = [];
 	private function onKeyPress(event:KeyboardEvent):Void
 	{
@@ -5567,7 +5056,7 @@ class PlayState extends MusicBeatState
 	{
 		// Opponent Mode: Check the correct character's stunned state
 		var controlledChar:Character = playOpponent ? dad : boyfriend;
-		if(cpuControlled || littleTimmyMode || paused || inCutscene || key < 0 || key >= playerStrums.length || !generatedMusic || endingSong || controlledChar.stunned) return;
+		if(cpuControlled || paused || inCutscene || key < 0 || key >= playerStrums.length || !generatedMusic || endingSong || controlledChar.stunned) return;
 
 		// Play hitsound on key press if enabled (Keys mode)
 		if (ClientPrefs.data.hitsoundType == 'Keys' && shouldUseGlobalHitsounds())
@@ -5636,7 +5125,7 @@ class PlayState extends MusicBeatState
 
 	private function keyReleased(key:Int)
 	{
-		if(cpuControlled || littleTimmyMode || !startedCountdown || paused || key < 0 || key >= playerStrums.length) return;
+		if(cpuControlled || !startedCountdown || paused || key < 0 || key >= playerStrums.length) return;
 
 		// Key Viewer
 		if(keyViewer != null) {
@@ -6047,7 +5536,6 @@ class PlayState extends MusicBeatState
 
 		if(note.wasGoodHit) return;
 		if(cpuControlled && note.ignoreNote) return;
-		if(littleTimmyMode && note.ignoreNote) return;
 
 		var isSus:Bool = note.isSustainNote; //GET OUT OF MY HEAD, GET OUT OF MY HEAD, GET OUT OF MY HEAD
 		var leData:Int = Math.round(Math.abs(note.noteData));
@@ -6330,41 +5818,6 @@ class PlayState extends MusicBeatState
 			closeSubState();
 			resetSubState();
 		}
-
-		if (nfRateSprite != null) {
-			remove(nfRateSprite);
-			nfRateSprite.destroy();
-			nfRateSprite = null;
-		}
-		if (nfComboSprite != null) {
-			remove(nfComboSprite);
-			nfComboSprite.destroy();
-			nfComboSprite = null;
-		}
-		if (nfNumItems != null) {
-			remove(nfNumItems);
-			nfNumItems.destroy();
-			nfNumItems = null;
-		}
-
-		if (nfRateTween != null) { nfRateTween.cancel(); nfRateTween = null; }
-		if (nfComboTween != null) { nfComboTween.cancel(); nfComboTween = null; }
-		if (nfRateTweenScaleX != null) { nfRateTweenScaleX.cancel(); nfRateTweenScaleX = null; }
-		if (nfRateTweenScaleY != null) { nfRateTweenScaleY.cancel(); nfRateTweenScaleY = null; }
-		if (nfComboTweenScaleX != null) { nfComboTweenScaleX.cancel(); nfComboTweenScaleX = null; }
-		if (nfComboTweenScaleY != null) { nfComboTweenScaleY.cancel(); nfComboTweenScaleY = null; }
-		for (tween in nfComboNumTween) {
-			if (tween != null) tween.cancel();
-		}
-		nfComboNumTween = [];
-		for (tween in nfComboNumTweenScaleX) {
-			if (tween != null) tween.cancel();
-		}
-		nfComboNumTweenScaleX = [];
-		for (tween in nfComboNumTweenScaleY) {
-			if (tween != null) tween.cancel();
-		}
-		nfComboNumTweenScaleY = [];
 
 		if (endCountdownText != null) {
 			remove(endCountdownText);

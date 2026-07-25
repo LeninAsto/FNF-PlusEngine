@@ -65,7 +65,6 @@ import states.TitleState;
 	public var framerate:Int = 60;
 	public var camZooms:Bool = true;
 	public var hideHud:Bool = false;
-	public var nfStyleSystem:Bool = false;
 	public var hideSustainSplash:Bool = true;
 	public var showKeyViewer:Bool = false;
 	public var iconBounceType:String = 'Default';
@@ -146,7 +145,6 @@ import states.TitleState;
 		'opponentdrain' => false, // JS Engine-style: opponent note hits drain player health
 		'opponentplay' => false,
 		'perfect' => false, // Perfect Mode - insta-kill on any judgement below Sick
-		'littletimmy' => false, // Little Timmy Mode - still generate score, ratings and TPS with auto-hit note
 		'nodroppenalty' => false // Hold drops don't cause misses
 	];
 
