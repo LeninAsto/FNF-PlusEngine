@@ -23,6 +23,8 @@ import backend.Conductor;
 import backend.MusicBeatSubstate;
 import backend.Paths;
 import backend.Language;
+import backend.AssetLoader;
+import haxe.Json;
 
 #if mobile
 import mobile.backend.MobileScaleMode;
@@ -162,6 +164,14 @@ class PauseSubState extends MusicBeatSubstate
 		blueballedTxt.updateHitbox();
 		add(blueballedTxt);
 
+		var author:String = getCurrentSongAuthor();
+		var authorTxt:FlxText = new FlxText(safeX(20), safeY(15 + 80), 0, author != null ? 'By: $author' : '', 16);
+		authorTxt.scrollFactor.set();
+		authorTxt.setFormat(Paths.font('vcr.ttf'), 16);
+		authorTxt.updateHitbox();
+		authorTxt.visible = author != null;
+		add(authorTxt);
+
 		practiceText = new FlxText(safeX(20), safeY(15 + 101), 0, Language.getPhrase("Practice Mode").toUpperCase(), 32);
 		practiceText.scrollFactor.set();
 		practiceText.setFormat(Paths.font('vcr.ttf'), 24);
@@ -180,17 +190,21 @@ class PauseSubState extends MusicBeatSubstate
 		add(chartingText);
 
 		blueballedTxt.alpha = 0;
+		authorTxt.alpha = 0;
 		levelDifficulty.alpha = 0;
 		levelInfo.alpha = 0;
 
 		levelInfo.x = safeX(safeWidth() - (levelInfo.width + 20));
 		levelDifficulty.x = safeX(safeWidth() - (levelDifficulty.width + 20));
 		blueballedTxt.x = safeX(safeWidth() - (blueballedTxt.width + 20));
+		authorTxt.x = safeX(safeWidth() - (authorTxt.width + 20));
 
 		FlxTween.tween(bg, {alpha: 0.6}, 0.4, {ease: FlxEase.quartInOut});
 		FlxTween.tween(levelInfo, {alpha: 1, y: 20}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.3});
 		FlxTween.tween(levelDifficulty, {alpha: 1, y: levelDifficulty.y + 5}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.5});
 		FlxTween.tween(blueballedTxt, {alpha: 1, y: blueballedTxt.y + 5}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.7});
+		if (authorTxt.visible)
+			FlxTween.tween(authorTxt, {alpha: 1, y: authorTxt.y + 5}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.8});
 		FlxTween.tween(dateTimeText, {alpha: 1, y: dateTimeText.y + 5}, 0.4, {ease: FlxEase.quartInOut, startDelay: 0.9});
 
 		grpMenuShit = new FlxTypedGroup<Alphabet>();
@@ -225,6 +239,58 @@ class PauseSubState extends MusicBeatSubstate
 		if(formattedSongName == 'none' || (formattedSongName != 'none' && formattedPauseMusic == 'none')) return null;
 
 		return (formattedSongName != '') ? formattedSongName : formattedPauseMusic;
+	}
+
+	function getCurrentSongAuthor():String
+	{
+		if (PlayState.SONG == null || PlayState.SONG.song == null)
+			return null;
+
+		var songKey:String = Paths.formatToSongPath(PlayState.SONG.song);
+		var rawMeta:String = cleanJsonText(AssetLoader.loadText(Paths.json('$songKey/song_meta')));
+		if (rawMeta == null || rawMeta.length == 0)
+			return null;
+
+		try
+		{
+			var parsed:Dynamic = Json.parse(rawMeta);
+			return firstMetaString(parsed, ['songAuthor', 'songAutor', 'author', 'artist', 'composer', 'musicArtist']);
+		}
+		catch (e:Dynamic)
+		{
+			trace('[PauseSubState] Invalid song_meta.json for $songKey: $e');
+		}
+		return null;
+	}
+
+	function firstMetaString(meta:Dynamic, names:Array<String>):String
+	{
+		if (meta == null || names == null)
+			return null;
+		for (name in names)
+		{
+			if (Reflect.hasField(meta, name))
+			{
+				var value:Dynamic = Reflect.field(meta, name);
+				if (value != null)
+				{
+					var text:String = Std.string(value).trim();
+					if (text.length > 0)
+						return text;
+				}
+			}
+		}
+		return null;
+	}
+
+	function cleanJsonText(raw:String):String
+	{
+		if (raw == null)
+			return null;
+		var text:String = StringTools.trim(raw);
+		if (text.length > 0 && text.charCodeAt(0) == 0xFEFF)
+			text = text.substr(1);
+		return text;
 	}
 
 	override function update(elapsed:Float)

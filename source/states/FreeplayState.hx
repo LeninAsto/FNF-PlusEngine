@@ -98,6 +98,7 @@ class FreeplayState extends MusicBeatState
 	private var songInfoPlatformLinks:Array<String> = [];
 	private var songInfoCardCache:Map<String, FreeplaySongCardData> = new Map<String, FreeplaySongCardData>();
 	private var songInfoCardCacheOrder:Array<String> = [];
+	private static var songMetaCache:Map<String, FreeplaySongMeta> = new Map<String, FreeplaySongMeta>();
 	private var selectedSongDataTimer:FlxTimer = null;
 	private var selectedSongDataLoadToken:Int = 0;
 
@@ -419,7 +420,7 @@ class FreeplayState extends MusicBeatState
 		var meta:FreeplaySongMeta = loadSongMeta(songs[index]);
 		var songKey:String = Paths.formatToSongPath(songs[index].songName);
 		var listCardKey:String = meta != null && meta.cardKey != null ? meta.cardKey : 'albumRoll/cards/$songKey';
-		var customListCard:FlxGraphic = getOptionalImage(listCardKey);
+		var customListCard:FlxGraphic = getOptionalSongImage(listCardKey, songs[index]);
 		if (loadRoundedGraphic(card, customListCard, 470, 110, 22, 'listCard:$listCardKey'))
 		{
 			card.updateHitbox();
@@ -481,6 +482,7 @@ class FreeplayState extends MusicBeatState
 	{
 		//Paths.clearStoredMemory();
 		//Paths.clearUnusedMemory();
+		roundedImageCache = [];
 		FlxG.mouse.visible = true;
 		
 		instance = this;
@@ -1993,6 +1995,7 @@ class FreeplayState extends MusicBeatState
 					{
 						_pendingSongCardData = {
 							songName: song.songName,
+							folder: song.folder,
 							coverKey: 'albumRoll/${Paths.formatToSongPath(song.songName)}',
 							cardKey: 'albumRoll/cards/${Paths.formatToSongPath(song.songName)}',
 							cardMode: 'background',
@@ -2062,7 +2065,7 @@ class FreeplayState extends MusicBeatState
 			songInfoCardScores.text = 'Diff and Scores:\n' + scoreLines.join('\n');
 		}
 
-		var coverGraphic:FlxGraphic = Paths.image(data.coverKey);
+		var coverGraphic:FlxGraphic = getOptionalImageInFolder(data.coverKey, data.folder);
 		if (coverGraphic == null)
 			coverGraphic = Paths.image('albumRoll/example');
 		if (songInfoCardCover != null)
@@ -2100,6 +2103,25 @@ class FreeplayState extends MusicBeatState
 			return null;
 
 		return Paths.image(key);
+	}
+
+	function getOptionalSongImage(key:String, song:SongMetadata):FlxGraphic
+	{
+		return getOptionalImageInFolder(key, song != null ? song.folder : null);
+	}
+
+	function getOptionalImageInFolder(key:String, folder:String):FlxGraphic
+	{
+		if (key == null || key.length == 0)
+			return null;
+
+		var previousModDirectory:String = Mods.currentModDirectory;
+		if (folder != null)
+			Mods.currentModDirectory = folder;
+
+		var graphic:FlxGraphic = getOptionalImage(key);
+		Mods.currentModDirectory = previousModDirectory;
+		return graphic;
 	}
 
 	function getLicenseImage(id:String):FlxGraphic
@@ -2223,7 +2245,12 @@ class FreeplayState extends MusicBeatState
 		var sourceKey:String = graphic.key != null ? graphic.key : Std.string(graphic);
 		var cacheKey:String = 'freeplayRounded:${cacheTag}:${width}x${height}:${radius}:${sourceKey}';
 		if (roundedImageCache.exists(cacheKey))
-			return roundedImageCache.get(cacheKey);
+		{
+			var cached:FlxGraphic = roundedImageCache.get(cacheKey);
+			if (cached != null && cached.bitmap != null && cached.bitmap.width > 0 && cached.bitmap.height > 0)
+				return cached;
+			roundedImageCache.remove(cacheKey);
+		}
 
 		var source:BitmapData = graphic.bitmap;
 		var output:BitmapData = new BitmapData(width, height, true, 0x00000000);
@@ -2555,6 +2582,7 @@ class FreeplayState extends MusicBeatState
 
 		return {
 			songName: song.songName,
+			folder: song.folder,
 			coverKey: meta != null && meta.coverKey != null ? meta.coverKey : 'albumRoll/$songKey',
 			cardKey: meta != null && meta.cardKey != null ? meta.cardKey : 'albumRoll/cards/$songKey',
 			cardMode: meta != null && meta.cardMode != null ? meta.cardMode : 'background',
@@ -2575,7 +2603,11 @@ class FreeplayState extends MusicBeatState
 			return null;
 
 		var songKey:String = Paths.formatToSongPath(song.songName);
-		var rawMeta:String = cleanJsonText(AssetLoader.loadText(Paths.json('$songKey/song_meta')));
+		var cacheKey:String = '${song.folder == null ? "" : song.folder}:$songKey';
+		if (songMetaCache.exists(cacheKey))
+			return songMetaCache.get(cacheKey);
+
+		var rawMeta:String = cleanJsonText(loadSongMetaText(song, songKey));
 		if (rawMeta == null || rawMeta.length == 0)
 			return null;
 
@@ -2593,7 +2625,7 @@ class FreeplayState extends MusicBeatState
 			var previewStartValue:Dynamic = firstMetaValue(parsed, ['freeplayPrevStart', 'previewStart', 'songPreviewStart']);
 			var previewEndValue:Dynamic = firstMetaValue(parsed, ['freeplayPrevEnd', 'previewEnd', 'songPreviewEnd']);
 
-			return {
+			var meta:FreeplaySongMeta = {
 				coverKey: normalizeAlbumRollKey(coverValue, 'albumRoll/$songKey'),
 				cardKey: normalizeAlbumRollKey(cardValue, 'albumRoll/cards/$songKey', 'cards'),
 				cardMode: stringOrNull(cardModeValue),
@@ -2605,6 +2637,8 @@ class FreeplayState extends MusicBeatState
 				previewStartSeconds: nonNegativeFloatOrNull(previewStartValue),
 				previewEndSeconds: nonNegativeFloatOrNull(previewEndValue)
 			};
+			songMetaCache.set(cacheKey, meta);
+			return meta;
 		}
 		catch (e:Dynamic)
 		{
@@ -2612,6 +2646,20 @@ class FreeplayState extends MusicBeatState
 		}
 
 		return null;
+	}
+
+	function loadSongMetaText(song:SongMetadata, songKey:String):String
+	{
+		#if MODS_ALLOWED
+		if (song != null && song.folder != null && song.folder.length > 0)
+		{
+			var modMetaPath:String = Paths.mods('${song.folder}/data/$songKey/song_meta.json');
+			if (FileSystem.exists(modMetaPath))
+				return File.getContent(modMetaPath);
+		}
+		#end
+
+		return AssetLoader.loadText(Paths.json('$songKey/song_meta'));
 	}
 
 	function firstMetaValue(meta:Dynamic, names:Array<String>):Dynamic
@@ -3110,7 +3158,9 @@ class FreeplayState extends MusicBeatState
 			var accentBar:FlxSprite = cardAccentArray[i];
 			if (accentBar != null)
 			{
-				accentBar.visible = !usesCustomListCard;
+				if (Std.int(accentBar.width) != 10 || Std.int(accentBar.height) != 84)
+					MD3ShapeTools.fillRoundRect(accentBar, 10, 84, 5);
+				accentBar.visible = true;
 				accentBar.x = card.x + 12;
 				accentBar.y = card.y + 13;
 				accentBar.color = OptionsMenuTheme.cardAccent(isSelected);
@@ -3454,6 +3504,7 @@ typedef FreeplayChartSummary =
 typedef FreeplaySongCardData =
 {
 	var songName:String;
+	var folder:String;
 	var coverKey:String;
 	var cardKey:String;
 	var cardMode:String;

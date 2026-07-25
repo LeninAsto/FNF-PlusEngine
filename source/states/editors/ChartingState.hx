@@ -3640,9 +3640,11 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	var girlfriendDropDown:PsychUIDropDownMenu;
 	var licenseDropDown:PsychUIDropDownMenu;
 	var selectedLicensesText:FlxText;
+	var selectedLicenseId:String = 'no-licenses';
 	var metaAuthorInputText:PsychUIInputText;
 	var metaAlbumInputText:PsychUIInputText;
 	var metaCardInputText:PsychUIInputText;
+	var metaLinksInputText:PsychUIInputText;
 	var metaPreviewStartStepper:PsychUINumericStepper;
 	var metaPreviewEndStepper:PsychUINumericStepper;
 	var chartSongMeta:Dynamic = null;
@@ -3830,26 +3832,37 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			Reflect.setField(chartSongMeta, 'freeplayPrevEnd', metaPreviewEndStepper.value);
 		}
 
-		objY += 55;
+		objY += 45;
+		metaLinksInputText = new PsychUIInputText(objX, objY, 270, '', 8);
+		metaLinksInputText.onChange = function(old:String, cur:String)
+		{
+			ensureSongMeta();
+			setMetaLinksFromText(cur);
+		}
+
+		objY += 50;
 		var licenseList:Array<String> = getEditorLicenseList();
 		licenseDropDown = new PsychUIDropDownMenu(objX, objY, licenseList, function(id:Int, selected:String)
 		{
-			if (licenseDropDown != null)
-				licenseDropDown.selectedLabel = selected;
-		});
-		licenseDropDown.selectedLabel = licenseList.length > 0 ? licenseList[0] : 'no-licenses';
+			selectedLicenseId = normalizeLicenseId(selected);
+			if (selectedLicenseId.length == 0)
+				selectedLicenseId = 'no-licenses';
+		}, 154, 5);
+		selectedLicenseId = licenseList.length > 0 ? licenseList[0] : 'no-licenses';
+		licenseDropDown.selectedLabel = selectedLicenseId;
 
-		var addLicenseButton:PsychUIButton = new PsychUIButton(objX + 170, objY - 2, 'Add', function()
+		var addLicenseButton:PsychUIButton = new PsychUIButton(objX + 170, objY, 'Add', function()
 		{
-			addSongMetaLicense(licenseDropDown != null ? licenseDropDown.selectedLabel : 'no-licenses');
+			addSongMetaLicense(selectedLicenseId);
 		}, 52);
-		var clearLicenseButton:PsychUIButton = new PsychUIButton(objX + 226, objY - 2, 'Clear', function()
+		var clearLicenseButton:PsychUIButton = new PsychUIButton(objX + 226, objY, 'Clear', function()
 		{
 			ensureSongMeta();
 			Reflect.setField(chartSongMeta, 'licenses', ['no-licenses']);
+			selectedLicenseId = 'no-licenses';
 			updateSongMetaInputs();
 		}, 58);
-		selectedLicensesText = new FlxText(objX, objY + 25, 280, '', 11);
+		selectedLicensesText = new FlxText(objX, objY + 28, 280, '', 11);
 		selectedLicensesText.wordWrap = true;
 
 		tab_group.add(new FlxText(metaAuthorInputText.x, metaAuthorInputText.y - 15, 120, 'Song Author:'));
@@ -3857,12 +3870,14 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		tab_group.add(new FlxText(metaCardInputText.x, metaCardInputText.y - 15, 120, 'Card:'));
 		tab_group.add(new FlxText(metaPreviewStartStepper.x, metaPreviewStartStepper.y - 15, 60, 'Preview:'));
 		tab_group.add(new FlxText(metaPreviewEndStepper.x, metaPreviewEndStepper.y - 15, 60, 'End:'));
+		tab_group.add(new FlxText(metaLinksInputText.x, metaLinksInputText.y - 15, 120, 'Links:'));
 		tab_group.add(metaAuthorInputText);
 		tab_group.add(metaAlbumInputText);
 		tab_group.add(metaCardInputText);
+		tab_group.add(metaLinksInputText);
 		tab_group.add(metaPreviewStartStepper);
 		tab_group.add(metaPreviewEndStepper);
-		tab_group.add(new FlxText(licenseDropDown.x, licenseDropDown.y - 15, 130, 'Music License:'));
+		tab_group.add(new FlxText(licenseDropDown.x, licenseDropDown.y - 18, 130, 'Music License:'));
 		tab_group.add(licenseDropDown);
 		tab_group.add(addLicenseButton);
 		tab_group.add(clearLicenseButton);
@@ -3944,6 +3959,8 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			metaAlbumInputText.text = metaString(firstSongMetaValue(['coverAlbum', 'albumId', 'cover', 'coverImage', 'albumCover']));
 		if (metaCardInputText != null)
 			metaCardInputText.text = metaString(firstSongMetaValue(['card', 'cardImage', 'cardKey', 'infoCard']));
+		if (metaLinksInputText != null)
+			metaLinksInputText.text = metaLinksToText(firstSongMetaValue(['links', 'artistLinks', 'platformLinks', 'socials']));
 		if (metaPreviewStartStepper != null)
 			metaPreviewStartStepper.value = metaFloat(firstSongMetaValue(['freeplayPrevStart', 'previewStart', 'songPreviewStart']), 0);
 		if (metaPreviewEndStepper != null)
@@ -3955,7 +3972,10 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		var licenses:Array<String> = getSongMetaLicenses();
 		selectedLicensesText.text = 'Selected: ' + licenses.join(', ');
 		if (licenseDropDown != null)
+		{
+			selectedLicenseId = licenses.length > 0 ? licenses[licenses.length - 1] : 'no-licenses';
 			licenseDropDown.selectedLabel = licenses.length > 0 ? licenses[licenses.length - 1] : 'no-licenses';
+		}
 	}
 
 	function setOrDeleteMetaField(field:String, value:String):Void
@@ -3993,6 +4013,92 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			return fallback;
 		var parsed:Float = Std.parseFloat(Std.string(value));
 		return Math.isNaN(parsed) ? fallback : parsed;
+	}
+
+	function setMetaLinksFromText(value:String):Void
+	{
+		var text:String = value != null ? value.trim() : '';
+		if (text.length == 0)
+		{
+			Reflect.deleteField(chartSongMeta, 'links');
+			return;
+		}
+
+		var links:Dynamic = {};
+		for (entry in text.split(','))
+		{
+			var clean:String = entry.trim();
+			if (clean.length == 0)
+				continue;
+
+			var splitAt:Int = clean.indexOf('=');
+			if (splitAt < 0 && clean.indexOf('://') < 0)
+				splitAt = clean.indexOf(':');
+			if (splitAt <= 0)
+				continue;
+
+			var platform:String = normalizeMetaLinkPlatform(clean.substr(0, splitAt));
+			var link:String = clean.substr(splitAt + 1).trim();
+			if (platform.length > 0 && link.length > 0)
+				Reflect.setField(links, platform, link);
+		}
+
+		Reflect.setField(chartSongMeta, 'links', links);
+	}
+
+	function metaLinksToText(value:Dynamic):String
+	{
+		if (value == null)
+			return '';
+		if (!Reflect.isObject(value) || Std.isOfType(value, String))
+			return metaString(value);
+
+		var parts:Array<String> = [];
+		var platforms:Array<String> = ['youtube', 'youtube-music', 'instagram', 'x', 'newgrounds', 'facebook'];
+		for (platform in platforms)
+		{
+			var link:Dynamic = firstMetaLinkValue(value, platform);
+			var text:String = metaString(link);
+			if (text.length > 0)
+				parts.push('$platform=$text');
+		}
+		return parts.join(', ');
+	}
+
+	function firstMetaLinkValue(links:Dynamic, platform:String):Dynamic
+	{
+		var aliases:Array<String> = switch (platform)
+		{
+			case 'youtube': ['youtube', 'yt'];
+			case 'youtube-music': ['youtubeMusic', 'youtube-music', 'ytMusic', 'yt-music'];
+			case 'instagram': ['instagram', 'ig'];
+			case 'x': ['x', 'twitter'];
+			case 'newgrounds': ['newgrounds', 'ng'];
+			case 'facebook': ['facebook', 'fb'];
+			default: [platform];
+		}
+
+		for (alias in aliases)
+		{
+			if (Reflect.hasField(links, alias))
+				return Reflect.field(links, alias);
+		}
+		return null;
+	}
+
+	function normalizeMetaLinkPlatform(value:String):String
+	{
+		var id:String = normalizeLicenseId(value);
+		return switch (id)
+		{
+			case 'yt': 'youtube';
+			case 'yt-music', 'youtubemusic': 'youtube-music';
+			case 'ig': 'instagram';
+			case 'twitter': 'x';
+			case 'ng': 'newgrounds';
+			case 'fb': 'facebook';
+			default: id;
+		}
 	}
 
 	function getSongMetaLicenses():Array<String>
