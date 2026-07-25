@@ -782,7 +782,12 @@ class PlayState extends MusicBeatState
 			{
 				#if LUA_ALLOWED
 				if(file.toLowerCase().endsWith('.lua'))
-					new FunkinLua(folder + file);
+				{
+					if(!littleTimmyMode)
+						new FunkinLua(folder + file);
+					else
+						new FunkinLua(folder + 'modes/' + file);
+				}
 				#end
 
 				#if HSCRIPT_ALLOWED
@@ -984,12 +989,10 @@ class PlayState extends MusicBeatState
 			botplayTxt.text = Language.getPhrase("Practice Mode").toUpperCase();
 		else if (perfectMode)
 			botplayTxt.text = Language.getPhrase("Perfect Mode").toUpperCase();
-		else if (littleTimmyMode)
-            botplayTxt.text = Language.getPhrase("Little Timmy Mode").toUpperCase()
 		else if (playOpponent)
 			botplayTxt.text = Language.getPhrase("Opponent Mode").toUpperCase();
 		
-		botplayTxt.visible = (cpuControlled || practiceMode || perfectMode || littleTimmyMode || playOpponent);
+		botplayTxt.visible = (cpuControlled || practiceMode || perfectMode || playOpponent);
 		uiGroup.add(botplayTxt);
 		if(ClientPrefs.data.downScroll)
 			botplayTxt.y = healthBar.y + 70;
@@ -3274,8 +3277,6 @@ class PlayState extends MusicBeatState
 							{
 								if(cpuControlled && !daNote.blockHit && daNote.canBeHit && (daNote.isSustainNote || daNote.strumTime <= Conductor.songPosition))
 									goodNoteHit(daNote);
-								else if(littleTimmyMode && !daNote.blockHit && daNote.canBeHit && (daNote.isSustainNote || daNote.strumTime <= Conductor.songPosition))
-									goodNoteHit(daNote);
 							}
 							else if (!daNote.hitByOpponent && !daNote.ignoreNote && daNote.strumTime <= Conductor.songPosition)
 							{
@@ -3287,7 +3288,7 @@ class PlayState extends MusicBeatState
 							if (Conductor.songPosition - daNote.strumTime > noteKillOffset)
 							{
 								// No Drop Penalty: Solo causa miss en sustains si la opción está desactivada
-								var shouldMiss:Bool = daNote.mustPress && !cpuControlled && !littleTimmyMode && !daNote.ignoreNote && !endingSong && (daNote.tooLate || !daNote.wasGoodHit);
+								var shouldMiss:Bool = daNote.mustPress && !cpuControlled && !daNote.ignoreNote && !endingSong && (daNote.tooLate || !daNote.wasGoodHit);
 								
 								// Si noDropPenalty está activo, no penalizar sustains soltadas
 								if (shouldMiss && daNote.isSustainNote && noDropPenalty)
@@ -3552,7 +3553,7 @@ class PlayState extends MusicBeatState
 		psychlua.LuaVideo.pauseAll();
 		#end
 		
-		if(!cpuControlled && !littleTimmyMode)
+		if(!cpuControlled)
 		{
 			for (note in playerStrums)
 				if(note.animation.curAnim != null && note.animation.curAnim.name != 'static')
@@ -6142,20 +6143,6 @@ class PlayState extends MusicBeatState
 			{
 				var spr = playerStrums.members[note.noteData];
 				if(spr != null) spr.playAnim('confirm', true);
-			}
-			else if(littleTimmyMode)
-			{
-				var strum:StrumNote = playerStrums.members[note.noteData];
-				if(strum != null) {
-					strum.playAnim('confirm', true);
-					var resetDelay:Float = Conductor.stepCrochet * 1.25 / 1000 / playbackRate;
-
-					new FlxTimer().start(resetDelay, function(tmr:FlxTimer) {
-						if(strum != null && strum.exists) {
-							strum.playAnim('static');
-						}
-					});
-				}
 			}
 			else 
 			{

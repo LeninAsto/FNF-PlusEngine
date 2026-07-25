@@ -939,8 +939,17 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 				{
 					isDraggingChar = true;
 					dragStartTouch.set(mouseWorld.x, mouseWorld.y);
-					dragStartPos[0] = character.positionArray[0];
-					dragStartPos[1] = character.positionArray[1];
+					var anim = anims[curAnim];
+					if (anim != null)
+					{
+						dragStartPos[0] = character.offset.x;
+						dragStartPos[1] = character.offset.y;
+					}
+					else
+					{
+						dragStartPos[0] = 0;
+						dragStartPos[1] = 0;
+					}
 				}
 			}
 
@@ -956,15 +965,18 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 					var deltaX:Float = mouseWorld.x - dragStartTouch.x;
 					var deltaY:Float = mouseWorld.y - dragStartTouch.y;
 
-					character.positionArray[0] = dragStartPos[0] + deltaX;
-					character.positionArray[1] = dragStartPos[1] + deltaY;
+					character.offset.x = dragStartPos[0] + deltaX;
+					character.offset.y = dragStartPos[1] + deltaY;
 
-					updateCharacterPositions();
-
-					if (positionXStepper != null) positionXStepper.value = character.positionArray[0];
-					if (positionYStepper != null) positionYStepper.value = character.positionArray[1];
-
-					unsavedProgress = true;
+					var anim = anims[curAnim];
+					if (anim != null && anim.offsets != null)
+					{
+						anim.offsets[0] = Std.int(character.offset.x);
+						anim.offsets[1] = Std.int(character.offset.y);
+						character.addOffset(anim.anim, character.offset.x, character.offset.y);
+						updateText();
+						unsavedProgress = true;
+					}
 				}
 			}
 		}
@@ -1529,8 +1541,17 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 				if (character.overlapsPoint(mouseWorld) && !isMouseOverUI()) {
 					isDraggingChar = true;
 					dragStartTouch.set(mouseWorld.x, mouseWorld.y);
-					dragStartPos[0] = character.positionArray[0];
-					dragStartPos[1] = character.positionArray[1];
+					var anim = anims[curAnim];
+					if (anim != null)
+					{
+						dragStartPos[0] = character.offset.x;
+						dragStartPos[1] = character.offset.y;
+					}
+					else
+					{
+						dragStartPos[0] = 0;
+						dragStartPos[1] = 0;
+					}
 				}
 				mouseWorld.put();
 
@@ -1540,13 +1561,18 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 					var deltaX = mouseWorld.x - dragStartTouch.x;
 					var deltaY = mouseWorld.y - dragStartTouch.y;
 
-					character.positionArray[0] = dragStartPos[0] + deltaX;
-					character.positionArray[1] = dragStartPos[1] + deltaY;
+					character.offset.x = dragStartPos[0] + deltaX;
+					character.offset.y = dragStartPos[1] + deltaY;
 
-					updateCharacterPositions();
-					if (positionXStepper != null) positionXStepper.value = character.positionArray[0];
-					if (positionYStepper != null) positionYStepper.value = character.positionArray[1];
-					unsavedProgress = true;
+					var anim = anims[curAnim];
+					if (anim != null && anim.offsets != null)
+					{
+						anim.offsets[0] = Std.int(character.offset.x);
+						anim.offsets[1] = Std.int(character.offset.y);
+						character.addOffset(anim.anim, character.offset.x, character.offset.y);
+						updateText();
+						unsavedProgress = true;
+					}
 					mouseWorld.put();
 				}
 

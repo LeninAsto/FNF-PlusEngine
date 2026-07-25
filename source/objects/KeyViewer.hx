@@ -131,7 +131,7 @@ class KeyViewer extends FlxSpriteGroup
 		if (playState == null)
 			return true;
 
-		return !isPlayStateFlagEnabled("cpuControlled") && !isPlayStateFlagEnabled("littleTimmyMode");
+		return !isPlayStateFlagEnabled("cpuControlled");
 	}
 
 	function isPlayStateFlagEnabled(fieldName:String):Bool
@@ -237,7 +237,6 @@ class KeyViewer extends FlxSpriteGroup
 			return "free";
 		return [
 			Std.string(isPlayStateFlagEnabled("cpuControlled")),
-			Std.string(isPlayStateFlagEnabled("littleTimmyMode")),
 			Std.string(isPlayStateFlagEnabled("playOpponent"))
 		].join(":");
 	}
