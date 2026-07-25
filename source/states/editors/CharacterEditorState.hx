@@ -1508,6 +1508,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		{
 			case TouchEvent.TOUCH_BEGIN:
 				var mouseWorld:FlxPoint = FlxG.camera.getScreenPosition(new FlxPoint(touchX, touchY));
+				
 				if (character.overlapsPoint(mouseWorld) && !isMouseOverUI())
 				{
 					isDraggingChar = true;
@@ -1520,6 +1521,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 				if (isDraggingChar)
 				{
 					var mouseWorld:FlxPoint = FlxG.camera.getScreenPosition(new FlxPoint(touchX, touchY));
+					
 					var deltaX:Float = mouseWorld.x - dragStartTouch.x;
 					var deltaY:Float = mouseWorld.y - dragStartTouch.y;
 
