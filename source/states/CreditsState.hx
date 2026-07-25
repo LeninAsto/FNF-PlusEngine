@@ -76,6 +76,13 @@ class CreditsState extends MusicBeatState
 			"https://github.com/TheoDevelops",    
 			"FFB347"
 			],
+			[
+			'That0neIdiot',
+			"that0ne",
+			"Miss rating sprite",
+			"https://www.youtube.com/@That0neIdiotGB",
+			"FFFFFF"
+			],
 			[''],
 			['Mobile Porting Team'],
 			['HomuHomu833',			'homura',             'Head Porter of Psych Engine and Author of linc_luajit-rewriten',                       'https://youtube.com/@HomuHomu833',		'FFE7C0'],
