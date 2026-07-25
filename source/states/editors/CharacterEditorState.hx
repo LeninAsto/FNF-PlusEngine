@@ -1496,7 +1496,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		}
     }
 
-	function onTouchEvent(e:TouchEvent):Void
+	function onTouchEvent(e:TouchEvent):Void 
 	{
 		if (!controls.mobileC || FlxG.stage == null || !ClientPrefs.data.dragCharacterToMove)
 			return;
@@ -1504,36 +1504,31 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		var touchX:Float = e.stageX;
 		var touchY:Float = e.stageY;
 
-		switch (e.type)
-		{
+		switch (e.type) {
 			case TouchEvent.TOUCH_BEGIN:
-				var mouseWorld:FlxPoint = FlxG.camera.getWorldPosition(new FlxPoint(touchX, touchY));
-				
-				if (character.overlapsPoint(mouseWorld) && !isMouseOverUI())
-				{
+				var mouseWorld = getWorldFromScreen(touchX, touchY);
+				if (character.overlapsPoint(mouseWorld) && !isMouseOverUI()) {
 					isDraggingChar = true;
 					dragStartTouch.set(mouseWorld.x, mouseWorld.y);
 					dragStartPos[0] = character.positionArray[0];
 					dragStartPos[1] = character.positionArray[1];
 				}
+				mouseWorld.put();
 
 			case TouchEvent.TOUCH_MOVE:
-				if (isDraggingChar)
-				{
-					var mouseWorld:FlxPoint = FlxG.camera.getWorldPosition(new FlxPoint(touchX, touchY));
-					
-					var deltaX:Float = mouseWorld.x - dragStartTouch.x;
-					var deltaY:Float = mouseWorld.y - dragStartTouch.y;
+				if (isDraggingChar) {
+					var mouseWorld = getWorldFromScreen(touchX, touchY);
+					var deltaX = mouseWorld.x - dragStartTouch.x;
+					var deltaY = mouseWorld.y - dragStartTouch.y;
 
 					character.positionArray[0] = dragStartPos[0] + deltaX;
 					character.positionArray[1] = dragStartPos[1] + deltaY;
 
 					updateCharacterPositions();
-
 					if (positionXStepper != null) positionXStepper.value = character.positionArray[0];
 					if (positionYStepper != null) positionYStepper.value = character.positionArray[1];
-
 					unsavedProgress = true;
+					mouseWorld.put();
 				}
 
 			case TouchEvent.TOUCH_END:
