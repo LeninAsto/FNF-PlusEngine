@@ -1,7 +1,8 @@
 ![Logo Off](docs/img/PlusEngineLogo.png)
 
 <div align="center">
-
+  OUTDATE
+  
 **EN-US | [ES-LA](README.es-LA.md) | [ID-ID](README.id-ID.md)**
 
 
@@ -84,6 +85,7 @@ relax — progress doesn’t wait.
 ## Developer Credits:
 * Lenin Asto - Main Programmer for Plus Engine Fork
 * Legacy Odyssey - Co-Programmer for Plus Engine Fork
+* SebasDeveloper - Programmer for Deep Engine RB Fork
 
 ## Original Credits:
 * Shadow Mario - Main Programmer and Head of Psych Engine.
