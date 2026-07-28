@@ -42,7 +42,7 @@ echo [10/15] flxanimate
 haxelib git flxanimate https://github.com/Dot-Stuff/flxanimate 768740a56b26aa0c072720e0d1236b94afe68e3e --quiet
 
 echo [11/15] linc_luajit
-haxelib git linc_luajit https://github.com/Psych-Plus-Team/linc_luajit.git --quiet
+haxelib git linc_luajit https://github.com/kittycathy233/linc_luajit --quiet
 
 echo [12/15] hxdiscord_rpc
 haxelib install hxdiscord_rpc --quiet --skip-dependencies

@@ -1,6 +1,7 @@
 package objects;
 
 import backend.ClientPrefs;
+import shaders.ColorSwap;
 
 class SustainSplash extends FlxSprite
 {
@@ -9,6 +10,7 @@ class SustainSplash extends FlxSprite
 	static var atlasCache:Map<String, Dynamic> = new Map();
 
 	public var strumNote:StrumNote;
+	var colorSwap:ColorSwap;
 
 	var timer:FlxTimer;
 
@@ -111,7 +113,13 @@ class SustainSplash extends FlxSprite
 		}
 		clipRect = new flixel.math.FlxRect(0, !PlayState.isPixelStage ? 0 : -210, frameWidth, frameHeight);
 
-		if (daNote.shader != null)
+		if (!ClientPrefs.data.noteRGB)
+		{
+			if(colorSwap == null) colorSwap = new ColorSwap();
+			Note.applyHSVToColorSwap(colorSwap, daNote.noteData);
+			shader = colorSwap.shader;
+		}
+		else if (daNote.rgbShader != null && daNote.rgbShader.enabled && daNote.shader != null)
 		{
 			shader = new objects.NoteSplash.PixelSplashShaderRef().shader;
 			shader.data.r.value = daNote.shader.data.r.value;
@@ -119,6 +127,7 @@ class SustainSplash extends FlxSprite
 			shader.data.b.value = daNote.shader.data.b.value;
 			shader.data.mult.value = daNote.shader.data.mult.value;
 		}
+		else shader = null;
 
 		strumNote = strum;
 		alpha = 1;

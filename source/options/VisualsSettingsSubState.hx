@@ -32,7 +32,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			changeNoteSkin(note);
 			notes.add(note);
 			
-			var splash:NoteSplash = new NoteSplash(0, 0, NoteSplash.defaultNoteSplash + NoteSplash.getSplashSkinPostfix());
+			var splash:NoteSplash = new NoteSplash(0, 0, NoteSplash.getDefaultNoteSplashPath() + NoteSplash.getSplashSkinPostfix());
 			splash.inEditor = true;
 			splash.babyArrow = note;
 			splash.ID = i;
@@ -48,10 +48,10 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(noteRgbOption);
 		noteRgbOption.onChange = onChangeNoteRGBMode;
 
-		var noteSkins:Array<String> = Mods.mergeAllTextsNamed(getNoteSkinsListPath());
+		var noteSkins:Array<String> = getNoteSkinsList();
 		if(noteSkins.length > 0)
 		{
-			noteSkins.insert(0, ClientPrefs.defaultData.noteSkin); //Default skin always comes first
+			ClientPrefs.data.noteSkin = resolveStringOptionValue(noteSkins, ClientPrefs.data.noteSkin, ClientPrefs.defaultData.noteSkin);
 			var option:Option = new Option('Note Skins:',
 				"Select your prefered Note skin.",
 				'noteSkin',
@@ -63,10 +63,10 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			noteOptionID = optionsArray.length - 1;
 		}
 		
-		var noteSplashes:Array<String> = Mods.mergeAllTextsNamed(getSplashSkinsListPath());
+		var noteSplashes:Array<String> = getSplashSkinsList();
 		if(noteSplashes.length > 0)
 		{
-			noteSplashes.insert(0, ClientPrefs.defaultData.splashSkin); //Default skin always comes first
+			ClientPrefs.data.splashSkin = resolveStringOptionValue(noteSplashes, ClientPrefs.data.splashSkin, ClientPrefs.defaultData.splashSkin);
 			var option:Option = new Option('Note Splashes:',
 				"Select your prefered Note Splash variation.",
 				'splashSkin',
@@ -398,6 +398,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 	function onChangeNoteRGBMode()
 	{
+		Note.globalRgbShaders = [];
 		refreshNoteSkinOptionList();
 		refreshSplashSkinOptionList();
 		onChangeNoteSkin();
@@ -406,17 +407,8 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 	function changeNoteSkin(note:StrumNote)
 	{
-		var skin:String = Note.getDefaultNoteSkinPath();
-		var postfix:String = Note.getNoteSkinPostfix();
+		var skin:String = Note.resolveNoteSkinPath(null, PlayState.isPixelStage);
 		
-		// Si hay un postfix (significa que el usuario seleccionó un skin personalizado)
-		if(postfix.length > 0)
-		{
-			var customSkin:String = skin + postfix;
-			if(Paths.fileExists('images/$customSkin.png', IMAGE)) 
-				skin = customSkin;
-		}
-
 		note.texture = skin; //Load texture and anims (setter calls reloadNote automatically)
 		note.playAnim('static');
 		
@@ -424,18 +416,51 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		note.checkNotITGSkin();
 	}
 
-	function getNoteSkinsListPath():String
+	function getNoteSkinsList():Array<String>
 	{
 		var preferred:String = ClientPrefs.data.noteRGB ? 'images/noteSkins/list.txt' : 'images/noteSkinsNoRGB/list.txt';
-		if(Mods.mergeAllTextsNamed(preferred).length > 0) return preferred;
-		return 'images/noteSkins/list.txt';
+		var fallback:String = ClientPrefs.data.noteRGB ? 'images/noteSkinsNoRGB/list.txt' : 'images/noteSkins/list.txt';
+		return buildSkinOptionList(preferred, fallback, ClientPrefs.defaultData.noteSkin);
 	}
 
-	function getSplashSkinsListPath():String
+	function getSplashSkinsList():Array<String>
 	{
 		var preferred:String = ClientPrefs.data.noteRGB ? 'images/noteSplashes/list.txt' : 'images/noteSplashesNoRGB/list.txt';
-		if(Mods.mergeAllTextsNamed(preferred).length > 0) return preferred;
-		return 'images/noteSplashes/list.txt';
+		var fallback:String = ClientPrefs.data.noteRGB ? 'images/noteSplashesNoRGB/list.txt' : 'images/noteSplashes/list.txt';
+		return buildSkinOptionList(preferred, fallback, ClientPrefs.defaultData.splashSkin);
+	}
+
+	function buildSkinOptionList(preferredPath:String, fallbackPath:String, defaultValue:String):Array<String>
+	{
+		var list:Array<String> = [];
+		addSkinOption(list, defaultValue);
+
+		var preferred:Array<String> = Mods.mergeAllTextsNamed(preferredPath);
+		for(value in preferred)
+			addSkinOption(list, value);
+
+		if(list.length <= 1)
+		{
+			var fallback:Array<String> = Mods.mergeAllTextsNamed(fallbackPath);
+			for(value in fallback)
+				addSkinOption(list, value);
+		}
+		return list;
+	}
+
+	function addSkinOption(list:Array<String>, value:String):Void
+	{
+		if(value == null) return;
+		value = value.trim();
+		if(value.length > 0 && !list.contains(value))
+			list.push(value);
+	}
+
+	function resolveStringOptionValue(list:Array<String>, current:String, defaultValue:String):String
+	{
+		if(list.contains(current)) return current;
+		if(list.contains(defaultValue)) return defaultValue;
+		return list.length > 0 ? list[0] : defaultValue;
 	}
 
 	function refreshStringOptionVisual(option:Option)
@@ -447,30 +472,26 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 	function refreshNoteSkinOptionList()
 	{
 		if(noteSkinOption == null) return;
-		var noteSkins:Array<String> = Mods.mergeAllTextsNamed(getNoteSkinsListPath());
+		var noteSkins:Array<String> = getNoteSkinsList();
 		if(noteSkins.length <= 0) return;
-		noteSkins.insert(0, ClientPrefs.defaultData.noteSkin);
 		noteSkinOption.options = noteSkins;
-		var resolved:String = noteSkins.contains(ClientPrefs.data.noteSkin) ? ClientPrefs.data.noteSkin : ClientPrefs.defaultData.noteSkin;
-		if(!noteSkins.contains(resolved))
-			resolved = noteSkins[0];
+		var resolved:String = resolveStringOptionValue(noteSkins, ClientPrefs.data.noteSkin, ClientPrefs.defaultData.noteSkin);
 		noteSkinOption.curOption = noteSkins.indexOf(resolved);
 		if(noteSkinOption.curOption < 0) noteSkinOption.curOption = 0;
+		noteSkinOption.setValue(resolved);
 		refreshStringOptionVisual(noteSkinOption);
 	}
 
 	function refreshSplashSkinOptionList()
 	{
 		if(splashSkinOption == null) return;
-		var splashSkins:Array<String> = Mods.mergeAllTextsNamed(getSplashSkinsListPath());
+		var splashSkins:Array<String> = getSplashSkinsList();
 		if(splashSkins.length <= 0) return;
-		splashSkins.insert(0, ClientPrefs.defaultData.splashSkin);
 		splashSkinOption.options = splashSkins;
-		var resolved:String = splashSkins.contains(ClientPrefs.data.splashSkin) ? ClientPrefs.data.splashSkin : ClientPrefs.defaultData.splashSkin;
-		if(!splashSkins.contains(resolved))
-			resolved = splashSkins[0];
+		var resolved:String = resolveStringOptionValue(splashSkins, ClientPrefs.data.splashSkin, ClientPrefs.defaultData.splashSkin);
 		splashSkinOption.curOption = splashSkins.indexOf(resolved);
 		if(splashSkinOption.curOption < 0) splashSkinOption.curOption = 0;
+		splashSkinOption.setValue(resolved);
 		refreshStringOptionVisual(splashSkinOption);
 	}
 

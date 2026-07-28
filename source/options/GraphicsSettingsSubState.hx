@@ -6,10 +6,16 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 {
 	var antialiasingOption:Int;
 	var boyfriend:Character = null;
+	#if windows
+	var initialFullscreenMode:String = null;
+	#end
 	public function new()
 	{
 		title = Language.getPhrase('graphics_menu', 'Graphics Settings');
 		rpcTitle = 'Graphics Settings Menu'; //for Discord Rich Presence
+		#if windows
+		initialFullscreenMode = ClientPrefs.data.fullscreenMode;
+		#end
 
 		boyfriend = new Character(840, 170, 'bf', true);
 		boyfriend.setGraphicSize(Std.int(boyfriend.width * 0.75));
@@ -96,7 +102,7 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 
 		#if windows
 		var option:Option = new Option('Fullscreen Mode',
-			'Choose how fullscreen behaves: borderless, borderless fix or exclusive fullscreen.',
+			'Borderless is capped to 1080p for better shader performance. Borderless Fix uses native monitor resolution.',
 			'fullscreenMode',
 			STRING,
 			['Borderless', 'Borderless Fix', 'Exclusive']);
@@ -134,5 +140,14 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 	{
 		super.changeSelection(change);
 		boyfriend.visible = (antialiasingOption == curSelected);
+	}
+
+	override function destroy()
+	{
+		#if windows
+		if (initialFullscreenMode != ClientPrefs.data.fullscreenMode && backend.WindowMode.isFullscreen())
+			backend.WindowMode.reapplyFullscreenPreference();
+		#end
+		super.destroy();
 	}
 }

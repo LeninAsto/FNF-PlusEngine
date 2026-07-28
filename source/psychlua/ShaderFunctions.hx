@@ -8,8 +8,6 @@ import flixel.addons.display.FlxRuntimeShader;
 
 class ShaderFunctions
 {
-	static var shaderDebugSetCount:Int = 0;
-
 	public static function implement(funk:FunkinLua)
 	{
 		var lua = funk.lua;
@@ -50,8 +48,6 @@ class ShaderFunctions
 			if(leObj != null) {
 				var arr:Array<String> = funk.runtimeShaders.get(shader);
 				var runtimeShader:shaders.ErrorHandledShader.ErrorHandledRuntimeShader = new shaders.ErrorHandledShader.ErrorHandledRuntimeShader(shader, arr[0], arr[1]);
-				shaderDebugSetCount++;
-				trace('[ShaderDebug][Lua] setSpriteShader #$shaderDebugSetCount obj=$obj shader=$shader frag=${arr[0] == null ? 0 : arr[0].length} vert=${arr[1] == null ? 0 : arr[1].length}');
 				runtimeShader.onError = function(error:Dynamic)
 				{
 					if(leObj != null && leObj.shader == runtimeShader)
@@ -295,7 +291,7 @@ class ShaderFunctions
 	public static function getShader(obj:String):FlxRuntimeShader
 	{
 		var split:Array<String> = obj.split('.');
-		var target:FlxSprite = null;
+		var target:Dynamic = null;
 		if(split.length > 1) target = LuaUtils.getVarInArray(LuaUtils.getPropertyLoop(split), split[split.length-1]);
 		else target = LuaUtils.getObjectDirectly(split[0]);
 
@@ -304,7 +300,15 @@ class ShaderFunctions
 			FunkinLua.luaTrace('Error on getting shader: Object $obj not found', false, false, FlxColor.RED);
 			return null;
 		}
-		return cast (target.shader, FlxRuntimeShader);
+
+		if(Std.isOfType(target, FlxRuntimeShader))
+			return cast target;
+
+		var shaderValue:Dynamic = Reflect.getProperty(target, 'shader');
+		if(shaderValue != null && Std.isOfType(shaderValue, FlxRuntimeShader))
+			return cast shaderValue;
+
+		return null;
 	}
 	#end
 }

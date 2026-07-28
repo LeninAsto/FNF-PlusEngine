@@ -2,6 +2,7 @@ package psychlua;
 
 import backend.WeekData;
 import objects.Character;
+import objects.Note;
 import backend.StageData;
 
 import openfl.display.BlendMode;
@@ -90,6 +91,9 @@ class LuaUtils
 			return value;
 		}
 
+		if(setLegacyNoteSplashProperty(instance, variable, value))
+			return value;
+
 		if(instance is MusicBeatState && MusicBeatState.getVariables().exists(variable))
 		{
 			MusicBeatState.getVariables().set(variable, value);
@@ -126,6 +130,9 @@ class LuaUtils
 			//trace(instance);
 			return instance.get(variable);
 		}
+
+		if(hasLegacyNoteSplashProperty(instance, variable))
+			return getLegacyNoteSplashProperty(instance, variable);
 
 		if(instance is MusicBeatState && MusicBeatState.getVariables().exists(variable))
 		{
@@ -234,6 +241,8 @@ class LuaUtils
 			leArray = obj;
 			variable = split[split.length-1];
 		}
+		if(setLegacyNoteSplashProperty(leArray, variable, value))
+			return value;
 		if(allowMaps && isMap(leArray)) leArray.set(variable, value);
 		else Reflect.setProperty(leArray, variable, value);
 		return value;
@@ -249,8 +258,52 @@ class LuaUtils
 			variable = split[split.length-1];
 		}
 
+		if(hasLegacyNoteSplashProperty(leArray, variable))
+			return getLegacyNoteSplashProperty(leArray, variable);
+
 		if(allowMaps && isMap(leArray)) return leArray.get(variable);
 		return Reflect.getProperty(leArray, variable);
+	}
+
+	static function hasLegacyNoteSplashProperty(instance:Dynamic, variable:String):Bool
+	{
+		return instance != null && Std.isOfType(instance, Note) && (variable == 'noteSplashDisabled' || variable == 'noteSplashTexture');
+	}
+
+	static function setLegacyNoteSplashProperty(instance:Dynamic, variable:String, value:Dynamic):Bool
+	{
+		if(!hasLegacyNoteSplashProperty(instance, variable))
+			return false;
+
+		var note:Note = cast instance;
+		switch(variable)
+		{
+			case 'noteSplashDisabled':
+				StructurePsychOld.warnLegacyLuaUsage('noteSplashDisabled', 'noteSplashData.disabled');
+				note.noteSplashData.disabled = value == true;
+			case 'noteSplashTexture':
+				StructurePsychOld.warnLegacyLuaUsage('noteSplashTexture', 'noteSplashData.texture');
+				note.noteSplashData.texture = value == null ? null : Std.string(value);
+		}
+		return true;
+	}
+
+	static function getLegacyNoteSplashProperty(instance:Dynamic, variable:String):Dynamic
+	{
+		var note:Note = cast instance;
+		switch(variable)
+		{
+			case 'noteSplashDisabled':
+				StructurePsychOld.warnLegacyLuaUsage('noteSplashDisabled', 'noteSplashData.disabled');
+			case 'noteSplashTexture':
+				StructurePsychOld.warnLegacyLuaUsage('noteSplashTexture', 'noteSplashData.texture');
+		}
+		return switch(variable)
+		{
+			case 'noteSplashDisabled': note.noteSplashData.disabled;
+			case 'noteSplashTexture': note.noteSplashData.texture;
+			default: null;
+		}
 	}
 
 	public static function getPropertyLoop(split:Array<String>, ?getProperty:Bool=true, ?allowMaps:Bool = false):Dynamic

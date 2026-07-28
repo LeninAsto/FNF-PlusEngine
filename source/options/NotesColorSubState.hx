@@ -751,15 +751,7 @@ class NotesColorSubState extends MusicBeatSubstate
 		
 		// Check if the current note skin is NotITG
 		var isNotITG:Bool = false;
-		var skin:String = Note.getDefaultNoteSkinPath();
-		var postfix:String = Note.getNoteSkinPostfix();
-		
-		if(postfix != null && postfix.length > 0)
-		{
-			var customSkin:String = skin + postfix;
-			if(Paths.fileExists('images/$customSkin.png', IMAGE)) 
-				skin = customSkin;
-		}
+		var skin:String = Note.resolveNoteSkinPath(null, PlayState.isPixelStage);
 		
 		if(skin != null)
 			isNotITG = skin.toLowerCase().contains('notitg');
@@ -840,7 +832,7 @@ class NotesColorSubState extends MusicBeatSubstate
 		var baseColor:FlxColor = getBaseModeColor(curSelectedNote, curSelectedMode);
 		var hueOffset:Int = FlxMath.wrap(Math.round(value.hue - baseColor.hue), -180, 180);
 		var satOffset:Float = (value.saturation - baseColor.saturation) * 100;
-		var brightOffset:Float = (value.brightness - baseColor.brightness) * 100;
+		var brightOffset:Float = baseColor.brightness > 0 ? ((value.brightness / baseColor.brightness) - 1) * 100 : value.brightness * 100;
 
 		dataHSV[curSelectedNote][0] = Math.round(FlxMath.bound(hueOffset, -180, 180));
 		dataHSV[curSelectedNote][1] = Math.round(FlxMath.bound(satOffset, -100, 100));
@@ -854,7 +846,7 @@ class NotesColorSubState extends MusicBeatSubstate
 		var baseColor:FlxColor = getBaseModeColor(curSelectedNote, curSelectedMode);
 		var hue:Int = FlxMath.wrap(Math.round(baseColor.hue + dataHSV[curSelectedNote][0]), 0, 360);
 		var sat:Float = FlxMath.bound(baseColor.saturation + (dataHSV[curSelectedNote][1] / 100), 0, 1);
-		var bright:Float = FlxMath.bound(baseColor.brightness + (dataHSV[curSelectedNote][2] / 100), 0, 1);
+		var bright:Float = FlxMath.bound(baseColor.brightness * (1 + (dataHSV[curSelectedNote][2] / 100)), 0, 1);
 		return FlxColor.fromHSB(hue, sat, bright);
 	}
 	function getShader() return Note.globalRgbShaders[curSelectedNote];

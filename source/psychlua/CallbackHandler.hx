@@ -8,7 +8,7 @@ class CallbackHandler
 		try
 		{
 			//trace('calling $fname');
-			var cbf:Dynamic = Lua_helper.get_callback(l, fname);
+			var cbf:Dynamic = Lua_helper.callbacks.get(fname);
 
 			//Local functions have the lowest priority
 			//This is to prevent a "for" loop being called in every single operation,
