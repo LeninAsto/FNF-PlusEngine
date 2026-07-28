@@ -512,16 +512,14 @@ class LoadingState extends MusicBeatState
 		var folder:String = Paths.formatToSongPath(Song.loadedSongName);
 		new Future<Bool>(() -> {
 			// LOAD NOTE IMAGE
-			var noteSkin:String = Note.defaultNoteSkin;
+			var noteSkin:String = Note.getDefaultNoteSkinPath(PlayState.isPixelStage);
 			if(PlayState.SONG.arrowSkin != null && PlayState.SONG.arrowSkin.length > 1) noteSkin = PlayState.SONG.arrowSkin;
-	
-			var customSkin:String = noteSkin + Note.getNoteSkinPostfix();
-			if(Paths.fileExists('images/$customSkin.png', IMAGE)) noteSkin = customSkin;
+			noteSkin = Note.resolveNoteSkinPath(noteSkin, PlayState.isPixelStage);
 			imagesToPrepare.push(noteSkin);
 			//
 
 			// LOAD NOTE SPLASH IMAGE
-			var noteSplash:String = NoteSplash.defaultNoteSplash;
+			var noteSplash:String = NoteSplash.getDefaultNoteSplashPath();
 			if(PlayState.SONG.splashSkin != null && PlayState.SONG.splashSkin.length > 0) noteSplash = PlayState.SONG.splashSkin;
 			else noteSplash += NoteSplash.getSplashSkinPostfix();
 			imagesToPrepare.push(noteSplash);

@@ -618,7 +618,7 @@ class FreeplayState extends MusicBeatState
 		freeplayText.y = 15;
 		add(freeplayText);
 
-		searchField = new MaterialTextField(FlxG.width - 238, 12, 206, Language.getPhrase("freeplay_search", "Search..."));
+		searchField = new MaterialTextField(FlxG.width - 238, 12, 206, Language.getPhrase("new_freeplay_search", "Search..."));
 		searchField.helperText = "Press B to focus, ESC to exit";
 		searchField.onChange = function(value:String)
 		{
@@ -665,7 +665,7 @@ class FreeplayState extends MusicBeatState
 		final control:String = (controls.mobileC) ? "C" : "CTRL";
 		final reset:String = (controls.mobileC) ? "Y" : "RESET";
 		
-		var leText:String = Language.getPhrase("freeplay_tip", "Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.", [space, control, reset]);
+		var leText:String = Language.getPhrase("new_freeplay_tip", "Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.", [space, control, reset]);
 		#if (MODS_ALLOWED && sys && !mobile)
 		leText += " / F5 reloads mods / drop a mod folder to import it.";
 		#end
@@ -2085,7 +2085,7 @@ class FreeplayState extends MusicBeatState
 	function formatSongInfoStats(data:FreeplaySongCardData):String
 	{
 		var statsLines:Array<String> = [
-			Language.getPhrase("freeplay_song_time", "Time: {1}", [formatDuration(data.durationMs)]),
+			Language.getPhrase("new_freeplay_song_time", "Time: {1}", [formatDuration(data.durationMs)]),
 			'BPM: ${formatFloat(data.bpm)}'
 		];
 		if (data.author != null && data.author.length > 0)
@@ -3629,11 +3629,11 @@ class DifficultySelector
 			
 			if (score > 0)
 			{
-				scoreText.text = 'Score: ' + score + '\nAccuracy: ' + accPercent + '% (' + accSystem + ')';
+				scoreText.text = Language.getPhrase('new_personal_best', 'Score: {1}\nAccuracy: {2}% ({3})', [score, accPercent, accSystem]);
 			}
 			else
 			{
-				scoreText.text = Language.getPhrase('no_score', 'No score yet');
+				scoreText.text = Language.getPhrase('new_no_score', 'No score yet');
 			}
 			#else
 			scoreText.text = '';

@@ -25,6 +25,7 @@ class EnUS
         "score_text_legacy" => "Score: {1} | Misses: {2} | Rating: {3}",
         "score_text_instakill_legacy" => "Score: {1} | Rating: {2}",
         "freeplay_song_time" => "Time: {1}",
+        "new_freeplay_song_time" => "Time: {1}",
         "botplay" => "Botplay",
         "perfect_mode" => "Perfect Mode",
         "opponent_mode" => "Opponent Mode",
@@ -82,12 +83,16 @@ class EnUS
 
         // Freeplay
         "freeplay_search" => "Search...",
-        "personal_best" => "PERSONAL BEST:\n{1} ({2}%)",
+        "personal_best" => "PERSONAL BEST: {1} ({2}%)",
+        "new_personal_best" => "Score: {1}\nAccuracy: {2}% ({3})",
+        "new_freeplay_search" => "Search...",
         "freeplay_tip" => "Press SPACE to listen to the Song / Press CTRL to open the Gameplay Changers Menu / Press RESET to Reset your Score and Accuracy.",
+        "new_freeplay_tip" => "Press {1} to preview / Press {2} for Gameplay Changers / Press {3} to reset score and accuracy.",
         "musicplayer_playing" => "PLAYING: {1}",
         "musicplayer_paused" => "PLAYING: {1} (PAUSED)",
         "musicplayer_tip" => "Press SPACE to Pause / Press ESCAPE to Exit / Press R to Reset the Song",
         "no_score" => "No score yet",
+        "new_no_score" => "No score yet",
 
         // Mods Menu
         "no_mods_installed" => "NO MODS INSTALLED\nPRESS BACK TO EXIT OR INSTALL A MOD",
@@ -572,4 +577,3 @@ class EnUS
         "language_example_text" => "This is a sample text for English (United States)."
     ];
 }
-

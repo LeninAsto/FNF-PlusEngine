@@ -4,6 +4,7 @@ import haxe.ds.Map;
 import haxe.Json;
 import haxe.io.Path;
 import flixel.util.FlxSave;
+import objects.Note;
 
 #if sys
 import sys.FileSystem;
@@ -340,20 +341,15 @@ class MobileData
 	public static function setButtonsColors(buttonsInstance:Dynamic):Dynamic
 	{
 		// Dynamic Controls Color
-		var data:Dynamic;
-		if (ClientPrefs.data.dynamicColors)
-			data = ClientPrefs.data;
-		else
-			data = ClientPrefs.defaultData;
-
 		for (i => button in [
 			buttonsInstance.buttonLeft,
 			buttonsInstance.buttonDown,
 			buttonsInstance.buttonUp,
 			buttonsInstance.buttonRight])
 		{
-			button.color = data.arrowRGB[i][0];
-			button.label.color = data.arrowRGB[i][0];
+			var color:FlxColor = ClientPrefs.data.dynamicColors ? Note.getNoteColorPalette(i, false)[0] : ClientPrefs.defaultData.arrowRGB[i][0];
+			button.color = color;
+			button.label.color = color;
 			button.label.updateColorTransform();
 		}
 

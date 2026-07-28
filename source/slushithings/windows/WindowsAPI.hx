@@ -11,6 +11,7 @@ import slushithings.windows.WindowsCPP;
 import slushithings.windows.winGDIThings.SlushiWinGDI;
 import slushithings.windows.winGDIThings.WinGDIThread;
 import psychlua.LuaUtils;
+import backend.ClientPrefs;
 #end
 
 /**
@@ -28,6 +29,23 @@ class WindowsAPI
 	private static var _windowsWallpaperPath:String = null;
 	public static var changedWallpaper:Bool = false;
 	private static final savedWallpaperPath:String = "assets/cache/savedWindowswallpaper.png";
+
+	static function gdiEffectsAllowed():Bool
+	{
+		if (!ClientPrefs.data.windowsGDIEffects)
+		{
+			trace("[Windows GDI]: Blocked. Enable Windows GDI Effects manually in Gameplay Settings first.");
+			return false;
+		}
+		return true;
+	}
+
+	static function psQuote(value:String):String
+	{
+		if (value == null)
+			return "''";
+		return "'" + StringTools.replace(value, "'", "''") + "'";
+	}
 	#end
 
 	/**
@@ -329,9 +347,9 @@ class WindowsAPI
 		if (getWindowsVersion() < 8) return;
 
 		var powershellCommand = "powershell -Command \"& {$ErrorActionPreference = 'Stop';"
-			+ "$title = '"
-			+ desc
-			+ "';"
+			+ "$title = "
+			+ psQuote(desc)
+			+ ";"
 			+ "[Windows.UI.Notifications.ToastNotificationManager, Windows.UI.Notifications, ContentType = WindowsRuntime] > $null;"
 			+ "$template = [Windows.UI.Notifications.ToastNotificationManager]::GetTemplateContent([Windows.UI.Notifications.ToastTemplateType]::ToastText01);"
 			+ "$toastXml = [xml] $template.GetXml();"
@@ -342,9 +360,8 @@ class WindowsAPI
 			+ "$toast.Tag = 'Test1';"
 			+ "$toast.Group = 'Test2';"
 			+ "$notifier = [Windows.UI.Notifications.ToastNotificationManager]::CreateToastNotifier('"
-			+ "Plus Engine: "
-			+ title
-			+ "');"
+			+ psQuote("Plus Engine: " + title)
+			+ ");"
 			+ "$notifier.Show($toast);}\"";
 
 		if (title != null && title != "" && desc != null && desc != "")
@@ -647,6 +664,7 @@ class WindowsAPI
 	public static function initGDIThread():Void
 	{
 		#if windows
+		if (!gdiEffectsAllowed()) return;
 		WinGDIThread.initWindowsGDIThread();
 		#else
 		trace("GDI effects are only available on Windows");
@@ -672,6 +690,7 @@ class WindowsAPI
 	public static function pauseGDIThread(pause:Bool):Void
 	{
 		#if windows
+		if (!gdiEffectsAllowed() && !pause) return;
 		WinGDIThread.temporarilyPaused = pause;
 		#else
 		trace("GDI effects are only available on Windows");
@@ -685,7 +704,7 @@ class WindowsAPI
 	public static function isGDIThreadRunning():Bool
 	{
 		#if windows
-		return WinGDIThread.runningThread;
+		return ClientPrefs.data.windowsGDIEffects && WinGDIThread.runningThread;
 		#else
 		trace("GDI effects are only available on Windows");
 		return false;
@@ -714,6 +733,7 @@ class WindowsAPI
 	public static function prepareGDIEffect(effect:String, wait:Float = 0):Void
 	{
 		#if windows
+		if (!gdiEffectsAllowed()) return;
 		SlushiWinGDI.prepareGDIEffect(effect, wait);
 		#else
 		trace("GDI effects are only available on Windows");
@@ -728,6 +748,7 @@ class WindowsAPI
 	public static function enableGDIEffect(effect:String, enabled:Bool = true):Void
 	{
 		#if windows
+		if (!gdiEffectsAllowed()) return;
 		SlushiWinGDI.enableGDIEffect(effect, enabled);
 		#else
 		trace("GDI effects are only available on Windows");
@@ -741,6 +762,7 @@ class WindowsAPI
 	public static function removeGDIEffect(effect:String):Void
 	{
 		#if windows
+		if (!gdiEffectsAllowed()) return;
 		SlushiWinGDI.removeGDIEffect(effect);
 		#else
 		trace("GDI effects are only available on Windows");
@@ -755,6 +777,7 @@ class WindowsAPI
 	public static function setGDIEffectWaitTime(effect:String, wait:Float):Void
 	{
 		#if windows
+		if (!gdiEffectsAllowed()) return;
 		SlushiWinGDI.setGDIEffectWaitTime(effect, wait);
 		#else
 		trace("GDI effects are only available on Windows");
@@ -768,6 +791,7 @@ class WindowsAPI
 	public static function setGDIElapsedTime(elapsed:Float):Void
 	{
 		#if windows
+		if (!gdiEffectsAllowed()) return;
 		SlushiWinGDI.setElapsedTime(elapsed);
 		#else
 		trace("GDI effects are only available on Windows");

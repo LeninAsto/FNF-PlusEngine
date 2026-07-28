@@ -97,6 +97,9 @@ class FunkinLua {
 		set('Function_Continue', LuaUtils.Function_Continue);
 		set('luaDebugMode', false);
 		set('luaDeprecatedWarnings', true);
+		set('inChartEditor', false);
+		set('cameraX', 0);
+		set('cameraY', 0);
 
 		set('PsychVersion', MainMenuState.psychEngineVersion.trim());
 		set('version', MainMenuState.psychEngineVersion.trim());
@@ -1768,6 +1771,7 @@ class FunkinLua {
 		CustomSubstate.implement(this);
 		ShaderFunctions.implement(this);
 		DeprecatedFunctions.implement(this);
+		LegacyCompatFunctions.implement(this);
 		#if MODCHARTS_NOTITG_ALLOWED LuaModchart.implement(this); #end
 		#if WINDOWS_FUNCTIONS_ALLOWED WindowsFunctions.implement(this); #end
 		#if (WINDOWS_FUNCTIONS_ALLOWED && GDI_ENABLED) WindowsGDIFunctions.implement(this); #end

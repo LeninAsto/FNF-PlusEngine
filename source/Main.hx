@@ -422,8 +422,6 @@ class Main extends Sprite
 
 	private function setupGame():Void
 	{
-		shaders.ShaderCompatibility.init();
-		
 		trace('\n\n' + backend.Native.buildSystemInfo());
 		
 		#if hxvlc

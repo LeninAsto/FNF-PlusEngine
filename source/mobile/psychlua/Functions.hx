@@ -315,13 +315,13 @@ class AndroidFunctions
 		Lua_helper.add_callback(lua, "isChromebook", AndroidTools.isChromebook());
 		Lua_helper.add_callback(lua, "isDeXMode", AndroidTools.isDeXMode());
 
-		Lua_helper.add_callback(lua, "backJustPressed", FlxG.android.justPressed.BACK);
-		Lua_helper.add_callback(lua, "backPressed", FlxG.android.pressed.BACK);
-		Lua_helper.add_callback(lua, "backJustReleased", FlxG.android.justReleased.BACK);
+		Lua_helper.add_callback(lua, "backJustPressed", () -> FlxG.android.justPressed.BACK);
+		Lua_helper.add_callback(lua, "backPressed", () -> FlxG.android.pressed.BACK);
+		Lua_helper.add_callback(lua, "backJustReleased", () -> FlxG.android.justReleased.BACK);
 
-		Lua_helper.add_callback(lua, "menuJustPressed", FlxG.android.justPressed.MENU);
-		Lua_helper.add_callback(lua, "menuPressed", FlxG.android.pressed.MENU);
-		Lua_helper.add_callback(lua, "menuJustReleased", FlxG.android.justReleased.MENU);
+		Lua_helper.add_callback(lua, "menuJustPressed", () -> FlxG.android.justPressed.MENU);
+		Lua_helper.add_callback(lua, "menuPressed", () -> FlxG.android.pressed.MENU);
+		Lua_helper.add_callback(lua, "menuJustReleased", () -> FlxG.android.justReleased.MENU);
 
 		Lua_helper.add_callback(lua, "getCurrentOrientation", () -> PsychJNI.getCurrentOrientationAsString());
 		Lua_helper.add_callback(lua, "setOrientation", function(?hint:String):Void

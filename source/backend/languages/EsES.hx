@@ -19,6 +19,7 @@ class EsES
         "score_text_new" => "Puntuación: {1} | {2}: {3} | Clasificación: {4} | TPS: {5}/{6}",
         "score_text_new_instakill" => "Puntuación: {1} | Clasificación: {2} | TPS: {3}/{4}",
         "freeplay_song_time" => "Tiempo: {1}",
+        "new_freeplay_song_time" => "Tiempo: {1}",
         "botplay" => "Automático",
         "little_timmy_mode" => "Modo Pequeño Timmy",
         "misses" => "Fallos",
@@ -68,7 +69,9 @@ class EsES
 
         // Freeplay
         "personal_best" => "MEJOR PUNTUACIÓN: {1} ({2}%)",
+        "new_personal_best" => "Puntuacion: {1}\nPrecision: {2}% ({3})",
         "freeplay_tip" => "Pulse ESPACIO para escuchar la canción / Pulse CTRL para abrir el menú de modificadores / Pulse REINICIAR para restablecer puntuación y precisión.",
+        "new_freeplay_tip" => "Pulsa {1} para previsualizar / Pulsa {2} para modificadores de gameplay / Pulsa {3} para reiniciar puntuacion y precision.",
         "musicplayer_playing" => "MÚSICA: {1}",
         "musicplayer_paused" => "MÚSICA: {1} (PAUSADO)",
         "musicplayer_tip" => "Pulse ESPACIO para pausar / Pulse ESC para salir / Pulse R para reiniciar la canción",
@@ -469,7 +472,9 @@ class EsES
         "storyname_week3" => "Pico",
         "storyname_week7" => "Tankman",
         "freeplay_search" => "Search...",
+        "new_freeplay_search" => "Buscar...",
         "no_score" => "No score yet",
+        "new_no_score" => "Sin puntuacion aun",
         "mods_leave" => "Press {1} To Leave",
         "credits_title" => "CREDITS",
         "link_hint" => "Press A/ENTER to open link | B/ESC to go back",

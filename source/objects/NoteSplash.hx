@@ -2,6 +2,7 @@ package objects;
 
 import backend.animation.PsychAnimationController;
 import shaders.RGBPalette;
+import shaders.ColorSwap;
 import flixel.system.FlxAssets.FlxShader;
 
 typedef RGB = {
@@ -42,6 +43,7 @@ class NoteSplash extends FlxSprite
 	var spawned:Bool = false;
 	var noteDataMap:Map<Int, String> = new Map();
 	var reusableRGBPalette:RGBPalette = new RGBPalette();
+	var colorSwap:ColorSwap;
 
 	public static var defaultNoteSplash(default, never):String = "noteSplashes/noteSplashes";
 	public static var noRgbNoteSplash(default, never):String = "noteSplashesNoRGB/noteSplashes";
@@ -292,62 +294,79 @@ class NoteSplash extends FlxSprite
 		var anim:String = playDefaultAnim();
 
 		var tempShader:RGBPalette = null;
-		if (config.allowRGB)
+		var colorIndex:Int = Note.normalizeNoteData(noteData);
+		var canUseSplashShader:Bool = inEditor || ((note == null || note.noteSplashData.useRGBShader) && (PlayState.SONG == null || !PlayState.SONG.disableNoteRGB));
+		if(!ClientPrefs.data.noteRGB)
 		{
-			Note.initializeGlobalRGBShader(noteData % Note.colArray.length);
-			if (inEditor || (note == null || note.noteSplashData.useRGBShader) && (PlayState.SONG == null || !PlayState.SONG.disableNoteRGB))
+			rgbShader.copyValues(null);
+			if(canUseSplashShader)
 			{
-				tempShader = reusableRGBPalette;
-				tempShader.mult = 1.0;
-				// If Note RGB is enabled:
-				if ((note == null || !note.noteSplashData.useGlobalShader) || inEditor)
+				if(colorSwap == null) colorSwap = new ColorSwap();
+				Note.applyHSVToColorSwap(colorSwap, colorIndex);
+				shader = colorSwap.shader;
+			}
+			else shader = null;
+		}
+		else
+		{
+			shader = rgbShader.shader;
+			if (config.allowRGB)
+			{
+				Note.initializeGlobalRGBShader(colorIndex);
+				if (canUseSplashShader)
 				{
-					var colors = config.rgb;
-					if (colors != null)
+					tempShader = reusableRGBPalette;
+					tempShader.mult = 1.0;
+					// If Note RGB is enabled:
+					if ((note == null || !note.noteSplashData.useGlobalShader) || inEditor)
 					{
-						for (i in 0...colors.length)
+						var colors = config.rgb;
+						if (colors != null)
 						{
-							if (i > 2) break;
-
-							var arr:Array<FlxColor> = ClientPrefs.data.arrowRGB[noteData % Note.colArray.length];
-							if (PlayState.isPixelStage) arr = ClientPrefs.data.arrowRGBPixel[noteData % Note.colArray.length];
-
-							var rgb = colors[i];
-							if (rgb == null)
+							for (i in 0...colors.length)
 							{
-								if (i == 0) tempShader.r = arr[0];
-								else if (i == 1) tempShader.g = arr[1];
-								else if (i == 2) tempShader.b = arr[2];
-								continue;
+								if (i > 2) break;
+
+								var arr:Array<FlxColor> = Note.getNoteColorPalette(colorIndex, PlayState.isPixelStage);
+								var fallbackColor:FlxColor = arr[i];
+
+								var rgb = colors[i];
+								if (rgb == null)
+								{
+									if (i == 0) tempShader.r = fallbackColor;
+									else if (i == 1) tempShader.g = fallbackColor;
+									else if (i == 2) tempShader.b = fallbackColor;
+									continue;
+								}
+
+								var r:Null<Int> = rgb.r; 
+								var g:Null<Int> = rgb.g;
+								var b:Null<Int> = rgb.b;
+
+								if (r == null || Math.isNaN(r) || r < 0) r = fallbackColor.red;
+								if (g == null || Math.isNaN(g) || g < 0) g = fallbackColor.green;
+								if (b == null || Math.isNaN(b) || b < 0) b = fallbackColor.blue;
+
+								var color:FlxColor = FlxColor.fromRGB(r, g, b);
+								if (i == 0) tempShader.r = color;
+								else if (i == 1) tempShader.g = color;
+								else if (i == 2) tempShader.b = color;
 							}
+						}
+						else tempShader.copyValues(Note.globalRgbShaders[colorIndex]);
 
-							var r:Null<Int> = rgb.r; 
-							var g:Null<Int> = rgb.g;
-							var b:Null<Int> = rgb.b;
-
-							if (r == null || Math.isNaN(r) || r < 0) r = arr[0];
-							if (g == null || Math.isNaN(g) || g < 0) g = arr[1];
-							if (b == null || Math.isNaN(b) || b < 0) b = arr[2];
-
-							var color:FlxColor = FlxColor.fromRGB(r, g, b);
-							if (i == 0) tempShader.r = color;
-							else if (i == 1) tempShader.g = color;
-							else if (i == 2) tempShader.b = color;
+						if (note != null)
+						{
+							if (note.noteSplashData.r != -1) tempShader.r = note.noteSplashData.r;
+							if (note.noteSplashData.g != -1) tempShader.g = note.noteSplashData.g;
+							if (note.noteSplashData.b != -1) tempShader.b = note.noteSplashData.b;
 						}
 					}
-					else tempShader.copyValues(Note.globalRgbShaders[noteData % Note.colArray.length]);
-
-					if (note != null)
-					{
-						if (note.noteSplashData.r != -1) tempShader.r = note.noteSplashData.r;
-						if (note.noteSplashData.g != -1) tempShader.g = note.noteSplashData.g;
-						if (note.noteSplashData.b != -1) tempShader.b = note.noteSplashData.b;
-					}
+					else tempShader.copyValues(Note.globalRgbShaders[colorIndex]);
 				}
-				else tempShader.copyValues(Note.globalRgbShaders[noteData % Note.colArray.length]);
 			}
+			rgbShader.copyValues(tempShader);
 		}
-		rgbShader.copyValues(tempShader);
 		if (!config.allowPixel) rgbShader.pixelAmount = 1;
 		else if (PlayState.isPixelStage) rgbShader.pixelAmount = 6;
 
@@ -449,9 +468,11 @@ class NoteSplash extends FlxSprite
 
 	public static function getDefaultNoteSplashPath():String
 	{
-		var preferred:String = defaultNoteSplash;
+		var preferred:String = ClientPrefs.data.noteRGB ? defaultNoteSplash : noRgbNoteSplash;
+		var fallback:String = ClientPrefs.data.noteRGB ? noRgbNoteSplash : defaultNoteSplash;
 		if(Paths.fileExists('images/' + preferred + '.png', IMAGE)) return preferred;
-		return noRgbNoteSplash;
+		if(Paths.fileExists('images/' + fallback + '.png', IMAGE)) return fallback;
+		return defaultNoteSplash;
 	}
 
 	public static function createConfig():NoteSplashConfig

@@ -53,7 +53,9 @@ class ZhHK
 
         // Freeplay
         "personal_best" => "個人最佳: {1} ({2}%)",
+        "new_personal_best" => "Score: {1}\nAccuracy: {2}% ({3})",
         "freeplay_tip" => "按空格鍵試聽歌曲 / 按CTRL打開遊戲修改器選單 / 按RESET重置你的分數和準確度。",
+        "new_freeplay_tip" => "Press {1} to preview / Press {2} for Gameplay Changers / Press {3} to reset score and accuracy.",
         "musicplayer_playing" => "正在播放: {1}",
         "musicplayer_paused" => "正在播放: {1} (已暫停)",
         "musicplayer_tip" => "按空格鍵暫停 / 按ESC退出 / 按R重置歌曲",
@@ -67,8 +69,8 @@ class ZhHK
         "description_shadow_mario" => "Psych Engine 團隊",
 
         // Reset Score/Achievement
-        "reset_score" => "重置分數",
-        "reset_achievement" => "重置成就:",
+        "reset_score" => "Reset the score of",
+        "reset_achievement" => "Reset Achievement:",
         "yes" => "是",
         "no" => "否",
 
@@ -115,15 +117,14 @@ class ZhHK
         "note_colors_lb" => "左肩按鈕",
 
         // Adjust Delay and Combo Menu
-        "delay_beat_hit" => "節拍命中！",
+        "delay_beat_hit" => "Beat Hit!",
         "delay_current_offset" => "當前偏移: {1} 毫秒",
-        "combo_rating_offset" => "評級偏移:",
-        "combo_numbers_offset" => "數字偏移:",
-        "combo_offset" => "連擊偏移",
-        "note_delay" => "音符延遲",
-        "switch_on_accept" => "(按確認鍵切換)",
-        "switch_on_start" => "(按開始鍵切換)",
-
+        "combo_rating_offset" => "Rating Offset:",
+        "combo_numbers_offset" => "Numbers Offset:",
+        "combo_offset" => "Combo Offset",
+        "note_delay" => "Note/Beat Delay",
+        "switch_on_accept" => "(Press Accept to Switch)",
+        "switch_on_start" => "(Press Start to Switch)",
         // Graphics Settings
         "description_low_quality" => "如果選中，禁用一些背景細節，\n減少載入時間並提高性能。",
         "description_anti-aliasing" => "如果未選中，禁用抗鋸齒，提高性能\n但視覺效果會更粗糙。",
@@ -258,9 +259,9 @@ class ZhHK
         "editorplaystate_score" => "命中: {1} | 失误: {2}",
         
         // Language example text
-        "controls" => "控制",
-        "mobile_settings" => "流動設定",
-        "notes" => "音符顏色",
+        "controls" => "Controls",
+        "mobile_settings" => "Mobile Settings",
+        "notes" => "Note Colors",
         "language_font" => "NotoSansTC-Medium.ttf",
         "language_example_text" => "這是繁體中文（香港）的示例文字。",
         // English fallback keys kept to avoid raw ids when a translation is incomplete.
@@ -292,7 +293,9 @@ class ZhHK
         "pause_exit_to_menu" => "Exit to menu",
         "pause_back" => "Back",
         "freeplay_search" => "Search...",
+        "new_freeplay_search" => "Search...",
         "no_score" => "No score yet",
+        "new_no_score" => "No score yet",
         "reload_button" => "RELOAD",
         "enable_all_button" => "ENABLE ALL",
         "disable_all_button" => "DISABLE ALL",
@@ -530,5 +533,6 @@ class ZhHK
         "touchpad_dpadmode_missing" => "This touchpad mode is missing its d-pad configuration.",
         "modchart_converter" => "Modchart Converter",
         "note_colors_notitg" => "RGB SHADERS DISABLED - NotITG skin preserves original colors",
+    "new_freeplay_song_time" => "Time: {1}",
     ];
 }

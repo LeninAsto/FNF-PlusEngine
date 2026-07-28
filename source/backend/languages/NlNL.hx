@@ -62,7 +62,9 @@ class NlNL
 
         // Freeplay
         "personal_best" => "PERSOONLIJK RECORD: {1} ({2}%)",
+        "new_personal_best" => "Score: {1}\nNauwkeurigheid: {2}% ({3})",
         "freeplay_tip" => "Druk op SPATIE om naar het nummer te luisteren / Druk op CTRL om het gameplay wijzigingen menu te openen / Druk op RESET om score en nauwkeurigheid te resetten.",
+        "new_freeplay_tip" => "Druk op {1} voor preview / Druk op {2} voor Gameplay Changers / Druk op {3} om score en nauwkeurigheid te resetten.",
         "musicplayer_playing" => "MUZIEK: {1}",
         "musicplayer_paused" => "MUZIEK: {1} (GEPAUZEERD)",
         "musicplayer_tip" => "Druk op SPATIE om te pauzeren / Druk op ESC om te verlaten / Druk op R om het nummer opnieuw te starten",
@@ -450,7 +452,9 @@ class NlNL
         "storyname_week3" => "Pico",
         "storyname_week7" => "Tankman",
         "freeplay_search" => "Search...",
+        "new_freeplay_search" => "Zoeken...",
         "no_score" => "No score yet",
+        "new_no_score" => "Nog geen score",
         "mods_leave" => "Press {1} To Leave",
         "credits_title" => "CREDITS",
         "link_hint" => "Press A/ENTER to open link | B/ESC to go back",
@@ -557,5 +561,6 @@ class NlNL
         "touchpad_dpadmode_missing" => "This touchpad mode is missing its d-pad configuration.",
         "modchart_converter" => "Modchart Converter",
         "note_colors_notitg" => "RGB SHADERS DISABLED - NotITG skin preserves original colors",
+    "new_freeplay_song_time" => "Tijd: {1}",
     ];
 }

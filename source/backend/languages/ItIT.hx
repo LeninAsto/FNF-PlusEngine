@@ -62,7 +62,9 @@ class ItIT
 
         // Freeplay
         "personal_best" => "MIGLIOR PUNTEGGIO: {1} ({2}%)",
+        "new_personal_best" => "Punteggio: {1}\nPrecisione: {2}% ({3})",
         "freeplay_tip" => "Premi SPAZIO per ascoltare la canzone / Premi CTRL per aprire il menu modificatori / Premi RESET per azzerare punteggio e precisione.",
+        "new_freeplay_tip" => "Premi {1} per anteprima / Premi {2} per modificatori gameplay / Premi {3} per azzerare punteggio e precisione.",
         "musicplayer_playing" => "MUSICA: {1}",
         "musicplayer_paused" => "MUSICA: {1} (IN PAUSA)",
         "musicplayer_tip" => "Premi SPAZIO per mettere in pausa / Premi ESC per uscire / Premi R per riavviare la canzone",
@@ -457,7 +459,9 @@ class ItIT
         "storyname_week3" => "Pico",
         "storyname_week7" => "Tankman",
         "freeplay_search" => "Search...",
+        "new_freeplay_search" => "Cerca...",
         "no_score" => "No score yet",
+        "new_no_score" => "Nessun punteggio",
         "mods_leave" => "Press {1} To Leave",
         "credits_title" => "CREDITS",
         "link_hint" => "Press A/ENTER to open link | B/ESC to go back",
@@ -557,5 +561,6 @@ class ItIT
         "touchpad_dpadmode_missing" => "This touchpad mode is missing its d-pad configuration.",
         "modchart_converter" => "Modchart Converter",
         "note_colors_notitg" => "RGB SHADERS DISABLED - NotITG skin preserves original colors",
+    "new_freeplay_song_time" => "Tempo: {1}",
     ];
 }

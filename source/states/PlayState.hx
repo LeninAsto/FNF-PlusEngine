@@ -3013,7 +3013,7 @@ class PlayState extends MusicBeatState
 			botplayTxt.alpha = 1 - Math.sin((Math.PI * botplaySine) / 180);
 		}
 
-		if (controls.PAUSE #if android || FlxG.android.justReleased.BACK #end && startedCountdown && canPause)
+		if ((controls.PAUSE #if android || FlxG.android.justReleased.BACK #end) && startedCountdown && canPause)
 		{
 			var ret:Dynamic = callOnScripts('onPause', null, true);
 			if(ret != LuaUtils.Function_Stop) {
@@ -4730,7 +4730,7 @@ class PlayState extends MusicBeatState
 				noteColor = note.rgbShader.r;
 			} else {
 				// Fallback to default arrow colors
-				var colorArray:Array<FlxColor> = isPixelStage ? ClientPrefs.data.arrowRGBPixel[noteData] : ClientPrefs.data.arrowRGB[noteData];
+				var colorArray:Array<FlxColor> = Note.getNoteColorPalette(noteData, isPixelStage);
 				if (colorArray != null && colorArray.length > 0) {
 					noteColor = colorArray[0]; // Use main color
 				}

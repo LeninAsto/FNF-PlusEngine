@@ -3,6 +3,7 @@ package options;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.text.FlxText.FlxTextBorderStyle;
 import flixel.util.FlxColor;
 import shaders.ColorSwap;
 import objects.Note;
@@ -21,8 +22,12 @@ class NotesColorLegacySubState extends MusicBeatSubstate
 	var nextAccept:Int = 5;
 
 	var blackBG:FlxSprite;
-	var hsbText:Alphabet;
-	var posX = 230;
+	var hsbTexts:FlxTypedGroup<FlxText>;
+	static inline var NOTE_X:Float = 230;
+	static inline var VALUE_START_X:Float = 480;
+	static inline var VALUE_SPACING_X:Float = 225;
+	static inline var ROW_START_Y:Float = 35;
+	static inline var ROW_SPACING_Y:Float = 165;
 
 	public function new()
 	{
@@ -34,7 +39,7 @@ class NotesColorLegacySubState extends MusicBeatSubstate
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		add(bg);
 
-		blackBG = new FlxSprite(posX - 25).makeGraphic(870, 200, FlxColor.BLACK);
+		blackBG = new FlxSprite(NOTE_X - 25).makeGraphic(900, 200, FlxColor.BLACK);
 		blackBG.alpha = 0.4;
 		add(blackBG);
 
@@ -45,17 +50,18 @@ class NotesColorLegacySubState extends MusicBeatSubstate
 
 		for (i in 0...ClientPrefs.data.arrowHSV.length)
 		{
-			var yPos:Float = (165 * i) + 35;
+			var yPos:Float = (ROW_SPACING_Y * i) + ROW_START_Y;
 			for (j in 0...3)
 			{
-				var optionText:Alphabet = new Alphabet(posX + (225 * j) + 250, yPos + 60, Std.string(Std.int(ClientPrefs.data.arrowHSV[i][j])), true);
+				var optionText:Alphabet = new Alphabet(VALUE_START_X + (VALUE_SPACING_X * j), yPos + 60, Std.string(Std.int(ClientPrefs.data.arrowHSV[i][j])), true);
+				optionText.alignment = CENTERED;
 				grpNumbers.add(optionText);
 			}
 
-			var note:FlxSprite = new FlxSprite(posX, yPos);
-			note.frames = Paths.getSparrowAtlas(Note.getDefaultNoteSkinPath());
+			var note:FlxSprite = new FlxSprite(NOTE_X, yPos);
+			note.frames = Paths.getSparrowAtlas(Note.resolveNoteSkinPath(null, false));
 			var animations:Array<String> = ['purple0', 'blue0', 'green0', 'red0'];
-			note.animation.addByPrefix('idle', animations[i]);
+			note.animation.addByPrefix('idle', animations[i % animations.length]);
 			note.animation.play('idle');
 			note.antialiasing = ClientPrefs.data.antialiasing;
 			grpNotes.add(note);
@@ -68,10 +74,16 @@ class NotesColorLegacySubState extends MusicBeatSubstate
 			shaderArray.push(newShader);
 		}
 
-		hsbText = new Alphabet(posX + 560, 0, "Hue    Saturation  Brightness", false);
-		hsbText.scaleX = 0.6;
-		hsbText.scaleY = 0.6;
-		add(hsbText);
+		hsbTexts = new FlxTypedGroup<FlxText>();
+		add(hsbTexts);
+		var labels:Array<String> = ['Hue', 'Saturation', 'Brightness'];
+		for(i in 0...labels.length)
+		{
+			var label:FlxText = new FlxText(VALUE_START_X + (VALUE_SPACING_X * i) - 45, 0, 180, labels[i], 24);
+			label.setFormat(Paths.font('vcr.ttf'), 24, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			label.borderSize = 2;
+			hsbTexts.add(label);
+		}
 
 		changeSelection();
 	}
@@ -197,7 +209,8 @@ class NotesColorLegacySubState extends MusicBeatSubstate
 			item.scale.set(curSelected == i ? 1 : 0.75, curSelected == i ? 1 : 0.75);
 			if (curSelected == i)
 			{
-				hsbText.y = item.y - 70;
+				for(label in hsbTexts)
+					label.y = item.y - 62;
 				blackBG.y = item.y - 20;
 			}
 		}
@@ -232,6 +245,7 @@ class NotesColorLegacySubState extends MusicBeatSubstate
 
 		var item = grpNumbers.members[(selected * 3) + type];
 		item.text = '0';
+		Note.globalRgbShaders = [];
 	}
 
 	function updateValue(change:Float = 0)
@@ -248,6 +262,7 @@ class NotesColorLegacySubState extends MusicBeatSubstate
 		else if(roundedValue > max) curValue = max;
 		roundedValue = Math.round(curValue);
 		ClientPrefs.data.arrowHSV[curSelected][typeSelected] = roundedValue;
+		Note.globalRgbShaders = [];
 
 		switch(typeSelected)
 		{

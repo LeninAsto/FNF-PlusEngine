@@ -52,7 +52,9 @@ class ZhCN
 
         // Freeplay
         "personal_best" => "个人最佳: {1} ({2}%)",
+        "new_personal_best" => "Score: {1}\nAccuracy: {2}% ({3})",
         "freeplay_tip" => "按空格键试听歌曲 / 按CTRL打开游戏修改器菜单 / 按RESET重置你的分数和准确度。",
+        "new_freeplay_tip" => "Press {1} to preview / Press {2} for Gameplay Changers / Press {3} to reset score and accuracy.",
         "musicplayer_playing" => "正在播放: {1}",
         "musicplayer_paused" => "正在播放: {1} (已暂停)",
         "musicplayer_tip" => "按空格键暂停 / 按ESC退出 / 按R重置歌曲",
@@ -66,8 +68,8 @@ class ZhCN
         "description_shadow_mario" => "Psych Engine 团队",
 
         // Reset Score/Achievement
-        "reset_score" => "重置分数",
-        "reset_achievement" => "重置成就:",
+        "reset_score" => "Reset the score of",
+        "reset_achievement" => "Reset Achievement:",
         "yes" => "是",
         "no" => "否",
 
@@ -114,15 +116,14 @@ class ZhCN
         "note_colors_lb" => "左肩按钮",
 
         // Adjust Delay and Combo Menu
-        "delay_beat_hit" => "节拍命中！",
+        "delay_beat_hit" => "Beat Hit!",
         "delay_current_offset" => "当前偏移: {1} 毫秒",
-        "combo_rating_offset" => "评级偏移:",
-        "combo_numbers_offset" => "数字偏移:",
-        "combo_offset" => "连击偏移",
-        "note_delay" => "音符/节拍延迟",
-        "switch_on_accept" => "(按确认键切换)",
-        "switch_on_start" => "(按开始键切换)",
-
+        "combo_rating_offset" => "Rating Offset:",
+        "combo_numbers_offset" => "Numbers Offset:",
+        "combo_offset" => "Combo Offset",
+        "note_delay" => "Note/Beat Delay",
+        "switch_on_accept" => "(Press Accept to Switch)",
+        "switch_on_start" => "(Press Start to Switch)",
         // Graphics Settings
         "description_low_quality" => "如果选中，禁用一些背景细节，\n减少加载时间并提高性能。",
         "description_anti-aliasing" => "如果未选中，禁用抗锯齿，提高性能\n但视觉效果会更粗糙。",
@@ -226,9 +227,8 @@ class ZhCN
 
         "reset_score_confirm" => "你确定要重置这首歌的分数和准确度吗？",
 
-        "no_mod_directory_loaded" => "< 未加载模组目录。 >",
-        "loaded_mod_directory" => "< 已加载模组目录: {1} >",
-
+        "no_mod_directory_loaded" => "< No mod directory loaded. >",
+        "loaded_mod_directory" => "< Mod directory loaded: {1} >",
         "time_hours" => "小时",
 
         // Results State
@@ -265,9 +265,9 @@ class ZhCN
         "editorplaystate_score" => "命中: {1} | 失误: {2}",
         
         // Language example text
-        "controls" => "控制",
-        "mobile_settings" => "移动设置",
-        "notes" => "音符颜色",
+        "controls" => "Controls",
+        "mobile_settings" => "Mobile Settings",
+        "notes" => "Note Colors",
         "language_font" => "NotoSansSC-Medium.ttf",
         "language_example_text" => "这是简体中文的示例文本。",
         // English fallback keys kept to avoid raw ids when a translation is incomplete.
@@ -299,7 +299,9 @@ class ZhCN
         "pause_exit_to_menu" => "Exit to menu",
         "pause_back" => "Back",
         "freeplay_search" => "Search...",
+        "new_freeplay_search" => "Search...",
         "no_score" => "No score yet",
+        "new_no_score" => "No score yet",
         "reload_button" => "RELOAD",
         "enable_all_button" => "ENABLE ALL",
         "disable_all_button" => "DISABLE ALL",
@@ -528,6 +530,7 @@ class ZhCN
         "touchpad_dpadmode_missing" => "This touchpad mode is missing its d-pad configuration.",
         "modchart_converter" => "Modchart Converter",
         "note_colors_notitg" => "RGB SHADERS DISABLED - NotITG skin preserves original colors",
+    "new_freeplay_song_time" => "Time: {1}",
     ];
 }
 

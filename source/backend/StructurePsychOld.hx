@@ -11,6 +11,7 @@ class StructurePsychOld
 	private static final _compatClassRefs:Array<Class<Dynamic>> = [
 		backend.VideoSpriteManager
 	];
+	private static var warnedLegacyUsages:Map<String, Bool> = new Map();
 
 	/**
 	 * Compatibility map for Psych Engine 0.6.3 and older script paths.
@@ -84,6 +85,75 @@ class StructurePsychOld
 		'GameplaySettingsSubState' => 'options.GameplaySettingsSubState'
 	];
 
+	public static final clientPrefsDataAliasMap:Map<String, String> = [
+		'downScroll' => 'downScroll',
+		'downscroll' => 'downScroll',
+		'middleScroll' => 'middleScroll',
+		'middlescroll' => 'middleScroll',
+		'opponentStrums' => 'opponentStrums',
+		'showFPS' => 'showFPS',
+		'flashing' => 'flashing',
+		'flashingLights' => 'flashing',
+		'globalAntialiasing' => 'antialiasing',
+		'antialiasing' => 'antialiasing',
+		'noteSkin' => 'noteSkin',
+		'splashSkin' => 'splashSkin',
+		'splashAlpha' => 'splashAlpha',
+		'lowQuality' => 'lowQuality',
+		'shaders' => 'shaders',
+		'shadersEnabled' => 'shaders',
+		'cacheOnGPU' => 'cacheOnGPU',
+		'framerate' => 'framerate',
+		'camZooms' => 'camZooms',
+		'cameraZoomOnBeat' => 'camZooms',
+		'hideHud' => 'hideHud',
+		'noteOffset' => 'noteOffset',
+		'arrowHSV' => 'arrowHSV',
+		'ghostTapping' => 'ghostTapping',
+		'timeBarType' => 'timeBarType',
+		'scoreZoom' => 'scoreZoom',
+		'noReset' => 'noReset',
+		'noResetButton' => 'noReset',
+		'healthBarAlpha' => 'healthBarAlpha',
+		'hitsoundVolume' => 'hitsoundVolume',
+		'pauseMusic' => 'pauseMusic',
+		'checkForUpdates' => 'checkForUpdates',
+		'comboStacking' => 'comboStacking',
+		'gameplaySettings' => 'gameplaySettings',
+		'comboOffset' => 'comboOffset',
+		'ratingOffset' => 'ratingOffset',
+		'sickWindow' => 'sickWindow',
+		'goodWindow' => 'goodWindow',
+		'badWindow' => 'badWindow',
+		'safeFrames' => 'safeFrames',
+		'guitarHeroSustains' => 'guitarHeroSustains',
+		'discordRPC' => 'discordRPC',
+		'language' => 'language'
+	];
+
+	public static function resolveClientPrefsDataProperty(className:String, variable:String):String
+	{
+		if(variable == null || variable.length < 1) return variable;
+
+		var resolvedClass:String = className;
+		if(classAliasMap.exists(resolvedClass))
+			resolvedClass = classAliasMap.get(resolvedClass);
+
+		if(resolvedClass != 'backend.ClientPrefs' && resolvedClass != 'ClientPrefs')
+			return variable;
+		if(variable == 'data' || variable.startsWith('data.') || variable.startsWith('defaultData.'))
+			return variable;
+
+		var split:Array<String> = variable.split('.');
+		if(split.length < 1 || !clientPrefsDataAliasMap.exists(split[0]))
+			return variable;
+
+		split[0] = clientPrefsDataAliasMap.get(split[0]);
+		var resolvedVariable:String = 'data.' + split.join('.');
+		warnLegacyLuaUsage(className + '.' + variable, 'backend.ClientPrefs.' + resolvedVariable);
+		return resolvedVariable;
+	}
+
 	/**
 	 * Resolves a class by name with backwards compatibility support.
 	 * @param className The full class path to resolve
@@ -100,6 +170,7 @@ class StructurePsychOld
 			myClass = Type.resolveClass(newClassName);
 			if (myClass != null)
 			{
+				warnLegacyLuaUsage(className, newClassName);
 				#if debug
 				trace('[Compatibility] Redirected "$className" to "$newClassName"');
 				#end
@@ -124,6 +195,26 @@ class StructurePsychOld
 		}
 
 		return myClass;
+	}
+
+	public static function warnLegacyLuaUsage(oldApi:String, newApi:String):Void
+	{
+		if(oldApi == null || newApi == null || oldApi == newApi) return;
+
+		var owner:String = '';
+		#if LUA_ALLOWED
+		if(psychlua.FunkinLua.lastCalledScript != null)
+			owner = psychlua.FunkinLua.lastCalledScript.scriptName;
+		#end
+		var key:String = owner + '|' + oldApi + '->' + newApi;
+		if(warnedLegacyUsages.exists(key)) return;
+		warnedLegacyUsages.set(key, true);
+
+		#if LUA_ALLOWED
+		psychlua.FunkinLua.luaTrace('Legacy compatibility: "$oldApi" redirects to "$newApi". Use the exact Psych 1.0+ API/path or this mod may fail on vanilla Psych.', false, true, flixel.util.FlxColor.YELLOW);
+		#elseif debug
+		trace('[Compatibility] "$oldApi" redirects to "$newApi"');
+		#end
 	}
 
 	#if debug

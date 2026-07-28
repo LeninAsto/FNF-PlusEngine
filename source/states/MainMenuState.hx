@@ -19,7 +19,7 @@ enum MainMenuColumn {
 class MainMenuState extends MusicBeatState
 {
 	public static var fnfVersion:String = '0.2.8';
-    public static var plusEngineVersion:String = '1.3'; // Nothing interesting =)
+    public static var plusEngineVersion:String = '1.3-prerelease'; // Nothing interesting =)
 	public static var psychEngineVersion:String = "1.0.4 (" + plusEngineVersion + ")"; // This is also used for Discord RPC
 	public static var curSelected:Int = 0;
 	public static var curColumn:MainMenuColumn = CENTER;
@@ -397,13 +397,6 @@ class MainMenuState extends MusicBeatState
 				FlxG.mouse.visible = false;
 				MusicBeatState.switchState(backend.ScriptableState.tryCreate('MasterEditorMenu', new MasterEditorMenu()));
 			}
-
-			#if mobile
-			if (touchPad.buttonX.justPressed)
-			{
-				lime.system.System.exit(0);
-			}
-			#end
 		}
 
 		super.update(elapsed);
