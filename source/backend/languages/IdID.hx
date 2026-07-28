@@ -43,6 +43,7 @@ class IdID
         "score_text_instakill" => "Skor: {1} | Rating: {2}",
         "score_text_new" => "Skor: {1} | {2}: {3} | Rating: {4} | TPS: {5}/{6}",
         "score_text_new_instakill" => "Skor: {1} | Rating: {2} | TPS: {3}/{4}",
+        "new_freeplay_song_time" => "Waktu: {1}",
         "practice_mode" => "Mode Latihan",
         "perfect_mode" => "Mode Sempurna",
         "opponent_mode" => "Mode Lawan",
@@ -94,13 +95,16 @@ class IdID
         "storyname_weekend1" => "Utang yang Harus Dibayar",
 
         // Freeplay
-        "personal_best" => "REKOR PRIBADI:\n{1} ({2}%)",
-        "freeplay_tip" => "Tekan SPACE untuk mendengarkan lagu / Tekan CTRL untuk membuka menu Gameplay Changers / Tekan RESET untuk mereset skor dan akurasi anda.",
+        "personal_best" => "REKOR PRIBADI: {1} ({2}%)",
+        "new_personal_best" => "Skor: {1}\nAkurasi: {2}% ({3})",
+        "freeplay_tip" => "Tekan SPACE untuk mendengarkan lagu / Tekan CTRL untuk membuka menu Gameplay Changers / Tekan RESET untuk mereset skor dan akurasi anda.",
+        "new_freeplay_tip" => "Tekan {1} untuk pratinjau / Tekan {2} untuk Gameplay Changers / Tekan {3} untuk reset skor dan akurasi.",
         "musicplayer_playing" => "MEMAINKAN: {1}",
         "musicplayer_paused" => "MEMAINKAN: {1} (DIJEDA)",
         "musicplayer_tip" => "Tekan SPACE untuk jeda / Tekan ESCAPE untuk keluar / Tekan R untuk mereset lagu",
         "no_score" => "Tidak ada skor.",
-
+
+        "new_no_score" => "Belum ada skor",
         // Mods Menu
         "no_mods_installed" => "TIDAK ADA MOD YANG DIINSTAL\nTEKAN TOMBOL KEMBALI UNTUK KELUAR ATAU INSTAL MOD",
         "no_mods_found" => "Tidak ditemukan mod.",
@@ -613,7 +617,8 @@ class IdID
         "rating_clear" => "Clear",
         "blueballed" => "Blueballed: {1}",
         "storyname_week3" => "Pico",
-        "freeplay_search" => "Search...",
+        "freeplay_search" => "Search...",
+        "new_freeplay_search" => "Cari...",
         "mods_leave" => "Press {1} To Leave",
         "credits_title" => "CREDITS",
         "link_hint" => "Press A/ENTER to open link | B/ESC to go back",

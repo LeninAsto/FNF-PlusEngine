@@ -1705,7 +1705,7 @@ class FunkinLua {
 			else luaTrace(Std.string(text), true, false, flxColor);
 		});
 
-		Lua_helper.add_callback(lua, "setModAutor", function(text:String = '') 
+		Lua_helper.add_callback(lua, "setModAutor", function(text:String = '') {
 			if (Main.fpsVar != null) {
 				Main.fpsVar.modAuthor = text;
 			}

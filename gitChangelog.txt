@@ -1,5 +1,1 @@
-- Fixed vanilla note splashes
-- New & added credit icons of sir, lenin and slushi in CreditsState
-- Updated Indonesian translation
-- Removed Little Timmy Mode from Gameplay Changers due to its useless and didn't work
-- Refactor PauseSubState and ResultsState where the date and time detection has been moved to the backend in the form of a hx file named LocaleUtils
+- To be filled

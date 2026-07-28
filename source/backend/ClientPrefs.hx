@@ -31,6 +31,7 @@ import states.TitleState;
 	public var mobileReceptorAlign:Bool = false; // Align receptors with hitbox lanes (mobile only, may break scripts)
 	#if windows
 	public var fullscreenMode:String = 'Borderless'; // 'Borderless', 'Borderless Fix', 'Exclusive'
+	public var windowsGDIEffects:Bool = false; // Requires manual user consent in Gameplay Settings
 	#end
 	public var accuracySystem:String = 'Psych'; // 'Wife3', 'Psych', 'Simple', 'osu!mania', 'DJMAX', 'ITG'
 	public var badShitBreakCombo:Bool = false; // When true, Bad and Shit will break the combo

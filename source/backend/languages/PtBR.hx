@@ -68,8 +68,10 @@ class PtBR
         "storyname_weekend1" => "Dívidas Fora do Prazo",
 
         // Freeplay
-        "personal_best" => "MELHOR PONTUAÇÃO:\n{1} ({2}%)",
+        "personal_best" => "MELHOR PONTUAÇÃO: {1} ({2}%)",
+        "new_personal_best" => "Pontuacao: {1}\nPrecisao: {2}% ({3})",
         "freeplay_tip" => "Aperte SPACE para ouvir a Música / Aperte CTRL para abrir o Menu de Modificadores / Aperte RESET para limpar sua pontuação.",
+        "new_freeplay_tip" => "Aperte {1} para pre-escutar / Aperte {2} para modificadores de gameplay / Aperte {3} para resetar pontuacao e precisao.",
         "musicplayer_playing" => "MÚSICA: {1}",
         "musicplayer_paused" => "MÚSICA: {1} (PAUSADO)",
         "musicplayer_tip" => "Aperte SPACE para Pausar / Aperte ESC para Sair / Aperte R para Reiniciar a Música",
@@ -434,7 +436,9 @@ class PtBR
         "rating_legendary" => "★ LEGENDARY ★",
         "rating_clear" => "Clear",
         "freeplay_search" => "Search...",
+        "new_freeplay_search" => "Pesquisar...",
         "no_score" => "No score yet",
+        "new_no_score" => "Sem pontuacao ainda",
         "mods_leave" => "Press {1} To Leave",
         "credits_title" => "CREDITS",
         "link_hint" => "Press A/ENTER to open link | B/ESC to go back",
@@ -557,6 +561,7 @@ class PtBR
         "touchpad_dpadmode_missing" => "This touchpad mode is missing its d-pad configuration.",
         "modchart_converter" => "Modchart Converter",
         "note_colors_notitg" => "RGB SHADERS DISABLED - NotITG skin preserves original colors",
+    "new_freeplay_song_time" => "Tempo: {1}",
     ];
 }
 

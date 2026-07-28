@@ -62,7 +62,9 @@ class DeDE
 
         // Freeplay
         "personal_best" => "BESTE PUNKTE: {1} ({2}%)",
+        "new_personal_best" => "Punkte: {1}\nGenauigkeit: {2}% ({3})",
         "freeplay_tip" => "Drücke LEERTASTE um das Lied anzuhören / Drücke STRG um das Gameplay-Änderungen-Menü zu öffnen / Drücke RESET um Punkte und Genauigkeit zurückzusetzen.",
+        "new_freeplay_tip" => "Druecke {1} fuer Vorschau / Druecke {2} fuer Gameplay-Aenderungen / Druecke {3} zum Zuruecksetzen von Punkten und Genauigkeit.",
         "musicplayer_playing" => "MUSIK: {1}",
         "musicplayer_paused" => "MUSIK: {1} (PAUSIERT)",
         "musicplayer_tip" => "Drücke LEERTASTE zum Pausieren / Drücke ESC zum Verlassen / Drücke R um das Lied neu zu starten",
@@ -457,7 +459,9 @@ class DeDE
         "storyname_week3" => "Pico",
         "storyname_week7" => "Tankman",
         "freeplay_search" => "Search...",
+        "new_freeplay_search" => "Suchen...",
         "no_score" => "No score yet",
+        "new_no_score" => "Noch keine Punkte",
         "mods_leave" => "Press {1} To Leave",
         "credits_title" => "CREDITS",
         "link_hint" => "Press A/ENTER to open link | B/ESC to go back",
@@ -557,5 +561,6 @@ class DeDE
         "touchpad_dpadmode_missing" => "This touchpad mode is missing its d-pad configuration.",
         "modchart_converter" => "Modchart Converter",
         "note_colors_notitg" => "RGB SHADERS DISABLED - NotITG skin preserves original colors",
+    "new_freeplay_song_time" => "Zeit: {1}",
     ];
 }

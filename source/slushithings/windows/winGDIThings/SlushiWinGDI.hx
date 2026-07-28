@@ -65,12 +65,33 @@ import flixel.util.FlxColor;
 
 static float gdiElapsedTime = 0;
 
+static bool getDesktopDrawingContext(HWND& hwnd, HDC& hdc, RECT& rekt) {
+	hwnd = GetDesktopWindow();
+	if (!hwnd) return false;
+
+	hdc = GetWindowDC(hwnd);
+	if (!hdc) return false;
+
+	if (!GetWindowRect(hwnd, &rekt)) {
+		ReleaseDC(hwnd, hdc);
+		hdc = NULL;
+		return false;
+	}
+
+	return true;
+}
+
+static int safeRand(int limit) {
+	return limit > 0 ? rand() % limit : 0;
+}
+
 int payloadDrawErrors() {
 	int ix = GetSystemMetrics(SM_CXICON) / 2;
 	int iy = GetSystemMetrics(SM_CYICON) / 2;
 	
 	HWND hwnd = GetDesktopWindow();
 	HDC hdc = GetWindowDC(hwnd);
+	if (!hwnd || !hdc) return 16;
 
 	POINT cursor;
 	GetCursorPos(&cursor);
@@ -78,7 +99,7 @@ int payloadDrawErrors() {
 	DrawIcon(hdc, cursor.x - ix, cursor.y - iy, LoadIcon(NULL, IDI_ERROR));
 
 	if (rand() % (int)(10/(gdiElapsedTime/500.0+1)+1) == 0) {
-		DrawIcon(hdc, rand()%GetSystemMetrics(SM_CXSCREEN), rand()%GetSystemMetrics(SM_CYSCREEN), LoadIcon(NULL, IDI_WARNING));
+		DrawIcon(hdc, safeRand(GetSystemMetrics(SM_CXSCREEN)), safeRand(GetSystemMetrics(SM_CYSCREEN)), LoadIcon(NULL, IDI_WARNING));
 	}
 	
 	ReleaseDC(hwnd, hdc);
@@ -87,10 +108,11 @@ int payloadDrawErrors() {
 }
 
 int payloadBlink() {
-	HWND hwnd = GetDesktopWindow();
-	HDC hdc = GetWindowDC(hwnd);
+	HWND hwnd = NULL;
+	HDC hdc = NULL;
 	RECT rekt;
-	GetWindowRect(hwnd, &rekt);
+	if (!getDesktopDrawingContext(hwnd, hdc, rekt)) return 100;
+
 	BitBlt(hdc, 0, 0, rekt.right - rekt.left, rekt.bottom - rekt.top, hdc, 0, 0, NOTSRCCOPY);
 	ReleaseDC(hwnd, hdc);
 
@@ -98,17 +120,23 @@ int payloadBlink() {
 }
 
 int payloadGlitchs() {
-	HWND hwnd = GetDesktopWindow();
-	HDC hdc = GetWindowDC(hwnd);
+	HWND hwnd = NULL;
+	HDC hdc = NULL;
 	RECT rekt;
-	GetWindowRect(hwnd, &rekt);
+	if (!getDesktopDrawingContext(hwnd, hdc, rekt)) return 40;
 
-	int x1 = rand() % (rekt.right - 100);
-	int y1 = rand() % (rekt.bottom - 100);
-	int x2 = rand() % (rekt.right - 100);
-	int y2 = rand() % (rekt.bottom - 100);
-	int width = rand() % 600;
-	int height = rand() % 600;
+	int maxX = rekt.right - rekt.left - 100;
+	int maxY = rekt.bottom - rekt.top - 100;
+	if (maxX < 1) maxX = 1;
+	if (maxY < 1) maxY = 1;
+	int x1 = safeRand(maxX);
+	int y1 = safeRand(maxY);
+	int x2 = safeRand(maxX);
+	int y2 = safeRand(maxY);
+	int widthLimit = maxX < 600 ? maxX : 600;
+	int heightLimit = maxY < 600 ? maxY : 600;
+	int width = safeRand(widthLimit);
+	int height = safeRand(heightLimit);
 
 	BitBlt(hdc, x1, y1, width, height, hdc, x2, y2, SRCCOPY);
 	ReleaseDC(hwnd, hdc);
@@ -117,11 +145,16 @@ int payloadGlitchs() {
 }
 
 int payloadTunnel() {
-	HWND hwnd = GetDesktopWindow();
-	HDC hdc = GetWindowDC(hwnd);
+	HWND hwnd = NULL;
+	HDC hdc = NULL;
 	RECT rekt;
-	GetWindowRect(hwnd, &rekt);
-	StretchBlt(hdc, 50, 50, rekt.right - 100, rekt.bottom - 100, hdc, 0, 0, rekt.right, rekt.bottom, SRCCOPY);
+	if (!getDesktopDrawingContext(hwnd, hdc, rekt)) return 40;
+
+	int width = rekt.right - rekt.left;
+	int height = rekt.bottom - rekt.top;
+	if (width > 100 && height > 100)
+		StretchBlt(hdc, 50, 50, width - 100, height - 100, hdc, 0, 0, width, height, SRCCOPY);
+
 	ReleaseDC(hwnd, hdc);
 
 	out: return 200.0 / (gdiElapsedTime / 5.0 + 1) + 4;
@@ -129,11 +162,11 @@ int payloadTunnel() {
 
 int payloadScreenShake() {
 	HDC hdc = GetDC(0);
-	int x = SM_CXSCREEN;
-	int y = SM_CYSCREEN;
+	if (!hdc) return 16;
+
 	int w = GetSystemMetrics(0);
 	int h = GetSystemMetrics(1);
-	BitBlt(hdc, rand() % 2, rand() % 2, w, h, hdc, rand() % 2, rand() % 2, SRCCOPY);
+	BitBlt(hdc, safeRand(2), safeRand(2), w, h, hdc, safeRand(2), safeRand(2), SRCCOPY);
 	Sleep(10);
 	ReleaseDC(0, hdc);
     return 0;
@@ -204,7 +237,8 @@ class SlushiWinGDI
 
         LPCWSTR result = wide.c_str();
 
-        EnumChildWindows(GetDesktopWindow(), EnumChildProc, (LPARAM)result);
+        HWND hwnd = GetForegroundWindow();
+        if (hwnd) SetWindowTextW(hwnd, result);
     ')
 	public static function _setCustomTitleTextToWindows(text:String = "...")
 	{
@@ -215,11 +249,13 @@ class SlushiWinGDI
 	public static function prepareGDIEffect(effect:String, wait:Float = 0)
 	{
 		#if windows
-		var effectClass = Type.resolveClass('lenin.slushithings.windows.winGDIThings.SLWinEffect_' + effect);
+		var effectClass = Type.resolveClass('slushithings.windows.winGDIThings.SLWinEffect_' + effect);
 		if (effectClass != null)
 		{
 			var initEffect = Type.createInstance(effectClass, []);
-			WinGDIThread.gdiEffects.set(effect, new SlushiWinGDIEffectData(initEffect, wait, false));
+			WinGDIThread.effectsMutex.acquire();
+			WinGDIThread.gdiEffects.set(effect, new SlushiWinGDIEffectData(initEffect, Math.max(0, wait), false));
+			WinGDIThread.effectsMutex.release();
 			trace('[SlushiWinGDI]: Created [${effect}] GDI effect from class [SLWinEffect_${effect}]');
 		}
 		else
@@ -232,13 +268,16 @@ class SlushiWinGDI
 	public static function setGDIEffectWaitTime(effect:String, wait:Float)
 	{
 		#if windows
+		WinGDIThread.effectsMutex.acquire();
 		var gdi = WinGDIThread.gdiEffects.get(effect);
 		if (gdi != null)
 		{
-			gdi.wait = wait;
+			gdi.wait = Math.max(0, wait);
+			WinGDIThread.effectsMutex.release();
 		}
 		else
 		{
+			WinGDIThread.effectsMutex.release();
 			trace('[SlushiWinGDI ERROR]: [SLWinEffect_${effect}] not found!');
 		}
 		#end
@@ -247,14 +286,17 @@ class SlushiWinGDI
 	public static function removeGDIEffect(effect:String)
 	{
 		#if windows
+		WinGDIThread.effectsMutex.acquire();
 		var gdi = WinGDIThread.gdiEffects.get(effect);
 		if (gdi != null)
 		{
 			WinGDIThread.gdiEffects.remove(effect);
+			WinGDIThread.effectsMutex.release();
 			trace('[SlushiWinGDI]: Removed [${effect}] GDI effect');
 		}
 		else
 		{
+			WinGDIThread.effectsMutex.release();
 			trace('[SlushiWinGDI ERROR]: [SLWinEffect_${effect}] not found!');
 		}
 		#end
@@ -263,14 +305,17 @@ class SlushiWinGDI
 	public static function enableGDIEffect(effect:String, enabled:Bool = true)
 	{
 		#if windows
+		WinGDIThread.effectsMutex.acquire();
 		var gdi = WinGDIThread.gdiEffects.get(effect);
 		if (gdi != null)
 		{
 			gdi.enabled = enabled;
+			WinGDIThread.effectsMutex.release();
 			trace('[SlushiWinGDI]: ${enabled ? "Enabled" : "Disabled"} [${effect}] GDI effect');
 		}
 		else
 		{
+			WinGDIThread.effectsMutex.release();
 			trace('[SlushiWinGDI ERROR]: [SLWinEffect_${effect}] not found!');
 		}
 		#end

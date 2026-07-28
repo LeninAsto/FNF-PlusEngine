@@ -2,7 +2,7 @@
 <project xmlns:config="http://lime.openfl.org/config">
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="Friday Night Funkin': Plus Engine" file="PlusEngine" packageName="com.leninasto.plusengine" package="com.leninasto.plusengine" main="Main" version="1.0" company="LeninAsto" />
+	<app title="Friday Night Funkin': Plus Engine" file="PlusEngine" packageName="com.leninasto.plusengine" package="com.leninasto.plusengine" main="Main" version="1.3-prerelease" company="LeninAsto" />
 	<app title="FNF: Plus Engine" if="android" />
 
 	<!--Switch Export with Unique ApplicationID and Icon-->
@@ -124,6 +124,8 @@
 	<!-- Force C99 standard for macOS/iOS to fix zlib compilation with Xcode 16.4 -->
 	<haxedef name="HXCPP_CFLAGS" value="-std=c99 -Wno-error=deprecated-non-prototype -Wno-deprecated-declarations -Wno-unused-command-line-argument -Wno-macro-redefined" if="macos || ios" />
 	<haxeflag name="-D" value="no-deprecation-warnings"/>
+	<haxedef name="HXCPP_CFLAGS" value="-Wnull-arithmetic -Wtautological-pointer-compare -Wtrigraphs"/>
+
 
 	<!-- Enables a terminal log prompt on debug builds -->
 	<haxelib name="hxcpp-debug-server" if="debug"/>
@@ -229,6 +231,6 @@
 
 	<section if="android">
 		<assets path="art/icons/android/res" rename="app/src/main/res" type="template" />
-		<include path="include_android.xml" />
+		<include path="mobile/include_android.xml" />
 	</section>
 </project>

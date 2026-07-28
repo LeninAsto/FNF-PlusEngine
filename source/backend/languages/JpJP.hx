@@ -53,7 +53,9 @@ class JpJP
 
         // Freeplay
         "personal_best" => "ベストスコア: {1} ({2}%)",
+        "new_personal_best" => "Score: {1}\nAccuracy: {2}% ({3})",
         "freeplay_tip" => "SPACEで曲を試聴 / CTRLでゲームプレイ変更メニューを開く / RESETでスコアと精度をリセット。",
+        "new_freeplay_tip" => "Press {1} to preview / Press {2} for Gameplay Changers / Press {3} to reset score and accuracy.",
         "musicplayer_playing" => "再生中: {1}",
         "musicplayer_paused" => "再生中: {1} (一時停止)",
         "musicplayer_tip" => "SPACEで一時停止 / ESCで終了 / Rで曲をリセット",
@@ -67,8 +69,8 @@ class JpJP
         "description_shadow_mario" => "Psych Engine チーム",
 
         // Reset Score/Achievement
-        "reset_score" => "スコアをリセット",
-        "reset_achievement" => "実績をリセット:",
+        "reset_score" => "Reset the score of",
+        "reset_achievement" => "Reset Achievement:",
         "yes" => "はい",
         "no" => "いいえ",
 
@@ -115,15 +117,14 @@ class JpJP
         "note_colors_lb" => "左ショルダーボタン",
 
         // Adjust Delay and Combo Menu
-        "delay_beat_hit" => "ビートヒット！",
+        "delay_beat_hit" => "Beat Hit!",
         "delay_current_offset" => "現在のオフセット: {1} ms",
-        "combo_rating_offset" => "評価オフセット:",
-        "combo_numbers_offset" => "数字オフセット:",
-        "combo_offset" => "コンボオフセット",
-        "note_delay" => "ノート/ビート遅延",
-        "switch_on_accept" => "(Acceptで切替)",
-        "switch_on_start" => "(Startで切替)",
-
+        "combo_rating_offset" => "Rating Offset:",
+        "combo_numbers_offset" => "Numbers Offset:",
+        "combo_offset" => "Combo Offset",
+        "note_delay" => "Note/Beat Delay",
+        "switch_on_accept" => "(Press Accept to Switch)",
+        "switch_on_start" => "(Press Start to Switch)",
         // Graphics Settings
         "description_low_quality" => "チェックすると、一部の背景詳細を無効にし、\n読み込み時間を短縮し、パフォーマンスを向上します。",
         "description_anti-aliasing" => "チェックを外すと、アンチエイリアスを無効にし、\nビジュアルが粗くなる代わりにパフォーマンスが向上します。",
@@ -248,9 +249,9 @@ class JpJP
         "editorplaystate_score" => "ヒット: {1} | ミス: {2}",
         
         // Language example text
-        "controls" => "コントロール",
-        "mobile_settings" => "モバイル設定",
-        "notes" => "ノートカラー",
+        "controls" => "Controls",
+        "mobile_settings" => "Mobile Settings",
+        "notes" => "Note Colors",
         "language_font" => "NotoSansJP-Medium.ttf",
         "language_example_text" => "これは日本語（日本）のサンプルテキストです。",
         // English fallback keys kept to avoid raw ids when a translation is incomplete.
@@ -282,7 +283,9 @@ class JpJP
         "pause_exit_to_menu" => "Exit to menu",
         "pause_back" => "Back",
         "freeplay_search" => "Search...",
+        "new_freeplay_search" => "Search...",
         "no_score" => "No score yet",
+        "new_no_score" => "No score yet",
         "reload_button" => "RELOAD",
         "enable_all_button" => "ENABLE ALL",
         "disable_all_button" => "DISABLE ALL",
@@ -524,5 +527,6 @@ class JpJP
         "touchpad_dpadmode_missing" => "This touchpad mode is missing its d-pad configuration.",
         "modchart_converter" => "Modchart Converter",
         "note_colors_notitg" => "RGB SHADERS DISABLED - NotITG skin preserves original colors",
+    "new_freeplay_song_time" => "Time: {1}",
     ];
 }

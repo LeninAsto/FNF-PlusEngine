@@ -124,6 +124,11 @@ class Controls
 
 	public function justPressed(key:String)
 	{
+		#if android
+		if (key == 'back' && FlxG.android.justPressed.BACK)
+			return true;
+		#end
+
 		var result:Bool = (FlxG.keys.anyJustPressed(getKeyboardBind(key)) == true);
 		if(result) controllerMode = false;
 
@@ -135,6 +140,11 @@ class Controls
 
 	public function pressed(key:String)
 	{
+		#if android
+		if (key == 'back' && FlxG.android.pressed.BACK)
+			return true;
+		#end
+
 		var result:Bool = (FlxG.keys.anyPressed(getKeyboardBind(key)) == true);
 		if(result) controllerMode = false;
 
@@ -146,6 +156,11 @@ class Controls
 
 	public function justReleased(key:String)
 	{
+		#if android
+		if (key == 'back' && FlxG.android.justReleased.BACK)
+			return true;
+		#end
+
 		var result:Bool = (FlxG.keys.anyJustReleased(getKeyboardBind(key)) == true);
 		if(result) controllerMode = false;
 

@@ -21,8 +21,8 @@ class MasterEditorMenu extends MusicBeatState
 		'menu_character_editor',
 		'dialogue_editor',
 		'dialogue_portrait_editor',
-		'note_splash_editor',
-		'modchart_converter'
+		'note_splash_editor'//,
+		//'modchart_converter'
 	];
 	private var grpTexts:FlxTypedGroup<Alphabet>;
 	private var directories:Array<String> = [null];
@@ -98,8 +98,8 @@ class MasterEditorMenu extends MusicBeatState
             Language.getPhrase('menu_character_editor', 'Menu Character Editor'),
             Language.getPhrase('dialogue_editor', 'Dialogue Editor'),
             Language.getPhrase('dialogue_portrait_editor', 'Dialogue Portrait Editor'),
-            Language.getPhrase('note_splash_editor', 'Note Splash Editor'),
-            Language.getPhrase('modchart_converter', 'Modchart Converter')
+            Language.getPhrase('note_splash_editor', 'Note Splash Editor')//,
+            //Language.getPhrase('modchart_converter', 'Modchart Converter')
         ];
     }
 

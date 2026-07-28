@@ -62,7 +62,9 @@ class FrFR
 
         // Freeplay
         "personal_best" => "MEILLEUR SCORE : {1} ({2}%)",
+        "new_personal_best" => "Score : {1}\nPrecision : {2}% ({3})",
         "freeplay_tip" => "Appuyez sur ESPACE pour écouter la chanson / Appuyez sur CTRL pour ouvrir le menu des modificateurs / Appuyez sur RESET pour réinitialiser le score et la précision.",
+        "new_freeplay_tip" => "Appuyez sur {1} pour previsualiser / Appuyez sur {2} pour les modificateurs / Appuyez sur {3} pour reinitialiser score et precision.",
         "musicplayer_playing" => "MUSIQUE : {1}",
         "musicplayer_paused" => "MUSIQUE : {1} (EN PAUSE)",
         "musicplayer_tip" => "Appuyez sur ESPACE pour mettre en pause / Appuyez sur ÉCHAP pour quitter / Appuyez sur R pour redémarrer la chanson",
@@ -457,7 +459,9 @@ class FrFR
         "storyname_week3" => "Pico",
         "storyname_week7" => "Tankman",
         "freeplay_search" => "Search...",
+        "new_freeplay_search" => "Rechercher...",
         "no_score" => "No score yet",
+        "new_no_score" => "Aucun score",
         "mods_leave" => "Press {1} To Leave",
         "credits_title" => "CREDITS",
         "link_hint" => "Press A/ENTER to open link | B/ESC to go back",
@@ -557,5 +561,6 @@ class FrFR
         "touchpad_dpadmode_missing" => "This touchpad mode is missing its d-pad configuration.",
         "modchart_converter" => "Modchart Converter",
         "note_colors_notitg" => "RGB SHADERS DISABLED - NotITG skin preserves original colors",
+    "new_freeplay_song_time" => "Temps : {1}",
     ];
 }

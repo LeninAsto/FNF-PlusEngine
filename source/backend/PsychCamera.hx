@@ -50,7 +50,6 @@ class PsychCamera extends FlxCamera
 		{
 			_debugFilterChanges++;
 			_lastDebugFilters = filters;
-			trace('[ShaderDebug][PsychCamera] filters ref changed, len=${filters == null ? 0 : filters.length}, enabled=$filtersEnabled');
 		}
 
 		if (elapsed > 0.05)
@@ -59,8 +58,6 @@ class PsychCamera extends FlxCamera
 		_debugTimer += elapsed;
 		if (_debugTimer >= 1)
 		{
-			if (_debugFilterChanges > 0 || _debugSlowFrames > 0 || (filters != null && filters.length > 0))
-				trace('[ShaderDebug][PsychCamera] 1s report: filters=${filters == null ? 0 : filters.length}, refChanges=$_debugFilterChanges, slowFrames=$_debugSlowFrames, elapsed=${Std.int(elapsed * 1000)}ms');
 
 			_debugTimer = 0;
 			_debugFilterChanges = 0;
