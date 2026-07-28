@@ -4341,7 +4341,7 @@ class PlayState extends MusicBeatState
 						}
 						changedDifficulty = false;
 						
-						MusicBeatState.switchState(StoryMenuStateSelector.create());
+						MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
 					}
 					transitioning = true;
 					return true;
