@@ -12,6 +12,7 @@ export/*
 .hmm/*
 # .github/
 .tmp/*
+.tmp*
 *.code-workspace
 vs_Community.exe
 # Local history which shouldn't be shared.
