@@ -85,7 +85,7 @@ relax — progress doesn’t wait.
 ## Developer Credits:
 * Lenin Asto - Main Programmer for Plus Engine Fork
 * Legacy Odyssey - Co-Programmer for Plus Engine Fork
-* SebasDeveloper - Programmer for Deep Engine RB Fork
+* SebasDeveloper - Main Programmer for Deep Engine RB Fork
 
 ## Original Credits:
 * Shadow Mario - Main Programmer and Head of Psych Engine.
