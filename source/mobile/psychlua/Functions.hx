@@ -6,7 +6,9 @@ import lime.ui.Haptic;
 import psychlua.FunkinLua;
 import psychlua.LuaUtils;
 import mobile.backend.TouchUtil;
-#if android import mobile.backend.PsychJNI; #end
+#if android
+import mobile.backend.PsychJNI;
+#end
 
 /**
  * ...
@@ -303,25 +305,23 @@ class MobileFunctions
 #if android
 class AndroidFunctions
 {
-	// static var spicyPillow:AndroidBatteryManager = new AndroidBatteryManager();
 	public static function implement(funk:FunkinLua)
 	{
 		var lua:State = funk.lua;
-		// Lua_helper.add_callback(lua, "isRooted", AndroidTools.isRooted());
+		Lua_helper.add_callback(lua, "isRooted", AndroidTools.isRooted());
 		Lua_helper.add_callback(lua, "isDolbyAtmos", AndroidTools.isDolbyAtmos());
 		Lua_helper.add_callback(lua, "isAndroidTV", AndroidTools.isAndroidTV());
 		Lua_helper.add_callback(lua, "isTablet", AndroidTools.isTablet());
 		Lua_helper.add_callback(lua, "isChromebook", AndroidTools.isChromebook());
 		Lua_helper.add_callback(lua, "isDeXMode", AndroidTools.isDeXMode());
-		// Lua_helper.add_callback(lua, "isCharging", spicyPillow.isCharging());
 
-		Lua_helper.add_callback(lua, "backJustPressed", FlxG.android.justPressed.BACK);
-		Lua_helper.add_callback(lua, "backPressed", FlxG.android.pressed.BACK);
-		Lua_helper.add_callback(lua, "backJustReleased", FlxG.android.justReleased.BACK);
+		Lua_helper.add_callback(lua, "backJustPressed", () -> FlxG.android.justPressed.BACK);
+		Lua_helper.add_callback(lua, "backPressed", () -> FlxG.android.pressed.BACK);
+		Lua_helper.add_callback(lua, "backJustReleased", () -> FlxG.android.justReleased.BACK);
 
-		Lua_helper.add_callback(lua, "menuJustPressed", FlxG.android.justPressed.MENU);
-		Lua_helper.add_callback(lua, "menuPressed", FlxG.android.pressed.MENU);
-		Lua_helper.add_callback(lua, "menuJustReleased", FlxG.android.justReleased.MENU);
+		Lua_helper.add_callback(lua, "menuJustPressed", () -> FlxG.android.justPressed.MENU);
+		Lua_helper.add_callback(lua, "menuPressed", () -> FlxG.android.pressed.MENU);
+		Lua_helper.add_callback(lua, "menuJustReleased", () -> FlxG.android.justReleased.MENU);
 
 		Lua_helper.add_callback(lua, "getCurrentOrientation", () -> PsychJNI.getCurrentOrientationAsString());
 		Lua_helper.add_callback(lua, "setOrientation", function(?hint:String):Void

@@ -1878,7 +1878,8 @@ class StageEditorState extends MusicBeatState implements PsychUIEventHandler.Psy
 	override function destroy()
 	{
 		destroySubStates = true;
-		animationEditor.destroy();
+		if (animationEditor != null)
+			animationEditor = FlxDestroyUtil.destroy(animationEditor);
 		super.destroy();
 	}
 }
@@ -2072,8 +2073,8 @@ class StageEditorAnimationSubstate extends MusicBeatSubstate {
 		{
 			curAnim = 0;
 			originalZoom = FlxG.camera.zoom;
-			originalCamPoint = FlxPoint.weak(FlxG.camera.scroll.x, FlxG.camera.scroll.y);
-			originalPosition = FlxPoint.weak(target.x, target.y);
+			originalCamPoint = FlxPoint.get(FlxG.camera.scroll.x, FlxG.camera.scroll.y);
+			originalPosition = FlxPoint.get(target.x, target.y);
 			originalCamTarget = FlxG.camera.target;
 			originalAlpha = target.alpha;
 			FlxG.camera.zoom = 0.5;
@@ -2101,6 +2102,17 @@ class StageEditorAnimationSubstate extends MusicBeatSubstate {
 			{
 				if(target.firstAnimation == null) target.firstAnimation = target.animations[0].anim;
 				playAnim(target.firstAnimation);
+			}
+
+			if (originalCamPoint != null)
+			{
+				originalCamPoint.put();
+				originalCamPoint = null;
+			}
+			if (originalPosition != null)
+			{
+				originalPosition.put();
+				originalPosition = null;
 			}
 		};
 

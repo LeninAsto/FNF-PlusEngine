@@ -4,7 +4,12 @@ import flixel.FlxSprite;
 import flixel.math.FlxAngle;
 import flixel.math.FlxPoint;
 import flixel.tweens.FlxEase.EaseFunction;
+import modchart.PlayfieldState;
+import modchart.backend.core.ArrowData;
+import modchart.backend.core.ModifierOutput;
+import modchart.backend.core.TransformMode;
 import modchart.backend.core.Node.NodeFunction;
+import modchart.backend.math.Vector3;
 import modchart.backend.graphics.*;
 import modchart.backend.graphics.renderers.*;
 import modchart.engine.events.types.*;
@@ -31,6 +36,7 @@ import openfl.geom.Matrix;
 final class PlayField extends FlxSprite {
 	public var context:Context;
 	public var displayName:Null<String> = null;
+	public var state(default, null):PlayfieldState;
 
 	public var events:EventManager;
 	public var modifiers:ModifierGroup;
@@ -48,6 +54,7 @@ final class PlayField extends FlxSprite {
 		super();
 
 		moves = false;
+		state = new PlayfieldState();
 
 		events = new EventManager(this);
 		modifiers = new ModifierGroup(this);
@@ -72,6 +79,10 @@ final class PlayField extends FlxSprite {
 		updateHitbox();
 	}
 
+	public inline function beginFrame(frameId:Int, songPosition:Float, beat:Float):Void {
+		state.beginFrame(frameId, songPosition, beat);
+	}
+
 	public inline function setPercent(name:String, value:Float, player:Int = -1)
 		return modifiers.setPercent(name, value, player);
 
@@ -89,6 +100,30 @@ final class PlayField extends FlxSprite {
 
 	public inline function addScriptedModifier(name:String, instance:Modifier)
 		return modifiers.addScriptedModifier(name, instance);
+
+	public inline function getCachedPath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true, ?transformMode:Int = 15):ModifierOutput {
+		final key = __makePathCacheKey(pos, data, posDiff, allowVis, allowPos, transformMode);
+		final cached = state.getCachedPath(key);
+		if (cached != null)
+			return cached;
+
+		final resolved = modifiers.getPath(pos, data, posDiff, allowVis, allowPos, transformMode);
+		final cloned = state.cloneOutput(resolved);
+		state.setCachedPath(key, cloned);
+		return cloned;
+	}
+
+	public inline function getNotePath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput
+		return getCachedPath(pos, data, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.NOTE);
+
+	public inline function getReceptorPath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput
+		return getCachedPath(pos, data, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.RECEPTOR);
+
+	public inline function getFieldPath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput
+		return getCachedPath(pos, data, posDiff, allowVis, allowPos, TransformMode.FIELD);
+
+	public inline function getSplashPath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput
+		return getCachedPath(pos, data, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.SPLASH);
 
 	public inline function addEvent(event:Event) {
 		events.add(event);
@@ -111,7 +146,7 @@ final class PlayField extends FlxSprite {
 			return;
 		}
 
-		addEvent(new EaseEvent(name, beat, length, value, easeFunc, player, events));
+		addEvent(new EaseEvent(name.toLowerCase(), beat, length, value, easeFunc, player, events));
 	}
 
 	public inline function add(name:String, beat:Float, length:Float, addition:Float = 1, easeFunc:EaseFunction, player:Int = -1):Void {
@@ -121,7 +156,7 @@ final class PlayField extends FlxSprite {
 			return;
 		}
 
-		addEvent(new AddEvent(name, beat, length, addition, easeFunc, player, events));
+		addEvent(new AddEvent(name.toLowerCase(), beat, length, addition, easeFunc, player, events));
 	}
 
 	public inline function setAdd(name:String, beat:Float, valueToAdd:Float, player:Int = -1):Void {
@@ -284,5 +319,9 @@ final class PlayField extends FlxSprite {
 			_skewMatrix.b = Math.tan(skew.y * FlxAngle.TO_RAD);
 			_skewMatrix.c = Math.tan(skew.x * FlxAngle.TO_RAD);
 		}
+	}
+
+	private inline function __makePathCacheKey(pos:Vector3, data:ArrowData, posDiff:Float, allowVis:Bool, allowPos:Bool, transformMode:Int):String {
+		return '${state.frameId}|${pos.x}|${pos.y}|${pos.z}|${data.hitTime}|${data.distance}|${data.sourceTime}|${data.lane}|${data.player}|${data.isTapArrow ? 1 : 0}|${data.straightHolds ? 1 : 0}|${posDiff}|${allowVis ? 1 : 0}|${allowPos ? 1 : 0}|${Std.int(transformMode)}';
 	}
 }

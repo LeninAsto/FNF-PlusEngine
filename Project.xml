@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<project>
+<project xmlns:config="http://lime.openfl.org/config">
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="Friday Night Funkin': Plus Engine" file="PlusEngine" packageName="com.leninasto.plusengine" package="com.leninasto.plusengine" main="Main" version="1.0" company="LeninAsto" />
+	<app title="Friday Night Funkin': Plus Engine" file="PlusEngine" packageName="com.leninasto.plusengine" package="com.leninasto.plusengine" main="Main" version="1.3-prerelease" company="LeninAsto" />
 	<app title="FNF: Plus Engine" if="android" />
 
 	<!--Switch Export with Unique ApplicationID and Icon-->
@@ -24,7 +24,6 @@
 	<define name="MODS_ALLOWED" if="desktop || mobile" />
 	<define name="MODCHARTS_NOTITG_ALLOWED" if="desktop || mobile" />
 	<define name="HSCRIPT_ALLOWED" if="desktop || mobile" />
-	<define name="SSCRIPT_ALLOWED" if="desktop || mobile" />
 	<define name="LUA_ALLOWED" if="cpp" />
 	<define name="ACHIEVEMENTS_ALLOWED" />
 	<define name="DISCORD_ALLOWED" if="desktop" />
@@ -48,17 +47,11 @@
 	<!--These window settings apply to all targets-->
 	<window width="1280" height="720" fps="60" background="#000000" hardware="true" vsync="false" allow-high-dpi="true" />
 
-	<!--HTML5-specific-->
-	<window if="html5" resizable="true" />
-
 	<!--Desktop-specific-->
 	<window if="desktop" orientation="landscape" fullscreen="false" resizable="true" vsync="false"/>
 
 	<!--Mobile-specific-->
 	<window if="mobile" orientation="landscape" fullscreen="true" resizable="false" allow-shaders="true" require-shaders="true" />
-
-	<!--Switch-specific-->
-	<window if="switch" orientation="landscape" fullscreen="true" width="0" height="0" resizable="true" />
 
 	<!-- _____________________________ Path Settings ____________________________ -->
 
@@ -72,28 +65,21 @@
 
 	<!-- Assets -->
 	<assets path="assets/fonts" />
-	<assets path="assets/shared"        exclude="*.ogg" if="web"/>
-	<assets path="assets/shared"        exclude="*.mp3" unless="web"/>
-	<assets path="assets/embed"         exclude="*.ogg" if="web" embed="true"/>
-	<assets path="assets/embed"         exclude="*.mp3" unless="web" embed="true"/>
-	<assets path="assets/videos"        if="VIDEOS_ALLOWED"/>
-	<assets path="assets/songs"         exclude="*.ogg" if="web"/>
-	<assets path="assets/songs"         exclude="*.mp3" unless="web"/>
-	<assets path="assets/week_assets"   rename="assets" exclude="*.ogg" if="web"/>
-	<assets path="assets/week_assets"   rename="assets" exclude="*.mp3" unless="web"/>
+	<assets path="assets/shared" />
+	<assets path="assets/embed" embed="true"/>
+	<assets path="assets/videos" if="VIDEOS_ALLOWED"/>
+	<assets path="assets/songs" />
+	<assets path="assets/week_assets" />
 	<section if="TITLE_SCREEN_EASTER_EGG">
-		<assets path="assets/secrets" rename="assets/shared" exclude="*.ogg" if="web"/>
-		<assets path="assets/secrets" rename="assets/shared" exclude="*.mp3"  unless="web"/>
+		<assets path="assets/secrets" rename="assets/shared"/>
 	</section>
 
 	<section if="TRANSLATIONS_ALLOWED">
-		<assets path="assets/translations" rename="assets" exclude="*.ogg" if="web"/>
-		<assets path="assets/translations" rename="assets" exclude="*.mp3"  unless="web"/>
+		<assets path="assets/translations" rename="assets"/>
 	</section>
 
 	<section if="BASE_GAME_FILES">
-		<assets path="assets/base_game" rename="assets" exclude="*.ogg" if="web"/>
-		<assets path="assets/base_game" rename="assets" exclude="*.mp3"  unless="web"/>
+		<assets path="assets/base_game" rename="assets"/>
 		<haxelib name="grig.audio" if="BASE_GAME_FILES"/>
 		<haxelib name="funkin.vis" if="BASE_GAME_FILES"/>
 	</section>
@@ -123,7 +109,7 @@
 
 	<!--Psych stuff needed-->
 	<haxelib name="linc_luajit" if="LUA_ALLOWED"/>
-	<haxelib name="hscript-iris" if="HSCRIPT_ALLOWED"/>
+	<haxelib name="hscript-iris" version="git" if="HSCRIPT_ALLOWED"/>
 	<haxelib name="hxvlc" if="VIDEOS_ALLOWED"/>
 	<haxelib name="hxdiscord_rpc" if="DISCORD_ALLOWED"/>
 	<haxelib name="flxanimate"/>
@@ -138,6 +124,8 @@
 	<!-- Force C99 standard for macOS/iOS to fix zlib compilation with Xcode 16.4 -->
 	<haxedef name="HXCPP_CFLAGS" value="-std=c99 -Wno-error=deprecated-non-prototype -Wno-deprecated-declarations -Wno-unused-command-line-argument -Wno-macro-redefined" if="macos || ios" />
 	<haxeflag name="-D" value="no-deprecation-warnings"/>
+	<haxedef name="HXCPP_CFLAGS" value="-Wnull-arithmetic -Wtautological-pointer-compare -Wtrigraphs"/>
+
 
 	<!-- Enables a terminal log prompt on debug builds -->
 	<haxelib name="hxcpp-debug-server" if="debug"/>
@@ -197,7 +185,7 @@
 	<haxedef name="message.reporting" value="pretty" />
 
 	<!-- Do whatever you want I'm tired uninstall and install everytime -->
-	<certificate path="key.keystore" password="psychengine" alias="psychport" alias-password="psychengine" if="android" unless="debug" />
+	<certificate path="key.keystore" password="plusengine" alias="psychplus" alias-password="plusengine" if="android" unless="debug" />
 
 	<!-- Category Type for Apple Systems -->
 	<config:ios category_type="public.app-category.music-games" />
@@ -239,22 +227,10 @@
 	<icon path="art/icons/icon32.png" size='32' unless="android"/>
 	<icon path="art/icons/icon64.png" size='64' unless="android"/>
 	<icon path="art/icons/iconOG.png" unless="android"/>
-
-	<!-- Only iOS icon -->
 	<icon path="art/icons/iconALT.png" if="ios"/>
-	
-	<icon path="art/icons/iOS/bf-iOS-Default-20x20@2x.png" size='40' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-20x20@3x.png" size='60' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-29x29.png" size='29' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-29x29@2x.png" size='58' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-29x29@3x.png" size='87' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-40x40@2x.png" size='80' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-60x60@2x.png" size='120' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-60x60@3x.png" size='180' if="ios" />
-	<icon path="art/icons/iOS/bf-iOS-Default-76x76@2x.png" size='152' if="ios" />
 
 	<section if="android">
 		<assets path="art/icons/android/res" rename="app/src/main/res" type="template" />
-		<include path="source/kotlin/include_android.xml" />
+		<include path="source/mobile/include_android.xml" />
 	</section>
 </project>

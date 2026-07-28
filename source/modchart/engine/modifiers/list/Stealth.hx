@@ -3,6 +3,7 @@ package modchart.engine.modifiers.list;
 import flixel.math.FlxMath;
 import modchart.backend.core.ModifierParameters;
 import modchart.backend.core.VisualParameters;
+import modchart.backend.core.TransformMode;
 
 class Stealth extends Modifier {
 	// Pre-computed hashed IDs to avoid Std.string(lane) allocations in hot path.
@@ -95,11 +96,12 @@ class Stealth extends Modifier {
 		final lane = params.lane;
 
 		// Use pre-computed IDs to avoid Std.string(lane) + string concat allocations
-		final stealthVal = getUnsafe(_stealthID, player) + getUnsafe(_stealthIDs[lane], player);
-		final darkVal = getUnsafe(_darkID, player) + getUnsafe(_darkIDs[lane], player);
-		final visibility = params.isTapArrow ? stealthVal : darkVal;
-		data.alpha = ((getUnsafe(_alphaID, player) + getUnsafe(_alphaIDs[lane], player)) * (1 - ((Math.max(0.5, visibility) - 0.5) * 2)));
-		data.glow += visibility * 2;
+		final stealthVal = getUnsafeLaneAdd(_stealthID, _stealthIDs[lane], player);
+		final darkVal = getUnsafeLaneAdd(_darkID, _darkIDs[lane], player);
+		final visibility = FlxMath.bound(params.isTapArrow ? stealthVal : darkVal, 0, 1);
+		final alpha = FlxMath.bound(getUnsafe(_alphaID, player), 0, 1)
+			* (hasUnsafeForPlayer(_alphaIDs[lane], player) ? FlxMath.bound(getUnsafe(_alphaIDs[lane], player), 0, 1) : 1);
+		data.alpha *= alpha * (1 - visibility);
 
 		// sudden & hidden
 		if (params.isTapArrow) // non receptor
@@ -113,4 +115,7 @@ class Stealth extends Modifier {
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function transformMode():TransformMode
+		return TransformMode.FIELD;
 }

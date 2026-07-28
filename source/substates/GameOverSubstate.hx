@@ -174,9 +174,9 @@ class GameOverSubstate extends MusicBeatSubstate
 				
 				Mods.loadTopMod();
 				if (PlayState.isStoryMode)
-					MusicBeatState.switchState(new StoryMenuState());
+					MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
 				else
-					MusicBeatState.switchState(new FreeplayState());
+					MusicBeatState.switchState(states.FreeplayStateSelector.create());
 			
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				PlayState.instance.callOnScripts('onGameOverConfirm', [false]);

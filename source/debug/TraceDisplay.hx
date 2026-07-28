@@ -22,6 +22,7 @@ typedef TraceInfo = {
     var color:Int;
     var type:TraceType;
     var timestamp:Float;
+    var count:Int;
 }
 
 /**
@@ -32,7 +33,6 @@ enum TraceType {
     ERROR;
     LUA_ERROR;
     HSCRIPT_ERROR;
-    SSCRIPT_ERROR;
     WARNING;
     INFO;
 }
@@ -51,7 +51,10 @@ class TraceDisplay extends Sprite
     /**
      * Máximo número de traces a mostrar
      */
-    public var maxTraces:Int = 30;
+    public var maxTraces:Int = 80;
+    public var maxStoredLines:Int = 80;
+    public var maxVisibleLines:Int = 18;
+    private static inline final TEXT_PADDING:Int = 8;
     
     /**
      * Si el display está visible o no
@@ -67,6 +70,10 @@ class TraceDisplay extends Sprite
      * Fondo semi-transparente para mejor legibilidad
      */
     private var backgroundShape:Shape;
+
+    private var baseX:Float = 0;
+    private var baseY:Float = 0;
+    private var shownAmount:Float = 0;
     
     /**
      * Referencia al trace original de Haxe
@@ -100,6 +107,8 @@ class TraceDisplay extends Sprite
         
         this.x = x;
         this.y = y;
+        baseX = x;
+        baseY = y;
         
         // Create text display field
         textDisplay = new TextField();
@@ -111,6 +120,8 @@ class TraceDisplay extends Sprite
         textDisplay.autoSize = openfl.text.TextFieldAutoSize.LEFT;
         textDisplay.multiline = true;
         textDisplay.wordWrap = false;
+        textDisplay.x = TEXT_PADDING;
+        textDisplay.y = TEXT_PADDING;
         
         // Crear fondo
         backgroundShape = new Shape();
@@ -129,8 +140,10 @@ class TraceDisplay extends Sprite
         }
         
         // Inicialmente oculto
-        textDisplay.visible = false;
-        backgroundShape.visible = false;
+        textDisplay.visible = true;
+        backgroundShape.visible = true;
+        alpha = 0;
+        visible = false;
     }
     
     /**
@@ -201,19 +214,27 @@ class TraceDisplay extends Sprite
      */
     public function addTraceDirectly(text:String, type:TraceType = NORMAL, color:Int = 0xFFFFFF):Void
     {
+        for (trace in traces) {
+            if (trace.text == text && trace.type == type && trace.color == color) {
+                trace.count++;
+                trace.timestamp = haxe.Timer.stamp();
+                if (isVisible) {
+                    updateDisplay();
+                }
+                return;
+            }
+        }
+
         var traceInfo:TraceInfo = {
             text: text,
             color: color,
             type: type,
-            timestamp: haxe.Timer.stamp()
+            timestamp: haxe.Timer.stamp(),
+            count: 1
         };
         
         traces.push(traceInfo);
-        
-        // Limitar el número de traces
-        if (traces.length > maxTraces) {
-            traces.shift();
-        }
+        enforceTraceLimits();
         
         // Actualizar display si está visible
         if (isVisible) {
@@ -250,6 +271,31 @@ class TraceDisplay extends Sprite
             instance.addTraceDirectly('LUA ERROR: $text', LUA_ERROR, 0xFF6666);
         }
     }
+
+    /**
+     * Funcion publica para agregar traces de Lua, incluyendo warnings y deprecated.
+     */
+    public static function addLuaTrace(text:String, color:Int = 0xFFFFFF, deprecated:Bool = false):Void
+    {
+        if (instance != null) {
+            var type = instance.typeFromColorAndText(color, text, deprecated);
+            var prefix = deprecated ? 'LUA DEPRECATED: ' : 'LUA: ';
+            if (type == LUA_ERROR) prefix = 'LUA ERROR: ';
+            else if (type == WARNING) prefix = deprecated ? 'LUA DEPRECATED: ' : 'LUA WARNING: ';
+            instance.addTraceDirectly(prefix + text, type, instance.displayColorForType(type, color));
+        }
+    }
+
+    /**
+     * Funcion publica para reflejar el panel debug del juego en TraceDisplay.
+     */
+    public static function addDebugText(text:String, color:Int = 0xFFFFFF):Void
+    {
+        if (instance != null) {
+            var type = instance.typeFromColorAndText(color, text, false);
+            instance.addTraceDirectly(Std.string(text), type, instance.displayColorForType(type, color));
+        }
+    }
     
     /**
      * Función pública para agregar errores de HScript
@@ -265,30 +311,7 @@ class TraceDisplay extends Sprite
             instance.addTraceDirectly(errorText, HSCRIPT_ERROR, 0xFF4444);
         }
     }
-    
-    /**
-     * Función pública para agregar errores de SScript
-     */
-    public static function addSScriptError(text:String, ?origin:String):Void
-    {
-        if (instance != null) {
-            var errorText = 'SSCRIPT ERROR: $text';
-            if (origin != null && origin.length > 0) {
-                var name = instance.extractFileName(origin);
-                errorText = 'SSCRIPT ERROR in $name: $text';
-            }
-            instance.addTraceDirectly(errorText, SSCRIPT_ERROR, 0xFF4444);
-        }
-        
-        // Incrementar contador en FPSCounter
-        #if !flash
-        try {
-            if (debug.FPSCounter.instance != null) {
-                debug.FPSCounter.instance.sscriptsErrors++;
-            }
-        } catch(e) {}
-        #end
-    }
+
     
     /**
      * Función pública para agregar warnings
@@ -309,6 +332,85 @@ class TraceDisplay extends Sprite
             instance.addTraceDirectly('INFO: $text', INFO, 0x00AAFF);
         }
     }
+
+    private function typeFromColorAndText(color:Int, text:String, deprecated:Bool):TraceType
+    {
+        var rgb = color & 0x00FFFFFF;
+        var lower = Std.string(text).toLowerCase();
+        if (rgb == 0xFF0000 || lower.indexOf('error') != -1 || lower.indexOf('fatal') != -1)
+            return LUA_ERROR;
+        if (deprecated || rgb == 0xFFFF00 || rgb == 0xFFAA00 || lower.indexOf('warning') != -1 || lower.indexOf('warn') != -1 || lower.indexOf('deprecated') != -1)
+            return WARNING;
+        if (rgb == 0x00FF00 || rgb == 0x00AAFF || lower.indexOf('loaded') != -1 || lower.indexOf('success') != -1)
+            return INFO;
+        return NORMAL;
+    }
+
+    private function displayColorForType(type:TraceType, color:Int):Int
+    {
+        return switch (type) {
+            case LUA_ERROR | ERROR: 0xFF6666;
+            case HSCRIPT_ERROR: 0xFF4444;
+            case WARNING: 0xFFAA00;
+            case INFO: 0x00AAFF;
+            case NORMAL: color & 0x00FFFFFF;
+        };
+    }
+
+    private function enforceTraceLimits():Void
+    {
+        while (traces.length > maxTraces)
+            traces.shift();
+
+        var totalLines = 0;
+        for (trace in traces)
+            totalLines += getTraceLineCount(trace);
+
+        while (traces.length > 0 && totalLines > maxStoredLines)
+            totalLines -= getTraceLineCount(traces.shift());
+    }
+
+    private function getTraceLineCount(trace:TraceInfo):Int
+    {
+        if (trace == null || trace.text == null || trace.text.length <= 0)
+            return 1;
+        return trace.text.split("\n").length;
+    }
+
+    private function formatTraceLine(trace:TraceInfo):String
+    {
+        var prefix = switch(trace.type) {
+            case ERROR: "[ERROR] ";
+            case LUA_ERROR: "[LUA-ERR] ";
+            case HSCRIPT_ERROR: "[HSC-ERR] ";
+            case WARNING: "[WARN] ";
+            case INFO: "[INFO] ";
+            case NORMAL: "";
+        }
+
+        var text = prefix + trace.text;
+        if (trace.count > 1)
+            text += ' x${trace.count}';
+        return text;
+    }
+
+    private function getVisibleTraceLines():Array<String>
+    {
+        final lines:Array<String> = [];
+        var traceIndex = traces.length - 1;
+
+        while (traceIndex >= 0 && lines.length < maxVisibleLines) {
+            final traceLines = formatTraceLine(traces[traceIndex]).split("\n");
+            var lineIndex = traceLines.length - 1;
+            while (lineIndex >= 0 && lines.length < maxVisibleLines) {
+                lines.unshift(traceLines[lineIndex]);
+                lineIndex--;
+            }
+            traceIndex--;
+        }
+
+        return lines;
+    }
     
     /**
      * Actualizar el contenido mostrado
@@ -322,20 +424,7 @@ class TraceDisplay extends Sprite
         if (traces.length == 0) {
             displayText += "Nothing for now...";
         } else {
-            for (i in 0...traces.length) {
-                var trace = traces[i];
-                var prefix = switch(trace.type) {
-                    case ERROR: "[ERROR] ";
-                    case LUA_ERROR: "[LUA-ERR] ";
-                    case HSCRIPT_ERROR: "[HSC-ERR] ";
-                    case SSCRIPT_ERROR: "[SSCR-ERR] ";
-                    case WARNING: "[WARN] ";
-                    case INFO: "[INFO] ";
-                    case NORMAL: "";
-                }
-                displayText += prefix + trace.text;
-                if (i < traces.length - 1) displayText += "\n";
-            }
+            displayText += getVisibleTraceLines().join("\n");
         }
         
         textDisplay.text = displayText;
@@ -350,8 +439,8 @@ class TraceDisplay extends Sprite
         if (!isVisible || backgroundShape == null) return;
         
         final INNER_DIFF:Int = 3;
-        var bgWidth = textDisplay.textWidth + 10;
-        var bgHeight = textDisplay.textHeight + 10;
+        var bgWidth = textDisplay.textWidth + (TEXT_PADDING * 2);
+        var bgHeight = textDisplay.textHeight + (TEXT_PADDING * 2);
         
         backgroundShape.graphics.clear();
         
@@ -382,10 +471,9 @@ class TraceDisplay extends Sprite
     public function toggleDisplay():Void
     {
         isVisible = !isVisible;
-        textDisplay.visible = isVisible;
-        backgroundShape.visible = isVisible;
         
         if (isVisible) {
+            visible = true;
             updateDisplay();
         }
     }
@@ -396,8 +484,7 @@ class TraceDisplay extends Sprite
     public function show():Void
     {
         isVisible = true;
-        textDisplay.visible = true;
-        backgroundShape.visible = true;
+        visible = true;
         updateDisplay();
     }
     
@@ -407,8 +494,6 @@ class TraceDisplay extends Sprite
     public function hide():Void
     {
         isVisible = false;
-        textDisplay.visible = false;
-        backgroundShape.visible = false;
     }
     
     /**
@@ -427,9 +512,30 @@ class TraceDisplay extends Sprite
      */
     public function positionTrace(x:Float, y:Float):Void
     {
-        this.x = x;
-        this.y = y;
+        baseX = x;
+        baseY = y;
+        this.x = baseX - (1 - shownAmount) * 18;
+        this.y = baseY;
         updateBackground();
+    }
+
+    private override function __enterFrame(deltaTime:Float):Void
+    {
+        var target = isVisible ? 1.0 : 0.0;
+        var elapsed = Math.max(0, deltaTime / 1000);
+        shownAmount += (target - shownAmount) * Math.min(1, elapsed * 12);
+
+        if (Math.abs(target - shownAmount) < 0.002)
+            shownAmount = target;
+
+        alpha = shownAmount;
+        x = baseX - (1 - shownAmount) * 18;
+        y = baseY;
+
+        if (!isVisible && shownAmount <= 0)
+            visible = false;
+        else if (isVisible)
+            visible = true;
     }
     
     /**

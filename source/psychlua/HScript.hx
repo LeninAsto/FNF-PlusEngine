@@ -230,8 +230,49 @@ class HScript extends Iris
 	override function preset() {
 		super.preset();
 
-		// Some very commonly used classes
+		// ===== PSYCH ENGINE 1.0.4 BASE PRESET =====
+		// Keep these first so old Psych scripts see the expected globals before
+		// Plus Engine layers add aliases or extended wrappers below.
 		set('Type', Type);
+		#if sys
+		set('File', File);
+		set('FileSystem', FileSystem);
+		#end
+		set('FlxG', CustomFlxG);
+		set('FlxMath', CustomFlxMath);
+		set('FlxSprite', flixel.FlxSprite);
+		set('FlxText', flixel.text.FlxText);
+		set('FlxCamera', flixel.FlxCamera);
+		set('PsychCamera', backend.PsychCamera);
+		set('FlxTimer', flixel.util.FlxTimer);
+		set('FlxTween', flixel.tweens.FlxTween);
+		set('FlxEase', flixel.tweens.FlxEase);
+		set('FlxColor', CustomFlxColor);
+		set('Countdown', backend.BaseStage.Countdown);
+		set('PlayState', PlayState);
+		set('Paths', Paths);
+		set('StorageUtil', mobile.backend.StorageUtil);
+		set('Conductor', Conductor);
+		set('ClientPrefs', ClientPrefs);
+		#if ACHIEVEMENTS_ALLOWED
+		set('Achievements', backend.Achievements);
+		#end
+		set('Character', objects.Character);
+		set('Alphabet', objects.Alphabet);
+		set('Note', objects.Note);
+		set('CustomSubstate', CustomSubstate);
+		#if (!flash && sys)
+		set('FlxRuntimeShader', flixel.addons.display.FlxRuntimeShader);
+		set('ErrorHandledRuntimeShader', shaders.ErrorHandledShader.ErrorHandledRuntimeShader);
+		#end
+		set('ShaderFilter', flash.filters.ShaderFilter);
+		set('StringTools', StringTools);
+		#if flxanimate
+		set('FlxAnimate', FlxAnimate);
+		#end
+
+		// ===== PLUS ENGINE NEW PRESET =====
+		// Extra Haxe stdlib, UI, mobile, state scripting and modchart helpers.
 		set('Reflect', Reflect);
 		set('Lambda', Lambda);
 		set('Json', haxe.Json);
@@ -245,37 +286,12 @@ class HScript extends Iris
 		set('FlxSave', flixel.util.FlxSave);
 		set('FlxSpriteUtil', flixel.util.FlxSpriteUtil);
 		#if sys
-		set('File', File);
-		set('FileSystem', FileSystem);
 		set('Sys', Sys);
 		#end
-		set('FlxG', CustomFlxG);
-		set('FlxMath', CustomFlxMath);
-		set('FlxSprite', flixel.FlxSprite);
-		set('FlxText', flixel.text.FlxText);
 		set('FlxTextAlign', CustomFlxTextAlign);
 		set('FlxTextBorderStyle', CustomFlxTextBorderStyle);
-		set('FlxCamera', flixel.FlxCamera);
-		set('PsychCamera', backend.PsychCamera);
-		set('FlxTimer', flixel.util.FlxTimer);
-		set('FlxTween', flixel.tweens.FlxTween);
-		set('FlxEase', flixel.tweens.FlxEase);
 		set('FlxSound', flixel.sound.FlxSound);
-
-		// Backwards compatibility: older mods expect a global `modchartTweens` map
-		// that stores tweens by tag. Use the shared PlayState instance so all
-		// scripts access the same map across the game (matches legacy behaviour).
-		#if LUA_ALLOWED
-		set('modchartTweens', PlayState.instance != null ? PlayState.instance.modchartTweens : null);
-		set('modchartSprites', PlayState.instance != null ? PlayState.instance.modchartSprites : null);
-		set('modchartTexts', PlayState.instance != null ? PlayState.instance.modchartTexts : null);
-		#else
-		set('modchartTweens', null);
-		set('modchartSprites', null);
-		set('modchartTexts', null);
-		#end
 		set('FlxFlicker', flixel.effects.FlxFlicker);
-		set('FlxColor', CustomFlxColor);
 		set('FlxAxes', CustomFlxAxes);
 		set('FlxSpriteGroup', flixel.group.FlxSpriteGroup);
 		set('FlxTypedGroup', flixel.group.FlxTypedGroup);
@@ -347,11 +363,13 @@ class HScript extends Iris
 		#end
 		set('CustomState', psychlua.CustomState);
 		set('ScriptableState', backend.ScriptableState);
+		set('ScriptableSubstate', backend.ScriptableSubstate);
 		set('PlayState', PlayState);
 		set('TitleState', states.TitleState);
 		set('MainMenuState', states.MainMenuState);
 		set('GameOverSubstate', substates.GameOverSubstate);
 		set('FreeplayState', states.FreeplayState);
+		set('FreeplayState_Psych', states.FreeplayState_Psych);
 		set('StoryMenuState', states.StoryMenuState);
 		set('LoadingState', states.LoadingState);
 		set('CreditsState', states.CreditsState);
@@ -383,6 +401,29 @@ class HScript extends Iris
 		set('NoteOffsetState', options.NoteOffsetState);
 		#if MODCHARTS_NOTITG_ALLOWED
 		set('ModchartSettingsSubState', options.ModchartSettingsSubState);
+		set('Manager', modchart.Manager);
+		set('ModchartManager', modchart.Manager);
+		set('PlayField', modchart.engine.PlayField);
+		set('Modifier', modchart.engine.modifiers.Modifier);
+		set('DynamicModifier', modchart.engine.modifiers.DynamicModifier);
+		set('ScriptedModifier', modchart.engine.modifiers.ScriptedModifier);
+		set('LuaModifier', modchart.engine.modifiers.LuaModifier);
+		set('ModifierGroup', modchart.engine.modifiers.ModifierGroup);
+		set('TransformMode_NONE', (modchart.backend.core.TransformMode.NONE : Int));
+		set('TransformMode_FIELD', (modchart.backend.core.TransformMode.FIELD : Int));
+		set('TransformMode_NOTE', (modchart.backend.core.TransformMode.NOTE : Int));
+		set('TransformMode_RECEPTOR', (modchart.backend.core.TransformMode.RECEPTOR : Int));
+		set('TransformMode_SPLASH', (modchart.backend.core.TransformMode.SPLASH : Int));
+		set('TransformMode_ALL', (modchart.backend.core.TransformMode.ALL : Int));
+		set('ModifierParameters', modchart.backend.core.ModifierParameters);
+		set('VisualParameters', modchart.backend.core.VisualParameters);
+		set('Vector3D', openfl.geom.Vector3D);
+		set('Adapter', modchart.backend.standalone.Adapter);
+		set('ModchartUtil', modchart.backend.util.ModchartUtil);
+		set('instance', modchart.Manager.instance);
+		set('manager', modchart.Manager.instance);
+		set('modManager', modchart.Manager.instance);
+		set('modchartManager', modchart.Manager.instance);
 		#end
 		#if TRANSLATIONS_ALLOWED
 		set('LanguageSubState', options.LanguageSubState);
@@ -955,6 +996,10 @@ class CustomFlxG {
 	public static var gamepads(get, never):Dynamic;
 	public static var width(get, never):Int;
 	public static var height(get, never):Int;
+	public static var displayWidth(get, never):Int;
+	public static var displayHeight(get, never):Int;
+	public static var screenOffsetX(get, never):Float;
+	public static var screenOffsetY(get, never):Float;
 	public static var autoPause(get, set):Bool;
 	public static var signals(get, never):Dynamic;
 	public static var random(get, never):Dynamic;
@@ -978,8 +1023,36 @@ class CustomFlxG {
 	static function get_keys():Dynamic return FlxG.keys;
 	static function get_mouse():Dynamic return FlxG.mouse;
 	static function get_gamepads():Dynamic return FlxG.gamepads;
-	static function get_width():Int return FlxG.width;
-	static function get_height():Int return FlxG.height;
+	static function get_width():Int {
+		#if mobile
+		return Std.int(mobile.backend.MobileScaleMode.getSafeWidth());
+		#else
+		return FlxG.width;
+		#end
+	}
+	static function get_height():Int {
+		#if mobile
+		return Std.int(mobile.backend.MobileScaleMode.getSafeHeight());
+		#else
+		return FlxG.height;
+		#end
+	}
+	static function get_displayWidth():Int return FlxG.width;
+	static function get_displayHeight():Int return FlxG.height;
+	static function get_screenOffsetX():Float {
+		#if mobile
+		return mobile.backend.MobileScaleMode.getHorizontalOffset();
+		#else
+		return 0;
+		#end
+	}
+	static function get_screenOffsetY():Float {
+		#if mobile
+		return mobile.backend.MobileScaleMode.getVerticalOffset();
+		#else
+		return 0;
+		#end
+	}
 	static function get_autoPause():Bool return FlxG.autoPause;
 	static function set_autoPause(value:Bool):Bool return FlxG.autoPause = value;
 	static function get_signals():Dynamic return FlxG.signals;
@@ -1440,6 +1513,23 @@ class CustomInterp extends crowplexus.hscript.Interp
 				PlayState.instance.addTextToDebug('WARNING ($scriptName): $warnMsg', FlxColor.YELLOW);
 			trace('WARNING ($scriptName): $warnMsg');
 			return null;
+		}
+
+		// Legacy Psych compatibility: map old HUD background names to Bar.bg.
+		// This keeps old scripts working with `game.healthBarBG` / `game.timeBarBG`.
+		var className:String = null;
+		try {
+			className = Type.getClassName(Type.getClass(o));
+		} catch(e:Dynamic) {}
+		if (className == "states.PlayState") {
+			switch (field) {
+				case "healthBarBG":
+					var healthBar:Dynamic = Reflect.getProperty(o, "healthBar");
+					if (healthBar != null) return Reflect.getProperty(healthBar, "bg");
+				case "timeBarBG":
+					var timeBar:Dynamic = Reflect.getProperty(o, "timeBar");
+					if (timeBar != null) return Reflect.getProperty(timeBar, "bg");
+			}
 		}
 		
 		// Scripted class instance: route all field access through hget()

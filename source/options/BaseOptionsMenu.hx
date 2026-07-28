@@ -9,8 +9,16 @@ import objects.AttachedText;
 import options.Option;
 import backend.InputFormatter;
 
+#if mobile
+import mobile.backend.MobileScaleMode;
+#end
+
 class BaseOptionsMenu extends MusicBeatSubstate
 {
+	private static inline var OPTION_SPAWN_X:Float = -420;
+	private static inline var INTRO_DURATION:Float = 0.32;
+	private static inline var INTRO_DESC_DURATION:Float = 0.24;
+	private static inline var OUTRO_DURATION:Float = 0.26;
 	private var curOption:Option = null;
 	private var curSelected:Int = 0;
 	private var optionsArray:Array<Option>;
@@ -21,6 +29,20 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 	private var descBox:FlxSprite;
 	private var descText:FlxText;
+	private var lastThemeSignature:String = "";
+	private var titleText:Alphabet;
+	private var playingIntroTransition:Bool = false;
+	private var closingTransition:Bool = false;
+	private var openedFromOptionsState:Bool = false;
+
+	inline function safeOffsetX():Float
+	{
+		#if mobile
+		return MobileScaleMode.getHorizontalOffset();
+		#else
+		return 0;
+		#end
+	}
 
 	public var title:String;
 	public var rpcTitle:String;
@@ -31,7 +53,6 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		controls.isInSubstate = true;
 
 		super();
-
 		if(title == null) title = 'Options';
 		if(rpcTitle == null) rpcTitle = 'Options Menu';
 		
@@ -40,7 +61,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		#end
 		
 		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
-		bg.color = 0xFFea71fd;
+		bg.alpha = OptionsMenuTheme.menuBackgroundAlpha();
 		bg.screenCenter();
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		add(bg);
@@ -59,20 +80,21 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		descBox.alpha = 0.6;
 		add(descBox);
 
-		var titleText:Alphabet = new Alphabet(75, 45, title, true);
+		titleText = new Alphabet(safeOffsetX() + 75, 45, title, true);
 		titleText.setScale(0.6);
 		titleText.alpha = 0.4;
 		add(titleText);
 
-		descText = new FlxText(50, 600, 1180, "", 32);
-		descText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		descText = new FlxText(safeOffsetX() + 50, 600, 1180, "", 32);
+		descText.setFormat(Paths.font("vcr.ttf"), 32, OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false)), CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		descText.scrollFactor.set();
 		descText.borderSize = 2.4;
 		add(descText);
+		refreshThemeVisuals();
 
 		for (i in 0...optionsArray.length)
 		{
-			var optionText:Alphabet = new Alphabet(220, 260, optionsArray[i].name, false);
+			var optionText:Alphabet = new Alphabet(safeOffsetX() + 220, 260, optionsArray[i].name, false);
 			optionText.isMenuItem = true;
 			/*optionText.forceX = 300;
 			optionText.yMult = 90;*/
@@ -84,6 +106,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 				var checkbox:CheckboxThingie = new CheckboxThingie(optionText.x - 105, optionText.y, Std.string(optionsArray[i].getValue()) == 'true');
 				checkbox.sprTracker = optionText;
 				checkbox.ID = i;
+				if (openedFromOptionsState) checkbox.alpha = 0;
 				checkboxGroup.add(checkbox);
 			}
 			else
@@ -95,23 +118,65 @@ class BaseOptionsMenu extends MusicBeatSubstate
 				valueText.sprTracker = optionText;
 				valueText.copyAlpha = true;
 				valueText.ID = i;
+				if (openedFromOptionsState) valueText.alpha = 0;
 				grpTexts.add(valueText);
 				optionsArray[i].child = valueText;
 			}
-			//optionText.snapToPosition(); //Don't ignore me when i ask for not making a fucking pull request to uncomment this line ok
 			updateTextFrom(optionsArray[i]);
 		}
 
 		changeSelection();
 		reloadCheckboxes();
+		setupIntroTransition();
 		
 		addTouchPad('LEFT_FULL', 'A_B_C');
+	}
+
+	override function create()
+	{
+		super.create();
+		callOnCompanionScript('onOptionsMenuCreatePost', [getOptionsCopy()]);
 	}
 
 	public function addOption(option:Option) {
 		if(optionsArray == null || optionsArray.length < 1) optionsArray = [];
 		optionsArray.push(option);
 		return option;
+	}
+
+	public function setOptionsList(newOptions:Array<Option>):Void
+	{
+		optionsArray = (newOptions != null) ? newOptions.copy() : [];
+		if (curSelected >= optionsArray.length)
+			curSelected = Std.int(Math.max(0, optionsArray.length - 1));
+		rebuildOptionsVisuals();
+	}
+
+	public function removeOptionAt(index:Int):Option
+	{
+		if (optionsArray == null || index < 0 || index >= optionsArray.length)
+			return null;
+
+		var removed = optionsArray.splice(index, 1);
+		if (curSelected >= optionsArray.length)
+			curSelected = Std.int(Math.max(0, optionsArray.length - 1));
+		rebuildOptionsVisuals();
+		return removed.length > 0 ? removed[0] : null;
+	}
+
+	public function removeOptionByName(name:String):Option
+	{
+		if (optionsArray == null || name == null)
+			return null;
+
+		for (i in 0...optionsArray.length)
+		{
+			var option = optionsArray[i];
+			if (option == null) continue;
+			if (option.name == name || option.variable == name)
+				return removeOptionAt(i);
+		}
+		return null;
 	}
 
 	var nextAccept:Int = 5;
@@ -126,12 +191,20 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+		if (lastThemeSignature != OptionsMenuTheme.signature())
+			refreshThemeVisuals();
 
 		if(bindingKey)
 		{
 			bindingKeyUpdate(elapsed);
 			return;
 		}
+
+		if (playingIntroTransition || closingTransition)
+			return;
+
+		if (curOption != null && !curOption.selectable)
+			changeSelection(0);
 
 		if (controls.UI_UP_P)
 		{
@@ -143,17 +216,24 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		}
 
 		if (controls.BACK) {
-			close();
+			var backStop = callOnCompanionScript('onOptionsBack', [getCurrentOption(), curSelected]);
+			if (backStop == Function_Stop)
+				return;
 			FlxG.sound.play(Paths.sound('cancelMenu'));
+			startCloseTransition();
+			return;
 		}
 
-		if(nextAccept <= 0)
+		if(nextAccept <= 0 && curOption != null && curOption.selectable)
 		{
 			switch(curOption.type)
 			{
 				case BOOL:
 					if(controls.ACCEPT)
 					{
+						var acceptStop = callOnCompanionScript('onOptionAccept', [getCurrentOption(), curSelected]);
+						if (acceptStop == Function_Stop)
+							return;
 						FlxG.sound.play(Paths.sound('scrollMenu'));
 						curOption.setValue((curOption.getValue() == true) ? false : true);
 						curOption.change();
@@ -165,6 +245,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 				case KEYBIND:
 					if(controls.ACCEPT)
 					{
+						var keybindStop = callOnCompanionScript('onOptionAccept', [getCurrentOption(), curSelected]);
+						if (keybindStop == Function_Stop)
+							return;
 						bindingBlack = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
 						bindingBlack.scale.set(FlxG.width, FlxG.height);
 						bindingBlack.updateHitbox();
@@ -296,6 +379,123 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		if(nextAccept > 0) {
 			nextAccept -= 1;
 		}
+	}
+
+	function refreshThemeVisuals():Void
+	{
+		lastThemeSignature = OptionsMenuTheme.signature();
+		if (bg != null)
+		{
+			bg.alpha = OptionsMenuTheme.menuBackgroundAlpha();
+		}
+		if (descBox != null)
+		{
+			descBox.color = OptionsMenuTheme.cardFill(false);
+			descBox.alpha = 0.84;
+		}
+		if (descText != null)
+			descText.color = OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false));
+	}
+
+	function setupIntroTransition():Void
+	{
+		openedFromOptionsState = Std.isOfType(FlxG.state, OptionsState) && OptionsState.substateVisualActive;
+		if (!openedFromOptionsState)
+			return;
+
+		playingIntroTransition = true;
+
+		if (titleText != null)
+		{
+			titleText.visible = false;
+			titleText.active = false;
+			titleText.alpha = 0;
+		}
+
+		for (item in grpOptions.members)
+		{
+			if (item == null) continue;
+			var targetX:Float = item.x;
+			item.x = Math.min(OPTION_SPAWN_X, -item.width - 140);
+			item.alpha = 0;
+			FlxTween.tween(item, {x: targetX}, INTRO_DURATION, {ease: FlxEase.cubeInOut, startDelay: 0.02 * Math.max(0, item.targetY + 1)});
+			FlxTween.tween(item, {alpha: item.targetY == curSelected ? 1 : 0.6}, INTRO_DURATION, {ease: FlxEase.cubeInOut, startDelay: 0.02 * Math.max(0, item.targetY + 1)});
+		}
+
+		for (text in grpTexts.members)
+		{
+			if (text == null) continue;
+			text.alpha = 0;
+			FlxTween.tween(text, {alpha: text.ID == curSelected ? 1 : 0.6}, INTRO_DURATION, {ease: FlxEase.cubeInOut, startDelay: 0.02 * Math.max(0, text.ID + 1)});
+		}
+
+		for (checkbox in checkboxGroup.members)
+		{
+			if (checkbox == null) continue;
+			checkbox.alpha = 0;
+			FlxTween.tween(checkbox, {alpha: checkbox.ID == curSelected ? 1 : 0.6}, INTRO_DURATION, {ease: FlxEase.cubeInOut, startDelay: 0.02 * Math.max(0, checkbox.ID + 1)});
+		}
+
+		if (descBox != null)
+		{
+			descBox.alpha = 0;
+			FlxTween.tween(descBox, {alpha: 0.84}, INTRO_DESC_DURATION, {ease: FlxEase.cubeInOut, startDelay: 0.08});
+		}
+
+		if (descText != null)
+		{
+			descText.alpha = 0;
+			FlxTween.tween(descText, {alpha: 1}, INTRO_DESC_DURATION, {ease: FlxEase.cubeInOut, startDelay: 0.1});
+		}
+
+		new FlxTimer().start(0.4, function(_) playingIntroTransition = false);
+	}
+
+	function startCloseTransition():Void
+	{
+		if (closingTransition)
+			return;
+
+		closingTransition = true;
+
+		for (item in grpOptions.members)
+		{
+			if (item == null) continue;
+			FlxTween.cancelTweensOf(item);
+			FlxTween.tween(item, {x: Math.min(OPTION_SPAWN_X, -item.width - 140), alpha: 0}, OUTRO_DURATION, {ease: FlxEase.cubeInOut});
+		}
+
+		for (text in grpTexts.members)
+		{
+			if (text == null) continue;
+			FlxTween.cancelTweensOf(text);
+			FlxTween.tween(text, {alpha: 0}, OUTRO_DURATION - 0.04, {ease: FlxEase.cubeInOut});
+		}
+
+		for (checkbox in checkboxGroup.members)
+		{
+			if (checkbox == null) continue;
+			FlxTween.cancelTweensOf(checkbox);
+			FlxTween.tween(checkbox, {alpha: 0}, OUTRO_DURATION - 0.04, {ease: FlxEase.cubeInOut});
+		}
+
+		if (descBox != null)
+		{
+			FlxTween.cancelTweensOf(descBox);
+			FlxTween.tween(descBox, {alpha: 0}, OUTRO_DURATION - 0.08, {ease: FlxEase.cubeInOut});
+		}
+
+		if (descText != null)
+		{
+			FlxTween.cancelTweensOf(descText);
+			FlxTween.tween(descText, {alpha: 0}, OUTRO_DURATION - 0.08, {ease: FlxEase.cubeInOut});
+		}
+
+		new FlxTimer().start(OUTRO_DURATION + 0.04, function(_)
+		{
+			closingTransition = false;
+			close();
+		});
 	}
 
 	function bindingKeyUpdate(elapsed:Float)
@@ -482,7 +682,26 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	
 	function changeSelection(change:Int = 0)
 	{
-		curSelected = FlxMath.wrap(curSelected + change, 0, optionsArray.length - 1);
+		if (optionsArray == null || optionsArray.length == 0)
+			return;
+
+		var direction:Int = change < 0 ? -1 : 1;
+		var target:Int = curSelected + change;
+		var found:Int = -1;
+		for (step in 0...optionsArray.length)
+		{
+			var index:Int = FlxMath.wrap(target + (step * direction), 0, optionsArray.length - 1);
+			if (optionsArray[index] != null && optionsArray[index].selectable)
+			{
+				found = index;
+				break;
+			}
+		}
+
+		if (found == -1)
+			found = Std.int(FlxMath.bound(curSelected, 0, optionsArray.length - 1));
+
+		curSelected = found;
 
 		descText.text = optionsArray[curSelected].description;
 		descText.screenCenter(Y);
@@ -491,13 +710,13 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		for (num => item in grpOptions.members)
 		{
 			item.targetY = num - curSelected;
-			item.alpha = 0.6;
-			if (item.targetY == 0) item.alpha = 1;
+			item.alpha = (optionsArray[num] != null && !optionsArray[num].selectable) ? 0.35 : 0.6;
+			if (item.targetY == 0 && (optionsArray[num] == null || optionsArray[num].selectable)) item.alpha = 1;
 		}
 		for (text in grpTexts)
 		{
-			text.alpha = 0.6;
-			if(text.ID == curSelected) text.alpha = 1;
+			text.alpha = (optionsArray[text.ID] != null && !optionsArray[text.ID].selectable) ? 0.35 : 0.6;
+			if(text.ID == curSelected && (optionsArray[text.ID] == null || optionsArray[text.ID].selectable)) text.alpha = 1;
 		}
 
 		descBox.setPosition(descText.x - 10, descText.y - 10);
@@ -505,10 +724,114 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		descBox.updateHitbox();
 
 		curOption = optionsArray[curSelected]; //shorter lol
+		callOnCompanionScript('onOptionSelectionChange', [curSelected, getCurrentOption()]);
 		FlxG.sound.play(Paths.sound('scrollMenu'));
 	}
 
 	function reloadCheckboxes()
 		for (checkbox in checkboxGroup)
 			checkbox.daValue = Std.string(optionsArray[checkbox.ID].getValue()) == 'true'; //Do not take off the Std.string() from this, it will break a thing in Mod Settings Menu
+
+	public function getOptionsCopy():Array<Option>
+		return optionsArray != null ? optionsArray.copy() : [];
+
+	public function getCurrentOption():Option
+		return curOption;
+
+	public function getCurrentOptionIndex():Int
+		return curSelected;
+
+	public function getOptionAt(index:Int):Option
+		return (optionsArray != null && index >= 0 && index < optionsArray.length) ? optionsArray[index] : null;
+
+	public function getOptionByName(name:String):Option
+	{
+		if (optionsArray == null || name == null) return null;
+		for (option in optionsArray)
+		{
+			if (option == null) continue;
+			if (option.name == name || option.variable == name)
+				return option;
+		}
+		return null;
+	}
+
+	public function selectOption(index:Int):Void
+	{
+		if (optionsArray == null || optionsArray.length < 1) return;
+		curSelected = FlxMath.wrap(index, 0, optionsArray.length - 1);
+		changeSelection(0);
+	}
+
+	public function rebuildOptionsVisuals():Void
+	{
+		if (optionsArray == null)
+			optionsArray = [];
+
+		for (i in 0...grpOptions.members.length)
+		{
+			var item = grpOptions.members[0];
+			item.kill();
+			grpOptions.remove(item, true);
+			item.destroy();
+		}
+		for (i in 0...grpTexts.members.length)
+		{
+			var text = grpTexts.members[0];
+			text.kill();
+			grpTexts.remove(text, true);
+			text.destroy();
+		}
+		for (i in 0...checkboxGroup.members.length)
+		{
+			var checkbox = checkboxGroup.members[0];
+			checkbox.kill();
+			checkboxGroup.remove(checkbox, true);
+			checkbox.destroy();
+		}
+
+		for (i in 0...optionsArray.length)
+		{
+			var optionText:Alphabet = new Alphabet(safeOffsetX() + 220, 260, optionsArray[i].name, false);
+			optionText.isMenuItem = true;
+			optionText.targetY = i;
+			grpOptions.add(optionText);
+
+			if(optionsArray[i].type == BOOL)
+			{
+				var checkbox:CheckboxThingie = new CheckboxThingie(optionText.x - 105, optionText.y, Std.string(optionsArray[i].getValue()) == 'true');
+				checkbox.sprTracker = optionText;
+				checkbox.ID = i;
+				checkboxGroup.add(checkbox);
+			}
+			else
+			{
+				optionText.x -= 80;
+				optionText.startPosition.x -= 80;
+				var valueText:AttachedText = new AttachedText('' + optionsArray[i].getValue(), optionText.width + 60);
+				valueText.sprTracker = optionText;
+				valueText.copyAlpha = true;
+				valueText.ID = i;
+				grpTexts.add(valueText);
+				optionsArray[i].child = valueText;
+			}
+			updateTextFrom(optionsArray[i]);
+		}
+
+		if (optionsArray.length > 0)
+		{
+			curSelected = Std.int(FlxMath.bound(curSelected, 0, optionsArray.length - 1));
+			changeSelection(0);
+			reloadCheckboxes();
+		}
+		else
+		{
+			curSelected = 0;
+			curOption = null;
+			descText.text = '';
+			descBox.setGraphicSize(1, 1);
+			descBox.updateHitbox();
+		}
+		callOnCompanionScript('onRebuildOptionsVisuals', [getOptionsCopy()]);
+	}
 }

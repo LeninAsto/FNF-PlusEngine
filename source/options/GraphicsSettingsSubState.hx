@@ -6,10 +6,16 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 {
 	var antialiasingOption:Int;
 	var boyfriend:Character = null;
+	#if windows
+	var initialFullscreenMode:String = null;
+	#end
 	public function new()
 	{
 		title = Language.getPhrase('graphics_menu', 'Graphics Settings');
 		rpcTitle = 'Graphics Settings Menu'; //for Discord Rich Presence
+		#if windows
+		initialFullscreenMode = ClientPrefs.data.fullscreenMode;
+		#end
 
 		boyfriend = new Character(840, 170, 'bf', true);
 		boyfriend.setGraphicSize(Std.int(boyfriend.width * 0.75));
@@ -56,24 +62,47 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 
+		var option:Option = new Option('FPS Counter Mode',
+			'Choose how much performance info is shown in the top-left overlay.',
+			'fpsCounterMode',
+			STRING,
+			['Hidden', 'Visible No Background', 'Visible with Background', 'Basic Debug', 'Extended Debug']);
+		option.onChange = onChangeFPSCounterMode;
+		addOption(option);
+
+		#if native
+		var option:Option = new Option('VSync',
+			'If checked, enables VSync, fixing screen tearing at the cost of capping FPS to the monitor refresh rate.\nRestart the game to fully apply it.',
+			'vsync',
+			BOOL);
+		option.onChange = onChangeVSync;
+		addOption(option);
+		#end
+
 		#if !html5 //Apparently other framerates isn't correctly supported on Browser? Probably it has some V-Sync shit enabled by default, idk
+		var option:Option = new Option('Framerate Mode',
+			'Choose how the engine handles update/draw timing.\nBase matches Psych Engine, Fixed is lighter, Interpolated is smoother.\nRestart the game to apply changes.',
+			'framerateMode',
+			STRING,
+			ClientPrefs.FRAMERATE_MODES);
+		addOption(option);
+
 		var option:Option = new Option('Framerate',
-			"Pretty self explanatory, isn't it?",
+			"Pretty self explanatory, isn't it?\nRestart the game to apply changes.",
 			'framerate',
 			INT);
 		addOption(option);
 
 		final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
-		option.minValue = 60;
+		option.minValue = #if mobile 30 #else 60 #end;
 		option.maxValue = 240;
 		option.defaultValue = Std.int(FlxMath.bound(refreshRate, option.minValue, option.maxValue));
 		option.displayFormat = '%v FPS';
-		option.onChange = onChangeFramerate;
 		#end
 
 		#if windows
 		var option:Option = new Option('Fullscreen Mode',
-			'Choose how fullscreen behaves: borderless, borderless fix or exclusive fullscreen.',
+			'Borderless is capped to 1080p for better shader performance. Borderless Fix uses native monitor resolution.',
 			'fullscreenMode',
 			STRING,
 			['Borderless', 'Borderless Fix', 'Exclusive']);
@@ -95,14 +124,30 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		}
 	}
 
-	function onChangeFramerate()
+	#if native
+	function onChangeVSync()
+		lime.app.Application.current.window.vsync = ClientPrefs.data.vsync;
+	#end
+
+	function onChangeFPSCounterMode()
 	{
-		ClientPrefs.applyFramePacing();
+		ClientPrefs.normalizeFPSCounterPrefs();
+		if (Main.fpsVar != null)
+			Main.fpsVar.applyPrefs();
 	}
 
 	override function changeSelection(change:Int = 0)
 	{
 		super.changeSelection(change);
 		boyfriend.visible = (antialiasingOption == curSelected);
+	}
+
+	override function destroy()
+	{
+		#if windows
+		if (initialFullscreenMode != ClientPrefs.data.fullscreenMode && backend.WindowMode.isFullscreen())
+			backend.WindowMode.reapplyFullscreenPreference();
+		#end
+		super.destroy();
 	}
 }

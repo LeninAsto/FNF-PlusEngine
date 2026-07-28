@@ -35,6 +35,7 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 	
 	// Variables map for substate-specific data
 	public var variables:Map<String, Dynamic> = new Map<String, Dynamic>();
+	var _companionClosing:Bool = false;
 	
 	// MusicBeatSubstate specific scripts (run on all MusicBeatSubstate instances)
 	#if LUA_ALLOWED
@@ -77,6 +78,9 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 		if (!(this is psychlua.CustomSubstate) && MusicBeatState.stateScriptOverridesEnabled())
 			_loadCompanionScript();
 		#end
+
+		callOnCompanionScript('onCreate', []);
+		callOnCompanionScript('onCreatePost', []);
 	}
 	public static function getSubstate():MusicBeatSubstate
 	{
@@ -93,10 +97,16 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 
 	override function update(elapsed:Float)
 	{
+		if (_companionClosing)
+			return;
+
 		// Call global script update
 		MusicBeatState.callOnGlobalScript('onSubstateUpdate', [elapsed]);
 
-		super.update(elapsed);
+		var stop = callOnCompanionScript('onUpdate', [elapsed]);
+		if (!LuaUtils.isStop(stop))
+			super.update(elapsed);
+		callOnCompanionScript('onUpdatePost', [elapsed]);
 	}
 
 	override public function stepHit():Void
@@ -104,7 +114,10 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 		// Call global script
 		MusicBeatState.callOnGlobalScript('onSubstateStepHit', [curStep]);
 
-		super.stepHit();
+		var stop = callOnCompanionScript('onStepHit', [curStep]);
+		if (!LuaUtils.isStop(stop))
+			super.stepHit();
+		callOnCompanionScript('onStepHitPost', [curStep]);
 	}
 
 	override public function beatHit():Void
@@ -112,7 +125,10 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 		// Call global script
 		MusicBeatState.callOnGlobalScript('onSubstateBeatHit', [curBeat]);
 
-		super.beatHit();
+		var stop = callOnCompanionScript('onBeatHit', [curBeat]);
+		if (!LuaUtils.isStop(stop))
+			super.beatHit();
+		callOnCompanionScript('onBeatHitPost', [curBeat]);
 	}
 
 	override public function sectionHit():Void
@@ -120,7 +136,26 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 		// Call global script
 		MusicBeatState.callOnGlobalScript('onSubstateSectionHit', [curSection]);
 
-		super.sectionHit();
+		var stop = callOnCompanionScript('onSectionHit', [curSection]);
+		if (!LuaUtils.isStop(stop))
+			super.sectionHit();
+		callOnCompanionScript('onSectionHitPost', [curSection]);
+	}
+
+	override function close():Void
+	{
+		if (_companionClosing)
+			return;
+
+		_companionClosing = true;
+		var stop = callOnCompanionScript('onClose', []);
+		if (LuaUtils.isStop(stop))
+		{
+			_companionClosing = false;
+			return;
+		}
+
+		super.close();
 	}
 
 	override function destroy()
@@ -130,14 +165,9 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 			controls.isInSubstate = false;
 			instance = null;
 		}
-		#if LUA_ALLOWED
-		if (companionLuaScript != null)
-		{
-			// Legacy destroy hook for Lua companion scripts
-			companionLuaScript.call('onDestroy', []);
-		}
-		#end
+		callOnCompanionScript('onDestroy', []);
 		super.destroy();
+		callOnCompanionScript('onDestroyPost', []);
 
 		#if HSCRIPT_ALLOWED
 		if (companionScript != null)
@@ -192,7 +222,11 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 		}
 		if (luaPath != null)
 		{
-			try { companionLuaScript = new FunkinLua(luaPath); }
+			try
+			{
+				var ctx = new psychlua.LuaHostContext(psychlua.LuaHostKind.SUBSTATE, clsName, this, getParentState(), variables, null);
+				companionLuaScript = new FunkinLua(luaPath, ctx);
+			}
 			catch(e:Dynamic) { trace('[CompanionSubstate] Lua error in $luaPath: $e'); }
 		}
 		#end
@@ -210,6 +244,8 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 			companionScript.set('add',            this.add);
 			companionScript.set('remove',         this.remove);
 			companionScript.set('close',          this.close);
+			companionScript.set('requestClose',   this.close);
+			companionScript.set('closeSubstate',  this.close);
 
 			companionScript.set('setSharedVar', function(n:String, v:Dynamic) {
 				MusicBeatState.globalVariables.set(n, v);
@@ -266,7 +302,7 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 				if (fn == null && funcName.startsWith('on'))
 				{
 					var bare = funcName.charAt(2).toLowerCase() + funcName.substr(3);
-					if (companionScript.exists(bare)) fn = bare;
+					if (bare != 'close' && companionScript.exists(bare)) fn = bare;
 				}
 				if (fn != null)
 				{

@@ -111,6 +111,16 @@ class Bar extends FlxSpriteGroup
 			rightBar.color = right;
 	}
 
+	/**
+	 * Psych Engine compatibility alias.
+	 * Sets the bar colors and refreshes the current fill state.
+	 */
+	public function createFilledBar(left:FlxColor = null, right:FlxColor = null)
+	{
+		setColors(left, right);
+		updateBar();
+	}
+
 	public function updateBar()
 	{
 		if(leftBar == null || rightBar == null) return;

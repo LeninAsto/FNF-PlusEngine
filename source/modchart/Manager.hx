@@ -6,6 +6,8 @@ import flixel.util.FlxSort;
 import haxe.ds.StringMap;
 import haxe.ds.Vector;
 import modchart.backend.core.Node.NodeFunction;
+import modchart.engine.events.types.CallbackEvent;
+import psychlua.LuaUtils;
 
 using StringTools;
 
@@ -60,10 +62,38 @@ final class Manager extends FlxBasic {
 	private var __scheduledPlayfieldOps:Array<ScheduledPlayfieldOperation> = [];
 
 	private var renderer:CtxRenderer;
+	private var __frameToken:Int = 0;
 
 	/** Exposes renderer stats for debug overlays. */
 	public var rendererStats(get, never):CtxRenderer;
 	inline function get_rendererStats() return renderer;
+	public var activePlayfieldCount(get, never):Int;
+	public var totalModifierCount(get, never):Int;
+	public var totalEventCount(get, never):Int;
+
+	function get_activePlayfieldCount():Int {
+		var count = 0;
+		for (playfield in playfields)
+			if (playfield != null)
+				count++;
+		return count;
+	}
+
+	function get_totalModifierCount():Int {
+		var count = 0;
+		for (playfield in playfields)
+			if (playfield != null)
+				count += playfield.modifiers.modifierCount;
+		return count;
+	}
+
+	function get_totalEventCount():Int {
+		var count = 0;
+		for (playfield in playfields)
+			if (playfield != null)
+				count += playfield.events.totalEvents;
+		return count;
+	}
 
 	public function new() {
 		super();
@@ -183,6 +213,18 @@ final class Manager extends FlxBasic {
 	}
 
 	/**
+	 * NMV-style alias for setting a raw modifier value immediately from HScript.
+	 */
+	public inline function setValue(name:String, value:Float, player:Int = -1, field:Int = -1)
+		setRawValue(name, value, player, field);
+
+	/**
+	 * NMV-style alias for reading a raw modifier value from HScript.
+	 */
+	public inline function getValue(name:String, player:Int = 0, field:Int = 0):Float
+		return getRawValue(name, player, field);
+
+	/**
 	 * Adds an event to all playfields or a specific one.
 	 *
 	 * @param event The event to add.
@@ -204,6 +246,18 @@ final class Manager extends FlxBasic {
 		iteratePlayfields((pf) -> pf.set(name, beat, value, player), field);
 
 	/**
+	 * NMV-style scheduled set: queueSet(beat, name, value, player, field).
+	 */
+	public inline function queueSet(beat:Float, name:String, value:Float, player:Int = -1, field:Int = -1)
+		set(name, beat, value, player, field);
+
+	/**
+	 * NMV uses P variants for percentage-style mods; Plus stores the same timeline value here.
+	 */
+	public inline function queueSetP(beat:Float, name:String, value:Float, player:Int = -1, field:Int = -1)
+		queueSet(beat, name, value, player, field);
+
+	/**
 	 * Applies easing to a modifier.
 	 *
 	 * @param name The name of the modifier.
@@ -216,6 +270,18 @@ final class Manager extends FlxBasic {
 	 */
 	public inline function ease(name:String, beat:Float, length:Float, value:Float = 1, easeFunc:EaseFunction, player:Int = -1, field:Int = -1)
 		iteratePlayfields((pf) -> pf.ease(name, beat, length, value, easeFunc, player), field);
+
+	/**
+	 * NMV-style scheduled ease: queueEase(startBeat, endBeat, name, value, ease, player, field).
+	 */
+	public inline function queueEase(beat:Float, endBeat:Float, name:String, value:Float, easeName:String = 'linear', player:Int = -1, field:Int = -1)
+		ease(name, beat, endBeat - beat, value, LuaUtils.getTweenEaseByString(easeName), player, field);
+
+	/**
+	 * NMV uses P variants for percentage-style mods; Plus stores the same timeline value here.
+	 */
+	public inline function queueEaseP(beat:Float, endBeat:Float, name:String, value:Float, easeName:String = 'linear', player:Int = -1, field:Int = -1)
+		queueEase(beat, endBeat, name, value, easeName, player, field);
 
 	/**
 	 * Adds easing to a modifier.
@@ -263,6 +329,18 @@ final class Manager extends FlxBasic {
 	 */
 	public inline function callback(beat:Float, callback:Event->Void, field:Int = -1)
 		iteratePlayfields((pf) -> pf.callback(beat, callback), field);
+
+	/**
+	 * NMV-style one-shot callback.
+	 */
+	public inline function queueFuncOnce(beat:Float, callback:CallbackEvent->Void, field:Int = -1)
+		iteratePlayfields((pf) -> pf.scheduleCallback(beat, (event) -> callback(event)), field);
+
+	/**
+	 * NMV-style ranged callback. The callback receives the event and current beat.
+	 */
+	public inline function queueFunc(beat:Float, endBeat:Float, callback:CallbackEvent->Float->Void, field:Int = -1)
+		iteratePlayfields((pf) -> pf.repeater(beat, endBeat - beat, (event) -> callback(event, Adapter.instance.getCurrentBeat())), field);
 
 	/**
 	 * Schedules a callback to run once at a specific beat (alias for callback).
@@ -368,6 +446,11 @@ final class Manager extends FlxBasic {
 	override function update(elapsed:Float):Void {
 		super.update(elapsed);
 
+		__frameToken++;
+		final songPos = Adapter.instance.getSongPosition();
+		final beat = Adapter.instance.getCurrentBeat();
+
+		iteratePlayfields(pf -> pf.beginFrame(__frameToken, songPos, beat));
 		__updateScheduledPlayfieldOps(Adapter.instance.getCurrentBeat());
 
 		iteratePlayfields(pf -> pf.update(elapsed));
@@ -402,6 +485,11 @@ final class Manager extends FlxBasic {
 		}
 		__namedPlayfields = new StringMap();
 		__scheduledPlayfieldOps.resize(0);
+		if (renderer != null)
+			renderer.dispose();
+		renderer = null;
+		if (instance == this)
+			instance = null;
 	}
 
 	private inline function __normalizePlayfieldName(name:Null<String>):Null<String> {

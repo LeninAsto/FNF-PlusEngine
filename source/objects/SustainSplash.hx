@@ -1,6 +1,7 @@
 package objects;
 
 import backend.ClientPrefs;
+import shaders.ColorSwap;
 
 class SustainSplash extends FlxSprite
 {
@@ -9,6 +10,7 @@ class SustainSplash extends FlxSprite
 	static var atlasCache:Map<String, Dynamic> = new Map();
 
 	public var strumNote:StrumNote;
+	var colorSwap:ColorSwap;
 
 	var timer:FlxTimer;
 
@@ -18,7 +20,6 @@ class SustainSplash extends FlxSprite
 
 		x = -50000;
 
-		// Verificar si el archivo existe antes de cargarlo
 		var atlasPath = getHoldCoverPath();
 		if (Paths.fileExists('images/$atlasPath.png', IMAGE) && Paths.fileExists('images/$atlasPath.xml', TEXT))
 		{
@@ -37,9 +38,8 @@ class SustainSplash extends FlxSprite
 		}
 		else
 		{
-			// Usar un atlas por defecto o crear frames vacíos
 			trace('Hold splash atlas not found: $atlasPath');
-			makeGraphic(1, 1, 0x00000000); // Crear una imagen transparente
+			makeGraphic(1, 1, 0x00000000);
 		}
 	}
 
@@ -113,7 +113,13 @@ class SustainSplash extends FlxSprite
 		}
 		clipRect = new flixel.math.FlxRect(0, !PlayState.isPixelStage ? 0 : -210, frameWidth, frameHeight);
 
-		if (daNote.shader != null)
+		if (!ClientPrefs.data.noteRGB)
+		{
+			if(colorSwap == null) colorSwap = new ColorSwap();
+			Note.applyHSVToColorSwap(colorSwap, daNote.noteData);
+			shader = colorSwap.shader;
+		}
+		else if (daNote.rgbShader != null && daNote.rgbShader.enabled && daNote.shader != null)
 		{
 			shader = new objects.NoteSplash.PixelSplashShaderRef().shader;
 			shader.data.r.value = daNote.shader.data.r.value;
@@ -121,6 +127,7 @@ class SustainSplash extends FlxSprite
 			shader.data.b.value = daNote.shader.data.b.value;
 			shader.data.mult.value = daNote.shader.data.mult.value;
 		}
+		else shader = null;
 
 		strumNote = strum;
 		alpha = 1;

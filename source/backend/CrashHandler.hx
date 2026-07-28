@@ -17,7 +17,7 @@ using flixel.util.FlxArrayUtil;
  */
 class CrashHandler
 {
-	// Link de ayuda/repositorio para mostrar en caso de crash
+	// Help link/repository to display in the event of a crash
 	public static final HELP_LINK:String = "https://github.com/LeninAsto/FNF-PlusEngine";
 	
 	// Fun error messages for null references
@@ -122,14 +122,14 @@ class CrashHandler
 		}
 		stackLabel = stackLabelArr.join('\r\n');
 
-		// Mostrar error en la consola/terminal
+		// Display the error in the console/terminal
 		trace('\n\n$m\n\n$stackLabel\n======================\nFor help, visit: $HELP_LINK');
 		
 		#if sys
 		saveErrorMessage('$m\n$stackLabel');
 		#end
 
-		// Mensaje con link de ayuda
+		// Message with a help link
 		var errorMsg = '$m\n\n$stackLabel\n\n========================\nNeed help? Visit:\n$HELP_LINK';
 		CoolUtil.showPopUp(errorMsg, "Error!");
 		#if DISCORD_ALLOWED DiscordClient.shutdown(); #end
@@ -152,7 +152,7 @@ class CrashHandler
 		
 		var errorLog = log.join('\n');
 		
-		// Mostrar error en la consola/terminal
+		// Display the error in the console/terminal
 		trace('=== CRITICAL ERROR ===');
 		trace(errorLog);
 		trace('======================');
@@ -162,7 +162,7 @@ class CrashHandler
 		saveErrorMessage(errorLog);
 		#end
 
-		// Mensaje con link de ayuda
+		// Message with a help link
 		var errorMsg = '$errorLog\n\n========================\nNeed help? Visit:\n$HELP_LINK';
 		CoolUtil.showPopUp(errorMsg, "Critical Error!");
 		#if DISCORD_ALLOWED DiscordClient.shutdown(); #end

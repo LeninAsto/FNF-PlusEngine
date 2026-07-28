@@ -81,15 +81,29 @@ static HWND GET_WINDOW() {
 // Get the engine window by title
 static HWND GET_ENGINE_WINDOW() {
 	HWND hwnd = GetForegroundWindow();
-    char windowTitle[256];
+    char windowTitle[256] = {0};
 
-    GetWindowTextA(hwnd, windowTitle, sizeof(windowTitle));
-
-    if (globalWindowTitle == windowTitle) {
+    if (hwnd && GetWindowTextA(hwnd, windowTitle, sizeof(windowTitle)) > 0 && globalWindowTitle == windowTitle) {
         return hwnd;
     }
 
-    return FindWindowA(NULL, globalWindowTitle.c_str());
+    HWND found = FindWindowA(NULL, globalWindowTitle.c_str());
+    return found ? found : hwnd;
+}
+
+static BYTE CLAMP_ALPHA_BYTE(double alpha) {
+	if (alpha < 0.0) alpha = 0.0;
+	if (alpha > 1.0) alpha = 1.0;
+	return (BYTE)(alpha * 255.0);
+}
+
+static void SET_LAYERED(HWND hwnd, bool enabled) {
+	if (!hwnd) return;
+	LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
+	if (enabled)
+		SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
+	else
+		SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle & ~WS_EX_LAYERED);
 }
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -106,6 +120,7 @@ static BOOL SaveToFile(HBITMAP hBitmap3, LPCTSTR lpszFileName)
 	LPBITMAPINFOHEADER lpbi;
 	HANDLE fh, hDib, hPal,hOldPal2=NULL;
 	hDC = CreateDC("DISPLAY", NULL, NULL, NULL);
+	if (!hDC) return 0;
 	iBits = GetDeviceCaps(hDC, BITSPIXEL) * GetDeviceCaps(hDC, PLANES);
 	DeleteDC(hDC);
 	if (iBits <= 1)
@@ -131,33 +146,52 @@ static BOOL SaveToFile(HBITMAP hBitmap3, LPCTSTR lpszFileName)
 	dwBmBitsSize = ((Bitmap0.bmWidth * wBitCount +31) & ~31) /8
 													* Bitmap0.bmHeight; 
 	hDib = GlobalAlloc(GHND,dwBmBitsSize + dwPaletteSize + sizeof(BITMAPINFOHEADER));
+	if (!hDib) return 0;
 	lpbi = (LPBITMAPINFOHEADER)GlobalLock(hDib);
+	if (!lpbi) {
+		GlobalFree(hDib);
+		return 0;
+	}
 	*lpbi = bi;
 
+	hDC = NULL;
 	hPal = GetStockObject(DEFAULT_PALETTE);
 	if (hPal)
 	{ 
 		hDC = GetDC(NULL);
+		if (!hDC) {
+			GlobalUnlock(hDib);
+			GlobalFree(hDib);
+			return 0;
+		}
 		hOldPal2 = SelectPalette(hDC, (HPALETTE)hPal, 0);
 		RealizePalette(hDC);
 	}
 
 
-	GetDIBits(hDC, hBitmap3, 0, (UINT) Bitmap0.bmHeight, (LPSTR)lpbi + sizeof(BITMAPINFOHEADER) 
-		+dwPaletteSize, (BITMAPINFO *)lpbi, DIB_RGB_COLORS);
+	if (!hDC || !GetDIBits(hDC, hBitmap3, 0, (UINT) Bitmap0.bmHeight, (LPSTR)lpbi + sizeof(BITMAPINFOHEADER)
+		+dwPaletteSize, (BITMAPINFO *)lpbi, DIB_RGB_COLORS)) {
+		if (hDC) ReleaseDC(NULL, hDC);
+		GlobalUnlock(hDib);
+		GlobalFree(hDib);
+		return 0;
+	}
 
 	if (hOldPal2)
 	{
 		SelectPalette(hDC, (HPALETTE)hOldPal2, 1);
 		RealizePalette(hDC);
-		ReleaseDC(NULL, hDC);
 	}
+	if (hDC) ReleaseDC(NULL, hDC);
 
 	fh = CreateFile(lpszFileName, GENERIC_WRITE,0, NULL, CREATE_ALWAYS, 
 		FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL); 
 
-	if (fh == INVALID_HANDLE_VALUE)
+	if (fh == INVALID_HANDLE_VALUE) {
+		GlobalUnlock(hDib);
+		GlobalFree(hDib);
 		return 0; 
+	}
 
 	bmfHdr.bfType = 0x4D42; // "BM"
 	dwDIBSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + dwPaletteSize + dwBmBitsSize;
@@ -179,23 +213,36 @@ static BOOL SaveToFile(HBITMAP hBitmap3, LPCTSTR lpszFileName)
 static int screenCapture(int x, int y, int w, int h, LPCSTR fname)
 {
     HDC hdcSource = GetDC(NULL);
+    if (!hdcSource) return 0;
+
     HDC hdcMemory = CreateCompatibleDC(hdcSource);
+    if (!hdcMemory) {
+        ReleaseDC(NULL, hdcSource);
+        return 0;
+    }
 
     int capX = GetDeviceCaps(hdcSource, HORZRES);
     int capY = GetDeviceCaps(hdcSource, VERTRES);
 
     HBITMAP hBitmap = CreateCompatibleBitmap(hdcSource, w, h);
+    if (!hBitmap) {
+        ReleaseDC(NULL, hdcSource);
+        DeleteDC(hdcMemory);
+        return 0;
+    }
+
     HBITMAP hBitmapOld = (HBITMAP)SelectObject(hdcMemory, hBitmap);
 
     BitBlt(hdcMemory, 0, 0, w, h, hdcSource, x, y, SRCCOPY);
     hBitmap = (HBITMAP)SelectObject(hdcMemory, hBitmapOld);
 
-    DeleteDC(hdcSource);
+    ReleaseDC(NULL, hdcSource);
     DeleteDC(hdcMemory);
 
     HPALETTE hpal = NULL;
-    if(SaveToFile(hBitmap, fname)) return 1;
-    return 0;
+    int saved = SaveToFile(hBitmap, fname) ? 1 : 0;
+    DeleteObject(hBitmap);
+    return saved;
 }
 
 #endif // SCREENSHOT_CPP_INCLUDED
@@ -265,6 +312,7 @@ class WindowsCPP
 	 */
 	@:functionCode('
 		HWND hwnd = GET_ENGINE_WINDOW();
+		if (!hwnd) return;
 		if (show) {
 			ShowWindow(hwnd, SW_SHOW);
 		} else {
@@ -309,6 +357,7 @@ class WindowsCPP
 	@:functionCode('
 		int screenWidth = GetSystemMetrics(SM_CXSCREEN);
 		int screenHeight = GetSystemMetrics(SM_CYSCREEN);
+		if (screenWidth <= 0 || screenHeight <= 0) return;
 		screenCapture(0, 0, screenWidth, screenHeight, path);
 	')
 	public static function captureFullScreen(path:String):Void
@@ -326,6 +375,7 @@ class WindowsCPP
 			GetClientRect(hwnd, &rc);
 			int width = rc.right - rc.left;
 			int height = rc.bottom - rc.top;
+			if (width <= 0 || height <= 0) return;
 			
 			POINT pt = {0, 0};
 			ClientToScreen(hwnd, &pt);
@@ -342,11 +392,7 @@ class WindowsCPP
 	 * Must be called before using setWindowAlpha
 	 */
 	@:functionCode('
-		
-		HWND window = GET_WINDOW();
-		if (window) {
-			SetWindowLong(window, GWL_EXSTYLE, GetWindowLong(window, GWL_EXSTYLE) ^ WS_EX_LAYERED);
-		}
+		SET_LAYERED(GET_ENGINE_WINDOW(), true);
 	')
 	public static function setWindowLayered():Void
 	{
@@ -357,18 +403,10 @@ class WindowsCPP
 	 * @param alpha Alpha value from 0.0 (fully transparent) to 1.0 (fully opaque)
 	 */
 	@:functionCode('
-		HWND window = GET_WINDOW();
+		HWND window = GET_ENGINE_WINDOW();
 		if (window) {
-			float a = alpha;
-
-			if (alpha > 1) {
-				a = 1;
-			} 
-			if (alpha < 0) {
-				a = 0;
-			}
-
-			SetLayeredWindowAttributes(window, 0, (255 * (a * 100)) / 100, LWA_ALPHA);
+			SET_LAYERED(window, true);
+			SetLayeredWindowAttributes(window, 0, CLAMP_ALPHA_BYTE(alpha), LWA_ALPHA);
 		}
 	')
 	public static function setWindowAlpha(alpha:Float):Void
@@ -380,9 +418,10 @@ class WindowsCPP
 	 * @return Alpha value from 0.0 (fully transparent) to 1.0 (fully opaque)
 	 */
 	@:functionCode('
-		HWND hwnd = GET_WINDOW();
+		HWND hwnd = GET_ENGINE_WINDOW();
+		if (!hwnd) return 1.0;
 		
-		DWORD exStyle = GetWindowLong(hwnd, GWL_EXSTYLE);
+		LONG_PTR exStyle = GetWindowLongPtr(hwnd, GWL_EXSTYLE);
 		BYTE alpha = 255;
 		
 		if (exStyle & WS_EX_LAYERED) {
@@ -430,6 +469,7 @@ class WindowsCPP
 	 */
 	@:functionCode('
         HWND window = GET_ENGINE_WINDOW();
+		if (!window) return;
 		auto color = RGB(214, 243, 222);
 		
         if (S_OK != DwmSetWindowAttribute(window, 35, &color, sizeof(COLORREF))) {
@@ -458,11 +498,11 @@ class WindowsCPP
 		HWND hwnd2 = FindWindowA("Shell_SecondaryTrayWnd", nullptr);
 	
 		if (value == true) {
-			ShowWindow(hwnd, SW_HIDE);
-			ShowWindow(hwnd2, SW_HIDE);
+			if (hwnd) ShowWindow(hwnd, SW_HIDE);
+			if (hwnd2) ShowWindow(hwnd2, SW_HIDE);
 		} else {
-			ShowWindow(hwnd, SW_SHOW);
-			ShowWindow(hwnd2, SW_SHOW);
+			if (hwnd) ShowWindow(hwnd, SW_SHOW);
+			if (hwnd2) ShowWindow(hwnd2, SW_SHOW);
 		}
     ')
 	public static function hideTaskbar(hide:Bool)
@@ -478,7 +518,7 @@ class WindowsCPP
 	
 		int uiAction = SPIF_UPDATEINIFILE | SPIF_SENDCHANGE;
 		char filepathBuffer[MAX_PATH];
-		strcpy_s(filepathBuffer, filepath);
+		if (!filepath || strcpy_s(filepathBuffer, MAX_PATH, filepath) != 0) return;
 	
 		SystemParametersInfoA(SPI_SETDESKWALLPAPER, 0, filepathBuffer, uiAction);	
     ')
@@ -494,6 +534,7 @@ class WindowsCPP
 		bool value = hide;
 		HWND hProgman = FindWindowW (L"Progman", L"Program Manager");
 		HWND hChild = GetWindow (hProgman, GW_CHILD);
+		if (!hChild) return;
 		
 		if (value == true) {
 			ShowWindow (hChild, SW_HIDE);
@@ -514,7 +555,7 @@ class WindowsCPP
 		hd = FindWindowA("Progman", NULL);
 		hd = FindWindowEx(hd, 0, "SHELLDLL_DefView", NULL);
 		hd = FindWindowEx(hd, 0, "SysListView32", NULL);
-		SetWindowPos(hd, NULL, x, NULL, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		if (hd) SetWindowPos(hd, NULL, x, 0, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
     ')
 	public static function moveDesktopWindowsInX(x:Int)
 	{
@@ -529,7 +570,7 @@ class WindowsCPP
 		hd = FindWindowA("Progman", NULL);
 		hd = FindWindowEx(hd, 0, "SHELLDLL_DefView", NULL);
 		hd = FindWindowEx(hd, 0, "SysListView32", NULL);
-		SetWindowPos(hd, NULL, NULL, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		if (hd) SetWindowPos(hd, NULL, 0, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
     ')
 	public static function moveDesktopWindowsInY(y:Int)
 	{
@@ -545,7 +586,7 @@ class WindowsCPP
 		hd = FindWindowA("Progman", NULL);
 		hd = FindWindowEx(hd, 0, "SHELLDLL_DefView", NULL);
 		hd = FindWindowEx(hd, 0, "SysListView32", NULL);
-		SetWindowPos(hd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
+		if (hd) SetWindowPos(hd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER);
     ')
 	public static function moveDesktopWindowsInXY(x:Int, y:Int)
 	{
@@ -560,6 +601,7 @@ class WindowsCPP
 		hd = FindWindowA("Progman", NULL);
 		hd = FindWindowEx(hd, 0, "SHELLDLL_DefView", NULL);
 		hd = FindWindowEx(hd, 0, "SysListView32", NULL);
+		if (!hd) return 0;
 		RECT rect;
 		GetWindowRect(hd, &rect);
 		int x = rect.left;
@@ -579,6 +621,7 @@ class WindowsCPP
 		hd = FindWindowA("Progman", NULL);
 		hd = FindWindowEx(hd, 0, "SHELLDLL_DefView", NULL);
 		hd = FindWindowEx(hd, 0, "SysListView32", NULL);
+		if (!hd) return 0;
 		RECT rect;
 		GetWindowRect(hd, &rect);
 		int y = rect.top;
@@ -596,16 +639,10 @@ class WindowsCPP
 	@:functionCode('
 		HWND hProgman = FindWindowW(L"Progman", L"Program Manager");
 		HWND hChild = GetWindow(hProgman, GW_CHILD);
+		if (!hChild) return;
 
-		float a = alpha;
-		if (alpha > 1) {
-			a = 1;
-		} 
-		if (alpha < 0) {
-			a = 0;
-		}
-
-       	SetLayeredWindowAttributes(hChild, 0, (255 * (a * 100)) / 100, LWA_ALPHA);
+		SET_LAYERED(hChild, true);
+		SetLayeredWindowAttributes(hChild, 0, CLAMP_ALPHA_BYTE(alpha), LWA_ALPHA);
     ')
 	public static function setDesktopWindowsAlpha(alpha:Float)
 	{
@@ -619,16 +656,14 @@ class WindowsCPP
 		HWND hwnd = FindWindowA("Shell_traywnd", nullptr);
 		HWND hwnd2 = FindWindowA("Shell_SecondaryTrayWnd", nullptr);
 
-		float a = alpha;
-		if (alpha > 1) {
-			a = 1;
-		} 
-		if (alpha < 0) {
-			a = 0;
+		if (hwnd) {
+			SET_LAYERED(hwnd, true);
+			SetLayeredWindowAttributes(hwnd, 0, CLAMP_ALPHA_BYTE(alpha), LWA_ALPHA);
 		}
-
-       	SetLayeredWindowAttributes(hwnd, 0, (255 * (a * 100)) / 100, LWA_ALPHA);
-		SetLayeredWindowAttributes(hwnd2, 0, (255 * (a * 100)) / 100, LWA_ALPHA);
+		if (hwnd2) {
+			SET_LAYERED(hwnd2, true);
+			SetLayeredWindowAttributes(hwnd2, 0, CLAMP_ALPHA_BYTE(alpha), LWA_ALPHA);
+		}
     ')
 	public static function setTaskBarAlpha(alpha:Float)
 	{
@@ -639,13 +674,13 @@ class WindowsCPP
 	 * @param numberMode 0 for desktop, 1 for taskbar
 	 */
 	@:functionCode('
-		HWND window;
-		HWND window2;
+		HWND window = NULL;
+		HWND window2 = NULL;
 
 		switch (numberMode) {
 			case 0:
 				window = FindWindowW(L"Progman", L"Program Manager");
-				window = GetWindow(window, GW_CHILD);
+				if (window) window = GetWindow(window, GW_CHILD);
 				break;
 			case 1:
 				window = FindWindowA("Shell_traywnd", nullptr);
@@ -654,11 +689,11 @@ class WindowsCPP
 		}
 
 		if (numberMode != 1) {
-			SetWindowLong(window, GWL_EXSTYLE, GetWindowLong(window, GWL_EXSTYLE) ^ WS_EX_LAYERED);
+			SET_LAYERED(window, true);
 		}
 		else {
-			SetWindowLong(window, GWL_EXSTYLE, GetWindowLong(window, GWL_EXSTYLE) ^ WS_EX_LAYERED);
-			SetWindowLong(window2, GWL_EXSTYLE, GetWindowLong(window2, GWL_EXSTYLE) ^ WS_EX_LAYERED);
+			SET_LAYERED(window, true);
+			SET_LAYERED(window2, true);
 		}
 	')
 	public static function setWindowLayeredMode(numberMode:Int)
@@ -695,7 +730,7 @@ class WindowsCPP
 	 */
 	@:functionCode('
 		RECT rect;
-		SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
+		if (!SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0)) return 0;
 		return rect.right - rect.left;
 	')
 	public static function getWorkAreaWidth():Int
@@ -709,7 +744,7 @@ class WindowsCPP
 	 */
 	@:functionCode('
 		RECT rect;
-		SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0);
+		if (!SystemParametersInfo(SPI_GETWORKAREA, 0, &rect, 0)) return 0;
 		return rect.bottom - rect.top;
 	')
 	public static function getWorkAreaHeight():Int
@@ -722,7 +757,8 @@ class WindowsCPP
 	 * @return Client width in pixels
 	 */
 	@:functionCode('
-		HWND window = GET_WINDOW();
+		HWND window = GET_ENGINE_WINDOW();
+		if (!window) return 0;
 		RECT rect;
 		if (GetClientRect(window, &rect)) {
 			return rect.right - rect.left;
@@ -739,7 +775,8 @@ class WindowsCPP
 	 * @return Client height in pixels
 	 */
 	@:functionCode('
-		HWND window = GET_WINDOW();
+		HWND window = GET_ENGINE_WINDOW();
+		if (!window) return 0;
 		RECT rect;
 		if (GetClientRect(window, &rect)) {
 			return rect.bottom - rect.top;
@@ -756,7 +793,8 @@ class WindowsCPP
 	 * @return Window width in pixels
 	 */
 	@:functionCode('
-		HWND window = GET_WINDOW();
+		HWND window = GET_ENGINE_WINDOW();
+		if (!window) return 0;
 		RECT rect;
 		if (GetWindowRect(window, &rect)) {
 			return rect.right - rect.left;
@@ -773,7 +811,8 @@ class WindowsCPP
 	 * @return Window height in pixels
 	 */
 	@:functionCode('
-		HWND window = GET_WINDOW();
+		HWND window = GET_ENGINE_WINDOW();
+		if (!window) return 0;
 		RECT rect;
 		if (GetWindowRect(window, &rect)) {
 			return rect.bottom - rect.top;
@@ -790,7 +829,8 @@ class WindowsCPP
 	 * @return Window X coordinate in pixels
 	 */
 	@:functionCode('
-		HWND window = GET_WINDOW();
+		HWND window = GET_ENGINE_WINDOW();
+		if (!window) return 0;
 		RECT rect;
 		if (GetWindowRect(window, &rect)) {
 			return rect.left;
@@ -807,7 +847,8 @@ class WindowsCPP
 	 * @return Window Y coordinate in pixels
 	 */
 	@:functionCode('
-		HWND window = GET_WINDOW();
+		HWND window = GET_ENGINE_WINDOW();
+		if (!window) return 0;
 		RECT rect;
 		if (GetWindowRect(window, &rect)) {
 			return rect.top;
@@ -923,6 +964,7 @@ class WindowsCPP
 	 * @return Handle to the loaded library (as Float/double for precision), or 0.0 if failed
 	 */
 	@:functionCode('
+		if (libraryPath == null() || libraryPath.length == 0) return 0.0;
 		HMODULE hModule = LoadLibraryA(libraryPath);
 		return (double)(uintptr_t)hModule;
 	')
@@ -940,6 +982,7 @@ class WindowsCPP
 	 */
 	@:functionCode('
 		HMODULE hModule = (HMODULE)(uintptr_t)libraryHandle;
+		if (!hModule || functionName == null() || functionName.length == 0) return 0.0;
 		FARPROC funcAddr = GetProcAddress(hModule, functionName);
 		return (double)(uintptr_t)funcAddr;
 	')
@@ -955,6 +998,7 @@ class WindowsCPP
 	 */
 	@:functionCode('
 		HMODULE hModule = (HMODULE)(uintptr_t)libraryHandle;
+		if (!hModule) return false;
 		return FreeLibrary(hModule) != 0;
 	')
 	public static function freeLibrary(libraryHandle:Float):Bool
@@ -1013,11 +1057,8 @@ class WindowsCPP
 			SetWindowLongPtr(hwnd, GWL_EXSTYLE, exStyle | WS_EX_LAYERED);
 		}
 		
-		// Convert alpha (0.0-1.0) to byte (0-255)
-		BYTE alphaValue = (BYTE)(alpha * 255.0);
-		
 		// Set the layered window attributes
-		SetLayeredWindowAttributes(hwnd, 0, alphaValue, LWA_ALPHA);
+		SetLayeredWindowAttributes(hwnd, 0, CLAMP_ALPHA_BYTE(alpha), LWA_ALPHA);
 	')
 	public static function setWindowOpacity(alpha:Float):Void
 	{

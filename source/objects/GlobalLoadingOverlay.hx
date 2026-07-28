@@ -155,33 +155,16 @@ private class GlobalLoadingOverlayDisplay extends Sprite
 		if (Lib.current == null || Lib.current.stage == null)
 			return;
 
-		if (FlxG.game != null)
+		var stageHost:Dynamic = Lib.current.stage;
+		if (parent != stageHost)
 		{
-			var gameHost:Sprite = cast FlxG.game;
-			if (parent != gameHost)
-			{
-				if (parent != null)
-					parent.removeChild(this);
-				gameHost.addChild(this);
-			}
-			else
-			{
-				gameHost.setChildIndex(this, gameHost.numChildren - 1);
-			}
+			if (parent != null)
+				parent.removeChild(this);
+			stageHost.addChild(this);
 		}
 		else
 		{
-			var stageHost:Dynamic = Lib.current.stage;
-			if (parent != stageHost)
-			{
-				if (parent != null)
-					parent.removeChild(this);
-				stageHost.addChild(this);
-			}
-			else
-			{
-				stageHost.setChildIndex(this, stageHost.numChildren - 1);
-			}
+			stageHost.setChildIndex(this, stageHost.numChildren - 1);
 		}
 
 		resize();
@@ -248,6 +231,9 @@ private class GlobalLoadingOverlayDisplay extends Sprite
 		if (stage == null)
 			return;
 
+		if (parent != null && parent.numChildren > 0 && parent.getChildIndex(this) != parent.numChildren - 1)
+			parent.setChildIndex(this, parent.numChildren - 1);
+
 		refreshThemeIfNeeded();
 
 		var now = nowSeconds();
@@ -283,10 +269,7 @@ private class GlobalLoadingOverlayDisplay extends Sprite
 	{
 		if (stage == null)
 			return;
-		if (FlxG.game != null && parent == FlxG.game)
-			x = Math.round(((stage.stageWidth - PANEL_WIDTH) * 0.5) - FlxG.game.x);
-		else
-			x = Math.round((stage.stageWidth - PANEL_WIDTH) * 0.5);
+		x = Math.round((stage.stageWidth - PANEL_WIDTH) * 0.5);
 		y = 0;
 	}
 
@@ -328,14 +311,15 @@ private class GlobalLoadingOverlayDisplay extends Sprite
 			return;
 
 		var size:Float = ICON_SIZE;
-		var thickness:Float = Math.max(4.0, size * 0.12);
+		var pulse:Float = (Math.sin(sweepPhase * 1.9) + 1) * 0.5;
+		var thicknessPulse:Float = (Math.sin(sweepPhase * 1.25 + 0.85) + 1) * 0.5;
+		var thickness:Float = Math.max(4.0, size * (0.11 + thicknessPulse * 0.03));
 		var center:Float = size * 0.5;
 		var baseRadius:Float = (size - thickness) * 0.5 - 1;
 		var amplitude:Float = Math.max(1.0, thickness * 0.35);
 		var waveTurns:Float = 6.0;
 		var startAngle:Float = -Math.PI / 2 + sweepPhase * 2.4;
-		var pulse:Float = (Math.sin(sweepPhase * 1.9) + 1) * 0.5;
-		var sweep:Float = TAU * lerp(0.18, 0.34, pulse);
+		var sweep:Float = TAU * lerp(0.18, 0.86, pulse);
 
 		iconWave.graphics.clear();
 		if (sweep <= 0.01)

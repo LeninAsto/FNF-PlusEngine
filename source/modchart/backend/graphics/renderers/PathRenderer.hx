@@ -129,44 +129,55 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		return percs != null ? percs[player] : null;
 	}
 
+	private inline function getMirroredPercent(name:String, player:Int):Null<Float> {
+		final current = getDefinedPercent(name, player);
+		if (current != null)
+			return current;
+
+		final otherPlayer = player == 0 ? 1 : 0;
+		return getDefinedPercent(name, otherPlayer);
+	}
+
 	private inline function getPathAlpha(player:Int, lane:Int):Float {
-		final laneAlpha = getDefinedPercent('path' + lane, player);
+		final laneAlpha = getMirroredPercent('path' + lane, player);
 		if (laneAlpha != null)
 			return laneAlpha;
 
-		final globalAlpha = getDefinedPercent('path', player);
+		final globalAlpha = getMirroredPercent('path', player);
 		if (globalAlpha != null)
 			return globalAlpha;
 
-		return parent.getPercent('arrowPathAlpha', player);
+		final mirroredArrowPathAlpha = getMirroredPercent('arrowPathAlpha', player);
+		return mirroredArrowPathAlpha != null ? mirroredArrowPathAlpha : parent.getPercent('arrowPathAlpha', player);
 	}
 
 	private inline function getPathThickness(player:Int, lane:Int):Float {
-		final laneThickness = getDefinedPercent('path' + lane + 'thickness', player);
+		final laneThickness = getMirroredPercent('path' + lane + 'thickness', player);
 		if (laneThickness != null)
 			return laneThickness;
 
-		final laneTickness = getDefinedPercent('path' + lane + 'tickness', player);
+		final laneTickness = getMirroredPercent('path' + lane + 'tickness', player);
 		if (laneTickness != null)
 			return laneTickness;
 
-		final globalThickness = getDefinedPercent('paththickness', player);
+		final globalThickness = getMirroredPercent('paththickness', player);
 		if (globalThickness != null)
 			return globalThickness;
 
-		final globalTickness = getDefinedPercent('pathtickness', player);
+		final globalTickness = getMirroredPercent('pathtickness', player);
 		if (globalTickness != null)
 			return globalTickness;
 
-		return parent.getPercent('arrowPathThickness', player);
+		final mirroredArrowPathThickness = getMirroredPercent('arrowPathThickness', player);
+		return mirroredArrowPathThickness != null ? mirroredArrowPathThickness : parent.getPercent('arrowPathThickness', player);
 	}
 
 	private inline function getPathBound(player:Int, lane:Int):Float {
-		final laneBound = getDefinedPercent('path' + lane + 'bound', player);
+		final laneBound = getMirroredPercent('path' + lane + 'bound', player);
 		if (laneBound != null)
 			return laneBound;
 
-		final globalBound = getDefinedPercent('pathbound', player);
+		final globalBound = getMirroredPercent('pathbound', player);
 		if (globalBound != null)
 			return globalBound;
 
@@ -174,11 +185,8 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		final reverseModifier = parent.modifiers.modifiers.get('reverse');
 		if (reverseModifier != null && Std.isOfType(reverseModifier, Reverse)) {
 			final spawnTimeMs = cast(reverseModifier, Reverse).getSpawnTime(player);
-			final scrollSpeed = Adapter.instance.getCurrentScrollSpeed();
-			// Convert spawn time (ms) to visual distance (pixels)
-			// scrollSpeed represents pixels per millisecond of note progression
-			final dynamicBound = Math.max(spawnTimeMs * scrollSpeed * 0.5, DEFAULT_PATH_BOUND);
-			return dynamicBound;
+			final pathPadding = Math.max(0, Config.ARROW_PATHS_CONFIG.LENGTH);
+			return Math.max(spawnTimeMs + pathPadding, DEFAULT_PATH_BOUND);
 		}
 
 		return DEFAULT_PATH_BOUND;
@@ -197,23 +205,16 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 	override public function prepare(item:FlxSprite):Null<DrawCommand> {
 		final lane = Adapter.instance.getLaneFromArrow(item);
 		final fn = Adapter.instance.getPlayerFromArrow(item);
+		final laneSlot = lane >= 0 ? ((fn * 8) + lane) % MAX_LANES : 0;
 
-		final canUseLast = fn == __lastPlayer && lane == __lastLane;
-
-		final pathAlpha = canUseLast ? __lastAlpha : getPathAlpha(fn, lane);
-		final pathThickness = canUseLast ? __lastThickness : getPathThickness(fn, lane);
-		final pathBound = canUseLast ? __lastBound : getPathBound(fn, lane);
+		final pathAlpha = getPathAlpha(fn, lane);
+		final pathThickness = getPathThickness(fn, lane);
+		final pathBound = getPathBound(fn, lane);
 
 		if (pathAlpha <= 0 || pathThickness <= 0 || pathBound <= 0)
 			return null;
 
-		__lastAlpha = pathAlpha;
-		__lastThickness = pathThickness;
-		__lastBound = pathBound;
-		__lastPlayer = fn;
-		__lastLane = lane;
-
-		final limit = 1800 + pathBound;
+		final limit = pathBound;
 		final divisions = getAdaptiveDivisions(limit);
 		final interval = limit / (divisions - 1); // max point distance = limit (receptor → furthest sample)
 		final songPos = Adapter.instance.getSongPosition();
@@ -249,7 +250,7 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 			_paramBuf.distance = hitTime;
 			_paramBuf.sourceTime = songPos + hitTime;
 
-			final output = parent.modifiers.getPath(_scratch, _paramBuf);
+			final output = parent.getReceptorPath(_scratch, _paramBuf);
 
 			_px[index] = output.pos.x;
 			_py[index] = output.pos.y;
@@ -288,8 +289,8 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		}
 
 		// --- Phase 3: Build quads using smooth per-endpoint normals ---
-		final laneVerts = _perLaneVertices[lane];
-		final laneTrans = _perLaneTransforms[lane];
+		final laneVerts = _perLaneVertices[laneSlot];
+		final laneTrans = _perLaneTransforms[laneSlot];
 
 		var vi = 0;
 		var hasC = false;

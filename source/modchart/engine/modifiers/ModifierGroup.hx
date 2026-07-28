@@ -9,6 +9,7 @@ import modchart.backend.core.ModifierOutput;
 import modchart.backend.core.ModifierParameters;
 import modchart.backend.core.PercentArray;
 import modchart.backend.core.VisualParameters;
+import modchart.backend.core.TransformMode;
 import modchart.backend.macros.ModifiersMacro;
 import modchart.backend.util.ModchartUtil;
 import modchart.engine.modifiers.Modifier;
@@ -42,6 +43,7 @@ final class ModifierGroup {
 	 * - This ensures efficient storage and retrieval while avoiding direct string key lookups.
 	 */
 	public var percents(default, never):PercentArray = new PercentArray();
+	@:noCompletion private var __explicitPercentPlayers:Vector<Int> = new Vector<Int>(Std.int(Math.pow(2, 16)));
 
 	/**
 	 * A `StringMap` that maps modifier names/identifiers to their corresponding `Modifier` class.
@@ -74,6 +76,8 @@ final class ModifierGroup {
 	@:noCompletion private var __modifierCount:Int = 0;
 	@:noCompletion private var __sortedIDs:Vector<String> = new Vector<String>(32);
 	@:noCompletion private var __idCount:Int = 0;
+	public var modifierCount(get, never):Int;
+	inline function get_modifierCount():Int return __modifierCount;
 
 	inline private function __loadModifiers() {
 		for (cls in COMPILED_MODIFIERS) {
@@ -85,6 +89,8 @@ final class ModifierGroup {
 
 	public function new(playfield:PlayField) {
 		this.playfield = playfield;
+		for (i in 0...__explicitPercentPlayers.length)
+			__explicitPercentPlayers[i] = 0;
 
 		// Pre-allocate reusable args struct to avoid 1 heap alloc per getPath() call
 		__cachedArgs = {songTime: 0, hitTime: 0, distance: 0, sourceTime: 0, curBeat: 0};
@@ -111,7 +117,7 @@ final class ModifierGroup {
 	 * - Iterates through all active modifiers, applying transformations if conditions are met.
 	 * - Adjusts the `z` position based on `Config.Z_SCALE` and projects the final position.
 	 */
-	public inline function getPath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput {
+	public inline function getPath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true, ?transformMode:Int = 15):ModifierOutput {
 		if (!allowVis && !allowPos)
 			return {pos: pos, visuals: {}, rawX: pos.x, rawY: pos.y, rawZ: pos.z};
 
@@ -155,7 +161,7 @@ final class ModifierGroup {
 			final useStraightAnchor = args.straightHolds && !mod.allowOnStraightHolds();
 			final activeArgs = useStraightAnchor ? straightArgs : args;
 
-			if (!mod.shouldRun(activeArgs))
+			if (!mod.supportsMode(cast transformMode) || !mod.shouldRun(activeArgs))
 				continue;
 
 			if (allowPos)
@@ -183,7 +189,7 @@ final class ModifierGroup {
 		__addModifier(name, instance);
 
 	public inline function addModifier(name:String) {
-		var lowerName = name.toLowerCase();
+		var lowerName = __normalizeModifierName(name);
 		if (modifiers.exists(lowerName))
 			return;
 
@@ -197,9 +203,18 @@ final class ModifierGroup {
 		__addModifier(lowerName, newModifier);
 	}
 
+	inline function __normalizeModifierName(name:String):String {
+		final lowerName = name.toLowerCase();
+		return switch (lowerName) {
+			case 'fieldrotate': 'field';
+			default: lowerName;
+		}
+	}
+
 	// Note: __hashKey in PercentArray is now case-insensitive, so no toLowerCase() needed.
 	public inline function setPercent(name:String, value:Float, player:Int = -1) {
-		final possiblePercs = percents.get(name);
+		final id = @:privateAccess percents.__hashKey(name);
+		final possiblePercs = percents.getUnsafe(id);
 		final generate = possiblePercs == null;
 		final percs = generate ? __getPercentTemplate() : possiblePercs;
 
@@ -209,9 +224,11 @@ final class ModifierGroup {
 		else
 			percs[player] = value;
 
+		__markExplicit(id, player);
+
 		// if the percent list already was generated, we dont need to set it again
 		if (generate)
-			percents.set(name, percs);
+			percents.setUnsafe(id, percs);
 	}
 
 	public inline function getPercent(name:String, player:Int):Float {
@@ -234,6 +251,12 @@ final class ModifierGroup {
 		return 0;
 	}
 
+	inline private function __hasUnsafe(id:Int):Bool
+		return percents.getUnsafe(id) != null;
+
+	inline private function __hasUnsafeForPlayer(id:Int, player:Int):Bool
+		return (percents.getUnsafe(id) != null) && ((__explicitPercentPlayers[id] & __playerMask(player)) != 0);
+
 	inline private function __setUnsafe(id:Int, value:Float, player:Int = -1) {
 		var possiblePercs = percents.getUnsafe(id);
 		var generate = possiblePercs == null;
@@ -245,8 +268,25 @@ final class ModifierGroup {
 		else
 			percs[player] = value;
 
+		__markExplicit(id, player);
+
 		if (generate)
 			percents.setUnsafe(id, percs);
+	}
+
+	inline private function __markExplicit(id:Int, player:Int):Void {
+		__explicitPercentPlayers[id] = __explicitPercentPlayers[id] | __playerMask(player);
+	}
+
+	inline private function __playerMask(player:Int):Int {
+		if (player == -1) {
+			var mask = 0;
+			for (i in 0...Adapter.instance.getPlayerCount())
+				mask = mask | (1 << i);
+			return mask;
+		}
+
+		return (player >= 0 && player < 31) ? (1 << player) : 0;
 	}
 
 	@:noCompletion

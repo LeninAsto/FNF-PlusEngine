@@ -4,21 +4,21 @@ import flixel.FlxG;
 import flixel.FlxObject;
 
 /**
- * Utilidades adicionales para FlxG para compatibilidad con mods antiguos
+ * Additional utilities for FlxG to ensure compatibility with older mods
  */
 class FlxGUtils 
 {
 	/**
-	 * Añade compatibilidad con addChildBelowMouse de versiones anteriores
-	 */
+     * Adds support for addChildBelowMouse from previous versions
+     */
 	public static function addChildBelowMouse(object:FlxObject, ?IndexModifier:Int = 0):Void 
 	{
-		// En el engine actual, simplemente añadimos al state
+		// In the current engine, we simply add to the state
 		FlxG.state.add(object);
 	}
 
 	/**
-	 * Compatibilidad con removeChild
+	 * Support for removeChild
 	 */
 	public static function removeChild(object:FlxObject):Void 
 	{

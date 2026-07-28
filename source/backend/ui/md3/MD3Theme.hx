@@ -255,24 +255,24 @@ class MD3Theme
 			tertiaryContainer    = colorFromHSL((h + 60) % 360, s * 0.24, 0.30);
 			onTertiaryContainer  = colorFromHSL((h + 60) % 360, s * 0.24, 0.92);
 
-			surface              = colorFromHSL(h, s * 0.05, 0.09);
+			surface              = 0xFF141414;
 			onSurface            = colorFromHSL(h, s * 0.04, 0.92);
-			surfaceVariant       = colorFromHSL(h, s * 0.10, 0.24);
+			surfaceVariant       = 0xFF232323;
 			onSurfaceVariant     = colorFromHSL(h, s * 0.08, 0.78);
 			background           = surface;
 			onBackground         = onSurface;
 
-			surfaceContainerLowest  = colorFromHSL(h, s * 0.03, 0.04);
-			surfaceContainerLow     = colorFromHSL(h, s * 0.04, 0.08);
-			surfaceContainer        = colorFromHSL(h, s * 0.05, 0.12);
-			surfaceContainerHigh    = colorFromHSL(h, s * 0.06, 0.16);
-			surfaceContainerHighest = colorFromHSL(h, s * 0.07, 0.20);
+			surfaceContainerLowest  = 0xFF101010;
+			surfaceContainerLow     = 0xFF151515;
+			surfaceContainer        = 0xFF1A1A1A;
+			surfaceContainerHigh    = 0xFF202020;
+			surfaceContainerHighest = 0xFF262626;
 
 			outline              = colorFromHSL(h, s * 0.08, 0.52);
-			outlineVariant       = colorFromHSL(h, s * 0.08, 0.32);
+			outlineVariant       = 0xFF383838;
 
-			inverseSurface       = colorFromHSL(h, s * 0.04, 0.90);
-			inverseOnSurface     = colorFromHSL(h, s * 0.04, 0.18);
+			inverseSurface       = 0xFF2A2A2A;
+			inverseOnSurface     = 0xFFF4EFF4;
 			inversePrimary       = colorFromHSL(h, s * 0.82, 0.40);
 		}
 		else

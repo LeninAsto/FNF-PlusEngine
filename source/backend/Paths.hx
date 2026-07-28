@@ -25,7 +25,7 @@ import backend.Mods;
 @:access(openfl.display.BitmapData)
 class Paths
 {
-	inline public static var SOUND_EXT = #if web "mp3" #else "ogg" #end;
+	inline public static var SOUND_EXT = "ogg";
 	inline public static var VIDEO_EXT = "mp4";
 
 	/**
@@ -337,7 +337,7 @@ class Paths
 	{
 		#if MODS_ALLOWED
 		var file:String = modsVideo(key);
-		if (FileSystem.exists(file))
+		if (safeModPathExists(file))
 			return file;
 		#end
 		return 'assets/videos/$key.$VIDEO_EXT';
@@ -427,7 +427,7 @@ class Paths
 		var folderKey:String = Language.getFileTranslation('fonts/$key');
 		#if MODS_ALLOWED
 		var file:String = modFolders(folderKey);
-		if (FileSystem.exists(file))
+		if (safeModPathExists(file))
 			return file;
 		#end
 		return 'assets/$folderKey';
@@ -443,17 +443,17 @@ class Paths
 				modKey = 'songs/$key';
 
 			for (mod in Mods.getGlobalMods())
-				if (FileSystem.exists(mods('$mod/$modKey')))
+				if (safeModPathExists(mods('$mod/$modKey')))
 					return true;
 			#if linux
-			else if (FileSystem.exists(findFile('$mod/$modKey')))
+			else if (safeModPathExists(findFile('$mod/$modKey')))
 				return true;
 			#end
 
-			if (FileSystem.exists(mods(Mods.currentModDirectory + '/' + modKey)) || FileSystem.exists(mods(modKey)))
+			if (safeModPathExists(mods(Mods.currentModDirectory + '/' + modKey)) || safeModPathExists(mods(modKey)))
 				return true;
 			#if linux
-			else if (FileSystem.exists(findFile(modKey)))
+			else if (safeModPathExists(findFile(modKey)))
 				return true;
 			#end
 		}
@@ -467,10 +467,10 @@ class Paths
 		var imageLoaded:FlxGraphic = image(key, parentFolder, allowGPU);
 
 		var myXml:Dynamic = getPath('images/$key.xml', TEXT, parentFolder, true);
-		if (OpenFlAssets.exists(myXml) #if MODS_ALLOWED || (FileSystem.exists(myXml) && (useMod = true)) #end)
+		if (OpenFlAssets.exists(myXml) #if MODS_ALLOWED || (safeModPathExists(myXml) && (useMod = true)) #end)
 		{
 			#if MODS_ALLOWED
-			return FlxAtlasFrames.fromSparrow(imageLoaded, (useMod ? stripBOM(File.getContent(myXml)) : myXml));
+			return FlxAtlasFrames.fromSparrow(imageLoaded, (useMod ? stripBOM(safeFileContent(myXml)) : myXml));
 			#else
 			return FlxAtlasFrames.fromSparrow(imageLoaded, myXml);
 			#end
@@ -478,10 +478,10 @@ class Paths
 		else
 		{
 			var myJson:Dynamic = getPath('images/$key.json', TEXT, parentFolder, true);
-			if (OpenFlAssets.exists(myJson) #if MODS_ALLOWED || (FileSystem.exists(myJson) && (useMod = true)) #end)
+			if (OpenFlAssets.exists(myJson) #if MODS_ALLOWED || (safeModPathExists(myJson) && (useMod = true)) #end)
 			{
 				#if MODS_ALLOWED
-				return FlxAtlasFrames.fromTexturePackerJson(imageLoaded, (useMod ? stripBOM(File.getContent(myJson)) : myJson));
+				return FlxAtlasFrames.fromTexturePackerJson(imageLoaded, (useMod ? stripBOM(safeFileContent(myJson)) : myJson));
 				#else
 				return FlxAtlasFrames.fromTexturePackerJson(imageLoaded, myJson);
 				#end
@@ -517,11 +517,11 @@ class Paths
 		var xmlExists:Bool = false;
 
 		var xml:String = modsXml(key);
-		if (FileSystem.exists(xml))
+		if (safeModPathExists(xml))
 			xmlExists = true;
 
 		return FlxAtlasFrames.fromSparrow(imageLoaded,
-			(xmlExists ? stripBOM(File.getContent(xml)) : stripBOM(getTextFromFile(Language.getFileTranslation('images/$key') + '.xml', true))));
+			(xmlExists ? stripBOM(safeFileContent(xml)) : stripBOM(getTextFromFile(Language.getFileTranslation('images/$key') + '.xml', true))));
 		#else
 		return FlxAtlasFrames.fromSparrow(imageLoaded, stripBOM(getTextFromFile(Language.getFileTranslation('images/$key') + '.xml', true)));
 		#end
@@ -534,11 +534,11 @@ class Paths
 		var txtExists:Bool = false;
 
 		var txt:String = modsTxt(key);
-		if (FileSystem.exists(txt))
+		if (safeModPathExists(txt))
 			txtExists = true;
 
 		return FlxAtlasFrames.fromSpriteSheetPacker(imageLoaded,
-			(txtExists ? stripBOM(File.getContent(txt)) : getPath(Language.getFileTranslation('images/$key') + '.txt', TEXT, parentFolder)));
+			(txtExists ? stripBOM(safeFileContent(txt)) : getPath(Language.getFileTranslation('images/$key') + '.txt', TEXT, parentFolder)));
 		#else
 		return FlxAtlasFrames.fromSpriteSheetPacker(imageLoaded, getPath(Language.getFileTranslation('images/$key') + '.txt', TEXT, parentFolder));
 		#end
@@ -551,11 +551,11 @@ class Paths
 		var jsonExists:Bool = false;
 
 		var json:String = modsImagesJson(key);
-		if (FileSystem.exists(json))
+		if (safeModPathExists(json))
 			jsonExists = true;
 
 		return FlxAtlasFrames.fromTexturePackerJson(imageLoaded,
-			(jsonExists ? stripBOM(File.getContent(json)) : getPath(Language.getFileTranslation('images/$key') + '.json', TEXT, parentFolder)));
+			(jsonExists ? stripBOM(safeFileContent(json)) : getPath(Language.getFileTranslation('images/$key') + '.json', TEXT, parentFolder)));
 		#else
 		return FlxAtlasFrames.fromTexturePackerJson(imageLoaded, getPath(Language.getFileTranslation('images/$key') + '.json', TEXT, parentFolder));
 		#end
@@ -616,6 +616,9 @@ class Paths
 
 	public static function safeModPathExists(path:String):Bool
 	{
+		if (path == null || path.length == 0)
+			return false;
+
 		try
 		{
 			return FileSystem.exists(path);
@@ -626,8 +629,11 @@ class Paths
 		}
 	}
 
-	static function safeModIsDirectory(path:String):Bool
+	public static function safeModIsDirectory(path:String):Bool
 	{
+		if (path == null || path.length == 0)
+			return false;
+
 		try
 		{
 			return FileSystem.isDirectory(path);
@@ -636,6 +642,34 @@ class Paths
 		{
 			return false;
 		}
+	}
+
+	public static function safeFileContent(path:String):String
+	{
+		if (path == null || path.length == 0)
+			return null;
+
+		try
+		{
+			if (FileSystem.exists(path))
+				return File.getContent(path);
+		}
+		catch (_:Dynamic) {}
+		return null;
+	}
+
+	public static function safeReadDirectory(path:String):Array<String>
+	{
+		if (path == null || path.length == 0)
+			return [];
+
+		try
+		{
+			if (FileSystem.exists(path) && FileSystem.isDirectory(path))
+				return FileSystem.readDirectory(path);
+		}
+		catch (_:Dynamic) {}
+		return [];
 	}
 
 	public static function getModsRootDirectories():Array<String>
@@ -655,46 +689,9 @@ class Paths
 		return roots;
 	}
 
-	public static function getLegacyModsRootDirectories():Array<String>
-	{
-		var roots:Array<String> = getModsRootDirectories();
-		#if MODS_ALLOWED
-		var legacyRoots:Array<String> = [];
-		#if android
-		if (StorageUtil.useExternalModsStorage())
-		{
-			for (modsRoot in StorageUtil.getPublicModsDirectoryCandidates())
-				addUniqueModsRoot(legacyRoots, modsRoot);
-			addUniqueModsRoot(legacyRoots, StorageUtil.getStorageDirectory() + 'PsychEngine/mods/');
-			addUniqueModsRoot(legacyRoots, StorageUtil.getStorageDirectory() + 'mods/');
-		}
-		else
-			addUniqueModsRoot(legacyRoots, StorageUtil.getStorageDirectory() + 'PsychEngine/mods/');
-		#else
-		addUniqueModsRoot(legacyRoots, Sys.getCwd() + 'PsychEngine/mods/');
-		addUniqueModsRoot(legacyRoots, Sys.getCwd() + 'mods/');
-		#end
-		for (root in legacyRoots)
-			if (!roots.contains(root)) roots.push(root);
-		#end
-		return roots;
-	}
-
-	static function shouldSearchLegacyModsRoot(key:String):Bool
-	{
-		if (key == null || key.length == 0)
-			return false;
-
-		var firstSegment:String = normalizeModKey(key).split('/')[0];
-		if (firstSegment == null || firstSegment.length == 0)
-			return false;
-
-		return !Mods.ignoreModFolders.contains(firstSegment.toLowerCase());
-	}
-
 	public static function getModsSearchRoots(?key:String):Array<String>
 	{
-		return ClientPrefs.data.legacyFileSystemAccess && shouldSearchLegacyModsRoot(key) ? getLegacyModsRootDirectories() : getModsRootDirectories();
+		return getModsRootDirectories();
 	}
 
 	public static function getPrimaryModsRoot():String
@@ -828,21 +825,21 @@ class Paths
 	{
 		// Try NDLL first
 		var ndllPath:String = modsNdll(key);
-		if (FileSystem.exists(ndllPath))
+		if (safeModPathExists(ndllPath))
 			return ndllPath;
 
 		// Try DLL
 		var dllPath:String = modsDll(key);
-		if (FileSystem.exists(dllPath))
+		if (safeModPathExists(dllPath))
 			return dllPath;
 
 		// Try without ndlls folder (root of mod)
 		var rootNdll:String = modFolders(key + '.ndll');
-		if (FileSystem.exists(rootNdll))
+		if (safeModPathExists(rootNdll))
 			return rootNdll;
 
 		var rootDll:String = modFolders(key + '.dll');
-		if (FileSystem.exists(rootDll))
+		if (safeModPathExists(rootDll))
 			return rootDll;
 
 		return null;
@@ -859,9 +856,9 @@ class Paths
 		if (Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0)
 		{
 			var ndllsFolder:String = mods(Mods.currentModDirectory + '/ndlls');
-			if (FileSystem.exists(ndllsFolder) && FileSystem.isDirectory(ndllsFolder))
+			if (safeModPathExists(ndllsFolder) && safeModIsDirectory(ndllsFolder))
 			{
-				for (file in FileSystem.readDirectory(ndllsFolder))
+				for (file in safeReadDirectory(ndllsFolder))
 				{
 					if (file.endsWith('.ndll') || file.endsWith('.dll'))
 					{
@@ -1069,11 +1066,9 @@ class Paths
 	public static function readDirectory(directory:String):Array<String>
 	{
 		#if MODS_ALLOWED
-		if (FileSystem.exists(directory))
-			return FileSystem.readDirectory(directory);
-
-		if (ClientPrefs.data.legacyFileSystemAccess)
-			return [];
+		var files:Array<String> = safeReadDirectory(directory);
+		if (files.length > 0)
+			return files;
 
 		#if android
 		var prefix:String = directory.endsWith('/') ? directory : directory + '/';

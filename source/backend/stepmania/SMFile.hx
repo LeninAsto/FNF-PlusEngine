@@ -10,8 +10,8 @@ import moonchart.backend.Timing;
 #end
 
 /**
- * Wrapper para cargar archivos StepMania usando la librería Moonchart
- * Mantiene compatibilidad con la interfaz anterior pero usa Moonchart internamente
+ * Wrapper for loading StepMania files using the Moonchart library
+ * Maintains compatibility with the previous interface but uses Moonchart internally
  */
 class SMFile {
 	public var header:SMHeader;
@@ -47,25 +47,25 @@ class SMFile {
 	function parseFile(data:String):Void {
 		#if !(mac || ios)
 		try {
-			// Inicializar Moonchart si no está inicializado
+			// Initialize Moonchart if it is not already initialized
 			moonchart.Moonchart.init();
 			
-			// Parsear el archivo SM usando Moonchart
+			// Parse the SM file using Moonchart
 			moonchartSM = new StepMania();
 			moonchartSM.fromStepMania(data);
 			
-			// Extraer información del header
+			// Extract information from the header
 			var basicChart = moonchartSM.toBasicFormat();
 			var meta = basicChart.meta;
 			
-			// Crear el header compatible con la implementación anterior
+			// Create a header that is compatible with the previous implementation
 			header = new SMHeader("");
 			header.TITLE = meta.title ?? "Unknown";
 			header.ARTIST = cast(meta.extraData.get("SONG_ARTIST"), String) ?? "Unknown";
 			header.MUSIC = cast(meta.extraData.get("AUDIO_FILE"), String) ?? "audio.ogg";
 			header.OFFSET = Std.string(meta.offset ?? 0.0);
 			
-			// Construir string de BPMS a partir de los cambios de BPM
+			// Build a BPMS string based on BPM changes
 			var bpmsArray:Array<String> = [];
 			var totalBeats:Float = 0;
 			for (i in 0...meta.bpmChanges.length) {
@@ -82,16 +82,16 @@ class SMFile {
 			}
 			header.BPMS = bpmsArray.join(',');
 			
-			// Reconstruir los bpmChanges para el header
+			// Reconstruct the bpmChanges for the header
 			header.parseBPMChanges();
 			
-			// Validar que el archivo de música sea .ogg
+			// Verify that the music file is an .ogg file
 			if (!header.MUSIC.toLowerCase().endsWith('.ogg')) {
 				trace('WARNING: Music file is not .ogg format: ${header.MUSIC}');
-				// No marcar como inválido, solo advertir
+				// Do not mark as invalid; just issue a warning
 			}
 			
-			// Extraer dificultades del formato Moonchart
+			// Identifying Challenges with the Moonchart Format
 			var smData:Dynamic = moonchartSM.data;
 			if (smData != null && smData.NOTES != null) {
 				var notesMap:Map<String, Dynamic> = smData.NOTES;
@@ -99,7 +99,7 @@ class SMFile {
 				for (diffName in notesMap.keys()) {
 					var diffData:Dynamic = notesMap.get(diffName);
 					
-					// Determinar si es double basado en el tipo de danza
+					// Determine whether it is a "double" based on the type of dance
 					var isDouble = false;
 					if (Reflect.hasField(diffData, 'dance')) {
 						var danceType:String = Reflect.field(diffData, 'dance');
@@ -109,7 +109,7 @@ class SMFile {
 					difficulties.push({
 						name: diffName,
 						isDouble: isDouble,
-						measures: [] // Las measures no son necesarias con Moonchart
+						measures: [] // Measures are not necessary with Moonchart
 					});
 				}
 			}
@@ -161,19 +161,19 @@ class SMFile {
 		}
 		
 		try {
-			// Obtener el nombre de la dificultad
+			// Get the name of the difficulty
 			var diffName = difficulties[difficultyIndex].name;
 			
-			// Convertir usando Moonchart: SM -> BasicFormat -> Psych
+			// Convert using Moonchart: SM -> BasicFormat -> Psych
 			var basicChart = moonchartSM.toBasicFormat();
 			
-			// Crear el convertidor de Psych
+			// Create the Psych Converter
 			var psychConverter = new FNFPsych();
 			
-			// Convertir de BasicFormat a Psych
+			// Convert from BasicFormat to Psych
 			psychConverter.fromBasicFormat(basicChart, diffName);
 			
-			// Obtener los datos en formato Psych
+			// Get the data in Psych format
 			var psychData = psychConverter.data;
 			
 			if (psychData == null || psychData.song == null) {
@@ -181,7 +181,7 @@ class SMFile {
 				return null;
 			}
 			
-			// Convertir de PsychJsonFormat a SwagSong
+			// Convert from PsychJsonFormat to SwagSong
 			var psychSong = psychData.song;
 			
 			var song:SwagSong = {
@@ -200,20 +200,20 @@ class SMFile {
 				disableNoteRGB: false
 			};
 			
-			// Convertir las secciones
+			// Convert the sections
 			if (psychSong.notes != null) {
 				for (section in psychSong.notes) {
 					var swagSection:SwagSection = {
 						sectionNotes: [],
 						sectionBeats: 4, // Psych usa lengthInSteps, convertir o usar default
 						mustHitSection: section.mustHitSection,
-						gfSection: false, // FNFLegacySection no tiene este campo en Moonchart
+						gfSection: false, // FNFLegacySection does not have this field in Moonchart
 						bpm: section.bpm ?? 0,
 						changeBPM: section.changeBPM ?? false,
 						altAnim: section.altAnim ?? false
 					};
 					
-					// Copiar las notas
+					// Copy the notes
 					if (section.sectionNotes != null) {
 						for (note in section.sectionNotes) {
 							swagSection.sectionNotes.push(note);
@@ -224,7 +224,7 @@ class SMFile {
 				}
 			}
 			
-			// Convertir los eventos
+			// Convert the events
 			if (psychSong.events != null) {
 				for (event in psychSong.events) {
 					song.events.push(event);
@@ -265,8 +265,8 @@ typedef SMDifficulty = {
 }
 
 /**
- * TimingStruct - Mantiene compatibilidad con código anterior
- * Ahora es solo una cáscara, Moonchart maneja el timing internamente
+ * TimingStruct - Maintains backward compatibility
+ * It is now just a shell; Moonchart handles the timing internally
  */
 class TimingStruct {
 	public static var allTimings:Array<TimingData> = [];

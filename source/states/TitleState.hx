@@ -9,15 +9,10 @@ import flixel.graphics.frames.FlxFrame;
 import flixel.group.FlxGroup;
 import flixel.input.gamepad.FlxGamepad;
 
-
 import shaders.ColorSwap;
 
 import states.StoryMenuState;
 import states.MainMenuState;
-
-#if VIDEOS_ALLOWED
-import hxvlc.flixel.FlxVideoSprite;
-#end
 
 #if mobile
 import mobile.backend.TouchUtil;
@@ -51,7 +46,6 @@ class TitleState extends MusicBeatState
 	public static var volumeUpKeys:Array<FlxKey> = [FlxKey.NUMPADPLUS, FlxKey.PLUS];
 
 	public static var initialized:Bool = false;
-	public static var fromSubstate:Bool = false; // Variable para detectar si viene del substate
 	
 	public var forceShowIntro:Bool = false; // Si debe forzar mostrar la intro
 
@@ -76,7 +70,6 @@ class TitleState extends MusicBeatState
 	public var easterEggKeysBuffer:String = '';
 	#end
 
-	public var introVideo:FlxVideoSprite;
 	public var showingIntro:Bool = false;
 	public var introFinished:Bool = false;
 	public var skipTimer:Float = 0;
@@ -117,7 +110,7 @@ class TitleState extends MusicBeatState
 		{
 			if(FlxG.save.data != null && FlxG.save.data.fullscreen)
 			{
-				backend.WindowMode.setBorderlessFullscreen(FlxG.save.data.fullscreen);
+				backend.WindowMode.applyFullscreenPreference(FlxG.save.data.fullscreen);
 				//trace('LOADED FULLSCREEN SETTING!!');
 			}
 			persistentUpdate = true;
@@ -133,16 +126,16 @@ class TitleState extends MusicBeatState
 		FlxG.mouse.visible = false;
 		
 		#if FREEPLAY
-		MusicBeatState.switchState(new FreeplayState());
+		MusicBeatState.switchState(FreeplayStateSelector.create());
 		#elseif CHARTING
-		MusicBeatState.switchState(new ChartingState());
+		MusicBeatState.switchState(backend.ScriptableState.tryCreate('ChartingState', new ChartingState()));
 		#else
 		if(FlxG.save.data.flashing == null && !FlashingState.leftState)
 		{
 			controls.isInSubstate = false; //idfk what's wrong
 			FlxTransitionableState.skipNextTransIn = true;
 			FlxTransitionableState.skipNextTransOut = true;
-			MusicBeatState.switchState(new FlashingState());
+			MusicBeatState.switchState(backend.ScriptableState.tryCreate('FlashingState', new FlashingState()));
 		}
 		else
 		{
@@ -333,7 +326,7 @@ class TitleState extends MusicBeatState
 		{
 			FlxTransitionableState.skipNextTransIn = true;
 			FlxTransitionableState.skipNextTransOut = true;
-			MusicBeatState.switchState(new AndroidPermissionsState());
+			MusicBeatState.switchState(backend.ScriptableState.tryCreate('AndroidPermissionsState', new AndroidPermissionsState()));
 		}, 190, 36);
 		androidToolsButton.scrollFactor.set();
 		add(androidToolsButton);
@@ -497,7 +490,7 @@ class TitleState extends MusicBeatState
 
 					new FlxTimer().start(1, function(tmr:FlxTimer)
 					{
-						MusicBeatState.switchState(new MainMenuState());
+						MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
 						closedState = true;
 					});
 					// FlxG.sound.play(Paths.music('titleShoot'), 0.7);
@@ -534,10 +527,10 @@ class TitleState extends MusicBeatState
 
 								FlxTween.tween(black, {alpha: 1}, 1, {onComplete:
 									function(twn:FlxTween) {
-										FlxTransitionableState.skipNextTransIn = true;
-										FlxTransitionableState.skipNextTransOut = true;
-										MusicBeatState.switchState(new TitleState());
-									}
+									FlxTransitionableState.skipNextTransIn = true;
+									FlxTransitionableState.skipNextTransOut = true;
+									MusicBeatState.switchState(backend.ScriptableState.tryCreate('TitleState', new TitleState()));
+								}
 								});
 								FlxG.sound.music.fadeOut();
 								if(FreeplayState.vocals != null)

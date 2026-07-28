@@ -16,7 +16,7 @@ echo [2/15] lime
 haxelib git lime https://github.com/Psych-Plus-Team/lime.git --quiet    
 
 echo [3/15] openfl
-haxelib install openfl 9.5.0 --quiet
+haxelib install openfl 9.5.2 --quiet
 
 :: HaxeFlixel
 echo [4/15] flixel
@@ -42,7 +42,7 @@ echo [10/15] flxanimate
 haxelib git flxanimate https://github.com/Dot-Stuff/flxanimate 768740a56b26aa0c072720e0d1236b94afe68e3e --quiet
 
 echo [11/15] linc_luajit
-haxelib git linc_luajit https://github.com/Psych-Plus-Team/linc_luajit.git --quiet
+haxelib git linc_luajit https://github.com/kittycathy233/linc_luajit --quiet
 
 echo [12/15] hxdiscord_rpc
 haxelib install hxdiscord_rpc --quiet --skip-dependencies
@@ -58,4 +58,3 @@ haxelib git grig.audio https://gitlab.com/haxe-grig/grig.audio.git cbf91e2180fd2
 
 echo.
 echo Finished installing libraries!
-pause

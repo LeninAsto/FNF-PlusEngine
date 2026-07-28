@@ -1,5 +1,7 @@
 package backend.ui;
 
+import options.OptionsMenuTheme;
+
 class PsychUINumericStepper extends PsychUIInputText
 {
 	public static final CHANGE_EVENT = "numericstepper_change";
@@ -29,12 +31,14 @@ class PsychUINumericStepper extends PsychUIInputText
 		buttonPlus.animation.add('normal', [0], false);
 		buttonPlus.animation.add('pressed', [1], false);
 		buttonPlus.animation.play('normal');
+		buttonPlus.color = OptionsMenuTheme.current().accent;
 		add(buttonPlus);
 		
 		buttonMinus = new FlxSprite(fieldWidth + buttonPlus.width).loadGraphic(Paths.image('psych-ui/stepper_minus', 'embed'), true, 16, 16);
 		buttonMinus.animation.add('normal', [0], false);
 		buttonMinus.animation.add('pressed', [1], false);
 		buttonMinus.animation.play('normal');
+		buttonMinus.color = OptionsMenuTheme.current().accent;
 		add(buttonMinus);
 
 		unfocus = function()

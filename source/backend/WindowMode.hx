@@ -22,17 +22,66 @@ class WindowMode
 	public static function toggleFullscreen():Void
 	{
 		#if desktop
+		applyFullscreenPreference(!isFullscreen());
+		#end
+	}
+
+	public static inline function isFullscreen():Bool
+	{
+		return borderlessFullscreen || exclusiveFullscreen;
+	}
+
+	public static function applyFullscreenPreference(enable:Bool):Void
+	{
+		#if desktop
 		#if windows
 		var mode = ClientPrefs.data.fullscreenMode;
 		if (mode == 'Exclusive')
-			setExclusiveFullscreen(!exclusiveFullscreen);
+			setExclusiveFullscreen(enable);
 		else if (mode == 'Borderless Fix')
-			setBorderlessFullscreenFix(!borderlessFullscreen);
+			setBorderlessFullscreenFix(enable);
 		else
-			setBorderlessFullscreen(!borderlessFullscreen);
+			setBorderlessFullscreen(enable);
 		#else
-		setBorderlessFullscreen(!borderlessFullscreen);
+		setBorderlessFullscreen(enable);
 		#end
+		#end
+	}
+
+	public static function reapplyFullscreenPreference():Void
+	{
+		#if desktop
+		if (!isFullscreen())
+			return;
+
+		forceWindowed();
+		applyFullscreenPreference(true);
+		#end
+	}
+
+	static function forceWindowed():Void
+	{
+		#if desktop
+		var window = Lib.current.stage.window;
+		if (window == null) return;
+
+		try {
+			window.fullscreen = false;
+		} catch (_:Dynamic) {}
+		window.borderless = false;
+
+		exclusiveFullscreen = false;
+		borderlessFullscreen = false;
+
+		if (hasWindowedState && lastWindowedW > 0 && lastWindowedH > 0)
+		{
+			window.resize(lastWindowedW, lastWindowedH);
+			window.x = lastWindowedX;
+			window.y = lastWindowedY;
+		}
+
+		ClientPrefs.applyFramePacing();
+		RenderInterpolation.syncAllCameras();
 		#end
 	}
 
@@ -105,16 +154,16 @@ class WindowMode
 				exclusiveFullscreen = false;
 			}
 
-			// Keep this mode as a regular bordered window (dev behavior).
-			// Borderless Fix is the one that becomes true borderless fullscreen.
+			// Performance fullscreen: keep the backbuffer capped for shader-heavy songs.
+			// Borderless Fix uses the native monitor resolution.
 			try {
 				window.fullscreen = false;
 			} catch (_:Dynamic) {}
-			window.borderless = false;
+			window.borderless = true;
 
 			var screenW = Std.int(Capabilities.screenResolutionX);
 			var screenH = Std.int(Capabilities.screenResolutionY);
-			var targetW = Std.int(Math.min(1980, screenW));
+			var targetW = Std.int(Math.min(1920, screenW));
 			var targetH = Std.int(Math.min(1080, screenH));
 
 			window.resize(targetW, targetH);

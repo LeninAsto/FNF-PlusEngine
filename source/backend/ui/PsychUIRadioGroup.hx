@@ -2,6 +2,7 @@ package backend.ui;
 
 import flixel.util.FlxDestroyUtil;
 import flixel.FlxObject;
+import options.OptionsMenuTheme;
 
 class PsychUIRadioGroup extends FlxSpriteGroup
 {
@@ -35,11 +36,13 @@ class PsychUIRadioGroup extends FlxSpriteGroup
 		arrowUp.animation.add('normal', [0]);
 		arrowUp.animation.add('press', [1]);
 		arrowUp.animation.play('normal');
+		arrowUp.color = OptionsMenuTheme.current().accent;
 		arrowUp.visible = false;
 		arrowDown = new FlxSprite().loadGraphic(Paths.image('psych-ui/arrow_down', 'embed'), true, 24, 18);
 		arrowDown.animation.add('normal', [0]);
 		arrowDown.animation.add('press', [1]);
 		arrowDown.animation.play('normal');
+		arrowDown.color = OptionsMenuTheme.current().accent;
 		arrowDown.visible = false;
 
 		this.space = space;

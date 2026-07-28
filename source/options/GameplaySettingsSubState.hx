@@ -45,6 +45,15 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		option.onChange = onChangeAutoPause;
 
+		#if windows
+		var option:Option = new Option('Windows GDI Effects',
+			'Allows Windows desktop GDI effects. Keep disabled unless you explicitly want mods to use them.',
+			'windowsGDIEffects',
+			BOOL);
+		addOption(option);
+		option.onChange = onChangeWindowsGDIEffects;
+		#end
+
 		var option:Option = new Option('Pop Up Score',
 			"If unchecked, hitting notes won't make \"sick\", \"good\".. and combo popups\n(Useful for low end " + Main.platform + ").",
 			'popUpRating',
@@ -174,7 +183,7 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 			"Choose the scoring system for note hits",
 			'systemScoreMultiplier',
 			STRING,
-			['Psych', 'Codename']); // No V-Slice here :frowning_face:
+			['Psych', 'Codename']);
 		addOption(option);
 
 		super();
@@ -206,6 +215,14 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 
 	function onChangeAutoPause()
 		FlxG.autoPause = ClientPrefs.data.autoPause;
+
+	#if windows
+	function onChangeWindowsGDIEffects()
+	{
+		if (!ClientPrefs.data.windowsGDIEffects)
+			slushithings.windows.WindowsAPI.stopGDIThread();
+	}
+	#end
 
 	function onChangeVibration()
 	{

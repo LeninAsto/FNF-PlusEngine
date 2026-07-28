@@ -3,10 +3,16 @@ package objects;
 import backend.animation.PsychAnimationController;
 
 import shaders.RGBPalette.RGBShaderReference;
+import shaders.ColorSwap;
+
+#if mobile
+import mobile.backend.MobileScaleMode;
+#end
 
 class StrumNote extends FlxSprite
 {
 	public var rgbShader:RGBShaderReference;
+	public var colorSwap:ColorSwap;
 	public var resetAnim:Float = 0;
 	private var noteData:Int = 0;
 	public var direction:Float = 90;
@@ -25,6 +31,7 @@ class StrumNote extends FlxSprite
 
 	public var useRGBShader:Bool = true;
 	public var animateOnBeat:Bool = false; // Para sincronizar animación estática con el beat (NotITG)
+	private var lastCenteredAnim:String = null;
 	
 	public function new(x:Float, y:Float, leData:Int, player:Int) {
 		animation = new PsychAnimationController(this);
@@ -39,11 +46,9 @@ class StrumNote extends FlxSprite
 		if(PlayState.SONG != null && PlayState.SONG.arrowSkin != null && PlayState.SONG.arrowSkin.length > 1) skin = PlayState.SONG.arrowSkin;
 		else 
 		{
-			skin = Note.getDefaultNoteSkinPath();
+			skin = Note.getDefaultNoteSkinPath(PlayState.isPixelStage);
 		}
-
-		var customSkin:String = skin + Note.getNoteSkinPostfix();
-		if(Paths.fileExists('images/$customSkin.png', IMAGE)) skin = customSkin;
+		skin = Note.resolveNoteSkinPath(skin, PlayState.isPixelStage);
 		
 		// Detectar PRIMERO si es NotITG antes de configurar el shader
 		var isNotITG:Bool = skin.toLowerCase().contains('notitg');
@@ -65,18 +70,22 @@ class StrumNote extends FlxSprite
 		}
 		else
 		{
-			// Solo asignar colores RGB si NO es NotITG
-			var arr:Array<FlxColor> = ClientPrefs.data.arrowRGB[leData];
-			if(PlayState.isPixelStage) arr = ClientPrefs.data.arrowRGBPixel[leData];
-			
-			if(leData <= arr.length)
+			if(ClientPrefs.data.noteRGB)
 			{
+				var arr:Array<FlxColor> = Note.getNoteColorPalette(leData);
 				@:bypassAccessor
 				{
 					rgbShader.r = arr[0];
 					rgbShader.g = arr[1];
 					rgbShader.b = arr[2];
 				}
+			}
+			else
+			{
+				colorSwap = new ColorSwap();
+				Note.resetHSVColorSwap(colorSwap);
+				rgbShader.enabled = false;
+				shader = colorSwap.shader;
 			}
 		}
 
@@ -114,6 +123,8 @@ class StrumNote extends FlxSprite
 			// Desbloquear el shader para skins normales
 			if(rgbShader != null)
 				rgbShader.forceDisabled = false;
+			if(!ClientPrefs.data.noteRGB && colorSwap != null)
+				shader = colorSwap.shader;
 		}
 	}
 
@@ -121,6 +132,7 @@ class StrumNote extends FlxSprite
 	{
 		var lastAnim:String = null;
 		if(animation.curAnim != null) lastAnim = animation.curAnim.name;
+		lastCenteredAnim = null;
 
 		if(PlayState.isPixelStage)
 		{
@@ -203,7 +215,12 @@ class StrumNote extends FlxSprite
 		var playerValue:Int = overridePlayer != null ? overridePlayer : player;
 		x += Note.swagWidth * noteData;
 		x += 50;
+		#if mobile
+		x += MobileScaleMode.getHorizontalOffset();
+		x += ((MobileScaleMode.getSafeWidth() / 2) * playerValue);
+		#else
 		x += ((FlxG.width / 2) * playerValue);
+		#end
 	}
 
 	override function update(elapsed:Float) {
@@ -221,14 +238,34 @@ class StrumNote extends FlxSprite
 		animation.play(anim, force);
 		if(animation.curAnim != null)
 		{
-			centerOffsets();
-			centerOrigin();
+			var curAnimName:String = animation.curAnim.name;
+			if(curAnimName != lastCenteredAnim)
+			{
+				centerOffsets();
+				centerOrigin();
+				lastCenteredAnim = curAnimName;
+			}
 		}
 		// Solo activar shader RGB si useRGBShader está habilitado y no es animación estática
 		// Para NotITG (useRGBShader = false), NUNCA activar el shader
-		if(useRGBShader && rgbShader != null) 
-			rgbShader.enabled = (animation.curAnim != null && animation.curAnim.name != 'static');
-		else if(rgbShader != null)
-			rgbShader.enabled = false; // Asegurar que esté desactivado si useRGBShader = false
+		if(rgbShader != null)
+		{
+			if(!ClientPrefs.data.noteRGB)
+			{
+				if(colorSwap == null) colorSwap = new ColorSwap();
+				var shouldUseLegacy:Bool = useRGBShader && animation.curAnim != null && animation.curAnim.name != 'static';
+				if(shouldUseLegacy) Note.applyHSVToColorSwap(colorSwap, noteData);
+				else Note.resetHSVColorSwap(colorSwap);
+
+				if(rgbShader.enabled) rgbShader.enabled = false;
+				shader = useRGBShader ? colorSwap.shader : null;
+			}
+			else
+			{
+				var shouldUseRGB:Bool = useRGBShader && animation.curAnim != null && animation.curAnim.name != 'static';
+				if(rgbShader.enabled != shouldUseRGB)
+					rgbShader.enabled = shouldUseRGB;
+			}
+		}
 	}
 }

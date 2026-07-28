@@ -13,15 +13,16 @@ class MasterEditorMenu extends MusicBeatState
     var options:Array<String> = [];
     
     // ← NUEVO: Array con las claves de traducción
-    var optionKeys:Array<String> = [
-        'chart_editor',
-        'character_editor', 
-        'stage_editor',
-        'week_editor',
-        'menu_character_editor',
-        'dialogue_editor',
-        'dialogue_portrait_editor',
-        'note_splash_editor'
+	var optionKeys:Array<String> = [
+		'chart_editor',
+		'character_editor', 
+		'stage_editor',
+		'week_editor',
+		'menu_character_editor',
+		'dialogue_editor',
+		'dialogue_portrait_editor',
+		'note_splash_editor'//,
+		//'modchart_converter'
 	];
 	private var grpTexts:FlxTypedGroup<Alphabet>;
 	private var directories:Array<String> = [null];
@@ -97,14 +98,14 @@ class MasterEditorMenu extends MusicBeatState
             Language.getPhrase('menu_character_editor', 'Menu Character Editor'),
             Language.getPhrase('dialogue_editor', 'Dialogue Editor'),
             Language.getPhrase('dialogue_portrait_editor', 'Dialogue Portrait Editor'),
-            Language.getPhrase('note_splash_editor', 'Note Splash Editor')
+            Language.getPhrase('note_splash_editor', 'Note Splash Editor')//,
+            //Language.getPhrase('modchart_converter', 'Modchart Converter')
         ];
     }
 
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		
 		if (controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed))
 		{
 			changeSelection(-1);
@@ -149,6 +150,8 @@ class MasterEditorMenu extends MusicBeatState
 					LoadingState.loadAndSwitchState(new DialogueCharacterEditorState(), false);
                 case 7: // Note Splash Editor
 					MusicBeatState.switchState(new NoteSplashEditorState());
+                case 8: // Modchart Converter
+					MusicBeatState.switchState(new ModchartConverterState());
 			}
 			FlxG.sound.music.volume = 0;
 			FreeplayState.destroyFreeplayVocals();
@@ -168,7 +171,7 @@ class MasterEditorMenu extends MusicBeatState
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 		curSelected = FlxMath.wrap(curSelected + change, 0, options.length - 1);
 	}
-	
+
 	#if MODS_ALLOWED
 	function changeDirectory(change:Int = 0)
 	{

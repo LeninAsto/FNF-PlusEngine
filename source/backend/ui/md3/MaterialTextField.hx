@@ -10,6 +10,7 @@ import flixel.util.FlxColor;
 import flixel.math.FlxMath;
 import flixel.input.keyboard.FlxKey;
 import flash.events.KeyboardEvent;
+import openfl.display.Shape;
 import backend.ui.md3.MD3Theme;
 
 /**
@@ -30,6 +31,7 @@ class MaterialTextField extends FlxSpriteGroup
 	public var onChange:String->Void = null;
 	public var onFocus:Void->Void = null;
 	public var onBlur:Void->Void = null;
+	public var escapeConsumed:Bool = false;
 
 	/** True while this field has keyboard focus. Check this to gate navigation input. */
 	public var focused(get, never):Bool;
@@ -117,52 +119,16 @@ class MaterialTextField extends FlxSpriteGroup
 	
 	function drawOutline(sprite:FlxSprite, width:Int, height:Int, thickness:Int, focused:Bool):Void
 	{
-		var graphics = sprite.pixels;
-		graphics.fillRect(graphics.rect, FlxColor.TRANSPARENT);
-		
 		var color = hasError ? MD3Theme.error : (focused ? MD3Theme.primary : MD3Theme.outline);
-		var cornerRadius = 4;
-		
-		// Draw outline using rectangles for each side
-		for (i in 0...thickness)
-		{
-			// Top
-			for (x in cornerRadius...(width - cornerRadius))
-				graphics.setPixel32(x, i, color);
-			
-			// Bottom
-			for (x in cornerRadius...(width - cornerRadius))
-				graphics.setPixel32(x, height - 1 - i, color);
-			
-			// Left
-			for (y in cornerRadius...(height - cornerRadius))
-				graphics.setPixel32(i, y, color);
-			
-			// Right
-			for (y in cornerRadius...(height - cornerRadius))
-				graphics.setPixel32(width - 1 - i, y, color);
-		}
-		
-		// Draw rounded corners
-		drawCorner(graphics, cornerRadius, cornerRadius, cornerRadius, color, thickness, 0); // Top-left
-		drawCorner(graphics, width - cornerRadius, cornerRadius, cornerRadius, color, thickness, 1); // Top-right
-		drawCorner(graphics, cornerRadius, height - cornerRadius, cornerRadius, color, thickness, 2); // Bottom-left
-		drawCorner(graphics, width - cornerRadius, height - cornerRadius, cornerRadius, color, thickness, 3); // Bottom-right
-	}
-	
-	function drawCorner(graphics:openfl.display.BitmapData, cx:Int, cy:Int, radius:Int, color:FlxColor, thickness:Int, corner:Int):Void
-	{
-		for (angle in 0...90)
-		{
-			var rad = angle * Math.PI / 180 + corner * Math.PI / 2;
-			for (r in (radius - thickness)...radius)
-			{
-				var x = Std.int(cx + Math.cos(rad) * r);
-				var y = Std.int(cy + Math.sin(rad) * r);
-				if (x >= 0 && x < graphics.width && y >= 0 && y < graphics.height)
-					graphics.setPixel32(x, y, color);
-			}
-		}
+		var shape = new Shape();
+		var graphics = shape.graphics;
+		graphics.clear();
+		graphics.lineStyle(thickness, color, 1);
+		graphics.beginFill(FlxColor.TRANSPARENT, 0);
+		graphics.drawRoundRect(0.5, 0.5, width - 1, height - 1, 8, 8);
+		graphics.endFill();
+		sprite.pixels.fillRect(sprite.pixels.rect, FlxColor.TRANSPARENT);
+		sprite.pixels.draw(shape);
 	}
 	
 	function floatLabel():Void
@@ -278,6 +244,9 @@ class MaterialTextField extends FlxSpriteGroup
 		var charCode:Int = e.charCode;
 		var flxKey:FlxKey = cast keyCode;
 		
+		if (e.altKey || e.ctrlKey || e.commandKey)
+			return;
+		
 		// Handle special keys
 		switch(flxKey)
 		{
@@ -291,14 +260,18 @@ class MaterialTextField extends FlxSpriteGroup
 				return;
 				
 			case ESCAPE:
+				escapeConsumed = true;
 				blur();
 				return;
-				
+			
+			case TAB, SHIFT, CONTROL, CAPSLOCK, LEFT, RIGHT, UP, DOWN, HOME, END, PAGEDOWN, PAGEUP, INSERT, DELETE, F1, F2, F3, F4, F5, F6, F7, F8, F9, F10, F11, F12:
+				return;
+			
 			default:
 		}
 		
 		// Handle character input
-		if (charCode > 0 && (maxLength == 0 || text.length < maxLength))
+		if (charCode > 31 && (maxLength == 0 || text.length < maxLength))
 		{
 			var char = String.fromCharCode(charCode);
 			text += char;

@@ -15,6 +15,8 @@ class EventManager {
 	private var table:StringMap<Array<Vector<Event>>> = new StringMap();
 	private var eventList:Vector<Event> = new Vector<Event>(256);
 	private var eventCount:Int = 0;
+	public var totalEvents(get, never):Int;
+	inline function get_totalEvents():Int return eventCount;
 
 	private var pf:PlayField;
 

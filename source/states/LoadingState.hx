@@ -18,6 +18,7 @@ import backend.StageData;
 
 import sys.thread.Mutex;
 
+import objects.GlobalLoadingOverlay;
 import objects.Note;
 import objects.NoteSplash;
 
@@ -188,6 +189,7 @@ class LoadingState extends MusicBeatState
 		addTouchPad('NONE', 'B');
 		
 		super.create();
+		GlobalLoadingOverlay.showPersistent();
 
 		if (stateChangeDelay <= 0 && checkLoaded())
 		{
@@ -206,6 +208,7 @@ class LoadingState extends MusicBeatState
 	{
 		super.update(elapsed);
 		if (dontUpdate) return;
+		GlobalLoadingOverlay.showPersistent();
 		
 		// Timeout system - incrementar el temporizador
 		if (!transitioning && !finishedLoading)
@@ -368,6 +371,7 @@ class LoadingState extends MusicBeatState
 	function onLoad()
 	{
 		_loaded();
+		GlobalLoadingOverlay.showPersistent();
 
 		if (stopMusic && FlxG.sound.music != null)
 			FlxG.sound.music.stop();
@@ -508,16 +512,14 @@ class LoadingState extends MusicBeatState
 		var folder:String = Paths.formatToSongPath(Song.loadedSongName);
 		new Future<Bool>(() -> {
 			// LOAD NOTE IMAGE
-			var noteSkin:String = Note.defaultNoteSkin;
+			var noteSkin:String = Note.getDefaultNoteSkinPath(PlayState.isPixelStage);
 			if(PlayState.SONG.arrowSkin != null && PlayState.SONG.arrowSkin.length > 1) noteSkin = PlayState.SONG.arrowSkin;
-	
-			var customSkin:String = noteSkin + Note.getNoteSkinPostfix();
-			if(Paths.fileExists('images/$customSkin.png', IMAGE)) noteSkin = customSkin;
+			noteSkin = Note.resolveNoteSkinPath(noteSkin, PlayState.isPixelStage);
 			imagesToPrepare.push(noteSkin);
 			//
 
 			// LOAD NOTE SPLASH IMAGE
-			var noteSplash:String = NoteSplash.defaultNoteSplash;
+			var noteSplash:String = NoteSplash.getDefaultNoteSplashPath();
 			if(PlayState.SONG.splashSkin != null && PlayState.SONG.splashSkin.length > 0) noteSplash = PlayState.SONG.splashSkin;
 			else noteSplash += NoteSplash.getSplashSkinPostfix();
 			imagesToPrepare.push(noteSplash);
@@ -655,14 +657,39 @@ class LoadingState extends MusicBeatState
 
 	public static function clearInvalids()
 	{
+		dedupe(imagesToPrepare);
+		dedupe(soundsToPrepare);
+		dedupe(musicToPrepare);
+		dedupe(songsToPrepare);
+
 		clearInvalidFrom(imagesToPrepare, 'images', '.png', IMAGE);
 		clearInvalidFrom(soundsToPrepare, 'sounds', '.${Paths.SOUND_EXT}', SOUND);
-		clearInvalidFrom(musicToPrepare, 'music',' .${Paths.SOUND_EXT}', SOUND);
+		clearInvalidFrom(musicToPrepare, 'music', '.${Paths.SOUND_EXT}', SOUND);
 		clearInvalidFrom(songsToPrepare, 'songs', '.${Paths.SOUND_EXT}', SOUND, 'songs');
 
 		for (arr in [imagesToPrepare, soundsToPrepare, musicToPrepare, songsToPrepare])
 			while (arr.contains(null))
 				arr.remove(null);
+	}
+
+	static function dedupe(arr:Array<String>):Void
+	{
+		var seen:Map<String, Bool> = [];
+		var i:Int = 0;
+		while (i < arr.length)
+		{
+			var item:String = arr[i];
+			var key:String = item == null ? null : item.trim();
+			if (key == null || seen.exists(key))
+			{
+				arr.splice(i, 1);
+				continue;
+			}
+
+			seen.set(key, true);
+			if (key != item) arr[i] = key;
+			i++;
+		}
 	}
 
 	static function clearInvalidFrom(arr:Array<String>, prefix:String, ext:String, type:AssetType, ?parentFolder:String = null)
@@ -852,9 +879,9 @@ class LoadingState extends MusicBeatState
 			#if TRANSLATIONS_ALLOWED requestKey = Language.getFileTranslation(requestKey); #end
 			if(requestKey.lastIndexOf('.') < 0) requestKey += '.png';
 
-			if (!Paths.currentTrackedAssets.exists(requestKey))
+			var file:String = Paths.getPath(requestKey, IMAGE);
+			if (!Paths.currentTrackedAssets.exists(file))
 			{
-				var file:String = Paths.getPath(requestKey, IMAGE);
 				if (#if sys FileSystem.exists(file) || #end OpenFlAssets.exists(file, IMAGE))
 				{
 					#if sys
@@ -872,7 +899,10 @@ class LoadingState extends MusicBeatState
 				else trace('no such image $key exists');
 			}
 
-			return Paths.currentTrackedAssets.get(requestKey).bitmap;
+			mutex.acquire();
+			Paths.localTrackedAssets.push(file);
+			mutex.release();
+			return Paths.currentTrackedAssets.get(file).bitmap;
 		}
 		catch(e:haxe.Exception)
 		{

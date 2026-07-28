@@ -1,8 +1,8 @@
 package backend.stepmania;
 
 /**
- * SMHeader - Clase simplificada para mantener compatibilidad
- * Los datos ahora son manejados por Moonchart internamente
+ * SMHeader - Simplified class to maintain compatibility
+ * Data is now handled internally by Moonchart
  */
 class SMHeader {
 	public var TITLE:String = "";

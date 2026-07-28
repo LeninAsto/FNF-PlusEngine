@@ -2,6 +2,7 @@ package psychlua;
 
 import backend.WeekData;
 import objects.Character;
+import objects.Note;
 import backend.StageData;
 
 import openfl.display.BlendMode;
@@ -26,6 +27,24 @@ class LuaUtils
 	public static final Function_StopLua:String = "##PSYCHLUA_FUNCTIONSTOPLUA";
 	public static final Function_StopHScript:String = "##PSYCHLUA_FUNCTIONSTOPHSCRIPT";
 	public static final Function_StopAll:String = "##PSYCHLUA_FUNCTIONSTOPALL";
+
+	public static function isStop(ret:Dynamic):Bool
+	{
+		return ret == Function_Stop
+			|| ret == Function_StopLua
+			|| ret == Function_StopHScript
+			|| ret == Function_StopAll
+			|| ret == 1;
+	}
+
+	public static function getCurrentContext():Null<LuaHostContext>
+	{
+		#if LUA_ALLOWED
+		if (FunkinLua.lastCalledScript != null)
+			return FunkinLua.lastCalledScript.context;
+		#end
+		return null;
+	}
 
 	public static function getLuaTween(options:Dynamic)
 	{
@@ -72,6 +91,9 @@ class LuaUtils
 			return value;
 		}
 
+		if(setLegacyNoteSplashProperty(instance, variable, value))
+			return value;
+
 		if(instance is MusicBeatState && MusicBeatState.getVariables().exists(variable))
 		{
 			MusicBeatState.getVariables().set(variable, value);
@@ -108,6 +130,9 @@ class LuaUtils
 			//trace(instance);
 			return instance.get(variable);
 		}
+
+		if(hasLegacyNoteSplashProperty(instance, variable))
+			return getLegacyNoteSplashProperty(instance, variable);
 
 		if(instance is MusicBeatState && MusicBeatState.getVariables().exists(variable))
 		{
@@ -168,8 +193,11 @@ class LuaUtils
 		else
 		{
 			FlxG.save.data.modSettings.remove(modName);
-			#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
-			PlayState.instance.addTextToDebug('getModSetting: $path could not be found!', FlxColor.RED);
+			#if LUA_ALLOWED
+			FunkinLua.luaTrace('getModSetting: $path could not be found!', true, false, FlxColor.RED);
+			#elseif HSCRIPT_ALLOWED
+			if (PlayState.instance != null) PlayState.instance.addTextToDebug('getModSetting: $path could not be found!', FlxColor.RED);
+			else FlxG.log.warn('getModSetting: $path could not be found!');
 			#else
 			FlxG.log.warn('getModSetting: $path could not be found!');
 			#end
@@ -177,8 +205,11 @@ class LuaUtils
 		}
 
 		if(settings.exists(saveTag)) return settings.get(saveTag);
-		#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
-		PlayState.instance.addTextToDebug('getModSetting: "$saveTag" could not be found inside $modName\'s settings!', FlxColor.RED);
+		#if LUA_ALLOWED
+		FunkinLua.luaTrace('getModSetting: "$saveTag" could not be found inside $modName\'s settings!', true, false, FlxColor.RED);
+		#elseif HSCRIPT_ALLOWED
+		if (PlayState.instance != null) PlayState.instance.addTextToDebug('getModSetting: "$saveTag" could not be found inside $modName\'s settings!', FlxColor.RED);
+		else FlxG.log.warn('getModSetting: "$saveTag" could not be found inside $modName\'s settings!');
 		#else
 		FlxG.log.warn('getModSetting: "$saveTag" could not be found inside $modName\'s settings!');
 		#end
@@ -210,6 +241,8 @@ class LuaUtils
 			leArray = obj;
 			variable = split[split.length-1];
 		}
+		if(setLegacyNoteSplashProperty(leArray, variable, value))
+			return value;
 		if(allowMaps && isMap(leArray)) leArray.set(variable, value);
 		else Reflect.setProperty(leArray, variable, value);
 		return value;
@@ -225,8 +258,52 @@ class LuaUtils
 			variable = split[split.length-1];
 		}
 
+		if(hasLegacyNoteSplashProperty(leArray, variable))
+			return getLegacyNoteSplashProperty(leArray, variable);
+
 		if(allowMaps && isMap(leArray)) return leArray.get(variable);
 		return Reflect.getProperty(leArray, variable);
+	}
+
+	static function hasLegacyNoteSplashProperty(instance:Dynamic, variable:String):Bool
+	{
+		return instance != null && Std.isOfType(instance, Note) && (variable == 'noteSplashDisabled' || variable == 'noteSplashTexture');
+	}
+
+	static function setLegacyNoteSplashProperty(instance:Dynamic, variable:String, value:Dynamic):Bool
+	{
+		if(!hasLegacyNoteSplashProperty(instance, variable))
+			return false;
+
+		var note:Note = cast instance;
+		switch(variable)
+		{
+			case 'noteSplashDisabled':
+				StructurePsychOld.warnLegacyLuaUsage('noteSplashDisabled', 'noteSplashData.disabled');
+				note.noteSplashData.disabled = value == true;
+			case 'noteSplashTexture':
+				StructurePsychOld.warnLegacyLuaUsage('noteSplashTexture', 'noteSplashData.texture');
+				note.noteSplashData.texture = value == null ? null : Std.string(value);
+		}
+		return true;
+	}
+
+	static function getLegacyNoteSplashProperty(instance:Dynamic, variable:String):Dynamic
+	{
+		var note:Note = cast instance;
+		switch(variable)
+		{
+			case 'noteSplashDisabled':
+				StructurePsychOld.warnLegacyLuaUsage('noteSplashDisabled', 'noteSplashData.disabled');
+			case 'noteSplashTexture':
+				StructurePsychOld.warnLegacyLuaUsage('noteSplashTexture', 'noteSplashData.texture');
+		}
+		return switch(variable)
+		{
+			case 'noteSplashDisabled': note.noteSplashData.disabled;
+			case 'noteSplashTexture': note.noteSplashData.texture;
+			default: null;
+		}
 	}
 
 	public static function getPropertyLoop(split:Array<String>, ?getProperty:Bool=true, ?allowMaps:Bool = false):Dynamic
@@ -244,11 +321,17 @@ class LuaUtils
 		switch(objectName)
 		{
 			case 'this' | 'instance' | 'game':
-				return PlayState.instance;
+				return getTargetInstance();
 			
 			default:
 				var obj:Dynamic = MusicBeatState.getVariables().get(objectName);
-				if(obj == null) obj = getVarInArray(MusicBeatState.getState(), objectName, allowMaps);
+				if(obj == null)
+				{
+					var ctx = getCurrentContext();
+					if(ctx != null && ctx.variables != null && ctx.variables.exists(objectName))
+						obj = ctx.variables.get(objectName);
+				}
+				if(obj == null) obj = getVarInArray(getTargetInstance(), objectName, allowMaps);
 				return obj;
 		}
 	}
@@ -267,6 +350,8 @@ class LuaUtils
 	
 	public static function getTargetInstance()
 	{
+		var ctx = getCurrentContext();
+		if(ctx != null && ctx.host != null) return ctx.host;
 		if(PlayState.instance != null) return PlayState.instance.isDead ? GameOverSubstate.instance : PlayState.instance;
 		return MusicBeatState.getState();
 	}
@@ -547,13 +632,28 @@ class LuaUtils
 	}
 
 	public static function cameraFromString(cam:String):FlxCamera {
-		switch(cam.toLowerCase()) {
-			case 'camgame' | 'game': return PlayState.instance.camGame;
-			case 'camhud' | 'hud': return PlayState.instance.camHUD;
-			case 'camother' | 'other': return PlayState.instance.camOther;
+		var lowerCam:String = cam == null ? '' : cam.toLowerCase();
+		if(PlayState.instance != null) {
+			switch(lowerCam) {
+				case 'camgame' | 'game': return PlayState.instance.camGame;
+				case 'camhud' | 'hud': return PlayState.instance.camHUD;
+				case 'camother' | 'other': return PlayState.instance.camOther;
+			}
 		}
 		var camera:FlxCamera = MusicBeatState.getVariables().get(cam);
-		if (camera == null || !Std.isOfType(camera, FlxCamera)) camera = PlayState.instance.camGame;
+		if (camera == null || !Std.isOfType(camera, FlxCamera))
+		{
+			var host = getTargetInstance();
+			var fieldName:String = switch(lowerCam) {
+				case 'camgame' | 'game': 'camGame';
+				case 'camhud' | 'hud': 'camHUD';
+				case 'camother' | 'other': 'camOther';
+				default: cam;
+			}
+			var reflected:Dynamic = (host != null && fieldName != null && fieldName.length > 0) ? Reflect.getProperty(host, fieldName) : null;
+			if(reflected != null && Std.isOfType(reflected, FlxCamera)) camera = reflected;
+		}
+		if (camera == null || !Std.isOfType(camera, FlxCamera)) camera = FlxG.camera;
 		return camera;
 	}
 }

@@ -6,7 +6,7 @@ import flixel.math.FlxMath;
 import flixel.math.FlxPoint;
 import openfl.geom.Matrix;
 
-// TODO: ahcer esto xd lololololololo pornopornoporn
+// TODO: ahcer esto xd lololololololo
 class Proxy extends FlxSprite {
 	public var source:PlayField;
 	public var playerSrc:Int = -1;

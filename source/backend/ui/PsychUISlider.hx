@@ -1,5 +1,7 @@
 package backend.ui;
 
+import options.OptionsMenuTheme;
+
 class PsychUISlider extends FlxSpriteGroup
 {
 	public static final CHANGE_EVENT = "slider_change";
@@ -20,6 +22,10 @@ class PsychUISlider extends FlxSpriteGroup
 	{
 		super(x, y);
 		this.onChange = callback;
+		if(mainColor == FlxColor.WHITE)
+			mainColor = OptionsMenuTheme.difficultyCardStroke(OptionsMenuTheme.current().accent, false);
+		if(handleColor == 0xFFAAAAAA)
+			handleColor = OptionsMenuTheme.current().accent;
 
 		bar = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
 		bar.scale.set(wid, 5);
@@ -41,6 +47,7 @@ class PsychUISlider extends FlxSpriteGroup
 		add(valueText);
 		labelText = new FlxText(0, 0, wid, '', 8);
 		labelText.alignment = CENTER;
+		labelText.color = OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false));
 		add(labelText);
 
 		handle = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);

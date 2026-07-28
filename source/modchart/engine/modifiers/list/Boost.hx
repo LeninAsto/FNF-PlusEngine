@@ -34,7 +34,7 @@ class Boost extends Modifier {
 
 		var fYOffset = params.distance;
 
-		final boost = (getUnsafe(_boostID, player) + getUnsafe(_boostIDs[lane], player));
+		final boost = getUnsafeLaneAdd(_boostID, _boostIDs[lane], player);
 		if (boost != 0) {
 			var fEffectHeight = HEIGHT;
 			var fNewYOffset = fYOffset * 1.5 / ((fYOffset + fEffectHeight / 1.2) / fEffectHeight);
@@ -44,7 +44,7 @@ class Boost extends Modifier {
 			curPos.y += fAccelYAdjust;
 		}
 
-		final brake = (getUnsafe(_brakeID, player) + getUnsafe(_brakeIDs[lane], player));
+		final brake = getUnsafeLaneAdd(_brakeID, _brakeIDs[lane], player);
 
 		if (brake != 0) {
 			var fEffectHeight = HEIGHT;
@@ -54,7 +54,7 @@ class Boost extends Modifier {
 			fBrakeYAdjust = ModchartUtil.clamp(fBrakeYAdjust, -400., 400.);
 			curPos.y += fBrakeYAdjust;
 		}
-		final wave = (getUnsafe(_waveID, player) + getUnsafe(_waveIDs[lane], player));
+		final wave = getUnsafeLaneAdd(_waveID, _waveIDs[lane], player);
 
 		if (wave != 0) {
 			curPos.y += wave * 20.0 * sin(fYOffset / 96.);

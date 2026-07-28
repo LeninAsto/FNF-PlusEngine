@@ -36,10 +36,7 @@ class MemoryUtil
 	{
 		#if (windows && cpp)
 		return slushithings.windows.WindowsCPP.getProcessMemoryUsage();
-		#elseif ((ios || macos) && cpp)
-		return funkin.external.apple.MemoryUtil.getCurrentProcessRss();
-
-		// Fallback: RSS from /proc (not PSS)
+		
 		try
 		{
 			#if cpp

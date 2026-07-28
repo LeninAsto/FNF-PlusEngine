@@ -75,21 +75,9 @@ class AssetCache
 		if (graphic.useCount > 0)
 			return false;
 
-		if (ClientPrefs.data.legacyMemoryManagement)
-		{
-			@:privateAccess
-			openfl.Assets.cache.removeBitmapData(graphic.key);
-			FlxG.bitmap.remove(graphic);
-			graphic.persist = false;
-			graphic.destroyOnNoUse = true;
-			graphic.destroy();
-		}
-		else
-		{
-			if (graphic.bitmap != null && graphic.bitmap.__texture != null)
-				graphic.bitmap.__texture.dispose();
-			FlxG.bitmap.remove(graphic);
-		}
+		if (graphic.bitmap != null && graphic.bitmap.__texture != null)
+			graphic.bitmap.__texture.dispose();
+		FlxG.bitmap.remove(graphic);
 
 		return true;
 	}

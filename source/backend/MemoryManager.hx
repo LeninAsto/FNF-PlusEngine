@@ -3,18 +3,21 @@ package backend;
 import flixel.FlxG;
 import flixel.graphics.FlxGraphic;
 import openfl.utils.Assets;
-import openfl.system.System;
+import haxe.Timer;
 
 #if sys
 import sys.FileSystem;
 #end
 
 /**
- * Sistema de gestión avanzada de memoria, especialmente optimizado para Android.
- * Permite liberar assets dinámicamente para reducir el consumo de RAM.
+ * Advanced memory management system, specially optimized for Android.
+ * Allows assets to be released dynamically to reduce RAM usage.
  */
 class MemoryManager
 {
+    private static inline final AGGRESSIVE_CLEANUP_COOLDOWN:Float = 2.0;
+    private static var lastAggressiveCleanupTime:Float = -9999;
+
     #if android
     private static var isAndroid:Bool = true;
     #else
@@ -22,31 +25,31 @@ class MemoryManager
     #end
 
     /**
-     * Elimina una imagen específica de todos los cachés (OpenFL, FlxG y Paths tracking)
-     * @param path Ruta de la imagen sin extensión (ej: "stages/philly/sky")
-     * @param removeInstantly Si es true, destruye el gráfico inmediatamente. Si es false, lo marca para destrucción posterior
+     * Removes a specific image from all caches (OpenFL, FlxG, and Paths tracking)
+     * @param path Path to the image without the file extension (e.g., "stages/philly/sky")
+     * @param removeInstantly If true, destroys the graphic immediately. If false, marks it for later destruction
      */
     public static function removeImageFromMemory(path:String, removeInstantly:Bool = true):Void
     {
         if (path == null || path == '') return;
 
-        // Agregar extensión si no la tiene
+        // Add the extension if you don't have it
         var imagePath:String = path;
         if (!imagePath.endsWith('.png'))
             imagePath = 'images/$path.png';
 
-        // Buscar en assets de OpenFL
+        // Search OpenFL assets
         var foundPath:String = Paths.getPath(imagePath, IMAGE);
         
-        // Limpiar caché de OpenFL Assets
+        // Clear the OpenFL Assets Cache
         if (Assets.cache.hasBitmapData(foundPath))
             Assets.cache.removeBitmapData(foundPath);
 
-        // Buscar en caché de FlxG
+        // Search the FlxG cache
         var graphic:FlxGraphic = FlxG.bitmap.get(foundPath);
         if (graphic == null)
         {
-            // Intentar con ruta de mods
+            // Try the mods path
             #if MODS_ALLOWED
             foundPath = Paths.modsImages(path);
             graphic = FlxG.bitmap.get(foundPath);
@@ -55,14 +58,14 @@ class MemoryManager
 
         if (graphic != null)
         {
-            // Remover de tracking de Paths
+            // Remove from Paths tracking
             if (Paths.currentTrackedAssets.exists(foundPath))
                 Paths.currentTrackedAssets.remove(foundPath);
             
             if (Paths.localTrackedAssets.contains(foundPath))
                 Paths.localTrackedAssets.remove(foundPath);
 
-            // Marcar para destrucción
+            // Mark for destruction
             graphic.persist = false;
             graphic.destroyOnNoUse = true;
 
@@ -75,9 +78,9 @@ class MemoryManager
     }
 
     /**
-     * Elimina múltiples imágenes de memoria de una vez
-     * @param paths Array de rutas de imágenes
-     * @param removeInstantly Si es true, destruye los gráficos inmediatamente
+     * Removes multiple images from memory at once
+     * @param paths Array of image paths
+     * @param removeInstantly If true, destroys the graphics immediately
      */
     public static function removeImagesFromMemory(paths:Array<String>, removeInstantly:Bool = true):Void
     {
@@ -88,9 +91,9 @@ class MemoryManager
     }
 
     /**
-     * Elimina un personaje específico del mapa de personajes y libera su memoria
-     * @param characterName Nombre del personaje (ej: "bf", "dad", "gf")
-     * @param removeInstantly Si es true, destruye el gráfico inmediatamente
+     * Removes a specific character from the character map and frees up its memory
+     * @param characterName Character name (e.g., "bf", "dad", "gf")
+     * @param removeInstantly If true, destroys the graphic immediately
      */
     public static function removeCharacterFromMemory(characterName:String, removeInstantly:Bool = true):Void
     {
@@ -99,21 +102,21 @@ class MemoryManager
         var imageFile:String = null;
         var char:objects.Character = null;
 
-        // Buscar en boyfriend map
+        // Search on Boyfriend Map
         if (PlayState.instance.boyfriendMap.exists(characterName))
         {
             char = PlayState.instance.boyfriendMap.get(characterName);
             PlayState.instance.boyfriendGroup.remove(char, true);
             PlayState.instance.boyfriendMap.remove(characterName);
         }
-        // Buscar en dad map
+        // Search on Dad Map
         else if (PlayState.instance.dadMap.exists(characterName))
         {
             char = PlayState.instance.dadMap.get(characterName);
             PlayState.instance.dadGroup.remove(char, true);
             PlayState.instance.dadMap.remove(characterName);
         }
-        // Buscar en gf map
+        // Search on GF Map
         else if (PlayState.instance.gfMap.exists(characterName))
         {
             char = PlayState.instance.gfMap.get(characterName);
@@ -121,7 +124,7 @@ class MemoryManager
             PlayState.instance.gfMap.remove(characterName);
         }
 
-        // Si encontramos el personaje, destruirlo y liberar su imagen
+        // If we find the character, destroy it and release its image
         if (char != null)
         {
             imageFile = char.imageFile;
@@ -134,7 +137,7 @@ class MemoryManager
     }
 
     /**
-     * Limpia assets de UI que no se están usando (pixel UI vs UI normal)
+     * Clears unused UI assets (pixel UI vs. normal UI)
      */
     public static function clearUnusedUI():Void
     {
@@ -143,7 +146,7 @@ class MemoryManager
 
         if (!PlayState.isPixelStage)
         {
-            // Limpiar UI pixel si estamos en stage normal
+            // Clear the UI pixel if we are in normal stage
             Assets.cache.clear('assets/shared/images/pixelUI');
             removeImageFromMemory('pixelUI/arrows-pixels');
             removeImageFromMemory('pixelUI/arrows-pixels-ends');
@@ -151,7 +154,7 @@ class MemoryManager
         }
         else
         {
-            // Limpiar UI normal si estamos en stage pixel
+            // Clear the normal UI if we are in pixel stage
             removeImageFromMemory('NOTE_assets');
             removeImageFromMemory('noteSplashes');
         }
@@ -159,79 +162,81 @@ class MemoryManager
     }
 
     /**
-     * Elimina personajes precargados que no se usan
+     * Remove unused preloaded characters
      */
     public static function clearPreloadedCharacters():Void
     {
         #if android
-        // Personaje de muerte que rara vez se usa
+        // A death character that is rarely used
         removeCharacterFromMemory('bf-dead', true);
         
-        // Logo del menú
+        // Menu logo
         removeImageFromMemory('logoBumpin', true);
         #end
     }
 
     /**
-     * Limpieza agresiva de memoria para Android
-     * Combina todas las funciones de limpieza y fuerza el garbage collector
+     * Aggressive memory cleanup for Android.
+     * Avoids forced GC during gameplay transitions because it causes visible frame spikes.
      */
     public static function aggressiveCleanup():Void
     {
         #if android
-        trace('MemoryManager: Ejecutando limpieza agresiva de memoria...');
+        var now:Float = Timer.stamp();
+        if (now - lastAggressiveCleanupTime < AGGRESSIVE_CLEANUP_COOLDOWN)
+        {
+            trace('MemoryManager: Skipping duplicate aggressive cleanup');
+            return;
+        }
+        lastAggressiveCleanupTime = now;
+
+        trace('MemoryManager: Performing aggressive memory cleanup...');
         
-        // Limpiar cachés de Paths
+        // Clear Paths caches
         Paths.clearUnusedMemory();
         
-        // Limpiar UI no utilizada
+        // Clear unused UI
         clearUnusedUI();
         
-        // Limpiar personajes precargados
+        // Clear Preloaded Characters
         clearPreloadedCharacters();
         
-        // Forzar garbage collection
-        System.gc();
-        #if cpp
-        cpp.NativeGc.run(true);
-        #end
-        
-        trace('MemoryManager: Limpieza completada');
+        trace('MemoryManager: Cleaning complete');
         #end
     }
 
     /**
-     * Obtiene el uso actual de memoria en MB (solo en sistemas que lo soporten)
+     * Retrieves the current memory usage in MB (only on systems that support it)
      */
     public static function getMemoryUsage():Float
     {
         #if cpp
-        return System.totalMemory / 1024 / 1024;
+        return openfl.system.System.totalMemoryNumber / 1024 / 1024;
         #else
         return 0;
         #end
     }
 
     /**
-     * Reporta el uso de memoria en consola (útil para debugging)
+     * Reports memory usage in the console (useful for debugging)
      */
     public static function reportMemoryUsage():Void
     {
         #if android
         var memoryMB:Float = getMemoryUsage();
-        trace('MemoryManager: Uso actual de memoria: ${Math.round(memoryMB)}MB');
+        trace('MemoryManager: Current Memory Usage: ${Math.round(memoryMB)}MB');
         #end
     }
 
     /**
-     * Limpia todos los shaders cargados (muy útil en Android donde los shaders consumen mucha RAM)
+     * Clears all loaded shaders (very useful on Android, where shaders consume a lot of RAM)
      */
     public static function clearShaders():Void
     {
         #if android
         if (PlayState.instance == null) return;
         
-        // Limpiar shaders del stage
+        // Clear stage shaders
         if (PlayState.instance.camGame != null && PlayState.instance.camGame.filters != null)
             PlayState.instance.camGame.filters = [];
         
@@ -241,14 +246,14 @@ class MemoryManager
         if (PlayState.instance.camOther != null && PlayState.instance.camOther.filters != null)
             PlayState.instance.camOther.filters = [];
         
-        trace('MemoryManager: Shaders limpiados');
+        trace('MemoryManager: Cleaned-up shaders');
         #end
     }
 
     /**
-     * Monitoreo automático de memoria para Android
-     * Ejecuta limpieza automática si el uso excede el umbral especificado
-     * @param thresholdMB Umbral en MB (por defecto 500MB)
+     * Automatic memory monitoring for Android
+     * Runs an automatic cleanup if memory usage exceeds the specified threshold
+     * @param thresholdMB Threshold in MB (default 500MB)
      */
     public static function autoMonitor(thresholdMB:Float = 500):Void
     {
@@ -257,7 +262,7 @@ class MemoryManager
         
         if (currentMemory > thresholdMB)
         {
-            trace('MemoryManager: Umbral excedido (${Math.round(currentMemory)}MB > ${thresholdMB}MB). Ejecutando limpieza...');
+            trace('MemoryManager: Threshold exceeded (${Math.round(currentMemory)} MB > ${thresholdMB} MB). Cleaning in progress...');
             aggressiveCleanup();
         }
         #end

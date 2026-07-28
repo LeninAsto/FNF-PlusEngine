@@ -5,6 +5,7 @@ import backend.NoteTypesConfig;
 
 import shaders.RGBPalette;
 import shaders.RGBPalette.RGBShaderReference;
+import shaders.ColorSwap;
 
 import objects.StrumNote;
 
@@ -65,6 +66,7 @@ class Note extends FlxSprite
 
 	public var wasGoodHit:Bool = false;
 	public var missed:Bool = false;
+	public var holdMissed:Bool = false;
 	public var isOpponentMode:Bool = false; // Flag para detectar Opponent Mode
 
 	public var ignoreNote:Bool = false;
@@ -82,6 +84,7 @@ class Note extends FlxSprite
 
 	public var sustainLength:Float = 0;
 	public var isSustainNote:Bool = false;
+	public var isSustainEnd:Bool = false;
 	public var noteType(default, set):String = null;
 
 	public var eventName:String = '';
@@ -90,6 +93,7 @@ class Note extends FlxSprite
 	public var eventVal2:String = '';
 
 	public var rgbShader:RGBShaderReference;
+	public var colorSwap:ColorSwap;
 	public static var globalRgbShaders:Array<RGBPalette> = [];
 	public var inEditor:Bool = false;
 
@@ -166,7 +170,7 @@ class Note extends FlxSprite
 
 	public function resizeByRatio(ratio:Float) //haha funny twitter shit
 	{
-		if(isSustainNote && animation.curAnim != null && !animation.curAnim.name.endsWith('end'))
+		if (isSustainNote && !isSustainEnd)
 		{
 			scale.y *= ratio;
 			updateHitbox();
@@ -182,21 +186,21 @@ class Note extends FlxSprite
 
 	public function defaultRGB()
 	{
-		var arr:Array<FlxColor> = ClientPrefs.data.arrowRGB[noteData];
-		if(PlayState.isPixelStage) arr = ClientPrefs.data.arrowRGBPixel[noteData];
+		if(!ClientPrefs.data.noteRGB)
+		{
+			if(colorSwap == null) colorSwap = new ColorSwap();
+			applyHSVToColorSwap(colorSwap, noteData);
+			if(rgbShader != null) rgbShader.enabled = false;
+			shader = colorSwap.shader;
+			return;
+		}
 
-		if (arr != null && noteData > -1 && noteData <= arr.length)
-		{
-			rgbShader.r = arr[0];
-			rgbShader.g = arr[1];
-			rgbShader.b = arr[2];
-		}
-		else
-		{
-			rgbShader.r = 0xFFFF0000;
-			rgbShader.g = 0xFF00FF00;
-			rgbShader.b = 0xFF0000FF;
-		}
+		if(rgbShader == null) return;
+
+		var arr:Array<FlxColor> = getNoteColorPalette(noteData);
+		rgbShader.r = arr[0];
+		rgbShader.g = arr[1];
+		rgbShader.b = arr[2];
 	}
 
 	private function set_noteType(value:String):String {
@@ -236,7 +240,7 @@ class Note extends FlxSprite
 					gfNote = true;
 			}
 			if (value != null && value.length > 1) NoteTypesConfig.applyNoteTypeData(this, value);
-			if (hitsound != 'hitsound' && hitsoundVolume > 0) Paths.sound(hitsound); //precache new sound for being idiot-proof
+			if (hitsound != 'hitsound' && (ClientPrefs.data.hitSounds != "None" || hitsoundForce) && hitsoundVolume > 0) Paths.sound(hitsound); //precache new sound for being idiot-proof
 			noteType = value;
 		}
 		return value;
@@ -271,6 +275,13 @@ class Note extends FlxSprite
 		{
 			rgbShader = new RGBShaderReference(this, initializeGlobalRGBShader(noteData));
 			if(PlayState.SONG != null && PlayState.SONG.disableNoteRGB) rgbShader.enabled = false;
+			if(!ClientPrefs.data.noteRGB)
+			{
+				colorSwap = new ColorSwap();
+				applyHSVToColorSwap(colorSwap, noteData);
+				rgbShader.enabled = false;
+				shader = colorSwap.shader;
+			}
 			texture = '';
 
 			x += swagWidth * (noteData);
@@ -337,44 +348,97 @@ class Note extends FlxSprite
 
 	public static function initializeGlobalRGBShader(noteData:Int)
 	{
-		if(globalRgbShaders[noteData] == null)
+		var colorIndex:Int = normalizeNoteData(noteData);
+		if(globalRgbShaders[colorIndex] == null)
 		{
 			var newRGB:RGBPalette = new RGBPalette();
-			var arr:Array<FlxColor> = (!PlayState.isPixelStage) ? ClientPrefs.data.arrowRGB[noteData] : ClientPrefs.data.arrowRGBPixel[noteData];
-			if(!ClientPrefs.data.noteRGB)
-			{
-				var baseArr:Array<FlxColor> = (!PlayState.isPixelStage) ? ClientPrefs.defaultData.arrowRGB[noteData] : ClientPrefs.defaultData.arrowRGBPixel[noteData];
-				var hsvArr:Array<Float> = ClientPrefs.data.arrowHSV[noteData];
-				if(baseArr != null && hsvArr != null && hsvArr.length >= 3)
-				{
-					arr = [];
-					for(i in 0...3)
-					{
-						var baseColor:FlxColor = baseArr[i];
-						var hue:Int = FlxMath.wrap(Math.round(baseColor.hue + hsvArr[0]), 0, 360);
-						var sat:Float = FlxMath.bound(baseColor.saturation + (hsvArr[1] / 100), 0, 1);
-						var bright:Float = FlxMath.bound(baseColor.brightness + (hsvArr[2] / 100), 0, 1);
-						arr.push(FlxColor.fromHSB(hue, sat, bright));
-					}
-				}
-			}
+			var arr:Array<FlxColor> = getNoteColorPalette(colorIndex);
+			newRGB.r = arr[0];
+			newRGB.g = arr[1];
+			newRGB.b = arr[2];
 			
-			if (arr != null && noteData > -1 && noteData <= arr.length)
-			{
-				newRGB.r = arr[0];
-				newRGB.g = arr[1];
-				newRGB.b = arr[2];
-			}
-			else
-			{
-				newRGB.r = 0xFFFF0000;
-				newRGB.g = 0xFF00FF00;
-				newRGB.b = 0xFF0000FF;
-			}
-			
-			globalRgbShaders[noteData] = newRGB;
+			globalRgbShaders[colorIndex] = newRGB;
 		}
-		return globalRgbShaders[noteData];
+		return globalRgbShaders[colorIndex];
+	}
+
+	public static function normalizeNoteData(noteData:Int):Int
+	{
+		var length:Int = colArray != null && colArray.length > 0 ? colArray.length : 4;
+		return FlxMath.wrap(noteData, 0, length - 1);
+	}
+
+	public static function getNoteHSV(noteData:Int):Array<Float>
+	{
+		var colorIndex:Int = normalizeNoteData(noteData);
+		var values:Array<Float> = null;
+		if(ClientPrefs.data.arrowHSV != null && colorIndex < ClientPrefs.data.arrowHSV.length)
+			values = ClientPrefs.data.arrowHSV[colorIndex];
+
+		if(values != null && values.length >= 3)
+			return values;
+		return [0, 0, 0];
+	}
+
+	public static function applyHSVToColorSwap(colorSwap:ColorSwap, noteData:Int):Void
+	{
+		if(colorSwap == null) return;
+		var hsv:Array<Float> = getNoteHSV(noteData);
+		colorSwap.hue = hsv[0] / 360;
+		colorSwap.saturation = hsv[1] / 100;
+		colorSwap.brightness = hsv[2] / 100;
+	}
+
+	public static function resetHSVColorSwap(colorSwap:ColorSwap):Void
+	{
+		if(colorSwap == null) return;
+		colorSwap.hue = 0;
+		colorSwap.saturation = 0;
+		colorSwap.brightness = 0;
+	}
+
+	public static function getNoteColorPalette(noteData:Int, ?pixel:Null<Bool>):Array<FlxColor>
+	{
+		var colorIndex:Int = normalizeNoteData(noteData);
+		var usePixel:Bool = PlayState.isPixelStage;
+		if(pixel != null) usePixel = pixel;
+		var arr:Array<FlxColor> = getPaletteFrom(usePixel ? ClientPrefs.data.arrowRGBPixel : ClientPrefs.data.arrowRGB, colorIndex);
+
+		if(!ClientPrefs.data.noteRGB)
+		{
+			var baseArr:Array<FlxColor> = getPaletteFrom(usePixel ? ClientPrefs.defaultData.arrowRGBPixel : ClientPrefs.defaultData.arrowRGB, colorIndex);
+			var hsvArr:Array<Float> = getNoteHSV(colorIndex);
+			if(baseArr != null)
+			{
+				var legacy:Array<FlxColor> = [];
+				for(i in 0...3)
+				{
+					var baseColor:FlxColor = baseArr[i];
+					var hue:Int = FlxMath.wrap(Math.round(baseColor.hue + hsvArr[0]), 0, 360);
+					var sat:Float = FlxMath.bound(baseColor.saturation + (hsvArr[1] / 100), 0, 1);
+					var bright:Float = FlxMath.bound(baseColor.brightness * (1 + (hsvArr[2] / 100)), 0, 1);
+					legacy.push(FlxColor.fromHSB(hue, sat, bright));
+				}
+				return legacy;
+			}
+		}
+
+		if(arr == null)
+			arr = getPaletteFrom(usePixel ? ClientPrefs.defaultData.arrowRGBPixel : ClientPrefs.defaultData.arrowRGB, colorIndex);
+		if(arr == null)
+			return [0xFFFF0000, 0xFF00FF00, 0xFF0000FF];
+		return [arr[0], arr[1], arr[2]];
+	}
+
+	static function getPaletteFrom(source:Array<Array<FlxColor>>, colorIndex:Int):Array<FlxColor>
+	{
+		if(source != null && colorIndex > -1 && colorIndex < source.length)
+		{
+			var arr:Array<FlxColor> = source[colorIndex];
+			if(arr != null && arr.length >= 3)
+				return arr;
+		}
+		return null;
 	}
 
 	var _lastNoteOffX:Float = 0;
@@ -391,7 +455,7 @@ class Note extends FlxSprite
 			skin = PlayState.SONG != null ? PlayState.SONG.arrowSkin : null;
 			if(skin == null || skin.length < 1)
 			{
-				skin = getDefaultNoteSkinPath() + postfix;
+				skin = getDefaultNoteSkinPath(PlayState.isPixelStage) + postfix;
 			}
 		}
 		else rgbShader.enabled = false;
@@ -405,8 +469,7 @@ class Note extends FlxSprite
 		var lastScaleY:Float = scale.y;
 		var skinPostfix:String = getNoteSkinPostfix();
 		var customSkin:String = skin + skinPostfix;
-		var path:String = PlayState.isPixelStage ? 'pixelUI/' : '';
-		if(customSkin == _lastValidChecked || Paths.fileExists('images/' + path + customSkin + '.png', IMAGE))
+		if(customSkin == _lastValidChecked || noteSkinPathExists(customSkin, PlayState.isPixelStage))
 		{
 			skin = customSkin;
 			_lastValidChecked = customSkin;
@@ -464,6 +527,8 @@ class Note extends FlxSprite
 			// Desbloquear shader para skins normales
 			if(rgbShader != null)
 				rgbShader.forceDisabled = false;
+			if(!ClientPrefs.data.noteRGB && colorSwap != null)
+				shader = colorSwap.shader;
 		}
 	}
 
@@ -475,11 +540,37 @@ class Note extends FlxSprite
 		return skin;
 	}
 
-	public static function getDefaultNoteSkinPath():String
+	public static function noteSkinPathExists(skin:String, ?pixel:Null<Bool>):Bool
+	{
+		if(skin == null || skin.length < 1) return false;
+		var usePixel:Bool = PlayState.isPixelStage;
+		if(pixel != null) usePixel = pixel;
+		var path:String = usePixel ? 'pixelUI/' : '';
+		return Paths.fileExists('images/' + path + skin + '.png', IMAGE);
+	}
+
+	public static function getDefaultNoteSkinPath(?pixel:Null<Bool>):String
 	{
 		var preferred:String = ClientPrefs.data.noteRGB ? defaultNoteSkin : noRgbNoteSkin;
-		if(Paths.fileExists('images/' + preferred + '.png', IMAGE)) return preferred;
+		var fallback:String = ClientPrefs.data.noteRGB ? noRgbNoteSkin : defaultNoteSkin;
+		if(noteSkinPathExists(preferred, pixel)) return preferred;
+		if(noteSkinPathExists(fallback, pixel)) return fallback;
 		return defaultNoteSkin;
+	}
+
+	public static function resolveNoteSkinPath(?skin:String, ?pixel:Null<Bool>):String
+	{
+		if(skin == null || skin.length < 1)
+			skin = getDefaultNoteSkinPath(pixel);
+
+		var postfix:String = getNoteSkinPostfix();
+		if(postfix.length > 0)
+		{
+			var customSkin:String = skin + postfix;
+			if(noteSkinPathExists(customSkin, pixel))
+				return customSkin;
+		}
+		return skin;
 	}
 
 	function loadNoteAnims() {
@@ -567,32 +658,66 @@ class Note extends FlxSprite
 		if (!myStrum.downScroll) distance *= -1;
 
 		var angleDir = strumDirection * Math.PI / 180;
-		if (copyAngle)
-			angle = strumDirection - 90 + strumAngle + offsetAngle;
+		if (isSustainNote)
+			angle = strumDirection - 90 + offsetAngle;
+		else if (copyAngle)
+			angle = strumAngle + offsetAngle;
+
+		if (isSustainNote)
+			flipY = myStrum.downScroll;
 
 		if(copyAlpha)
 			alpha = strumAlpha * multAlpha;
 
-		if(copyX)
-			x = strumX + offsetX + Math.cos(angleDir) * distance;
-
-		if(copyY)
+		if (isSustainNote)
 		{
-			y = strumY + offsetY + correctionOffset + Math.sin(angleDir) * distance;
-			if(myStrum.downScroll && isSustainNote)
+			var axisX:Float = Math.cos(angleDir);
+			var axisY:Float = Math.sin(angleDir);
+			var sustainCorrectionOffset:Float = correctionOffset;
+			if (!PlayState.isPixelStage)
+				sustainCorrectionOffset = myStrum.downScroll ? 0 : ((parent != null) ? parent.height / 2 : correctionOffset);
+
+			var sustainVisualOffset:Float = 0;
+
+			if(myStrum.downScroll)
 			{
+				final sustainScaleY = isSustainEnd ? 1.0 : scale.y;
+				sustainVisualOffset = (frameHeight * sustainScaleY) - (Note.swagWidth / 2);
 				if(PlayState.isPixelStage)
-				{
-					y -= PlayState.daPixelZoom * 9.5;
-				}
-				y -= (frameHeight * scale.y) - (Note.swagWidth / 2);
+					sustainVisualOffset += PlayState.daPixelZoom * 9.5;
 			}
+
+			var alongAxis:Float = distance + sustainCorrectionOffset - sustainVisualOffset + offsetY;
+			var noteX:Float = strumX + offsetX + (axisX * alongAxis);
+			var noteY:Float = strumY + (axisY * alongAxis);
+
+			if(copyX)
+				x = noteX;
+
+			if(copyY)
+				y = noteY;
+		}
+		else
+		{
+			if(copyX)
+				x = strumX + offsetX + Math.cos(angleDir) * distance;
+
+			if(copyY)
+				y = strumY + offsetY + Math.sin(angleDir) * distance;
 		}
 	}
 
 	public function clipToStrumNote(myStrum:StrumNote)
 	{
-		var center:Float = myStrum.y + offsetY + Note.swagWidth / 2;
+		var angleDir:Float = myStrum.direction * Math.PI / 180;
+		var axisX:Float = Math.cos(angleDir);
+		var axisY:Float = Math.sin(angleDir);
+		var clipOffset:Float = Note.swagWidth / 2;
+		var centerX:Float = myStrum.x + offsetX + (axisX * clipOffset);
+		var centerY:Float = myStrum.y + offsetY + (axisY * clipOffset);
+		var centerProjection:Float = (centerX * axisX) + (centerY * axisY);
+		var noteProjection:Float = (x * axisX) + (y * axisY);
+		var localFrameHeight:Float = height / Math.max(scale.y, 0.00001);
 		if((mustPress || !ignoreNote) && (wasGoodHit || (prevNote.wasGoodHit && !canBeHit)))
 		{
 			var swagRect:FlxRect = clipRect;
@@ -600,18 +725,19 @@ class Note extends FlxSprite
 
 			if (myStrum.downScroll)
 			{
-				if(y - offset.y * scale.y + height >= center)
+				var visibleWorldLength:Float = centerProjection - noteProjection;
+				if(visibleWorldLength >= 0)
 				{
 					swagRect.width = frameWidth;
-					swagRect.height = (center - y) / scale.y;
+					swagRect.height = FlxMath.bound(visibleWorldLength / Math.max(scale.y, 0.00001), 0, localFrameHeight);
 					swagRect.y = frameHeight - swagRect.height;
 				}
 			}
-			else if (y + offset.y * scale.y <= center)
+			else if (noteProjection <= centerProjection)
 			{
-				swagRect.y = (center - y) / scale.y;
+				swagRect.y = FlxMath.bound((centerProjection - noteProjection) / Math.max(scale.y, 0.00001), 0, localFrameHeight);
 				swagRect.width = width / scale.x;
-				swagRect.height = (height / scale.y) - swagRect.y;
+				swagRect.height = localFrameHeight - swagRect.y;
 			}
 			clipRect = swagRect;
 		}

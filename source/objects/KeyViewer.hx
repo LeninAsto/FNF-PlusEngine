@@ -3,15 +3,10 @@ package objects;
 import backend.Controls;
 import backend.InputFormatter;
 import backend.CoolUtil;
-import flixel.FlxG;
-import flixel.FlxSprite;
-import flixel.group.FlxSpriteGroup;
-import flixel.text.FlxText;
-import flixel.util.FlxColor;
-import flixel.tweens.FlxTween;
-import flixel.tweens.FlxEase;
+import flixel.input.keyboard.FlxKey;
 import openfl.display.BitmapData;
 import openfl.display.Shape;
+import haxe.Timer;
 
 using StringTools;
 
@@ -30,9 +25,13 @@ class KeyViewer extends FlxSpriteGroup
 	public var kpsText:FlxText;
 	public var totalText:FlxText;
 	
-	public var hitArray:Array<Date> = [];
+	public var hitArray:Array<Float> = [];
 	public var kps:Int = 0;
 	public var total:Int = 0;
+	var keyLabelRefreshElapsed:Float = 0;
+	var lastKeyboardBindVersion:Int = -1;
+	var lastControlContext:String = "";
+	static inline final KEY_LABEL_REFRESH_INTERVAL:Float = 0.5;
 	
 	// Referencia a PlayState para acceder a cpuControlled
 	private var playState:Dynamic = null;
@@ -76,9 +75,7 @@ class KeyViewer extends FlxSpriteGroup
 		
 		for (i in 0...keyCount)
 		{
-			var pressureBar = new PressureBar(i * (keySize + spacing), 0 - 10, keySize, i);
-			pressureBars.push(pressureBar);
-			add(pressureBar);
+			createPressureBarForKey(i, keySize);
 		}
 		
 		kpsText = new FlxText(0, keySize + 10, totalWidth, "KPS: 0", 14);
@@ -97,7 +94,7 @@ class KeyViewer extends FlxSpriteGroup
 		var keysArray = ['note_left', 'note_down', 'note_up', 'note_right'];
 		
 		if (keyIndex < keysArray.length) {
-			var keyBind = Controls.instance.getKeyboardBind(keysArray[keyIndex]);
+			var keyBind = getDisplayKeyboardBind(keysArray[keyIndex]);
 			if (keyBind != null && keyBind.length > 0) {
 				var names:Array<String> = [];
 				for (boundKey in keyBind) {
@@ -117,19 +114,45 @@ class KeyViewer extends FlxSpriteGroup
 		
 		return "?";
 	}
+
+	function getDisplayKeyboardBind(controlName:String):Array<FlxKey>
+	{
+		if (Controls.instance == null)
+			return null;
+
+		if (shouldUseTemporaryGameplayBinds())
+			return Controls.instance.getKeyboardBind(controlName);
+
+		return Controls.instance.keyboardBinds.get(controlName);
+	}
+
+	function shouldUseTemporaryGameplayBinds():Bool
+	{
+		if (playState == null)
+			return true;
+
+		return !isPlayStateFlagEnabled("cpuControlled");
+	}
+
+	function isPlayStateFlagEnabled(fieldName:String):Bool
+	{
+		return playState != null && Reflect.field(playState, fieldName) == true;
+	}
 	
 	public function keyPressed(keyIndex:Int)
 	{
 		if (keyIndex >= 0 && keyIndex < keys.length)
 		{
+			refreshPressureBarAnchor(keyIndex);
 			keys[keyIndex].press();
 			var keyColor = CoolUtil.colorFromString(ClientPrefs.data.keyViewerColor);
 			keyTexts[keyIndex].color = keyColor;
 			keyTexts[keyIndex].alpha = 1.0;
 			
-			pressureBars[keyIndex].startGrowing();
+			if (pressureBars[keyIndex] != null)
+				pressureBars[keyIndex].startGrowing();
 			
-			hitArray.unshift(Date.now());
+			hitArray.push(Timer.stamp());
 			total++;
 			updateTexts();
 		}
@@ -139,22 +162,19 @@ class KeyViewer extends FlxSpriteGroup
 	{
 		if (keyIndex >= 0 && keyIndex < keys.length)
 		{
+			refreshPressureBarAnchor(keyIndex);
 			keys[keyIndex].release();
 			keyTexts[keyIndex].color = FlxColor.WHITE;
 			keyTexts[keyIndex].alpha = 0.6;
 			
 			var currentBar = pressureBars[keyIndex];
-			if (currentBar.height > 10) {
+			if (currentBar != null && currentBar.currentHeight > currentBar.minHeight) {
 				currentBar.startFlying();
 				flyingBars.push(currentBar);
 				
 				var keySize:Float = 45;
-				var spacing:Float = 6;
-				var keyButton = keys[keyIndex];
-				var newBar = new PressureBar(keyIndex * (keySize + spacing), keyButton.y - 10, keySize, keyIndex);
-				pressureBars[keyIndex] = newBar;
-				add(newBar);
-			} else {
+				createPressureBarForKey(keyIndex, keySize);
+			} else if (currentBar != null) {
 				currentBar.isGrowing = false;
 				currentBar.alpha = 0;
 				currentBar.visible = false;
@@ -165,7 +185,23 @@ class KeyViewer extends FlxSpriteGroup
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		refreshKeyLabels();
+		keyLabelRefreshElapsed += elapsed;
+		final bindVersion = Controls.instance != null ? Controls.instance.keyboardBindVersion : -1;
+		final controlContext = getControlContext();
+		if (controlContext != lastControlContext)
+		{
+			lastControlContext = controlContext;
+			releaseAllKeys();
+			refreshKeyLabels(true);
+		}
+		else if (bindVersion != lastKeyboardBindVersion || keyLabelRefreshElapsed >= KEY_LABEL_REFRESH_INTERVAL)
+		{
+			lastKeyboardBindVersion = bindVersion;
+			keyLabelRefreshElapsed = 0;
+			refreshKeyLabels(false);
+		}
+
+		refreshPressureBarAnchors();
 		
 		var i = flyingBars.length - 1;
 		while (i >= 0)
@@ -178,16 +214,9 @@ class KeyViewer extends FlxSpriteGroup
 			i--;
 		}
 		
-		var j = hitArray.length - 1;
-		while (j >= 0)
-		{
-			var time:Date = hitArray[j];
-			if (time != null && time.getTime() + 1000 < Date.now().getTime())
-				hitArray.remove(time);
-			else
-				j = -1;
-			j--;
-		}
+		var cutoff:Float = Timer.stamp() - 1;
+		while (hitArray.length > 0 && hitArray[0] < cutoff)
+			hitArray.shift();
 		
 		var newKps = hitArray.length;
 		if (kps != newKps) {
@@ -202,14 +231,38 @@ class KeyViewer extends FlxSpriteGroup
 		keyText.y = keyButton.y + (keySize - keyText.height) / 2;
 	}
 
-	function refreshKeyLabels():Void
+	function getControlContext():String
+	{
+		if (playState == null)
+			return "free";
+		return [
+			Std.string(isPlayStateFlagEnabled("cpuControlled")),
+			Std.string(isPlayStateFlagEnabled("playOpponent"))
+		].join(":");
+	}
+
+	function releaseAllKeys():Void
+	{
+		for (i in 0...keys.length)
+		{
+			if (keys[i] != null && keys[i].isPressed)
+				keys[i].release();
+			if (i < keyTexts.length && keyTexts[i] != null)
+			{
+				keyTexts[i].color = FlxColor.WHITE;
+				keyTexts[i].alpha = 0.6;
+			}
+		}
+	}
+
+	function refreshKeyLabels(force:Bool = false):Void
 	{
 		final keySize:Float = 45;
 
 		for (i in 0...keyTexts.length)
 		{
 			final newLabel = getKeyName(i);
-			if (keyTextLabels[i] == newLabel)
+			if (!force && keyTextLabels[i] == newLabel)
 				continue;
 
 			keyTextLabels[i] = newLabel;
@@ -299,6 +352,42 @@ class KeyViewer extends FlxSpriteGroup
 		
 		x = (FlxG.width - totalWidth) / 2 + ClientPrefs.data.keyViewerOffset[0];
 		y = FlxG.height - 150 + ClientPrefs.data.keyViewerOffset[1];
+		refreshPressureBarAnchors();
+	}
+
+	function refreshPressureBarAnchors():Void
+	{
+		for (i in 0...pressureBars.length)
+		{
+			refreshPressureBarAnchor(i);
+		}
+	}
+
+	function createPressureBarForKey(keyIndex:Int, keySize:Float):PressureBar
+	{
+		if (keyIndex < 0 || keyIndex >= keys.length)
+			return null;
+
+		var pressureBar = new PressureBar(0, 0, keySize, keyIndex);
+		pressureBars[keyIndex] = pressureBar;
+		add(pressureBar);
+		refreshPressureBarAnchor(keyIndex);
+		return pressureBar;
+	}
+
+	function refreshPressureBarAnchor(keyIndex:Int):Void
+	{
+		if (keyIndex < 0 || keyIndex >= keys.length || keyIndex >= pressureBars.length)
+			return;
+
+		var pressureBar = pressureBars[keyIndex];
+		var keyButton = keys[keyIndex];
+		if (pressureBar == null || keyButton == null)
+			return;
+
+		pressureBar.x = keyButton.x;
+		pressureBar.baseY = keyButton.y - 10;
+		pressureBar.updateBarVisual();
 	}
 	
 	override function destroy()
@@ -408,13 +497,16 @@ class PressureBar extends FlxSprite
 	public var keyIndex:Int;
 	public var isGrowing:Bool = false;
 	public var isDestroyed:Bool = false;
-	private var maxHeight:Float = 500;
-	private var growSpeed:Float = 150;
+	public var maxHeight:Float = 170;
+	public var minHeight:Float = 8;
+	private var growSpeed:Float = 220;
 	private var flyTween:FlxTween;
-	private var releaseTween:FlxTween;
 	private var fadeTween:FlxTween;
-	public var baseWidth:Float; 
-	public var baseY:Float; 
+	public var baseWidth:Float;
+	public var baseY:Float;
+	public var currentHeight:Float = 0;
+	private var currentColor:FlxColor = FlxColor.WHITE;
+	private var currentGraphicHeight:Int = 0;
 	
 	public function new(x:Float, y:Float, width:Float, keyIndex:Int)
 	{
@@ -423,21 +515,21 @@ class PressureBar extends FlxSprite
 		this.baseWidth = width;
 		this.baseY = y;
 		
-		var keyColor = CoolUtil.colorFromString(ClientPrefs.data.keyViewerColor);
-		makeGraphic(Std.int(width), 1, keyColor);
-		
 		alpha = 0;
 		visible = false;
+		updateBarVisual();
 	}
 	
 	public function startGrowing()
 	{
+		cancelTweens();
 		isGrowing = true;
+		isDestroyed = false;
 		visible = true;
 		alpha = 0.8;
-		var keyColor = CoolUtil.colorFromString(ClientPrefs.data.keyViewerColor);
-		makeGraphic(Std.int(baseWidth), 10, keyColor);
-		y = baseY - height;
+		refreshGradientGraphic();
+		currentHeight = minHeight;
+		updateBarVisual();
 	}
 	
 	override function update(elapsed:Float)
@@ -446,19 +538,23 @@ class PressureBar extends FlxSprite
 		
 		if (isGrowing && !isDestroyed)
 		{
-			var newHeight = height + (growSpeed * elapsed);
-			if (newHeight > maxHeight) newHeight = maxHeight;
-			
-			var keyColor = CoolUtil.colorFromString(ClientPrefs.data.keyViewerColor);
-			makeGraphic(Std.int(baseWidth), Std.int(newHeight), keyColor);
-			
-			y = baseY - height;
+			currentHeight += growSpeed * elapsed;
+			if (currentHeight > maxHeight) currentHeight = maxHeight;
+			updateBarVisual();
 		}
 	}
 	
 	public function startFlying()
 	{
 		isGrowing = false;
+		if (currentHeight <= minHeight)
+		{
+			alpha = 0;
+			visible = false;
+			isDestroyed = true;
+			return;
+		}
+		cancelTweens();
 		
 		var currentY = y;
 		flyTween = FlxTween.tween(this, {y: currentY - 100}, 1.0, {
@@ -472,10 +568,37 @@ class PressureBar extends FlxSprite
 			ease: FlxEase.quadOut
 		});
 	}
-	
 
-	
-	override function destroy()
+	function refreshGradientGraphic():Void
+	{
+		var newColor = CoolUtil.colorFromString(ClientPrefs.data.keyViewerColor);
+		var graphicHeight:Int = Std.int(Math.max(1, currentHeight));
+		if (pixels != null && currentColor == newColor && currentGraphicHeight == graphicHeight && pixels.width == Std.int(baseWidth))
+			return;
+
+		currentColor = newColor;
+		currentGraphicHeight = graphicHeight;
+		var bitmap = new BitmapData(Std.int(baseWidth), graphicHeight, true, 0x00000000);
+		var rgb:Int = currentColor & 0x00FFFFFF;
+		for (row in 0...bitmap.height)
+		{
+			var alphaValue:Int = Std.int(255 * ((row + 1) / bitmap.height));
+			var color:Int = (alphaValue << 24) | rgb;
+			bitmap.fillRect(new openfl.geom.Rectangle(0, row, bitmap.width, 1), color);
+		}
+		loadGraphic(bitmap);
+		updateHitbox();
+	}
+
+	public inline function updateBarVisual():Void
+	{
+		currentHeight = Math.max(minHeight, Math.min(maxHeight, currentHeight));
+		clipRect = null;
+		refreshGradientGraphic();
+		y = baseY - currentHeight;
+	}
+
+	inline function cancelTweens():Void
 	{
 		if (flyTween != null) {
 			flyTween.cancel();
@@ -485,6 +608,11 @@ class PressureBar extends FlxSprite
 			fadeTween.cancel();
 			fadeTween = null;
 		}
+	}
+
+	override function destroy()
+	{
+		cancelTweens();
 		super.destroy();
 	}
 }

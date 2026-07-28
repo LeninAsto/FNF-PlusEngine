@@ -18,43 +18,88 @@ class AssetLoader
 {
 	public static function exists(path:String, type:AssetType):Bool
 	{
+		if (path == null || path.length == 0)
+			return false;
+
 		#if MODS_ALLOWED
-		if (FileSystem.exists(path))
-			return true;
+		try
+		{
+			if (FileSystem.exists(path))
+				return true;
+		}
+		catch (_:Dynamic) {}
 		#end
-		return OpenFlAssets.exists(path, type);
+		try
+		{
+			return OpenFlAssets.exists(path, type);
+		}
+		catch (_:Dynamic) {}
+		return false;
 	}
 
 	public static function loadText(path:String):String
 	{
+		if (path == null || path.length == 0)
+			return null;
+
 		#if MODS_ALLOWED
-		if (FileSystem.exists(path))
-			return File.getContent(path);
+		try
+		{
+			if (FileSystem.exists(path))
+				return File.getContent(path);
+		}
+		catch (_:Dynamic) {}
 		#end
-		if (OpenFlAssets.exists(path, TEXT))
-			return Assets.getText(path);
+		try
+		{
+			if (OpenFlAssets.exists(path, TEXT))
+				return Assets.getText(path);
+		}
+		catch (_:Dynamic) {}
 		return null;
 	}
 
 	public static function loadBitmap(path:String):BitmapData
 	{
+		if (path == null || path.length == 0)
+			return null;
+
 		#if MODS_ALLOWED
-		if (FileSystem.exists(path))
-			return BitmapData.fromFile(path);
+		try
+		{
+			if (FileSystem.exists(path))
+				return BitmapData.fromFile(path);
+		}
+		catch (_:Dynamic) {}
 		#end
-		if (OpenFlAssets.exists(path, IMAGE))
-			return OpenFlAssets.getBitmapData(path);
+		try
+		{
+			if (OpenFlAssets.exists(path, IMAGE))
+				return OpenFlAssets.getBitmapData(path);
+		}
+		catch (_:Dynamic) {}
 		return null;
 	}
 
 	public static function loadSound(path:String):Sound
 	{
+		if (path == null || path.length == 0)
+			return null;
+
 		#if MODS_ALLOWED
-		if (FileSystem.exists(path))
-			return Sound.fromFile(path);
+		try
+		{
+			if (FileSystem.exists(path))
+				return Sound.fromFile(path);
+		}
+		catch (_:Dynamic) {}
 		#end
-		if (OpenFlAssets.exists(path, SOUND))
-			return OpenFlAssets.getSound(path);
+		try
+		{
+			if (OpenFlAssets.exists(path, SOUND))
+				return OpenFlAssets.getSound(path);
+		}
+		catch (_:Dynamic) {}
 		return null;
 	}
 }

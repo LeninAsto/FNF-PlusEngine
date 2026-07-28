@@ -1,5 +1,7 @@
 package backend.ui;
 
+import options.OptionsMenuTheme;
+
 class PsychUICheckBox extends FlxSpriteGroup
 {
 	public static final CLICK_EVENT = 'checkbox_click';
@@ -22,6 +24,7 @@ class PsychUICheckBox extends FlxSpriteGroup
 
 		text = new FlxText(box.width + 4, 0, textWid, label);
 		text.y += box.height/2 - text.height/2;
+		text.color = OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false));
 		add(text);
 
 		this.onClick = callback;
@@ -33,6 +36,7 @@ class PsychUICheckBox extends FlxSpriteGroup
 		box.animation.add('false', [0]);
 		box.animation.add('true', [1]);
 		box.animation.play('false');
+		box.color = OptionsMenuTheme.current().accent;
 	}
 
 	public var broadcastCheckBoxEvent:Bool = true;

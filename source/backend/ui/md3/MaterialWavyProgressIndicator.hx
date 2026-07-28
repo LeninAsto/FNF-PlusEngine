@@ -405,7 +405,24 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 		}
 		else
 		{
-			graphics.drawCircle(center, center, radius);
+			var startAngle = -Math.PI / 2 + sweepPhase * 2.4;
+			var pulse = (Math.sin(sweepPhase * 1.9) + 1) * 0.5;
+			var waveSweep = TAU * FlxMath.lerp(0.22, 0.7, pulse);
+			var gap = Math.max(FlxMath.bound(circularEdgeGap, 0, Math.PI / 4), 0.03);
+			var trackStart = startAngle + waveSweep + gap;
+			var trackSweep = TAU - waveSweep - (gap * 2);
+			if (trackSweep > 0.01)
+			{
+				var steps = Std.int(Math.max(36, Math.ceil((trackSweep * radius) / 3.0)));
+				for (i in 0...steps + 1)
+				{
+					var t = i / steps;
+					var angle = trackStart + trackSweep * t;
+					var px = center + Math.cos(angle) * radius;
+					var py = center + Math.sin(angle) * radius;
+					if (i == 0) graphics.moveTo(px, py); else graphics.lineTo(px, py);
+				}
+			}
 		}
 
 		bitmap.draw(shape);
@@ -433,7 +450,7 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 		{
 			startAngle += sweepPhase * 2.4;
 			var pulse = (Math.sin(sweepPhase * 1.9) + 1) * 0.5;
-			sweep = TAU * FlxMath.lerp(0.18, 0.34, pulse);
+			sweep = TAU * FlxMath.lerp(0.22, 0.7, pulse);
 		}
 		else
 		{

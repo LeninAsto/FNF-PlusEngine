@@ -9,13 +9,19 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 	var noteOptionID:Int = -1;
 	var noteSkinOption:Option = null;
 	var splashSkinOption:Option = null;
+	var themeModeOption:Option = null;
+	var accentColorOption:Option = null;
 	var notes:FlxTypedGroup<StrumNote>;
 	var splashes:FlxTypedGroup<NoteSplash>;
 	var noteY:Float = 90;
+	var lastNonCustomAccent:String = 'Purple';
 	public function new()
 	{
 		title = Language.getPhrase('visuals_menu', 'Visuals Settings');
 		rpcTitle = 'Visuals Settings Menu'; //for Discord Rich Presence
+		lastNonCustomAccent = OptionsMenuTheme.normalizeAccent(ClientPrefs.data.menuAccentColor);
+		if (lastNonCustomAccent == 'Custom')
+			lastNonCustomAccent = 'Purple';
 
 		// for note skins and splash skins
 		notes = new FlxTypedGroup<StrumNote>();
@@ -26,7 +32,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			changeNoteSkin(note);
 			notes.add(note);
 			
-			var splash:NoteSplash = new NoteSplash(0, 0, NoteSplash.defaultNoteSplash + NoteSplash.getSplashSkinPostfix());
+			var splash:NoteSplash = new NoteSplash(0, 0, NoteSplash.getDefaultNoteSplashPath() + NoteSplash.getSplashSkinPostfix());
 			splash.inEditor = true;
 			splash.babyArrow = note;
 			splash.ID = i;
@@ -42,10 +48,10 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(noteRgbOption);
 		noteRgbOption.onChange = onChangeNoteRGBMode;
 
-		var noteSkins:Array<String> = Mods.mergeAllTextsNamed(getNoteSkinsListPath());
+		var noteSkins:Array<String> = getNoteSkinsList();
 		if(noteSkins.length > 0)
 		{
-			noteSkins.insert(0, ClientPrefs.defaultData.noteSkin); //Default skin always comes first
+			ClientPrefs.data.noteSkin = resolveStringOptionValue(noteSkins, ClientPrefs.data.noteSkin, ClientPrefs.defaultData.noteSkin);
 			var option:Option = new Option('Note Skins:',
 				"Select your prefered Note skin.",
 				'noteSkin',
@@ -57,10 +63,10 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			noteOptionID = optionsArray.length - 1;
 		}
 		
-		var noteSplashes:Array<String> = Mods.mergeAllTextsNamed(getSplashSkinsListPath());
+		var noteSplashes:Array<String> = getSplashSkinsList();
 		if(noteSplashes.length > 0)
 		{
-			noteSplashes.insert(0, ClientPrefs.defaultData.splashSkin); //Default skin always comes first
+			ClientPrefs.data.splashSkin = resolveStringOptionValue(noteSplashes, ClientPrefs.data.splashSkin, ClientPrefs.defaultData.splashSkin);
 			var option:Option = new Option('Note Splashes:',
 				"Select your prefered Note Splash variation.",
 				'splashSkin',
@@ -108,6 +114,16 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			['Gray', 'Red', 'Blue', 'Green', 'Purple', 'Orange', 'Pink', 'Cyan', 'White', 'Black']);
 		addOption(option);
 		option.onChange = onChangeKeyViewerColor;
+
+		var option:Option = new Option('Accent Color:',
+			'Choose a preset accent color or open the custom color picker.',
+			'menuAccentColor',
+			STRING,
+			OptionsMenuTheme.ACCENT_CHOICES.copy(),
+			'accent_color');
+		addOption(option);
+		option.onChange = onChangeAccentColor;
+		accentColorOption = option;
 		
 		var option:Option = new Option('Time Bar:',
 			"What should the Time Bar display?",
@@ -119,12 +135,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		var option:Option = new Option('Gradient Time Bar',
 		    "If checked, the time bar will be shaded according to the color of the character icon.",
 		    'shadedTimeBar',
-		    BOOL);
-		addOption(option);
-
-		var option:Option = new Option('Use Wavy Time Bar',
-		    'If checked, uses a Material-style wavy progress indicator instead of the classic time bar.',
-		    'useWavyTimeBar',
 		    BOOL);
 		addOption(option);
 
@@ -150,7 +160,8 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			"Changes the way the health icons bounce.",
 			'iconBounceType',
 			STRING,
-			['Old', 'D&D', 'NF', 'Default']);
+			['Old', 'D&B', 'NF', 'Default']);
+		addOption(option);
 
 		var option:Option = new Option('Time Text Bump',
 			'If unchecked, disables the time text bump animation on beat.',
@@ -162,12 +173,25 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			'If checked, shows the version text during gameplay.',
 			'versionTextOnGameplay',
 			BOOL);
+		addOption(option);
 		
 		var option:Option = new Option('Abbreviate Score',
 			'If enabled, the score will be abbreviated (e.g. 10.00K, 1.00M).',
 			'abbreviateScore',
 			BOOL
 		);
+		addOption(option);
+
+		var option:Option = new Option('Dynamic Combo Digits',
+		    'If checked, the combo will appear with two digits in first combo, and only\nwhen it reaches 100 combo will it become three digits.',
+			'dynamicComboDigits',
+			BOOL);
+		addOption(option);
+
+		var option:Option = new Option('NF Rating Style',
+			'If checked, ratings and combo numbers bop in place instead of flying/fading.',
+			'nfRatingStyle',
+			BOOL);
 		addOption(option);
 
 		var option:Option = new Option('Health Bar Opacity',
@@ -192,7 +216,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			'smoothHPBug',
 			BOOL);
 		addOption(option);
-		
 
 		var option:Option = new Option('Show Watermark',
 			'If checked, shows the watermark on screen.',
@@ -200,15 +223,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 		option.onChange = onChangeWatermark;
-
-		#if native
-		var option:Option = new Option('VSync',
-			'If checked, Enables VSync fixing any screen tearing at the cost of capping the FPS to screen refresh rate.\n(Must restart the game to have an effect)',
-			'vsync',
-			BOOL);
-		option.onChange = onChangeVSync;
-		addOption(option);
-		#end
 		
 		var option:Option = new Option('Pause Music:',
 			"What song do you prefer for the Pause Screen?",
@@ -217,18 +231,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			['None', 'Tea Time', 'Breakfast', 'Breakfast (Pico)']);
 		addOption(option);
 		option.onChange = onChangePauseMusic;
-
-		var option:Option = new Option('Intro Video',
-		    'Show intro video when starting the game',
-			'showIntroVideo',
-			BOOL);
-		addOption(option);
-		
-		var option:Option = new Option('Vanilla Transition',
-		    'If checked, uses the vanilla Psych Engine transition instead of the custom one.',
-			'vanillaTransition',
-			BOOL);
-		addOption(option);
 		
 		#if CHECK_FOR_UPDATES
 		var option:Option = new Option('Check for Updates',
@@ -396,6 +398,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 	function onChangeNoteRGBMode()
 	{
+		Note.globalRgbShaders = [];
 		refreshNoteSkinOptionList();
 		refreshSplashSkinOptionList();
 		onChangeNoteSkin();
@@ -404,17 +407,8 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 	function changeNoteSkin(note:StrumNote)
 	{
-		var skin:String = Note.getDefaultNoteSkinPath();
-		var postfix:String = Note.getNoteSkinPostfix();
+		var skin:String = Note.resolveNoteSkinPath(null, PlayState.isPixelStage);
 		
-		// Si hay un postfix (significa que el usuario seleccionó un skin personalizado)
-		if(postfix.length > 0)
-		{
-			var customSkin:String = skin + postfix;
-			if(Paths.fileExists('images/$customSkin.png', IMAGE)) 
-				skin = customSkin;
-		}
-
 		note.texture = skin; //Load texture and anims (setter calls reloadNote automatically)
 		note.playAnim('static');
 		
@@ -422,18 +416,51 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		note.checkNotITGSkin();
 	}
 
-	function getNoteSkinsListPath():String
+	function getNoteSkinsList():Array<String>
 	{
 		var preferred:String = ClientPrefs.data.noteRGB ? 'images/noteSkins/list.txt' : 'images/noteSkinsNoRGB/list.txt';
-		if(Mods.mergeAllTextsNamed(preferred).length > 0) return preferred;
-		return 'images/noteSkins/list.txt';
+		var fallback:String = ClientPrefs.data.noteRGB ? 'images/noteSkinsNoRGB/list.txt' : 'images/noteSkins/list.txt';
+		return buildSkinOptionList(preferred, fallback, ClientPrefs.defaultData.noteSkin);
 	}
 
-	function getSplashSkinsListPath():String
+	function getSplashSkinsList():Array<String>
 	{
 		var preferred:String = ClientPrefs.data.noteRGB ? 'images/noteSplashes/list.txt' : 'images/noteSplashesNoRGB/list.txt';
-		if(Mods.mergeAllTextsNamed(preferred).length > 0) return preferred;
-		return 'images/noteSplashes/list.txt';
+		var fallback:String = ClientPrefs.data.noteRGB ? 'images/noteSplashesNoRGB/list.txt' : 'images/noteSplashes/list.txt';
+		return buildSkinOptionList(preferred, fallback, ClientPrefs.defaultData.splashSkin);
+	}
+
+	function buildSkinOptionList(preferredPath:String, fallbackPath:String, defaultValue:String):Array<String>
+	{
+		var list:Array<String> = [];
+		addSkinOption(list, defaultValue);
+
+		var preferred:Array<String> = Mods.mergeAllTextsNamed(preferredPath);
+		for(value in preferred)
+			addSkinOption(list, value);
+
+		if(list.length <= 1)
+		{
+			var fallback:Array<String> = Mods.mergeAllTextsNamed(fallbackPath);
+			for(value in fallback)
+				addSkinOption(list, value);
+		}
+		return list;
+	}
+
+	function addSkinOption(list:Array<String>, value:String):Void
+	{
+		if(value == null) return;
+		value = value.trim();
+		if(value.length > 0 && !list.contains(value))
+			list.push(value);
+	}
+
+	function resolveStringOptionValue(list:Array<String>, current:String, defaultValue:String):String
+	{
+		if(list.contains(current)) return current;
+		if(list.contains(defaultValue)) return defaultValue;
+		return list.length > 0 ? list[0] : defaultValue;
 	}
 
 	function refreshStringOptionVisual(option:Option)
@@ -445,30 +472,26 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 	function refreshNoteSkinOptionList()
 	{
 		if(noteSkinOption == null) return;
-		var noteSkins:Array<String> = Mods.mergeAllTextsNamed(getNoteSkinsListPath());
+		var noteSkins:Array<String> = getNoteSkinsList();
 		if(noteSkins.length <= 0) return;
-		noteSkins.insert(0, ClientPrefs.defaultData.noteSkin);
 		noteSkinOption.options = noteSkins;
-		var resolved:String = noteSkins.contains(ClientPrefs.data.noteSkin) ? ClientPrefs.data.noteSkin : ClientPrefs.defaultData.noteSkin;
-		if(!noteSkins.contains(resolved))
-			resolved = noteSkins[0];
+		var resolved:String = resolveStringOptionValue(noteSkins, ClientPrefs.data.noteSkin, ClientPrefs.defaultData.noteSkin);
 		noteSkinOption.curOption = noteSkins.indexOf(resolved);
 		if(noteSkinOption.curOption < 0) noteSkinOption.curOption = 0;
+		noteSkinOption.setValue(resolved);
 		refreshStringOptionVisual(noteSkinOption);
 	}
 
 	function refreshSplashSkinOptionList()
 	{
 		if(splashSkinOption == null) return;
-		var splashSkins:Array<String> = Mods.mergeAllTextsNamed(getSplashSkinsListPath());
+		var splashSkins:Array<String> = getSplashSkinsList();
 		if(splashSkins.length <= 0) return;
-		splashSkins.insert(0, ClientPrefs.defaultData.splashSkin);
 		splashSkinOption.options = splashSkins;
-		var resolved:String = splashSkins.contains(ClientPrefs.data.splashSkin) ? ClientPrefs.data.splashSkin : ClientPrefs.defaultData.splashSkin;
-		if(!splashSkins.contains(resolved))
-			resolved = splashSkins[0];
+		var resolved:String = resolveStringOptionValue(splashSkins, ClientPrefs.data.splashSkin, ClientPrefs.defaultData.splashSkin);
 		splashSkinOption.curOption = splashSkins.indexOf(resolved);
 		if(splashSkinOption.curOption < 0) splashSkinOption.curOption = 0;
+		splashSkinOption.setValue(resolved);
 		refreshStringOptionVisual(splashSkinOption);
 	}
 
@@ -561,8 +584,59 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		}
 	}
 
-	#if native
-	function onChangeVSync()
-		lime.app.Application.current.window.vsync = ClientPrefs.data.vsync;
-	#end
+	function onChangeThemeMode()
+	{
+		ClientPrefs.syncThemeModeFlags();
+		OptionsMenuTheme.syncAccent();
+		ClientPrefs.saveSettings();
+	}
+
+	function onChangeAccentColor()
+	{
+		ClientPrefs.data.menuAccentColor = OptionsMenuTheme.normalizeAccent(ClientPrefs.data.menuAccentColor);
+		if (ClientPrefs.data.menuAccentColor != 'Custom')
+		{
+			lastNonCustomAccent = ClientPrefs.data.menuAccentColor;
+			OptionsMenuTheme.syncAccent();
+			ClientPrefs.saveSettings();
+			return;
+		}
+
+		var previousAccentChoice = lastNonCustomAccent;
+		var previousCustomColor = ClientPrefs.data.menuAccentColorCustom;
+		openSubState(backend.ScriptableSubstate.tryCreate('ThemeAccentColorSubState',
+			new ThemeAccentColorSubState(ClientPrefs.data.menuAccentColorCustom,
+				function(color:Int)
+				{
+					ClientPrefs.data.menuAccentColor = 'Custom';
+					ClientPrefs.data.menuAccentColorCustom = color;
+					OptionsMenuTheme.syncAccent();
+				},
+				function()
+				{
+					ClientPrefs.data.menuAccentColor = 'Custom';
+					OptionsMenuTheme.syncAccent();
+					ClientPrefs.saveSettings();
+					refreshAccentOptionVisual();
+				},
+				function()
+				{
+					ClientPrefs.data.menuAccentColor = previousAccentChoice;
+					ClientPrefs.data.menuAccentColorCustom = previousCustomColor;
+					OptionsMenuTheme.syncAccent();
+					refreshAccentOptionVisual();
+					ClientPrefs.saveSettings();
+				}
+			)
+		));
+	}
+
+	function refreshAccentOptionVisual():Void
+	{
+		if (accentColorOption == null) return;
+		accentColorOption.curOption = accentColorOption.options.indexOf(ClientPrefs.data.menuAccentColor);
+		if (accentColorOption.curOption < 0)
+			accentColorOption.curOption = 0;
+		refreshStringOptionVisual(accentColorOption);
+	}
 }

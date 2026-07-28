@@ -37,7 +37,7 @@ typedef SwagSong =
 
 	@:optional var arrowSkin:String;
 	@:optional var splashSkin:String;
-	@:optional var isAnimated:Bool; // Soporte para íconos animados en el chart
+	@:optional var isAnimated:Bool; // Support for animated icons in the chart
 	@:optional var useModcharts:Bool;
 }
 
@@ -172,6 +172,11 @@ class Song
 		PlayState.SONG = getChart(jsonInput, folder);
 		loadedSongName = folder;
 		chartPath = _lastPath;
+		if (PlayState.SONG == null)
+		{
+			trace('Failed to load chart "$jsonInput" from folder "$folder"');
+			return null;
+		}
 		#if windows
 		// prevent any saving errors by fixing the path on Windows (being the only OS to ever use backslashes instead of forward slashes for paths)
 		chartPath = chartPath.replace('/', '\\');
@@ -218,12 +223,12 @@ class Song
 		_lastPath = Paths.json('$formattedFolder/$formattedSong');
 
 		#if MODS_ALLOWED
-		// Compatibilidad con Psych 0.7.3: Si el chart no existe,
-		// intenta cargar con sufijo "-normal" para mods antiguos
+		// Compatibility with Psych 0.7.3: If the chart doesn't exist,
+        // try loading it with the suffix “-normal” for older mods
 		var pathExists:Bool = AssetLoader.exists(_lastPath, TEXT);
 		if(!pathExists)
 		{
-			// Verifica si el jsonInput ya tiene un sufijo de dificultad
+			// Check if jsonInput already has a difficulty suffix
 			var hasDifficultySuffix:Bool = false;
 			for(diff in Difficulty.list)
 			{
@@ -235,16 +240,27 @@ class Song
 				}
 			}
 			
-			// Si no tiene sufijo, intenta con "-normal" (compatibilidad 0.7.3)
+			// If there is no suffix, try “-normal” (compatibility 0.7.3)
+			var normalDiff:String = Paths.formatToSongPath(Difficulty.getDefault()); // "normal"
 			if(!hasDifficultySuffix)
 			{
-				var normalDiff:String = Paths.formatToSongPath(Difficulty.getDefault()); // "normal"
 				var altPath:String = Paths.json('$formattedFolder/$formattedSong-$normalDiff');
 				if(AssetLoader.exists(altPath, TEXT))
 				{
 					_lastPath = altPath;
 					pathExists = true;
 					trace('Psych 0.7.3 Compatibility: Using "$formattedSong-$normalDiff" chart');
+				}
+			}
+			else if(formattedSong.endsWith('-$normalDiff'))
+			{
+				var baseSong:String = formattedSong.substr(0, formattedSong.length - normalDiff.length - 1);
+				var altPath:String = Paths.json('$formattedFolder/$baseSong');
+				if(AssetLoader.exists(altPath, TEXT))
+				{
+					_lastPath = altPath;
+					pathExists = true;
+					trace('Normal chart compatibility: Using "$baseSong" chart');
 				}
 			}
 		}
@@ -268,13 +284,32 @@ class Song
 	public static function parseJSON(rawData:String, ?nameForError:String = null, ?convertTo:String = 'psych_v1'):SwagSong
 	{
 		lastDetectedSourceFormat = '';
-		var songJson:SwagSong = cast Json.parse(rawData);
+		if (rawData == null || rawData.length == 0)
+			return null;
+
+		var songJson:SwagSong = null;
+		try
+		{
+			songJson = cast Json.parse(rawData);
+		}
+		catch (e:Dynamic)
+		{
+			trace('Failed to parse chart ${nameForError != null ? nameForError : ""}: $e');
+			return null;
+		}
+
+		if (songJson == null)
+			return null;
+
 		if(Reflect.hasField(songJson, 'song'))
 		{
 			var subSong:SwagSong = Reflect.field(songJson, 'song');
 			if(subSong != null && Type.typeof(subSong) == TObject)
 				songJson = subSong;
 		}
+
+		if (songJson == null)
+			return null;
 
 		// Detect if the chart is not formatted (single line with no line breaks)
 		var fmt:String = songJson.format;

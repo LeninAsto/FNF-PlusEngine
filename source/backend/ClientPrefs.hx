@@ -3,7 +3,6 @@ package backend;
 import flixel.util.FlxSave;
 import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepadInputID;
-//import funkin.cloud.GoogleCloudSyncNotifier;
 
 import states.TitleState;
 
@@ -15,7 +14,7 @@ import states.TitleState;
 	public var dynamicColors:Bool = true; // yes cause its cool -Karim
 	public var controlsAlpha:Float = FlxG.onMobile ? 0.6 : 0;
 	public var showTouchPointer:Bool = true; // show touch pointer indicator (like Android dev option)
-	public var showMobileDebugButtons:Bool = false; // show T and D debug buttons on mobile
+	public var showMobileDebugButtons:Bool = false; // show the trace button on mobile
 	public var screensaver:Bool = false;
 	public var infinityDisplay:Bool = false; // Extend viewport vertically for modern screens while keeping game at 16:9
 	#if android
@@ -27,12 +26,14 @@ import states.TitleState;
 	public var popUpRating:Bool = true;
 	public var versionTextOnGameplay:Bool = false;
 	public var gameOverVibration:Bool = false;
-	public var fpsRework:Bool = true;
+	public var fpsRework:Bool = false;
+	public var framerateMode:String = 'Psych';
 	public var mobileReceptorAlign:Bool = false; // Align receptors with hitbox lanes (mobile only, may break scripts)
 	#if windows
 	public var fullscreenMode:String = 'Borderless'; // 'Borderless', 'Borderless Fix', 'Exclusive'
+	public var windowsGDIEffects:Bool = false; // Requires manual user consent in Gameplay Settings
 	#end
-	public var accuracySystem:String = 'Wife3'; // 'Wife3', 'Psych', 'Simple', 'osu!mania', 'DJMAX', 'ITG'
+	public var accuracySystem:String = 'Psych'; // 'Wife3', 'Psych', 'Simple', 'osu!mania', 'DJMAX', 'ITG'
 	public var badShitBreakCombo:Bool = false; // When true, Bad and Shit will break the combo
 	public var systemScoreMultiplier:String = 'Psych'; // 'Psych', 'Codename'
 	public var downScroll:Bool = false;
@@ -40,10 +41,12 @@ import states.TitleState;
 	public var opponentStrums:Bool = true;
 	public var showFPS:Bool = true;
 	public var vsync:Bool = false;
-	public var fpsDebugLevel:Int = 0; // FPSCounter debug level (persistent)
+	public var fpsCounterMode:String = #if mobile 'Visible No Background' #else 'Visible with Background' #end; // FPS counter visibility/detail mode
+	public var fpsDebugLevel:Int = #if mobile 1 #else 2 #end; // Legacy FPSCounter debug level (persistent)
 	public var showWatermark:Bool = false;
 	public var flashing:Bool = true;
 	public var autoPause:Bool = true;
+	public var lowerVolumeOnFocusLost:Bool = false;
 	public var antialiasing:Bool = true;
 	#if windows
 	public var changeWindowBorderColorWithNoteHit:Bool = false; // Changes window border color on note hit (Windows 11 only)
@@ -54,7 +57,9 @@ import states.TitleState;
 	public var splashAlpha:Float = 0.6;
 	public var colorQuantization:Bool = false; // StepMania-style color quantization
 	public var menuAccentColor:String = 'Purple';
+	public var menuAccentColorCustom:Int = 0xFF6F52D8;
 	public var menuDarkTheme:Bool = false;
+	public var menuThemeMode:String = 'Light';
 	public var lowQuality:Bool = false;
 	public var shaders:Bool = true;
 	public var colorblindMode:String = 'None';
@@ -67,11 +72,10 @@ import states.TitleState;
 	public var iconBounceType:String = 'Default';
 	public var judgementCounter:Bool = false;
 	public var showRating:Bool = true;
-	public var showCombo:Bool = true;
+	public var showCombo:Bool = false;
 	public var showComboNum:Bool = true;
 	public var comboInGame:Bool = false;
-	public var useFreakyFont:Bool = false;
-	public var showStateInFPS:Bool = true;
+	public var nfRatingStyle:Bool = false;
 	public var showEndCountdown:Bool = false; // Enables/disables the end countdown
 	public var endCountdownSeconds:Int = 10;  // End countdown seconds (10-30)
 	public var camera3dEnabled:Bool = true; // Enables 3D camera transformations
@@ -85,6 +89,7 @@ import states.TitleState;
 	public var holdCacheEnabled:Bool = true; // Hold graphics cache for performance
 	public var holdAlphaDivisions:Int = 20; // Pre-calculated alpha variants (10-30)
 	public var columnSpecificModifiers:Bool = true; // Enables per-lane modifier calculations
+	public var modchartDebug:Bool = false; // Shows the NotITG-style modchart debug overlay
 	
 	public var noteOffset:Int = 0;
 	public var arrowRGB:Array<Array<FlxColor>> = [
@@ -106,7 +111,6 @@ import states.TitleState;
 
 	public var ghostTapping:Bool = true;
 	public var timeBarType:String = 'Time Left';
-	public var useWavyTimeBar:Bool = false;
 	public var shadedTimeBar:Bool = false;
 	public var scoreZoom:Bool = true;
 	public var timeBump:Bool = false;
@@ -121,7 +125,6 @@ import states.TitleState;
 	public var pauseMusic:String = 'Tea Time';
 	public var checkForUpdates:Bool = true;
 	public var comboStacking:Bool = true;
-	public var enablePreloader:Bool = false; // Enable global asset preloader on startup
 	public var gameplaySettings:Map<String, Dynamic> = [
 		'scrollspeed' => 1.0,
 		'scrolltype' => 'multiplicative', 
@@ -151,7 +154,6 @@ import states.TitleState;
 	public var keyViewerOffset:Array<Int> = [0, 0]; // X, Y offset for key viewer
 	public var keyViewerColor:String = 'Gray'; // Color name for key viewer
 	public var ratingOffset:Int = 0;
-	public var flawlessRating:Bool = true;
 	public var flawlessWindow:Float = 20.0;
 	public var sickWindow:Float = 45.0;
 	public var goodWindow:Float = 90.0;
@@ -159,46 +161,25 @@ import states.TitleState;
 	public var safeFrames:Float = 10.0;
 	public var guitarHeroSustains:Bool = false;
 	public var discordRPC:Bool = true;
-	public var loadingScreen:Bool = true;
 	public var language:String = 'en-US';
 	public var abbreviateScore:Bool = true;
+	public var dynamicComboDigits:Bool = false;
 	public var newfreeplay:Bool = true;
+	public var resultsStateAtEnd:Bool = true;
 	public var vanillaTransition:Bool = false; // Use vanilla Psych Engine transition instead of custom
-	public var cloudProvider:String = 'Google';
-	public var cloudSessionStatus:String = 'Not signed in';
-	public var firebaseDesktopLoginUrl:String = 'https://fnf-plus-engine.web.app/auth';
-	public var firebaseApiKey:String = 'AIzaSyBBuMPZbBMLTic9RFKTR-I0b-wmbdPgR-I';
-	public var firebaseProjectId:String = 'fnf-plus-engine';
-	public var firebaseRealtimeDbUrl:String = 'https://fnf-plus-engine-default-rtdb.firebaseio.com';
-	public var googleCloudUid:String = '';
-	public var googleCloudEmail:String = '';
-	public var googleFirebaseIdToken:String = '';
-	public var googleFirebaseRefreshToken:String = '';
-	public var cloudLastLocalSaveAt:String = '';
-	public var cloudLastCloudPushAt:String = '';
-	public var cloudLastCloudPullAt:String = '';
-	public var cloudLastSeenRemoteSnapshotAt:String = '';
-	public var cloudLastSeenRemoteSnapshotHash:String = '';
-	public var cloudDebugTraces:Bool = true;
-	public var gameJoltUsername:String = '';
-	public var gameJoltToken:String = '';
-	public var gameJoltGameId:String = '';
-	public var gameJoltPrivateKey:String = '';
 	public var pauseCountdown:Bool = false; // Enable countdown when resuming from pause
 	public var heyIntro:Bool = false; // Boyfriend and Girlfriend do Hey! animation on countdown Go!
 	public var breakTimer:Bool = false; // Show timer when next notes are approaching
-	public var disableLargeChartGC:Bool = false; // Skip manual GC pass for large charts to reduce loading stutters
-	public var legacyMemoryManagement:Bool = false; // Use Psych 0.7.3 memory management style (no GPU disposal)
-	public var legacyFileSystemAccess:Bool = false; // Allow direct FileSystem.readDirectory access like in Psych 0.7.3
-	public var legacyShaderInit:Bool = false; // Use Psych 0.7.3 shader initialization (glslVersion parameter, direct FlxRuntimeShader)
-	public var autoConvertChartsToV2:Bool = false; // Automatically convert psych_v1 charts to psych_v2 format when loading
+	public var usePsychFreeplay:Bool = true; // Use Psych-style legacy Freeplay instead of PlusEngine Freeplay
 	public var useScriptableCustomStates:Bool = false; // Allow scripted state overrides through ScriptableState and CustomState
+	public var dragCharacterToMove:Bool = false; // Allow to drag position character with cursor like in Codename Engine
 }
 
 class ClientPrefs {
 	public static var data:SaveVariables = {};
 	public static var defaultData:SaveVariables = {};
 	public static var judgementCounter:Bool = false;
+	public static final FRAMERATE_MODES:Array<String> = ['Psych', 'Fixed', 'Interpolated'];
 
 	//Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
 	public static var keyBinds:Map<String, Array<FlxKey>> = [
@@ -327,7 +308,8 @@ class ClientPrefs {
 	#end
 
 	public static function saveSettings() {
-		data.cloudLastLocalSaveAt = Date.now().toString();
+		syncThemeModeFlags();
+		normalizeFPSCounterPrefs();
 
 		for (key in Reflect.fields(data))
 			Reflect.setField(FlxG.save.data, key, Reflect.field(data, key));
@@ -348,7 +330,6 @@ class ClientPrefs {
 		save.data.gamepad = gamepadBinds;
 		save.data.mobile = mobileBinds;
 		save.flush();
-		//GoogleCloudSyncNotifier.notifySaveEvent();
 		FlxG.log.add("Settings saved!");
 	}
 
@@ -359,18 +340,35 @@ class ClientPrefs {
 			if (key != 'gameplaySettings' && Reflect.hasField(FlxG.save.data, key))
 				Reflect.setField(data, key, Reflect.field(FlxG.save.data, key));
 
-		// Fixed timestep is now always enabled to keep simulation and interpolation consistent.
-		data.fpsRework = true;
+		if (!Reflect.hasField(FlxG.save.data, 'fpsCounterMode'))
+		{
+			if (Reflect.hasField(FlxG.save.data, 'showFPS') && Reflect.field(FlxG.save.data, 'showFPS') == false)
+				data.fpsCounterMode = 'Hidden';
+			else if (Reflect.hasField(FlxG.save.data, 'fpsDebugLevel'))
+				data.fpsCounterMode = fpsModeFromLegacy(Std.int(Reflect.field(FlxG.save.data, 'fpsDebugLevel')));
+		}
+		normalizeFPSCounterPrefs();
+
+		var storedFramerateMode:Dynamic = Reflect.field(FlxG.save.data, 'framerateMode');
+		if (storedFramerateMode == null)
+			data.framerateMode = Reflect.hasField(FlxG.save.data, 'fpsRework') ? ((Reflect.field(FlxG.save.data, 'fpsRework') == false) ? 'Psych' : 'Interpolated') : defaultData.framerateMode;
+		else
+			data.framerateMode = Std.string(storedFramerateMode);
+		data.framerateMode = normalizeFramerateMode(data.framerateMode);
+		syncLegacyFpsReworkFlag();
+		if (!Reflect.hasField(FlxG.save.data, 'menuThemeMode'))
+			data.menuThemeMode = data.menuDarkTheme ? 'Dark' : 'Light';
+		syncThemeModeFlags();
 		
 		if(Main.fpsVar != null)
-			Main.fpsVar.visible = data.showFPS;
+			Main.fpsVar.applyPrefs();
 
 		#if (!html5 && !switch)
 		FlxG.autoPause = ClientPrefs.data.autoPause;
 
 		if(FlxG.save.data.framerate == null) {
 			final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
-			data.framerate = Std.int(FlxMath.bound(refreshRate, 60, 240));
+			data.framerate = Std.int(FlxMath.bound(refreshRate, #if mobile 30 #else 60 #end, 240));
 		}
 		#end
 
@@ -435,15 +433,35 @@ class ClientPrefs {
 
 	public static function applyFramePacing():Void
 	{
-		// Keep fixed timestep + interpolation always on for stable gameplay timing.
-		data.fpsRework = true;
-		var safeFramerate:Int = Std.int(Math.max(30, data.framerate));
-		var drawFramerate:Int = getInterpolatedDrawFramerate(safeFramerate);
+		data.framerateMode = normalizeFramerateMode(data.framerateMode);
+		syncLegacyFpsReworkFlag();
 
-		FlxG.fixedTimestep = true;
-		FlxG.updateFramerate = safeFramerate;
-		FlxG.drawFramerate = drawFramerate;
-		FlxG.maxElapsed = 1 / safeFramerate;
+		var safeFramerate:Int = Std.int(Math.max(30, data.framerate));
+		var drawFramerate:Int = safeFramerate;
+
+		switch (data.framerateMode)
+		{
+			case 'Psych':
+				FlxG.fixedTimestep = false;
+				FlxG.updateFramerate = safeFramerate;
+				FlxG.drawFramerate = safeFramerate;
+				FlxG.maxElapsed = 0.1;
+
+			case 'Fixed':
+				FlxG.fixedTimestep = true;
+				FlxG.updateFramerate = safeFramerate;
+				FlxG.drawFramerate = safeFramerate;
+				FlxG.maxElapsed = 1 / safeFramerate;
+
+			default:
+				drawFramerate = getInterpolatedDrawFramerate(safeFramerate);
+				FlxG.fixedTimestep = true;
+				FlxG.updateFramerate = safeFramerate;
+				FlxG.drawFramerate = drawFramerate;
+				FlxG.maxElapsed = 1 / safeFramerate;
+		}
+
+		drawFramerate = FlxG.drawFramerate;
 
 		#if (!html5 && !switch)
 		try
@@ -462,8 +480,91 @@ class ClientPrefs {
 		#end
 	}
 
+	public static function normalizeFPSCounterPrefs():Void
+	{
+		final modes:Array<String> = ['Hidden', 'Visible No Background', 'Visible with Background', 'Basic Debug', 'Extended Debug'];
+		if (data.fpsCounterMode == null || !modes.contains(data.fpsCounterMode))
+			data.fpsCounterMode = #if mobile 'Visible No Background' #else 'Visible with Background' #end;
+
+		data.fpsDebugLevel = switch (data.fpsCounterMode)
+		{
+			case 'Hidden': 0;
+			case 'Visible No Background': 1;
+			case 'Visible with Background': 2;
+			case 'Basic Debug': 3;
+			case 'Extended Debug': 4;
+			default: 2;
+		}
+		data.showFPS = data.fpsCounterMode != 'Hidden';
+	}
+
+	static function fpsModeFromLegacy(level:Int):String
+	{
+		return switch (level)
+		{
+			case 0: 'Visible No Background';
+			case 1: 'Visible with Background';
+			case 2: 'Basic Debug';
+			case 3: 'Extended Debug';
+			default: #if mobile 'Hidden' #else 'Visible with Background' #end;
+		}
+	}
+
+	public static function getTargetWindowFramerate():Int
+	{
+		var safeFramerate:Int = Std.int(Math.max(30, data.framerate));
+		return switch (normalizeFramerateMode(data.framerateMode))
+		{
+			case 'Interpolated':
+				getInterpolatedDrawFramerate(safeFramerate);
+			default:
+				safeFramerate;
+		};
+	}
+
+	static function normalizeFramerateMode(mode:String):String
+	{
+		if (mode == null)
+			return 'Interpolated';
+
+		for (allowedMode in FRAMERATE_MODES)
+			if (allowedMode == mode)
+				return allowedMode;
+
+		return switch (mode.toLowerCase())
+		{
+			case 'psych': 'Psych';
+			case 'fixed': 'Fixed';
+			default: 'Interpolated';
+		};
+	}
+
+	static function syncLegacyFpsReworkFlag():Void
+	{
+		data.fpsRework = normalizeFramerateMode(data.framerateMode) != 'Psych';
+	}
+
+	public static function syncThemeModeFlags():Void
+	{
+		var themeMode:String = data.menuThemeMode;
+		if (themeMode == null || themeMode.length == 0)
+			themeMode = data.menuDarkTheme ? 'Dark' : 'Light';
+
+		data.menuThemeMode = switch (themeMode.toLowerCase())
+		{
+			case 'dark': 'Dark';
+			default: 'Light';
+		};
+		data.menuDarkTheme = data.menuThemeMode == 'Dark';
+		data.menuAccentColorCustom = 0xFF000000 | (data.menuAccentColorCustom & 0x00FFFFFF);
+	}
+
 	static function getInterpolatedDrawFramerate(safeFramerate:Int):Int
 	{
+		#if mobile
+		return safeFramerate;
+		#end
+
 		#if (!html5 && !switch)
 		try
 		{
@@ -471,7 +572,7 @@ class ClientPrefs {
 			{
 				var refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
 				if (refreshRate > 0)
-					return Std.int(FlxMath.bound(refreshRate, 30, 240));
+					return Std.int(FlxMath.bound(refreshRate, safeFramerate, Std.int(Math.min(240, safeFramerate * 2))));
 			}
 		}
 		catch (e:Dynamic)

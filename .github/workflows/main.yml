@@ -1,223 +1,754 @@
-# This is a basic workflow to help you get started with Actions
-
 name: Build
 
-
-# Controls when the action will run.
 on:
-  # Triggers the workflow on push or pull request events but only for the master branch
   push:
-    branches: [ main ]
+    branches: [main, dev]
   pull_request:
-    branches: [ main ]
-
-  # Allows you to run this workflow manually from the Actions tab
+    branches: [main, dev]
   workflow_dispatch:
+    inputs:
+      build_linux:
+        description: 'Build Linux x64'
+        type: boolean
+        default: true
+      build_android:
+        description: 'Build Android'
+        type: boolean
+        default: true
+      build_windows:
+        description: 'Build Windows x64'
+        type: boolean
+        default: true
+      build_macos_arm64:
+        description: 'Build macOS ARM64'
+        type: boolean
+        default: true
+      build_macos_intel:
+        description: 'Build macOS Intel'
+        type: boolean
+        default: true
+      build_ios:
+        description: 'Build iOS'
+        type: boolean
+        default: true
+      publish_all:
+        description: 'Publish to all platforms (dev build)'
+        type: boolean
+        default: true
+      dev_build:
+        description: 'Show GitHub commit build info in-game'
+        type: boolean
+        default: true
 
-# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+permissions:
+  contents: read
+
+env:
+  APP_VERSION: 4.0.0-${{ github.run_id }}
+  HAXE_VERSION: 4.3.7
+  DEV_BUILD_TAG: dev-build
+
 jobs:
-  # This workflow contains a single job called "build"
-  buildLinux:
-    # The type of runner that the job will run on
-    if: contains(github.event.head_commit.message, 'wd')
-    runs-on: ubuntu-latest
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
+  check_platforms:
+    name: Check Platforms
+    runs-on: ubuntu-24.04
+    outputs:
+      build_linux: ${{ steps.set_outputs.outputs.build_linux }}
+      build_android: ${{ steps.set_outputs.outputs.build_android }}
+      build_windows: ${{ steps.set_outputs.outputs.build_windows }}
+      build_macos_arm64: ${{ steps.set_outputs.outputs.build_macos_arm64 }}
+      build_macos_intel: ${{ steps.set_outputs.outputs.build_macos_intel }}
+      build_ios: ${{ steps.set_outputs.outputs.build_ios }}
+      publish_all: ${{ steps.set_outputs.outputs.publish_all }}
+      dev_build: ${{ steps.set_outputs.outputs.dev_build }}
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4.1.7
-
-      - uses: krdlab/setup-haxe@master
-        with:
-          haxe-version: 4.3.4
-      
-      # Runs a set of commands using the runners shell
-      - name: Install Haxelib
+      - id: set_outputs
         run: |
-          sudo apt-get install libvlc-dev
-          sudo apt-get install libvlccore-dev
-          haxelib setup ~/haxelib
-          haxelib install hxcpp > /dev/null --quiet
+          if [[ "${{ github.event_name }}" == "push" ]] || [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            echo "build_linux=true" >> $GITHUB_OUTPUT
+            echo "build_android=true" >> $GITHUB_OUTPUT
+            echo "build_windows=true" >> $GITHUB_OUTPUT
+            echo "build_macos_arm64=true" >> $GITHUB_OUTPUT
+            echo "build_macos_intel=true" >> $GITHUB_OUTPUT
+            echo "build_ios=true" >> $GITHUB_OUTPUT
+            echo "publish_all=true" >> $GITHUB_OUTPUT
+            if [[ "${{ github.ref_name }}" == "dev" ]]; then
+              echo "dev_build=true" >> $GITHUB_OUTPUT
+            else
+              echo "dev_build=false" >> $GITHUB_OUTPUT
+            fi
+          else
+            echo "build_linux=${{ github.event.inputs.build_linux }}" >> $GITHUB_OUTPUT
+            echo "build_android=${{ github.event.inputs.build_android }}" >> $GITHUB_OUTPUT
+            echo "build_windows=${{ github.event.inputs.build_windows }}" >> $GITHUB_OUTPUT
+            echo "build_macos_arm64=${{ github.event.inputs.build_macos_arm64 }}" >> $GITHUB_OUTPUT
+            echo "build_macos_intel=${{ github.event.inputs.build_macos_intel }}" >> $GITHUB_OUTPUT
+            echo "build_ios=${{ github.event.inputs.build_ios }}" >> $GITHUB_OUTPUT
+            echo "publish_all=${{ github.event.inputs.publish_all }}" >> $GITHUB_OUTPUT
+            echo "dev_build=${{ github.event.inputs.dev_build }}" >> $GITHUB_OUTPUT
+          fi
+
+  build_linux_x64:
+    name: Build Linux x64
+    runs-on: ubuntu-24.04
+    needs: check_platforms
+    if: needs.check_platforms.outputs.build_linux == 'true'
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Haxe
+        run: |
+          sudo add-apt-repository ppa:haxe/releases -y
+          sudo apt-get update
+          sudo apt-get install -y haxe libvlc-dev libvlccore-dev
+          haxe --version
+
+      - name: Install libraries
+        run: |
           chmod +x ./setup/unish-lib.sh
-          sh ./setup/unish-lib.sh
-      - name: Skip SScript setup mode
+          ./setup/unish-lib.sh
+
+      - name: Prepare build
         run: |
-          echo -n 'oy9:showMacroty8:loopCosti25y10:includeAllfg' > ~/settings.cocoa
-          cat ~/settings.cocoa
-      - name: Create Version Tag
-        run: echo "${{github.run_id}}" > VERSION
-      - name: Compile
-        run: haxelib run lime build linux --app-version="4.0.0-${{ github.run_id}}" -D officialBuild
-      - name: Publish Artifact
-        uses: actions/upload-artifact@v4.3.4
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+
+      - name: Build
+        run: haxelib run lime build Project.xml linux --app-version="${APP_VERSION}" -DofficialBuild
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          tar -C export/release/linux/bin -czf dist/FNF-PlusEngine-linux-x64.tar.gz .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
         with:
-          name: linuxBuild
-          path: 'export/release/linux/bin'
-          
-  buildWindows:
-    if: contains(github.event.head_commit.message, 'wd')
-    runs-on: windows-latest
+          name: linux-x64-artifact
+          path: dist/FNF-PlusEngine-linux-x64.tar.gz
+          if-no-files-found: error
+
+  build_android:
+    name: Build Android
+    runs-on: ubuntu-24.04
+    needs: check_platforms
+    if: needs.check_platforms.outputs.build_android == 'true'
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v5
 
-      - uses: krdlab/setup-haxe@master
-        with:
-          haxe-version: 4.3.4
-      
-      # Runs a set of commands using the runners shell
-      - name: Install Haxelib
+      - name: Setup Haxe
         run: |
-          haxelib setup C:/haxelib
-          haxelib install hxcpp > /dev/null --quiet
-          .\"setup/windows-lib.bat"
-        shell: cmd
-      - name: Skip SScript setup mode
-        run: |
-          echo oy9:showMacroty8:loopCosti25y10:includeAllfg > %USERPROFILE%\settings.cocoa
-          type %USERPROFILE%\settings.cocoa
-        shell: cmd
-      - name: Create Version Tag
-        run: echo "${{github.run_id}}" > VERSION
-      - name: Compile
-        run: haxelib run lime build windows --app-version="4.0.0-${{ github.run_id}}"  -D officialBuild
-      - name: Publish Artifact
-        uses: actions/upload-artifact@v4.3.4
+          sudo add-apt-repository ppa:haxe/releases -y
+          sudo apt-get update
+          sudo apt-get install -y haxe
+          haxe --version
+
+      - name: Setup Java
+        uses: actions/setup-java@v5
         with:
-          name: windowsBuild
-          path: export/release/windows/bin
+          distribution: zulu
+          java-version: "21"
 
-  buildMac:
-    if: contains(github.event.head_commit.message, 'wd')
-    runs-on: macos-15
-
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4.1.7
-
-      - uses: krdlab/setup-haxe@master
-        with:
-          haxe-version: 4.3.4
-      
-      # Runs a set of commands using the runners shell
-      - name: Install Haxelib
-        run: |
-          haxelib setup ~/haxelib
-          chmod +x ./setup/unish-lib.sh
-          sh ./setup/unish-lib.sh
-      - name: Skip SScript setup mode
-        run: |
-          echo -n 'oy9:showMacroty8:loopCosti25y10:includeAllfg' > ~/settings.cocoa
-
-          cat ~/settings.cocoa
-      - name: Create Version Tag
-        run: echo "${{github.run_id}}" > VERSION
-      - name: Compile
-        run: haxelib run lime build mac --app-version="4.0.0-${{ github.run_id}}" -D officialBuild
-      - name: Publish Artifact
-        uses: actions/upload-artifact@v4.3.4
-        with:
-          name: macBuild
-          path: export/release/macos/bin
-
-  buildAndroid:
-    if: contains(github.event.head_commit.message, 'wd')
-    runs-on: ubuntu-latest
-
-    steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4.1.7
-
-      - uses: krdlab/setup-haxe@master
-        with:
-          haxe-version: 4.3.4
-      
-      - name: Setup Java JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'zulu'
-          java-version: '17'
-      
       - name: Setup Android SDK
-        uses: android-actions/setup-android@v3
-      
-      - name: Install Android SDK 35 and NDK r27d
+        uses: android-actions/setup-android@v4
+
+      - name: Install Android packages
         run: |
-          sdkmanager --sdk_root=$ANDROID_SDK_ROOT "platforms;android-35" "build-tools;35.0.0" "ndk;27.0.12077973" "cmdline-tools;latest"
-          echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.0.12077973" >> $GITHUB_ENV
-          echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/27.0.12077973" >> $GITHUB_ENV
-      
-      # Runs a set of commands using the runners shell
-      - name: Install Haxelib
+          sdkmanager --sdk_root="$ANDROID_SDK_ROOT" \
+            "platform-tools" \
+            "platforms;android-36" \
+            "build-tools;36.0.0" \
+            "cmdline-tools;latest" \
+            "ndk;27.3.13750724"
+          {
+            echo "ANDROID_NDK_HOME=$ANDROID_SDK_ROOT/ndk/27.3.13750724"
+            echo "ANDROID_NDK_ROOT=$ANDROID_SDK_ROOT/ndk/27.3.13750724"
+          } >> "$GITHUB_ENV"
+
+      - name: Install libraries
         run: |
-          haxelib setup ~/haxelib
-          haxelib install hxcpp > /dev/null --quiet
           chmod +x ./setup/unish-lib.sh
-          sh ./setup/unish-lib.sh
-      
-      - name: Setup Lime for Android
+          ./setup/unish-lib.sh
+
+      - name: Configure Lime
         run: |
           haxelib run lime setup android
-          haxelib run lime config ANDROID_SDK $ANDROID_SDK_ROOT
-          haxelib run lime config ANDROID_NDK_ROOT $ANDROID_SDK_ROOT/ndk/27.0.12077973
-          haxelib run lime config JAVA_HOME $JAVA_HOME
-      
-      - name: Skip SScript setup mode
-        run: |
-          echo -n 'oy9:showMacroty8:loopCosti25y10:includeAllfg' > ~/settings.cocoa
-          cat ~/settings.cocoa
-      
-      - name: Create Version Tag
-        run: echo "${{github.run_id}}" > VERSION
-      
-      - name: Clean old build artifacts only
-        run: |
-          rm -rf export
-          rm -rf build
-          rm -rf ~/.gradle
-      
-      - name: Compile
-        run: haxelib run lime build android --app-version="4.0.0-${{ github.run_id}}" -D officialBuild -D HXCPP_IGNORE_WARNINGS
-      
-      - name: Publish Artifact
-        uses: actions/upload-artifact@v4.3.4
-        with:
-          name: androidBuild
-          path: export/release/android/bin
+          haxelib run lime config ANDROID_SDK "$ANDROID_SDK_ROOT"
+          haxelib run lime config ANDROID_NDK_ROOT "$ANDROID_SDK_ROOT/ndk/27.3.13750724"
+          haxelib run lime config JAVA_HOME "$JAVA_HOME"
 
-  buildIOS:
-    if: contains(github.event.head_commit.message, 'wd')
-    runs-on: macos-15
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+          rm -rf export build ~/.gradle
+
+      - name: Build
+        run: haxelib run lime build Project.xml android --app-version="${APP_VERSION}" -DofficialBuild -DHXCPP_IGNORE_WARNINGS
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          apk_path="$(find export/release/android/bin -type f -name '*.apk' | head -n 1)"
+          test -n "$apk_path"
+          cp "$apk_path" dist/FNF-PlusEngine-android.apk
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-artifact
+          path: dist/FNF-PlusEngine-android.apk
+          if-no-files-found: error
+
+  build_windows_x64:
+    name: Build Windows x64
+    runs-on: windows-2025
+    needs: check_platforms
+    if: needs.check_platforms.outputs.build_windows == 'true'
 
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
-      - uses: actions/checkout@v4.1.7
+      - uses: actions/checkout@v5
 
       - uses: krdlab/setup-haxe@master
         with:
-          haxe-version: 4.3.4
-      
-      # Runs a set of commands using the runners shell
-      - name: Install Haxelib
+          haxe-version: 4.3.7
+
+      - name: Install libraries
         run: |
-          haxelib setup ~/haxelib
-          chmod +x ./setup/unish-lib.sh
-          sh ./setup/unish-lib.sh
-      
-      - name: Skip SScript setup mode
+          haxelib setup C:\haxelib
+          cmd /c setup\windows-lib.bat
+
+      - name: Prepare build
         run: |
-          echo -n 'oy9:showMacroty8:loopCosti25y10:includeAllfg' > ~/settings.cocoa
-          cat ~/settings.cocoa
-      
-      - name: Create Version Tag
-        run: echo "${{github.run_id}}" > VERSION
-      
-      - name: Compile
-        run: haxelib run lime build ios -nosign --app-version="4.0.0-${{ github.run_id}}" -D officialBuild
-      
-      - name: Publish Artifact
-        uses: actions/upload-artifact@v4.3.4
+          Set-Content -Path VERSION -Value "${{ github.run_id }}"
+          @'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          '@ | Set-Content -Path source/backend/BuildInfoGenerated.hx
+
+      - name: Build
+        run: haxelib run lime build Project.xml windows --app-version="${env:APP_VERSION}" -DofficialBuild
+
+      - name: Package artifact
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          Compress-Archive -Path export/release/windows/bin/* -DestinationPath dist/FNF-PlusEngine-windows-x64.zip -Force
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
         with:
-          name: iOSBuild
-          path: export/release/ios/build/Release-iphoneos
+          name: windows-x64-artifact
+          path: dist/FNF-PlusEngine-windows-x64.zip
+          if-no-files-found: error
+
+  build_macos_arm64:
+    name: Build macOS ARM64
+    runs-on: macos-15
+    needs: check_platforms
+    if: needs.check_platforms.outputs.build_macos_arm64 == 'true'
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: 4.3.7
+
+      - name: Install libraries
+        run: |
+          chmod +x ./setup/unish-lib.sh
+          ./setup/unish-lib.sh
+
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+
+      - name: Build
+        run: haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -DofficialBuild
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          ditto -c -k --sequesterRsrc --keepParent export/release/macos/bin dist/FNF-PlusEngine-macos-arm64.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-arm64-artifact
+          path: dist/FNF-PlusEngine-macos-arm64.zip
+          if-no-files-found: error
+
+  build_macos_intel:
+    name: Build macOS Intel
+    runs-on: macos-15-intel
+    needs: check_platforms
+    if: needs.check_platforms.outputs.build_macos_intel == 'true'
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: 4.3.7
+
+      - name: Install libraries
+        run: |
+          chmod +x ./setup/unish-lib.sh
+          ./setup/unish-lib.sh
+
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+
+      - name: Build
+        run: haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -DofficialBuild
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          ditto -c -k --sequesterRsrc --keepParent export/release/macos/bin dist/FNF-PlusEngine-macos-intel.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-intel-artifact
+          path: dist/FNF-PlusEngine-macos-intel.zip
+          if-no-files-found: error
+
+  build_ios:
+    name: Build iOS
+    runs-on: macos-15
+    needs: check_platforms
+    if: needs.check_platforms.outputs.build_ios == 'true'
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: 4.3.7
+
+      - name: Install libraries
+        run: |
+          chmod +x ./setup/unish-lib.sh
+          ./setup/unish-lib.sh
+
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+
+      - name: Build
+        run: haxelib run lime build Project.xml ios -nosign --app-version="${APP_VERSION}" -DofficialBuild
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          ditto -c -k --sequesterRsrc --keepParent export/release/ios/build/Release-iphoneos dist/FNF-PlusEngine-ios.zip
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-artifact
+          path: dist/FNF-PlusEngine-ios.zip
+          if-no-files-found: error
+
+  summary:
+    name: Workflow Summary
+    runs-on: ubuntu-24.04
+    needs:
+      - check_platforms
+      - build_linux_x64
+      - build_android
+      - build_windows_x64
+      - build_macos_arm64
+      - build_macos_intel
+      - build_ios
+    if: always()
+
+    steps:
+      - name: Build tree summary
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import sys
+
+          needs = json.loads(r'''${{ toJson(needs) }}''')
+          order = [
+              ("build_linux_x64", "Linux x64"),
+              ("build_android", "Android"),
+              ("build_windows_x64", "Windows x64"),
+              ("build_macos_arm64", "macOS ARM64"),
+              ("build_macos_intel", "macOS Intel"),
+              ("build_ios", "iOS"),
+          ]
+          icons = {
+              "success": "[ok]",
+              "failure": "[fail]",
+              "cancelled": "[stop]",
+              "skipped": "[skip]",
+          }
+
+          lines = ["## Resumen", "", "```text", "workflow"]
+          failed = []
+
+          for index, (job_id, label) in enumerate(order):
+              result = needs[job_id]["result"]
+              icon = icons.get(result, "[?]")
+              branch = "`--" if index == len(order) - 1 else "|--"
+              lines.append(f"{branch} {label}: {icon} {result}")
+              if result not in ("success", "skipped"):
+                  failed.append(label)
+
+          lines.append("```")
+
+          with open(os.environ["GITHUB_STEP_SUMMARY"], "a", encoding="utf-8") as handle:
+              handle.write("\n".join(lines) + "\n")
+
+          if failed:
+              sys.exit(1)
+          PY
+
+  publish_dev_build:
+    name: Publish Dev Build
+    runs-on: ubuntu-24.04
+    needs:
+      - check_platforms
+      - summary
+    if: |
+      always() &&
+      github.event_name != 'pull_request' &&
+      github.ref == 'refs/heads/dev' &&
+      needs.check_platforms.outputs.publish_all == 'true'
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Download Linux artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: linux-x64-artifact
+          path: release-assets/linux-x64
+
+      - name: Download Android artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: android-artifact
+          path: release-assets/android
+
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: windows-x64-artifact
+          path: release-assets/windows-x64
+
+      - name: Download macOS ARM64 artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: macos-arm64-artifact
+          path: release-assets/macos-arm64
+
+      - name: Download macOS Intel artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: macos-intel-artifact
+          path: release-assets/macos-intel
+
+      - name: Download iOS artifact
+        uses: actions/download-artifact@v7
+        with:
+          name: ios-artifact
+          path: release-assets/ios
+
+      - name: Publish prerelease
+        uses: actions/github-script@v8
+        env:
+          RELEASE_TAG: ${{ env.DEV_BUILD_TAG }}
+        with:
+          script: |
+            const fs = require('fs');
+            const path = require('path');
+
+            const tag = process.env.RELEASE_TAG;
+            const buildDate = new Date().toISOString().slice(0, 10);
+            const owner = context.repo.owner;
+            const repo = context.repo.repo;
+
+            async function deleteExistingReleaseAndTag() {
+              try {
+                const existing = await github.rest.repos.getReleaseByTag({ owner, repo, tag });
+                await github.rest.repos.deleteRelease({
+                  owner,
+                  repo,
+                  release_id: existing.data.id,
+                });
+              } catch (error) {
+                if (error.status !== 404) throw error;
+              }
+
+              try {
+                await github.rest.git.deleteRef({
+                  owner,
+                  repo,
+                  ref: `tags/${tag}`,
+                });
+              } catch (error) {
+                if (error.status !== 404) throw error;
+              }
+            }
+
+            function collectFiles(dir) {
+              const entries = [];
+              if (!fs.existsSync(dir)) return entries;
+
+              for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+                const fullPath = path.join(dir, entry.name);
+                if (entry.isDirectory()) {
+                  entries.push(...collectFiles(fullPath));
+                } else {
+                  entries.push(fullPath);
+                }
+              }
+
+              return entries;
+            }
+
+            function contentTypeFor(filePath) {
+              const lower = filePath.toLowerCase();
+              if (lower.endsWith('.zip'))
+                return 'application/zip';
+              if (lower.endsWith('.apk'))
+                return 'application/vnd.android.package-archive';
+              if (lower.endsWith('.tar.gz'))
+                return 'application/gzip';
+              return 'application/octet-stream';
+            }
+
+            await deleteExistingReleaseAndTag();
+
+            const release = await github.rest.repos.createRelease({
+              owner,
+              repo,
+              tag_name: tag,
+              target_commitish: context.sha,
+              name: `devbuild ${buildDate}`,
+              body: [
+                `Build based on the commit ${context.sha}.`,
+                `Workflow run: ${context.runId}.`,
+                `It was generated by the branch ${context.ref.replace('refs/heads/', '')}.`,
+              ].join('\n'),
+              prerelease: true,
+              draft: false,
+            });
+
+            const assetDirs = [
+              'release-assets/linux-x64',
+              'release-assets/android',
+              'release-assets/windows-x64',
+              'release-assets/macos-arm64',
+              'release-assets/macos-intel',
+              'release-assets/ios',
+            ];
+
+            for (const dir of assetDirs) {
+              for (const filePath of collectFiles(dir)) {
+                const assetName = path.basename(filePath);
+                const data = fs.readFileSync(filePath);
+                await github.rest.repos.uploadReleaseAsset({
+                  owner,
+                  repo,
+                  release_id: release.data.id,
+                  name: assetName,
+                  data,
+                  headers: {
+                    'content-type': contentTypeFor(filePath),
+                    'content-length': data.length,
+                  },
+                });
+              }
+            }
+
+  notify_discord:
+    name: Notify Discord
+    runs-on: ubuntu-24.04
+    needs:
+      - summary
+      - publish_dev_build
+    if: always() && github.event_name != 'pull_request'
+
+    steps:
+      - name: Send Discord notification
+        env:
+          DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
+          SUMMARY_RESULT: ${{ needs.summary.result }}
+          PUBLISH_RESULT: ${{ needs.publish_dev_build.result }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_NUMBER: ${{ github.run_number }}
+          REF_NAME: ${{ github.ref_name }}
+          SHA: ${{ github.sha }}
+          SERVER_URL: ${{ github.server_url }}
+          ACTOR: ${{ github.actor }}
+          EVENT_NAME: ${{ github.event_name }}
+          APP_VERSION: ${{ env.APP_VERSION }}
+        run: |
+          if [ -z "$DISCORD_WEBHOOK" ]; then
+            echo "DISCORD_WEBHOOK is not configured, skipping notification."
+            exit 0
+          fi
+
+          RUN_URL="$SERVER_URL/$REPOSITORY/actions/runs/$RUN_ID"
+          RELEASE_URL="$SERVER_URL/$REPOSITORY/releases/tag/dev-build"
+          SHORT_SHA="${SHA::7}"
+          TIMESTAMP_UTC="$(date -u +"%Y-%m-%d %H:%M UTC")"
+          TIMESTAMP_ISO="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
+
+          if [ "$SUMMARY_RESULT" = "success" ]; then
+            STATUS="SUCCESS"
+            COLOR=5763719
+            if [ "$PUBLISH_RESULT" = "success" ]; then
+              DOWNLOAD_LABEL="Release"
+              DOWNLOAD_URL="$RELEASE_URL"
+              DESCRIPTION="The workflow completed successfully and the latest dev build is ready to download."
+            else
+              DOWNLOAD_LABEL="Artifacts"
+              DOWNLOAD_URL="$RUN_URL"
+              DESCRIPTION="The workflow completed successfully. The build files are available in this run's artifacts."
+            fi
+          else
+            STATUS="FAILED"
+            COLOR=15548997
+            DOWNLOAD_LABEL="Workflow Run"
+            DOWNLOAD_URL="$RUN_URL"
+            DESCRIPTION="The workflow finished with errors. Check the run logs for details."
+          fi
+
+          export STATUS COLOR DOWNLOAD_LABEL DOWNLOAD_URL DESCRIPTION TIMESTAMP_UTC TIMESTAMP_ISO
+
+          python - <<'PY'
+          import json
+          import os
+          import sys
+          import urllib.error
+          import urllib.request
+
+          webhook = os.environ["DISCORD_WEBHOOK"]
+          repo = os.environ["REPOSITORY"]
+          branch = os.environ["REF_NAME"]
+          short_sha = os.environ["SHA"][:7]
+          run_id = os.environ["RUN_ID"]
+          run_number = os.environ["RUN_NUMBER"]
+          actor = os.environ["ACTOR"]
+          event_name = os.environ["EVENT_NAME"]
+          app_version = os.environ["APP_VERSION"]
+          run_url = f'{os.environ["SERVER_URL"]}/{repo}/actions/runs/{run_id}'
+
+          payload = {
+              "embeds": [
+                  {
+                      "title": f'Build Workflow {os.environ["STATUS"]}',
+                      "description": (
+                          f'{os.environ["DESCRIPTION"]}\n\n'
+                          f'[{os.environ["DOWNLOAD_LABEL"]}]({os.environ["DOWNLOAD_URL"]})'
+                      ),
+                      "color": int(os.environ["COLOR"]),
+                      "timestamp": os.environ["TIMESTAMP_ISO"],
+                      "fields": [
+                          {"name": "Repository", "value": repo, "inline": True},
+                          {"name": "Branch", "value": branch, "inline": True},
+                          {"name": "Commit", "value": f'`{short_sha}`', "inline": True},
+                          {"name": "Run", "value": f'#{run_number}', "inline": True},
+                          {"name": "Triggered by", "value": actor, "inline": True},
+                          {"name": "Event", "value": event_name, "inline": True},
+                          {"name": "App Version", "value": f'`{app_version}`', "inline": False},
+                          {"name": "Completed At", "value": os.environ["TIMESTAMP_UTC"], "inline": False},
+                          {"name": "Workflow Logs", "value": run_url, "inline": False},
+                      ],
+                  }
+              ]
+          }
+
+          data = json.dumps(payload).encode("utf-8")
+          req = urllib.request.Request(
+              webhook,
+              data=data,
+              headers={
+                  "Content-Type": "application/json",
+                  "User-Agent": "GitHub-Actions-Discord-Notifier",
+              },
+              method="POST",
+          )
+          try:
+              with urllib.request.urlopen(req) as resp:
+                  print(f"Discord webhook response: {resp.status}")
+          except urllib.error.HTTPError as err:
+              body = err.read().decode("utf-8", errors="replace")
+              print(f"Discord webhook HTTP error: {err.code} {err.reason}")
+              if body:
+                  print(body)
+              print("Continuing without failing the workflow.")
+              sys.exit(0)
+          except Exception as err:
+              print(f"Discord webhook unexpected error: {err}")
+              print("Continuing without failing the workflow.")
+              sys.exit(0)
+          PY

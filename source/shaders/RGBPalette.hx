@@ -108,14 +108,28 @@ class RGBShaderReference
 	}
 	private function set_enabled(value:Bool)
 	{
+		if(_owner == null)
+			return (enabled = false);
+
+		var ownsCurrentShader:Bool = ownsShader();
+
 		// Si forceDisabled está activado (NotITG), NUNCA activar el shader
 		if(forceDisabled)
 		{
-			_owner.shader = null;
+			if(ownsCurrentShader)
+				_owner.shader = null;
 			return (enabled = false);
 		}
 		
-		_owner.shader = value ? parent.shader : null;
+		if(value)
+		{
+			if(_owner.shader == null || (ownsCurrentShader && _owner.shader != parent.shader))
+				_owner.shader = parent.shader;
+		}
+		else if(ownsCurrentShader)
+		{
+			_owner.shader = null;
+		}
 		return (enabled = value);
 	}
 
@@ -127,15 +141,20 @@ class RGBShaderReference
 			allowNew = false;
 			if(_original != parent) return;
 
+			var shouldApplyShader:Bool = enabled && (_owner == null || _owner.shader == null || ownsShader());
 			parent = new RGBPalette();
 			parent.r = _original.r;
 			parent.g = _original.g;
 			parent.b = _original.b;
 			parent.mult = _original.mult;
-			_owner.shader = parent.shader;
+			if(_owner != null && shouldApplyShader)
+				_owner.shader = parent.shader;
 			//trace('created new shader');
 		}
 	}
+
+	private inline function ownsShader():Bool
+		return _owner != null && (_owner.shader == parent.shader || (_original != null && _owner.shader == _original.shader));
 }
 
 class RGBPaletteShader extends FlxShader {

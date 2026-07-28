@@ -27,6 +27,12 @@ class ShaderFunctions
 			if(!ClientPrefs.data.shaders) return false;
 
 			#if (!flash && sys)
+			if(shaders.ErrorHandledShader.isBroken(shader))
+			{
+				FunkinLua.luaTrace('setSpriteShader: Shader $shader failed before, skipping it for this session.', false, false, FlxColor.RED);
+				return false;
+			}
+
 			if(!funk.runtimeShaders.exists(shader) && !funk.initLuaShader(shader))
 			{
 				FunkinLua.luaTrace('setSpriteShader: Shader $shader is missing!', false, false, FlxColor.RED);
@@ -41,12 +47,21 @@ class ShaderFunctions
 
 			if(leObj != null) {
 				var arr:Array<String> = funk.runtimeShaders.get(shader);
-				
-				var adapted = ClientPrefs.data.legacyShaderInit
-					? [arr[0], arr[1]]
-					: shaders.ShaderCompatibility.adaptShaderCode(arr[0], arr[1]);
-				
-				leObj.shader = new shaders.ErrorHandledShader.ErrorHandledRuntimeShader(shader, adapted[0], adapted[1]);
+				var runtimeShader:shaders.ErrorHandledShader.ErrorHandledRuntimeShader = new shaders.ErrorHandledShader.ErrorHandledRuntimeShader(shader, arr[0], arr[1]);
+				runtimeShader.onError = function(error:Dynamic)
+				{
+					if(leObj != null && leObj.shader == runtimeShader)
+						leObj.shader = null;
+				};
+
+				if(runtimeShader.failed || shaders.ErrorHandledShader.isBroken(shader))
+				{
+					leObj.shader = null;
+					FunkinLua.luaTrace('setSpriteShader: Shader $shader failed to compile and was removed.', false, false, FlxColor.RED);
+					return false;
+				}
+
+				leObj.shader = runtimeShader;
 				return true;
 			}
 			#else
@@ -276,7 +291,7 @@ class ShaderFunctions
 	public static function getShader(obj:String):FlxRuntimeShader
 	{
 		var split:Array<String> = obj.split('.');
-		var target:FlxSprite = null;
+		var target:Dynamic = null;
 		if(split.length > 1) target = LuaUtils.getVarInArray(LuaUtils.getPropertyLoop(split), split[split.length-1]);
 		else target = LuaUtils.getObjectDirectly(split[0]);
 
@@ -285,7 +300,15 @@ class ShaderFunctions
 			FunkinLua.luaTrace('Error on getting shader: Object $obj not found', false, false, FlxColor.RED);
 			return null;
 		}
-		return cast (target.shader, FlxRuntimeShader);
+
+		if(Std.isOfType(target, FlxRuntimeShader))
+			return cast target;
+
+		var shaderValue:Dynamic = Reflect.getProperty(target, 'shader');
+		if(shaderValue != null && Std.isOfType(shaderValue, FlxRuntimeShader))
+			return cast shaderValue;
+
+		return null;
 	}
 	#end
 }

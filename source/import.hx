@@ -35,7 +35,6 @@ import android.Settings as AndroidSettings;
 import android.Tools as AndroidTools;
 import android.os.Build.VERSION as AndroidVersion;
 import android.os.Build.VERSION_CODES as AndroidVersionCode;
-import android.os.BatteryManager as AndroidBatteryManager;
 #end
 
 #if sys
@@ -57,6 +56,7 @@ import backend.BaseStage;
 import backend.Difficulty;
 import backend.Mods;
 import backend.Language;
+import backend.BuildInfo;
 import backend.StructurePsychOld;
 import mobile.backend.StorageUtil;
 
@@ -71,6 +71,8 @@ import states.LoadingState;
 
 import psychlua.LuaUtils.Function_Stop;
 import psychlua.LuaUtils.Function_Continue;
+import backend.ScriptableState;
+import backend.ScriptableSubstate;
 
 #if flxanimate
 import flxanimate.*;
@@ -93,7 +95,7 @@ import flixel.tweens.FlxTween;
 import flixel.group.FlxSpriteGroup;
 import flixel.group.FlxGroup.FlxTypedGroup;
 import flixel.addons.transition.FlxTransitionableState;
-import shaders.flixel.system.FlxShader;
+import flixel.system.FlxAssets.FlxShader;
 
 using StringTools;
 #end

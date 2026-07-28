@@ -3,7 +3,6 @@ package;
 import debug.FPSCounter;
 import debug.TraceDisplay;
 import debug.TraceButton;
-import debug.DebugButton;
 import backend.ClientPrefs;
 import backend.Screenshot;
 import objects.MaterialVolumeTray;
@@ -52,7 +51,6 @@ class Main extends Sprite
 	public static var fpsVar:FPSCounter;
 	public static var traceDisplay:TraceDisplay;
 	public static var traceButton:TraceButton;
-	public static var debugButton:DebugButton;
 	public static var materialVolumeTray:MaterialVolumeTray;
 
 	public static final platform:String = #if mobile "Phones" #else "PCs" #end;
@@ -198,9 +196,6 @@ class Main extends Sprite
 		#if mobile
 		traceButton = new TraceButton();
 		addChild(traceButton);
-		
-		debugButton = new DebugButton();
-		addChild(debugButton);
 		#end
 		
 		Lib.current.stage.align = "tl";
@@ -209,11 +204,7 @@ class Main extends Sprite
 			   // Posicionamiento inicial con márgenes constantes
 			   var marginX = 10;
 			   var marginY = 3;
-			   #if mobile
-			   fpsVar.positionFPS(FlxG.game.x + marginX, FlxG.game.y + marginY, 1.0);
-			   #else
 			   fpsVar.positionFPS(marginX, marginY, 1.0);
-			   #end
 		   }
 
 		#if (linux || mac) // fix the app icon not showing up on the Linux Panel / Mac Dock
@@ -226,13 +217,9 @@ class Main extends Sprite
 		FlxG.mouse.visible = false;
 		#end
 
-		FlxG.fixedTimestep = true;
+		FlxG.fixedTimestep = false;
 		FlxG.game.focusLostFramerate = #if mobile 30 #else 60 #end;
-		#if web
-		FlxG.keys.preventDefaultKeys.push(TAB);
-		#else
 		FlxG.keys.preventDefaultKeys = [TAB];
-		#end
 
 		#if DISCORD_ALLOWED
 		DiscordClient.prepare();
@@ -268,20 +255,13 @@ class Main extends Sprite
 			if(fpsVar != null) {
 				var marginX = 10;
 				var marginY = 3;
-				#if mobile
-				fpsVar.positionFPS(FlxG.game.x + marginX, FlxG.game.y + marginY, 1.0);
-				#else
 				fpsVar.positionFPS(marginX, marginY, 1.0);
-				#end
 			}
 			
 			// Reposition TraceDisplay button.
 			#if mobile
 			if(traceButton != null) {
 				traceButton.updatePosition();
-			}
-			if(debugButton != null) {
-				debugButton.updatePosition();
 			}
 			#end
 			
@@ -394,6 +374,7 @@ class Main extends Sprite
 	function onWindowFocusOut():Void
 	{
 		focused = false;
+		if (!ClientPrefs.data.lowerVolumeOnFocusLost) return;
 
 		oldVol = FlxG.sound.volume;
 		if (oldVol > 0.3)
@@ -413,7 +394,10 @@ class Main extends Sprite
 		}
 
 		if (focusMusicTween != null) focusMusicTween.cancel();
-		focusMusicTween = FlxTween.tween(FlxG.sound, {volume: newVol}, 0.5);
+		restoringFocusVolume = true;
+		focusMusicTween = FlxTween.tween(FlxG.sound, {volume: newVol}, 0.5, {
+			onComplete: function(_) focusMusicTween = null
+		});
 	}
 
 	function onWindowFocusIn():Void
@@ -422,17 +406,22 @@ class Main extends Sprite
 			focused = true;
 		});
 
+		if (!restoringFocusVolume) return;
+
 		// Normal global volume when focused
 		if (focusMusicTween != null) focusMusicTween.cancel();
 
-		focusMusicTween = FlxTween.tween(FlxG.sound, {volume: oldVol}, 0.5);
+		focusMusicTween = FlxTween.tween(FlxG.sound, {volume: oldVol}, 0.5, {
+			onComplete: function(_) {
+				focusMusicTween = null;
+				restoringFocusVolume = false;
+			}
+		});
 	}
 	#end
 
 	private function setupGame():Void
 	{
-		shaders.ShaderCompatibility.init();
-		
 		trace('\n\n' + backend.Native.buildSystemInfo());
 		
 		#if hxvlc
@@ -444,7 +433,7 @@ class Main extends Sprite
 		}
 		#end
 		
-		var flxGraphic = backend.Paths.image("marca");
+		var flxGraphic = backend.Paths.image("watermark");
 		if (flxGraphic != null) {
 			var bmpData:openfl.display.BitmapData = flxGraphic.bitmap;
 			if (watermarkSprite != null && watermarkSprite.parent != null) {
@@ -462,10 +451,10 @@ class Main extends Sprite
 			watermarkSprite.visible = ClientPrefs.data.showWatermark;
 			openfl.Lib.current.stage.addChild(watermarkSprite);
 		} else {
-			trace('No se pudo cargar la marca de agua con backend.Paths.image("marca").');
+			trace('The watermark could not be loaded using backend.Paths.image("watermark").');
 		}
 
-		var imagePath = backend.Paths.getPath('images/marca.png', IMAGE);
+		var imagePath = backend.Paths.getPath('images/watermark.png', IMAGE);
 		if (sys.FileSystem.exists(imagePath)) {
 		    if (watermark != null && watermark.parent != null)
 		        removeChild(watermark);

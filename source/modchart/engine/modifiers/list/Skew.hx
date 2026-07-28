@@ -3,6 +3,7 @@ package modchart.engine.modifiers.list;
 import flixel.math.FlxAngle;
 import modchart.backend.core.ModifierParameters;
 import modchart.backend.core.VisualParameters;
+import modchart.backend.core.TransformMode;
 
 class Skew extends Modifier {
 	var xID = 0;
@@ -58,12 +59,15 @@ class Skew extends Modifier {
 		final lane = params.lane;
 		final player = params.player;
 
-		data.skewX += getUnsafe(xID, player) + getUnsafe(xLaneIDs[lane], player);
-		data.skewY += getUnsafe(yID, player) + getUnsafe(yLaneIDs[lane], player);
+		data.skewX += getUnsafeLaneAdd(xID, xLaneIDs[lane], player);
+		data.skewY += getUnsafeLaneAdd(yID, yLaneIDs[lane], player);
 
 		return data;
 	}
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function transformMode():TransformMode
+		return TransformMode.FIELD;
 }

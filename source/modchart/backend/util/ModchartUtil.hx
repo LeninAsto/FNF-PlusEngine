@@ -73,11 +73,11 @@ using StringTools;
 			final evType = possibleLastEvent.getType();
 			if (evType == EASE) {
 				var castedEvent:EaseEvent = cast possibleLastEvent;
-				entryPerc = (castedEvent.ease(1) * castedEvent.target);
+				entryPerc = castedEvent.target;
 			} else if (evType == ADD) {
 				var castedEvent:AddEvent = cast possibleLastEvent;
 				@:privateAccess
-				entryPerc = (castedEvent.entryPerc + (castedEvent.ease(1) * castedEvent.addAmount));
+				entryPerc = (castedEvent.entryPerc != null ? castedEvent.entryPerc : event.getModPercent(event.name, event.player)) + castedEvent.addAmount;
 			} else {
 				entryPerc = possibleLastEvent.target;
 			}

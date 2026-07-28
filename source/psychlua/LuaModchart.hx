@@ -4,6 +4,7 @@ import modchart.Manager;
 import modchart.backend.core.ArrowData;
 import modchart.backend.standalone.Adapter;
 import modchart.engine.PlayField;
+import modchart.engine.modifiers.LuaModifier;
 import modchart.engine.modifiers.list.PathModifier;
 import modchart.engine.modifiers.list.PathModifier.PathNode;
 import psychlua.FunkinLua;
@@ -74,7 +75,7 @@ class LuaModchart
             Adapter.instance.getDefaultReceptorY(lane, player) + Manager.ARROW_SIZEDIV2,
             0
         );
-        final output = playfield.modifiers.getPath(arrowPosition, __luaArrowData);
+        final output = playfield.getReceptorPath(arrowPosition, __luaArrowData);
 
         __luaArrowPoint.set(output.pos.x - Manager.ARROW_SIZEDIV2, output.pos.y - Manager.ARROW_SIZEDIV2);
         return __luaArrowPoint;
@@ -166,10 +167,15 @@ class LuaModchart
             // Check if first parameter is a table of mods
             if (Std.isOfType(nameOrMods, String)) {
                 // Single mod: set('modname', beat, value, player, field)
+                final modName:String = cast nameOrMods;
                 if (namedPlayfield != null)
-                    namedPlayfield.set(cast nameOrMods, beat, cast value, player);
+                {
+                    namedPlayfield.set(modName, beat, cast value, player);
+                }
                 else
-                    Manager.instance.set(cast nameOrMods, beat, cast value, player, resolveFieldIndex(field, -1));
+                {
+                    Manager.instance.set(modName, beat, cast value, player, resolveFieldIndex(field, -1));
+                }
             } else {
                 // Multiple mods: set({mod1=100, mod2=50}, beat, player, field)
                 // In this case: value becomes player, player becomes field
@@ -415,6 +421,30 @@ class LuaModchart
                 }
             }
         });
+
+        Lua_helper.add_callback(lua, "createModifier", function(name:String, ?options:Dynamic = null, ?field:Dynamic = -1) {
+            return createLuaModifier(funk, name, options, field);
+        });
+
+        Lua_helper.add_callback(lua, "createLuaModifier", function(name:String, ?options:Dynamic = null, ?field:Dynamic = -1) {
+            return createLuaModifier(funk, name, options, field);
+        });
+
+        Lua_helper.add_callback(lua, "registerMod", function(name:String, ?options:Dynamic = null, ?field:Dynamic = -1) {
+            return createLuaModifier(funk, name, options, field);
+        });
+
+        Lua_helper.add_callback(lua, "registerModifier", function(name:String, ?options:Dynamic = null, ?field:Dynamic = -1) {
+            return createLuaModifier(funk, name, options, field);
+        });
+
+        Lua_helper.add_callback(lua, "quickRegister", function(name:String, ?options:Dynamic = null, ?field:Dynamic = -1) {
+            return createLuaModifier(funk, name, options, field);
+        });
+
+        Lua_helper.add_callback(lua, "makeVector3", function(?x:Float = 0, ?y:Float = 0, ?z:Float = 0, ?w:Float = 0):Dynamic {
+            return new modchart.backend.math.Vector3(x, y, z, w);
+        });
         
         // Create a node: bind inputs and outputs through a function
         Lua_helper.add_callback(lua, "node", function(inputs:Array<String>, outputs:Array<String>, funcName:String, ?field:Dynamic = -1) {
@@ -440,13 +470,32 @@ class LuaModchart
         });
 
 		// PathModifier helpers (works for any modifier that extends PathModifier, e.g. arrowshape, luapath)
-        Lua_helper.add_callback(lua, "setModifierPath", function(modName:String, nodes:Array<Dynamic>, ?field:Dynamic = 0, ?lane:Int = -1) {
+        Lua_helper.add_callback(lua, "setModifierPath", function(modName:String, nodes:Array<Dynamic>, ?field:Dynamic = -1, ?lane:Int = -1) {
 			if (Manager.instance == null)
 				return;
-            final pf = resolvePlayfield(field, 0, 'setModifierPath');
-			if (pf == null) {
+			final parsed = parsePathNodes(nodes);
+			final fieldIndex = resolveFieldIndex(field, -1);
+
+			if (fieldIndex == -1) {
+				for (pf in Manager.instance.playfields) {
+					if (pf == null)
+						continue;
+
+					final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
+					if (mod == null || !Std.isOfType(mod, PathModifier))
+						continue;
+
+					if (lane >= 0)
+						cast(mod, PathModifier).loadPathForLane(parsed, lane);
+					else
+						cast(mod, PathModifier).loadPath(parsed);
+				}
 				return;
 			}
+
+            final pf = resolvePlayfield(fieldIndex, 0, 'setModifierPath');
+			if (pf == null)
+				return;
 
 			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
 			if (mod == null) {
@@ -458,7 +507,6 @@ class LuaModchart
 				return;
 			}
 
-			final parsed = parsePathNodes(nodes);
 			if (lane >= 0) {
 				// Set path for specific lane
 				cast(mod, PathModifier).loadPathForLane(parsed, lane);
@@ -468,13 +516,26 @@ class LuaModchart
 			}
 		});
 
-        Lua_helper.add_callback(lua, "setModifierPathOffset", function(modName:String, x:Float, y:Float, ?z:Float = 0, ?field:Dynamic = 0) {
+        Lua_helper.add_callback(lua, "setModifierPathOffset", function(modName:String, x:Float, y:Float, ?z:Float = 0, ?field:Dynamic = -1) {
 			if (Manager.instance == null)
 				return;
-            final pf = resolvePlayfield(field, 0, 'setModifierPathOffset');
-	 		if (pf == null) {
+
+			final fieldIndex = resolveFieldIndex(field, -1);
+			if (fieldIndex == -1) {
+				for (pf in Manager.instance.playfields) {
+					if (pf == null)
+						continue;
+
+					final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
+					if (mod != null && Std.isOfType(mod, PathModifier))
+						cast(mod, PathModifier).pathOffset.setTo(x, y, z);
+				}
 				return;
 			}
+
+            final pf = resolvePlayfield(fieldIndex, 0, 'setModifierPathOffset');
+	 		if (pf == null)
+				return;
 
 			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
 			if (mod == null || !Std.isOfType(mod, PathModifier)) {
@@ -485,13 +546,26 @@ class LuaModchart
 			cast(mod, PathModifier).pathOffset.setTo(x, y, z);
 		});
 
-        Lua_helper.add_callback(lua, "setModifierPathBound", function(modName:String, bound:Float, ?field:Dynamic = 0) {
+        Lua_helper.add_callback(lua, "setModifierPathBound", function(modName:String, bound:Float, ?field:Dynamic = -1) {
 			if (Manager.instance == null)
 				return;
-            final pf = resolvePlayfield(field, 0, 'setModifierPathBound');
-			if (pf == null) {
+
+			final fieldIndex = resolveFieldIndex(field, -1);
+			if (fieldIndex == -1) {
+				for (pf in Manager.instance.playfields) {
+					if (pf == null)
+						continue;
+
+					final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
+					if (mod != null && Std.isOfType(mod, PathModifier))
+						cast(mod, PathModifier).setPathBound(bound);
+				}
 				return;
 			}
+
+            final pf = resolvePlayfield(fieldIndex, 0, 'setModifierPathBound');
+			if (pf == null)
+				return;
 
 			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
 			if (mod == null || !Std.isOfType(mod, PathModifier)) {
@@ -503,31 +577,14 @@ class LuaModchart
 		});
 
         Lua_helper.add_callback(lua, "changeControls", function(bindings:Dynamic) {
-            if (PlayState.instance == null || Controls.instance == null || bindings == null)
-                return;
-
-            for (fieldName in Reflect.fields(bindings)) {
-                final controlName = normalizeGameplayControlName(fieldName);
-                if (controlName == null) {
-                    PlayState.instance.addTextToDebug('changeControls: invalid control "' + fieldName + '"', 0xFFFF0000);
-                    continue;
-                }
-
-                final parsedKeys = parseLuaKeyList(Reflect.field(bindings, fieldName), fieldName);
-                if (parsedKeys == null)
-                    continue;
-
-                if (parsedKeys.length <= 0)
-                    Controls.instance.clearTemporaryKeyboardBind(controlName);
-                else
-                    Controls.instance.setTemporaryKeyboardBind(controlName, parsedKeys);
-            }
+            applyGameplayControlsSafe(bindings, 'changeControls');
+        });
+        Lua_helper.add_callback(lua, "applyGameplayControls", function(bindings:Dynamic) {
+            applyGameplayControlsSafe(bindings, 'applyGameplayControls');
         });
 
-        Lua_helper.add_callback(lua, "restoreControls", function() {
-            if (Controls.instance != null)
-                Controls.instance.clearTemporaryGameplayBinds();
-        });
+        Lua_helper.add_callback(lua, "restoreControls", restoreGameplayControlsSafe);
+        Lua_helper.add_callback(lua, "restoreGameplayControls", restoreGameplayControlsSafe);
 
         Lua_helper.add_callback(lua, "getGameplayControls", function():Dynamic {
             final result:Dynamic = {};
@@ -544,6 +601,67 @@ class LuaModchart
             }
 
             return result;
+        });
+
+        // ===== NMV / legacy compatibility aliases =====
+        Lua_helper.add_callback(lua, "setValue", function(name:String, value:Float, ?player:Int = -1, ?field:Dynamic = -1) {
+            if (Manager.instance == null)
+                return;
+            setRawModifierValue(name, value, player, field);
+        });
+
+        Lua_helper.add_callback(lua, "getValue", function(name:String, ?player:Int = 0, ?field:Dynamic = 0):Float {
+            return getRawModifierValue(name, player, field);
+        });
+
+        Lua_helper.add_callback(lua, "queueSet", function(beat:Float, name:String, value:Float, ?player:Int = -1, ?field:Dynamic = -1) {
+            if (Manager.instance != null)
+                queueSet(name, beat, value, player, field);
+        });
+
+        Lua_helper.add_callback(lua, "queueSetP", function(beat:Float, name:String, value:Float, ?player:Int = -1, ?field:Dynamic = -1) {
+            if (Manager.instance != null)
+                queueSet(name, beat, value, player, field);
+        });
+
+        Lua_helper.add_callback(lua, "queueEase", function(beat:Float, endBeat:Float, name:String, value:Float, ?easeName:String = 'linear', ?player:Int = -1, ?startValue:Dynamic = null, ?field:Dynamic = -1) {
+            if (Manager.instance == null)
+                return;
+            if (startValue != null)
+                queueSet(name, beat, toFloat(startValue), player, field);
+            queueEase(name, beat, endBeat - beat, value, easeName, player, field);
+        });
+
+        Lua_helper.add_callback(lua, "queueEaseP", function(beat:Float, endBeat:Float, name:String, value:Float, ?easeName:String = 'linear', ?player:Int = -1, ?startValue:Dynamic = null, ?field:Dynamic = -1) {
+            if (Manager.instance == null)
+                return;
+            if (startValue != null)
+                queueSet(name, beat, toFloat(startValue), player, field);
+            queueEase(name, beat, endBeat - beat, value, easeName, player, field);
+        });
+
+        Lua_helper.add_callback(lua, "queueFuncOnce", function(beat:Float, funcName:String, ?field:Dynamic = -1) {
+            scheduleLuaCallback(funk, beat, funcName, field);
+        });
+
+        Lua_helper.add_callback(lua, "queueFunc", function(beat:Float, endBeat:Float, funcName:String, ?field:Dynamic = -1) {
+            repeatLuaCallback(funk, beat, endBeat - beat, funcName, field);
+        });
+
+        Lua_helper.add_callback(lua, "getBaseX", function(lane:Int, ?player:Int = 0):Float {
+            return Adapter.instance != null ? Adapter.instance.getDefaultReceptorX(lane, player) : 0;
+        });
+
+        Lua_helper.add_callback(lua, "getBaseY", function(lane:Int, ?player:Int = 0):Float {
+            return Adapter.instance != null ? Adapter.instance.getDefaultReceptorY(lane, player) : 0;
+        });
+
+        Lua_helper.add_callback(lua, "getBaseVisPosD", function(diff:Float, ?songSpeed:Float = 1):Float {
+            return 0.45 * diff * songSpeed;
+        });
+
+        Lua_helper.add_callback(lua, "getVisPos", function(songPosition:Float, strumTime:Float, ?songSpeed:Float = 1):Float {
+            return -(0.45 * (songPosition - strumTime) * songSpeed);
         });
         
         // ===== "NOW" VARIANTS FOR USE IN CALLBACKS =====
@@ -823,6 +941,117 @@ class LuaModchart
         return playfield;
     }
 
+    private static function createLuaModifier(funk:FunkinLua, name:String, ?options:Dynamic = null, ?field:Dynamic = -1):Bool {
+        if (Manager.instance == null || name == null || name.trim().length <= 0)
+            return false;
+
+        final normalized = name.toLowerCase();
+        if (isNamedPlayfield(field)) {
+            final playfield = requireNamedPlayfield(field, 'createModifier');
+            if (playfield == null)
+                return false;
+
+            playfield.addScriptedModifier(normalized, new LuaModifier(playfield, normalized, funk, options));
+            return true;
+        }
+
+        final fieldIndex = resolveFieldIndex(field, -1);
+        if (fieldIndex == -1) {
+            var added = false;
+            for (playfield in Manager.instance.playfields) {
+                if (playfield == null)
+                    continue;
+                playfield.addScriptedModifier(normalized, new LuaModifier(playfield, normalized, funk, options));
+                added = true;
+            }
+            return added;
+        }
+
+        final playfield = resolvePlayfield(fieldIndex, 0, 'createModifier');
+        if (playfield == null)
+            return false;
+
+        playfield.addScriptedModifier(normalized, new LuaModifier(playfield, normalized, funk, options));
+        return true;
+    }
+
+    private static function setRawModifierValue(name:String, value:Float, player:Int = -1, ?field:Dynamic = -1):Void {
+        if (Manager.instance == null)
+            return;
+
+        if (isNamedPlayfield(field)) {
+            final playfield = requireNamedPlayfield(field, 'setValue');
+            if (playfield != null)
+                playfield.setRawValue(name, value, player);
+            return;
+        }
+
+        Manager.instance.setRawValue(name, value, player, resolveFieldIndex(field, -1));
+    }
+
+    private static function getRawModifierValue(name:String, player:Int = 0, ?field:Dynamic = 0):Float {
+        if (Manager.instance == null)
+            return 0;
+
+        if (isNamedPlayfield(field)) {
+            final playfield = requireNamedPlayfield(field, 'getValue', false);
+            return playfield != null ? playfield.getRawValue(name, player) : 0;
+        }
+
+        return Manager.instance.getRawValue(name, player, resolveFieldIndex(field, 0));
+    }
+
+    private static function queueSet(name:String, beat:Float, value:Float, player:Int = -1, ?field:Dynamic = -1):Void {
+        if (isNamedPlayfield(field)) {
+            final playfield = requireNamedPlayfield(field, 'queueSet');
+            if (playfield != null)
+                playfield.set(name, beat, value, player);
+            return;
+        }
+
+        Manager.instance.set(name, beat, value, player, resolveFieldIndex(field, -1));
+    }
+
+    private static function queueEase(name:String, beat:Float, length:Float, value:Float, ?easeName:String = 'linear', player:Int = -1, ?field:Dynamic = -1):Void {
+        final easeFunc = getEaseFunction(easeName);
+        if (isNamedPlayfield(field)) {
+            final playfield = requireNamedPlayfield(field, 'queueEase');
+            if (playfield != null)
+                playfield.ease(name, beat, length, value, easeFunc, player);
+            return;
+        }
+
+        Manager.instance.ease(name, beat, length, value, easeFunc, player, resolveFieldIndex(field, -1));
+    }
+
+    private static function scheduleLuaCallback(funk:FunkinLua, beat:Float, funcName:String, ?field:Dynamic = -1):Void {
+        if (Manager.instance == null)
+            return;
+
+        if (isNamedPlayfield(field)) {
+            final playfield = requireNamedPlayfield(field, 'queueFuncOnce');
+            if (playfield != null)
+                playfield.scheduleCallback(beat, function(event) funk.call(funcName, []));
+            return;
+        }
+
+        Manager.instance.scheduleCallback(beat, function(event) funk.call(funcName, []), resolveFieldIndex(field, -1));
+    }
+
+    private static function repeatLuaCallback(funk:FunkinLua, beat:Float, length:Float, funcName:String, ?field:Dynamic = -1):Void {
+        if (Manager.instance == null)
+            return;
+
+        if (isNamedPlayfield(field)) {
+            final playfield = requireNamedPlayfield(field, 'queueFunc');
+            if (playfield != null)
+                playfield.repeater(beat, length, function(event) funk.call(funcName, []));
+            return;
+        }
+
+        Manager.instance.repeater(beat, length, function(event) funk.call(funcName, []), resolveFieldIndex(field, -1));
+    }
+
     private static function resolvePlayfield(field:Dynamic, defaultField:Int, context:String):Null<PlayField> {
         if (Manager.instance == null)
             return null;
@@ -870,11 +1099,76 @@ class LuaModchart
         }
     }
 
-    private static function parseLuaKeyList(rawValue:Dynamic, fieldName:String):Null<Array<FlxKey>> {
+    private static function applyGameplayControlsSafe(bindings:Dynamic, context:String):Void {
+        if (PlayState.instance == null || Controls.instance == null || bindings == null)
+            return;
+
+        try {
+            final fields = Reflect.fields(bindings);
+            if (fields == null || fields.length <= 0) {
+                PlayState.instance.addTextToDebug(context + ': expected a table/object with left/down/up/right bindings', 0xFFFFAA00);
+                return;
+            }
+
+            for (fieldName in fields) {
+                final controlName = normalizeGameplayControlName(fieldName);
+                if (controlName == null) {
+                    PlayState.instance.addTextToDebug(context + ': invalid control "' + fieldName + '"', 0xFFFF0000);
+                    continue;
+                }
+
+                final parsedKeys = parseLuaKeyList(Reflect.field(bindings, fieldName), fieldName, context);
+                if (parsedKeys == null)
+                    continue;
+
+                if (parsedKeys.length <= 0)
+                    Controls.instance.clearTemporaryKeyboardBind(controlName);
+                else
+                    Controls.instance.setTemporaryKeyboardBind(controlName, parsedKeys);
+            }
+        } catch (e:Dynamic) {
+            if (PlayState.instance != null)
+                PlayState.instance.addTextToDebug(context + ': failed to apply controls: ' + Std.string(e), 0xFFFF0000);
+        }
+    }
+
+    private static function restoreGameplayControlsSafe():Void {
+        try {
+            if (Controls.instance != null)
+                Controls.instance.clearTemporaryGameplayBinds();
+        } catch (e:Dynamic) {
+            if (PlayState.instance != null)
+                PlayState.instance.addTextToDebug('restoreGameplayControls: failed to restore controls: ' + Std.string(e), 0xFFFF0000);
+        }
+    }
+
+    private static function collectLuaKeyValues(rawValue:Dynamic):Array<Dynamic> {
+        if (rawValue == null)
+            return [];
+        if (Std.isOfType(rawValue, Array))
+            return cast rawValue;
+
+        final fields = Reflect.fields(rawValue);
+        if (fields != null && fields.length > 0) {
+            fields.sort(function(a:String, b:String):Int {
+                final ai = Std.parseInt(a);
+                final bi = Std.parseInt(b);
+                if (ai != null && bi != null)
+                    return ai - bi;
+                return Reflect.compare(a, b);
+            });
+
+            return [for (field in fields) Reflect.field(rawValue, field)];
+        }
+
+        return [rawValue];
+    }
+
+    private static function parseLuaKeyList(rawValue:Dynamic, fieldName:String, context:String = 'changeControls'):Null<Array<FlxKey>> {
         if (rawValue == null)
             return [];
 
-        final values:Array<Dynamic> = Std.isOfType(rawValue, Array) ? cast rawValue : [rawValue];
+        final values:Array<Dynamic> = collectLuaKeyValues(rawValue);
         final parsed:Array<FlxKey> = [];
 
         for (value in values) {
@@ -884,11 +1178,24 @@ class LuaModchart
             final text = Std.string(value).trim();
             if (text.length <= 0)
                 continue;
+            if (!isValidLuaKeyNameText(text)) {
+                if (PlayState.instance != null)
+                    PlayState.instance.addTextToDebug(context + ': ignored corrupt key value for ' + fieldName, 0xFFFFAA00);
+                return null;
+            }
 
-            final key = FlxKey.fromString(text.toUpperCase());
+            var key:FlxKey = NONE;
+            try {
+                key = FlxKey.fromString(text.toUpperCase());
+            } catch (e:Dynamic) {
+                if (PlayState.instance != null)
+                    PlayState.instance.addTextToDebug(context + ': invalid key "' + text + '" for ' + fieldName + ' (' + Std.string(e) + ')', 0xFFFF0000);
+                return null;
+            }
+
             if (key == NONE) {
                 if (PlayState.instance != null)
-                    PlayState.instance.addTextToDebug('changeControls: invalid key "' + text + '" for ' + fieldName, 0xFFFF0000);
+                    PlayState.instance.addTextToDebug(context + ': invalid key "' + text + '" for ' + fieldName, 0xFFFF0000);
                 return null;
             }
 
@@ -897,6 +1204,18 @@ class LuaModchart
         }
 
         return parsed;
+    }
+
+    private static function isValidLuaKeyNameText(text:String):Bool {
+        if (text == null || text.length <= 0 || text.length > 32)
+            return false;
+
+        for (i in 0...text.length) {
+            final code = text.fastCodeAt(i);
+            if (code < 32 || code > 126)
+                return false;
+        }
+        return true;
     }
 
     private static function parsePathNodes(nodes:Array<Dynamic>):Array<PathNode> {

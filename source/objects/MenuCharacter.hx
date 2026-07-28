@@ -1,6 +1,6 @@
 package objects;
 
-import openfl.utils.Assets;
+import backend.AssetLoader;
 import haxe.Json;
 
 typedef MenuCharacterFile = {
@@ -49,13 +49,9 @@ class MenuCharacter extends FlxSprite
 				var characterPath:String = 'images/menucharacters/' + character + '.json';
 
 				var path:String = Paths.getPath(characterPath, TEXT);
-				#if MODS_ALLOWED
-				if (!FileSystem.exists(path))
-				#else
-				if (!Assets.exists(path))
-				#end
+				if (!AssetLoader.exists(path, TEXT))
 				{
-					path = Paths.getSharedPath('characters/' + DEFAULT_CHARACTER + '.json'); //If a character couldn't be found, change him to BF just to prevent a crash
+					path = Paths.getPath('images/menucharacters/' + DEFAULT_CHARACTER + '.json', TEXT);
 					color = FlxColor.BLACK;
 					alpha = 0.6;
 				}
@@ -63,19 +59,50 @@ class MenuCharacter extends FlxSprite
 				var charFile:MenuCharacterFile = null;
 				try
 				{
-					#if MODS_ALLOWED
-					charFile = Json.parse(File.getContent(path));
-					#else
-					charFile = Json.parse(Assets.getText(path));
-					#end
+					var rawJson:String = AssetLoader.loadText(path);
+					if (rawJson == null || rawJson.length == 0)
+						throw 'Missing menu character file: $path';
+
+					charFile = Json.parse(rawJson);
 				}
 				catch(e:Dynamic)
 				{
 					trace('Error loading menu character file of "$character": $e');
 				}
 
-				frames = Paths.getSparrowAtlas('menucharacters/' + charFile.image);
+				if (charFile == null || charFile.image == null || charFile.image.length == 0 || charFile.idle_anim == null || charFile.idle_anim.length == 0)
+				{
+					trace('Invalid menu character file of "$character", hiding sprite to prevent a crash.');
+					visible = false;
+					dontPlayAnim = true;
+					return;
+				}
+
+				try
+				{
+					frames = Paths.getSparrowAtlas('menucharacters/' + charFile.image);
+				}
+				catch(e:Dynamic)
+				{
+					trace('Error loading menu character atlas of "$character": $e');
+				}
+
+				if (frames == null)
+				{
+					trace('Error loading menu character atlas of "$character": menucharacters/${charFile.image}');
+					visible = false;
+					dontPlayAnim = true;
+					return;
+				}
+
 				animation.addByPrefix('idle', charFile.idle_anim, 24);
+				if (animation.getByName('idle') == null)
+				{
+					trace('Error loading menu character idle animation of "$character": ${charFile.idle_anim}');
+					visible = false;
+					dontPlayAnim = true;
+					return;
+				}
 
 				var confirmAnim:String = charFile.confirm_anim;
 				if(confirmAnim != null && confirmAnim.length > 0 && confirmAnim != charFile.idle_anim)
@@ -86,12 +113,14 @@ class MenuCharacter extends FlxSprite
 				}
 				flipX = (charFile.flipX == true);
 
-				if(charFile.scale != 1)
+				var charScale:Float = (charFile.scale > 0) ? charFile.scale : 1;
+				if(charScale != 1)
 				{
-					scale.set(charFile.scale, charFile.scale);
+					scale.set(charScale, charScale);
 					updateHitbox();
 				}
-				offset.set(charFile.position[0], charFile.position[1]);
+				if (charFile.position != null && charFile.position.length >= 2)
+					offset.set(charFile.position[0], charFile.position[1]);
 				animation.play('idle');
 
 				antialiasing = (charFile.antialiasing != false && ClientPrefs.data.antialiasing);
