@@ -49,6 +49,12 @@ class LegacySettingsSubState extends BaseOptionsMenu
 		};
 		addOption(option);
 
+		var option:Option = new Option('Results State at End',
+		    'If unchecked, endSong will not transition to ResultsState in Freeplay/Story Mode.',
+			'resultsStateAtEnd',
+			BOOL);
+		addOption(option);
+
 		super();
 	}
 }

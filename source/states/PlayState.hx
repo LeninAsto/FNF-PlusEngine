@@ -4176,33 +4176,49 @@ class PlayState extends MusicBeatState
 			#end
 			playbackRate = 1;
 
-		if (!chartingMode && !cpuControlled && !isStoryMode) {
-				// INICIAR FREAKYMENU ANTES DE IR A RESULTSSTATE
-				FlxG.sound.playMusic(Paths.music('freakyMenu'), 0.7, true);
-				
-				MusicBeatState.switchState(backend.ScriptableState.tryCreate('ResultsState', new ResultsState({
-					score: songScore,
-					prevHighScore: Highscore.getScore(Song.loadedSongName, storyDifficulty),
-					accuracy: ratingPercent,
-					flawlesss: ratingsData[0].hits,
-					sicks: ratingsData[1].hits,
-					goods: ratingsData[2].hits,
-					bads: ratingsData[3].hits,
-					shits: ratingsData[4].hits,
-					misses: songMisses,
-					maxCombo: maxCombo,
-					totalNotes: totalNotes,
-					songName: SONG.song,
-					difficulty: Difficulty.getString(),
-					isMod: Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0,
-					modFolder: Mods.currentModDirectory,
-					isPractice: practiceMode,
-					ratingName: ratingName,
-					ratingFC: ratingFC
-				})));
-			transitioning = true;
-			return true;
-		}
+			if (!chartingMode && !isStoryMode)
+			{
+				if (ClientPrefs.data.resultsStateAtEnd && !cpuControlled)
+				{
+					FlxG.sound.playMusic(Paths.music('freakyMenu'), 0.7, true);
+					
+					MusicBeatState.switchState(backend.ScriptableState.tryCreate('ResultsState', new ResultsState({
+						score: songScore,
+						prevHighScore: Highscore.getScore(Song.loadedSongName, storyDifficulty),
+						accuracy: ratingPercent,
+						flawlesss: ratingsData[0].hits,
+						sicks: ratingsData[1].hits,
+						goods: ratingsData[2].hits,
+						bads: ratingsData[3].hits,
+						shits: ratingsData[4].hits,
+						misses: songMisses,
+						maxCombo: maxCombo,
+						totalNotes: totalNotes,
+						songName: SONG.song,
+						difficulty: Difficulty.getString(),
+						isMod: Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0,
+						modFolder: Mods.currentModDirectory,
+						isPractice: practiceMode,
+						ratingName: ratingName,
+						ratingFC: ratingFC
+					})));
+					transitioning = true;
+					return true;
+				}
+				else
+				{
+					trace('WENT BACK TO FREEPLAY??');
+					Mods.loadTopMod();
+					#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
+
+					canResync = false;
+					MusicBeatState.switchState(FreeplayStateSelector.create());
+					FlxG.sound.playMusic(Paths.music('freakyMenu'));
+					changedDifficulty = false;
+					transitioning = true;
+					return true;
+				}
+			}
 
 			if (chartingMode)
 			{
@@ -4214,8 +4230,7 @@ class PlayState extends MusicBeatState
 			{
 				campaignScore += songScore;
 				campaignMisses += songMisses;
-				
-				// Acumular estadísticas de la canción actual
+
 				campaignFlawlesss += ratingsData[0].hits;
 				campaignSicks += ratingsData[1].hits;
 				campaignGoods += ratingsData[2].hits;
@@ -4224,8 +4239,7 @@ class PlayState extends MusicBeatState
 				if (maxCombo > campaignMaxCombo) campaignMaxCombo = maxCombo;
 				campaignTotalNotes += totalNotes;
 				campaignSongsPlayed.push(SONG.song);
-				
-				// Acumular accuracy de cada canción (respeta el sistema de accuracy configurado)
+
 				campaignAccuracySum += ratingPercent;
 				campaignSongsCount++;
 
@@ -4233,92 +4247,104 @@ class PlayState extends MusicBeatState
 
 				if (storyPlaylist.length <= 0)
 				{
-					// La semana ha terminado - mostrar ResultsState con estadísticas acumuladas
 					Mods.loadTopMod();
-					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 					#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
-
 					canResync = false;
-					
-					// Calcular accuracy promedio de toda la semana
-					// El promedio se calcula sumando el accuracy de cada canción y dividiendo por la cantidad de canciones
-					var weekAccuracy:Float = 0;
-					if (campaignSongsCount > 0) {
-						weekAccuracy = campaignAccuracySum / campaignSongsCount;
-					}
-					
-					// Construir nombre compuesto de todas las canciones jugadas
-					var allSongsName:String = campaignSongsPlayed.join(" + ");
-					
-					// Determinar rating y FC basado en estadísticas acumuladas
-					var weekRatingName:String = '';
-					var weekRatingFC:String = '';
-					
-					// Calcular rating letter
-					var ratingStuff:Array<Dynamic> = PlayState.getRatingStuff();
-					for (i in 0...ratingStuff.length)
+
+					if (ClientPrefs.data.resultsStateAtEnd)
 					{
-						if (weekAccuracy < ratingStuff[i][1])
+						FlxG.sound.playMusic(Paths.music('freakyMenu'));
+
+						var weekAccuracy:Float = 0;
+						if (campaignSongsCount > 0) {
+							weekAccuracy = campaignAccuracySum / campaignSongsCount;
+						}
+
+						var allSongsName:String = campaignSongsPlayed.join(" + ");
+
+						var weekRatingName:String = '';
+						var weekRatingFC:String = '';
+
+						var ratingStuff:Array<Dynamic> = PlayState.getRatingStuff();
+						for (i in 0...ratingStuff.length)
 						{
-							weekRatingName = ratingStuff[i][0];
-							break;
-						}
-					}
-					if (weekRatingName == '') weekRatingName = ratingStuff[ratingStuff.length - 1][0];
-					
-					// Calcular FC
-					if (campaignMisses == 0)
-					{
-						if (campaignBads == 0 && campaignShits == 0) {
-							if (campaignGoods == 0) {
-								if (campaignSicks == 0)
-									weekRatingFC = Language.getPhrase('rating_efc', 'EFC');
-								else
-									weekRatingFC = Language.getPhrase('rating_sfc', 'SFC');
+							if (weekAccuracy < ratingStuff[i][1])
+							{
+								weekRatingName = ratingStuff[i][0];
+								break;
 							}
-							else weekRatingFC = Language.getPhrase('rating_gfc', 'GFC');
 						}
-						else weekRatingFC = Language.getPhrase('rating_fc', 'FC');
+						if (weekRatingName == '') weekRatingName = ratingStuff[ratingStuff.length - 1][0];
+						
+						if (campaignMisses == 0)
+						{
+							if (campaignBads == 0 && campaignShits == 0) {
+								if (campaignGoods == 0) {
+									if (campaignSicks == 0)
+										weekRatingFC = Language.getPhrase('rating_efc', 'EFC');
+									else
+										weekRatingFC = Language.getPhrase('rating_sfc', 'SFC');
+								}
+								else weekRatingFC = Language.getPhrase('rating_gfc', 'GFC');
+							}
+							else weekRatingFC = Language.getPhrase('rating_fc', 'FC');
+						}
+						else
+						{
+							if (campaignMisses < 2) weekRatingFC = Language.getPhrase('rating_smc', 'SMC');
+							else if (campaignMisses < 5) weekRatingFC = Language.getPhrase('rating_lmc', 'LMC');
+							else if (campaignMisses < 10) weekRatingFC = Language.getPhrase('rating_mmc', 'MMC');
+							else weekRatingFC = Language.getPhrase('rating_clear', 'Clear');
+						}
+
+						if(!ClientPrefs.getGameplaySetting('practice') && !ClientPrefs.getGameplaySetting('botplay')) {
+							StoryMenuState.weekCompleted.set(WeekData.weeksList[storyWeek], true);
+							Highscore.saveWeekScore(WeekData.getWeekFileName(), campaignScore, storyDifficulty);
+
+							FlxG.save.data.weekCompleted = StoryMenuState.weekCompleted;
+							FlxG.save.flush();
+						}
+						changedDifficulty = false;
+
+						MusicBeatState.switchState(backend.ScriptableState.tryCreate('ResultsState', new ResultsState({
+							score: campaignScore,
+							prevHighScore: Highscore.getWeekScore(WeekData.getWeekFileName(), storyDifficulty),
+							accuracy: weekAccuracy,
+							flawlesss: campaignFlawlesss,
+							sicks: campaignSicks,
+							goods: campaignGoods,
+							bads: campaignBads,
+							shits: campaignShits,
+							misses: campaignMisses,
+							maxCombo: campaignMaxCombo,
+							totalNotes: campaignTotalNotes,
+							songName: allSongsName,
+							difficulty: Difficulty.getString(),
+							isMod: Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0,
+							modFolder: Mods.currentModDirectory,
+							isPractice: practiceMode,
+							ratingName: weekRatingName,
+							ratingFC: weekRatingFC,
+							isWeek: true
+						})));
 					}
 					else
 					{
-						if (campaignMisses < 2) weekRatingFC = Language.getPhrase('rating_smc', 'SMC');
-						else if (campaignMisses < 5) weekRatingFC = Language.getPhrase('rating_lmc', 'LMC');
-						else if (campaignMisses < 10) weekRatingFC = Language.getPhrase('rating_mmc', 'MMC');
-						else weekRatingFC = Language.getPhrase('rating_clear', 'Clear');
-					}
+						FlxG.sound.playMusic(Paths.music('freakyMenu'));
+						
+						if(!ClientPrefs.getGameplaySetting('practice') && !ClientPrefs.getGameplaySetting('botplay')) {
+							StoryMenuState.weekCompleted.set(WeekData.weeksList[storyWeek], true);
+							Highscore.saveWeekScore(WeekData.getWeekFileName(), campaignScore, storyDifficulty);
 
-					if(!ClientPrefs.getGameplaySetting('practice') && !ClientPrefs.getGameplaySetting('botplay')) {
-						StoryMenuState.weekCompleted.set(WeekData.weeksList[storyWeek], true);
-						Highscore.saveWeekScore(WeekData.getWeekFileName(), campaignScore, storyDifficulty);
-
-						FlxG.save.data.weekCompleted = StoryMenuState.weekCompleted;
-						FlxG.save.flush();
+							FlxG.save.data.weekCompleted = StoryMenuState.weekCompleted;
+							FlxG.save.flush();
+						}
+						changedDifficulty = false;
+						
+						MusicBeatState.switchState(StoryMenuStateSelector.create());
 					}
-					changedDifficulty = false;
-					
-					// Ir a ResultsState con las estadísticas de toda la semana
-					MusicBeatState.switchState(backend.ScriptableState.tryCreate('ResultsState', new ResultsState({
-						score: campaignScore,
-						prevHighScore: Highscore.getWeekScore(WeekData.getWeekFileName(), storyDifficulty),
-						accuracy: weekAccuracy,
-						flawlesss: campaignFlawlesss,
-						sicks: campaignSicks,
-						goods: campaignGoods,
-						bads: campaignBads,
-						shits: campaignShits,
-						misses: campaignMisses,
-						maxCombo: campaignMaxCombo,
-						totalNotes: campaignTotalNotes,
-						songName: allSongsName,
-						difficulty: Difficulty.getString(),
-						isMod: Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0,
-						modFolder: Mods.currentModDirectory,
-						isPractice: practiceMode,
-						ratingName: weekRatingName,
-						ratingFC: weekRatingFC,
-						isWeek: true // Indicador de que es una semana completa
-					})));
+					transitioning = true;
+					return true;
 				}
 				else
 				{
@@ -4335,26 +4361,23 @@ class PlayState extends MusicBeatState
 					FlxG.sound.music.stop();
 
 					canResync = false;
-					
-					// Pequeño delay para evitar congelamiento en pantalla completa/maximizado
+
 					new FlxTimer().start(0.1, function(tmr:FlxTimer)
 					{
 						LoadingState.prepareToSong();
 						LoadingState.loadAndSwitchState(new PlayState(), false, false);
 					});
+					transitioning = true;
+					return true;
 				}
 			}
-			else
-			{
-				trace('WENT BACK TO FREEPLAY??');
-				Mods.loadTopMod();
-				#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
 
-				canResync = false;
-				MusicBeatState.switchState(FreeplayStateSelector.create());
-				FlxG.sound.playMusic(Paths.music('freakyMenu'));
-				changedDifficulty = false;
-			}
+			Mods.loadTopMod();
+			#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
+			canResync = false;
+			MusicBeatState.switchState(FreeplayStateSelector.create());
+			FlxG.sound.playMusic(Paths.music('freakyMenu'));
+			changedDifficulty = false;
 			transitioning = true;
 		}
 		return true;
