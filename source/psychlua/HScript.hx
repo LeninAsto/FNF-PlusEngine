@@ -1193,7 +1193,7 @@ class CustomFlxPoint {
 	 * Recycle or create new FlxPoint.
 	 * Be sure to put() them back into the pool after you're done with them!
 	 */
-	public static inline function get(x:Float = 0, y:Float = 0):flixel.math.FlxBasePoint {
+	public static inline function get(x:Float = 0, y:Float = 0):flixel.math.FlxPoint {
 		return flixel.math.FlxPoint.get(x, y);
 	}
 
@@ -1201,7 +1201,7 @@ class CustomFlxPoint {
 	 * Recycle or create a new FlxPoint which will automatically be released
 	 * to the pool when passed into a flixel function.
 	 */
-	public static inline function weak(x:Float = 0, y:Float = 0):flixel.math.FlxBasePoint {
+	public static inline function weak(x:Float = 0, y:Float = 0):flixel.math.FlxPoint {
 		return flixel.math.FlxPoint.weak(x, y);
 	}
 }

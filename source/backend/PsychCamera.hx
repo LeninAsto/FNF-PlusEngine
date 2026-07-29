@@ -143,16 +143,20 @@ class PsychCamera extends FlxCamera
 			}
 		}
 
-		var mult:Float = 1 - Math.exp(-elapsed * followLerp / (1/60));
+		var mult:Float = followLerp;
+
+        if (mult > 1) mult = 1;
+        if (mult < 0) mult = 0;
 		scroll.x += (_scrollTarget.x - scroll.x) * mult;
 		scroll.y += (_scrollTarget.y - scroll.y) * mult;
 		//trace('lerp on this frame: $mult');
 	}
 
-	function set_followLerp(value:Float)
-	{
-		return followLerp = value;
-	}
+function set_followLerp(value:Float):Float
+{
+    followLerp = value;
+    return value;
+}
 
 	override public function snapToTarget():Void
 	{

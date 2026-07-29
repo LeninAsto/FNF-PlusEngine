@@ -1,6 +1,7 @@
 package options;
 
 import objects.Character;
+import backend.ReShadeUtil;
 
 class GraphicsSettingsSubState extends BaseOptionsMenu
 {
@@ -38,6 +39,15 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 			'shaders',
 			BOOL);
 		addOption(option);
+		
+      var option:Option = new Option(
+      'Shaders ReShade',
+     'Enable support for ReShade post-processing effects.\nRequires ReShade to be installed.',
+     'reshade',
+      BOOL);
+
+     option.onChange = onChangeReShade;
+     addOption(option);
 
 		var option:Option = new Option('Color Accessibility',
 		    "Select several options according to your color blindness disorder.",
@@ -99,6 +109,20 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 	{
 		ClientPrefs.applyFramePacing();
 	}
+    function onChangeReShade()
+{
+    if (ClientPrefs.data.reshade && !ReShadeUtil.isInstalled())
+    {
+        ClientPrefs.data.reshade = false;
+
+        CoolUtil.showPopUp(
+            "ReShade is not installed.\nThe official website will open.",
+            "ReShade"
+        );
+
+        CoolUtil.browserLoad("https://reshade.me/");
+    }
+}
 
 	override function changeSelection(change:Int = 0)
 	{

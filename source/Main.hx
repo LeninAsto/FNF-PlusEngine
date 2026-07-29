@@ -248,7 +248,7 @@ class Main extends Sprite
 		LimeSystem.allowScreenTimeout = ClientPrefs.data.screensaver;
 		#end
 
-		Application.current.window.vsync = ClientPrefs.data.vsync;
+		try { Reflect.setProperty(Application.current.window, 'vsync', ClientPrefs.data.vsync); } catch (e:Dynamic) {}
 
 		#if (cpp && windows)
 		// Add window close handler for fade out effect

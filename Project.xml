@@ -3,7 +3,7 @@
 	<!-- _________________________ Application Settings _________________________ -->
 
 	<app title="Friday Night Funkin': Deep Engine RB" file="DeepEngineRB" packageName="com.sebasdeveloper.deepenginerb" package="com.sebasdeveloper.deepenginerb" main="Main" version="1.0" company="LeninAsto" />
-	<app title="FNF: Deep ENgine RB" if="android" />
+	<app title="FNF: Deep Engine RB" if="android" />
 
 	<!--Switch Export with Unique ApplicationID and Icon-->
 	<set name="APP_ID" value="0x0100f6c013bbc000" />
@@ -38,7 +38,6 @@
 	<define name="VIDEOS_ALLOWED" if="desktop || mobile" unless="32bits"/> <!-- Videos are now always enabled for desktop/mobile builds -->
 
 	<section if="OfficialBuild">
-		<define name="TITLE_SCREEN_EASTER_EGG"/>
 		<define name="BASE_GAME_FILES" />
 	</section>
 
@@ -80,10 +79,6 @@
 	<assets path="assets/songs"         exclude="*.mp3" unless="web"/>
 	<assets path="assets/week_assets"   rename="assets" exclude="*.ogg" if="web"/>
 	<assets path="assets/week_assets"   rename="assets" exclude="*.mp3" unless="web"/>
-	<section if="TITLE_SCREEN_EASTER_EGG">
-		<assets path="assets/secrets" rename="assets/shared" exclude="*.ogg" if="web"/>
-		<assets path="assets/secrets" rename="assets/shared" exclude="*.mp3"  unless="web"/>
-	</section>
 
 	<section if="TRANSLATIONS_ALLOWED">
 		<assets path="assets/translations" rename="assets" exclude="*.ogg" if="web"/>
@@ -97,7 +92,7 @@
 		<haxelib name="funkin.vis" if="BASE_GAME_FILES"/>
 	</section>
 
-	<define name="CHECK_FOR_UPDATES" if="officialBuild"/>
+	<define name="CHECK_FOR_UPDATES" if="OfficialBuild"/>
 
 	<section if="MODS_ALLOWED">
 		<assets path='example_mods' rename='mods' embed='false' />
@@ -115,8 +110,8 @@
 
 	<!-- _______________________________ Libraries ______________________________ -->
 
-	<haxelib name="flixel"/>
-	<haxelib name="flixel-addons" />
+	<haxelib name="flixel" version="6.2.0"/>
+	<haxelib name="flixel-addons" version="4.0.1"/>
 	<haxelib name="tjson" version="1.4.0"/>
 	<haxelib name="moonchart" unless="mac | ios"/>
 
@@ -222,7 +217,7 @@
     <section if="MODCHARTS_NOTITG_ALLOWED">
 		<assets path="assets/modchart/arrowShape.csv" rename="modchart/arrowShape.csv" embed="true" />
 		<assets path="assets/modchart/eyeShape.csv" rename="modchart/eyeShape.csv" embed="true" />
-		<haxedef name="FM_ENGINE" value="PSYCH"/>
+		<haxedef name="FM_ENGINE" value="DEEP"/>
     	<haxedef name="FM_ENGINE_VERSION" value="1.0"/>
     	<haxeflag name="--macro" value="modchart.backend.macros.Macro.includeFiles()"/>
 		<haxeflag name="source/extraParams.hxml" unless="ios"/>

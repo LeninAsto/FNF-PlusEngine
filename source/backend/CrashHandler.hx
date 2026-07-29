@@ -18,7 +18,7 @@ using flixel.util.FlxArrayUtil;
 class CrashHandler
 {
 	// Link de ayuda/repositorio para mostrar en caso de crash
-	public static final HELP_LINK:String = "https://github.com/LeninAsto/FNF-PlusEngine";
+	public static final HELP_LINK:String = "https://github.com/Sebas1002502/Deep-Engine-RB";
 	
 	// Fun error messages for null references
 	static final NULL_ERROR_MESSAGES:Array<String> = [

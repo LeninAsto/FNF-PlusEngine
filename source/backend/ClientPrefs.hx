@@ -58,6 +58,7 @@ import states.TitleState;
 	public var lowQuality:Bool = false;
 	public var shaders:Bool = true;
 	public var colorblindMode:String = 'None';
+	public var reshade:Bool = false;
 	public var cacheOnGPU:Bool = #if !switch false #else true #end; // GPU Caching made by Raltyro
 	public var framerate:Int = 60;
 	public var camZooms:Bool = true;
@@ -166,10 +167,10 @@ import states.TitleState;
 	public var vanillaTransition:Bool = false; // Use vanilla Psych Engine transition instead of custom
 	public var cloudProvider:String = 'Google';
 	public var cloudSessionStatus:String = 'Not signed in';
-	public var firebaseDesktopLoginUrl:String = 'https://fnf-plus-engine.web.app/auth';
+	public var firebaseDesktopLoginUrl:String = 'https://fnf-plus-engine.web.app/auth';//be delete
 	public var firebaseApiKey:String = 'AIzaSyBBuMPZbBMLTic9RFKTR-I0b-wmbdPgR-I';
-	public var firebaseProjectId:String = 'fnf-plus-engine';
-	public var firebaseRealtimeDbUrl:String = 'https://fnf-plus-engine-default-rtdb.firebaseio.com';
+	public var firebaseProjectId:String = 'fnf-plus-engine';//be delete
+	public var firebaseRealtimeDbUrl:String = 'https://fnf-plus-engine-default-rtdb.firebaseio.com';//be delete
 	public var googleCloudUid:String = '';
 	public var googleCloudEmail:String = '';
 	public var googleFirebaseIdToken:String = '';

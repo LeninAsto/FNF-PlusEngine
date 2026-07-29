@@ -23,7 +23,7 @@ echo [4/15] flixel
 haxelib git flixel https://github.com/Psych-Plus-Team/flixel --quiet
 
 echo [5/15] flixel-addons
-haxelib install flixel-addons 3.3.2 --quiet
+haxelib install flixel-addons 3.2.2 --quiet
 
 echo [6/15] flixel-tools
 haxelib install flixel-tools 1.5.1 --quiet

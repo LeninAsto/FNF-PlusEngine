@@ -99,6 +99,7 @@ class PlayState extends MusicBeatState
 {
 	public static var STRUM_X = 42;
 	public static var STRUM_X_MIDDLESCROLL = -278;
+	public var playbackRate:Float = 1.0;
 
 	public static var ratingStuff:Array<Dynamic> = [
 		['You Suck!', 0.2], //From 0% to 19%
@@ -804,6 +805,7 @@ class PlayState extends MusicBeatState
 		versionText.cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
 
 		Conductor.songPosition = -Conductor.crochet * 5 + Conductor.offset;
+		Conductor.resetTimingDelta();
 		var showTime:Bool = (ClientPrefs.data.timeBarType != 'Disabled');
 		timeTxt = new FlxText(STRUM_X + (FlxG.width / 2) - 248, 19, 400, "", 32);
 		timeTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -1716,6 +1718,7 @@ class PlayState extends MusicBeatState
 
 			startedCountdown = true;
 			Conductor.songPosition = -Conductor.crochet * 5 + Conductor.offset;
+			Conductor.resetTimingDelta();
 			setOnScripts('startedCountdown', true);
 			callOnScripts('onCountdownStarted');
 
@@ -2871,6 +2874,7 @@ class PlayState extends MusicBeatState
 				voc.play();
 			}
 			else voc.pause();
+			Conductor.resetTimingDelta();
 		}
 	}
 
@@ -2893,7 +2897,7 @@ class PlayState extends MusicBeatState
 		return (a << 24) | (r << 16) | (g << 8) | b;
 	}
 
-	// ← NUEVAS FUNCIONES DE OPTIMIZACIÓN
+	
 	public var paused:Bool = false;
 	public var resumingWithCountdown:Bool = false;
 	public var canReset:Bool = true;
@@ -2903,6 +2907,13 @@ class PlayState extends MusicBeatState
 	var allowDebugKeys:Bool = true;
 
 	override public function update(elapsed:Float)
+
+		 
+    if (!paused && updateTime && FlxG.sound.music != null && FlxG.sound.music.playing)
+    {
+        Conductor.updateWithLerp(elapsed, playbackRate);
+    }
+
 	{
 		if(!inCutscene && !paused && !freezeCamera) {
 			FlxG.camera.followLerp = 0.04 * cameraSpeed * playbackRate;
@@ -2973,10 +2984,7 @@ class PlayState extends MusicBeatState
 			Conductor.songPosition += elapsed * 1000 * playbackRate;
 			if (Conductor.songPosition >= Conductor.offset)
 			{
-				Conductor.songPosition = FlxMath.lerp(FlxG.sound.music.time + Conductor.offset, Conductor.songPosition, Math.exp(-elapsed * 5));
-				var timeDiff:Float = Math.abs((FlxG.sound.music.time + Conductor.offset) - Conductor.songPosition);
-				if (timeDiff > 1000 * playbackRate)
-					Conductor.songPosition = Conductor.songPosition + 1000 * FlxMath.signOf(timeDiff);
+				Conductor.updateWithLerp(elapsed, playbackRate);
 			}
 		}
 
@@ -3009,6 +3017,7 @@ class PlayState extends MusicBeatState
 				startSong();
 			else if(!startedCountdown)
 				Conductor.songPosition = -Conductor.crochet * 5 + Conductor.offset;
+			    Conductor.resetTimingDelta();
 		}
 		else if (!paused && updateTime)
 		{
@@ -4831,7 +4840,7 @@ class PlayState extends MusicBeatState
 
 		// more accurate hit time for the ratings?
 		var lastTime:Float = Conductor.songPosition;
-		if(Conductor.songPosition >= 0) Conductor.songPosition = FlxG.sound.music.time + Conductor.offset;
+        if(Conductor.songPosition >= 0) Conductor.updateWithLerp(FlxG.elapsed, playbackRate);
 
 		// obtain notes that the player can hit
 		var plrInputNotes:Array<Note> = notes.members.filter(function(n:Note):Bool {
@@ -4876,6 +4885,7 @@ class PlayState extends MusicBeatState
 
 		//more accurate hit time for the ratings? part 2 (Now that the calculations are done, go back to the time it was before for not causing a note stutter)
 		Conductor.songPosition = lastTime;
+        Conductor.resetTimingDelta(); 
 
 		var spr:StrumNote = playerStrums.members[key];
 		if(strumsBlocked[key] != true && spr != null && spr.animation.curAnim.name != 'confirm')

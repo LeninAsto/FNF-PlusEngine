@@ -2,6 +2,16 @@ package backend;
 
 import backend.Song;
 import objects.Note;
+import flixel.FlxG;
+import flixel.math.FlxMath;
+
+#if cpp
+import cpp.NativeArray;
+#end
+
+#if !cpp
+import haxe.Timer;
+#end
 
 typedef BPMChangeEvent =
 {
@@ -23,6 +33,18 @@ class Conductor
 	public static var safeZoneOffset:Float = 0; // is calculated in create(), is safeFrames in milliseconds
 
 	public static var bpmChangeMap:Array<BPMChangeEvent> = [];
+
+	// === Variables para timing preciso (adaptado de FNF v0.8.4) ===
+	public static var songPositionDelta:Float = 0;
+	static var prevTimestamp:Float = 0;
+	static var prevTime:Float = 0;
+
+	// Threshold para resync (ms)
+	static final RESYNC_THRESHOLD:Float = 250;
+
+	// Ratio para lerp suave (frame-rate independent)
+	static final MUSIC_EASE_RATIO:Float = 42;
+	
 
 	public static function judgeNote(arr:Array<Rating>, diff:Float=0):Rating // die
 	{
@@ -120,52 +142,49 @@ class Conductor
 			totalSteps += deltaSteps;
 			totalPos += ((60 / curBPM) * 1000 / 4) * deltaSteps;
 		}
-		
+
 		// Procesar eventos de cambio de BPM (usado por charts de StepMania)
 		if(song.events != null) {
 			for(event in song.events) {
 				if(event != null && event.length >= 2) {
 					var eventTime:Float = event[0];
 					var eventData:Array<Dynamic> = event[1];
-					
+
 					if(eventData != null && eventData.length > 0) {
 						for(subEvent in eventData) {
 							if(subEvent != null && subEvent.length >= 2) {
 								var eventName:String = subEvent[0];
 								var eventValue:String = subEvent[1];
-								
+
 							if(eventName == 'Change BPM') {
 								var newBPM:Float = Std.parseFloat(eventValue);
 								if(!Math.isNaN(newBPM) && newBPM > 0) {
 									// Calcular stepTime basado en el BPM actual hasta este punto
-									// Necesitamos calcular manualmente ya que bpmChangeMap aún se está construyendo
 									var stepTime:Int = 0;
 									var currentTime:Float = 0;
 									var currentBPM:Float = song.bpm;
 									var currentSteps:Int = 0;
-									
+
 									// Primero procesar las secciones hasta este punto de tiempo
 									for (i in 0...song.notes.length) {
 										var deltaSteps:Int = Math.round(getSectionBeats(song, i) * 4);
 										var sectionDuration:Float = ((60 / currentBPM) * 1000 / 4) * deltaSteps;
-										
+
 										if (currentTime + sectionDuration > eventTime) {
-											// El evento está en esta sección
 											var timeInSection:Float = eventTime - currentTime;
 											var stepsInSection:Int = Math.round((timeInSection / 1000) * (currentBPM / 60) * 4);
 											stepTime = currentSteps + stepsInSection;
 											break;
 										}
-										
+
 										currentTime += sectionDuration;
 										currentSteps += deltaSteps;
-										
-										// Actualizar BPM si la sección lo cambia
+
 										if(song.notes[i].changeBPM && song.notes[i].bpm != currentBPM) {
 											currentBPM = song.notes[i].bpm;
 										}
 									}
-									
+
 									var bpmEvent:BPMChangeEvent = {
 										stepTime: stepTime,
 										songTime: eventTime,
@@ -181,13 +200,13 @@ class Conductor
 					}
 				}
 			}
-			
+
 			// Ordenar el mapa por tiempo de canción
 			bpmChangeMap.sort(function(a, b) {
 				return a.songTime < b.songTime ? -1 : (a.songTime > b.songTime ? 1 : 0);
 			});
 		}
-		
+
 		trace("new BPM map BUDDY " + bpmChangeMap);
 	}
 
@@ -209,4 +228,73 @@ class Conductor
 
 		return bpm = newBPM;
 	}
+
+	// === FIX: Funciones de timing preciso (adaptado de FNF v0.8.4) ===
+
+	/**
+	 * Update the conductor with lerp suave hacia el audio real.
+	 * Debe llamarse desde PlayState.update() cada frame.
+	 * @param elapsed Tiempo desde el último frame.
+	 * @param playbackRate Velocidad de reproducción (1.0 = normal).
+	 */
+	public static function updateWithLerp(elapsed:Float, playbackRate:Float = 1.0):Void
+	{
+		if (FlxG.sound.music == null || !FlxG.sound.music.playing) return;
+
+		var targetPos:Float = FlxG.sound.music.time + offset;
+		var audioDiff:Float = Math.abs(targetPos - songPosition);
+
+		if (audioDiff <= RESYNC_THRESHOLD)
+		{
+			// Lerp exponencial suave (frame-rate independent)
+			var easeRatio:Float = 1.0 - Math.exp(-(MUSIC_EASE_RATIO * playbackRate) * elapsed);
+			songPosition += (targetPos - songPosition) * easeRatio;
+		}
+		else
+		{
+			// Sync directo si hay mucho drift
+			trace('WARNING: Conductor drift detected (' + audioDiff + 'ms), syncing directly');
+			songPosition = targetPos;
+		}
+
+		// Actualizar delta para input preciso
+		songPositionDelta += elapsed * 1000 * playbackRate;
+		if (prevTime != songPosition)
+		{
+			songPositionDelta = 0;
+			prevTime = songPosition;
+			prevTimestamp = haxe.Timer.stamp() * 1000;
+		}
+	}
+
+	/**
+	 * Retorna el tiempo con compensación de delta para input preciso.
+	 * Usar esto en vez de songPosition directo para juzgar notas.
+	 */
+	public static function getTimeWithDelta():Float
+	{
+		return songPosition + songPositionDelta;
+	}
+
+	/**
+	 * Retorna el tiempo real del canal de audio (más preciso).
+	 * Útil para input polling entre frames.
+	 */
+	public static function getTimeWithDiff():Float
+	{
+		if (FlxG.sound.music == null) return songPosition;
+		@:privateAccess
+		return FlxG.sound.music._channel.position + offset;
+	}
+
+	/**
+	 * Resetea el delta de timing. Llamar al iniciar una canción.
+	 */
+	public static function resetTimingDelta():Void
+	{
+		songPositionDelta = 0;
+		prevTime = 0;
+		prevTimestamp = 0;
+	}
+	// === FIN FIX ===
 }

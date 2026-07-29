@@ -563,6 +563,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 	#if native
 	function onChangeVSync()
-		lime.app.Application.current.window.vsync = ClientPrefs.data.vsync;
+	   try { Reflect.setProperty(lime.app.Application.current.window, 'vsync', ClientPrefs.data.vsync); } catch (e:Dynamic) {}
 	#end
 }

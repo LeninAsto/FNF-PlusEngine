@@ -156,7 +156,7 @@ class CustomFadeTransition extends MusicBeatSubstate {
 		iconSprite.scale.set(0.5, 0.5);
 		iconSprite.screenCenter();
 
-		waterMark = new FlxText(0, height - 140, 300, 'Deeps Engine\nv${MainMenuState.deepEngineVersion}', 32);
+		waterMark = new FlxText(0, height - 140, 300, 'Deep Engine\nv${MainMenuState.deepEngineVersion}', 32);
 		waterMark.x = (width - waterMark.width) / 2;
 		waterMark.setFormat(Paths.font('NotoSans-Medium.ttf'), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		waterMark.scrollFactor.set();

@@ -410,7 +410,7 @@ class FPSCounter extends Sprite
 				displayText += '\nBPM: ' + currentBPM;
 				displayText += '\nHealth: ' + healthPercent + '%';
 
-				displayText += '\n\nDeep Engine vw' + MainMenuState.deepEngineVersion;
+				displayText += '\n\nDeep Engine v' + MainMenuState.deepEngineVersion;
 				displayText += '\nPsych v' + MainMenuState.psychEngineVersion;
 		}
 
