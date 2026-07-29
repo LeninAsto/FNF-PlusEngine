@@ -28,9 +28,7 @@ THE UPDATES IN THIS ENGINE BE TOOOO MUCHHH TIME BECAUSE I TRYING PORT THE PLAYST
 [![Mac](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Mac&primaryBGColor=%231c1c1c&primaryTextColor=%23FFFFFF&secondaryBGColor=%23000000&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=macos&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.apple.com/macos/)
 [![Linux](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Linux&primaryBGColor=%23dba80f&primaryTextColor=%23FFFFFF&secondaryBGColor=%23ffc107&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=linux&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.linux.org/)
 
-Engine based in Psych 1.0.4 with modcharts like NotITG and compatible with hxcodec videos from Psych mods 0.6.3 and 0.7.3.
-
-[![Discord](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Join+to+the+&secondaryLabel=Discord&primaryBGColor=%23689bb1&primaryTextColor=%23ffffff&secondaryBGColor=%235665ed&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=discord&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://discord.gg/EBvUWcMdqV)
+Engine based in Plus Engine 1.0.4 with modcharts like NotITG and compatible with hxcodec videos from Psych mods 0.6.3 and 0.7.3.
 
 </div>
 
@@ -130,6 +128,7 @@ You need to have:
 - Variables for window and system management in Lua: Many variables were added, whether to hide the taskbar or window borders, etc.
 - Key Viewer
 - Modchart support and settings.
+- Adding things i try this be special :)
 ![Modchart](docs/img/modchart.gif)
 - New Gameplay Changers (Opponent Mode, No Drop Penalty, Perfect Only).
 - You can choose your default accuracy system. ITG, Psych, DJMax, Wife3, osu!, Simple
