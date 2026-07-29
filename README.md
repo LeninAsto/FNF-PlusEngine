@@ -2,6 +2,9 @@
 
 <div align="center">
   OUTDATE
+
+
+THE UPDATES IN THIS ENGINE BE TOOOO MUCHHH TIME BECAUSE I TRYING PORT THE PLAYSTATE THE FNF v0.8.4 or not :) can be because i need port the other things but ok bye
   
 **EN-US | [ES-LA](README.es-LA.md) | [ID-ID](README.id-ID.md)**
 
