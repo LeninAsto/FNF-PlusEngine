@@ -37,7 +37,7 @@
 	<define name="SHOW_LOADING_SCREEN" />
 	<define name="VIDEOS_ALLOWED" if="desktop || mobile" unless="32bits"/> <!-- Videos are now always enabled for desktop/mobile builds -->
 
-	<section if="OfficialBuild">
+	<section if="official">
 		<define name="BASE_GAME_FILES" />
 	</section>
 
@@ -92,7 +92,7 @@
 		<haxelib name="funkin.vis" if="BASE_GAME_FILES"/>
 	</section>
 
-	<define name="CHECK_FOR_UPDATES" if="OfficialBuild"/>
+	<define name="CHECK_FOR_UPDATES" if="official"/>
 
 	<section if="MODS_ALLOWED">
 		<assets path='example_mods' rename='mods' embed='false' />

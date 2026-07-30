@@ -99,7 +99,6 @@ class PlayState extends MusicBeatState
 {
 	public static var STRUM_X = 42;
 	public static var STRUM_X_MIDDLESCROLL = -278;
-	public var playbackRate:Float = 1.0;
 
 	public static var ratingStuff:Array<Dynamic> = [
 		['You Suck!', 0.2], //From 0% to 19%
@@ -1893,6 +1892,8 @@ class PlayState extends MusicBeatState
 							resumingWithCountdown = false;
 							callOnScripts('onResume');
 							resetRPC(startTimer != null && startTimer.finished);
+							requiresSyncing = false;
+							gameFroze = false;
 							runSongSyncThread();
 						}
 						callOnScripts('onResumeCountdownFinished');
@@ -1918,6 +1919,8 @@ class PlayState extends MusicBeatState
 				resumingWithCountdown = false;
 				callOnScripts('onResume');
 				resetRPC(startTimer != null && startTimer.finished);
+				requiresSyncing = false;
+				gameFroze = false;
 				runSongSyncThread();
 			}
 		}
@@ -2775,18 +2778,21 @@ class PlayState extends MusicBeatState
 	}
 
 	public var canResync:Bool = true;
-	override function closeSubState()
+    override function closeSubState()
+{
+	super.closeSubState();
+	
+	if (videoCutscene != null && !resumingWithCountdown) videoCutscene.resume();
+	stagesFunc(function(stage:BaseStage) stage.closeSubState());
+	if (paused)
 	{
-		super.closeSubState();
-		
-		if (videoCutscene != null && !resumingWithCountdown) videoCutscene.resume();
-		stagesFunc(function(stage:BaseStage) stage.closeSubState());
-		if (paused)
+		requiresSyncing = false;
+		gameFroze = false;
+
+		if (ClientPrefs.data.pauseCountdown)
 		{
-			if (ClientPrefs.data.pauseCountdown)
-			{
-				resumingWithCountdown = true;
-			}
+			resumingWithCountdown = true;
+		}
 
 			FlxTimer.globalManager.forEach(function(tmr:FlxTimer) if(!tmr.finished) tmr.active = true);
 			FlxTween.globalManager.forEach(function(twn:FlxTween) if(!twn.finished) twn.active = true);
@@ -2906,17 +2912,15 @@ class PlayState extends MusicBeatState
 	var freezeCamera:Bool = false;
 	var allowDebugKeys:Bool = true;
 
-	override public function update(elapsed:Float)
-
-		 
+	    override public function update(elapsed:Float)
+{
     if (!paused && updateTime && FlxG.sound.music != null && FlxG.sound.music.playing)
     {
         Conductor.updateWithLerp(elapsed, playbackRate);
     }
 
-	{
-		if(!inCutscene && !paused && !freezeCamera) {
-			FlxG.camera.followLerp = 0.04 * cameraSpeed * playbackRate;
+    if(!inCutscene && !paused && !freezeCamera) {
+        FlxG.camera.followLerp = 0.04 * cameraSpeed * playbackRate;
 			var idleAnim:Bool = (boyfriend.getAnimationName().startsWith('idle') || boyfriend.getAnimationName().startsWith('danceLeft') || boyfriend.getAnimationName().startsWith('danceRight'));
 			if(!startingSong && !endingSong && idleAnim) {
 				boyfriendIdleTime += elapsed;
@@ -3501,11 +3505,13 @@ class PlayState extends MusicBeatState
 	}
 
 	function openPauseMenu()
-	{
-		FlxG.camera.followLerp = 0;
-		persistentUpdate = false;
-		persistentDraw = true;
-		paused = true;
+{
+	FlxG.camera.followLerp = 0;
+	persistentUpdate = false;
+	persistentDraw = true;
+	paused = true;
+	requiresSyncing = false;
+	gameFroze = false;
 
 		if(FlxG.sound.music != null) {
 			FlxG.sound.music.pause();

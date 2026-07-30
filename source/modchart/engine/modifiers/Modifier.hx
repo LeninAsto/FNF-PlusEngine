@@ -5,6 +5,7 @@ import modchart.Manager;
 import modchart.backend.core.ModifierParameters;
 import modchart.backend.core.VisualParameters;
 import modchart.engine.PlayField;
+import modchart.backend.core.TransformMode;
 
 using StringTools;
 
@@ -29,6 +30,13 @@ class Modifier {
 
 	public function shouldRun(params:ModifierParameters):Bool
 		return false;
+
+
+	public function transformMode():TransformMode
+        return TransformMode.ALL;
+    
+    public inline function hasUnsafe(id:Int):Bool
+        return @:privateAccess pf.modifiers.__hasUnsafe(id);
 
 	public function allowOnStraightHolds():Bool
 		return true;

@@ -83,6 +83,9 @@ final class ModifierGroup {
 		}
 	}
 
+	inline private function __hasUnsafe(id:Int):Bool
+     return percents.getUnsafe(id) != null;
+
 	public function new(playfield:PlayField) {
 		this.playfield = playfield;
 

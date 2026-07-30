@@ -229,8 +229,6 @@ class Conductor
 		return bpm = newBPM;
 	}
 
-	// === FIX: Funciones de timing preciso (adaptado de FNF v0.8.4) ===
-
 	/**
 	 * Update the conductor with lerp suave hacia el audio real.
 	 * Debe llamarse desde PlayState.update() cada frame.
@@ -296,5 +294,4 @@ class Conductor
 		prevTime = 0;
 		prevTimestamp = 0;
 	}
-	// === FIN FIX ===
 }
