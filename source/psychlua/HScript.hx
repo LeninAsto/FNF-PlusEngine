@@ -486,6 +486,10 @@ class HScript extends Iris
 		set('VideoHandler', objects.hxcodec.v2_6_0.VideoHandler);
 		set('MP4Handler', objects.hxcodec.v2_5_0.MP4Handler);
 		set('MP4Sprite', objects.hxcodec.v2_5_0.MP4Sprite);
+		set('vlc.VideoHandler', objects.hxcodec.v2_6_0.VideoHandler);
+		set('vlc.VideoSprite', objects.hxcodec.v2_6_0.VideoSprite);
+		set('vlc.MP4Handler', objects.hxcodec.v2_5_0.MP4Handler);
+		set('vlc.MP4Sprite', objects.hxcodec.v2_5_0.MP4Sprite);
 		set('hxcodec.flixel.FlxVideo', objects.hxcodec.v3_0_0.FlxVideo);
 		set('hxcodec.flixel.FlxVideoSprite', objects.hxcodec.v3_0_0.FlxVideoSprite);
 		set('hxcodec.flixel.Video', objects.hxcodec.v3_0_0.Video);
