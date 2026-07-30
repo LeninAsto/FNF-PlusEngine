@@ -1,6 +1,7 @@
 ![Logo Off](docs/img/PlusEngineLogo.png)
 
 <div align="center">
+DESACTUALIZADO
 
 **[EN-US](README.md) | ES-LA | ID-ID**
 
@@ -22,9 +23,7 @@
 [![Mac](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Mac&primaryBGColor=%231c1c1c&primaryTextColor=%23FFFFFF&secondaryBGColor=%23000000&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=macos&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.apple.com/macos/)
 [![Linux](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Linux&primaryBGColor=%23dba80f&primaryTextColor=%23FFFFFF&secondaryBGColor=%23ffc107&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=linux&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.linux.org/)
 
-Motor basado en Psych 1.0.4 con modcharts como NotITG y compatible con videos hxcodec de mods de Psych 0.6.3 y 0.7.3.
-
-[![Discord](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Unete+al+&secondaryLabel=Discord&primaryBGColor=%23689bb1&primaryTextColor=%23ffffff&secondaryBGColor=%235665ed&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=discord&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://discord.gg/EBvUWcMdqV)
+Motor basado en Plus engine con modcharts como NotITG y compatible con videos hxcodec de mods de Psych 0.6.3 y 0.7.3.
 
 </div>
 
@@ -82,6 +81,7 @@ relájate — el progreso no espera.
 ## Créditos del Desarrollador:
 * Lenin Asto - Programador Principal del Fork de Plus Engine
 * Legacy Odyssey - Co-Programador del Fork de Plus Engine
+* SebasDeveloper - Programador Principal del Fork de Deep Engine RB
 
 ## Créditos Originales:
 * Shadow Mario - Programador Principal y Líder de Psych Engine.
