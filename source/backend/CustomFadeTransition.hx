@@ -112,15 +112,19 @@ class CustomFadeTransition extends MusicBeatSubstate {
 		var width:Int = Std.int(FlxG.width / Math.max(camera.zoom, 0.001));
 		var height:Int = Std.int(FlxG.height / Math.max(camera.zoom, 0.001));
 
+		var paddingX:Int = 10;
+		
 		transGradient = FlxGradient.createGradientFlxSprite(1, height, (isTransIn ? [0x0, FlxColor.BLACK] : [FlxColor.BLACK, 0x0]));
-		transGradient.scale.x = width;
+		transGradient.scale.x = width + paddingX;
+		transGradient.x = -Std.int(paddingX / 2);
 		transGradient.updateHitbox();
 		transGradient.scrollFactor.set();
 		transGradient.screenCenter(X);
 		add(transGradient);
 
 		transBlack = new FlxSprite().makeGraphic(1, 1, FlxColor.BLACK);
-		transBlack.scale.set(width, height + 400);
+		transBlack.scale.set(width + paddingX, height + 400);
+		transBlack.x = -Std.int(paddingX / 2);
 		transBlack.updateHitbox();
 		transBlack.scrollFactor.set();
 		transBlack.screenCenter(X);
@@ -136,17 +140,23 @@ class CustomFadeTransition extends MusicBeatSubstate {
 		var width:Int = FlxG.width;
 		var height:Int = FlxG.height;
 
+		var paddingX:Int = 10;
+		var offsetX:Int = -5;
+		var extraHeight:Int = 10;
+
 		topDoor = new FlxSprite();
 		topDoor.loadGraphic(Paths.image('ui/transition/transUp'));
 		topDoor.scrollFactor.set();
-		topDoor.setGraphicSize(width, height);
+		topDoor.setGraphicSize(width + paddingX, height + extraHeight);
+		topDoor.x = offsetX;
 		topDoor.updateHitbox();
 		topDoor.antialiasing = ClientPrefs.data.antialiasing;
 
 		bottomDoor = new FlxSprite();
 		bottomDoor.loadGraphic(Paths.image('ui/transition/transDown'));
 		bottomDoor.scrollFactor.set();
-		bottomDoor.setGraphicSize(width, height);
+		bottomDoor.setGraphicSize(width + paddingX, height + extraHeight);
+		bottomDoor.x = offsetX;
 		bottomDoor.updateHitbox();
 		bottomDoor.antialiasing = ClientPrefs.data.antialiasing;
 

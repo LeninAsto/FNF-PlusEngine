@@ -60,9 +60,6 @@ class FreeplayState_Psych extends MusicBeatState
 
 	override function create()
 	{
-		//Paths.clearStoredMemory();
-		//Paths.clearUnusedMemory();
-		
 		persistentUpdate = true;
 		PlayState.isStoryMode = false;
 		WeekData.reloadWeekFiles(false);
@@ -133,19 +130,13 @@ class FreeplayState_Psych extends MusicBeatState
 			var icon:HealthIcon = new HealthIcon(songs[i].songCharacter);
 			icon.sprTracker = songText;
 
-			
-			// too laggy with a lot of songs, so i had to recode the logic for it
 			songText.visible = songText.active = songText.isMenuItem = false;
 			icon.visible = icon.active = false;
 
-			// using a FlxGroup is too much fuss!
 			iconArray.push(icon);
 			add(icon);
-
-			// songText.x += 40;
-			// DONT PUT X IN THE FIRST PARAMETER OF new ALPHABET() !!
-			// songText.screenCenter(X);
 		}
+
 		WeekData.setDirectoryFromWeek();
 
 		scoreText = new FlxText(FlxG.width * 0.52, 5, FlxG.width * 0.48 - 6, "", 32);
@@ -160,7 +151,6 @@ class FreeplayState_Psych extends MusicBeatState
 		add(diffText);
 
 		add(scoreText);
-
 
 		missingTextBG = new FlxSprite().makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
 		missingTextBG.alpha = 0.6;
@@ -180,22 +170,29 @@ class FreeplayState_Psych extends MusicBeatState
 
 		curDifficulty = Math.round(Math.max(0, Difficulty.defaultList.indexOf(lastDifficultyName)));
 
-		bottomBG = new FlxSprite(0, FlxG.height - 26).makeGraphic(FlxG.width, 26, 0xFF000000);
+		bottomBG = new FlxSprite(0, FlxG.height - 50).makeGraphic(FlxG.width, 50, 0xFF000000);
 		bottomBG.alpha = 0.6;
+		var padding:Int = 8;
+		bottomBG.makeGraphic(FlxG.width, Std.int(bottomText.height + padding), 0xFF000000);
+		bottomBG.y = FlxG.height - bottomBG.height;
 		add(bottomBG);
 
 		final space:String = (controls.mobileC) ? "X" : "SPACE";
 		final control:String = (controls.mobileC) ? "C" : "CTRL";
 		final reset:String = (controls.mobileC) ? "Y" : "RESET";
-		
+
 		var leText:String = Language.getPhrase("freeplay_tip", "Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.", [space, control, reset]);
 		#if (MODS_ALLOWED && sys && !mobile)
 		leText += " / F5 reloads mods / drop a mod folder to import it.";
 		#end
 		bottomString = leText;
+
 		var size:Int = 16;
-		bottomText = new FlxText(bottomBG.x, bottomBG.y + 4, FlxG.width, leText, size);
+		bottomText = new FlxText(0, bottomBG.y + 4, FlxG.width - 10, leText, size);
+		bottomText.y = bottomBG.y + (bottomBG.height - bottomText.height) / 2;
 		bottomText.setFormat(Paths.font("vcr.ttf"), size, FlxColor.WHITE, CENTER);
+		bottomText.wordWrap = true;
+		bottomText.alignment = CENTER;
 		bottomText.scrollFactor.set();
 		add(bottomText);
 		
@@ -292,25 +289,25 @@ class FreeplayState_Psych extends MusicBeatState
 					changeSelection();
 					holdTime = 0;	
 				}
-				if (controls.UI_UP_P)
+				if (controls.UI_UP_P || touchPad.buttonUp.justPressed)
 				{
 					changeSelection(-shiftMult);
 					holdTime = 0;
 				}
-				if (controls.UI_DOWN_P)
+				if (controls.UI_DOWN_P || touchPad.buttonDown.justPressed)
 				{
 					changeSelection(shiftMult);
 					holdTime = 0;
 				}
 
-				if(controls.UI_DOWN || controls.UI_UP)
+				if(controls.UI_DOWN || controls.UI_UP || touchPad.buttonUp.pressed || touchPad.buttonDown.pressed)
 				{
 					var checkLastHold:Int = Math.floor((holdTime - 0.5) * 10);
 					holdTime += elapsed;
 					var checkNewHold:Int = Math.floor((holdTime - 0.5) * 10);
 
 					if(holdTime > 0.5 && checkNewHold - checkLastHold > 0)
-						changeSelection((checkNewHold - checkLastHold) * (controls.UI_UP ? -shiftMult : shiftMult));
+						changeSelection((checkNewHold - checkLastHold) * ((controls.UI_UP || touchPad.buttonUp.pressed) ? -shiftMult : shiftMult));
 				}
 
 				if(FlxG.mouse.wheel != 0)
@@ -320,19 +317,19 @@ class FreeplayState_Psych extends MusicBeatState
 				}
 			}
 
-			if (controls.UI_LEFT_P)
+			if (controls.UI_LEFT_P || touchPad.buttonLeft.justPressed)
 			{
 				changeDiff(-1);
 				_updateSongLastDifficulty();
 			}
-			else if (controls.UI_RIGHT_P)
+			else if (controls.UI_RIGHT_P || touchPad.buttonRight.justPressed)
 			{
 				changeDiff(1);
 				_updateSongLastDifficulty();
 			}
 		}
 
-		if (controls.BACK)
+		if (controls.BACK || touchPad.buttonB.justPressed)
 		{
 			if (player.playingMusic)
 			{
@@ -399,7 +396,6 @@ class FreeplayState_Psych extends MusicBeatState
 					opponentVocals = new FlxSound();
 					try
 					{
-						//trace('please work...');
 						var oppVocals:String = getVocalFromCharacter(PlayState.SONG.player2);
 						var loadedVocals = Paths.voices(PlayState.SONG.song, (oppVocals != null && oppVocals.length > 0) ? oppVocals : 'Opponent');
 						
@@ -411,13 +407,11 @@ class FreeplayState_Psych extends MusicBeatState
 							opponentVocals.volume = 0.8;
 							opponentVocals.play();
 							opponentVocals.pause();
-							//trace('yaaay!!');
 						}
 						else opponentVocals = FlxDestroyUtil.destroy(opponentVocals);
 					}
 					catch(e:Dynamic)
 					{
-						//trace('FUUUCK');
 						opponentVocals = FlxDestroyUtil.destroy(opponentVocals);
 					}
 				}
@@ -436,7 +430,7 @@ class FreeplayState_Psych extends MusicBeatState
 				player.pauseOrResume(!player.playing);
 			}
 		}
-		else if (controls.ACCEPT && !player.playingMusic)
+		else if ((controls.ACCEPT || touchPad.buttonA.justPressed) && !player.playingMusic)
 		{
 			persistentUpdate = false;
 			var songLowercase:String = Paths.formatToSongPath(songs[curSelected].songName);
