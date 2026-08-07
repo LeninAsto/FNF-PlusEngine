@@ -9,14 +9,7 @@ class StructurePsychOld
 {
 	// Keep reflection-only compatibility classes from being removed by DCE.
 	private static final _compatClassRefs:Array<Class<Dynamic>> = [
-		backend.VideoSpriteManager,
-		objects.hxcodec.v2_5_0.MP4Handler,
-		objects.hxcodec.v2_5_0.MP4Sprite,
-		objects.hxcodec.v2_6_0.VideoHandler,
-		objects.hxcodec.v2_6_0.VideoSprite,
-		objects.hxcodec.v3_0_0.FlxVideo,
-		objects.hxcodec.v3_0_0.FlxVideoSprite,
-		objects.hxcodec.v3_0_0.Video
+		backend.VideoSpriteManager
 	];
 	private static var warnedLegacyUsages:Map<String, Bool> = new Map();
 
@@ -89,19 +82,7 @@ class StructurePsychOld
 		'NoteOffsetState' => 'options.NoteOffsetState',
 		'VisualsSettingsSubState' => 'options.VisualsSettingsSubState',
 		'GraphicsSettingsSubState' => 'options.GraphicsSettingsSubState',
-		'GameplaySettingsSubState' => 'options.GameplaySettingsSubState',
-		// ===== hxCodec / hxvlc compatibility for Psych 0.6.x video scripts =====
-		'vlc.MP4Handler' => 'objects.hxcodec.v2_5_0.MP4Handler',
-		'vlc.MP4Sprite' => 'objects.hxcodec.v2_5_0.MP4Sprite',
-		'vlc.VideoHandler' => 'objects.hxcodec.v2_6_0.VideoHandler',
-		'vlc.VideoSprite' => 'objects.hxcodec.v2_6_0.VideoSprite',
-		'hxcodec.MP4Handler' => 'objects.hxcodec.v2_5_0.MP4Handler',
-		'hxcodec.MP4Sprite' => 'objects.hxcodec.v2_5_0.MP4Sprite',
-		'hxcodec.VideoHandler' => 'objects.hxcodec.v2_6_0.VideoHandler',
-		'hxcodec.VideoSprite' => 'objects.hxcodec.v2_6_0.VideoSprite',
-		'hxcodec.flixel.FlxVideo' => 'objects.hxcodec.v3_0_0.FlxVideo',
-		'hxcodec.flixel.FlxVideoSprite' => 'objects.hxcodec.v3_0_0.FlxVideoSprite',
-		'hxcodec.flixel.Video' => 'objects.hxcodec.v3_0_0.Video'
+		'GameplaySettingsSubState' => 'options.GameplaySettingsSubState'
 	];
 
 	public static final clientPrefsDataAliasMap:Map<String, String> = [

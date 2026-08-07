@@ -154,7 +154,7 @@ class VideoHandler extends HxvlcVideo
 		}
 	}
 
-	public function update(?E:Event):Void
+	private function update(?E:Event):Void
 	{
 		#if FLX_KEYBOARD
 		if (canSkip && (FlxG.keys.anyJustPressed(skipKeys) #if android || FlxG.android.justReleased.BACK #end) && _isPlaying && isDisplaying)

@@ -178,7 +178,6 @@ import states.TitleState;
 class ClientPrefs {
 	public static var data:SaveVariables = {};
 	public static var defaultData:SaveVariables = {};
-	public static var globalAntialiasing(get, set):Bool;
 	public static var judgementCounter:Bool = false;
 	public static final FRAMERATE_MODES:Array<String> = ['Psych', 'Fixed', 'Interpolated'];
 
@@ -246,17 +245,6 @@ class ClientPrefs {
 	public static var defaultButtons:Map<String, Array<FlxGamepadInputID>> = null;
 	public static var defaultMobileBinds:Map<String, Array<MobileInputID>> = null;
 	static var controlsSaveCache:FlxSave = null;
-
-	static function get_globalAntialiasing():Bool
-	{
-		return data.antialiasing;
-	}
-
-	static function set_globalAntialiasing(value:Bool):Bool
-	{
-		data.antialiasing = value;
-		return value;
-	}
 
 	static function getControlsSave():FlxSave
 	{

@@ -674,16 +674,16 @@ class PlayState extends MusicBeatState
 		switch (curStage)
 		{
 			case 'stage': new StageWeek1(); 			//Week 1
-			case 'spooky': new Spooky();				//Week 2
-			case 'philly': new Philly();				//Week 3
-			case 'limo': new Limo();					//Week 4
-			case 'mall': new Mall();					//Week 5 - Cocoa, Eggnog
-			case 'mallEvil': new MallEvil();			//Week 5 - Winter Horrorland
-			case 'school': new School();				//Week 6 - Senpai, Roses
-			case 'schoolEvil': new SchoolEvil();		//Week 6 - Thorns
-			case 'tank': new Tank();					//Week 7 - Ugh, Guns, Stress
-			case 'phillyStreets': new PhillyStreets(); 	//Weekend 1 - Darnell, Lit Up, 2Hot
-			case 'phillyBlazin': new PhillyBlazin();	//Weekend 1 - Blazin
+			// case 'spooky': new Spooky();				//Week 2
+			// case 'philly': new Philly();				//Week 3
+			// case 'limo': new Limo();					//Week 4
+			// case 'mall': new Mall();					//Week 5 - Cocoa, Eggnog
+			// case 'mallEvil': new MallEvil();			//Week 5 - Winter Horrorland
+			// case 'school': new School();				//Week 6 - Senpai, Roses
+			// case 'schoolEvil': new SchoolEvil();		//Week 6 - Thorns
+			// case 'tank': new Tank();					//Week 7 - Ugh, Guns, Stress
+			// case 'phillyStreets': new PhillyStreets(); 	//Weekend 1 - Darnell, Lit Up, 2Hot
+			// case 'phillyBlazin': new PhillyBlazin();	//Weekend 1 - Blazin
 			case 'notitg': new NotITG();				//StepMania NotITG stage - Stage negro vacío
 		}
 		if(isPixelStage) introSoundsSuffix = '-pixel';
@@ -2736,11 +2736,6 @@ class PlayState extends MusicBeatState
 		var returnedValue:Null<Float> = callOnScripts('eventEarlyTrigger', [event.event, event.value1, event.value2, event.strumTime], true);
 		if(returnedValue != null && returnedValue != 0) {
 			return returnedValue;
-		}
-
-		switch(event.event) {
-			case 'Kill Henchmen': //Better timing so that the kill sound matches the beat intended
-				return 280; //Plays 280ms before the actual position
 		}
 		return 0;
 	}

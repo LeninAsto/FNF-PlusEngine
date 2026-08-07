@@ -66,7 +66,7 @@ class MP4Handler extends HxvlcVideo
 		}
 	}
 
-	public function update(?E:Event):Void
+	private function update(?E:Event):Void
 	{
 		#if FLX_KEYBOARD
 		if ((FlxG.keys.justPressed.ENTER || FlxG.keys.justPressed.SPACE) && isPlaying)
