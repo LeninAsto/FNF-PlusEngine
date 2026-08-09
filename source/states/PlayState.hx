@@ -818,6 +818,9 @@ class PlayState extends MusicBeatState
 		timeTxt.borderSize = 2;
 		timeTxt.visible = updateTime = showTime;
 		if(ClientPrefs.data.downScroll) timeTxt.y = getGameplaySafeY() + getGameplaySafeHeight() - 44;
+		#if mobile
+		if(ClientPrefs.data.mobileReceptorAlign) timeTxt.y = getGameplaySafeY() + getGameplaySafeHeight() - 44;
+		#end
 		if(ClientPrefs.data.timeBarType == 'Song Name') timeTxt.text = SONG.song;
 
 		timeBar = new Bar(0, timeTxt.y + (timeTxt.height / 4), 'timeBar', function() return songPercent, 0, 1);
@@ -868,7 +871,10 @@ class PlayState extends MusicBeatState
 
 		FlxG.worldBounds.set(0, 0, FlxG.width, FlxG.height);
 		moveCameraSection();
-
+        
+		#if mobile
+		if(ClientPrefs.data.mobileReceptorAlign) healthBar = new Bar(0, getGameplaySafeY() + getGameplaySafeHeight() * 0.11, 'healthBar', function() return health, 0, 2);
+		#end
 		healthBar = new Bar(0, getGameplaySafeY() + getGameplaySafeHeight() * (!ClientPrefs.data.downScroll ? 0.89 : 0.11), 'healthBar', function() return health, 0, 2);
 		healthBar.x = getGameplaySafeX() + (getGameplaySafeWidth() - healthBar.width) / 2;
 		healthBar.leftToRight = playOpponent ? true : false;
@@ -963,6 +969,10 @@ class PlayState extends MusicBeatState
 		uiGroup.add(botplayTxt);
 		if(ClientPrefs.data.downScroll)
 			botplayTxt.y = healthBar.y + 70;
+		#if mobile
+		if(ClientPrefs.data.mobileReceptorAlign)
+		    botplayTxt.y = healthBar.y + 70;
+		#end
 
 		// Key Viewer
 		if(ClientPrefs.data.showKeyViewer) {
@@ -2638,6 +2648,10 @@ class PlayState extends MusicBeatState
 
 							if(ClientPrefs.data.downScroll)
 								sustainNote.correctionOffset = 0;
+							#if mobile
+							if(ClientPrefs.data.mobileReceptorAlign)
+							    sustainNote.correctionOffset = 0;
+							#end
 						}
 						else if(oldNote.isSustainNote)
 						{
@@ -2761,6 +2775,10 @@ class PlayState extends MusicBeatState
 	{
 		// Para charts de StepMania, centrar strums del jugador y ocultar del oponente
 		var strumLineX:Float = ClientPrefs.data.middleScroll ? STRUM_X_MIDDLESCROLL : STRUM_X;
+		#if mobile
+		if(ClientPrefs.data.mobileReceptorAlign)
+		    var strumLineY:Float = getGameplaySafeY() + (getGameplaySafeHeight() - 150);
+		#end
 		var strumLineY:Float = getGameplaySafeY() + (ClientPrefs.data.downScroll ? (getGameplaySafeHeight() - 150) : 50);
 		
 		// En StepMania, siempre centrar los strums del jugador
@@ -2786,6 +2804,9 @@ class PlayState extends MusicBeatState
 			}
 
 			var babyArrow:StrumNote = new StrumNote(strumLineX, strumLineY, i, player);
+			#if mobile
+			if(ClientPrefs.data.mobileReceptorAlign) babyArrow.downScroll = true;
+			#end
 			babyArrow.downScroll = ClientPrefs.data.downScroll;
 			if (!isStoryMode && !skipArrowStartTween)
 			{
@@ -3075,6 +3096,12 @@ class PlayState extends MusicBeatState
 		}
 		else if (!paused && updateTime)
 		{
+			#if mobile
+			if(ClientPrefs.data.mobileReceptorAlign)
+				if (breakTimerHud != null && playerStrums != null && playerStrums.length > 0)
+					breakTimerHud.updateDisplay(Conductor.songPosition, startingSong, playerStrums, true, getRenderedStrumCenterX,
+						getRenderedStrumTopY);
+			#end
 			if (breakTimerHud != null && playerStrums != null && playerStrums.length > 0)
 				breakTimerHud.updateDisplay(Conductor.songPosition, startingSong, playerStrums, ClientPrefs.data.downScroll, getRenderedStrumCenterX,
 					getRenderedStrumTopY);
@@ -6001,6 +6028,10 @@ class PlayState extends MusicBeatState
 		}
 
 		if (generatedMusic)
+		    #if mobile
+			if(ClientPrefs.data.mobileReceptorAlign)
+			    notes.sort(FlxSort.byY, FlxSort.ASCENDING);
+			#end
 			notes.sort(FlxSort.byY, ClientPrefs.data.downScroll ? FlxSort.ASCENDING : FlxSort.DESCENDING);
 
 		if (ClientPrefs.data.iconBounceType == 'Default')
