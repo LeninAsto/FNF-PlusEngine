@@ -1,0 +1,24 @@
+{
+  "version": "2.2.4",
+  "songName": "Spookeez (Pico Mix)",
+  "artist": "six impala (feat. Saster)",
+  "charter": "fabs + Spazkid",
+  "offsets": {},
+  "playData": {
+    "difficulties": ["easy", "normal", "hard"],
+    "characters": {
+      "player": "pico-dark",
+      "girlfriend": "nene-dark",
+      "opponent": "spooky-dark",
+      "instrumental": "pico",
+      "opponentVocals": ["spooky-dark"],
+      "playerVocals": ["pico-dark"]
+    },
+    "stage": "spookyMansionErect",
+    "noteStyle": "funkin",
+    "ratings": { "easy": 1, "normal": 2, "hard": 3 },
+    "album": "volume4"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 150, "bt": [4, 4, 4, 4] }]
+}

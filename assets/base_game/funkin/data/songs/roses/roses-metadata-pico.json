@@ -1,0 +1,24 @@
+{
+  "version": "2.2.4",
+  "songName": "Roses (Pico Mix)",
+  "artist": "Xploshi (ft. Saruky)",
+  "charter": "fabs + Spazkid",
+  "offsets": {},
+  "playData": {
+    "difficulties": ["easy", "normal", "hard"],
+    "characters": {
+      "player": "pico-pixel",
+      "girlfriend": "nene-pixel",
+      "opponent": "senpai-angry",
+      "instrumental": "pico",
+      "opponentVocals": ["senpai-angry"],
+      "playerVocals": ["pico-pixel"]
+    },
+    "stage": "schoolErect",
+    "noteStyle": "pixel",
+    "ratings": { "easy": 2, "normal": 3, "hard": 4 },
+    "album": "expansion2"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 120, "bt": [4, 4, 4, 4] }]
+}

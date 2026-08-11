@@ -1,0 +1,24 @@
+{
+  "version": "2.2.4",
+  "songName": "Ugh (Pico Mix)",
+  "artist": "tsuyunoshi (ft. Saruky)",
+  "charter": "fabs + Spazkid",
+  "offsets": {},
+  "playData": {
+    "difficulties": ["easy", "normal", "hard"],
+    "characters": {
+      "player": "pico-playable",
+      "girlfriend": "nene-tankmen",
+      "opponent": "tankman",
+      "instrumental": "pico",
+      "opponentVocals": ["tankman"],
+      "playerVocals": ["pico-playable"]
+    },
+    "stage": "tankmanBattlefieldErect",
+    "noteStyle": "funkin",
+    "ratings": { "easy": 2, "normal": 3, "hard": 4 },
+    "album": "volume4"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 160, "bt": [4, 4, 4, 4] }]
+}

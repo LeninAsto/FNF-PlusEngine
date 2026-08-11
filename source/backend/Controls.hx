@@ -287,15 +287,17 @@ class Controls
 	{
 		if (isInSubstate)
 			return MusicBeatSubstate.instance;
-		else
-			return MusicBeatState.getState();
+		else if (Std.isOfType(FlxG.state, MusicBeatState))
+			return cast(FlxG.state, MusicBeatState);
+
+		return null;
 	}
 
 	@:noCompletion
 	private function get_requestedMobileC():IMobileControls
 	{
 		var inst = requestedInstance;
-		if (inst == null) return null;
+		if (inst == null || !Reflect.hasField(inst, 'mobileControls')) return null;
 		return inst.mobileControls;
 	}
 

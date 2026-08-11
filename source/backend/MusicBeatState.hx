@@ -102,6 +102,10 @@ class MusicBeatState extends BaseMusicBeatState
 
 		super.create();
 
+		#if vslice
+		funkin.plus.VSlicePlusStateBridge.create(this);
+		#end
+
 		if(!skip) {
 			// Call scripts before fade in - if they return Function_Stop, they handle their own transition
 			var globalResult = callOnGlobalScript('onFadeIn');
@@ -129,6 +133,10 @@ class MusicBeatState extends BaseMusicBeatState
 	override function update(elapsed:Float)
 	{
 		NetworkCheckToast.updateRequests();
+
+		#if vslice
+		funkin.plus.VSlicePlusStateBridge.update(elapsed);
+		#end
 
 		//everyStep();
 		var oldStep:Int = curStep;
@@ -291,6 +299,10 @@ class MusicBeatState extends BaseMusicBeatState
 
 	override function destroy():Void
 	{
+		#if vslice
+		funkin.plus.VSlicePlusStateBridge.destroy(this);
+		#end
+
 		super.destroy();
 
 		#if HSCRIPT_ALLOWED

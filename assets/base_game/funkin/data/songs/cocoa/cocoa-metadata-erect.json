@@ -1,0 +1,24 @@
+{
+  "version": "2.2.4",
+  "songName": "Cocoa Erect",
+  "artist": "Saster",
+  "charter": "fabs + Spazkid",
+  "offsets": {},
+  "playData": {
+    "difficulties": ["erect", "nightmare"],
+    "characters": {
+      "player": "bf-christmas",
+      "girlfriend": "gf-christmas",
+      "opponent": "parents-christmas",
+      "instrumental": "erect",
+      "opponentVocals": ["parents-christmas"],
+      "playerVocals": ["bf-christmas"]
+    },
+    "stage": "mallXmasErect",
+    "noteStyle": "funkin",
+    "ratings": { "erect": 7, "nightmare": 8 },
+    "album": "volume4"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 174, "bt": [4, 4, 4, 4] }]
+}

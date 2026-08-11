@@ -1,0 +1,143 @@
+import funkin.graphics.FunkinSprite;
+import funkin.Conductor;
+import funkin.graphics.shaders.DropShadowShader;
+import flixel.FlxG;
+import flixel.util.FlxTimer;
+
+/**
+ * Base-game VSlice prop used by Tankman cutscene/stage scripts.
+ */
+class TankmanSprite extends FunkinSprite
+{
+  public var endingOffset:Float = 0;
+  public var runSpeed:Float = 0;
+  public var strumTime:Float = 0;
+  public var goingRight:Bool = false;
+
+  function new()
+  {
+    super();
+
+    loadSparrow('tankmanKilled1');
+    animation.addByPrefix('run', 'tankman running', 24, true);
+    animation.addByPrefix('shot', 'John Shot ' + FlxG.random.int(1, 2), 24, false);
+
+    initAnim();
+
+    setGraphicSize(Std.int(width * 0.4));
+    updateHitbox();
+  }
+
+  var deathFlickerTimer:FlxTimer = null;
+  var deathFlickerRunning:Bool = false;
+  var rim:DropShadowShader;
+
+  function deathFlicker()
+  {
+    cancelTankmanFlicker();
+
+    deathFlickerRunning = true;
+    visible = true;
+
+    deathFlickerTimer = new FlxTimer().start(1 / 20, function(timer:FlxTimer)
+    {
+      visible = !visible;
+
+      if (timer.loopsLeft <= 0)
+      {
+        deathFlickerTimer = null;
+        deathFlickerRunning = false;
+        visible = false;
+        kill();
+      }
+    }, 12);
+  }
+
+  function cancelTankmanFlicker()
+  {
+    if (deathFlickerTimer != null)
+    {
+      try deathFlickerTimer.cancel()
+      catch (e:Dynamic) {}
+      deathFlickerTimer = null;
+    }
+
+    deathFlickerRunning = false;
+    visible = true;
+  }
+
+  public function addRimlight()
+  {
+    rim = new DropShadowShader();
+
+    rim.baseBrightness = -46;
+    rim.baseHue = -38;
+    rim.baseContrast = -25;
+    rim.baseSaturation = -20;
+    rim.threshold = 0.4;
+    rim.color = 0xFFDFEF3C;
+    rim.attachedSprite = this.superClass;
+
+    shader = rim;
+
+    animation.onFrameChange.add(function()
+    {
+      rim.updateFrameInfo(this.frame);
+    });
+
+    rim.angle = 135;
+  }
+
+  function initAnim()
+  {
+    animation.play('run');
+    animation.curAnim.curFrame = FlxG.random.int(0, animation.curAnim.numFrames - 1);
+
+    offset.y = 0;
+    offset.x = 0;
+  }
+
+  function revive()
+  {
+    cancelTankmanFlicker();
+    super.revive();
+    visible = true;
+    initAnim();
+  }
+
+  function destroy():Void
+  {
+    cancelTankmanFlicker();
+    super.destroy();
+  }
+
+  function update(elapsed:Float):Void
+  {
+    super.update(elapsed);
+
+    if (animation.curAnim.name == 'shot' && animation.curAnim.curFrame >= 10 && !deathFlickerRunning)
+    {
+      deathFlicker();
+    }
+
+    if (Conductor.instance.songPosition >= strumTime && animation.curAnim.name == 'run')
+    {
+      animation.play('shot');
+      offset.y = 200;
+      offset.x = 300;
+    }
+
+    if (animation.curAnim.name == 'run')
+    {
+      var runFactor = ((Conductor.instance.songPosition - strumTime) * runSpeed);
+      if (!goingRight)
+      {
+        x = (FlxG.width * 0.02 - endingOffset) + runFactor;
+      }
+      else
+      {
+        x = (FlxG.width * 0.74 + endingOffset) - runFactor;
+      }
+    }
+  }
+}

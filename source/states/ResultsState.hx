@@ -182,7 +182,7 @@ class ResultsState extends MusicBeatState
             yBottom += 28;
         }
 
-        var engineInfo = Language.getPhrase('psych_engine_version', 'Psych Engine v') + MainMenuState.psychEngineVersion + "\n" + Language.getPhrase('fnf_version', 'Friday Night Funkin\' v') + "0.2.8";
+        var engineInfo = Language.getPhrase('psych_engine_version', 'Psych Engine v') + MainMenuState.psychEngineVersion + "\nFNF API v" + MainMenuState.fnfApiVersion;
         var engineText = new FlxText(0, FlxG.height - 100, FlxG.width, engineInfo, 25);
         engineText.setFormat(Paths.font("NotoSans-Medium.ttf"), 25, FlxColor.CYAN, "center");
         add(engineText);

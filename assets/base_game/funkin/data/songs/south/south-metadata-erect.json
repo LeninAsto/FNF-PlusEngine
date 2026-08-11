@@ -1,0 +1,24 @@
+{
+  "version": "2.2.4",
+  "songName": "South Erect",
+  "artist": "Kawai Sprite (feat. Saruky)",
+  "charter": "Spazkid + fabs",
+  "offsets": {},
+  "playData": {
+    "difficulties": ["erect", "nightmare"],
+    "characters": {
+      "player": "bf-dark",
+      "girlfriend": "gf-dark",
+      "opponent": "spooky-dark",
+      "instrumental": "erect",
+      "opponentVocals": ["spooky-dark"],
+      "playerVocals": ["bf-dark"]
+    },
+    "stage": "spookyMansionErect",
+    "noteStyle": "funkin",
+    "ratings": { "erect": 8, "nightmare": 9 },
+    "album": "volume3"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 177, "bt": [4, 4, 4, 4] }]
+}

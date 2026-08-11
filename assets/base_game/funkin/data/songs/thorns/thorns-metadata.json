@@ -1,0 +1,24 @@
+{
+  "version": "2.2.4",
+  "songName": "Thorns",
+  "artist": "Kawai Sprite",
+  "charter": "ninjamuffin99 + MtH",
+  "offsets": {},
+  "playData": {
+    "songVariations": ["erect"],
+    "difficulties": ["easy", "normal", "hard"],
+    "characters": {
+      "player": "bf-pixel",
+      "girlfriend": "gf-pixel",
+      "opponent": "spirit",
+      "opponentVocals": ["spirit"],
+      "playerVocals": ["bf-pixel"]
+    },
+    "stage": "schoolEvil",
+    "noteStyle": "pixel",
+    "ratings": { "easy": 2, "normal": 3, "hard": 4 },
+    "album": "volume2"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 190, "bt": [4, 4, 4, 4] }]
+}

@@ -1,0 +1,24 @@
+{
+  "version": "2.2.4",
+  "songName": "Pico (Pico Mix)",
+  "artist": "Metaroom (ft. Saster)",
+  "charter": "fabs",
+  "offsets": {},
+  "playData": {
+    "difficulties": ["easy", "normal", "hard"],
+    "characters": {
+      "player": "pico-playable",
+      "girlfriend": "nene",
+      "opponent": "pico",
+      "instrumental": "pico",
+      "opponentVocals": ["pico"],
+      "playerVocals": ["pico-playable"]
+    },
+    "stage": "phillyTrainErect",
+    "noteStyle": "funkin",
+    "ratings": { "easy": 2, "normal": 3, "hard": 4 },
+    "album": "expansion2"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 150, "bt": [4, 4, 4, 4] }]
+}

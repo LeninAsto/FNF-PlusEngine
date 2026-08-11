@@ -16,10 +16,14 @@ class OptionsState extends MusicBeatState
 		'Visuals',
 		'Gameplay',
 		'Legacy',
+		'VSlice',
 		#if MODCHARTS_NOTITG_ALLOWED 'Modchart' #end
 		#if TRANSLATIONS_ALLOWED , 'Language' #end,
 		#if mobile 'Mobile' #end
 	];
+	#if vslice
+	var vsliceOptionCategories:Map<String, Dynamic> = [];
+	#end
 	private var grpOptions:FlxTypedGroup<Alphabet>;
 	private static var curSelected:Int = 0;
 	var lerpSelected:Float = 0;
@@ -51,6 +55,11 @@ class OptionsState extends MusicBeatState
 
 	function getDisplayLabel(label:String):String
 	{
+		#if vslice
+		if (vsliceOptionCategories != null && vsliceOptionCategories.exists(label))
+			return label;
+		#end
+
 		return switch (label)
 		{
 			case 'Note Colors': Language.getPhrase('notes', 'Note Colors');
@@ -59,6 +68,7 @@ class OptionsState extends MusicBeatState
 			case 'Visuals': Language.getPhrase('visuals_menu', 'Visual Settings');
 			case 'Gameplay': Language.getPhrase('gameplay_menu', 'Gameplay Settings');
 			case 'Legacy': Language.getPhrase('legacy_menu', 'Legacy Settings');
+			case 'VSlice': Language.getPhrase('vslice_menu', 'VSlice Settings');
 			case 'Modchart': Language.getPhrase('modchart_menu', 'Modchart Settings');
 			case 'Language': Language.getPhrase('language_menu', 'Language');
 			case 'Mobile': Language.getPhrase('mobile_settings', 'Mobile Settings');
@@ -109,6 +119,10 @@ class OptionsState extends MusicBeatState
 			persistentUpdate = true;
 			beginSubstateTransition(label);
 		}
+		#if vslice
+		if (openVSliceOptionCategory(label))
+			return;
+		#end
 		switch(label)
 		{
 			case 'Note Colors':
@@ -124,6 +138,8 @@ class OptionsState extends MusicBeatState
 				openSubState(ScriptableSubstate.tryCreate('GameplaySettingsSubState', new options.GameplaySettingsSubState()));
 			case 'Legacy':
 				openSubState(ScriptableSubstate.tryCreate('LegacySettingsSubState', new options.LegacySettingsSubState()));
+			case 'VSlice':
+				openSubState(ScriptableSubstate.tryCreate('VSliceSettingsSubState', new options.VSliceSettingsSubState()));
 			case 'Modchart':
 				openSubState(ScriptableSubstate.tryCreate('ModchartSettingsSubState', new options.ModchartSettingsSubState()));
 			case 'Adjust Delay and Combo':
@@ -136,6 +152,19 @@ class OptionsState extends MusicBeatState
 		}
 	}
 
+	#if vslice
+	function openVSliceOptionCategory(label:String):Bool
+	{
+		if (vsliceOptionCategories == null || !vsliceOptionCategories.exists(label))
+			return false;
+
+		var category:Dynamic = vsliceOptionCategories.get(label);
+		clearSubstateTransition();
+		MusicBeatState.switchState(funkin.plus.VSliceRuntime.createOptionsState(category.pageId));
+		return true;
+	}
+	#end
+
 	var selectorLeft:Alphabet;
 	var selectorRight:Alphabet;
 
@@ -143,6 +172,10 @@ class OptionsState extends MusicBeatState
 	{
 		#if DISCORD_ALLOWED
 		DiscordClient.changePresence("Options Menu", null);
+		#end
+
+		#if vslice
+		appendVSliceOptionCategories();
 		#end
 
 		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
@@ -208,6 +241,20 @@ class OptionsState extends MusicBeatState
 		callOnCompanionScript('onOptionsMenuCreatePost', [getOptionsCopy()]);
 		new FlxTimer().start(OPTION_INTRO_DURATION + 0.06, function(_) optionsIntroActive = false);
 	}
+
+	#if vslice
+	function appendVSliceOptionCategories():Void
+	{
+		vsliceOptionCategories = [];
+		for (category in funkin.plus.VSliceRuntime.listOptionCategories())
+		{
+			var label:String = 'VSlice: ${category.label}';
+			if (options.contains(label)) continue;
+			options.push(label);
+			vsliceOptionCategories.set(label, category);
+		}
+	}
+	#end
 
 	override function closeSubState()
 	{

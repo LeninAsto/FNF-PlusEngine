@@ -1,0 +1,28 @@
+{
+  "version": "2.2.4",
+  "songName": "Roses",
+  "artist": "Kawai Sprite",
+  "charter": "ninjamuffin99 + MtH + Spazkid",
+  "offsets": {
+    "altInstrumentals": { "pico": -4000.0 },
+    "altVocals": { "pico": { "senpai-angry": 4000.0, "bf-pixel": 4000.0 } }
+  },
+  "playData": {
+    "songVariations": ["erect", "pico"],
+    "difficulties": ["easy", "normal", "hard"],
+    "characters": {
+      "player": "bf-pixel",
+      "girlfriend": "gf-pixel",
+      "opponent": "senpai-angry",
+      "altInstrumentals": ["pico"],
+      "opponentVocals": ["senpai-angry"],
+      "playerVocals": ["bf-pixel"]
+    },
+    "stage": "school",
+    "noteStyle": "pixel",
+    "ratings": { "easy": 2, "normal": 3, "hard": 4 },
+    "album": "volume2"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 120, "bt": [4, 4, 4, 4] }]
+}

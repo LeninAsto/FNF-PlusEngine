@@ -1,0 +1,24 @@
+{
+  "version": "2.2.4",
+  "songName": "Cocoa (Pico Mix)",
+  "artist": "six impala (feat. Saruky)",
+  "charter": "fabs + Spazkid",
+  "offsets": {},
+  "playData": {
+    "difficulties": ["easy", "normal", "hard"],
+    "characters": {
+      "player": "pico-christmas",
+      "girlfriend": "nene-christmas",
+      "opponent": "parents-christmas",
+      "instrumental": "pico",
+      "opponentVocals": ["parents-christmas"],
+      "playerVocals": ["pico-christmas"]
+    },
+    "stage": "mallXmasErect",
+    "noteStyle": "funkin",
+    "ratings": { "easy": 2, "normal": 3, "hard": 4 },
+    "album": "expansion2"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 100, "bt": [4, 4, 4, 4] }]
+}

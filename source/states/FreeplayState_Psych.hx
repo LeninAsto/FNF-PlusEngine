@@ -23,6 +23,11 @@ import haxe.io.Path;
 
 import haxe.Json;
 
+#if FEATURE_POLYMOD_MODS
+import funkin.plus.VSliceFreeplayBridge;
+import funkin.plus.VSliceFreeplayBridge.VSliceFreeplaySong;
+#end
+
 class FreeplayState_Psych extends MusicBeatState
 {
 	var songs:Array<SongMetadataPsych> = [];
@@ -72,7 +77,12 @@ class FreeplayState_Psych extends MusicBeatState
 		final accept:String = (controls.mobileC) ? "A" : "ACCEPT";
 		final reject:String = (controls.mobileC) ? "B" : "BACK";
 
-		if(WeekData.weeksList.length < 1)
+		var vsliceSongs:Array<Dynamic> = [];
+		#if FEATURE_POLYMOD_MODS
+		vsliceSongs = cast VSliceFreeplayBridge.listSongs();
+		#end
+
+		if(WeekData.weeksList.length < 1 && vsliceSongs.length < 1)
 		{
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
@@ -108,6 +118,7 @@ class FreeplayState_Psych extends MusicBeatState
 			}
 		}
 		Mods.loadTopMod();
+		appendVSliceSongs(vsliceSongs);
 
 		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
@@ -126,8 +137,10 @@ class FreeplayState_Psych extends MusicBeatState
 			songText.scaleX = Math.min(1, 980 / songText.width);
 			songText.snapToPosition();
 
-			Mods.currentModDirectory = songs[i].folder;
+			Mods.currentModDirectory = songs[i].isVSlice ? '' : songs[i].folder;
+			Mods.currentVSliceModDirectory = songs[i].isVSlice ? songs[i].vsliceMod : '';
 			var icon:HealthIcon = new HealthIcon(songs[i].songCharacter);
+			Mods.currentVSliceModDirectory = '';
 			icon.sprTracker = songText;
 
 			songText.visible = songText.active = songText.isMenuItem = false;
@@ -224,6 +237,23 @@ class FreeplayState_Psych extends MusicBeatState
 		songs.push(new SongMetadataPsych(songName, weekNum, songCharacter, color));
 	}
 
+	function appendVSliceSongs(vsliceSongs:Array<Dynamic>):Void
+	{
+		#if FEATURE_POLYMOD_MODS
+		for (entry in vsliceSongs)
+		{
+			var song:SongMetadataPsych = new SongMetadataPsych(entry.displayName, -1, entry.icon, entry.color);
+			song.folder = '';
+			song.isVSlice = true;
+			song.vsliceMod = entry.modDir;
+			song.vsliceSongId = entry.songId;
+			song.vsliceVariation = entry.variation;
+			song.vsliceDifficulties = entry.difficulties.copy();
+			songs.push(song);
+		}
+		#end
+	}
+
 	function weekIsLocked(name:String):Bool
 	{
 		var leWeek:WeekData = WeekData.weeksLoaded.get(name);
@@ -238,10 +268,10 @@ class FreeplayState_Psych extends MusicBeatState
 	var stopMusicPlay:Bool = false;
 	override function update(elapsed:Float)
 	{
-		if(WeekData.weeksList.length < 1)
+		if(songs.length < 1)
 			return;
 
-		if (FlxG.sound.music.volume < 0.7)
+		if (FlxG.sound.music != null && FlxG.sound.music.volume < 0.7)
 			FlxG.sound.music.volume += 0.5 * elapsed;
 
 		lerpScore = Math.floor(FlxMath.lerp(intendedScore, lerpScore, Math.exp(-elapsed * 24)));
@@ -360,6 +390,14 @@ class FreeplayState_Psych extends MusicBeatState
 		}
 		else if(FlxG.keys.justPressed.SPACE || touchPad.buttonX.justPressed)
 		{
+			if (songs[curSelected].isVSlice)
+			{
+				FlxG.sound.play(Paths.sound('cancelMenu'), 0.35);
+				updateTexts(elapsed);
+				super.update(elapsed);
+				return;
+			}
+
 			if(instPlaying != curSelected && !player.playingMusic)
 			{
 				destroyFreeplayVocals();
@@ -433,6 +471,16 @@ class FreeplayState_Psych extends MusicBeatState
 		else if ((controls.ACCEPT || touchPad.buttonA.justPressed) && !player.playingMusic)
 		{
 			persistentUpdate = false;
+			if (songs[curSelected].isVSlice)
+			{
+				stopMusicPlay = true;
+				destroyFreeplayVocals();
+				#if FEATURE_POLYMOD_MODS
+				VSliceFreeplayBridge.play(songs[curSelected].toVSliceEntry(), curDifficulty);
+				#end
+				return;
+			}
+
 			var songLowercase:String = Paths.formatToSongPath(songs[curSelected].songName);
 			var poop:String = Highscore.formatSong(songLowercase, curDifficulty);
 
@@ -567,13 +615,26 @@ class FreeplayState_Psych extends MusicBeatState
 			}
 		}
 		
-		Mods.currentModDirectory = songs[curSelected].folder;
-		PlayState.storyWeek = songs[curSelected].week;
-		Difficulty.loadFromWeek();
+		if (songs[curSelected].isVSlice)
+		{
+			Mods.currentModDirectory = '';
+			Mods.currentVSliceModDirectory = songs[curSelected].vsliceMod;
+			PlayState.storyWeek = -1;
+			Difficulty.list = songs[curSelected].vsliceDifficulties != null && songs[curSelected].vsliceDifficulties.length > 0
+				? songs[curSelected].vsliceDifficulties.copy()
+				: ['normal'];
+		}
+		else
+		{
+			Mods.currentVSliceModDirectory = '';
+			Mods.currentModDirectory = songs[curSelected].folder;
+			PlayState.storyWeek = songs[curSelected].week;
+			Difficulty.loadFromWeek();
+		}
 		
 		var savedDiff:String = songs[curSelected].lastDifficulty;
 		var lastDiff:Int = Difficulty.list.indexOf(lastDifficultyName);
-		if(savedDiff != null && !Difficulty.list.contains(savedDiff) && Difficulty.list.contains(savedDiff))
+		if(savedDiff != null && Difficulty.list.contains(savedDiff))
 			curDifficulty = Math.round(Math.max(0, Difficulty.list.indexOf(savedDiff)));
 		else if(lastDiff > -1)
 			curDifficulty = lastDiff;
@@ -688,7 +749,7 @@ class FreeplayState_Psych extends MusicBeatState
 		super.destroy();
 
 		FlxG.autoPause = ClientPrefs.data.autoPause;
-		if (!FlxG.sound.music.playing && !stopMusicPlay)
+		if (!stopMusicPlay && (FlxG.sound.music == null || !FlxG.sound.music.playing))
 			FlxG.sound.playMusic(Paths.music('freakyMenu'));
 	}	
 }
@@ -701,6 +762,11 @@ class SongMetadataPsych
 	public var color:Int = -7179779;
 	public var folder:String = "";
 	public var lastDifficulty:String = null;
+	public var isVSlice:Bool = false;
+	public var vsliceMod:String = "";
+	public var vsliceSongId:String = "";
+	public var vsliceVariation:String = "default";
+	public var vsliceDifficulties:Array<String> = [];
 
 	public function new(song:String, week:Int, songCharacter:String, color:Int)
 	{
@@ -711,4 +777,20 @@ class SongMetadataPsych
 		this.folder = Mods.currentModDirectory;
 		if(this.folder == null) this.folder = '';
 	}
+
+	#if FEATURE_POLYMOD_MODS
+	public function toVSliceEntry():VSliceFreeplaySong
+	{
+		return {
+			songId: vsliceSongId,
+			displayName: songName,
+			modDir: vsliceMod,
+			levelId: '',
+			icon: songCharacter,
+			color: color,
+			difficulties: vsliceDifficulties.copy(),
+			variation: vsliceVariation
+		};
+	}
+	#end
 }

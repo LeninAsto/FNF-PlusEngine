@@ -15,6 +15,7 @@ typedef ModsList = {
 class Mods
 {
 	static public var currentModDirectory:String = '';
+	static public var currentVSliceModDirectory:String = '';
 	public static final ignoreModFolders:Array<String> = [
 		'characters',
 		'custom_events',
@@ -34,6 +35,7 @@ class Mods
 	];
 
 	private static var globalMods:Array<String> = [];
+	private static var updatedVSliceOnState:Bool = false;
 
 	inline public static function getGlobalMods()
 		return globalMods;
@@ -64,6 +66,32 @@ class Mods
 		}
 		#end
 		return list;
+	}
+
+	inline public static function getVSliceModDirectories():Array<String>
+	{
+		var list:Array<String> = [];
+		#if MODS_ALLOWED
+		var modsFolder:String = Paths.vsliceMods();
+		if(Paths.safeModPathExists(modsFolder)) {
+			for (folder in Paths.safeReadDirectory(modsFolder))
+			{
+				var path = haxe.io.Path.join([modsFolder, folder]);
+				if (Paths.safeModIsDirectory(path) && !list.contains(folder))
+					list.push(folder);
+			}
+		}
+		#end
+		return list;
+	}
+
+	inline public static function getVSliceModsRoot():String
+	{
+		#if MODS_ALLOWED
+		return Paths.vsliceMods();
+		#else
+		return 'vslice_mods/';
+		#end
 	}
 	
 	inline public static function mergeAllTextsNamed(path:String, ?defaultDirectory:String = null, allowDuplicates:Bool = false)
@@ -176,8 +204,71 @@ class Mods
 		#end
 		return list;
 	}
+
+	inline public static function parseVSliceList():ModsList {
+		if(!updatedVSliceOnState) updateVSliceModList();
+		var list:ModsList = {enabled: [], disabled: [], all: []};
+
+		#if MODS_ALLOWED
+		try {
+			for (mod in CoolUtil.coolTextFile(getVSliceListPath()))
+			{
+				if(mod.trim().length < 1) continue;
+
+				var dat = mod.split("|");
+				list.all.push(dat[0]);
+				if (dat.length < 2 || dat[1] == "1")
+					list.enabled.push(dat[0]);
+				else
+					list.disabled.push(dat[0]);
+			}
+		} catch(e) {
+			trace(e);
+		}
+		#end
+		return list;
+	}
+
+	public static function getVSliceListPath():String
+	{
+		#if android
+		return StorageUtil.getStorageDirectory() + 'vsliceList.txt';
+		#else
+		return Sys.getCwd() + 'vsliceList.txt';
+		#end
+	}
+
+	public static function saveList(list:ModsList, vsliceMode:Bool = false):Void
+	{
+		var fileStr:String = '';
+		for (mod in list.all)
+		{
+			if(mod.trim().length < 1) continue;
+
+			if(fileStr.length > 0) fileStr += '\n';
+
+			var on = '1';
+			if(list.disabled.contains(mod)) on = '0';
+			fileStr += '$mod|$on';
+		}
+
+		var path:String = vsliceMode ? getVSliceListPath() : (#if android StorageUtil.getModsListPath() #else Sys.getCwd() + 'modsList.txt' #end);
+		try
+		{
+			File.saveContent(path, fileStr);
+		}
+		catch(e:Dynamic)
+		{
+			trace('[Mods] Failed to save ${vsliceMode ? 'vsliceList.txt' : 'modsList.txt'}: $e');
+		}
+
+		if (vsliceMode)
+			updatedVSliceOnState = true;
+		else
+			updatedOnState = true;
+	}
 	
-	private static function updateModList()
+	public static function updateModList()
 	{
 		#if MODS_ALLOWED
 		// Find all that are already ordered
@@ -233,6 +324,56 @@ class Mods
 		#end
 	}
 
+	public static function updateVSliceModList()
+	{
+		#if MODS_ALLOWED
+		var list:Array<Array<Dynamic>> = [];
+		var added:Array<String> = [];
+		try {
+			for (mod in CoolUtil.coolTextFile(getVSliceListPath()))
+			{
+				var dat:Array<String> = mod.split("|");
+				var folder:String = dat[0];
+				var folderPath:String = Paths.vsliceMods(folder);
+				if(folder.trim().length > 0 && Paths.safeModIsDirectory(folderPath) && !added.contains(folder))
+				{
+					added.push(folder);
+					list.push([folder, (dat.length < 2 || dat[1] == "1")]);
+				}
+			}
+		} catch(e) {
+			trace(e);
+		}
+		
+		for (folder in getVSliceModDirectories())
+		{
+			var folderPath:String = Paths.vsliceMods(folder);
+			if(folder.trim().length > 0 && Paths.safeModIsDirectory(folderPath) && !added.contains(folder))
+			{
+				added.push(folder);
+				list.push([folder, true]);
+			}
+		}
+
+		var fileStr:String = '';
+		for (values in list)
+		{
+			if(fileStr.length > 0) fileStr += '\n';
+			fileStr += values[0] + '|' + (values[1] ? '1' : '0');
+		}
+
+		try
+		{
+			File.saveContent(getVSliceListPath(), fileStr);
+		}
+		catch(e:Dynamic)
+		{
+			trace('Failed to save vsliceList.txt: $e');
+		}
+		updatedVSliceOnState = true;
+		#end
+	}
+
 	public static function loadTopMod()
 	{
 		Mods.currentModDirectory = '';
@@ -241,6 +382,17 @@ class Mods
 		var list:Array<String> = Mods.parseList().enabled;
 		if(list != null && list[0] != null)
 			Mods.currentModDirectory = list[0];
+		#end
+	}
+
+	public static function loadTopVSliceMod()
+	{
+		Mods.currentVSliceModDirectory = '';
+		
+		#if MODS_ALLOWED
+		var list:Array<String> = Mods.parseVSliceList().enabled;
+		if(list != null && list[0] != null)
+			Mods.currentVSliceModDirectory = list[0];
 		#end
 	}
 }

@@ -61,9 +61,13 @@ class ModsMenuState extends MusicBeatState
 
 	public var _lastControllerMode:Bool = false;
 	public var startMod:String = null;
-	public function new(startMod:String = null)
+	public var vsliceMode:Bool = false;
+	public var returnToSelector:Bool = false;
+	public function new(startMod:String = null, vsliceMode:Bool = false, returnToSelector:Bool = false)
 	{
 		this.startMod = startMod;
+		this.vsliceMode = vsliceMode;
+		this.returnToSelector = returnToSelector;
 		super();
 	}
 	override function create()
@@ -76,8 +80,9 @@ class ModsMenuState extends MusicBeatState
 		Paths.clearUnusedMemory();
 		persistentUpdate = false;
 
-		modsList = Mods.parseList();
-		Mods.loadTopMod();
+		modsList = vsliceMode ? Mods.parseVSliceList() : Mods.parseList();
+		if (vsliceMode) Mods.loadTopVSliceMod();
+		else Mods.loadTopMod();
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
@@ -99,7 +104,7 @@ class ModsMenuState extends MusicBeatState
 		{
 			if(startMod == mod) curSelectedMod = i;
 
-			var modItem:ModItem = new ModItem(mod);
+			var modItem:ModItem = new ModItem(mod, vsliceMode);
 			if(modsList.disabled.contains(mod))
 			{
 				modItem.icon.color = 0xFFFF6666;
@@ -330,6 +335,7 @@ class ModsMenuState extends MusicBeatState
 	var exiting:Bool = false;
 	function hasBootStateOverrides():Bool
 	{
+		if (vsliceMode) return false;
 		#if (HSCRIPT_ALLOWED && MODS_ALLOWED && !mobile)
 		return ScriptableState.hasScript('TitleState')
 			|| ScriptableState.hasScript('FlashingState')
@@ -372,7 +378,7 @@ class ModsMenuState extends MusicBeatState
 			else
 			{
 				if(waitingToRestart) Language.reloadPhrases();
-				MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
+				MusicBeatState.switchState(returnToSelector ? new ModsManagerSelectorState() : backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
 			}
 
 			persistentUpdate = false;
@@ -596,8 +602,9 @@ class ModsMenuState extends MusicBeatState
 			{
 				nextAttempt = 1;
 				@:privateAccess
-				Mods.updateModList();
-				modsList = Mods.parseList();
+				if (vsliceMode) Mods.updateVSliceModList();
+				else Mods.updateModList();
+				modsList = vsliceMode ? Mods.parseVSliceList() : Mods.parseList();
 			if(modsList.all.length > 0)
 			{
 				trace('mod(s) found! reloading');
@@ -726,7 +733,14 @@ class ModsMenuState extends MusicBeatState
 		}
 		updateItemPositions();
 
-		icon.loadGraphic(curMod.icon.graphic, true, 150, 150);
+		if (curMod.totalFrames > 0)
+			icon.loadGraphic(curMod.icon.graphic, true, 150, 150);
+		else
+		{
+			icon.loadGraphic(curMod.icon.graphic);
+			icon.setGraphicSize(150, 150);
+			icon.updateHitbox();
+		}
 		icon.antialiasing = curMod.icon.antialiasing;
 
 		if(curMod.totalFrames > 0)
@@ -742,7 +756,8 @@ class ModsMenuState extends MusicBeatState
 		modName.setScale(newScale, Math.min(newScale * 1.35, 0.8));
 		modName.y = modNameInitialY - (modName.height / 2);
 		modRestartText.visible = curMod.mustRestart;
-		modDesc.text = curMod.desc;
+		modDesc.size = vsliceMode ? 20 : 24;
+		modDesc.text = curMod.desc + (vsliceMode ? curMod.getVSliceDetails() : '');
 
 		for (button in buttons) if(button.focusChangeCallback != null) button.focusChangeCallback(button.onFocus);
 		settingsButton.enabled = (curMod.settings != null && curMod.settings.length > 0);
@@ -891,41 +906,22 @@ class ModsMenuState extends MusicBeatState
 		FlxTransitionableState.skipNextTransIn = true;
 		FlxTransitionableState.skipNextTransOut = true;
 		var curMod:ModItem = modsGroup.members[curSelectedMod];
-		MusicBeatState.switchState(backend.ScriptableState.tryCreate('ModsMenuState', new ModsMenuState(curMod != null ? curMod.folder : null)));
+		MusicBeatState.switchState(backend.ScriptableState.tryCreate('ModsMenuState', new ModsMenuState(curMod != null ? curMod.folder : null, vsliceMode, returnToSelector)));
 	}
 	
 	function saveTxt()
 	{
-		var fileStr:String = '';
-		for (mod in modsList.all)
+		Mods.saveList(modsList, vsliceMode);
+		if (vsliceMode)
 		{
-			if(mod.trim().length < 1) continue;
-
-			if(fileStr.length > 0) fileStr += '\n';
-
-			var on = '1';
-			if(modsList.disabled.contains(mod)) on = '0';
-			fileStr += '$mod|$on';
+			Mods.parseVSliceList();
+			Mods.loadTopVSliceMod();
 		}
-
-		// Use StorageUtil.saveContent with proper error handling and no popup alert
-		#if android
-		try {
-			File.saveContent(StorageUtil.getModsListPath(), fileStr);
-		} catch (e:Dynamic) {
-			trace('[ModsMenuState] Failed to save modsList.txt: $e');
+		else
+		{
+			Mods.parseList();
+			Mods.loadTopMod();
 		}
-		#else
-		var path:String = Sys.getCwd() + 'modsList.txt';
-		try {
-			File.saveContent(path, fileStr);
-		} catch (e:Dynamic) {
-			trace('[ModsMenuState] Failed to save modsList.txt: $e');
-		}
-		#end
-		
-		Mods.parseList();
-		Mods.loadTopMod();
 	}
 }
 
@@ -945,16 +941,18 @@ class ModItem extends FlxSpriteGroup
 	public var folder:String = 'unknownMod';
 	public var mustRestart:Bool = false;
 	public var settings:Array<Dynamic> = null;
+	public var vsliceMode:Bool = false;
 
-	public function new(folder:String)
+	public function new(folder:String, vsliceMode:Bool = false)
 	{
 		super();
 
 		this.folder = folder;
-		pack = Mods.getPack(folder);
+		this.vsliceMode = vsliceMode;
+		pack = vsliceMode ? getVSliceMeta(folder) : Mods.getPack(folder);
 
 		var path:String = Paths.mods('$folder/data/settings.json');
-		if(FileSystem.exists(path))
+		if(!vsliceMode && FileSystem.exists(path))
 		{
 			try
 			{
@@ -985,10 +983,10 @@ class ModItem extends FlxSpriteGroup
 		add(text);
 
 		var isPixel = false;
-		var file:String = Paths.mods('$folder/pack.png');
+		var file:String = vsliceMode ? Paths.vsliceMods('$folder/_polymod_icon.png') : Paths.mods('$folder/pack.png');
 		if (!FileSystem.exists(file))
 		{
-			file = Paths.mods('$folder/pack-pixel.png');
+			file = vsliceMode ? Paths.vsliceMods('$folder/pack-pixel.png') : Paths.mods('$folder/pack-pixel.png');
 			isPixel = true;
 		}
 		
@@ -998,17 +996,30 @@ class ModItem extends FlxSpriteGroup
 
 		if(FileSystem.exists(file))
 		{
-			icon.loadGraphic(Paths.cacheBitmap(file, bmp), true, 150, 150);
-			if(isPixel) icon.antialiasing = false;
+			if (vsliceMode)
+			{
+				icon.loadGraphic(Paths.cacheBitmap(file, bmp));
+				icon.setGraphicSize(75, 75);
+				icon.updateHitbox();
+			}
+			else
+			{
+				icon.loadGraphic(Paths.cacheBitmap(file, bmp), true, 150, 150);
+				if(isPixel) icon.antialiasing = false;
+			}
 		}
 		else icon.loadGraphic(Paths.image('unknownMod'), true, 150, 150);
-		icon.scale.set(0.5, 0.5);
-		icon.updateHitbox();
+		if (!vsliceMode)
+		{
+			icon.scale.set(0.5, 0.5);
+			icon.updateHitbox();
+		}
 		
 		this.name = folder;
 		if(pack != null)
 		{
 			if(pack.name != null) this.name = pack.name;
+			if(pack.title != null) this.name = pack.title;
 			if(pack.description != null) this.desc = pack.description;
 			if(pack.iconFramerate != null) this.iconFps = pack.iconFramerate;
 			if(pack.color != null)
@@ -1021,7 +1032,7 @@ class ModItem extends FlxSpriteGroup
 		}
 		text.text = this.name;
 
-		if(bmp != null)
+		if(bmp != null && !vsliceMode)
 		{
 			totalFrames = Math.floor(bmp.width / 150) * Math.floor(bmp.height / 150);
 			icon.animation.add("icon", [for (i in 0...totalFrames) i], iconFps);
@@ -1029,6 +1040,85 @@ class ModItem extends FlxSpriteGroup
 		}
 		selectBg.scale.set(width + 5, height + 5);
 		selectBg.updateHitbox();
+	}
+
+	function getVSliceMeta(folder:String):Dynamic
+	{
+		var metaPath:String = Paths.vsliceMods('$folder/_polymod_meta.json');
+		if (FileSystem.exists(metaPath))
+		{
+			try
+			{
+				return Json.parse(File.getContent(metaPath));
+			}
+			catch(e:Dynamic)
+			{
+				trace('[ModsMenuState] Failed to parse _polymod_meta.json for $folder: $e');
+			}
+		}
+		return null;
+	}
+
+	public function getVSliceDetails():String
+	{
+		if (!vsliceMode || pack == null) return '';
+
+		var lines:Array<String> = [];
+		addMetaLine(lines, 'Version', ['mod_version', 'modVersion', 'version']);
+		addMetaLine(lines, 'API', ['api_version', 'apiVersion', 'api']);
+		addMetaLine(lines, 'License', ['license']);
+
+		var contributors:String = getContributorsSummary();
+		if (contributors.length > 0) lines.push('Contributors: ' + contributors);
+
+		return lines.length > 0 ? '\n\n' + lines.join('\n') : '';
+	}
+
+	function addMetaLine(lines:Array<String>, label:String, fields:Array<String>):Void
+	{
+		for (field in fields)
+		{
+			var value:Dynamic = Reflect.field(pack, field);
+			if (value == null) continue;
+
+			var text:String = Std.string(value).trim();
+			if (text.length > 0)
+			{
+				lines.push(label + ': ' + text);
+				return;
+			}
+		}
+	}
+
+	function getContributorsSummary():String
+	{
+		var contributors:Dynamic = Reflect.field(pack, 'contributors');
+		if (contributors == null || !Std.isOfType(contributors, Array)) return '';
+
+		var names:Array<String> = [];
+		var raw:Array<Dynamic> = cast contributors;
+		for (entry in raw)
+		{
+			var name:String = '';
+			if (Std.isOfType(entry, String))
+				name = Std.string(entry);
+			else
+			{
+				var entryName:Dynamic = Reflect.field(entry, 'name');
+				var role:Dynamic = Reflect.field(entry, 'role');
+				if (entryName != null)
+					name = Std.string(entryName);
+				if (name.length > 0 && role != null && Std.string(role).trim().length > 0)
+					name += ' (' + Std.string(role).trim() + ')';
+			}
+
+			name = name.trim();
+			if (name.length > 0) names.push(name);
+			if (names.length >= 8) break;
+		}
+
+		if (raw.length > names.length) names.push('+' + (raw.length - names.length) + ' more');
+		return names.join(', ');
 	}
 }
 
