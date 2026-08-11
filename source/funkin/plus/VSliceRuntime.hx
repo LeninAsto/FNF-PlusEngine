@@ -93,12 +93,22 @@ class VSliceRuntime
 			variation = Constants.DEFAULT_VARIATION;
 			targetSong = SongRegistry.instance.fetchEntry(songId, {variation: variation});
 		}
-		if (targetSong == null) throw 'Could not find VSlice song "$songId"';
+		if (targetSong == null)
+		{
+			trace('VSliceRuntime could not find song "$songId"; returning to Plus freeplay.');
+			FlxG.switchState(() -> states.FreeplayStateSelector.create());
+			return;
+		}
 
 		variation = resolveVariationForDifficulty(targetSong, difficulty, variation);
 		trace('VSliceRuntime loading song "$songId" difficulty "$difficulty" variation "$variation"');
 
 		var targetDifficulty = targetSong.getDifficulty(difficulty, variation);
+		if (targetDifficulty == null && variation != Constants.DEFAULT_VARIATION)
+		{
+			variation = Constants.DEFAULT_VARIATION;
+			targetDifficulty = targetSong.getDifficulty(difficulty, variation);
+		}
 		if (targetDifficulty == null)
 		{
 			trace('VSliceRuntime could not find chart data for "$songId" difficulty "$difficulty" variation "$variation"; returning to Plus freeplay.');
@@ -260,6 +270,26 @@ class VSliceRuntime
 		}
 		#end
 		return result;
+	}
+
+	public static function refreshLoadedModsFromMenu():Void
+	{
+		#if FEATURE_POLYMOD_MODS
+		var dirs:Array<String> = getEnabledVSliceModDirs();
+		var signature:String = dirs.join('|');
+
+		active = dirs.length > 0;
+		initialized = false;
+		loadedSignature = null;
+
+		ModuleHandler.clearModuleCache();
+		polymod.Polymod.clearScripts();
+		PolymodHandler.loadModsByDir(dirs);
+		reloadRegistries();
+
+		initialized = true;
+		loadedSignature = signature;
+		#end
 	}
 
 	public static function listOptionCategories():Array<VSliceOptionCategory>

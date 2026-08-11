@@ -197,6 +197,13 @@ class WeekData {
 		return weeksList[PlayState.storyWeek];
 	}
 
+	public static function getWeekIndex(fileName:String):Int
+	{
+		if (fileName == null)
+			return -1;
+		return weeksList.indexOf(fileName);
+	}
+
 	//Used on LoadingState, nothing really too relevant
 	public static function getCurrentWeek():WeekData {
 		return weeksLoaded.get(weeksList[PlayState.storyWeek]);

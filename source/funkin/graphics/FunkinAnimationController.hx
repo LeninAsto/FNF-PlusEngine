@@ -31,11 +31,37 @@ class FunkinAnimationController extends FlxAnimateController
 
     if (!_parentSprite.hasAnimation(animName))
     {
-      // Skip if the animation doesn't exist
-      trace('Animation ${animName} does not exist!');
-      return;
+      final fallbackAnim:String = getMissingAnimationFallback(animName);
+      if (fallbackAnim == null)
+      {
+        // Skip if the animation doesn't exist and there is nothing safe to play.
+        trace('Animation ${animName} does not exist!');
+        return;
+      }
+
+      trace('Animation ${animName} does not exist! Falling back to ${fallbackAnim}.');
+      animName = fallbackAnim;
     }
 
     super.play(animName, force, reversed, frame);
+  }
+
+  function getMissingAnimationFallback(animName:String):Null<String>
+  {
+    final preferredFallbacks:Array<String> = switch (animName)
+    {
+      case 'idle': ['still', 'idle_unselected', 'idle_selected'];
+      case 'selected': ['idle_selected', 'idle', 'still'];
+      case 'unselected': ['idle_unselected', 'idle', 'still'];
+      default: ['idle', 'still'];
+    }
+
+    for (name in preferredFallbacks)
+    {
+      if (_parentSprite.hasAnimation(name)) return name;
+    }
+
+    final names:Array<String> = getNameList();
+    return names.length > 0 ? names[0] : null;
   }
 }

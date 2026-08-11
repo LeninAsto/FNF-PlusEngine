@@ -1,5 +1,9 @@
 package backend;
 
+import funkin.play.scoring.Scoring;
+import funkin.save.Save;
+import funkin.save.Save.SaveScoreData;
+
 class Highscore
 {
 	public static var weekScores:Map<String, Int> = new Map();
@@ -141,6 +145,82 @@ class Highscore
 			return 'Unknown';
 
 		return systemMap.get(daSong);
+	}
+
+	public static function getVSliceScore(songId:String, difficulty:String, variation:String = 'default'):Int
+	{
+		var scoreData:Null<SaveScoreData> = getVSliceScoreData(songId, difficulty, variation);
+		return scoreData != null ? scoreData.score : 0;
+	}
+
+	public static function getVSliceRating(songId:String, difficulty:String, variation:String = 'default'):Float
+	{
+		var scoreData:Null<SaveScoreData> = getVSliceScoreData(songId, difficulty, variation);
+		if (scoreData == null || scoreData.tallies == null || scoreData.tallies.totalNotes <= 0) return 0;
+		return Scoring.tallyCompletion(scoreData.tallies);
+	}
+
+	public static function getVSliceAccuracySystem(songId:String, difficulty:String, variation:String = 'default'):String
+	{
+		return getVSliceScoreData(songId, difficulty, variation) != null ? 'VSlice' : 'Unknown';
+	}
+
+	public static function getVSliceWeekScore(levelId:String, difficulty:String = 'normal'):Int
+	{
+		#if FEATURE_POLYMOD_MODS
+		if (levelId == null || levelId.length == 0) return 0;
+		if (difficulty == null || difficulty.length == 0) difficulty = 'normal';
+		try
+		{
+			if (Save.instance == null) Save.load();
+			var scoreData:Null<SaveScoreData> = Save.instance.getLevelScore(levelId, difficulty);
+			return scoreData != null ? scoreData.score : 0;
+		}
+		catch (_:Dynamic) {}
+		#end
+		return 0;
+	}
+
+	static function getVSliceScoreData(songId:String, difficulty:String, variation:String = 'default'):Null<SaveScoreData>
+	{
+		#if FEATURE_POLYMOD_MODS
+		if (songId == null || songId.length == 0) return null;
+		if (difficulty == null || difficulty.length == 0) difficulty = 'normal';
+		try
+		{
+			if (Save.instance == null) Save.load();
+			var scoreData:Null<SaveScoreData> = Save.instance.getSongScore(songId, difficulty, variation);
+			if (scoreData != null) return scoreData;
+
+			var suffixedDifficulty:String = getVSliceSuffixedDifficulty(difficulty, variation);
+			if (suffixedDifficulty != difficulty)
+			{
+				scoreData = Save.instance.getSongScore(songId, suffixedDifficulty);
+				if (scoreData != null) return scoreData;
+			}
+
+			var normalizedSongId:String = Paths.formatToSongPath(songId);
+			if (normalizedSongId != songId)
+			{
+				scoreData = Save.instance.getSongScore(normalizedSongId, difficulty, variation);
+				if (scoreData != null) return scoreData;
+				if (suffixedDifficulty != difficulty)
+				{
+					scoreData = Save.instance.getSongScore(normalizedSongId, suffixedDifficulty);
+					if (scoreData != null) return scoreData;
+				}
+			}
+		}
+		catch (_:Dynamic) {}
+		#end
+		return null;
+	}
+
+	static function getVSliceSuffixedDifficulty(difficulty:String, variation:String):String
+	{
+		if (variation != null && variation.length > 0 && variation != 'default' && variation != 'erect' && difficulty.indexOf('-$variation') == -1)
+			return '$difficulty-$variation';
+		return difficulty;
 	}
 
 	public static function formatSong(song:String, diff:Int):String

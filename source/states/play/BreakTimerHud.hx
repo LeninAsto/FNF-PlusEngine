@@ -77,19 +77,38 @@ class BreakTimerHud
 
 	public function cacheNotes(unspawnNotes:Array<Note>):Void
 	{
+		var times:Array<Float> = [];
+
+		if (unspawnNotes == null)
+		{
+			cacheNoteTimes(times);
+			return;
+		}
+
+		for (note in unspawnNotes)
+		{
+			if (note != null && note.mustPress && !note.isSustainNote)
+				times.push(note.strumTime);
+		}
+
+		cacheNoteTimes(times);
+	}
+
+	public function cacheNoteTimes(times:Array<Float>):Void
+	{
 		noteTimes = [];
 		noteIndex = 0;
 		nextNoteTime = -1;
 		lastNoteTime = -1;
 		lastDisplayValue = -1;
 
-		if (unspawnNotes == null)
+		if (times == null)
 			return;
 
-		for (note in unspawnNotes)
+		for (time in times)
 		{
-			if (note != null && note.mustPress && !note.isSustainNote)
-				noteTimes.push(note.strumTime);
+			if (time >= 0)
+				noteTimes.push(time);
 		}
 
 		noteTimes.sort(function(a:Float, b:Float):Int
@@ -136,6 +155,33 @@ class BreakTimerHud
 		if (text == null || indicator == null || playerStrums == null || playerStrums.length <= 0)
 			return;
 
+		var centerX:Float = 0;
+		var centerY:Float = 0;
+		var strumCount:Int = 0;
+		for (strum in playerStrums)
+		{
+			if (strum == null)
+				continue;
+
+			centerX += getCenterX(strum);
+			centerY += getTopY(strum);
+			strumCount++;
+		}
+
+		if (strumCount <= 0)
+		{
+			clearDisplay();
+			return;
+		}
+
+		updateDisplayAt(songPosition, startingSong, centerX / strumCount, centerY / strumCount, downScroll);
+	}
+
+	public function updateDisplayAt(songPosition:Float, startingSong:Bool, centerX:Float, centerY:Float, downScroll:Bool):Void
+	{
+		if (text == null || indicator == null)
+			return;
+
 		syncNotes(songPosition);
 
 		var gapStart:Float = lastNoteTime >= 0 ? lastNoteTime : 0;
@@ -153,28 +199,6 @@ class BreakTimerHud
 
 				var countdownDuration = Math.max(0.001, totalGap / 1000);
 				indicator.value = FlxMath.bound(timeUntilNext / countdownDuration, 0, 1);
-
-				var centerX:Float = 0;
-				var centerY:Float = 0;
-				var strumCount:Int = 0;
-				for (strum in playerStrums)
-				{
-					if (strum == null)
-						continue;
-
-					centerX += getCenterX(strum);
-					centerY += getTopY(strum);
-					strumCount++;
-				}
-
-				if (strumCount <= 0)
-				{
-					clearDisplay();
-					return;
-				}
-
-				centerX /= strumCount;
-				centerY /= strumCount;
 
 				var indicatorY = centerY + (downScroll ? -164 : 100);
 				var indicatorSize = indicator.getIndicatorHeight();

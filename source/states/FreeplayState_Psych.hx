@@ -62,6 +62,7 @@ class FreeplayState_Psych extends MusicBeatState
 	var bottomBG:FlxSprite;
 
 	var player:MusicPlayerPsych;
+	var freeplayTouchInputBlockTime:Float = 0;
 
 	override function create()
 	{
@@ -183,13 +184,6 @@ class FreeplayState_Psych extends MusicBeatState
 
 		curDifficulty = Math.round(Math.max(0, Difficulty.defaultList.indexOf(lastDifficultyName)));
 
-		bottomBG = new FlxSprite(0, FlxG.height - 50).makeGraphic(FlxG.width, 50, 0xFF000000);
-		bottomBG.alpha = 0.6;
-		var padding:Int = 8;
-		bottomBG.makeGraphic(FlxG.width, Std.int(bottomText.height + padding), 0xFF000000);
-		bottomBG.y = FlxG.height - bottomBG.height;
-		add(bottomBG);
-
 		final space:String = (controls.mobileC) ? "X" : "SPACE";
 		final control:String = (controls.mobileC) ? "C" : "CTRL";
 		final reset:String = (controls.mobileC) ? "Y" : "RESET";
@@ -201,12 +195,18 @@ class FreeplayState_Psych extends MusicBeatState
 		bottomString = leText;
 
 		var size:Int = 16;
-		bottomText = new FlxText(0, bottomBG.y + 4, FlxG.width - 10, leText, size);
-		bottomText.y = bottomBG.y + (bottomBG.height - bottomText.height) / 2;
+		bottomText = new FlxText(5, 0, FlxG.width - 10, leText, size);
 		bottomText.setFormat(Paths.font("vcr.ttf"), size, FlxColor.WHITE, CENTER);
 		bottomText.wordWrap = true;
 		bottomText.alignment = CENTER;
 		bottomText.scrollFactor.set();
+
+		var padding:Int = 8;
+		bottomBG = new FlxSprite(0, 0).makeGraphic(FlxG.width, Std.int(bottomText.height + padding), 0xFF000000);
+		bottomBG.alpha = 0.6;
+		bottomBG.y = FlxG.height - bottomBG.height;
+		bottomText.y = bottomBG.y + (bottomBG.height - bottomText.height) / 2;
+		add(bottomBG);
 		add(bottomText);
 		
 		player = new MusicPlayerPsych(this);
@@ -216,6 +216,7 @@ class FreeplayState_Psych extends MusicBeatState
 		updateTexts();
 
 		addTouchPad('LEFT_FULL', 'A_B_C_X_Y_Z');
+		freeplayTouchInputBlockTime = 0.12;
 		super.create();
 
 		#if (MODS_ALLOWED && sys && !mobile)
@@ -230,6 +231,12 @@ class FreeplayState_Psych extends MusicBeatState
 		super.closeSubState();
 		removeTouchPad();
 		addTouchPad('LEFT_FULL', 'A_B_C_X_Y_Z');
+		freeplayTouchInputBlockTime = 0.12;
+	}
+
+	inline function touchActionReleased(button:Dynamic):Bool
+	{
+		return freeplayTouchInputBlockTime <= 0 && button != null && button.justReleased;
 	}
 
 	public function addSong(songName:String, weekNum:Int, songCharacter:String, color:Int)
@@ -268,6 +275,9 @@ class FreeplayState_Psych extends MusicBeatState
 	var stopMusicPlay:Bool = false;
 	override function update(elapsed:Float)
 	{
+		if (freeplayTouchInputBlockTime > 0)
+			freeplayTouchInputBlockTime -= elapsed;
+
 		if(songs.length < 1)
 			return;
 
@@ -359,7 +369,7 @@ class FreeplayState_Psych extends MusicBeatState
 			}
 		}
 
-		if (controls.BACK || touchPad.buttonB.justPressed)
+		if (controls.BACK || touchActionReleased(touchPad.buttonB))
 		{
 			if (player.playingMusic)
 			{
@@ -382,13 +392,13 @@ class FreeplayState_Psych extends MusicBeatState
 			}
 		}
 
-		if((FlxG.keys.justPressed.CONTROL || touchPad.buttonC.justPressed) && !player.playingMusic)
+		if((FlxG.keys.justPressed.CONTROL || touchActionReleased(touchPad.buttonC)) && !player.playingMusic)
 		{
 			persistentUpdate = false;
 			openSubState(new GameplayChangersSubstate());
 			removeTouchPad();
 		}
-		else if(FlxG.keys.justPressed.SPACE || touchPad.buttonX.justPressed)
+		else if(FlxG.keys.justPressed.SPACE || touchActionReleased(touchPad.buttonX))
 		{
 			if (songs[curSelected].isVSlice)
 			{
@@ -468,7 +478,7 @@ class FreeplayState_Psych extends MusicBeatState
 				player.pauseOrResume(!player.playing);
 			}
 		}
-		else if ((controls.ACCEPT || touchPad.buttonA.justPressed) && !player.playingMusic)
+		else if ((controls.ACCEPT || touchActionReleased(touchPad.buttonA)) && !player.playingMusic)
 		{
 			persistentUpdate = false;
 			if (songs[curSelected].isVSlice)
@@ -527,7 +537,7 @@ class FreeplayState_Psych extends MusicBeatState
 			DiscordClient.loadModRPC();
 			#end
 		}
-		else if((controls.RESET || touchPad.buttonY.justPressed) && !player.playingMusic)
+		else if((controls.RESET || touchActionReleased(touchPad.buttonY)) && !player.playingMusic)
 		{
 			persistentUpdate = false;
 			openSubState(new ResetScoreSubState(songs[curSelected].songName, curDifficulty, songs[curSelected].songCharacter));

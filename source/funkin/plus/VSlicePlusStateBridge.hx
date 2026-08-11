@@ -19,9 +19,13 @@ class VSlicePlusStateBridge
 
 	public static function create(state:FlxState):Void
 	{
-		if (!canDispatchFor(state)) return;
+		if (state == null || !supportsState(state)) return;
+		if (!VSliceRuntime.shouldUseVSliceRuntime()) return;
 		if (!isStateReadyForPlusModules(state)) return;
 		if (createdState == state) return;
+
+		VSliceRuntime.ensureReady();
+		if (!VSliceRuntime.active) return;
 
 		FlxG.keys.enabled = true;
 		createdState = state;

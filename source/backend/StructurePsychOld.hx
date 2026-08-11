@@ -230,7 +230,8 @@ class StructurePsychOld
 		warnedLegacyUsages.set(key, true);
 
 		#if LUA_ALLOWED
-		psychlua.FunkinLua.luaTrace('Legacy compatibility: "$oldApi" redirects to "$newApi". Use the exact Psych 1.0+ API/path or this mod may fail on vanilla Psych.', false, true, flixel.util.FlxColor.YELLOW);
+		if (psychlua.FunkinLua.getBool('luaDebugMode') && psychlua.FunkinLua.getBool('luaDeprecatedWarnings'))
+			psychlua.FunkinLua.luaTrace('Legacy compatibility: "$oldApi" redirects to "$newApi". Use the exact Psych 1.0+ API/path or this mod may fail on vanilla Psych.', false, true, flixel.util.FlxColor.YELLOW);
 		#elseif debug
 		trace('[Compatibility] "$oldApi" redirects to "$newApi"');
 		#end

@@ -2,7 +2,6 @@ package shaders;
 
 import flixel.addons.display.FlxRuntimeShader;
 import lime.graphics.opengl.GLProgram;
-import lime.app.Application;
 
 class ErrorHandledShader extends FlxShader implements IErrorHandler
 {
@@ -44,20 +43,20 @@ class ErrorHandledShader extends FlxShader implements IErrorHandler
 
 		trace(error);
 
-		#if !debug
-		// Save a crash log on Release builds
-		var errMsg:String = "";
-		var dateNow:String = Date.now().toString().replace(" ", "_").replace(":", "'");
+		try
+		{
+			var dateNow:String = Date.now().toString().replace(" ", "_").replace(":", "'");
+			if (!FileSystem.exists('./logs/'))
+				FileSystem.createDirectory('./logs/');
 
-		if (!FileSystem.exists('./logs/'))
-			FileSystem.createDirectory('./logs/');
-
-		var crashLogPath:String = './logs/shader_${shaderName}_${dateNow}.txt';
-		File.saveContent(crashLogPath, error);
-		Application.current.window.alert('Error log saved at: $crashLogPath', alertTitle);
-		#else
-		Application.current.window.alert('Error logs aren\'t created on debug builds, check the trace log instead.', alertTitle);
-		#end
+			var crashLogPath:String = './logs/shader_${shaderName}_${dateNow}.txt';
+			File.saveContent(crashLogPath, Std.string(error));
+			trace('$alertTitle - error log saved at: $crashLogPath');
+		}
+		catch (logError:Dynamic)
+		{
+			trace('$alertTitle - failed to save shader error log: $logError');
+		}
 
 		onError(error);
 	}
@@ -72,7 +71,7 @@ class ErrorHandledRuntimeShader extends FlxRuntimeShader implements IErrorHandle
 	public function new(?shaderName:String, ?fragmentSource:String, ?vertexSource:String)
 	{
 		this.shaderName = shaderName;
-		super(fragmentSource, vertexSource);
+		super(ShaderCompatibility.adaptRuntimeShaderCode(fragmentSource, shaderName, "fragment"), ShaderCompatibility.adaptRuntimeShaderCode(vertexSource, shaderName, "vertex"));
 	}
 
 	override function __createGLProgram(vertexSource:String, fragmentSource:String):GLProgram

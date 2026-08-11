@@ -93,7 +93,7 @@ class PolymodHandler
   public static var loadedModIds:Array<String> = [];
 
   // Use SysZipFileSystem on native and MemoryZipFilesystem on web.
-  static var modFileSystem:Null<IFileSystem> = null;
+  public static var modFileSystem:Null<IFileSystem> = null;
 
   /**
    * If the mods folder doesn't exist, create it.
@@ -287,6 +287,9 @@ class PolymodHandler
     // `lime.utils.Assets` literally just has a private `resolveClass` function for some reason? so we replace it with our own.
     Polymod.addImportAlias('lime.utils.Assets', funkin.Assets);
     Polymod.addImportAlias('openfl.utils.Assets', funkin.Assets);
+    Polymod.addDefaultImport(haxe.Json, 'Json');
+    Polymod.addImportAlias('haxe.Json', haxe.Json);
+    Polymod.addImportAlias('Json', haxe.Json);
     Polymod.addDefaultImport(funkin.plus.vslice.VSliceStringTools, 'StringTools');
     Polymod.addImportAlias('StringTools', funkin.plus.vslice.VSliceStringTools);
     Polymod.addDefaultImport(funkin.ui.FullScreenScaleMode, 'FSSM');

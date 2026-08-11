@@ -726,17 +726,14 @@ class Note extends FlxSprite
 			if (myStrum.downScroll)
 			{
 				var visibleWorldLength:Float = centerProjection - noteProjection;
-				if(visibleWorldLength >= 0)
-				{
-					swagRect.width = frameWidth;
-					swagRect.height = FlxMath.bound(visibleWorldLength / Math.max(scale.y, 0.00001), 0, localFrameHeight);
-					swagRect.y = frameHeight - swagRect.height;
-				}
+				swagRect.width = frameWidth;
+				swagRect.height = FlxMath.bound(visibleWorldLength / Math.max(scale.y, 0.00001), 0, localFrameHeight);
+				swagRect.y = localFrameHeight - swagRect.height;
 			}
-			else if (noteProjection <= centerProjection)
+			else
 			{
 				swagRect.y = FlxMath.bound((centerProjection - noteProjection) / Math.max(scale.y, 0.00001), 0, localFrameHeight);
-				swagRect.width = width / scale.x;
+				swagRect.width = frameWidth;
 				swagRect.height = localFrameHeight - swagRect.y;
 			}
 			clipRect = swagRect;

@@ -22,6 +22,9 @@ typedef VSliceFreeplaySong =
 	var color:Int;
 	var difficulties:Array<String>;
 	var variation:String;
+	var ?instrumental:String;
+	var ?previewStartSeconds:Null<Float>;
+	var ?previewEndSeconds:Null<Float>;
 }
 
 /**
@@ -60,7 +63,15 @@ class VSliceFreeplayBridge
 
 		Mods.currentVSliceModDirectory = song.modDir;
 		trace('VSliceFreeplayBridge play "${song.songId}" difficulty "$difficulty" variation "${song.variation}" from mod "${song.modDir}".');
-		VSliceRuntime.loadPlayState(song.songId, difficulty, song.variation);
+		try
+		{
+			VSliceRuntime.loadPlayState(song.songId, difficulty, song.variation);
+		}
+		catch (e:Dynamic)
+		{
+			trace('[VSliceFreeplayBridge] Failed to play "${song.songId}": $e');
+			flixel.FlxG.switchState(() -> states.FreeplayStateSelector.create());
+		}
 	}
 
 	#if (FEATURE_POLYMOD_MODS && MODS_ALLOWED && sys)
@@ -145,6 +156,9 @@ class VSliceFreeplayBridge
 		var displayName:String = fieldString(metadata, 'songName', songId);
 		var difficulties:Array<String> = parseDifficulties(Reflect.field(playData, 'difficulties'));
 		var metaColor:Int = parseColor(Reflect.field(metadata, 'color'), color);
+		var instrumental:String = fieldString(characters, 'instrumental', '');
+		var previewStart:Null<Float> = parseOptionalSeconds(firstDynamic(playData, ['freeplayPrevStart', 'previewStart', 'songPreviewStart']));
+		var previewEnd:Null<Float> = parseOptionalSeconds(firstDynamic(playData, ['freeplayPrevEnd', 'previewEnd', 'songPreviewEnd']));
 
 		seen.set(key, true);
 		result.push({
@@ -155,8 +169,47 @@ class VSliceFreeplayBridge
 			icon: icon,
 			color: metaColor,
 			difficulties: difficulties,
-			variation: variation
+			variation: variation,
+			instrumental: instrumental,
+			previewStartSeconds: previewStart,
+			previewEndSeconds: previewEnd
 		});
+	}
+
+	public static function resolveInstPath(song:VSliceFreeplaySong):Null<String>
+	{
+		if (song == null || song.modDir == null || song.songId == null) return null;
+
+		var songRoot:String = haxe.io.Path.join([Paths.vsliceMods(song.modDir), 'songs', song.songId]);
+		var suffixes:Array<String> = [];
+		addAudioSuffix(suffixes, song.instrumental);
+		if (song.variation != null && song.variation != 'default' && song.variation != 'erect')
+			addAudioSuffix(suffixes, song.variation);
+
+		for (suffix in suffixes)
+		{
+			var path:Null<String> = findExistingInst(songRoot, '-$suffix');
+			if (path != null) return path;
+		}
+
+		return findExistingInst(songRoot, '');
+	}
+
+	static function addAudioSuffix(suffixes:Array<String>, value:String):Void
+	{
+		if (value == null) return;
+		var suffix:String = value.trim();
+		if (suffix.length > 0 && !suffixes.contains(suffix)) suffixes.push(suffix);
+	}
+
+	static function findExistingInst(songRoot:String, suffix:String):Null<String>
+	{
+		for (ext in ['ogg', 'mp3', 'wav'])
+		{
+			var path:String = haxe.io.Path.join([songRoot, 'Inst$suffix.$ext']);
+			if (FileSystem.exists(path)) return path;
+		}
+		return null;
 	}
 
 	static function parseMetadataFileName(metadataPath:String):Null<{songId:String, variation:String}>
@@ -285,6 +338,28 @@ class VSliceFreeplayBridge
 			if (value != null) return Std.string(value);
 		}
 		return fallback;
+	}
+
+	static function firstDynamic(object:Dynamic, fields:Array<String>):Dynamic
+	{
+		if (object == null) return null;
+		for (field in fields)
+		{
+			if (Reflect.hasField(object, field))
+			{
+				var value:Dynamic = Reflect.field(object, field);
+				if (value != null) return value;
+			}
+		}
+		return null;
+	}
+
+	static function parseOptionalSeconds(value:Dynamic):Null<Float>
+	{
+		if (value == null) return null;
+		var parsed:Float = Std.parseFloat(Std.string(value));
+		if (Math.isNaN(parsed) || parsed < 0) return null;
+		return parsed > 1000 ? parsed / 1000 : parsed;
 	}
 
 	static function sortedJsonFiles(path:String):Array<String>

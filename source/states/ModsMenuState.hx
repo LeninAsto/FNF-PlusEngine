@@ -378,6 +378,7 @@ class ModsMenuState extends MusicBeatState
 			else
 			{
 				if(waitingToRestart) Language.reloadPhrases();
+				refreshModsAfterLeavingMenu();
 				MusicBeatState.switchState(returnToSelector ? new ModsManagerSelectorState() : backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
 			}
 
@@ -612,7 +613,22 @@ class ModsMenuState extends MusicBeatState
 			}
 		}
 	}
-}	function changeSelectedButton(add:Int = 0)
+}
+
+	function refreshModsAfterLeavingMenu():Void
+	{
+		#if FEATURE_POLYMOD_MODS
+		if (vsliceMode)
+			funkin.plus.VSliceRuntime.refreshLoadedModsFromMenu();
+		else
+		#end
+			Mods.loadTopMod();
+
+		Paths.clearStoredMemory();
+		Paths.clearUnusedMemory();
+	}
+
+	function changeSelectedButton(add:Int = 0)
 	{
 		var max = buttons.length - 1;
 		

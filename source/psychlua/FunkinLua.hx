@@ -2143,6 +2143,7 @@ class FunkinLua {
 				if(FileSystem.exists(frag))
 				{
 					frag = File.getContent(frag);
+					frag = shaders.ShaderCompatibility.adaptRuntimeShaderCode(frag, name, "fragment");
 					found = true;
 				}
 				else frag = null;
@@ -2150,6 +2151,7 @@ class FunkinLua {
 				if(FileSystem.exists(vert))
 				{
 					vert = File.getContent(vert);
+					vert = shaders.ShaderCompatibility.adaptRuntimeShaderCode(vert, name, "vertex");
 					found = true;
 				}
 				else vert = null;

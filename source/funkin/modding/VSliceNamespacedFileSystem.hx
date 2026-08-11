@@ -74,7 +74,16 @@ class VSliceNamespacedFileSystem implements IFileSystem
 
   public function getMetadataById(modId:String, ?origin:PolymodErrorOrigin):Null<ModMetadata>
   {
-    return inner.getMetadataById(modId, origin);
+    var metadata:Null<ModMetadata> = inner.getMetadataById(modId, origin);
+    if (metadata != null || modId == null) return metadata;
+
+    var normalizedId:String = modId.toLowerCase();
+    for (mod in inner.scanMods())
+    {
+      if (mod.id.toLowerCase() == normalizedId) return mod;
+    }
+
+    return null;
   }
 
   static function toLegacySpecialPath(path:String):String

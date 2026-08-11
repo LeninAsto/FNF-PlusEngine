@@ -130,6 +130,7 @@ class FreeplayState extends MusicBeatState
 	public var bottomText:FlxText;
 
 	public var player:MusicPlayer;
+	var freeplayTouchInputBlockTime:Float = 0;
 	
 	public var inDifficultySelect:Bool = false;
 	public var difficultySelector:DifficultySelector;
@@ -685,9 +686,12 @@ class FreeplayState extends MusicBeatState
 		#end
 		bottomString = leText;
 		var size:Int = 16;
-		bottomText = new FlxText(0, FlxG.height - 34, FlxG.width, leText, size);
+		bottomText = new FlxText(5, FlxG.height - 50, FlxG.width - 10, leText, size);
 		bottomText.setFormat(Paths.font("vcr.ttf"), size, FlxColor.WHITE, CENTER);
+		bottomText.wordWrap = true;
+		bottomText.alignment = CENTER;
 		bottomText.scrollFactor.set();
+		bottomText.y = FlxG.height - bottomText.height - 4;
 		add(bottomText);
 		
 		player = new MusicPlayer(this);
@@ -718,6 +722,7 @@ class FreeplayState extends MusicBeatState
 			touchPad.visible = true;
 			touchPad.updateTrackedButtons();
 		}
+		freeplayTouchInputBlockTime = 0.12;
 	}
 
 	override function closeSubState()
@@ -732,6 +737,12 @@ class FreeplayState extends MusicBeatState
 			touchPad.visible = true;
 			touchPad.updateTrackedButtons();
 		}
+		freeplayTouchInputBlockTime = 0.12;
+	}
+
+	inline function touchActionReleased(button:Dynamic):Bool
+	{
+		return freeplayTouchInputBlockTime <= 0 && button != null && button.justReleased;
 	}
 
 	function hideMissingCard(?instant:Bool = false):Void
@@ -838,6 +849,9 @@ class FreeplayState extends MusicBeatState
 			song.vsliceSongId = entry.songId;
 			song.vsliceVariation = entry.variation;
 			song.vsliceDifficulties = entry.difficulties.copy();
+			song.vsliceInstrumental = entry.instrumental;
+			song.vslicePreviewStartSeconds = entry.previewStartSeconds;
+			song.vslicePreviewEndSeconds = entry.previewEndSeconds;
 			songs.push(song);
 		}
 		#end
@@ -957,6 +971,9 @@ class FreeplayState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+		if (freeplayTouchInputBlockTime > 0)
+			freeplayTouchInputBlockTime -= elapsed;
+
 		var searchFocused:Bool = searchField != null && searchField.focused;
 
 		if (searchFocused && FlxG.keys.justPressed.ESCAPE)
@@ -994,13 +1011,13 @@ class FreeplayState extends MusicBeatState
         if(pendingSound != null && pendingToken == previewLoadToken && pendingIndex == curSelected) {
             try {
                 // Register in Paths cache so it gets cleaned up correctly later
-                var cacheKey:String = Paths.getPath(
-                    Language.getFileTranslation('${Paths.formatToSongPath(songs[pendingIndex].songName)}/Inst') + '.${Paths.SOUND_EXT}',
-                    openfl.utils.AssetType.SOUND, 'songs', true
-                );
-                if(!Paths.currentTrackedSounds.exists(cacheKey))
-                    Paths.currentTrackedSounds.set(cacheKey, pendingSound);
-                Paths.localTrackedAssets.push(cacheKey);
+				var cacheKey:String = getInstPreviewCacheKey(songs[pendingIndex]);
+				if(cacheKey != null && cacheKey.length > 0)
+				{
+					if(!Paths.currentTrackedSounds.exists(cacheKey))
+						Paths.currentTrackedSounds.set(cacheKey, pendingSound);
+					Paths.localTrackedAssets.push(cacheKey);
+				}
 
 				FlxG.sound.playMusic(pendingSound, 0, true);
 				applySongPreviewStart(songs[pendingIndex]);
@@ -1125,6 +1142,12 @@ class FreeplayState extends MusicBeatState
         #end
 		
 		if(songs.length < 1)
+			return;
+
+		if (FlxG.sound.music == null)
+			FlxG.sound.playMusic(Paths.music('freakyMenu'), 0.7, true);
+
+		if (FlxG.sound.music == null)
 			return;
 
 		if (FlxG.sound.music.volume < 0.7)
@@ -1257,7 +1280,7 @@ class FreeplayState extends MusicBeatState
 			searchField.focus();
 		}
 
-		if (!searchFocused && (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed)))
+		if (!searchFocused && (controls.BACK || (touchPad != null && touchActionReleased(touchPad.buttonB))))
 		{
 			if (player.playingMusic)
 			{
@@ -1289,26 +1312,26 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 
-		if(!searchFocused && (FlxG.keys.justPressed.CONTROL || (touchPad != null && touchPad.buttonC.justPressed)) && !player.playingMusic)
+		if(!searchFocused && (FlxG.keys.justPressed.CONTROL || (touchPad != null && touchActionReleased(touchPad.buttonC))) && !player.playingMusic)
 		{
 			persistentUpdate = false;
 			removeTouchPad();
 			openSubState(backend.ScriptableSubstate.tryCreate('GameplayChangersSubstate', new GameplayChangersSubstate()));
 		}
-		if(!searchFocused && (FlxG.keys.justPressed.SPACE || (touchPad != null && touchPad.buttonX.justPressed)))
+		if(!searchFocused && (FlxG.keys.justPressed.SPACE || (touchPad != null && touchActionReleased(touchPad.buttonX))))
 		{
-			if (songs[curSelected].isVSlice)
-			{
-				FlxG.sound.play(Paths.sound('cancelMenu'), 0.35);
-				updateSongInfoCardLayout();
-				updateTexts(elapsed);
-				return;
-			}
-
 			if(instPlaying != curSelected && !player.playingMusic)
 			{
 				destroyFreeplayVocals();
 				FlxG.sound.music.volume = 0;
+
+				if (songs[curSelected].isVSlice)
+				{
+					playInstPreview();
+					updateSongInfoCardLayout();
+					updateTexts(elapsed);
+					return;
+				}
 
 				Mods.currentModDirectory = songs[curSelected].folder;
 				
@@ -1390,7 +1413,7 @@ class FreeplayState extends MusicBeatState
 				player.pauseOrResume(!player.playing);
 			}
 		}
-			else if (!searchFocused && (controls.ACCEPT || (touchPad != null && touchPad.buttonA.justPressed)) && !player.playingMusic)
+			else if (!searchFocused && (controls.ACCEPT || (touchPad != null && touchActionReleased(touchPad.buttonA))) && !player.playingMusic)
 		{
 			if (!inDifficultySelect)
 			{
@@ -1505,7 +1528,7 @@ class FreeplayState extends MusicBeatState
 				#end
 			}
 		}
-		else if(!searchFocused && (controls.RESET || (touchPad != null && touchPad.buttonY.justPressed)) && !player.playingMusic)
+		else if(!searchFocused && (controls.RESET || (touchPad != null && touchActionReleased(touchPad.buttonY))) && !player.playingMusic)
 		{
 		persistentUpdate = false;
 		removeTouchPad();
@@ -1569,6 +1592,9 @@ class FreeplayState extends MusicBeatState
 		hideSongInfoCard();
 
 		difficultySelector.loadDifficulties();
+		if (Difficulty.list == null || Difficulty.list.length == 0)
+			Difficulty.list = ['Normal'];
+		curDifficulty = Std.int(FlxMath.bound(curDifficulty, 0, Difficulty.list.length - 1));
 		difficultySelector.curSelected = curDifficulty;
 		difficultySelector.lerpSelected = curDifficulty;
 
@@ -1601,8 +1627,17 @@ class FreeplayState extends MusicBeatState
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 		
 		#if !switch
-		intendedScore = Highscore.getScore(songs[curSelected].songName, difficultySelector.curSelected, viewingOpponentScores);
-		intendedRating = Highscore.getRating(songs[curSelected].songName, difficultySelector.curSelected, viewingOpponentScores);
+		if (songs[curSelected].isVSlice)
+		{
+			var diffName:String = Difficulty.list[difficultySelector.curSelected] ?? 'normal';
+			intendedScore = Highscore.getVSliceScore(songs[curSelected].vsliceSongId, diffName, songs[curSelected].vsliceVariation);
+			intendedRating = Highscore.getVSliceRating(songs[curSelected].vsliceSongId, diffName, songs[curSelected].vsliceVariation);
+		}
+		else
+		{
+			intendedScore = Highscore.getScore(songs[curSelected].songName, difficultySelector.curSelected, viewingOpponentScores);
+			intendedRating = Highscore.getRating(songs[curSelected].songName, difficultySelector.curSelected, viewingOpponentScores);
+		}
 		#end
 		
 		// Actualizar textos de score cuando cambia la selección
@@ -1790,7 +1825,7 @@ class FreeplayState extends MusicBeatState
 		updateCurrentBpmFromSelection();
 		queueSongInfoCardLoad(0.05);
 
-		if (!songs[requestIndex].isStepMania && !songs[requestIndex].isVSlice)
+		if (!songs[requestIndex].isStepMania)
 		{
 			if (previewTimer == null)
 				previewTimer = new FlxTimer();
@@ -1824,6 +1859,7 @@ class FreeplayState extends MusicBeatState
 			Difficulty.list = songs[curSelected].vsliceDifficulties != null && songs[curSelected].vsliceDifficulties.length > 0
 				? songs[curSelected].vsliceDifficulties.copy()
 				: ['normal'];
+			curDifficulty = Std.int(FlxMath.bound(curDifficulty, 0, Difficulty.list.length - 1));
 			return;
 		}
 		
@@ -2332,7 +2368,16 @@ class FreeplayState extends MusicBeatState
 		var matrix:Matrix = new Matrix();
 		matrix.scale(scale, scale);
 		matrix.translate((width - source.width * scale) * 0.5, (height - source.height * scale) * 0.5);
-		output.draw(source, matrix, null, null, null, true);
+		try
+		{
+			output.draw(source, matrix, null, null, null, true);
+		}
+		catch (e:Dynamic)
+		{
+			trace('[FreePlay] Failed to draw rounded image "$cacheTag": $e');
+			output.dispose();
+			return null;
+		}
 
 		var feather:Float = 1.25;
 		var maxX:Float = width - 1;
@@ -3015,11 +3060,13 @@ class FreeplayState extends MusicBeatState
 			return;
 
 		var meta:FreeplaySongMeta = loadSongMeta(song);
-		if (meta == null)
+		if (meta == null && !song.isVSlice)
 			return;
 
-		var startMs:Float = meta.previewStartSeconds != null ? meta.previewStartSeconds * 1000 : 0;
-		var endMs:Float = meta.previewEndSeconds != null ? meta.previewEndSeconds * 1000 : 0;
+		var startSeconds:Null<Float> = song.isVSlice ? song.vslicePreviewStartSeconds : meta.previewStartSeconds;
+		var endSeconds:Null<Float> = song.isVSlice ? song.vslicePreviewEndSeconds : meta.previewEndSeconds;
+		var startMs:Float = startSeconds != null ? startSeconds * 1000 : 0;
+		var endMs:Float = endSeconds != null ? endSeconds * 1000 : 0;
 		if (!Math.isNaN(startMs) && FlxG.sound.music.length > 0)
 		{
 			currentPreviewStartMs = Math.min(startMs, Math.max(0, FlxG.sound.music.length - 100));
@@ -3043,7 +3090,13 @@ class FreeplayState extends MusicBeatState
         previewLoadToken++;
         var requestToken:Int = previewLoadToken;
         var requestedIndex:Int = curSelected;
-        var songName:String = Paths.formatToSongPath(songs[requestedIndex].songName);
+		var requestedSong:SongMetadata = songs[requestedIndex];
+        var songName:String = getInstPreviewCacheKey(requestedSong);
+		if(songName == null || songName.length == 0)
+		{
+			trace('[FreePlay] Missing inst preview path for ${requestedSong != null ? requestedSong.songName : Std.string(requestedIndex)}.');
+			return;
+		}
 
         if(previewLoadTimer != null)
             previewLoadTimer.cancel();
@@ -3063,10 +3116,9 @@ class FreeplayState extends MusicBeatState
             #if (target.threaded && sys)
             // Resolve the file path on the main thread (safe, read-only) to avoid
             // touching shared Paths data from inside the worker thread.
-            var filePath:String = Paths.getPath(
-                Language.getFileTranslation('${songName}/Inst') + '.${Paths.SOUND_EXT}',
-                SOUND, 'songs', true
-            );
+            var filePath:String = getInstPreviewFilePath(songs[requestedIndex]);
+			if(filePath == null || filePath.length == 0)
+				return;
             var capturedBpm:Float = currentBPM;
             var capturedToken:Int = requestToken;
             var capturedIndex:Int = requestedIndex;
@@ -3102,7 +3154,17 @@ class FreeplayState extends MusicBeatState
             #else
             // Fallback for single-threaded targets (web, etc.): load synchronously.
             try {
-                FlxG.sound.playMusic(Paths.inst(songName), 0, true);
+				var filePath:String = getInstPreviewFilePath(songs[requestedIndex]);
+				if(songs[requestedIndex].isVSlice)
+				{
+					if(filePath == null || filePath.length == 0)
+						return;
+					FlxG.sound.playMusic(AssetLoader.loadSound(filePath), 0, true);
+				}
+				else
+				{
+					FlxG.sound.playMusic(Paths.inst(Paths.formatToSongPath(songs[requestedIndex].songName)), 0, true);
+				}
                 applySongPreviewStart(songs[requestedIndex]);
                 FlxG.sound.music.fadeIn(1.0, 0, 0.7);
                 instSound = FlxG.sound.music;
@@ -3122,6 +3184,42 @@ class FreeplayState extends MusicBeatState
             #end
         });
     }
+
+	function getInstPreviewCacheKey(song:SongMetadata):String
+	{
+		if (song == null) return null;
+		if (song.isVSlice)
+		{
+			#if FEATURE_POLYMOD_MODS
+			return VSliceFreeplayBridge.resolveInstPath(song.toVSliceEntry());
+			#else
+			return null;
+			#end
+		}
+
+		return Paths.getPath(
+			Language.getFileTranslation('${Paths.formatToSongPath(song.songName)}/Inst') + '.${Paths.SOUND_EXT}',
+			SOUND, 'songs', true
+		);
+	}
+
+	function getInstPreviewFilePath(song:SongMetadata):String
+	{
+		if (song == null) return null;
+		if (song.isVSlice)
+		{
+			#if FEATURE_POLYMOD_MODS
+			return VSliceFreeplayBridge.resolveInstPath(song.toVSliceEntry());
+			#else
+			return null;
+			#end
+		}
+
+		return Paths.getPath(
+			Language.getFileTranslation('${Paths.formatToSongPath(song.songName)}/Inst') + '.${Paths.SOUND_EXT}',
+			SOUND, 'songs', true
+		);
+	}
     
     /**
      * Stop instrumental preview and return to freakyMenu.
@@ -3156,7 +3254,7 @@ class FreeplayState extends MusicBeatState
 
         var toRemove:Array<String> = [];
         for(key in Paths.currentTrackedSounds.keys()) {
-            if(key.contains('/' + songPath + '/'))
+            if(key == songPath || key.contains(songPath) || key.contains('/' + songPath + '/'))
                 toRemove.push(key);
         }
 
@@ -3588,6 +3686,9 @@ class SongMetadata
 	public var vsliceSongId:String = "";
 	public var vsliceVariation:String = "default";
 	public var vsliceDifficulties:Array<String> = [];
+	public var vsliceInstrumental:String = "";
+	public var vslicePreviewStartSeconds:Null<Float> = null;
+	public var vslicePreviewEndSeconds:Null<Float> = null;
 
 	public function new(song:String, week:Int, songCharacter:String, color:Int)
 	{
@@ -3610,7 +3711,10 @@ class SongMetadata
 			icon: songCharacter,
 			color: color,
 			difficulties: vsliceDifficulties.copy(),
-			variation: vsliceVariation
+			variation: vsliceVariation,
+			instrumental: vsliceInstrumental,
+			previewStartSeconds: vslicePreviewStartSeconds,
+			previewEndSeconds: vslicePreviewEndSeconds
 		};
 	}
 	#end
@@ -3683,7 +3787,8 @@ class DifficultySelector
 		// Solo cargar dificultades desde semana si NO es StepMania
 		if (FreeplayState.instance != null && FreeplayState.instance.songs[FreeplayState.curSelected] != null)
 		{
-			if (!FreeplayState.instance.songs[FreeplayState.curSelected].isStepMania)
+			if (!FreeplayState.instance.songs[FreeplayState.curSelected].isStepMania
+				&& !FreeplayState.instance.songs[FreeplayState.curSelected].isVSlice)
 			{
 				Difficulty.loadFromWeek();
 			}
@@ -3728,12 +3833,26 @@ class DifficultySelector
 			if (scoreText == null) continue;
 			
 			var diffIndex:Int = scoreText.ID;
-			var songName:String = FreeplayState.instance.songs[FreeplayState.curSelected].songName;
+			var song:SongMetadata = FreeplayState.instance.songs[FreeplayState.curSelected];
+			var songName:String = song.songName;
 			
 			#if !switch
-			var score:Int = Highscore.getScore(songName, diffIndex, FreeplayState.viewingOpponentScores);
-			var accuracy:Float = Highscore.getRating(songName, diffIndex, FreeplayState.viewingOpponentScores);
-			var accSystem:String = Highscore.getAccuracySystem(songName, diffIndex, FreeplayState.viewingOpponentScores);
+			var score:Int = 0;
+			var accuracy:Float = 0;
+			var accSystem:String = 'Unknown';
+			if (song.isVSlice)
+			{
+				var diffName:String = Difficulty.list[diffIndex] ?? 'normal';
+				score = Highscore.getVSliceScore(song.vsliceSongId, diffName, song.vsliceVariation);
+				accuracy = Highscore.getVSliceRating(song.vsliceSongId, diffName, song.vsliceVariation);
+				accSystem = Highscore.getVSliceAccuracySystem(song.vsliceSongId, diffName, song.vsliceVariation);
+			}
+			else
+			{
+				score = Highscore.getScore(songName, diffIndex, FreeplayState.viewingOpponentScores);
+				accuracy = Highscore.getRating(songName, diffIndex, FreeplayState.viewingOpponentScores);
+				accSystem = Highscore.getAccuracySystem(songName, diffIndex, FreeplayState.viewingOpponentScores);
+			}
 			
 			var accPercent:String = '';
 			if (accuracy > 0)

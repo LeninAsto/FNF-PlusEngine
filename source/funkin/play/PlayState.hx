@@ -39,6 +39,7 @@ import funkin.input.PreciseInputManager;
 import funkin.modding.events.ScriptEvent;
 import funkin.api.newgrounds.Events;
 import funkin.modding.events.ScriptEventDispatcher;
+import funkin.modding.module.ModuleHandler;
 import funkin.play.character.BaseCharacter;
 import funkin.data.character.CharacterData.CharacterDataParser;
 import funkin.play.components.HealthIcon;
@@ -52,6 +53,7 @@ import funkin.play.notes.notekind.NoteKind;
 import funkin.play.notes.NoteSprite;
 import funkin.play.notes.notestyle.NoteStyle;
 import funkin.play.notes.Strumline;
+import funkin.play.notes.StrumlineNote;
 import funkin.play.notes.SustainTrail;
 import funkin.play.notes.NoteVibrationsHandler;
 import funkin.plus.VSlicePreferencesBridge;
@@ -59,6 +61,7 @@ import funkin.play.scoring.Scoring;
 import funkin.play.song.Song;
 import funkin.play.stage.Stage;
 import funkin.save.Save;
+import states.play.BreakTimerHud;
 #if FEATURE_CHART_EDITOR
 import funkin.ui.debug.charting.ChartEditorState;
 #end
@@ -561,6 +564,7 @@ class PlayState extends MusicBeatSubState
   var versionText:Null<FlxText>;
   var versionTextTween:Null<FlxTween>;
   var keyViewer:Null<KeyViewer>;
+  var breakTimerHud:Null<BreakTimerHud>;
 
   /**
    * The bar which displays the player's health.
@@ -909,6 +913,7 @@ class PlayState extends MusicBeatSubState
     }
     initStrumlines();
     initPopups();
+    initBreakTimerHud();
 
     #if mobile
     if (!ControlsHandler.hasExternalInputDevice)
@@ -1049,6 +1054,7 @@ class PlayState extends MusicBeatSubState
 
     updateHealthBar();
     updateScoreText();
+    updatePlusDebugOverlay();
 
     // Handle restarting the song when needed (player death or pressing Retry)
     if (needsReset)
@@ -1335,6 +1341,7 @@ class PlayState extends MusicBeatSubState
     }
 
     processSongEvents();
+    updateBreakTimerHud();
 
     // Handle keybinds.
     processInputQueue();
@@ -1435,6 +1442,22 @@ class PlayState extends MusicBeatSubState
     pauseCircle.alpha = 0;
     if (hitbox != null) hitbox.visible = false;
     #end
+  }
+
+  function updatePlusDebugOverlay():Void
+  {
+    if (Main.fpsVar == null) return;
+
+    Main.fpsVar.currentStep = Conductor.instance.currentStep;
+    Main.fpsVar.currentBeat = Conductor.instance.currentBeat;
+    Main.fpsVar.currentSection = Conductor.instance.currentMeasure;
+    Main.fpsVar.songSpeed = playbackRate;
+    Main.fpsVar.currentBPM = Std.int(Math.round(Conductor.instance.bpm));
+    Main.fpsVar.playerHealth = health;
+    Main.fpsVar.comboCount = Highscore.tallies.combo;
+    Main.fpsVar.lastRating = 'VSlice';
+    Main.fpsVar.hscriptsLoaded = ModuleHandler.getLoadedModuleCount();
+    Main.fpsVar.hscriptsFailed = 0;
   }
 
   function openPauseSubState(mode:PauseMode, cam:FlxCamera, lostFocus:Bool = false, ?onPause:Void->Void):Void
@@ -2324,6 +2347,54 @@ class PlayState extends MusicBeatSubState
     opponentStrumline.fadeInArrows();
   }
 
+  function initBreakTimerHud():Void
+  {
+    if (!ClientPrefs.data.breakTimer || breakTimerHud != null) return;
+
+    breakTimerHud = new BreakTimerHud(camHUD);
+    breakTimerHud.addTo(this);
+  }
+
+  function cacheBreakTimerNotes(playerNoteData:Array<SongNoteData>):Void
+  {
+    if (breakTimerHud == null) return;
+
+    var noteTimes:Array<Float> = [];
+    if (playerNoteData != null)
+    {
+      for (note in playerNoteData)
+      {
+        if (note != null)
+          noteTimes.push(note.time);
+      }
+    }
+
+    breakTimerHud.cacheNoteTimes(noteTimes);
+  }
+
+  function updateBreakTimerHud():Void
+  {
+    if (breakTimerHud == null || playerStrumline == null || playerStrumline.strumlineNotes == null) return;
+
+    var centerX:Float = 0;
+    var centerY:Float = 0;
+    var strumCount:Int = 0;
+
+    for (strum in playerStrumline.strumlineNotes.members)
+    {
+      if (strum == null) continue;
+
+      centerX += strum.x + strum.width / 2;
+      centerY += strum.y;
+      strumCount++;
+    }
+
+    if (strumCount <= 0) return;
+
+    breakTimerHud.updateDisplayAt(Conductor.instance.songPosition, startingSong, centerX / strumCount, centerY / strumCount,
+      playerStrumline.isDownscroll);
+  }
+
   /**
      * Configures the position of strumline for the default control scheme
      */
@@ -2600,6 +2671,7 @@ class PlayState extends MusicBeatSubState
 
     playerStrumline.applyNoteData(playerNoteData);
     opponentStrumline.applyNoteData(opponentNoteData);
+    cacheBreakTimerNotes(playerNoteData);
   }
 
   function onStrumlineNoteIncoming(noteSprite:NoteSprite):Void
@@ -3838,6 +3910,12 @@ class PlayState extends MusicBeatSubState
     {
       remove(currentConversation);
       currentConversation.kill();
+    }
+
+    if (breakTimerHud != null)
+    {
+      breakTimerHud.destroyFrom(this);
+      breakTimerHud = null;
     }
 
     if (currentChart != null)

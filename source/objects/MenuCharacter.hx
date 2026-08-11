@@ -1,6 +1,7 @@
 package objects;
 
 import backend.AssetLoader;
+import backend.Mods;
 import haxe.Json;
 
 typedef MenuCharacterFile = {
@@ -18,6 +19,7 @@ class MenuCharacter extends FlxSprite
 	public var character:String;
 	public var hasConfirmAnimation:Bool = false;
 	private static var DEFAULT_CHARACTER:String = 'bf';
+	var loadedModDirectory:String = null;
 
 	public function new(x:Float, character:String = 'bf')
 	{
@@ -28,9 +30,11 @@ class MenuCharacter extends FlxSprite
 
 	public function changeCharacter(?character:String = 'bf') {
 		if(character == null) character = '';
-		if(character == this.character) return;
+		var currentDirectory:String = #if MODS_ALLOWED Mods.currentModDirectory #else '' #end;
+		if(character == this.character && currentDirectory == loadedModDirectory) return;
 
 		this.character = character;
+		loadedModDirectory = currentDirectory;
 		visible = true;
 
 		var dontPlayAnim:Bool = false;

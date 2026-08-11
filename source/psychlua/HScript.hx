@@ -264,6 +264,7 @@ class HScript extends Iris
 		#if (!flash && sys)
 		set('FlxRuntimeShader', flixel.addons.display.FlxRuntimeShader);
 		set('ErrorHandledRuntimeShader', shaders.ErrorHandledShader.ErrorHandledRuntimeShader);
+		set('ShaderCompatibility', shaders.ShaderCompatibility);
 		#end
 		set('ShaderFilter', flash.filters.ShaderFilter);
 		set('StringTools', StringTools);
@@ -466,6 +467,7 @@ class HScript extends Iris
 		#if (!flash && sys)
 		set('FlxRuntimeShader', flixel.addons.display.FlxRuntimeShader);
 		set('ErrorHandledRuntimeShader', shaders.ErrorHandledShader.ErrorHandledRuntimeShader);
+		set('ShaderCompatibility', shaders.ShaderCompatibility);
 		#end
 		set('ShaderFilter', flash.filters.ShaderFilter);
 		set('flash.filters.ShaderFilter', flash.filters.ShaderFilter);

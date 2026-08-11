@@ -516,6 +516,7 @@ class PlayState extends MusicBeatState
 		//trace('Playback Rate: ' + playbackRate);
 		_lastLoadedModDirectory = Mods.currentModDirectory;
 		Paths.clearStoredMemory();
+		Paths.clearUnusedMemory();
 		
 		// Optimización inicial para Android
 		#if android
@@ -524,7 +525,6 @@ class PlayState extends MusicBeatState
 		#end
 		if(nextReloadAll)
 		{
-			Paths.clearUnusedMemory();
 			Language.reloadPhrases();
 		}
 		nextReloadAll = false;
@@ -4966,14 +4966,15 @@ class PlayState extends MusicBeatState
 					var digit:Int = Std.parseInt(comboStr.charAt(i));
 					var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(uiFolder + 'num' + digit + uiPostfix));
 					numScore.screenCenter();
-					numScore.x = startX + (43 * i) - 90 + (ClientPrefs.data.dynamicComboDigits ? 0 : 0);
-					numScore.y += 80 - ClientPrefs.data.comboOffset[3];
+					var digitBaseY:Float = numScore.y + 80 - ClientPrefs.data.comboOffset[3];
+					numScore.x = startX + (43 * i) - 90;
 
 					if (!PlayState.isPixelStage)
 						numScore.setGraphicSize(Std.int(numScore.width * COMBO_NUMBER_SCALE));
 					else
 						numScore.setGraphicSize(Std.int(numScore.width * daPixelZoom * 0.9));
 					numScore.updateHitbox();
+					numScore.y = digitBaseY;
 
 					if (!useNfPopupStyle)
 					{
@@ -4997,8 +4998,13 @@ class PlayState extends MusicBeatState
 						FlxTween.tween(numScore.scale, {x: numScore.scale.x / 1.12, y: numScore.scale.y / 1.12}, 0.12 / playbackRate, {ease: FlxEase.quadOut});
 						new FlxTimer().start(Conductor.crochet * 0.0016 / playbackRate, function(_)
 						{
-							comboGroup.remove(numScore, true);
-							numScore.destroy();
+							FlxTween.tween(numScore, {alpha: 0}, 0.12 / playbackRate, {
+								onComplete: function(tween:FlxTween)
+								{
+									comboGroup.remove(numScore, true);
+									numScore.destroy();
+								}
+							});
 						});
 					}
 					else
@@ -5028,10 +5034,16 @@ class PlayState extends MusicBeatState
 				}
 				new FlxTimer().start(Conductor.crochet * 0.0016 / playbackRate, function(_)
 				{
-					comboGroup.remove(comboSpr, true);
-					comboGroup.remove(rating, true);
-					comboSpr.destroy();
-					rating.destroy();
+					FlxTween.tween(rating, {alpha: 0}, 0.12 / playbackRate);
+					FlxTween.tween(comboSpr, {alpha: 0}, 0.12 / playbackRate, {
+						onComplete: function(tween:FlxTween)
+						{
+							comboGroup.remove(comboSpr, true);
+							comboGroup.remove(rating, true);
+							comboSpr.destroy();
+							rating.destroy();
+						}
+					});
 				});
 			}
 			else
@@ -5978,6 +5990,7 @@ class PlayState extends MusicBeatState
 
 		NoteSplash.configs.clear();
 		NoteSplash.clearCache();
+		Song.clearChartCache();
 		
 		// Limpiar Manager de modchart
 		#if MODCHARTS_NOTITG_ALLOWED
@@ -6008,6 +6021,7 @@ class PlayState extends MusicBeatState
 	instance = null;
 	shutdownThread = true;
 	FlxG.signals.preUpdate.remove(checkForResync);
+	Paths.clearUnusedMemory();
 	
 	super.destroy();
 	
@@ -6844,6 +6858,7 @@ class PlayState extends MusicBeatState
 			if(AssetLoader.exists(frag, TEXT))
 			{
 				frag = AssetLoader.loadText(frag);
+				frag = shaders.ShaderCompatibility.adaptRuntimeShaderCode(frag, name, "fragment");
 				found = true;
 			}
 			else frag = null;
@@ -6851,6 +6866,7 @@ class PlayState extends MusicBeatState
 			if(AssetLoader.exists(vert, TEXT))
 			{
 				vert = AssetLoader.loadText(vert);
+				vert = shaders.ShaderCompatibility.adaptRuntimeShaderCode(vert, name, "vertex");
 				found = true;
 			}
 			else vert = null;

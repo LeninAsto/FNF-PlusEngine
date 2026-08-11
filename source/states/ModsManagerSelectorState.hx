@@ -11,11 +11,13 @@ import flixel.text.FlxText;
 import flixel.text.FlxText.FlxTextAlign;
 import flixel.text.FlxText.FlxTextBorderStyle;
 import flixel.util.FlxColor;
+import objects.Alphabet;
 
 class ModsManagerSelectorState extends MusicBeatState
 {
 	var options:Array<ModManagerOption> = [];
-	var optionTexts:FlxTypedGroup<FlxText>;
+	var optionTexts:FlxTypedGroup<Alphabet>;
+	var optionDescriptions:FlxTypedGroup<FlxText>;
 	var curSelected:Int = 0;
 	var selected:Bool = false;
 
@@ -48,18 +50,27 @@ class ModsManagerSelectorState extends MusicBeatState
 		title.scrollFactor.set();
 		add(title);
 
-		optionTexts = new FlxTypedGroup<FlxText>();
+		optionTexts = new FlxTypedGroup<Alphabet>();
+		optionDescriptions = new FlxTypedGroup<FlxText>();
 		add(optionTexts);
+		add(optionDescriptions);
 
 		for (i in 0...options.length)
 		{
 			var option = options[i];
-			var text:FlxText = new FlxText(0, 225 + i * 110, FlxG.width, option.label + '\n' + option.description, 32);
-			text.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, FlxTextAlign.CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			text.borderSize = 2;
+			var text:Alphabet = new Alphabet(0, 212 + i * 126, option.label, true);
+			text.setScale(0.82);
+			text.x = (FlxG.width - text.width) / 2;
 			text.scrollFactor.set();
 			text.ID = i;
 			optionTexts.add(text);
+
+			var description:FlxText = new FlxText(0, text.y + 54, FlxG.width, option.description, 20);
+			description.setFormat(Paths.font('vcr.ttf'), 20, FlxColor.WHITE, FlxTextAlign.CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			description.borderSize = 1.5;
+			description.scrollFactor.set();
+			description.ID = i;
+			optionDescriptions.add(description);
 		}
 
 		var hint:String = controls.mobileC ? 'A / B' : 'ENTER / BACKSPACE';
@@ -110,7 +121,16 @@ class ModsManagerSelectorState extends MusicBeatState
 			var isSelected:Bool = text.ID == curSelected;
 			text.color = isSelected ? 0xFF00FFFF : FlxColor.WHITE;
 			text.alpha = isSelected ? 1 : 0.55;
-			text.scale.set(isSelected ? 1.08 : 1, isSelected ? 1.08 : 1);
+			text.setScale(isSelected ? 0.92 : 0.82);
+			text.x = (FlxG.width - text.width) / 2;
+		}
+
+		for (description in optionDescriptions.members)
+		{
+			if (description == null) continue;
+			var isSelected:Bool = description.ID == curSelected;
+			description.color = isSelected ? 0xFFBFFFFF : FlxColor.WHITE;
+			description.alpha = isSelected ? 0.95 : 0.5;
 		}
 	}
 

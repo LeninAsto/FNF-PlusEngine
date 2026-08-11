@@ -1489,11 +1489,11 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		if (!controls.mobileC || FlxG.stage == null || UI_box == null || UI_characterbox == null)
 			return;
 
-		if (isDraggingChar) return;
-
 		switch (e.type)
 		{
 			case MouseEvent.MOUSE_DOWN:
+				if (isDraggingChar)
+					return;
 				if (!isMouseOverUI())
 				{
 					var mouse = new Point(e.stageX, e.stageY);
@@ -1502,7 +1502,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 					isDragging = true;
 				}
 
-			case MouseEvent.MOUSE_MOVE if (isDragging):
+			case MouseEvent.MOUSE_MOVE if (isDragging && !isDraggingChar):
 				var mouse = new Point(e.stageX, e.stageY);
 				FlxG.camera.scroll.x = cameraPosition.x - mouse.x;
 				FlxG.camera.scroll.y = cameraPosition.y - mouse.y;
@@ -1540,6 +1540,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 				var mouseWorld = getWorldFromScreen(touchX, touchY);
 				if (character.overlapsPoint(mouseWorld) && !isMouseOverUI()) {
 					isDraggingChar = true;
+					isDragging = false;
 					dragStartTouch.set(mouseWorld.x, mouseWorld.y);
 					var anim = anims[curAnim];
 					if (anim != null)

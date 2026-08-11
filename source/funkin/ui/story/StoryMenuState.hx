@@ -138,7 +138,12 @@ class StoryMenuState extends MusicBeatState
 
       return levelData.isVisible();
     });
-    if (levelList.length == 0) levelList = ['tutorial']; // Make sure there's at least one level to display.
+    if (levelList.length == 0)
+    {
+      trace('Story menu has no visible VSlice levels to display.');
+      FlxG.switchState(() -> new MainMenuState());
+      return;
+    }
 
     difficultySprites = new Map<String, FlxSprite>();
 
@@ -239,10 +244,16 @@ class StoryMenuState extends MusicBeatState
 
   function rememberSelection():Void
   {
-    if (rememberedLevelId != null)
+    if (rememberedLevelId != null && levelList.contains(rememberedLevelId))
     {
       currentLevelId = rememberedLevelId;
     }
+    else
+    {
+      currentLevelId = levelList[0];
+      rememberedLevelId = currentLevelId;
+    }
+
     if (rememberedDifficulty != null)
     {
       currentDifficultyId = rememberedDifficulty;
@@ -262,7 +273,21 @@ class StoryMenuState extends MusicBeatState
   function updateData():Void
   {
     currentLevel = LevelRegistry.instance.fetchEntry(currentLevelId);
-    if (currentLevel == null) throw 'Could not fetch data for level: ${currentLevelId}';
+    if (currentLevel == null)
+    {
+      trace('Could not fetch data for level: ${currentLevelId}; falling back to the first visible level.');
+      currentLevelId = levelList.length > 0 ? levelList[0] : '';
+      rememberedLevelId = currentLevelId;
+      currentLevel = currentLevelId.length > 0 ? LevelRegistry.instance.fetchEntry(currentLevelId) : null;
+    }
+
+    if (currentLevel == null)
+    {
+      trace('Story menu cannot continue because no valid VSlice levels are loaded.');
+      FlxG.switchState(() -> new MainMenuState());
+      return;
+    }
+
     isLevelUnlocked = currentLevel == null ? false : currentLevel.isUnlocked();
   }
 

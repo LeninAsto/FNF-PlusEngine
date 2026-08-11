@@ -60,6 +60,15 @@ class ModuleHandler
 
   static function onStateSwitchComplete():Void
   {
+    callCurrentStateChangeEnd();
+  }
+
+  public static function callCurrentStateChangeEnd(force:Bool = false):Void
+  {
+    #if vslice
+    if (!force && isPlusBridgeManagedState(FlxG.state)) return;
+    #end
+
     callEvent(new StateChangeScriptEvent(STATE_CHANGE_END, FlxG.state, true));
   }
 
@@ -101,6 +110,11 @@ class ModuleHandler
   public static function getModule(moduleId:String):Null<Module>
   {
     return moduleCache.get(moduleId);
+  }
+
+  public static function getLoadedModuleCount():Int
+  {
+    return modulePriorityOrder.length;
   }
 
   public static function activateModule(moduleId:String):Void
@@ -169,19 +183,32 @@ class ModuleHandler
     {
       var module:Null<Module> = moduleCache.get(moduleId);
       if (module == null || !module.active || module.state == null) continue;
-      if (!isModuleStateActive(module.state)) continue;
+      if (!isModuleStateActive(module.state, eventTargetState(event))) continue;
 
       refreshPlayStateBackrefs(module);
       ScriptEventDispatcher.callEvent(module, event);
     }
   }
 
-  static function isModuleStateActive(state:Class<Dynamic>):Bool
+  static function eventTargetState(event:ScriptEvent):Dynamic
   {
-    if (Type.getClass(FlxG.state) == state || Type.getClass(FlxG.state?.subState) == state) return true;
+    if (Std.isOfType(event, StateChangeScriptEvent))
+    {
+      var stateEvent:StateChangeScriptEvent = cast event;
+      if (stateEvent.targetState != null) return stateEvent.targetState;
+    }
+    return FlxG.state;
+  }
+
+  static function isModuleStateActive(state:Class<Dynamic>, ?activeTarget:Dynamic):Bool
+  {
+    if (activeTarget == null) activeTarget = FlxG.state;
+    if (Type.getClass(activeTarget) == state || Type.getClass(FlxG.state?.subState) == state) return true;
 
     #if vslice
-    if (isPlusStateAlias(state, Type.getClass(FlxG.state)) || isPlusStateAlias(state, Type.getClass(FlxG.state?.subState))) return true;
+    if (isPlusStateAlias(state, Type.getClass(activeTarget)) || isPlusStateAlias(state, Type.getClass(FlxG.state?.subState))) return true;
+    if (isPlusScriptableStateAlias(state, activeTarget) || isPlusScriptableStateAlias(state, FlxG.state?.subState)) return true;
+    if (isPlusStateNameAlias(state, activeTarget) || isPlusStateNameAlias(state, FlxG.state?.subState)) return true;
     #end
 
     // Plus can enter the VSlice PlayState through the official transition bridge.
@@ -193,6 +220,11 @@ class ModuleHandler
   }
 
   #if vslice
+  static function isPlusBridgeManagedState(activeState:Dynamic):Bool
+  {
+    return isPlusMainMenuTarget(activeState) || isPlusFreeplayTarget(activeState) || isPlusStoryTarget(activeState);
+  }
+
   static function isPlusStateAlias(moduleState:Class<Dynamic>, activeState:Null<Class<Dynamic>>):Bool
   {
     if (activeState == null) return false;
@@ -200,6 +232,118 @@ class ModuleHandler
     if (moduleState == funkin.ui.mainmenu.MainMenuState && activeState == states.MainMenuState) return true;
     if (moduleState == funkin.ui.freeplay.FreeplayState && (activeState == states.FreeplayState || activeState == states.FreeplayState_Psych)) return true;
     if (moduleState == funkin.ui.story.StoryMenuState && activeState == states.StoryMenuState) return true;
+
+    return false;
+  }
+
+  static function isPlusScriptableStateAlias(moduleState:Class<Dynamic>, activeState:Dynamic):Bool
+  {
+    if (activeState == null || !Std.isOfType(activeState, backend.ScriptableState)) return false;
+
+    var stateName:String = '';
+    try
+    {
+      stateName = Std.string(Reflect.field(activeState, 'stateName'));
+    }
+    catch (_:Dynamic) {}
+
+    if (stateName == null || stateName.length == 0) return false;
+
+    if (moduleState == funkin.ui.mainmenu.MainMenuState && stateName == 'MainMenuState') return true;
+    if (moduleState == funkin.ui.freeplay.FreeplayState && (stateName == 'FreeplayState' || stateName == 'FreeplayState_Psych')) return true;
+    if (moduleState == funkin.ui.story.StoryMenuState && stateName == 'StoryMenuState') return true;
+
+    return false;
+  }
+
+  static function isPlusStateNameAlias(moduleState:Class<Dynamic>, activeState:Dynamic):Bool
+  {
+    if (moduleState == null || activeState == null) return false;
+
+    var moduleName:String = classNameFromClass(moduleState);
+    if (moduleName == null || moduleName.length == 0) return false;
+
+    if (isPlusMainMenuTarget(activeState) && isNamedLike(moduleName, ['funkin.ui.mainmenu.MainMenuState', 'MainMenuState'])) return true;
+    if (isPlusFreeplayTarget(activeState) && isNamedLike(moduleName, ['funkin.ui.freeplay.FreeplayState', 'FreeplayState', 'FreeplayState_Psych'])) return true;
+    if (isPlusStoryTarget(activeState) && isNamedLike(moduleName, ['funkin.ui.story.StoryMenuState', 'StoryMenuState'])) return true;
+
+    return false;
+  }
+
+  static function classNameFromClass(cls:Class<Dynamic>):String
+  {
+    if (cls == null) return '';
+
+    try
+    {
+      var direct:String = Type.getClassName(cls);
+      if (direct != null && direct.length > 0) return direct;
+    }
+    catch (_:Dynamic) {}
+
+    try
+    {
+      var nameParts:Dynamic = Reflect.field(cls, '__name__');
+      if (nameParts != null)
+      {
+        var parts:Array<Dynamic> = cast nameParts;
+        if (parts != null && parts.length > 0) return parts.join('.');
+      }
+    }
+    catch (_:Dynamic) {}
+
+    try
+    {
+      var qName:Dynamic = Reflect.field(cls, '__qname__');
+      if (qName != null) return Std.string(qName);
+    }
+    catch (_:Dynamic) {}
+
+    try
+    {
+      return Std.string(cls);
+    }
+    catch (_:Dynamic) {}
+
+    return '';
+  }
+
+  static function isNamedLike(className:String, aliases:Array<String>):Bool
+  {
+    for (alias in aliases)
+    {
+      if (className == alias || className.endsWith('.' + alias)) return true;
+    }
+    return false;
+  }
+
+  static function isPlusMainMenuTarget(activeState:Dynamic):Bool
+  {
+    return Std.isOfType(activeState, states.MainMenuState) || isScriptableStateNamed(activeState, 'MainMenuState');
+  }
+
+  static function isPlusFreeplayTarget(activeState:Dynamic):Bool
+  {
+    return Std.isOfType(activeState, states.FreeplayState)
+      || Std.isOfType(activeState, states.FreeplayState_Psych)
+      || isScriptableStateNamed(activeState, 'FreeplayState')
+      || isScriptableStateNamed(activeState, 'FreeplayState_Psych');
+  }
+
+  static function isPlusStoryTarget(activeState:Dynamic):Bool
+  {
+    return Std.isOfType(activeState, states.StoryMenuState) || isScriptableStateNamed(activeState, 'StoryMenuState');
+  }
+
+  static function isScriptableStateNamed(activeState:Dynamic, name:String):Bool
+  {
+    if (activeState == null || !Std.isOfType(activeState, backend.ScriptableState)) return false;
+
+    try
+    {
+      return Reflect.field(activeState, 'stateName') == name;
+    }
+    catch (_:Dynamic) {}
 
     return false;
   }

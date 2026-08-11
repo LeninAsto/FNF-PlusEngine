@@ -14,6 +14,11 @@ import options.GameplayChangersSubstate;
 import substates.ResetScoreSubState;
 
 import backend.StageData;
+import funkin.data.story.level.LevelRegistry;
+import funkin.play.PlayStatePlaylist;
+import funkin.play.song.Song as VSliceSong;
+import funkin.ui.story.Level;
+import funkin.ui.story.LevelProp;
 
 #if mobile
 import mobile.backend.MobileScaleMode;
@@ -37,6 +42,7 @@ class StoryMenuState extends MusicBeatState
 
 	public var grpWeekText:FlxTypedGroup<MenuItem>;
 	public var grpWeekCharacters:FlxTypedGroup<MenuCharacter>;
+	public var grpVSliceWeekProps:FlxTypedGroup<LevelProp>;
 
 	public var grpLocks:FlxTypedGroup<FlxSprite>;
 
@@ -46,6 +52,8 @@ class StoryMenuState extends MusicBeatState
 	public var rightArrow:FlxSprite;
 
 	public var loadedWeeks:Array<WeekData> = [];
+	var vsliceWeeks:Map<String, Level> = new Map<String, Level>();
+	var currentVSliceProps:Array<LevelProp> = [];
 
 	inline function safeX(x:Float):Float
 	{
@@ -73,6 +81,7 @@ class StoryMenuState extends MusicBeatState
 		persistentUpdate = persistentDraw = true;
 		PlayState.isStoryMode = true;
 		WeekData.reloadWeekFiles(true);
+		appendVSliceWeeks();
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
@@ -112,6 +121,7 @@ class StoryMenuState extends MusicBeatState
 		add(blackBarThingie);
 
 		grpWeekCharacters = new FlxTypedGroup<MenuCharacter>();
+		grpVSliceWeekProps = new FlxTypedGroup<LevelProp>();
 
 		grpLocks = new FlxTypedGroup<FlxSprite>();
 		add(grpLocks);
@@ -128,7 +138,10 @@ class StoryMenuState extends MusicBeatState
 			{
 				loadedWeeks.push(weekFile);
 				WeekData.setDirectoryFromWeek(weekFile);
-				var weekThing:MenuItem = new MenuItem(0, bgSprite.y + 396, WeekData.weeksList[i]);
+				var isVSliceWeek:Bool = isVSliceWeekId(WeekData.weeksList[i]);
+				var weekThing:MenuItem = new MenuItem(0, bgSprite.y + 396, isVSliceWeek ? 'week1' : WeekData.weeksList[i]);
+				if (isVSliceWeek)
+					applyVSliceWeekTitle(weekThing, WeekData.weeksList[i]);
 				weekThing.y += ((weekThing.height + 20) * num);
 				weekThing.ID = num;
 				weekThing.targetY = itemTargetY;
@@ -205,6 +218,7 @@ class StoryMenuState extends MusicBeatState
 		add(bgYellow);
 		add(bgSprite);
 		add(grpWeekCharacters);
+		add(grpVSliceWeekProps);
 
 		var tracksSprite:FlxSprite = new FlxSprite(safeX(safeWidth() * 0.07 + 100), bgSprite.y + 425).loadGraphic(Paths.image('Menu_Tracks'));
 		tracksSprite.antialiasing = ClientPrefs.data.antialiasing;
@@ -350,10 +364,90 @@ class StoryMenuState extends MusicBeatState
 	var selectedWeek:Bool = false;
 	var stopspamming:Bool = false;
 
+	static inline var VSLICE_WEEK_PREFIX:String = '__vslice__';
+
+	function appendVSliceWeeks():Void
+	{
+		#if vslice
+		if (!funkin.plus.VSliceRuntime.shouldUseVSliceRuntime())
+			return;
+
+		funkin.plus.VSliceRuntime.ensureReady();
+
+		for (levelId in LevelRegistry.instance.listSortedLevelIds())
+		{
+			var level:Null<Level> = LevelRegistry.instance.fetchEntry(levelId);
+			if (level == null || !level.isVisible())
+				continue;
+
+			var fileName:String = VSLICE_WEEK_PREFIX + levelId;
+			if (WeekData.weeksLoaded.exists(fileName))
+				continue;
+
+			var weekFile:backend.WeekFile = WeekData.createWeekFile();
+			weekFile.songs = [];
+			for (songId in level.getSongs())
+			{
+				weekFile.songs.push([songId, 'face', [146, 113, 253]]);
+			}
+			weekFile.weekCharacters = ['', '', ''];
+			weekFile.weekBackground = '';
+			weekFile.weekBefore = '';
+			weekFile.storyName = level.getTitle();
+			weekFile.weekName = level.getCapsuleTitle() ?? level.getTitle();
+			weekFile.startUnlocked = level.isUnlocked();
+			weekFile.hiddenUntilUnlocked = false;
+			weekFile.hideStoryMode = false;
+			weekFile.hideFreeplay = true;
+			weekFile.difficulties = level.getDifficulties().join(',');
+
+			var weekData:WeekData = new WeekData(weekFile, fileName);
+			WeekData.weeksLoaded.set(fileName, weekData);
+			WeekData.weeksList.push(fileName);
+			vsliceWeeks.set(fileName, level);
+		}
+		#end
+	}
+
+	inline function isVSliceWeekId(fileName:String):Bool
+	{
+		return fileName != null && vsliceWeeks.exists(fileName);
+	}
+
+	function getVSliceLevel(fileName:String):Null<Level>
+	{
+		return isVSliceWeekId(fileName) ? vsliceWeeks.get(fileName) : null;
+	}
+
+	function applyVSliceWeekTitle(weekThing:MenuItem, fileName:String):Void
+	{
+		var level:Null<Level> = getVSliceLevel(fileName);
+		if (level == null || weekThing == null)
+			return;
+
+		try
+		{
+			var title:FlxSprite = level.buildTitleGraphic();
+			if (title != null && title.graphic != null)
+			{
+				weekThing.loadGraphic(title.graphic);
+				weekThing.antialiasing = ClientPrefs.data.antialiasing;
+				weekThing.updateHitbox();
+			}
+		}
+		catch (e:Dynamic)
+		{
+			trace('Failed to load VSlice story title "${level.id}": $e');
+		}
+	}
+
 	function selectWeek()
 	{
 		if (!weekIsLocked(loadedWeeks[curWeek].fileName))
 		{
+			if (selectVSliceWeek())
+				return;
+
 			// We can't use Dynamic Array .copy() because that crashes HTML5, here's a workaround.
 			var songArray:Array<String> = [];
 			var leWeek:Array<Dynamic> = loadedWeeks[curWeek].songs;
@@ -432,6 +526,153 @@ class StoryMenuState extends MusicBeatState
 		else FlxG.sound.play(Paths.sound('cancelMenu'));
 	}
 
+	function selectVSliceWeek():Bool
+	{
+		var leWeek:WeekData = loadedWeeks[curWeek];
+		var level:Null<Level> = getVSliceLevel(leWeek.fileName);
+		if (level == null)
+			return false;
+
+		if (!level.isUnlocked())
+		{
+			FlxG.sound.play(Paths.sound('cancelMenu'));
+			return true;
+		}
+
+		if (selectedWeek)
+			return true;
+
+		selectedWeek = true;
+		PlayState.isStoryMode = true;
+
+		FlxG.sound.play(Paths.sound('confirmMenu'));
+		grpWeekText.members[curWeek].isFlashing = true;
+		for (prop in currentVSliceProps)
+		{
+			if (prop != null)
+				prop.playConfirm();
+		}
+		stopspamming = true;
+
+		var songs:Array<String> = level.getSongs();
+		PlayStatePlaylist.playlistSongIds = songs.copy();
+		PlayStatePlaylist.isStoryMode = true;
+		PlayStatePlaylist.campaignScore = 0;
+		PlayStatePlaylist.campaignId = leWeek.fileName.substr(VSLICE_WEEK_PREFIX.length);
+		PlayStatePlaylist.campaignTitle = level.getTitle();
+		PlayStatePlaylist.campaignDifficulty = Difficulty.getString(curDifficulty, false).toLowerCase();
+		funkin.Highscore.talliesLevel = new funkin.Highscore.Tallies();
+		funkin.Paths.setCurrentLevel(PlayStatePlaylist.campaignId);
+
+		var targetSongId:String = PlayStatePlaylist.playlistSongIds.shift();
+		var targetSong:Null<VSliceSong> = funkin.data.song.SongRegistry.instance.fetchEntry(targetSongId, {variation: funkin.util.Constants.DEFAULT_VARIATION});
+		if (targetSong == null)
+		{
+			trace('Failed to load VSlice story song "$targetSongId".');
+			selectedWeek = false;
+			FlxG.sound.play(Paths.sound('cancelMenu'));
+			return true;
+		}
+
+		var targetVariation:String = targetSong.getFirstValidVariation(PlayStatePlaylist.campaignDifficulty);
+		if (targetVariation == null || targetVariation.length < 1)
+			targetVariation = funkin.util.Constants.DEFAULT_VARIATION;
+
+		new FlxTimer().start(1, function(tmr:FlxTimer)
+		{
+			#if !SHOW_LOADING_SCREEN
+			if (FlxG.sound.music != null)
+				FlxG.sound.music.stop();
+			#end
+
+			funkin.ui.transition.LoadingState.loadPlayState({
+				targetSong: targetSong,
+				targetDifficulty: PlayStatePlaylist.campaignDifficulty,
+				targetVariation: targetVariation,
+				practiceMode: funkin.plus.VSlicePreferencesBridge.practiceMode(),
+				botPlayMode: funkin.plus.VSlicePreferencesBridge.botPlayMode(),
+				playbackRate: funkin.plus.VSlicePreferencesBridge.playbackRate()
+			}, true);
+			FreeplayState.destroyFreeplayVocals();
+		});
+
+		#if (MODS_ALLOWED && DISCORD_ALLOWED)
+		DiscordClient.loadModRPC();
+		#end
+
+		return true;
+	}
+
+	function updateVSliceBackground(level:Level):Void
+	{
+		if (level == null)
+		{
+			bgSprite.visible = false;
+			return;
+		}
+
+		try
+		{
+			var bg:FlxSprite = level.buildBackground();
+			if (bg == null || bg.graphic == null)
+			{
+				bgSprite.visible = false;
+				return;
+			}
+
+			bgSprite.visible = true;
+			bgSprite.loadGraphic(bg.graphic);
+			bgSprite.color = bg.color;
+			bgSprite.alpha = bg.alpha;
+			bgSprite.setPosition(0, 56);
+			if (bgSprite.width != FlxG.width || bgSprite.height != 386)
+				bgSprite.setGraphicSize(FlxG.width, 386);
+			bgSprite.updateHitbox();
+		}
+		catch (e:Dynamic)
+		{
+			trace('Failed to build VSlice story background "${level.id}": $e');
+			bgSprite.visible = false;
+		}
+	}
+
+	function updateVSliceProps(level:Level):Void
+	{
+		if (level == null || grpVSliceWeekProps == null)
+			return;
+
+		try
+		{
+			currentVSliceProps = level.buildProps(currentVSliceProps);
+			grpVSliceWeekProps.clear();
+			for (prop in currentVSliceProps)
+			{
+				if (prop == null)
+					continue;
+
+				prop.y = (prop.propData?.offsets[1] ?? 0) + 70;
+				grpVSliceWeekProps.add(prop);
+			}
+		}
+		catch (e:Dynamic)
+		{
+			trace('Failed to build VSlice story props "${level.id}": $e');
+			clearVSliceProps();
+		}
+	}
+
+	function clearVSliceProps():Void
+	{
+		if (grpVSliceWeekProps != null)
+			grpVSliceWeekProps.clear();
+
+		for (prop in currentVSliceProps)
+		{
+			if (prop != null)
+				prop.visible = false;
+		}
+	}
+
 	function changeDifficulty(change:Int = 0):Void
 	{
 		curDifficulty += change;
@@ -461,7 +702,11 @@ class StoryMenuState extends MusicBeatState
 		lastDifficultyName = diff;
 
 		#if !switch
-		intendedScore = Highscore.getWeekScore(loadedWeeks[curWeek].fileName, curDifficulty);
+		var vsliceLevel:Null<Level> = getVSliceLevel(loadedWeeks[curWeek].fileName);
+		if (vsliceLevel != null)
+			intendedScore = backend.Highscore.getVSliceWeekScore(loadedWeeks[curWeek].fileName.substr(VSLICE_WEEK_PREFIX.length), diff.toLowerCase());
+		else
+			intendedScore = Highscore.getWeekScore(loadedWeeks[curWeek].fileName, curDifficulty);
 		#end
 	}
 
@@ -493,15 +738,26 @@ class StoryMenuState extends MusicBeatState
 		}
 
 		bgSprite.visible = true;
-		var assetName:String = leWeek.weekBackground;
-		if(assetName == null || assetName.length < 1) {
-			bgSprite.visible = false;
-		} else {
-			bgSprite.loadGraphic(Paths.image('menubackgrounds/menu_' + assetName));
+		var vsliceLevel:Null<Level> = getVSliceLevel(leWeek.fileName);
+		if (vsliceLevel != null)
+			updateVSliceBackground(vsliceLevel);
+		else
+		{
+			var assetName:String = leWeek.weekBackground;
+			if(assetName == null || assetName.length < 1) {
+				bgSprite.visible = false;
+			} else {
+				bgSprite.loadGraphic(Paths.image('menubackgrounds/menu_' + assetName));
+				bgSprite.color = FlxColor.WHITE;
+			}
 		}
-		PlayState.storyWeek = curWeek;
+		var storyWeekIndex:Int = WeekData.getWeekIndex(leWeek.fileName);
+		PlayState.storyWeek = storyWeekIndex >= 0 ? storyWeekIndex : curWeek;
 
-		Difficulty.loadFromWeek();
+		if (vsliceLevel != null)
+			Difficulty.copyFrom(vsliceLevel.getDifficulties().map(function(diff:String) return diff.toLowerCase()));
+		else
+			Difficulty.loadFromWeek();
 		difficultySelectors.visible = unlocked;
 
 		if(Difficulty.list.contains(Difficulty.getDefault()))
@@ -519,6 +775,10 @@ class StoryMenuState extends MusicBeatState
 	}
 
 	function weekIsLocked(name:String):Bool {
+		var vsliceLevel:Null<Level> = getVSliceLevel(name);
+		if (vsliceLevel != null)
+			return !vsliceLevel.isUnlocked();
+
 		var leWeek:WeekData = WeekData.weeksLoaded.get(name);
 		if (leWeek == null)
 			return true;
@@ -527,15 +787,40 @@ class StoryMenuState extends MusicBeatState
 
 	function updateText()
 	{
-		var weekArray:Array<String> = loadedWeeks[curWeek].weekCharacters;
-		for (i in 0...grpWeekCharacters.length) {
-			grpWeekCharacters.members[i].changeCharacter(weekArray[i]);
+		var leWeek:WeekData = loadedWeeks[curWeek];
+		var vsliceLevel:Null<Level> = getVSliceLevel(leWeek.fileName);
+
+		if (vsliceLevel != null)
+		{
+			grpWeekCharacters.visible = false;
+			grpVSliceWeekProps.visible = true;
+			updateVSliceProps(vsliceLevel);
+		}
+		else
+		{
+			grpWeekCharacters.visible = true;
+			grpVSliceWeekProps.visible = false;
+			clearVSliceProps();
 		}
 
-		var leWeek:WeekData = loadedWeeks[curWeek];
+		var weekArray:Array<String> = loadedWeeks[curWeek].weekCharacters;
+		if (vsliceLevel == null)
+		{
+			for (i in 0...grpWeekCharacters.length) {
+				grpWeekCharacters.members[i].changeCharacter(weekArray[i]);
+			}
+		}
+
 		var stringThing:Array<String> = [];
-		for (i in 0...leWeek.songs.length) {
-			stringThing.push(leWeek.songs[i][0]);
+		if (vsliceLevel != null)
+		{
+			stringThing = vsliceLevel.getSongDisplayNames(Difficulty.getString(curDifficulty, false).toLowerCase());
+		}
+		else
+		{
+			for (i in 0...leWeek.songs.length) {
+				stringThing.push(leWeek.songs[i][0]);
+			}
 		}
 
 		txtTracklist.text = '';
@@ -549,7 +834,10 @@ class StoryMenuState extends MusicBeatState
 		txtTracklist.x = safeX((safeWidth() - txtTracklist.width) / 2 - safeWidth() * 0.35);
 
 		#if !switch
-		intendedScore = Highscore.getWeekScore(loadedWeeks[curWeek].fileName, curDifficulty);
+		if (vsliceLevel != null)
+			intendedScore = backend.Highscore.getVSliceWeekScore(leWeek.fileName.substr(VSLICE_WEEK_PREFIX.length), Difficulty.getString(curDifficulty, false).toLowerCase());
+		else
+			intendedScore = Highscore.getWeekScore(loadedWeeks[curWeek].fileName, curDifficulty);
 		#end
 	}
 }
