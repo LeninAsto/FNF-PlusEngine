@@ -101,6 +101,9 @@ haxelib git funkin.vis https://github.com/FunkinCrew/funkVis 22b1ce089dd924f15cd
 echo "[VSlice/Base Game] grig.audio"
 haxelib git grig.audio https://gitlab.com/haxe-grig/grig.audio.git cbf91e2180fd2e374924fe74844086aab7891666
 
+echo "[Set important libraries]"
+haxelib set lime git
+
 ###############################################################################
 # Android-only VSlice/mobile helper. Install manually on Android machines:
 # haxelib git extension-androidtools https://github.com/Psych-Plus-Team/extension-androidtools
