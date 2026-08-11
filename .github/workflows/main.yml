@@ -300,7 +300,7 @@ jobs:
           EOF
 
       - name: Build
-        run: haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" - officialBuild -D vslice -release
+        run: haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -D officialBuild -D vslice -release
 
       - name: Package artifact
         run: |

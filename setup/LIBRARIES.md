@@ -60,8 +60,8 @@ with `-D vslice` / `FEATURE_POLYMOD_MODS`.
 | `json2object` | `FunkinCrew/json2object` git `59e0467...` | Typed JSON parsing for Funkin data |
 | `jsonpatch` | `1.1.0` | Polymod JSON patches |
 | `jsonpath` | `1.1.0` | Polymod patch paths |
-| `thx.core` | `0.44.0` | Funkin save/data helpers |
-| `thx.semver` | `0.2.2` | Mod/API version checks |
+| `thx.core` | `fponticelli/thx.core` git `2bf2b99...` | Funkin save/data helpers and `jsonpath` compatibility |
+| `thx.semver` | `fponticelli/thx.semver` git `bdb191f...` | Mod/API version checks |
 | `flixel-animate` | `Psych-Plus-Team/flixel-animate` git `main` | VSlice AnimateAtlas package, imports `animate.*` |
 | `FlxPartialSound` | `FunkinCrew/FlxPartialSound` git `2f984e2...` | Partial audio loading |
 | `hxjsonast` | `nadako/hxjsonast` git `20e72cc...` | HScript/Polymod parser support |

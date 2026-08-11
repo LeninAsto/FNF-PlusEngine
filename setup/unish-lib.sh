@@ -80,11 +80,11 @@ haxelib install jsonpatch 1.1.0 --quiet
 echo "[VSlice] jsonpath 1.1.0"
 haxelib install jsonpath 1.1.0 --quiet
 
-echo "[VSlice] thx.core 0.44.0"
-haxelib install thx.core 0.44.0 --quiet
+echo "[VSlice] thx.core git"
+haxelib git thx.core https://github.com/fponticelli/thx.core 2bf2b992e06159510f595554e6b952e47922f128
 
-echo "[VSlice] thx.semver 0.2.2"
-haxelib install thx.semver 0.2.2 --quiet
+echo "[VSlice] thx.semver git"
+haxelib git thx.semver https://github.com/fponticelli/thx.semver bdb191fe7cf745c02a980749906dbf22719e200b
 
 echo "[VSlice] flixel-animate fork"
 haxelib git flixel-animate https://github.com/Psych-Plus-Team/flixel-animate main
