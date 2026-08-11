@@ -83,7 +83,7 @@ class RuntimeRainShader extends RuntimePostEffectShader
 
   function set_blurredScreen(value:BitmapData):BitmapData
   {
-    this.setBitmapData('uBlurredScreen', value);
+    this.setBitmapDataSafe('uBlurredScreen', value);
     return blurredScreen = value;
   }
 
@@ -91,7 +91,7 @@ class RuntimeRainShader extends RuntimePostEffectShader
 
   function set_mask(value:BitmapData):BitmapData
   {
-    this.setBitmapData('uMask', value);
+    this.setBitmapDataSafe('uMask', value);
     return mask = value;
   }
 
@@ -107,7 +107,7 @@ class RuntimeRainShader extends RuntimePostEffectShader
 
   function set_lightMap(value:BitmapData):BitmapData
   {
-    this.setBitmapData('uLightMap', value);
+    this.setBitmapDataSafe('uLightMap', value);
     return lightMap = value;
   }
 

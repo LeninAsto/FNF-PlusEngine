@@ -16,7 +16,7 @@ class RuntimeCustomBlendShader extends RuntimePostEffectShader
     {
       try
       {
-        this.setBitmapData("sourceSwag", value);
+        this.setBitmapDataSafe("sourceSwag", value);
       }
       catch (error) {}
     }
@@ -32,7 +32,7 @@ class RuntimeCustomBlendShader extends RuntimePostEffectShader
     {
       try
       {
-        this.setBitmapData("backgroundSwag", value);
+        this.setBitmapDataSafe("backgroundSwag", value);
       }
       catch (error) {}
     }

@@ -21,6 +21,16 @@ class BlendModesShader extends FlxRuntimeShader
   {
     this.cameraData = cameraData;
 
-    this.setBitmapData('camera', this.cameraData);
+    setBitmapDataSafe('camera', this.cameraData);
+  }
+
+  function setBitmapDataSafe(name:String, value:BitmapData):Void
+  {
+    try
+    {
+      final input:Dynamic = data == null ? null : Reflect.field(data, name);
+      if (input != null) input.input = value;
+    }
+    catch (error) {}
   }
 }

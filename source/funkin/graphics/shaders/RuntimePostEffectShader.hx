@@ -6,6 +6,7 @@ import flixel.graphics.frames.FlxFrame;
 import flixel.addons.display.FlxRuntimeShader;
 import lime.graphics.opengl.GLProgram;
 import lime.utils.Log;
+import openfl.display.BitmapData;
 
 class RuntimePostEffectShader extends FlxRuntimeShader
 {
@@ -163,6 +164,16 @@ class RuntimePostEffectShader extends FlxRuntimeShader
     {
       final param:Dynamic = data == null ? null : Reflect.field(data, name);
       if (param != null) param.value = value;
+    }
+    catch (error) {}
+  }
+
+  function setBitmapDataSafe(name:String, value:BitmapData):Void
+  {
+    try
+    {
+      final input:Dynamic = data == null ? null : Reflect.field(data, name);
+      if (input != null) input.input = value;
     }
     catch (error) {}
   }
