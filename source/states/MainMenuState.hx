@@ -2,9 +2,11 @@ package states;
 
 import flixel.FlxObject;
 import flixel.effects.FlxFlicker;
+import flixel.graphics.frames.FlxAtlasFrames;
 import states.editors.MasterEditorMenu;
 import options.OptionsState;
 import flixel.text.FlxText;
+import openfl.display.BitmapData;
 
 #if mobile
 import mobile.backend.MobileScaleMode;
@@ -18,14 +20,15 @@ enum MainMenuColumn {
 
 class MainMenuState extends MusicBeatState
 {
-	public static var fnfVersion:String = '0.2.8';
+	public static var fnfApiVersion:String = '0.8.5';
     public static var plusEngineVersion:String = '1.3-prerelease'; // Nothing interesting =)
 	public static var psychEngineVersion:String = "1.0.4 (" + plusEngineVersion + ")"; // This is also used for Discord RPC
 	public static var curSelected:Int = 0;
 	public static var curColumn:MainMenuColumn = CENTER;
 	public var allowMouse:Bool = true; //Turn this off to block mouse movement in menus
 
-	public var menuItems:FlxTypedGroup<FlxSprite>;
+	public var menuItems:PlusMainMenuItemGroup;
+	public var leftWatermarkText:FlxText;
 	public var leftItem:FlxSprite;
 	public var rightItem:FlxSprite;
 
@@ -102,7 +105,7 @@ class MainMenuState extends MusicBeatState
 		magenta.color = 0xFFfd719b;
 		add(magenta);
 
-		menuItems = new FlxTypedGroup<FlxSprite>();
+		menuItems = new PlusMainMenuItemGroup();
 		add(menuItems);
 
 		for (num => option in optionShit)
@@ -126,9 +129,10 @@ class MainMenuState extends MusicBeatState
 		psychVer.scrollFactor.set();
 		psychVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		add(psychVer);
-		var fnfVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 44 : 24), 0, "Friday Night Funkin' v" + fnfVersion, 12);
+		var fnfVer:FlxText = new FlxText(safeX(12), FlxG.height - (hasBuildLine ? 44 : 24), 0, "FNF API v" + fnfApiVersion, 12);
 		fnfVer.scrollFactor.set();
 		fnfVer.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		leftWatermarkText = fnfVer;
 		add(fnfVer);
 		if (hasBuildLine)
 		{
@@ -157,6 +161,10 @@ class MainMenuState extends MusicBeatState
 		FlxG.camera.follow(camFollow, null, 0.15);
 
 		addTouchPad('NONE', 'E_X');
+
+		#if vslice
+		funkin.plus.VSlicePlusStateBridge.create(this);
+		#end
 	}
 
 	#if CHECK_FOR_UPDATES
@@ -178,10 +186,35 @@ class MainMenuState extends MusicBeatState
 	function createMenuItem(name:String, x:Float, y:Float):FlxSprite
 	{
 		var menuItem:FlxSprite = new FlxSprite(x, y);
-		menuItem.frames = Paths.getSparrowAtlas('mainmenu/menu_$name');
-		menuItem.animation.addByPrefix('idle', '$name idle', 24, true);
-		menuItem.animation.addByPrefix('selected', '$name selected', 24, true);
-		menuItem.animation.play('idle');
+		try
+		{
+			menuItem.frames = Paths.getSparrowAtlas('mainmenu/menu_$name');
+		}
+		catch (e:Dynamic)
+		{
+			trace('Main menu atlas failed for $name, trying direct disk atlas: $e');
+			menuItem.frames = loadMenuAtlasFromDisk(name);
+		}
+
+		if (menuItem.frames != null)
+		{
+			menuItem.animation.addByPrefix('idle', '$name idle', 24, true);
+			menuItem.animation.addByPrefix('selected', '$name selected', 24, true);
+			menuItem.animation.play('idle');
+		}
+		else
+		{
+			var fallbackBitmap:Null<BitmapData> = loadMenuBitmapFromDisk(name);
+			if (fallbackBitmap != null)
+			{
+				menuItem.loadGraphic(fallbackBitmap);
+			}
+			else
+			{
+				trace('Main menu image missing for $name; using transparent placeholder.');
+				menuItem.makeGraphic(360, 80, FlxColor.TRANSPARENT);
+			}
+		}
 		menuItem.updateHitbox();
 		
 		menuItem.antialiasing = ClientPrefs.data.antialiasing;
@@ -190,19 +223,62 @@ class MainMenuState extends MusicBeatState
 		return menuItem;
 	}
 
+	function loadMenuAtlasFromDisk(name:String):Null<FlxAtlasFrames>
+	{
+		var base:String = 'assets/shared/images/mainmenu/menu_$name';
+		var png:String = '$base.png';
+		var xml:String = '$base.xml';
+
+		if (!FileSystem.exists(png) || !FileSystem.exists(xml)) return null;
+
+		try
+		{
+			var bitmap:BitmapData = BitmapData.fromFile(png);
+			if (bitmap == null) return null;
+			return FlxAtlasFrames.fromSparrow(bitmap, File.getContent(xml));
+		}
+		catch (e:Dynamic)
+		{
+			trace('Direct main menu atlas failed for $name: $e');
+		}
+
+		return null;
+	}
+
+	function loadMenuBitmapFromDisk(name:String):Null<BitmapData>
+	{
+		var png:String = 'assets/shared/images/mainmenu/menu_$name.png';
+		if (!FileSystem.exists(png)) return null;
+
+		try
+		{
+			return BitmapData.fromFile(png);
+		}
+		catch (e:Dynamic)
+		{
+			trace('Direct main menu image failed for $name: $e');
+		}
+
+		return null;
+	}
+
 	var selectedSomethin:Bool = false;
 
 	var timeNotMoving:Float = 0;
 	override function update(elapsed:Float)
 	{
-		if (FlxG.sound.music.volume < 0.8)
+		#if vslice
+		funkin.plus.VSlicePlusStateBridge.update(elapsed, true);
+		#end
+
+		if (FlxG.sound.music != null && FlxG.sound.music.volume < 0.8)
 			FlxG.sound.music.volume = Math.min(FlxG.sound.music.volume + 0.5 * elapsed, 0.8);
 
 		#if CHECK_FOR_UPDATES
 		tryShowOutdatedWarning();
 		#end
 
-		if (!selectedSomethin)
+		if (!selectedSomethin && !isMenuInputBlocked())
 		{
 			if (controls.UI_UP_P)
 				changeItem(-1);
@@ -347,13 +423,20 @@ class MainMenuState extends MusicBeatState
 					switch (option)
 					{
 						case 'story_mode':
+							#if FEATURE_POLYMOD_MODS
+							if (funkin.plus.VSliceRuntime.shouldUseVSliceRuntime())
+							{
+								MusicBeatState.switchState(funkin.plus.VSliceRuntime.createStoryMenuState());
+								return;
+							}
+							#end
 							MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
 						case 'freeplay':
 							MusicBeatState.switchState(FreeplayStateSelector.create());
 
 						#if MODS_ALLOWED
 						case 'mods':
-							MusicBeatState.switchState(backend.ScriptableState.tryCreate('ModsMenuState', new ModsMenuState()));
+							MusicBeatState.switchState(new ModsManagerSelectorState());
 						#end
 
 						#if ACHIEVEMENTS_ALLOWED
@@ -398,6 +481,12 @@ class MainMenuState extends MusicBeatState
 		super.update(elapsed);
 	}
 
+	function isMenuInputBlocked():Bool
+	{
+		if (menuItems == null) return false;
+		return Reflect.field(menuItems, 'enabled') == false || Reflect.field(menuItems, 'busy') == true;
+	}
+
 	function changeItem(change:Int = 0)
 	{
 		if(change != 0) curColumn = CENTER;
@@ -406,7 +495,7 @@ class MainMenuState extends MusicBeatState
 
 		for (item in menuItems)
 		{
-			item.animation.play('idle');
+			if (item.animation.exists('idle')) item.animation.play('idle');
 			item.centerOffsets();
 		}
 
@@ -420,8 +509,21 @@ class MainMenuState extends MusicBeatState
 			case RIGHT:
 				selectedItem = rightItem;
 		}
-		selectedItem.animation.play('selected');
+		if (selectedItem.animation.exists('selected')) selectedItem.animation.play('selected');
 		selectedItem.centerOffsets();
 		camFollow.y = selectedItem.getGraphicMidpoint().y;
+	}
+}
+
+class PlusMainMenuItemGroup extends FlxTypedGroup<FlxSprite>
+{
+	public function new()
+	{
+		super();
+	}
+
+	public function addItem(id:String, item:FlxSprite):FlxSprite
+	{
+		return add(item);
 	}
 }

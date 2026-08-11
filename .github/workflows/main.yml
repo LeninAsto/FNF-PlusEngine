@@ -124,7 +124,7 @@ jobs:
           EOF
 
       - name: Build
-        run: haxelib run lime build Project.xml linux --app-version="${APP_VERSION}" -DofficialBuild
+        run: haxelib run lime build Project.xml linux --app-version="${APP_VERSION}" -D officialBuild -D vslice -release
 
       - name: Package artifact
         run: |
@@ -204,7 +204,7 @@ jobs:
           rm -rf export build ~/.gradle
 
       - name: Build
-        run: haxelib run lime build Project.xml android --app-version="${APP_VERSION}" -DofficialBuild -DHXCPP_IGNORE_WARNINGS
+        run: haxelib run lime build Project.xml android --app-version="${APP_VERSION}" -D officialBuild -D vslice -release -DHXCPP_IGNORE_WARNINGS
 
       - name: Package artifact
         run: |
@@ -253,7 +253,7 @@ jobs:
           '@ | Set-Content -Path source/backend/BuildInfoGenerated.hx
 
       - name: Build
-        run: haxelib run lime build Project.xml windows --app-version="${env:APP_VERSION}" -DofficialBuild
+        run: haxelib run lime build Project.xml windows --app-version="${env:APP_VERSION}" -D officialBuild -D vslice -release
 
       - name: Package artifact
         run: |
@@ -300,7 +300,7 @@ jobs:
           EOF
 
       - name: Build
-        run: haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -DofficialBuild
+        run: haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -D officialBuild -D vslice -release
 
       - name: Package artifact
         run: |
@@ -347,7 +347,7 @@ jobs:
           EOF
 
       - name: Build
-        run: haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -DofficialBuild
+        run: haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -D officialBuild -D vslice -release
 
       - name: Package artifact
         run: |
@@ -394,7 +394,7 @@ jobs:
           EOF
 
       - name: Build
-        run: haxelib run lime build Project.xml ios -nosign --app-version="${APP_VERSION}" -DofficialBuild
+        run: haxelib run lime build Project.xml ios -nosign --app-version="${APP_VERSION}" -D officialBuild -D vslice -release
 
       - name: Package artifact
         run: |

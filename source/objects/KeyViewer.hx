@@ -31,6 +31,7 @@ class KeyViewer extends FlxSpriteGroup
 	var keyLabelRefreshElapsed:Float = 0;
 	var lastKeyboardBindVersion:Int = -1;
 	var lastControlContext:String = "";
+	var disposed:Bool = false;
 	static inline final KEY_LABEL_REFRESH_INTERVAL:Float = 0.5;
 	
 	// Referencia a PlayState para acceder a cpuControlled
@@ -141,8 +142,12 @@ class KeyViewer extends FlxSpriteGroup
 	
 	public function keyPressed(keyIndex:Int)
 	{
+		if (disposed || !exists) return;
 		if (keyIndex >= 0 && keyIndex < keys.length)
 		{
+			if (keys[keyIndex] == null || keyIndex >= keyTexts.length || keyTexts[keyIndex] == null)
+				return;
+
 			refreshPressureBarAnchor(keyIndex);
 			keys[keyIndex].press();
 			var keyColor = CoolUtil.colorFromString(ClientPrefs.data.keyViewerColor);
@@ -160,8 +165,12 @@ class KeyViewer extends FlxSpriteGroup
 	
 	public function keyReleased(keyIndex:Int)
 	{
+		if (disposed || !exists) return;
 		if (keyIndex >= 0 && keyIndex < keys.length)
 		{
+			if (keys[keyIndex] == null || keyIndex >= keyTexts.length || keyTexts[keyIndex] == null)
+				return;
+
 			refreshPressureBarAnchor(keyIndex);
 			keys[keyIndex].release();
 			keyTexts[keyIndex].color = FlxColor.WHITE;
@@ -184,6 +193,7 @@ class KeyViewer extends FlxSpriteGroup
 	
 	override function update(elapsed:Float)
 	{
+		if (disposed || !exists) return;
 		super.update(elapsed);
 		keyLabelRefreshElapsed += elapsed;
 		final bindVersion = Controls.instance != null ? Controls.instance.keyboardBindVersion : -1;
@@ -392,6 +402,21 @@ class KeyViewer extends FlxSpriteGroup
 	
 	override function destroy()
 	{
+		if (disposed) return;
+		disposed = true;
+		if (KeyViewer.instance == this) KeyViewer.instance = null;
+
+		for (text in keyTexts)
+		{
+			if (text != null)
+				FlxTween.cancelTweensOf(text);
+		}
+		for (key in keys)
+		{
+			if (key != null)
+				FlxTween.cancelTweensOf(key);
+		}
+
 		for (bar in flyingBars) {
 			if (bar != null) {
 				remove(bar, true);

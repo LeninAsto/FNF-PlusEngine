@@ -202,6 +202,9 @@ class Paths
 					currentTrackedAssets.remove(key); // and remove the key from local cache map
 			}
 		}
+
+		// Match Psych's cache cleanup behavior: free collected assets promptly.
+		System.gc();
 	}
 
 	// define the locally tracked assets
@@ -692,6 +695,71 @@ class Paths
 	public static function getModsSearchRoots(?key:String):Array<String>
 	{
 		return getModsRootDirectories();
+	}
+
+	public static function getVSliceModsRootDirectories():Array<String>
+	{
+		var roots:Array<String> = [];
+		#if android
+		if (StorageUtil.useExternalModsStorage())
+		{
+			for (modsRoot in StorageUtil.getPublicModsDirectoryCandidates())
+				addUniqueModsRoot(roots, modsRoot + '../vslice_mods/');
+		}
+		else
+			addUniqueModsRoot(roots, StorageUtil.getStorageDirectory() + 'vslice_mods/');
+		#else
+		addUniqueModsRoot(roots, Sys.getCwd() + 'vslice_mods/');
+		#end
+		return roots;
+	}
+
+	public static function getPrimaryVSliceModsRoot():String
+	{
+		var roots:Array<String> = getVSliceModsRootDirectories();
+		return roots.length > 0 ? roots[0] : (#if android StorageUtil.getStorageDirectory() #else Sys.getCwd() #end) + 'vslice_mods/';
+	}
+
+	public static function getVSliceModDirectory(modName:String):String
+	{
+		var normalizedModName:String = normalizeModKey(modName);
+		if (normalizedModName.length == 0)
+			return getPrimaryVSliceModsRoot();
+
+		var resolvedPath:String = getPrimaryVSliceModsRoot() + normalizedModName;
+
+		for (root in getVSliceModsRootDirectories())
+		{
+			var candidate:String = root + normalizedModName;
+			if (safeModPathExists(candidate) && safeModIsDirectory(candidate))
+			{
+				resolvedPath = candidate;
+				break;
+			}
+		}
+
+		return resolvedPath;
+	}
+
+	public static function vsliceMods(key:String = '')
+	{
+		var normalizedKey:String = normalizeModKey(key);
+		if (normalizedKey.length == 0)
+			return getPrimaryVSliceModsRoot();
+
+		var resolvedPath:String = getPrimaryVSliceModsRoot() + normalizedKey;
+
+		for (root in getVSliceModsRootDirectories())
+		{
+			var candidate:String = root + normalizedKey;
+			if (safeModPathExists(candidate))
+			{
+				resolvedPath = candidate;
+				break;
+			}
+		}
+
+		return resolvedPath;
 	}
 
 	public static function getPrimaryModsRoot():String

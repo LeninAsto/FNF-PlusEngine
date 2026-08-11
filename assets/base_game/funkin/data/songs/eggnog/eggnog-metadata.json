@@ -1,0 +1,25 @@
+{
+  "version": "2.2.4",
+  "songName": "Eggnog",
+  "artist": "Kawai Sprite",
+  "charter": "ninjamuffin99 + MtH",
+  "offsets": {},
+  "playData": {
+    "songVariations": ["erect", "pico"],
+    "difficulties": ["easy", "normal", "hard"],
+    "characters": {
+      "player": "bf-christmas",
+      "girlfriend": "gf-christmas",
+      "opponent": "parents-christmas",
+      "altInstrumentals": ["pico"],
+      "opponentVocals": ["parents-christmas"],
+      "playerVocals": ["bf-christmas"]
+    },
+    "stage": "mallXmas",
+    "noteStyle": "funkin",
+    "ratings": { "easy": 1, "normal": 2, "hard": 3 },
+    "album": "volume1"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 150, "bt": [4, 4, 4, 4] }]
+}

@@ -1,0 +1,24 @@
+{
+  "version": "2.2.4",
+  "songName": "DadBattle (Pico Mix)",
+  "artist": "TeraVex (ft. Saruky)",
+  "charter": "fabs + Spazkid",
+  "offsets": {},
+  "playData": {
+    "difficulties": ["easy", "normal", "hard"],
+    "characters": {
+      "player": "pico-playable",
+      "girlfriend": "nene",
+      "opponent": "dad",
+      "instrumental": "pico",
+      "opponentVocals": ["dad"],
+      "playerVocals": ["pico-playable"]
+    },
+    "stage": "mainStageErect",
+    "noteStyle": "funkin",
+    "ratings": { "easy": 3, "normal": 4, "hard": 5 },
+    "album": "volume4"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 180, "bt": [4, 4, 4, 4] }]
+}

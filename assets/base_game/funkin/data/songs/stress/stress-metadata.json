@@ -1,0 +1,25 @@
+{
+  "version": "2.2.4",
+  "songName": "Stress",
+  "artist": "Kawai Sprite",
+  "charter": "MtH + Spazkid + Hundrec",
+  "offsets": {},
+  "playData": {
+    "songVariations": ["pico"],
+    "difficulties": ["easy", "normal", "hard"],
+    "characters": {
+      "player": "bf-holding-gf",
+      "girlfriend": "pico-speaker",
+      "opponent": "tankman",
+      "altInstrumentals": ["pico"],
+      "opponentVocals": ["tankman"],
+      "playerVocals": ["bf-holding-gf"]
+    },
+    "stage": "tankmanBattlefield",
+    "noteStyle": "funkin",
+    "ratings": { "easy": 3, "normal": 4, "hard": 5 },
+    "album": "volume2"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 178, "bt": [4, 4, 4, 4] }]
+}

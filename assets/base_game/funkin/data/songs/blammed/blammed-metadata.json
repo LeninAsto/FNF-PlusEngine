@@ -1,0 +1,25 @@
+{
+  "version": "2.2.4",
+  "songName": "Blammed",
+  "artist": "Kawai Sprite",
+  "charter": "ninjamuffin99 + MtH",
+  "offsets": {},
+  "playData": {
+    "songVariations": ["erect", "pico"],
+    "difficulties": ["easy", "normal", "hard"],
+    "characters": {
+      "player": "bf",
+      "girlfriend": "gf",
+      "opponent": "pico",
+      "altInstrumentals": ["pico"],
+      "opponentVocals": ["pico"],
+      "playerVocals": ["bf"]
+    },
+    "stage": "phillyTrain",
+    "noteStyle": "funkin",
+    "ratings": { "easy": 1, "normal": 2, "hard": 3 },
+    "album": "volume1"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 165, "bt": [4, 4, 4, 4] }]
+}

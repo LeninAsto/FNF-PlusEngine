@@ -36,6 +36,17 @@
 	<define name="SHOW_LOADING_SCREEN" />
 	<define name="PSYCH_WATERMARKS"/> <!-- DELETE THIS TO REMOVE THE PSYCH LOGO FROM LOADING SCREEN -->
 	<define name="VIDEOS_ALLOWED" if="desktop || mobile" unless="32bits"/> <!-- Videos are now always enabled for desktop/mobile builds -->
+	<define name="FEATURE_POLYMOD_MODS" if="vslice" />
+	<define name="FEATURE_PARTIAL_SOUNDS" if="vslice" />
+	<define name="FEATURE_VIDEO_PLAYBACK" if="VIDEOS_ALLOWED vslice" />
+	<define name="FEATURE_OPEN_URL" if="vslice" />
+	<define name="FEATURE_GHOST_TAPPING" if="vslice" />
+	<define name="FEATURE_LAG_ADJUSTMENT" if="vslice" />
+	<define name="FEATURE_TOUCH_CONTROLS" if="mobile vslice" />
+	<define name="FEATURE_DEBUG_FUNCTIONS" if="debug vslice" />
+	<define name="FEATURE_DEBUG_DISPLAY" if="debug vslice" unless="mobile" />
+	<define name="NO_FEATURE_TOUCH_CONTROLS" unless="FEATURE_TOUCH_CONTROLS" />
+	<define name="NO_FEATURE_DEBUG_DISPLAY" unless="FEATURE_DEBUG_DISPLAY" />
 
 	<section if="officialBuild">
 		<define name="TITLE_SCREEN_EASTER_EGG"/>
@@ -89,6 +100,7 @@
 	<section if="MODS_ALLOWED">
 		<assets path='example_mods' rename='mods' embed='false' />
 		<assets path='example_sm' rename='sm' embed='false' />
+		<assets path='vslice_mods' embed='false'/>
 		<assets path='list.txt' rename='modsList.txt' />
 	</section>
 	
@@ -106,6 +118,17 @@
 	<haxelib name="flixel-addons" />
 	<haxelib name="tjson" version="1.4.0"/>
 	<haxelib name="moonchart" unless="mac | ios"/>
+
+	<haxelib name="polymod" if="FEATURE_POLYMOD_MODS"/>
+	<haxelib name="json2object" if="FEATURE_POLYMOD_MODS"/>
+	<haxelib name="jsonpatch" if="FEATURE_POLYMOD_MODS"/>
+	<haxelib name="jsonpath" if="FEATURE_POLYMOD_MODS"/>
+	<haxelib name="thx.core" if="FEATURE_POLYMOD_MODS"/>
+	<haxelib name="thx.semver" if="FEATURE_POLYMOD_MODS"/>
+	<haxelib name="flixel-animate" if="FEATURE_POLYMOD_MODS"/>
+	<haxelib name="FlxPartialSound" if="FEATURE_PARTIAL_SOUNDS"/>
+	<haxelib name="hxjsonast" if="FEATURE_POLYMOD_MODS"/>
+	<haxelib name="extension-androidtools" if="android FEATURE_POLYMOD_MODS"/>
 
 	<!--Psych stuff needed-->
 	<haxelib name="linc_luajit" if="LUA_ALLOWED"/>
@@ -202,9 +225,17 @@
 	<haxeflag name="--macro" value="include('my.pack')" />
 
 	<haxedef name="hscriptPos" if="HSCRIPT_ALLOWED" />
+	<haxedef name="custom_classes" if="HSCRIPT_ALLOWED" />
+	<haxedef name="POLYMOD_MOD_METADATA_FILE" value="_polymod_meta.json" if="FEATURE_POLYMOD_MODS" />
+	<haxedef name="POLYMOD_MOD_ICON_FILE" value="_polymod_icon.png" if="FEATURE_POLYMOD_MODS" />
 
 	<!-- Enable all classes compilation for hscript -->
+	<haxeflag name="--macro" value="addMetadata('@:build(funkin.util.macro.FlxMacro.buildFlxBasic())', 'flixel.FlxBasic')" if="FEATURE_POLYMOD_MODS" />
+	<haxeflag name="--macro" value="addMetadata('@:build(funkin.util.macro.FlxMacro.buildFlxSprite())', 'flixel.FlxSprite')" if="FEATURE_POLYMOD_MODS" />
 	<haxeflag name="--macro" value="include('flixel', true, [ 'flixel.addons.editors.spine.*', 'flixel.addons.nape.*', 'flixel.system.macros.*' ])" />
+	<haxeflag name="--macro" value="include('animate')" if="FEATURE_POLYMOD_MODS" />
+	<haxeflag name="--macro" value="include('funkin', true, [ 'funkin.mobile.*', 'funkin.ui.debug.anim.*', 'funkin.ui.debug.charting.*', 'funkin.ui.debug.stage.*', 'funkin.ui.debug.stageeditor.*', 'funkin.ui.haxeui.*' ])" if="FEATURE_POLYMOD_MODS" />
+	<haxeflag name="--macro" value="include('funkin.mobile')" if="mobile FEATURE_POLYMOD_MODS" />
 
 	<!-- ____________________________ Modcharts? _______________________________ -->
 

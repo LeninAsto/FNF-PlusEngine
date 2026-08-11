@@ -1,0 +1,39 @@
+{
+  "version": "1.0.0",
+  "name": "Senpai (Angry)",
+  "assetPath": "characters/senpai",
+  "singTime": 8.0,
+  "isPixel": true,
+  "scale": 6,
+  "healthIcon": {
+    "id": "senpai-angry",
+    "isPixel": true
+  },
+  "animations": [
+    {
+      "name": "idle",
+      "prefix": "Angry Senpai Idle instance 10",
+      "offsets": [0, 0]
+    },
+    {
+      "name": "singLEFT",
+      "prefix": "Angry Senpai LEFT NOTE instance 10",
+      "offsets": [4, 1]
+    },
+    {
+      "name": "singDOWN",
+      "prefix": "Angry Senpai DOWN NOTE instance 10",
+      "offsets": [1, 1]
+    },
+    {
+      "name": "singUP",
+      "prefix": "Angry Senpai UP NOTE instance 10",
+      "offsets": [1, 6]
+    },
+    {
+      "name": "singRIGHT",
+      "prefix": "Angry Senpai RIGHT NOTE instance 10",
+      "offsets": [-1, 0]
+    }
+  ]
+}

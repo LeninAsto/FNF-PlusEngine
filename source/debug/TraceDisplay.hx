@@ -158,8 +158,8 @@ class TraceDisplay extends Sprite
         Log.trace = function(v:Dynamic, ?infos:PosInfos):Void {
             // Formatear para la consola/terminal con estilo limpio
             if (infos != null) {
-                var fileName = extractFileName(infos.fileName);
-                Sys.println('[$fileName - ${infos.lineNumber}]: ${Std.string(v)}');
+                var sourceLabel = formatSourceLabel(infos.fileName);
+                Sys.println('[$sourceLabel - ${infos.lineNumber}]: ${Std.string(v)}');
             } else {
                 Sys.println(Std.string(v));
             }
@@ -184,8 +184,8 @@ class TraceDisplay extends Sprite
             // Agregar a nuestro display
             var errorText = 'HSCRIPT ERROR: $message';
             if (pos != null && pos.fileName != null) {
-                var fileName = extractFileName(pos.fileName);
-                errorText = 'HSCRIPT ERROR in $fileName: $message';
+                var sourceLabel = formatSourceLabel(pos.fileName);
+                errorText = 'HSCRIPT ERROR in $sourceLabel: $message';
             }
             addTraceDirectly(errorText, HSCRIPT_ERROR, 0xFF4444);
         };
@@ -200,8 +200,8 @@ class TraceDisplay extends Sprite
         var traceText:String;
         
         if (infos != null) {
-            var fileName = extractFileName(infos.fileName);
-            traceText = '($fileName - ${infos.lineNumber}): ${Std.string(value)}';
+            var sourceLabel = formatSourceLabel(infos.fileName);
+            traceText = '$sourceLabel - ${infos.lineNumber}: ${Std.string(value)}';
         } else {
             traceText = Std.string(value);
         }
@@ -261,6 +261,24 @@ class TraceDisplay extends Sprite
         
         return fileName;
     }
+
+    private function formatSourceLabel(fileName:String):String
+    {
+        var label = extractFileName(fileName);
+        return isFunkinSource(fileName) ? '(funkin) ' + label : label;
+    }
+
+    private function isFunkinSource(fileName:String):Bool
+    {
+        if (fileName == null) return false;
+
+        var normalized = fileName.split("\\").join("/");
+        return normalized.indexOf("/funkin/") != -1
+            || normalized.indexOf("source/funkin/") == 0
+            || normalized.indexOf("assets/funkin/") == 0
+            || normalized.indexOf("/assets/funkin/") != -1
+            || normalized.indexOf("funkin/") == 0;
+    }
     
     /**
      * Función pública para agregar errores de Lua
@@ -305,8 +323,8 @@ class TraceDisplay extends Sprite
         if (instance != null) {
             var errorText = 'HSCRIPT ERROR: $text';
             if (fileName != null) {
-                var name = instance.extractFileName(fileName);
-                errorText = 'HSCRIPT ERROR in $name: $text';
+                var sourceLabel = instance.formatSourceLabel(fileName);
+                errorText = 'HSCRIPT ERROR in $sourceLabel: $text';
             }
             instance.addTraceDirectly(errorText, HSCRIPT_ERROR, 0xFF4444);
         }

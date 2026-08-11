@@ -1,0 +1,24 @@
+{
+  "version": "2.2.4",
+  "songName": "Ugh Erect",
+  "artist": "Kawai Sprite",
+  "charter": "fabs + Spazkid",
+  "offsets": {},
+  "playData": {
+    "difficulties": ["erect", "nightmare"],
+    "characters": {
+      "player": "bf",
+      "girlfriend": "gf-tankmen",
+      "opponent": "tankman",
+      "instrumental": "erect",
+      "opponentVocals": ["tankman"],
+      "playerVocals": ["bf"]
+    },
+    "stage": "tankmanBattlefieldErect",
+    "noteStyle": "funkin",
+    "ratings": { "erect": 8, "nightmare": 9 },
+    "album": "volume4"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 170, "bt": [4, 4, 4, 4] }]
+}

@@ -1,0 +1,25 @@
+{
+  "version": "2.2.4",
+  "songName": "Senpai",
+  "artist": "Kawai Sprite",
+  "charter": "ninjamuffin99 + MtH",
+  "offsets": {},
+  "playData": {
+    "songVariations": ["erect", "pico"],
+    "difficulties": ["easy", "normal", "hard"],
+    "characters": {
+      "player": "bf-pixel",
+      "girlfriend": "gf-pixel",
+      "opponent": "senpai",
+      "altInstrumentals": ["pico"],
+      "opponentVocals": ["senpai"],
+      "playerVocals": ["bf-pixel"]
+    },
+    "stage": "school",
+    "noteStyle": "pixel",
+    "ratings": { "easy": 1, "normal": 2, "hard": 3 },
+    "album": "volume2"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 144, "bt": [4, 4, 4, 4] }]
+}

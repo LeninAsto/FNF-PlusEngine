@@ -1,0 +1,22 @@
+{
+  "version": "2.2.4",
+  "songName": "Blazin'",
+  "artist": "Kawai Sprite",
+  "charter": "fabs + PhantomArcade",
+  "offsets": {},
+  "playData": {
+    "difficulties": ["easy", "normal", "hard"],
+    "characters": {
+      "player": "pico-blazin",
+      "girlfriend": "nene",
+      "opponent": "darnell-blazin"
+    },
+    "stage": "phillyBlazin",
+    "noteStyle": "funkin",
+    "ratings": { "easy": 3, "normal": 4, "hard": 5 },
+    "stickerPack": "bonus-weekend1",
+    "album": "volume3"
+  },
+  "generatedBy": "Friday Night Funkin' - v0.8.1",
+  "timeChanges": [{ "t": 0, "b": 0, "bpm": 180, "bt": [4, 4, 4, 4] }]
+}

@@ -257,8 +257,8 @@ class FPSCounter extends Sprite
 				box.setTextColor(textColorValue);
 		}
 
-		// Update counters for extended debug mode without extra throttling.
-		if (debugLevel >= 4)
+		// Update counters for debug modes without extra throttling.
+		if (debugLevel >= 3)
 		{
 			updateCountersOptimized();
 		}
@@ -270,7 +270,7 @@ class FPSCounter extends Sprite
 
 		if (showCounter)
 		{
-			setBox(index++, Std.string(currentFPS) + ' FPS\nDelay: ' + formatFloat(frameTimeMs, 1) + ' / ' + formatFloat(avgFrameTimeMs, 1) + ' ms\nRAM: ' + currentMemoryStr + ' / ' + peakMemoryStr, showBackground);
+			setBox(index++, Std.string(currentFPS) + ' FPS\nDelay: ' + formatFloat(frameTimeMs, 1) + ' / ' + formatFloat(avgFrameTimeMs, 1) + ' ms\nGC: ' + currentMemoryStr + ' / ' + peakMemoryStr, showBackground);
 
 			if (modAuthor != null && modAuthor.length > 0)
 				setBox(index++, modAuthor, showBackground);
@@ -287,6 +287,7 @@ class FPSCounter extends Sprite
 			var buildDebug:String = os.substring(1) + '\nCommit: ' + commitText;
 			if (BuildInfo.githubDevBuild && BuildInfo.runId.length > 0)
 				buildDebug += '\nBuild: #' + BuildInfo.runId;
+			buildDebug += '\nState: ' + cachedCurrentState;
 			if (debugLevel >= 4)
 			{
 				if (commitDate != null && commitDate.length > 0)
@@ -294,7 +295,6 @@ class FPSCounter extends Sprite
 				if (commitTime != null && commitTime.length > 0)
 					buildDebug += '\nTime: ' + commitTime + ' UTC';
 				buildDebug += '\nUptime: ' + getUptime();
-				buildDebug += '\nState: ' + cachedCurrentState;
 			}
 			setBox(index++, buildDebug, true);
 		}
@@ -637,14 +637,7 @@ class FPSCounter extends Sprite
 		if (FlxG.state == null)
 			return "null";
 
-		var stateName = Type.getClassName(Type.getClass(FlxG.state));
-
-		// Strip package prefix
-		if (stateName.indexOf('.') > -1)
-		{
-			var parts = stateName.split('.');
-			stateName = parts[parts.length - 1];
-		}
+		var stateName = formatStateClassName(Type.getClassName(Type.getClass(FlxG.state)));
 
 		// Show the script name when running inside a ScriptableState
 		#if (HSCRIPT_ALLOWED && sys)
@@ -659,16 +652,27 @@ class FPSCounter extends Sprite
 		// Check for active substate
 		if (FlxG.state.subState != null)
 		{
-			var subStateName = Type.getClassName(Type.getClass(FlxG.state.subState));
-			if (subStateName.indexOf('.') > -1)
-			{
-				var parts = subStateName.split('.');
-				subStateName = parts[parts.length - 1];
-			}
+			var subStateName = formatStateClassName(Type.getClassName(Type.getClass(FlxG.state.subState)));
 			return '${stateName} -> ${subStateName}';
 		}
 
 		return stateName;
+	}
+
+	private function formatStateClassName(fullName:String):String
+	{
+		if (fullName == null || fullName.length <= 0)
+			return "Unknown";
+
+		var isFunkinState = fullName.indexOf("funkin.") == 0;
+		var stateName = fullName;
+		if (stateName.indexOf('.') > -1)
+		{
+			var parts = stateName.split('.');
+			stateName = parts[parts.length - 1];
+		}
+
+		return isFunkinState ? '(funkin) ' + stateName : stateName;
 	}
 
 	// Función para obtener el idioma actual
