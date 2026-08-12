@@ -312,7 +312,8 @@ class FreeplayState_Psych extends MusicBeatState
 			}
 			#end
 
-			scoreText.text = Language.getPhrase('personal_best', 'PERSONAL BEST: {1} ({2}%)', [lerpScore, ratingSplit.join('.')]);
+			var phraseString:String = Language.getPhrase('personal_best', 'PERSONAL BEST: {1} ({2}%)', [lerpScore, ratingSplit.join('.')]);
+			scoreText.text = (phraseString != null) ? phraseString : 'PERSONAL BEST: ${lerpScore} (${ratingSplit.join('.')}%)';
 			positionHighscore();
 			
 			if(songs.length > 1)
