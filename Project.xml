@@ -3,7 +3,7 @@
 	<!-- _________________________ Application Settings _________________________ -->
 
 	<app title="Friday Night Funkin': Plus Engine" file="PlusEngine" packageName="com.leninasto.plusengine" package="com.leninasto.plusengine" main="Main" version="1.3-prerelease" company="LeninAsto" />
-	<app title="FNF: Plus Engine" if="android" />
+	<app title="FNF: Plus Engine" if="mobile" />
 
 	<!--Switch Export with Unique ApplicationID and Icon-->
 	<set name="APP_ID" value="0x0100f6c013bbc000" />
