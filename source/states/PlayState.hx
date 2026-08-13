@@ -205,8 +205,21 @@ class PlayState extends MusicBeatState
 		uiPrefix = uiPostfix = "";
 		if (value != "normal")
 		{
-			uiPrefix = value.split("-pixel")[0].trim();
-			if (value == "pixel" || value.endsWith("-pixel")) uiPostfix = "-pixel";
+			Paths.setUIPath(value);
+
+			var baseName = value;
+			var isPixel = false;
+			if (value.endsWith("-pixel"))
+			{
+				baseName = value.substr(0, value.length - 6);
+				isPixel = true;
+			}
+			uiPrefix = baseName + "UI/";
+			if (isPixel || value == "pixel") uiPostfix = "-pixel";
+		}
+		else
+		{
+			Paths.resetUIPath();
 		}
 		return stageUI = value;
 	}
@@ -1800,8 +1813,8 @@ class PlayState extends MusicBeatState
 		var introAssets:Map<String, Array<String>> = new Map<String, Array<String>>();
 		var introImagesArray:Array<String> = switch(stageUI) {
 			case "pixel": ['pixelUI/ready-pixel', 'pixelUI/set-pixel', 'pixelUI/date-pixel'];
-			case "normal": ["ready", "set" ,"go"];
-			default: ['${uiPrefix}UI/ready${uiPostfix}', '${uiPrefix}UI/set${uiPostfix}', '${uiPrefix}UI/go${uiPostfix}'];
+			case "normal": ["ready", "set", "go"];
+			default: [Paths.getUIPath("ready"), Paths.getUIPath("set"), Paths.getUIPath("go")];
 		}
 		introAssets.set(stageUI, introImagesArray);
 		var introAlts:Array<String> = introAssets.get(stageUI);
@@ -1874,8 +1887,8 @@ class PlayState extends MusicBeatState
 				var introAssets:Map<String, Array<String>> = new Map<String, Array<String>>();
 				var introImagesArray:Array<String> = switch(stageUI) {
 					case "pixel": ['pixelUI/ready-pixel', 'pixelUI/set-pixel', 'pixelUI/date-pixel'];
-					case "normal": ["ready", "set" ,"go"];
-					default: ['${uiPrefix}UI/ready${uiPostfix}', '${uiPrefix}UI/set${uiPostfix}', '${uiPrefix}UI/go${uiPostfix}'];
+					case "normal": ["ready", "set", "go"];
+					default: [Paths.getUIPath("ready"), Paths.getUIPath("set"), Paths.getUIPath("go")];
 				}
 				introAssets.set(stageUI, introImagesArray);
 
@@ -1981,11 +1994,10 @@ class PlayState extends MusicBeatState
 			new FlxTimer().start(Conductor.crochet / 1000 / playbackRate, function(tmr:FlxTimer)
 			{
 				var introAssets:Map<String, Array<String>> = new Map<String, Array<String>>();
-				var introImagesArray:Array<String> = switch (stageUI)
-				{
-					case "pixel": ['pixelUI/get-pixel', 'pixelUI/ready-pixel', 'pixelUI/set-pixel', 'pixelUI/date-pixel'];
-					case "normal": ["get", "ready", "set", "go"];
-					default: ['${uiPrefix}UI/get${uiPostfix}', '${uiPrefix}UI/ready${uiPostfix}', '${uiPrefix}UI/set${uiPostfix}', '${uiPrefix}UI/go${uiPostfix}'];
+				var introImagesArray:Array<String> = switch(stageUI) {
+					case "pixel": ['pixelUI/ready-pixel', 'pixelUI/set-pixel', 'pixelUI/date-pixel'];
+					case "normal": ["ready", "set", "go"];
+					default: [Paths.getUIPath("ready"), Paths.getUIPath("set"), Paths.getUIPath("go")];
 				}
 				introAssets.set(stageUI, introImagesArray);
 
@@ -4473,17 +4485,18 @@ class PlayState extends MusicBeatState
 
 	private function cachePopUpScore()
 	{
-		var uiFolder:String = "";
-		if (stageUI != "normal")
-			uiFolder = uiPrefix + "UI/";
-
 		for (rating in ratingsData)
-			Paths.image(uiFolder + rating.image + uiPostfix);
+		{
+			var imgPath = Paths.getUIPath(rating.image, true);
+			Paths.image(imgPath);
+		}
 		for (i in 0...10)
-			Paths.image(uiFolder + 'num' + i + uiPostfix);
-		
-		// Cache miss popup once. comboBroken now reuses miss for consistency and less clutter.
-		Paths.image(uiFolder + 'miss' + uiPostfix);
+		{
+			var imgPath = Paths.getUIPath('num' + i, true);
+			Paths.image(imgPath);
+		}
+		var missPath = Paths.getUIPath('miss', true);
+		Paths.image(missPath);
 	}
 
 	inline function shouldUseGameplayRuntimeBridge():Bool
@@ -4872,7 +4885,7 @@ class PlayState extends MusicBeatState
 				clearComboGroupSprites();
 
 			var rating:FlxSprite = new FlxSprite();
-			rating.loadGraphic(Paths.image(uiFolder + daRating.image + uiPostfix));
+			rating.loadGraphic(Paths.uiImage(daRating.image, true));
 			rating.screenCenter();
 			rating.x = placement - 40;
 			rating.y -= 60;

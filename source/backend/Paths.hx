@@ -29,6 +29,93 @@ class Paths
 	inline public static var VIDEO_EXT = "mp4";
 
 	/**
+	 * Base UI path prefix for custom UI assets.
+	 */
+	public static var uiBasePath:String = "";
+	
+	/**
+	 * UI suffix for pixel/alternate versions
+	 */
+	public static var uiSuffix:String = "";
+	
+	/**
+	 * Get a UI asset path with support for nested folders
+	 * @param assetName Base asset name (e.g., "ready", "combo")
+	 * @param useSuffix Whether to append uiSuffix
+	 * @return Full image path string
+	 */
+	public static function getUIPath(assetName:String, useSuffix:Bool = true):String
+	{
+		var base:String = "images/";
+		
+		// Add custom base path if set
+		if (uiBasePath != null && uiBasePath.length > 0)
+		{
+			// Normalize path: ensure no leading/trailing slashes
+			var normalizedPath = uiBasePath.replace('\\', '/');
+			if (normalizedPath.startsWith("/")) normalizedPath = normalizedPath.substr(1);
+			if (normalizedPath.endsWith("/")) normalizedPath = normalizedPath.substr(0, -1);
+			
+			// Add UI folder suffix
+			base += normalizedPath + "/";
+		}
+		
+		// Add asset name
+		base += assetName;
+		
+		// Add suffix if requested
+		if (useSuffix && uiSuffix != null && uiSuffix.length > 0)
+			base += uiSuffix;
+		
+		return base;
+	}
+	
+	/**
+	 * Set UI path for standard UI
+	 * @param uiName UI name
+	 * @param isPixel Whether to use pixel suffix
+	 */
+	public static function setUIPath(uiName:String, isPixel:Bool = false):Void
+	{
+		if (uiName == null || uiName == "normal")
+		{
+			uiBasePath = "";
+			uiSuffix = "";
+			return;
+		}
+		
+		// Handle "-pixel" suffix in name
+		if (uiName.endsWith("-pixel"))
+		{
+			uiName = uiName.substr(0, uiName.length - 6);
+			isPixel = true;
+		}
+		
+		uiBasePath = uiName;
+		uiSuffix = isPixel ? "-pixel" : "";
+	}
+	
+	/**
+	 * Reset UI path to default (normal)
+	 */
+	public static function resetUIPath():Void
+	{
+		uiBasePath = "";
+		uiSuffix = "";
+	}
+	
+	/**
+	 * Get the UI folder prefix (compatible with old system)
+	 * @deprecated Use getUIPath() instead
+	 */
+	public static function getUIPrefix():String
+	{
+		if (uiBasePath == null || uiBasePath.length == 0)
+			return "";
+		return uiBasePath + "UI/";
+	}
+
+	/**
 	 * Temporary frames cache that gets cleared between states.
 	 */
 	static var tempFramesCache:Map<String, FlxAtlasFrames> = [];
@@ -385,6 +472,42 @@ class Paths
 			return currentTrackedAssets.get(resolvedFile);
 		}
 		return cacheBitmap(key, parentFolder, bitmap, allowGPU);
+	}
+
+	/**
+	 * Load a UI image with softcoded path support
+	 * @param assetName Asset name (e.g., "ready", "combo")
+	 * @param useSuffix Whether to append uiSuffix
+	 * @param parentFolder Optional parent folder override
+	 * @param allowGPU Whether to allow GPU caching
+	 * @return FlxGraphic or null if not found
+	 */
+	static public function uiImage(assetName:String, useSuffix:Bool = true, ?parentFolder:String = null, ?allowGPU:Bool = true):FlxGraphic
+	{
+		var path:String = getUIPath(assetName, useSuffix);
+		return image(path, parentFolder, allowGPU);
+	}
+	
+	/**
+	 * Check if a UI image exists with softcoded path support
+	 * @param assetName Asset name (e.g., "ready", "combo")
+	 * @param useSuffix Whether to use uiSuffix
+	 * @param parentFolder Optional parent folder override
+	 * @return True if the image exists
+	 */
+	static public function uiImageExists(assetName:String, useSuffix:Bool = true, ?parentFolder:String = null):Bool
+	{
+		var path:String = getUIPath(assetName, useSuffix);
+		return fileExists(path, IMAGE, false, parentFolder);
+	}
+	
+	/**
+	 * Get a UI atlas with softcoded path support
+	 */
+	static public function getUIAtlas(assetName:String, useSuffix:Bool = true, ?parentFolder:String = null, ?allowGPU:Bool = true):FlxAtlasFrames
+	{
+		var path:String = getUIPath(assetName, useSuffix);
+		return getAtlas(path, parentFolder, allowGPU);
 	}
 
 	public static function cacheBitmap(key:String, ?parentFolder:String = null, ?bitmap:BitmapData, ?allowGPU:Bool = true):FlxGraphic
@@ -1171,4 +1294,3 @@ class Paths
 		#end
 	}
 }
-
