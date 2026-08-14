@@ -218,6 +218,13 @@ class MaterialTextField extends FlxSpriteGroup
 		cursorVisible = true;
 		cursor.offset.x = -(PADDING_HORIZONTAL + (inputText.textField != null ? inputText.textField.textWidth : 0) + 2);
 		
+		#if mobile
+		if (FlxG.stage != null && FlxG.stage.window != null) {
+			FlxG.stage.window.requestTextInput(true);
+			FlxG.stage.focus = FlxG.stage;
+		}
+		#end
+		
 		if (onFocus != null)
 			onFocus();
 	}
@@ -231,6 +238,12 @@ class MaterialTextField extends FlxSpriteGroup
 		updateOutline();
 		cursor.alpha = 0;
 		cursorVisible = false;
+		
+		#if mobile
+		if (FlxG.stage != null && FlxG.stage.window != null) {
+			FlxG.stage.window.requestTextInput(false);
+		}
+		#end
 		
 		if (onBlur != null)
 			onBlur();
