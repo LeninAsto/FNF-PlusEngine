@@ -204,16 +204,12 @@ class StorageUtil
 
 	public static function getPublicModsDirectory():String
 	{
-		final dir = Path.join([getPublicStorageDirectory(), 'mods']);
-		ensureDirectory(dir);
-		return Path.addTrailingSlash(dir);
+		return Path.addTrailingSlash(Path.join([getPublicStorageDirectory(), 'mods']));
 	}
 
 	public static function getScopedModsDirectory():String
 	{
-		final dir = Path.join([getInternalStorageDirectory(), 'mods']);
-		ensureDirectory(dir);
-		return Path.addTrailingSlash(dir);
+		return Path.addTrailingSlash(Path.join([getInternalStorageDirectory(), 'mods']));
 	}
 
 	public static function getPublicModsDirectoryCandidates():Array<String>
@@ -353,16 +349,13 @@ class StorageUtil
 		final directories = [
 			rootDir,
 			getStorageDirectory(),
-			getScopedModsDirectory(),
 			getSavesDirectory(),
-			getLogsDirectory(),
-			getSMDirectory()
+			getLogsDirectory()
 		];
 
 		if (useExternalModsStorage())
 		{
 			directories.push(getPublicStorageDirectory());
-			directories.push(getPublicModsDirectory());
 		}
 
 		var allDirectoriesCreated = true;
@@ -410,6 +403,26 @@ class StorageUtil
 		}
 	}
 
+	private static function ensureModsDirectory(path:String):Bool
+	{
+		if (path == null || path.length == 0)
+			return false;
+
+		try
+		{
+			if (!FileSystem.exists(path)) {
+				FileSystem.createDirectory(path);
+				trace('Created mods/sm directory: $path');
+			}
+			return true;
+		}
+		catch (e:Dynamic)
+		{
+			trace('Failed to create mods/sm directory $path: ${Std.string(e)}');
+			return false;
+		}
+	}
+
 	public static function copyModsAndSMAssets():Array<String>
 	{
 		var failedFiles:Array<String> = [];
@@ -440,7 +453,10 @@ class StorageUtil
 			var internalSMDir:String = getSMDirectory();
 			var externalSMDir:String = Path.join([getPublicStorageDirectory(), 'sm']);
 
-			ensureDirectory(externalSMDir);
+			var createdInternalMods = false;
+			var createdExternalMods = false;
+			var createdInternalSM = false;
+			var createdExternalSM = false;
 
 			for (assetPath in modsAssets)
 			{
@@ -455,18 +471,21 @@ class StorageUtil
 					var relativePath:String = '';
 					var targetDir:String = '';
 					var externalTargetDir:String = '';
+					var isMods:Bool = false;
 
 					if (isModsAsset)
 					{
 						relativePath = assetPath.substring('mods/'.length);
 						targetDir = internalModsDir;
 						externalTargetDir = externalModsDir;
+						isMods = true;
 					}
 					else if (isSMAsset)
 					{
 						relativePath = assetPath.substring('sm/'.length);
 						targetDir = internalSMDir;
 						externalTargetDir = externalSMDir;
+						isMods = false;
 					}
 
 					if (relativePath == '' || relativePath == '/')
@@ -478,6 +497,17 @@ class StorageUtil
 						continue;
 					}
 
+					if (!createdInternalMods && isMods) {
+						if (ensureModsDirectory(targetDir)) {
+							createdInternalMods = true;
+						}
+					}
+					if (!createdInternalSM && !isMods) {
+						if (ensureModsDirectory(targetDir)) {
+							createdInternalSM = true;
+						}
+					}
+
 					var internalSuccess:Bool = copyAssetToDirectory(assetPath, targetDir, relativePath);
 					if (!internalSuccess)
 					{
@@ -486,6 +516,17 @@ class StorageUtil
 
 					if (useExternalModsStorage())
 					{
+						if (!createdExternalMods && isMods) {
+							if (ensureModsDirectory(externalTargetDir)) {
+								createdExternalMods = true;
+							}
+						}
+						if (!createdExternalSM && !isMods) {
+							if (ensureModsDirectory(externalTargetDir)) {
+								createdExternalSM = true;
+							}
+						}
+
 						var externalSuccess:Bool = copyAssetToDirectory(assetPath, externalTargetDir, relativePath);
 						if (!externalSuccess && !failedFiles.contains('$assetPath (Failed to copy to internal storage)'))
 						{
@@ -524,12 +565,6 @@ class StorageUtil
 	{
 		try
 		{
-			if (!ensureDirectory(targetDir))
-			{
-				trace('Failed to create target directory: $targetDir');
-				return false;
-			}
-
 			var fullPath:String = Path.join([targetDir, relativePath]);
 			var fileDir:String = Path.directory(fullPath);
 
@@ -642,7 +677,10 @@ class StorageUtil
 			var internalSMDir:String = getSMDirectory();
 			var externalSMDir:String = Path.join([getPublicStorageDirectory(), 'sm']);
 
-			ensureDirectory(externalSMDir);
+			var createdInternalMods = false;
+			var createdExternalMods = false;
+			var createdInternalSM = false;
+			var createdExternalSM = false;
 
 			for (assetPath in modsAssets)
 			{
@@ -661,18 +699,21 @@ class StorageUtil
 					var relativePath:String = '';
 					var targetDir:String = '';
 					var externalTargetDir:String = '';
+					var isMods:Bool = false;
 
 					if (isModsAsset)
 					{
 						relativePath = assetPath.substring('mods/'.length);
 						targetDir = internalModsDir;
 						externalTargetDir = externalModsDir;
+						isMods = true;
 					}
 					else if (isSMAsset)
 					{
 						relativePath = assetPath.substring('sm/'.length);
 						targetDir = internalSMDir;
 						externalTargetDir = externalSMDir;
+						isMods = false;
 					}
 
 					if (relativePath == '' || relativePath == '/')
@@ -688,6 +729,17 @@ class StorageUtil
 						continue;
 					}
 
+					if (!createdInternalMods && isMods) {
+						if (ensureModsDirectory(targetDir)) {
+							createdInternalMods = true;
+						}
+					}
+					if (!createdInternalSM && !isMods) {
+						if (ensureModsDirectory(targetDir)) {
+							createdInternalSM = true;
+						}
+					}
+
 					var internalSuccess:Bool = copyAssetToDirectory(assetPath, targetDir, relativePath);
 					if (!internalSuccess)
 					{
@@ -696,6 +748,17 @@ class StorageUtil
 
 					if (useExternalModsStorage())
 					{
+						if (!createdExternalMods && isMods) {
+							if (ensureModsDirectory(externalTargetDir)) {
+								createdExternalMods = true;
+							}
+						}
+						if (!createdExternalSM && !isMods) {
+							if (ensureModsDirectory(externalTargetDir)) {
+								createdExternalSM = true;
+							}
+						}
+
 						var externalSuccess:Bool = copyAssetToDirectory(assetPath, externalTargetDir, relativePath);
 						if (!externalSuccess && !failedFiles.contains('$assetPath (Internal copy failed)'))
 						{
