@@ -153,7 +153,7 @@ class FreeplayState_Psych extends MusicBeatState
 
 		WeekData.setDirectoryFromWeek();
 
-		scoreText = new FlxText(FlxG.width * 0.52, 5, FlxG.width * 0.48 - 6, "", 32);
+		scoreText = new FlxText(FlxG.width * 0.7, 5, 0, "", 32);
 		scoreText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, RIGHT);
 
 		scoreBG = new FlxSprite(scoreText.x - 6, 0).makeGraphic(1, 66, 0xFF000000);
@@ -663,8 +663,7 @@ class FreeplayState_Psych extends MusicBeatState
 
 	private function positionHighscore()
 	{
-		scoreText.fieldWidth = FlxG.width * 0.48 - 6;
-		scoreText.x = FlxG.width - scoreText.fieldWidth - 6;
+		scoreText.x = FlxG.width - scoreText.width - 6;
 		scoreBG.scale.x = FlxG.width - scoreText.x + 6;
 		scoreBG.x = FlxG.width - (scoreBG.scale.x / 2);
 		diffText.x = Std.int(scoreBG.x + (scoreBG.width / 2));
