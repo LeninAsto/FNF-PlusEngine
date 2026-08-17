@@ -68,7 +68,7 @@ class StepmaniaHud
 		if (hideHud)
 			return;
 
-		var spriteName:String = switch(ratingName.toLowerCase())
+		var spriteName:String = switch (ratingName.toLowerCase())
 		{
 			case 'flawless': 'fantastic';
 			case 'sick': 'excellent';
@@ -110,3 +110,4 @@ class StepmaniaHud
 		judgementSprite.destroy();
 	}
 }
+

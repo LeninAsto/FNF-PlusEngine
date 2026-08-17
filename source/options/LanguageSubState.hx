@@ -8,11 +8,12 @@ class LanguageSubState extends MusicBeatSubstate
 	private static inline var INTRO_DURATION:Float = 0.32;
 	private static inline var INTRO_DESC_DURATION:Float = 0.24;
 	private static inline var OUTRO_DURATION:Float = 0.26;
+
 	var grpLanguages:FlxTypedGroup<Alphabet> = new FlxTypedGroup<Alphabet>();
 	var languages:Array<String> = [];
 	var displayLanguages:Map<String, String> = [];
 	var curSelected:Int = 0;
-	
+
 	// Usando el mismo sistema de descText que BaseOptionsMenu
 	private var descBox:FlxSprite;
 	private var descText:FlxText;
@@ -21,21 +22,21 @@ class LanguageSubState extends MusicBeatSubstate
 	private var titleText:Alphabet;
 	private var playingIntroTransition:Bool = false;
 	private var closingTransition:Bool = false;
-	
+
 	public var title:String;
 	public var rpcTitle:String;
-	
+
 	public function new()
 	{
 		title = Language.getPhrase('language_menu', 'Language');
 		rpcTitle = 'Language Menu';
-		
+
 		super();
 
 		#if DISCORD_ALLOWED
 		DiscordClient.changePresence(rpcTitle, null);
 		#end
-		
+
 		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.alpha = OptionsMenuTheme.menuBackgroundAlpha();
 		bg.screenCenter();
@@ -55,7 +56,8 @@ class LanguageSubState extends MusicBeatSubstate
 		add(titleText);
 
 		descText = new FlxText(50, 600, 1180, "", 32);
-		descText.setFormat(Paths.font("vcr.ttf"), 32, OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false)), CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		descText.setFormat(Paths.font("vcr.ttf"), 32, OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false)), CENTER, FlxTextBorderStyle.OUTLINE,
+			FlxColor.BLACK);
 		descText.scrollFactor.set();
 		descText.borderSize = 2.4;
 		add(descText);
@@ -63,8 +65,10 @@ class LanguageSubState extends MusicBeatSubstate
 
 		// ← NUEVO: Cargar idiomas hardcodeados primero
 		var hardcodedLanguages = Language.getAvailableLanguages();
-		for (lang in hardcodedLanguages) {
-			if (!languages.contains(lang.code)) {
+		for (lang in hardcodedLanguages)
+		{
+			if (!languages.contains(lang.code))
+			{
 				languages.push(lang.code);
 				displayLanguages.set(lang.code, lang.name);
 			}
@@ -76,28 +80,30 @@ class LanguageSubState extends MusicBeatSubstate
 		{
 			for (file in FileSystem.readDirectory(directory))
 			{
-				if(file.toLowerCase().endsWith('.lang'))
+				if (file.toLowerCase().endsWith('.lang'))
 				{
 					var langFile:String = file.substring(0, file.length - '.lang'.length).trim();
-					if(!languages.contains(langFile))
+					if (!languages.contains(langFile))
 						languages.push(langFile);
 
-					if(!displayLanguages.exists(langFile))
+					if (!displayLanguages.exists(langFile))
 					{
 						var path:String = '$directory/$file';
-						#if MODS_ALLOWED 
+						#if MODS_ALLOWED
 						var txt:String = File.getContent(path);
 						#else
 						var txt:String = Assets.getText(path);
 						#end
 
 						var id:Int = txt.indexOf('\n');
-						if(id > 0) //language display name shouldnt be an empty string or null
+						if (id > 0) // language display name shouldnt be an empty string or null
 						{
 							var name:String = txt.substr(0, id).trim();
-							if(!name.contains(':')) displayLanguages.set(langFile, name);
+							if (!name.contains(':'))
+								displayLanguages.set(langFile, name);
 						}
-						else if(txt.trim().length > 0 && !txt.contains(':')) displayLanguages.set(langFile, txt.trim());
+						else if (txt.trim().length > 0 && !txt.contains(':'))
+							displayLanguages.set(langFile, txt.trim());
 					}
 				}
 			}
@@ -107,16 +113,18 @@ class LanguageSubState extends MusicBeatSubstate
 		{
 			a = (displayLanguages.exists(a) ? displayLanguages.get(a) : a).toLowerCase();
 			b = (displayLanguages.exists(b) ? displayLanguages.get(b) : b).toLowerCase();
-			if (a < b) return -1;
-			else if (a > b) return 1;
+			if (a < b)
+				return -1;
+			else if (a > b)
+				return 1;
 			return 0;
 		});
 
-		//trace(ClientPrefs.data.language);
+		// trace(ClientPrefs.data.language);
 		curSelected = languages.indexOf(ClientPrefs.data.language);
-		if(curSelected < 0)
+		if (curSelected < 0)
 		{
-			//trace('Language not found: ' + ClientPrefs.data.language);
+			// trace('Language not found: ' + ClientPrefs.data.language);
 			ClientPrefs.data.language = ClientPrefs.defaultData.language;
 			curSelected = Std.int(Math.max(0, languages.indexOf(ClientPrefs.data.language)));
 		}
@@ -124,14 +132,15 @@ class LanguageSubState extends MusicBeatSubstate
 		for (num => lang in languages)
 		{
 			var name:String = displayLanguages.get(lang);
-			if(name == null) name = lang;
+			if (name == null)
+				name = lang;
 
 			var text:Alphabet = new Alphabet(0, 300, name, true);
 			text.isMenuItem = true;
 			text.targetY = num;
 			text.changeX = false;
 			text.distancePerItem.y = 100;
-			if(languages.length < 7)
+			if (languages.length < 7)
 			{
 				text.changeY = false;
 				text.screenCenter(Y);
@@ -148,6 +157,7 @@ class LanguageSubState extends MusicBeatSubstate
 	}
 
 	var changedLanguage:Bool = false;
+
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
@@ -158,29 +168,30 @@ class LanguageSubState extends MusicBeatSubstate
 			return;
 
 		var mult:Int = (FlxG.keys.pressed.SHIFT) ? 4 : 1;
-		if(controls.UI_UP_P)
+		if (controls.UI_UP_P)
 			changeSelected(-1 * mult);
-		if(controls.UI_DOWN_P)
+		if (controls.UI_DOWN_P)
 			changeSelected(1 * mult);
-		if(FlxG.mouse.wheel != 0)
+		if (FlxG.mouse.wheel != 0)
 			changeSelected(FlxG.mouse.wheel * mult);
 
-		if(controls.BACK)
+		if (controls.BACK)
 		{
 			FlxG.sound.play(Paths.sound('cancelMenu'));
-			if(changedLanguage)
+			if (changedLanguage)
 			{
 				startCloseTransition(true);
 			}
-			else startCloseTransition(false);
+			else
+				startCloseTransition(false);
 			return;
 		}
 
-		if(controls.ACCEPT)
+		if (controls.ACCEPT)
 		{
 			FlxG.sound.play(Paths.sound('confirmMenu'), 0.6);
 			ClientPrefs.data.language = languages[curSelected];
-			//trace(ClientPrefs.data.language);
+			// trace(ClientPrefs.data.language);
 			ClientPrefs.saveSettings();
 			Language.reloadPhrases();
 			changedLanguage = true;
@@ -219,12 +230,14 @@ class LanguageSubState extends MusicBeatSubstate
 
 		for (lang in grpLanguages.members)
 		{
-			if (lang == null) continue;
+			if (lang == null)
+				continue;
 			var targetX:Float = lang.x;
 			lang.x = -lang.width - 140;
 			lang.alpha = 0;
 			FlxTween.tween(lang, {x: targetX}, INTRO_DURATION, {ease: FlxEase.cubeInOut, startDelay: 0.02 * Math.max(0, lang.targetY + 1)});
-			FlxTween.tween(lang, {alpha: lang.targetY == 0 ? 1 : 0.6}, INTRO_DURATION, {ease: FlxEase.cubeInOut, startDelay: 0.02 * Math.max(0, lang.targetY + 1)});
+			FlxTween.tween(lang, {alpha: lang.targetY == 0 ? 1 : 0.6}, INTRO_DURATION,
+				{ease: FlxEase.cubeInOut, startDelay: 0.02 * Math.max(0, lang.targetY + 1)});
 		}
 
 		if (descBox != null)
@@ -251,7 +264,8 @@ class LanguageSubState extends MusicBeatSubstate
 
 		for (lang in grpLanguages.members)
 		{
-			if (lang == null) continue;
+			if (lang == null)
+				continue;
 			FlxTween.cancelTweensOf(lang);
 			FlxTween.tween(lang, {x: -lang.width - 140, alpha: 0}, OUTRO_DURATION, {ease: FlxEase.cubeInOut});
 		}
@@ -277,18 +291,20 @@ class LanguageSubState extends MusicBeatSubstate
 				FlxTransitionableState.skipNextTransOut = true;
 				MusicBeatState.resetState();
 			}
-			else close();
+			else
+				close();
 		});
 	}
 
 	function changeSelected(change:Int = 0)
 	{
-		curSelected = FlxMath.wrap(curSelected + change, 0, languages.length-1);
+		curSelected = FlxMath.wrap(curSelected + change, 0, languages.length - 1);
 		for (num => lang in grpLanguages)
 		{
 			lang.targetY = num - curSelected;
 			lang.alpha = 0.6;
-			if(num == curSelected) lang.alpha = 1;
+			if (num == curSelected)
+				lang.alpha = 1;
 		}
 		updateExampleText();
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.6);
@@ -296,20 +312,22 @@ class LanguageSubState extends MusicBeatSubstate
 
 	function updateExampleText()
 	{
-		if (descText == null) return; // Verificación de seguridad
-		
+		if (descText == null)
+			return; // Verificación de seguridad
+
 		if (languages.length > 0 && curSelected >= 0 && curSelected < languages.length)
 		{
 			var currentLang = languages[curSelected];
 			var exampleString = Language.getPhraseForLanguage(currentLang, 'language_example_text', getExampleTextForLanguage(currentLang));
 			var fontName = Language.getPhraseForLanguage(currentLang, 'language_font', getFontForLanguage(currentLang));
-			descText.setFormat(Paths.font(fontName), 32, OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false)), CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			descText.setFormat(Paths.font(fontName), 32, OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false)), CENTER,
+				FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			descText.text = exampleString;
-			
+
 			// Centrar el texto como en BaseOptionsMenu
 			descText.screenCenter(Y);
 			descText.y += 270;
-			
+
 			// Actualizar el fondo
 			descBox.setPosition(descText.x - 10, descText.y - 10);
 			descBox.setGraphicSize(Std.int(descText.width + 20), Std.int(descText.height + 25));
@@ -335,3 +353,4 @@ class LanguageSubState extends MusicBeatSubstate
 	}
 	#end
 }
+

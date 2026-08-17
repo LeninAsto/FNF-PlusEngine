@@ -9,43 +9,45 @@ import lime.system.JNI;
  */
 class ScreenUtil
 {
-  /**
-   * Retrieves the dimensions of display cutouts (such as notches) on Android devices.
-   *
-   * @return An array of `Rectangle` objects, each representing a display cutout's position and size.
-   */
-  public static function getCutoutDimensions():Array<Rectangle>
-  {
-    final getCutoutDimensionsJNI:Null<Dynamic> = JNIUtil.createStaticMethod('funkin/util/ScreenUtil', 'getCutoutDimensions', '()[Landroid/graphics/Rect;');
+	/**
+	 * Retrieves the dimensions of display cutouts (such as notches) on Android devices.
+	 *
+	 * @return An array of `Rectangle` objects, each representing a display cutout's position and size.
+	 */
+	public static function getCutoutDimensions():Array<Rectangle>
+	{
+		final getCutoutDimensionsJNI:Null<Dynamic> = JNIUtil.createStaticMethod('funkin/util/ScreenUtil', 'getCutoutDimensions', '()[Landroid/graphics/Rect;');
 
-    if (getCutoutDimensionsJNI != null)
-    {
-      final rectangles:Array<Rectangle> = [];
+		if (getCutoutDimensionsJNI != null)
+		{
+			final rectangles:Array<Rectangle> = [];
 
-      for (rectangle in cast(getCutoutDimensionsJNI(), Array<Dynamic>))
-      {
-        if (rectangle == null) continue;
+			for (rectangle in cast(getCutoutDimensionsJNI(), Array<Dynamic>))
+			{
+				if (rectangle == null)
+					continue;
 
-        final topJNI:Null<JNIMemberField> = JNIUtil.createMemberField('android/graphics/Rect', 'top', 'I');
-        final leftJNI:Null<JNIMemberField> = JNIUtil.createMemberField('android/graphics/Rect', 'left', 'I');
-        final rightJNI:Null<JNIMemberField> = JNIUtil.createMemberField('android/graphics/Rect', 'right', 'I');
-        final bottomJNI:Null<JNIMemberField> = JNIUtil.createMemberField('android/graphics/Rect', 'bottom', 'I');
+				final topJNI:Null<JNIMemberField> = JNIUtil.createMemberField('android/graphics/Rect', 'top', 'I');
+				final leftJNI:Null<JNIMemberField> = JNIUtil.createMemberField('android/graphics/Rect', 'left', 'I');
+				final rightJNI:Null<JNIMemberField> = JNIUtil.createMemberField('android/graphics/Rect', 'right', 'I');
+				final bottomJNI:Null<JNIMemberField> = JNIUtil.createMemberField('android/graphics/Rect', 'bottom', 'I');
 
-        if (topJNI != null && leftJNI != null && rightJNI != null && bottomJNI != null)
-        {
-          final top:Int = topJNI.get(rectangle);
-          final left:Int = leftJNI.get(rectangle);
-          final right:Int = rightJNI.get(rectangle);
-          final bottom:Int = bottomJNI.get(rectangle);
+				if (topJNI != null && leftJNI != null && rightJNI != null && bottomJNI != null)
+				{
+					final top:Int = topJNI.get(rectangle);
+					final left:Int = leftJNI.get(rectangle);
+					final right:Int = rightJNI.get(rectangle);
+					final bottom:Int = bottomJNI.get(rectangle);
 
-          rectangles.push(new Rectangle(left, top, right - left, bottom - top));
-        }
-      }
+					rectangles.push(new Rectangle(left, top, right - left, bottom - top));
+				}
+			}
 
-      return rectangles;
-    }
+			return rectangles;
+		}
 
-    return [];
-  }
+		return [];
+	}
 }
 #end
+

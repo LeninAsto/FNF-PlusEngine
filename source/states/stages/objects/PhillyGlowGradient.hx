@@ -5,12 +5,13 @@ class PhillyGlowGradient extends FlxSprite
 	public var originalY:Float;
 	public var originalHeight:Int = 400;
 	public var intendedAlpha:Float = 1;
+
 	public function new(x:Float, y:Float)
 	{
 		super(x, y);
 		originalY = y;
 
-		loadGraphic(Paths.image('philly/gradient')); //This shit was refusing to properly load FlxGradient so fuck it
+		loadGraphic(Paths.image('philly/gradient')); // This shit was refusing to properly load FlxGradient so fuck it
 		scrollFactor.set(0, 0.75);
 		setGraphicSize(2000, originalHeight);
 		updateHitbox();
@@ -20,7 +21,7 @@ class PhillyGlowGradient extends FlxSprite
 	override function update(elapsed:Float)
 	{
 		var newHeight:Int = Math.round(height - 1000 * elapsed);
-		if(newHeight > 0)
+		if (newHeight > 0)
 		{
 			alpha = intendedAlpha;
 			setGraphicSize(2000, newHeight);
@@ -44,3 +45,4 @@ class PhillyGlowGradient extends FlxSprite
 		alpha = intendedAlpha;
 	}
 }
+

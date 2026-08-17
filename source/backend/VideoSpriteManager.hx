@@ -33,7 +33,7 @@ class VideoSpriteManager extends FlxVideoSprite
 
 	private function onFormatSetup():Void
 	{
-		if(targetWidth > 0)
+		if (targetWidth > 0)
 			setGraphicSize(targetWidth, targetHeight > 0 ? targetHeight : 0);
 		updateHitbox();
 	}
@@ -45,23 +45,23 @@ class VideoSpriteManager extends FlxVideoSprite
 
 	private function cleanupAndDestroy():Void
 	{
-		if(alreadyDestroyed)
+		if (alreadyDestroyed)
 			return;
 
 		alreadyDestroyed = true;
 
-		if(bitmap != null)
+		if (bitmap != null)
 		{
 			bitmap.onEndReached.remove(onVideoEndReached);
 			bitmap.onFormatSetup.remove(onFormatSetup);
 		}
 
-		if(FlxG.state != null)
+		if (FlxG.state != null)
 		{
-			if(FlxG.state.members != null && FlxG.state.members.contains(this))
+			if (FlxG.state.members != null && FlxG.state.members.contains(this))
 				FlxG.state.remove(this, true);
 
-			if(FlxG.state.subState != null && FlxG.state.subState.members != null && FlxG.state.subState.members.contains(this))
+			if (FlxG.state.subState != null && FlxG.state.subState.members != null && FlxG.state.subState.members.contains(this))
 				FlxG.state.subState.remove(this, true);
 		}
 
@@ -70,10 +70,10 @@ class VideoSpriteManager extends FlxVideoSprite
 
 	override public function destroy():Void
 	{
-		if(alreadyDestroyed && bitmap == null)
+		if (alreadyDestroyed && bitmap == null)
 			return;
 
-		if(bitmap != null)
+		if (bitmap != null)
 		{
 			bitmap.onEndReached.remove(onVideoEndReached);
 			bitmap.onFormatSetup.remove(onFormatSetup);
@@ -85,7 +85,7 @@ class VideoSpriteManager extends FlxVideoSprite
 	public function startVideo(path:Dynamic, ?isLooped:Dynamic = false, ?loopAmount:Dynamic = 0):Void
 	{
 		var resolvedPath = Std.string(path);
-		if(resolvedPath == null || resolvedPath.trim().length == 0)
+		if (resolvedPath == null || resolvedPath.trim().length == 0)
 			return;
 
 		var loop = isLooped == true;
@@ -102,6 +102,9 @@ class VideoSpriteManager extends FlxSprite
 		visible = false;
 	}
 
-	public function startVideo(path:Dynamic, ?isLooped:Dynamic = false, ?loopAmount:Dynamic = 0):Void {}
+	public function startVideo(path:Dynamic, ?isLooped:Dynamic = false, ?loopAmount:Dynamic = 0):Void
+	{
+	}
 }
 #end
+

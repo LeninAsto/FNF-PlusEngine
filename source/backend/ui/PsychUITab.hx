@@ -27,10 +27,10 @@ class PsychUITab extends FlxSprite
 	{
 		super.draw();
 
-		if(visible && text != null && text.exists && text.visible)
+		if (visible && text != null && text.exists && text.visible)
 		{
 			text.x = x;
-			text.y = y + height/2 - text.height/2;
+			text.y = y + height / 2 - text.height / 2;
 			text.draw();
 		}
 	}
@@ -41,10 +41,10 @@ class PsychUITab extends FlxSprite
 		menu = FlxDestroyUtil.destroy(menu);
 		super.destroy();
 	}
-	
+
 	public function updateMenu(parent:PsychUIBox, elapsed:Float)
 	{
-		if(menu != null && menu.exists && menu.active)
+		if (menu != null && menu.exists && menu.active)
 		{
 			menu.scrollFactor.set(parent.scrollFactor.x, parent.scrollFactor.y);
 			menu.update(elapsed);
@@ -53,7 +53,7 @@ class PsychUITab extends FlxSprite
 
 	public function drawMenu(parent:PsychUIBox)
 	{
-		if(menu != null && menu.exists && menu.visible)
+		if (menu != null && menu.exists && menu.visible)
 		{
 			menu.x = parent.x;
 			menu.y = parent.y + parent.tabHeight;
@@ -74,7 +74,6 @@ class PsychUITab extends FlxSprite
 		return (name = v);
 	}
 
-
 	override function set_cameras(v:Array<FlxCamera>)
 	{
 		text.cameras = v;
@@ -89,3 +88,4 @@ class PsychUITab extends FlxSprite
 		return super.set_camera(v);
 	}
 }
+

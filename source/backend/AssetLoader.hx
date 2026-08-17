@@ -27,13 +27,17 @@ class AssetLoader
 			if (FileSystem.exists(path))
 				return true;
 		}
-		catch (_:Dynamic) {}
+		catch (_:Dynamic)
+		{
+		}
 		#end
 		try
 		{
 			return OpenFlAssets.exists(path, type);
 		}
-		catch (_:Dynamic) {}
+		catch (_:Dynamic)
+		{
+		}
 		return false;
 	}
 
@@ -48,14 +52,18 @@ class AssetLoader
 			if (FileSystem.exists(path))
 				return File.getContent(path);
 		}
-		catch (_:Dynamic) {}
+		catch (_:Dynamic)
+		{
+		}
 		#end
 		try
 		{
 			if (OpenFlAssets.exists(path, TEXT))
 				return Assets.getText(path);
 		}
-		catch (_:Dynamic) {}
+		catch (_:Dynamic)
+		{
+		}
 		return null;
 	}
 
@@ -70,14 +78,18 @@ class AssetLoader
 			if (FileSystem.exists(path))
 				return BitmapData.fromFile(path);
 		}
-		catch (_:Dynamic) {}
+		catch (_:Dynamic)
+		{
+		}
 		#end
 		try
 		{
 			if (OpenFlAssets.exists(path, IMAGE))
 				return OpenFlAssets.getBitmapData(path);
 		}
-		catch (_:Dynamic) {}
+		catch (_:Dynamic)
+		{
+		}
 		return null;
 	}
 
@@ -92,14 +104,19 @@ class AssetLoader
 			if (FileSystem.exists(path))
 				return Sound.fromFile(path);
 		}
-		catch (_:Dynamic) {}
+		catch (_:Dynamic)
+		{
+		}
 		#end
 		try
 		{
 			if (OpenFlAssets.exists(path, SOUND))
 				return OpenFlAssets.getSound(path);
 		}
-		catch (_:Dynamic) {}
+		catch (_:Dynamic)
+		{
+		}
 		return null;
 	}
 }
+

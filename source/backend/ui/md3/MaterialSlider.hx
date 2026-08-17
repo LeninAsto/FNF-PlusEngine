@@ -25,7 +25,7 @@ class MaterialSlider extends FlxSpriteGroup
 	public var enabled:Bool = true;
 	public var allowMouseInput:Bool = true;
 	public var onChange:Float->Void = null;
-	
+
 	// Visual components
 	var trackInactive:FlxSprite;
 	var trackActive:FlxSprite;
@@ -52,17 +52,38 @@ class MaterialSlider extends FlxSpriteGroup
 	static inline var TAU:Float = 6.283185307179586;
 	static inline var VALUE_PULSE_DURATION:Float = 0.32;
 
-	inline function trackInactiveHeight():Int return MD3Metrics.size(4);
-	inline function trackActiveHeight():Int return MD3Metrics.size(6);
-	inline function thumbSize():Int return MD3Metrics.size(20);
-	inline function thumbPressedSize():Int return MD3Metrics.size(24);
-	inline function labelHeight():Int return MD3Metrics.size(32);
-	inline function labelWidth():Int return MD3Metrics.size(60);
-	inline function labelTextSize():Int return MD3Metrics.text(13);
-	inline function labelGap():Int return MD3Metrics.size(10);
-	inline function hitHeight():Int return MD3Metrics.touch(36);
-	inline function thumbCenterY():Float return thumbPressedSize() * 0.5;
-	inline function trackY(height:Float):Float return thumbCenterY() - height * 0.5;
+	inline function trackInactiveHeight():Int
+		return MD3Metrics.size(4);
+
+	inline function trackActiveHeight():Int
+		return MD3Metrics.size(6);
+
+	inline function thumbSize():Int
+		return MD3Metrics.size(20);
+
+	inline function thumbPressedSize():Int
+		return MD3Metrics.size(24);
+
+	inline function labelHeight():Int
+		return MD3Metrics.size(32);
+
+	inline function labelWidth():Int
+		return MD3Metrics.size(60);
+
+	inline function labelTextSize():Int
+		return MD3Metrics.text(13);
+
+	inline function labelGap():Int
+		return MD3Metrics.size(10);
+
+	inline function hitHeight():Int
+		return MD3Metrics.touch(36);
+
+	inline function thumbCenterY():Float
+		return thumbPressedSize() * 0.5;
+
+	inline function trackY(height:Float):Float
+		return thumbCenterY() - height * 0.5;
 
 	public function new(x:Float = 0, y:Float = 0, width:Float = 200, ?value:Float = 0.5, ?min:Float = 0.0, ?max:Float = 1.0)
 	{
@@ -115,16 +136,16 @@ class MaterialSlider extends FlxSpriteGroup
 
 	function traceLayout(reason:String):Void
 	{
-		if (!TRACE_LAYOUT) return;
+		if (!TRACE_LAYOUT)
+			return;
 	}
 
 	public function getDebugLayout():String
 	{
-		return 'group=(' + x + ', ' + y + ') width=' + sliderWidth
-			+ ' trackInactiveLocal=(' + (trackInactive.x - x) + ', ' + (trackInactive.y - y) + ', ' + trackInactive.width + 'x' + trackInactive.height + ')'
-			+ ' trackActiveLocal=(' + (trackActive.x - x) + ', ' + (trackActive.y - y) + ', ' + trackActive.width + 'x' + trackActive.height + ')'
-			+ ' thumbLocal=(' + (thumb.x - x) + ', ' + (thumb.y - y) + ', ' + thumb.width + 'x' + thumb.height + ')'
-			+ ' labelLocal=(' + (valueLabel.x - x) + ', ' + (valueLabel.y - y) + ', ' + valueLabel.width + 'x' + valueLabel.height + ')'
+		return 'group=(' + x + ', ' + y + ') width=' + sliderWidth + ' trackInactiveLocal=(' + (trackInactive.x - x) + ', ' + (trackInactive.y - y) + ', '
+			+ trackInactive.width + 'x' + trackInactive.height + ')' + ' trackActiveLocal=(' + (trackActive.x - x) + ', ' + (trackActive.y - y) + ', '
+			+ trackActive.width + 'x' + trackActive.height + ')' + ' thumbLocal=(' + (thumb.x - x) + ', ' + (thumb.y - y) + ', ' + thumb.width + 'x'
+			+ thumb.height + ')' + ' labelLocal=(' + (valueLabel.x - x) + ', ' + (valueLabel.y - y) + ', ' + valueLabel.width + 'x' + valueLabel.height + ')'
 			+ ' value=' + value;
 	}
 
@@ -191,13 +212,15 @@ class MaterialSlider extends FlxSpriteGroup
 		var range = max - min;
 		var normalizedValue = range == 0 ? 0 : (value - min) / range;
 		var targetCenterX = sliderWidth * normalizedValue;
-		if (animate && thumbTween != null) thumbTween.cancel();
+		if (animate && thumbTween != null)
+			thumbTween.cancel();
 
 		if (animate)
 		{
 			thumbTween = FlxTween.tween(this, {displayCenterX: targetCenterX}, duration, {
 				ease: FlxEase.cubeOut,
-				onUpdate: function(_) {
+				onUpdate: function(_)
+				{
 					layoutComponents(isDragging);
 				}
 			});
@@ -283,16 +306,20 @@ class MaterialSlider extends FlxSpriteGroup
 
 	function showValueLabel():Void
 	{
-		if (labelTween != null) labelTween.cancel();
-		labelTween = FlxTween.num(valueLabel.alpha, 1, 0.15, {ease: FlxEase.cubeOut}, function(v) {
+		if (labelTween != null)
+			labelTween.cancel();
+		labelTween = FlxTween.num(valueLabel.alpha, 1, 0.15, {ease: FlxEase.cubeOut}, function(v)
+		{
 			setLabelAlpha(v);
 		});
 	}
 
 	function hideValueLabel():Void
 	{
-		if (labelTween != null) labelTween.cancel();
-		labelTween = FlxTween.num(valueLabel.alpha, 0, 0.15, {ease: FlxEase.cubeOut}, function(v) {
+		if (labelTween != null)
+			labelTween.cancel();
+		labelTween = FlxTween.num(valueLabel.alpha, 0, 0.15, {ease: FlxEase.cubeOut}, function(v)
+		{
 			setLabelAlpha(v);
 		});
 	}
@@ -314,7 +341,8 @@ class MaterialSlider extends FlxSpriteGroup
 
 		valuePulseTimer -= elapsed;
 		wavePhase += elapsed * WAVE_SPEED * TAU;
-		if (wavePhase > TAU) wavePhase -= TAU;
+		if (wavePhase > TAU)
+			wavePhase -= TAU;
 		layoutComponents(true);
 		updateLabelPosition();
 		updateLabelText();
@@ -331,7 +359,8 @@ class MaterialSlider extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 
-		if (!enabled) return;
+		if (!enabled)
+			return;
 		updateValuePulse(elapsed);
 		if (!allowMouseInput)
 		{
@@ -348,8 +377,10 @@ class MaterialSlider extends FlxSpriteGroup
 		var mousePos = FlxG.mouse.getScreenPosition();
 		var hitPadY = Std.int(Math.max(0, (hitHeight() - thumbPressedSize()) / 2));
 		var hitPadX = thumbPressedSize() / 2;
-		var isOverSlider = mousePos.x >= x - hitPadX && mousePos.x <= x + sliderWidth + hitPadX
-			&& mousePos.y >= y - hitPadY && mousePos.y <= y + thumbPressedSize() + hitPadY;
+		var isOverSlider = mousePos.x >= x - hitPadX
+			&& mousePos.x <= x + sliderWidth + hitPadX
+			&& mousePos.y >= y - hitPadY
+			&& mousePos.y <= y + thumbPressedSize() + hitPadY;
 
 		// Start dragging
 		if (FlxG.mouse.justPressed && isOverSlider)
@@ -392,7 +423,8 @@ class MaterialSlider extends FlxSpriteGroup
 		if (isDragging)
 		{
 			wavePhase += elapsed * WAVE_SPEED * TAU;
-			if (wavePhase > TAU) wavePhase -= TAU;
+			if (wavePhase > TAU)
+				wavePhase -= TAU;
 			layoutComponents(true);
 			updateLabelPosition();
 			updateLabelText();
@@ -413,11 +445,14 @@ class MaterialSlider extends FlxSpriteGroup
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(_onThemeChange);
-		if (thumbTween != null) thumbTween.cancel();
-		if (labelTween != null) labelTween.cancel();
+		if (thumbTween != null)
+			thumbTween.cancel();
+		if (labelTween != null)
+			labelTween.cancel();
 
 		onChange = null;
 
 		super.destroy();
 	}
 }
+

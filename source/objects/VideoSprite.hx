@@ -1,17 +1,18 @@
 package objects;
 
 import flixel.addons.display.FlxPieDial;
-
 #if hxvlc
 import hxvlc.flixel.FlxVideoSprite;
 #end
 
-class VideoSprite extends FlxSpriteGroup {
+class VideoSprite extends FlxSpriteGroup
+{
 	#if VIDEOS_ALLOWED
 	public var finishCallback:Void->Void = null;
 	public var onSkip:Void->Void = null;
 
 	final _timeToSkip:Float = 1;
+
 	public var holdingTime:Float = 0;
 	public var videoSprite:FlxVideoSprite;
 	public var skipSprite:FlxPieDial;
@@ -22,7 +23,8 @@ class VideoSprite extends FlxSpriteGroup {
 
 	public var waiting:Bool = false;
 
-	public function new(videoName:String, isWaiting:Bool, canSkip:Bool = false, shouldLoop:Dynamic = false) {
+	public function new(videoName:String, isWaiting:Bool, canSkip:Bool = false, shouldLoop:Dynamic = false)
+	{
 		super();
 
 		this.videoName = videoName;
@@ -30,7 +32,7 @@ class VideoSprite extends FlxSpriteGroup {
 		cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
 
 		waiting = isWaiting;
-		if(!waiting)
+		if (!waiting)
 		{
 			cover = new FlxSprite().makeGraphic(1, 1, FlxColor.BLACK);
 			cover.scale.set(FlxG.width + 100, FlxG.height + 100);
@@ -43,21 +45,23 @@ class VideoSprite extends FlxSpriteGroup {
 		videoSprite = new FlxVideoSprite();
 		videoSprite.antialiasing = ClientPrefs.data.antialiasing;
 		add(videoSprite);
-		if(canSkip) this.canSkip = true;
+		if (canSkip)
+			this.canSkip = true;
 
 		// callbacks
-		if(!shouldLoop) videoSprite.bitmap.onEndReached.add(finishVideo);
+		if (!shouldLoop)
+			videoSprite.bitmap.onEndReached.add(finishVideo);
 
 		videoSprite.bitmap.onFormatSetup.add(function()
 		{
 			/*
-			#if hxvlc
-			var wd:Int = videoSprite.bitmap.formatWidth;
-			var hg:Int = videoSprite.bitmap.formatHeight;
-			trace('Video Resolution: ${wd}x${hg}');
-			videoSprite.scale.set(FlxG.width / wd, FlxG.height / hg);
-			#end
-			*/
+				#if hxvlc
+				var wd:Int = videoSprite.bitmap.formatWidth;
+				var hg:Int = videoSprite.bitmap.formatHeight;
+				trace('Video Resolution: ${wd}x${hg}');
+				videoSprite.scale.set(FlxG.width / wd, FlxG.height / hg);
+				#end
+			 */
 			videoSprite.setGraphicSize(FlxG.width);
 			videoSprite.updateHitbox();
 			videoSprite.screenCenter();
@@ -68,48 +72,50 @@ class VideoSprite extends FlxSpriteGroup {
 	}
 
 	var alreadyDestroyed:Bool = false;
+
 	override function destroy()
 	{
-		if(alreadyDestroyed)
+		if (alreadyDestroyed)
 			return;
 
 		trace('Video destroyed');
-		if(cover != null)
+		if (cover != null)
 		{
 			remove(cover);
 			cover.destroy();
 		}
-		
+
 		finishCallback = null;
 		onSkip = null;
 
-		if(FlxG.state != null)
+		if (FlxG.state != null)
 		{
-			if(FlxG.state.members.contains(this))
+			if (FlxG.state.members.contains(this))
 				FlxG.state.remove(this);
 
-			if(FlxG.state.subState != null && FlxG.state.subState.members.contains(this))
+			if (FlxG.state.subState != null && FlxG.state.subState.members.contains(this))
 				FlxG.state.subState.remove(this);
 		}
 		super.destroy();
 		alreadyDestroyed = true;
 	}
+
 	function finishVideo()
 	{
 		if (!alreadyDestroyed)
 		{
-			if(finishCallback != null)
+			if (finishCallback != null)
 				finishCallback();
-			
+
 			destroy();
 		}
 	}
 
 	override function update(elapsed:Float)
 	{
-		if(canSkip)
+		if (canSkip)
 		{
-			if(Controls.instance.pressed('accept'))
+			if (Controls.instance.pressed('accept'))
 			{
 				holdingTime = Math.max(0, Math.min(_timeToSkip, holdingTime + elapsed));
 			}
@@ -119,9 +125,10 @@ class VideoSprite extends FlxSpriteGroup {
 			}
 			updateSkipAlpha();
 
-			if(holdingTime >= _timeToSkip)
+			if (holdingTime >= _timeToSkip)
 			{
-				if(onSkip != null) onSkip();
+				if (onSkip != null)
+					onSkip();
 				finishCallback = null;
 				videoSprite.bitmap.onEndReached.dispatch();
 				trace('Skipped video');
@@ -133,10 +140,7 @@ class VideoSprite extends FlxSpriteGroup {
 
 	public function canSkipFromPause():Bool
 	{
-		return canSkip
-			&& !alreadyDestroyed
-			&& videoSprite != null
-			&& videoSprite.bitmap != null;
+		return canSkip && !alreadyDestroyed && videoSprite != null && videoSprite.bitmap != null;
 	}
 
 	public function skipFromPause():Bool
@@ -144,11 +148,11 @@ class VideoSprite extends FlxSpriteGroup {
 		if (!canSkipFromPause())
 			return false;
 
-		if(onSkip != null)
+		if (onSkip != null)
 			onSkip();
 		finishCallback = null;
 
-		if(videoSprite != null && videoSprite.bitmap != null && videoSprite.bitmap.onEndReached != null)
+		if (videoSprite != null && videoSprite.bitmap != null && videoSprite.bitmap.onEndReached != null)
 			videoSprite.bitmap.onEndReached.dispatch();
 		else
 			destroy();
@@ -160,9 +164,9 @@ class VideoSprite extends FlxSpriteGroup {
 	function set_canSkip(newValue:Bool)
 	{
 		canSkip = newValue;
-		if(canSkip)
+		if (canSkip)
 		{
-			if(skipSprite == null)
+			if (skipSprite == null)
 			{
 				skipSprite = new FlxPieDial(0, 0, 40, FlxColor.WHITE, 40, true, 24);
 				skipSprite.replaceColor(FlxColor.BLACK, FlxColor.TRANSPARENT);
@@ -172,7 +176,7 @@ class VideoSprite extends FlxSpriteGroup {
 				add(skipSprite);
 			}
 		}
-		else if(skipSprite != null)
+		else if (skipSprite != null)
 		{
 			remove(skipSprite);
 			skipSprite.destroy();
@@ -183,14 +187,21 @@ class VideoSprite extends FlxSpriteGroup {
 
 	function updateSkipAlpha()
 	{
-		if(skipSprite == null) return;
+		if (skipSprite == null)
+			return;
 
 		skipSprite.amount = Math.min(1, Math.max(0, (holdingTime / _timeToSkip) * 1.025));
 		skipSprite.alpha = FlxMath.remapToRange(skipSprite.amount, 0.025, 1, 0, 1);
 	}
 
-	public function play() videoSprite?.play();
-	public function resume() videoSprite?.resume();
-	public function pause() videoSprite?.pause();
+	public function play()
+		videoSprite?.play();
+
+	public function resume()
+		videoSprite?.resume();
+
+	public function pause()
+		videoSprite?.pause();
 	#end
 }
+

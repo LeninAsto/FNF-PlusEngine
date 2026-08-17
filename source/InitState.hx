@@ -28,9 +28,9 @@ class InitialState extends MusicBeatState
 		backend.MusicBeatState.initGlobalScript();
 		backend.CustomFadeTransition.initCustomTransitionScript();
 		#end
-		
+
 		super.create();
-		
+
 		Highscore.load();
 		Language.reloadPhrases();
 
@@ -42,24 +42,32 @@ class InitialState extends MusicBeatState
 		// ScriptableState.tryCreate checks mods then engine assets automatically.
 		// CustomState is kept as a fallback for old flat-callback scripts.
 		#if (HSCRIPT_ALLOWED && MODS_ALLOWED && !mobile)
-		if (ScriptableState.overridesEnabled()) {
+		if (ScriptableState.overridesEnabled())
+		{
 			var shouldAskFlashing = FlxG.save.data != null && FlxG.save.data.flashing == null && !FlashingState.leftState;
-			if (shouldAskFlashing) {
+			if (shouldAskFlashing)
+			{
 				var flashingScript = ScriptableState.tryCreate('FlashingState', new FlashingState());
-				if (flashingScript != null) {
+				if (flashingScript != null)
+				{
 					MusicBeatState.switchState(flashingScript);
 					return;
-				} else if (CustomState.hasScript('FlashingState')) {
+				}
+				else if (CustomState.hasScript('FlashingState'))
+				{
 					MusicBeatState.switchState(new CustomState('FlashingState'));
 					return;
 				}
 			}
 
 			var titleScript = ScriptableState.tryCreate('TitleState', new TitleState());
-			if (titleScript != null) {
+			if (titleScript != null)
+			{
 				MusicBeatState.switchState(titleScript);
 				return;
-			} else if (CustomState.hasScript('TitleState')) {
+			}
+			else if (CustomState.hasScript('TitleState'))
+			{
 				MusicBeatState.switchState(new CustomState('TitleState'));
 				return;
 			}
@@ -70,3 +78,4 @@ class InitialState extends MusicBeatState
 		MusicBeatState.switchState(new TitleState());
 	}
 }
+

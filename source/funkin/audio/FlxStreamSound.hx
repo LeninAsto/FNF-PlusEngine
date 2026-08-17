@@ -14,34 +14,36 @@ import openfl.utils.AssetType;
 @:nullSafety
 class FlxStreamSound extends FlxSound
 {
-  public function new()
-  {
-    super();
-  }
+	public function new()
+	{
+		super();
+	}
 
-  override public function loadEmbedded(EmbeddedSound:Null<FlxSoundAsset>, Looped:Bool = false, AutoDestroy:Bool = false, ?OnComplete:Void->Void):FlxSound
-  {
-    if (EmbeddedSound == null) return this;
+	override public function loadEmbedded(EmbeddedSound:Null<FlxSoundAsset>, Looped:Bool = false, AutoDestroy:Bool = false, ?OnComplete:Void->Void):FlxSound
+	{
+		if (EmbeddedSound == null)
+			return this;
 
-    cleanup(true);
+		cleanup(true);
 
-    if ((EmbeddedSound is Sound))
-    {
-      _sound = EmbeddedSound;
-    }
-    else if ((EmbeddedSound is Class))
-    {
-      _sound = Type.createInstance(EmbeddedSound, []);
-    }
-    else if ((EmbeddedSound is String))
-    {
-      if (Assets.exists(EmbeddedSound, AssetType.SOUND)
-        || Assets.exists(EmbeddedSound, AssetType.MUSIC)) _sound = Assets.getMusic(EmbeddedSound);
-      else
-        FlxG.log.error('Could not find a Sound asset with an ID of \'$EmbeddedSound\'.');
-    }
+		if ((EmbeddedSound is Sound))
+		{
+			_sound = EmbeddedSound;
+		}
+		else if ((EmbeddedSound is Class))
+		{
+			_sound = Type.createInstance(EmbeddedSound, []);
+		}
+		else if ((EmbeddedSound is String))
+		{
+			if (Assets.exists(EmbeddedSound, AssetType.SOUND) || Assets.exists(EmbeddedSound, AssetType.MUSIC))
+				_sound = Assets.getMusic(EmbeddedSound);
+			else
+				FlxG.log.error('Could not find a Sound asset with an ID of \'$EmbeddedSound\'.');
+		}
 
-    // NOTE: can't pull ID3 info from embedded sound currently
-    return init(Looped, AutoDestroy, OnComplete);
-  }
+		// NOTE: can't pull ID3 info from embedded sound currently
+		return init(Looped, AutoDestroy, OnComplete);
+	}
 }
+

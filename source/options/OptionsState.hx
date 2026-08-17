@@ -18,15 +18,18 @@ class OptionsState extends MusicBeatState
 		'Legacy',
 		'VSlice',
 		#if MODCHARTS_NOTITG_ALLOWED 'Modchart' #end
-		#if TRANSLATIONS_ALLOWED , 'Language' #end,
+		#if TRANSLATIONS_ALLOWED, 'Language' #end,
 		#if mobile 'Mobile' #end
 	];
 	#if vslice
 	var vsliceOptionCategories:Map<String, Dynamic> = [];
 	#end
 	private var grpOptions:FlxTypedGroup<Alphabet>;
+
 	private static var curSelected:Int = 0;
+
 	var lerpSelected:Float = 0;
+
 	public static var menuBG:FlxSprite;
 	public static var onPlayState:Bool = false;
 	public static var substateVisualActive:Bool = false;
@@ -41,6 +44,7 @@ class OptionsState extends MusicBeatState
 	public static inline var OPTION_SPACING_Y:Float = 90;
 	public static inline var OPTION_INTRO_SPAWN_X:Float = -420;
 	public static inline var OPTION_INTRO_DURATION:Float = 0.46;
+
 	var optionsIntroActive:Bool = true;
 	var substateInputBlocked:Bool = false;
 
@@ -78,7 +82,8 @@ class OptionsState extends MusicBeatState
 
 	function restoreOptionTexts():Void
 	{
-		if (grpOptions == null || options == null) return;
+		if (grpOptions == null || options == null)
+			return;
 		for (i in 0...grpOptions.members.length)
 		{
 			var item = grpOptions.members[i];
@@ -109,12 +114,14 @@ class OptionsState extends MusicBeatState
 		}
 	}
 
-	function openSelectedSubstate(label:String) {
+	function openSelectedSubstate(label:String)
+	{
 		var stop = callOnCompanionScript('onOptionsMenuAccept', [label, curSelected]);
 		if (stop == Function_Stop)
 			return;
 
-		if (label != "Adjust Delay and Combo"){
+		if (label != "Adjust Delay and Combo")
+		{
 			removeTouchPad();
 			persistentUpdate = true;
 			beginSubstateTransition(label);
@@ -123,11 +130,13 @@ class OptionsState extends MusicBeatState
 		if (openVSliceOptionCategory(label))
 			return;
 		#end
-		switch(label)
+		switch (label)
 		{
 			case 'Note Colors':
-				if(ClientPrefs.data.noteRGB) openSubState(ScriptableSubstate.tryCreate('NotesColorSubState', new options.NotesColorSubState()));
-				else openSubState(ScriptableSubstate.tryCreate('NotesColorLegacySubState', new options.NotesColorLegacySubState()));
+				if (ClientPrefs.data.noteRGB)
+					openSubState(ScriptableSubstate.tryCreate('NotesColorSubState', new options.NotesColorSubState()));
+				else
+					openSubState(ScriptableSubstate.tryCreate('NotesColorLegacySubState', new options.NotesColorLegacySubState()));
 			case 'Controls':
 				openSubState(ScriptableSubstate.tryCreate('ControlsSubState', new options.ControlsSubState()));
 			case 'Graphics':
@@ -188,7 +197,8 @@ class OptionsState extends MusicBeatState
 
 		if (controls.mobileC)
 		{
-			var tipText:FlxText = new FlxText(150, FlxG.height - 24, 0, Language.getPhrase('mobile_controls_tip', 'Press {1} to Go Mobile Controls Menu', [(FlxG.onMobile ? 'C' : 'CTRL or C')]), 16);
+			var tipText:FlxText = new FlxText(150, FlxG.height - 24, 0,
+				Language.getPhrase('mobile_controls_tip', 'Press {1} to Go Mobile Controls Menu', [(FlxG.onMobile ? 'C' : 'CTRL or C')]), 16);
 			tipText.setFormat("VCR OSD Mono", 17, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			tipText.borderSize = 1.25;
 			tipText.scrollFactor.set();
@@ -217,7 +227,7 @@ class OptionsState extends MusicBeatState
 		lerpSelected = curSelected;
 		changeSelection();
 		ClientPrefs.saveSettings();
-		
+
 		// Posicionar elementos sin animación inicial
 		for (num => item in grpOptions.members)
 		{
@@ -249,7 +259,8 @@ class OptionsState extends MusicBeatState
 		for (category in funkin.plus.VSliceRuntime.listOptionCategories())
 		{
 			var label:String = 'VSlice: ${category.label}';
-			if (options.contains(label)) continue;
+			if (options.contains(label))
+				continue;
 			options.push(label);
 			vsliceOptionCategories.set(label, category);
 		}
@@ -270,7 +281,8 @@ class OptionsState extends MusicBeatState
 		restoreOptionTexts();
 		for (item in grpOptions.members)
 		{
-			if (item == null) continue;
+			if (item == null)
+				continue;
 			item.x -= 180;
 			item.alpha = 0;
 		}
@@ -280,7 +292,9 @@ class OptionsState extends MusicBeatState
 	}
 
 	var exiting = false;
-	override function update(elapsed:Float) {
+
+	override function update(elapsed:Float)
+	{
 		super.update(elapsed);
 
 		lerpSelected = FlxMath.lerp(curSelected, lerpSelected, Math.exp(-elapsed * 9.6));
@@ -336,15 +350,17 @@ class OptionsState extends MusicBeatState
 
 		selectorLeft.alpha = substateVisualActive ? 0 : 1;
 		selectorRight.alpha = substateVisualActive ? 0 : 1;
-		if (substateReturning && Math.abs(grpOptions.members[curSelected].x - ((FlxG.width - grpOptions.members[curSelected].width) * 0.5)) < 4)
+		if (substateReturning
+			&& Math.abs(grpOptions.members[curSelected].x - ((FlxG.width - grpOptions.members[curSelected].width) * 0.5)) < 4)
 			substateReturning = false;
 
-		if(!exiting && !substateInputBlocked) {
+		if (!exiting && !substateInputBlocked)
+		{
 			if (controls.UI_UP_P)
 				changeSelection(-1);
 			if (controls.UI_DOWN_P)
 				changeSelection(1);
-			
+
 			if (touchPad.buttonC.justPressed || FlxG.keys.justPressed.CONTROL && controls.mobileC)
 			{
 				persistentUpdate = false;
@@ -358,23 +374,24 @@ class OptionsState extends MusicBeatState
 					return;
 				exiting = true;
 				FlxG.sound.play(Paths.sound('cancelMenu'));
-				if(onPlayState)
+				if (onPlayState)
 				{
 					clearSubstateTransition();
 					StageData.loadDirectory(PlayState.SONG);
 					LoadingState.loadAndSwitchState(new PlayState());
 					FlxG.sound.music.volume = 0;
 				}
-				else 
+				else
 				{
 					clearSubstateTransition();
 					MusicBeatState.switchState(new MainMenuState());
 				}
 			}
-			else if (controls.ACCEPT && options != null && options.length > 0) openSelectedSubstate(options[curSelected]);
+			else if (controls.ACCEPT && options != null && options.length > 0)
+				openSelectedSubstate(options[curSelected]);
 		}
 	}
-	
+
 	function changeSelection(change:Int = 0)
 	{
 		if (options == null || options.length == 0)
@@ -386,9 +403,10 @@ class OptionsState extends MusicBeatState
 		{
 			item.targetY = num;
 		}
-		
+
 		callOnCompanionScript('onOptionsMenuSelectionChange', [curSelected, getSelectedOptionLabel()]);
-		if(change != 0) FlxG.sound.play(Paths.sound('scrollMenu'));
+		if (change != 0)
+			FlxG.sound.play(Paths.sound('scrollMenu'));
 	}
 
 	public function getOptionsCopy():Array<String>
@@ -405,7 +423,8 @@ class OptionsState extends MusicBeatState
 
 	public function selectOption(index:Int):Void
 	{
-		if (options == null || options.length < 1) return;
+		if (options == null || options.length < 1)
+			return;
 		curSelected = FlxMath.wrap(index, 0, options.length - 1);
 		lerpSelected = curSelected;
 		changeSelection(0);
@@ -413,9 +432,11 @@ class OptionsState extends MusicBeatState
 
 	public function selectOptionByLabel(label:String):Bool
 	{
-		if (options == null || label == null) return false;
+		if (options == null || label == null)
+			return false;
 		var index = options.indexOf(label);
-		if (index < 0) return false;
+		if (index < 0)
+			return false;
 		selectOption(index);
 		return true;
 	}
@@ -430,17 +451,21 @@ class OptionsState extends MusicBeatState
 
 	public function addOption(label:String):Void
 	{
-		if (label == null) return;
-		if (options == null) options = [];
+		if (label == null)
+			return;
+		if (options == null)
+			options = [];
 		options.push(label);
 		rebuildOptionsVisuals();
 	}
 
 	public function removeOption(label:String):Bool
 	{
-		if (options == null || label == null) return false;
+		if (options == null || label == null)
+			return false;
 		var index = options.indexOf(label);
-		if (index < 0) return false;
+		if (index < 0)
+			return false;
 		options.splice(index, 1);
 		if (curSelected >= options.length)
 			curSelected = Std.int(Math.max(0, options.length - 1));
@@ -457,7 +482,8 @@ class OptionsState extends MusicBeatState
 
 	public function rebuildOptionsVisuals():Void
 	{
-		if (grpOptions == null) return;
+		if (grpOptions == null)
+			return;
 
 		for (i in 0...grpOptions.members.length)
 		{
@@ -501,3 +527,4 @@ class OptionsState extends MusicBeatState
 		super.destroy();
 	}
 }
+

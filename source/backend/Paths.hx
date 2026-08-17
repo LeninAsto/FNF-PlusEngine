@@ -32,12 +32,12 @@ class Paths
 	 * Base UI path prefix for custom UI assets.
 	 */
 	public static var uiBasePath:String = "";
-	
+
 	/**
 	 * UI suffix for pixel/alternate versions
 	 */
 	public static var uiSuffix:String = "";
-	
+
 	/**
 	 * Get a UI asset path with support for nested folders
 	 * @param assetName Base asset name (e.g., "ready", "combo")
@@ -47,29 +47,31 @@ class Paths
 	public static function getUIPath(assetName:String, useSuffix:Bool = true):String
 	{
 		var base:String = "images/";
-		
+
 		// Add custom base path if set
 		if (uiBasePath != null && uiBasePath.length > 0)
 		{
 			// Normalize path: ensure no leading/trailing slashes
 			var normalizedPath = uiBasePath.replace('\\', '/');
-			if (normalizedPath.startsWith("/")) normalizedPath = normalizedPath.substr(1);
-			if (normalizedPath.endsWith("/")) normalizedPath = normalizedPath.substr(0, -1);
-			
+			if (normalizedPath.startsWith("/"))
+				normalizedPath = normalizedPath.substr(1);
+			if (normalizedPath.endsWith("/"))
+				normalizedPath = normalizedPath.substr(0, -1);
+
 			// Add UI folder suffix
 			base += normalizedPath + "/";
 		}
-		
+
 		// Add asset name
 		base += assetName;
-		
+
 		// Add suffix if requested
 		if (useSuffix && uiSuffix != null && uiSuffix.length > 0)
 			base += uiSuffix;
-		
+
 		return base;
 	}
-	
+
 	/**
 	 * Set UI path for standard UI
 	 * @param uiName UI name
@@ -83,18 +85,18 @@ class Paths
 			uiSuffix = "";
 			return;
 		}
-		
+
 		// Handle "-pixel" suffix in name
 		if (uiName.endsWith("-pixel"))
 		{
 			uiName = uiName.substr(0, uiName.length - 6);
 			isPixel = true;
 		}
-		
+
 		uiBasePath = uiName;
 		uiSuffix = isPixel ? "-pixel" : "";
 	}
-	
+
 	/**
 	 * Reset UI path to default (normal)
 	 */
@@ -103,7 +105,7 @@ class Paths
 		uiBasePath = "";
 		uiSuffix = "";
 	}
-	
+
 	/**
 	 * Get the UI folder prefix (compatible with old system)
 	 * @deprecated Use getUIPath() instead
@@ -487,7 +489,7 @@ class Paths
 		var path:String = getUIPath(assetName, useSuffix);
 		return image(path, parentFolder, allowGPU);
 	}
-	
+
 	/**
 	 * Check if a UI image exists with softcoded path support
 	 * @param assetName Asset name (e.g., "ready", "combo")
@@ -500,7 +502,7 @@ class Paths
 		var path:String = getUIPath(assetName, useSuffix);
 		return fileExists(path, IMAGE, false, parentFolder);
 	}
-	
+
 	/**
 	 * Get a UI atlas with softcoded path support
 	 */
@@ -780,7 +782,9 @@ class Paths
 			if (FileSystem.exists(path))
 				return File.getContent(path);
 		}
-		catch (_:Dynamic) {}
+		catch (_:Dynamic)
+		{
+		}
 		return null;
 	}
 
@@ -794,7 +798,9 @@ class Paths
 			if (FileSystem.exists(path) && FileSystem.isDirectory(path))
 				return FileSystem.readDirectory(path);
 		}
-		catch (_:Dynamic) {}
+		catch (_:Dynamic)
+		{
+		}
 		return [];
 	}
 
@@ -1294,3 +1300,4 @@ class Paths
 		#end
 	}
 }
+

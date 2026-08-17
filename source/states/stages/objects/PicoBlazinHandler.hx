@@ -6,9 +6,12 @@ import objects.Character;
 // Pico Note functions
 class PicoBlazinHandler
 {
-	public function new() {}
+	public function new()
+	{
+	}
 
 	var cantUppercut = false;
+
 	public function noteHit(note:Note)
 	{
 		if (wasNoteHitPoorly(note.rating) && isPlayerLowHealth() && isDarnellPreppingUppercut())
@@ -24,7 +27,7 @@ class PicoBlazinHandler
 			return;
 		}
 
-		switch(note.noteType)
+		switch (note.noteType)
 		{
 			case "weekend-1-punchlow":
 				playPunchLowAnim();
@@ -91,7 +94,7 @@ class PicoBlazinHandler
 
 	public function noteMiss(note:Note)
 	{
-		//trace('missed note!');
+		// trace('missed note!');
 		if (isDarnellInUppercut())
 		{
 			playUppercutHitAnim();
@@ -181,12 +184,12 @@ class PicoBlazinHandler
 				playIdleAnim();
 		}
 	}
-	
+
 	public function noteMissPress(direction:Int)
 	{
 		if (willMissBeLethal())
 			playHitLowAnim(); // Darnell throws a punch so that Pico dies.
-		else 
+		else
 			playPunchHighAnim(); // Pico wildly throws punches but Darnell dodges.
 	}
 
@@ -194,7 +197,8 @@ class PicoBlazinHandler
 	{
 		var bfPos:Int = FlxG.state.members.indexOf(boyfriendGroup);
 		var dadPos:Int = FlxG.state.members.indexOf(dadGroup);
-		if(bfPos < dadPos) return;
+		if (bfPos < dadPos)
+			return;
 
 		FlxG.state.members[dadPos] = boyfriendGroup;
 		FlxG.state.members[bfPos] = dadGroup;
@@ -204,13 +208,15 @@ class PicoBlazinHandler
 	{
 		var bfPos:Int = FlxG.state.members.indexOf(boyfriendGroup);
 		var dadPos:Int = FlxG.state.members.indexOf(dadGroup);
-		if(bfPos > dadPos) return;
+		if (bfPos > dadPos)
+			return;
 
 		FlxG.state.members[dadPos] = boyfriendGroup;
 		FlxG.state.members[bfPos] = dadGroup;
 	}
 
 	var alternate:Bool = false;
+
 	function doAlternate():String
 	{
 		alternate = !alternate;
@@ -257,7 +263,8 @@ class PicoBlazinHandler
 	function playUppercutAnim(hit:Bool)
 	{
 		boyfriend.playAnim('uppercut', true);
-		if (hit) FlxG.camera.shake(0.005, 0.25);
+		if (hit)
+			FlxG.camera.shake(0.005, 0.25);
 		moveToFront();
 	}
 
@@ -319,7 +326,7 @@ class PicoBlazinHandler
 	{
 		return PlayState.instance.health <= 0.0 && !PlayState.instance.practiceMode;
 	}
-	
+
 	function isDarnellPreppingUppercut()
 	{
 		return dad.getAnimationName() == 'uppercutPrep';
@@ -339,12 +346,13 @@ class PicoBlazinHandler
 	{
 		return PlayState.instance.health <= 0.3 * 2;
 	}
-	
+
 	function moveToBack()
 	{
 		var bfPos:Int = FlxG.state.members.indexOf(boyfriendGroup);
 		var dadPos:Int = FlxG.state.members.indexOf(dadGroup);
-		if(bfPos < dadPos) return;
+		if (bfPos < dadPos)
+			return;
 
 		FlxG.state.members[dadPos] = boyfriendGroup;
 		FlxG.state.members[bfPos] = dadGroup;
@@ -354,7 +362,8 @@ class PicoBlazinHandler
 	{
 		var bfPos:Int = FlxG.state.members.indexOf(boyfriendGroup);
 		var dadPos:Int = FlxG.state.members.indexOf(dadGroup);
-		if(bfPos > dadPos) return;
+		if (bfPos > dadPos)
+			return;
 
 		FlxG.state.members[dadPos] = boyfriendGroup;
 		FlxG.state.members[bfPos] = dadGroup;
@@ -364,8 +373,17 @@ class PicoBlazinHandler
 	var dad(get, never):Character;
 	var boyfriendGroup(get, never):FlxSpriteGroup;
 	var dadGroup(get, never):FlxSpriteGroup;
-	function get_boyfriend() return PlayState.instance.boyfriend;
-	function get_dad() return PlayState.instance.dad;
-	function get_boyfriendGroup() return PlayState.instance.boyfriendGroup;
-	function get_dadGroup() return PlayState.instance.dadGroup;
+
+	function get_boyfriend()
+		return PlayState.instance.boyfriend;
+
+	function get_dad()
+		return PlayState.instance.dad;
+
+	function get_boyfriendGroup()
+		return PlayState.instance.boyfriendGroup;
+
+	function get_dadGroup()
+		return PlayState.instance.dadGroup;
 }
+

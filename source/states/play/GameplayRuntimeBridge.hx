@@ -26,3 +26,4 @@ class GameplayRuntimeBridge
 		counter.comboCount = combo;
 	}
 }
+

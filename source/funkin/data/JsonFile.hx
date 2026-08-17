@@ -5,6 +5,7 @@ package funkin.data;
  */
 typedef JsonFile =
 {
-  fileName:String,
-  contents:String
+	fileName:String,
+	contents:String
 };
+

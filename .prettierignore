@@ -1,0 +1,12 @@
+export/
+.haxelib/
+.hmm/
+.tmp/
+assets/
+art/
+example_mods/
+example_sm/
+screenshots/
+sm/
+vslice_mods/
+node_modules/

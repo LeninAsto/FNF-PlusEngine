@@ -83,7 +83,6 @@ class FlxShader extends OriginalFlxShader
 		#end
 
 		var id = vertex + fragment;
-
 		@:privateAccess
 		if (__context.__programs.exists(id) && save)
 		{
@@ -96,7 +95,6 @@ class FlxShader extends OriginalFlxShader
 
 			@:privateAccess
 			program.__glProgram = __createGLProgram(vertex, fragment);
-
 			@:privateAccess
 			if (save)
 				__context.__programs.set(id, program);
@@ -169,3 +167,4 @@ class FlxShader extends OriginalFlxShader
 		}
 	}
 }
+

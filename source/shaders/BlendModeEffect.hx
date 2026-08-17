@@ -31,3 +31,4 @@ class BlendModeEffect
 		return this.color = color;
 	}
 }
+

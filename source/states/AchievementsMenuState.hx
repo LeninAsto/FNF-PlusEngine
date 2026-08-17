@@ -33,7 +33,7 @@ class AchievementsMenuState extends MusicBeatState
 		for (achievement => data in Achievements.achievements)
 		{
 			var unlocked:Bool = Achievements.isUnlocked(achievement);
-			if(data.hidden != true || unlocked)
+			if (data.hidden != true || unlocked)
 				options.push(makeAchievement(achievement, data, unlocked, data.mod));
 		}
 
@@ -56,25 +56,28 @@ class AchievementsMenuState extends MusicBeatState
 		{
 			var hasAntialias:Bool = ClientPrefs.data.antialiasing;
 			var graphic = null;
-			if(option.unlocked)
+			if (option.unlocked)
 			{
 				#if MODS_ALLOWED Mods.currentModDirectory = option.mod; #end
 				var image:String = 'achievements/' + option.name;
-				if(Paths.fileExists('images/$image-pixel.png', IMAGE))
+				if (Paths.fileExists('images/$image-pixel.png', IMAGE))
 				{
 					graphic = Paths.image('$image-pixel');
 					hasAntialias = false;
 				}
-				else graphic = Paths.image(image);
+				else
+					graphic = Paths.image(image);
 
-				if(graphic == null) graphic = Paths.image('unknownMod');
+				if (graphic == null)
+					graphic = Paths.image('unknownMod');
 			}
-			else graphic = Paths.image('achievements/lockedachievement');
+			else
+				graphic = Paths.image('achievements/lockedachievement');
 
 			var spr:FlxSprite = new FlxSprite(0, Math.floor(grpOptions.members.length / MAX_PER_ROW) * 180).loadGraphic(graphic);
 			spr.scrollFactor.x = 0;
 			spr.screenCenter(X);
-			spr.x += 180 * ((grpOptions.members.length % MAX_PER_ROW) - MAX_PER_ROW/2) + spr.width / 2 + 15;
+			spr.x += 180 * ((grpOptions.members.length % MAX_PER_ROW) - MAX_PER_ROW / 2) + spr.width / 2 + 15;
 			spr.ID = grpOptions.members.length;
 			spr.antialiasing = hasAntialias;
 			grpOptions.add(spr);
@@ -96,7 +99,7 @@ class AchievementsMenuState extends MusicBeatState
 		box.alpha = 0.6;
 		box.scrollFactor.set();
 		add(box);
-		
+
 		nameText = new FlxText(50, box.y + 10, FlxG.width - 100, "", 32);
 		nameText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER);
 		nameText.scrollFactor.set();
@@ -109,7 +112,7 @@ class AchievementsMenuState extends MusicBeatState
 		progressBar.screenCenter(X);
 		progressBar.scrollFactor.set();
 		progressBar.enabled = false;
-		
+
 		progressTxt = new FlxText(50, progressBar.y - 6, FlxG.width - 100, "", 32);
 		progressTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		progressTxt.scrollFactor.set();
@@ -119,20 +122,21 @@ class AchievementsMenuState extends MusicBeatState
 		add(progressTxt);
 		add(descText);
 		add(nameText);
-		
+
 		_changeSelection();
 
 		addTouchPad('LEFT_FULL', 'B_C');
 
 		super.create();
-		
+
 		FlxG.camera.follow(camFollow, null, 0.15);
 		FlxG.camera.scroll.y = -FlxG.height;
 	}
 
-	override function closeSubState() {
+	override function closeSubState()
+	{
 		super.closeSubState();
-                removeTouchPad();
+		removeTouchPad();
 		addTouchPad('LEFT_FULL', 'B_C');
 	}
 
@@ -155,67 +159,80 @@ class AchievementsMenuState extends MusicBeatState
 		return FlxSort.byValues(FlxSort.ASCENDING, Obj1.ID, Obj2.ID);
 
 	var goingBack:Bool = false;
-	override function update(elapsed:Float) {
+
+	override function update(elapsed:Float)
+	{
 		super.update(elapsed);
-		
-		if(!goingBack && options.length > 1)
+
+		if (!goingBack && options.length > 1)
 		{
 			var add:Int = 0;
-			if (controls.UI_LEFT_P || (touchPad != null && touchPad.buttonLeft.justPressed)) add = -1;
-			else if (controls.UI_RIGHT_P || (touchPad != null && touchPad.buttonRight.justPressed)) add = 1;
+			if (controls.UI_LEFT_P || (touchPad != null && touchPad.buttonLeft.justPressed))
+				add = -1;
+			else if (controls.UI_RIGHT_P || (touchPad != null && touchPad.buttonRight.justPressed))
+				add = 1;
 
-			if(add != 0)
+			if (add != 0)
 			{
 				var oldRow:Int = Math.floor(curSelected / MAX_PER_ROW);
 				var rowSize:Int = Std.int(Math.min(MAX_PER_ROW, options.length - oldRow * MAX_PER_ROW));
-				
+
 				curSelected += add;
 				var curRow:Int = Math.floor(curSelected / MAX_PER_ROW);
-				if(curSelected >= options.length) curRow++;
+				if (curSelected >= options.length)
+					curRow++;
 
-				if(curRow != oldRow)
+				if (curRow != oldRow)
 				{
-					if(curRow < oldRow) curSelected += rowSize;
-					else curSelected = curSelected -= rowSize;
+					if (curRow < oldRow)
+						curSelected += rowSize;
+					else
+						curSelected = curSelected -= rowSize;
 				}
 				_changeSelection();
 			}
 
-			if(options.length > MAX_PER_ROW)
+			if (options.length > MAX_PER_ROW)
 			{
 				var add:Int = 0;
-				if (controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed)) add = -1;
-				else if (controls.UI_DOWN_P || (touchPad != null && touchPad.buttonDown.justPressed)) add = 1;
+				if (controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed))
+					add = -1;
+				else if (controls.UI_DOWN_P || (touchPad != null && touchPad.buttonDown.justPressed))
+					add = 1;
 
-				if(add != 0)
+				if (add != 0)
 				{
 					var diff:Int = curSelected - (Math.floor(curSelected / MAX_PER_ROW) * MAX_PER_ROW);
 					curSelected += add * MAX_PER_ROW;
-					//trace('Before correction: $curSelected');
-					if(curSelected < 0)
+					// trace('Before correction: $curSelected');
+					if (curSelected < 0)
 					{
 						curSelected += Math.ceil(options.length / MAX_PER_ROW) * MAX_PER_ROW;
-						if(curSelected >= options.length) curSelected -= MAX_PER_ROW;
-						//trace('Pass 1: $curSelected');
+						if (curSelected >= options.length)
+							curSelected -= MAX_PER_ROW;
+						// trace('Pass 1: $curSelected');
 					}
-					if(curSelected >= options.length)
+					if (curSelected >= options.length)
 					{
 						curSelected = diff;
-						//trace('Pass 2: $curSelected');
+						// trace('Pass 2: $curSelected');
 					}
 
 					_changeSelection();
 				}
 			}
-			
-			if(MusicBeatState.getState().touchPad.buttonC.justPressed || controls.RESET && (options[curSelected].unlocked || options[curSelected].curProgress > 0))
+
+			if (MusicBeatState.getState().touchPad.buttonC.justPressed
+				|| controls.RESET
+				&& (options[curSelected].unlocked || options[curSelected].curProgress > 0))
 			{
 				removeTouchPad();
 				openSubState(backend.ScriptableSubstate.tryCreate('ResetAchievementSubstate', new ResetAchievementSubstate()));
 			}
 		}
 
-		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed)) {
+		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed))
+		{
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
 			goingBack = true;
@@ -223,6 +240,7 @@ class AchievementsMenuState extends MusicBeatState
 	}
 
 	public var barTween:FlxTween = null;
+
 	function _changeSelection()
 	{
 		FlxG.sound.play(Paths.sound('scrollMenu'));
@@ -231,32 +249,40 @@ class AchievementsMenuState extends MusicBeatState
 		descText.text = options[curSelected].description;
 		progressTxt.visible = progressBar.visible = hasProgress;
 
-		if(barTween != null) barTween.cancel();
+		if (barTween != null)
+			barTween.cancel();
 
-		if(hasProgress)
+		if (hasProgress)
 		{
 			var val1:Float = options[curSelected].curProgress;
 			var val2:Float = options[curSelected].maxProgress;
-			progressTxt.text = CoolUtil.floorDecimal(val1, options[curSelected].decProgress) + ' / ' + CoolUtil.floorDecimal(val2, options[curSelected].decProgress);
+			progressTxt.text = CoolUtil.floorDecimal(val1, options[curSelected].decProgress)
+				+ ' / '
+				+ CoolUtil.floorDecimal(val2, options[curSelected].decProgress);
 
-			barTween = FlxTween.tween(progressBar, {percent: (val1 / val2) * 100}, 0.5, {ease: FlxEase.quadOut,
+			barTween = FlxTween.tween(progressBar, {percent: (val1 / val2) * 100}, 0.5, {
+				ease: FlxEase.quadOut,
 				onComplete: function(twn:FlxTween) progressBar.updateBar(),
 				onUpdate: function(twn:FlxTween) progressBar.updateBar()
 			});
 		}
-		else progressBar.percent = 0;
+		else
+			progressBar.percent = 0;
 
 		var maxRows = Math.floor(grpOptions.members.length / MAX_PER_ROW);
-		if(maxRows > 0)
+		if (maxRows > 0)
 		{
 			var camY:Float = FlxG.height / 2 + (Math.floor(curSelected / MAX_PER_ROW) / maxRows) * Math.max(0, grpOptions.height - FlxG.height / 2 - 50) - 100;
 			camFollow.setPosition(0, camY);
 		}
-		else camFollow.setPosition(0, grpOptions.members[curSelected].getGraphicMidpoint().y - 100);
+		else
+			camFollow.setPosition(0, grpOptions.members[curSelected].getGraphicMidpoint().y - 100);
 
-		grpOptions.forEach(function(spr:FlxSprite) {
+		grpOptions.forEach(function(spr:FlxSprite)
+		{
 			spr.alpha = 0.6;
-			if(spr.ID == curSelected) spr.alpha = 1;
+			if (spr.ID == curSelected)
+				spr.alpha = 1;
 		});
 	}
 }
@@ -283,19 +309,20 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 		text.screenCenter(X);
 		text.scrollFactor.set();
 		add(text);
-		
+
 		var state:AchievementsMenuState = cast FlxG.state;
 		var text:FlxText = new FlxText(50, text.y + 90, FlxG.width - 100, state.options[state.curSelected].displayName, 40);
 		text.setFormat(Paths.font("vcr.ttf"), 40, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		text.scrollFactor.set();
 		text.borderSize = 2;
 		add(text);
-		
+
 		yesText = new Alphabet(0, text.y + 120, Language.getPhrase('Yes'), true);
 		yesText.screenCenter(X);
 		yesText.x -= 200;
 		yesText.scrollFactor.set();
-		for(letter in yesText.letters) letter.color = FlxColor.RED;
+		for (letter in yesText.letters)
+			letter.color = FlxColor.RED;
 		add(yesText);
 		noText = new Alphabet(0, text.y + 120, Language.getPhrase('No'), true);
 		noText.screenCenter(X);
@@ -309,7 +336,7 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 
 	override function update(elapsed:Float)
 	{
-		if(controls.BACK)
+		if (controls.BACK)
 		{
 			close();
 			controls.isInSubstate = false;
@@ -319,14 +346,15 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 
 		super.update(elapsed);
 
-		if(controls.UI_LEFT_P || controls.UI_RIGHT_P) {
+		if (controls.UI_LEFT_P || controls.UI_RIGHT_P)
+		{
 			onYes = !onYes;
 			updateOptions();
 		}
 
-		if(controls.ACCEPT)
+		if (controls.ACCEPT)
 		{
-			if(onYes)
+			if (onYes)
 			{
 				var state:AchievementsMenuState = cast FlxG.state;
 				var option:Dynamic = state.options[state.curSelected];
@@ -336,14 +364,17 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 				option.unlocked = false;
 				option.curProgress = 0;
 				option.name = state.nameText.text = '???';
-				if(option.maxProgress > 0) state.progressTxt.text = '0 / ' + option.maxProgress;
+				if (option.maxProgress > 0)
+					state.progressTxt.text = '0 / ' + option.maxProgress;
 				state.grpOptions.members[state.curSelected].loadGraphic(Paths.image('achievements/lockedachievement'));
 				state.grpOptions.members[state.curSelected].antialiasing = ClientPrefs.data.antialiasing;
 
-				if(state.progressBar.visible)
+				if (state.progressBar.visible)
 				{
-					if(state.barTween != null) state.barTween.cancel();
-					state.barTween = FlxTween.tween(state.progressBar, {percent: 0}, 0.5, {ease: FlxEase.quadOut,
+					if (state.barTween != null)
+						state.barTween.cancel();
+					state.barTween = FlxTween.tween(state.progressBar, {percent: 0}, 0.5, {
+						ease: FlxEase.quadOut,
 						onComplete: function(twn:FlxTween) state.progressBar.updateBar(),
 						onUpdate: function(twn:FlxTween) state.progressBar.updateBar()
 					});
@@ -359,7 +390,8 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 		}
 	}
 
-	function updateOptions() {
+	function updateOptions()
+	{
 		var scales:Array<Float> = [0.75, 1];
 		var alphas:Array<Float> = [0.6, 1.25];
 		var confirmInt:Int = onYes ? 1 : 0;
@@ -372,3 +404,4 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 	}
 }
 #end
+

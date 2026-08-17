@@ -37,10 +37,17 @@ class MaterialMenu extends FlxSpriteGroup
 	// Animation
 	var openTween:FlxTween;
 
-	inline function itemHeight():Int return MD3Metrics.size(52);
-	inline function menuRadius():Int return MD3Metrics.corner(8, menuWidth, itemHeight());
-	inline function horizontalPadding():Int return MD3Metrics.size(16);
-	inline function itemLabelSize():Int return MD3Metrics.text(15);
+	inline function itemHeight():Int
+		return MD3Metrics.size(52);
+
+	inline function menuRadius():Int
+		return MD3Metrics.corner(8, menuWidth, itemHeight());
+
+	inline function horizontalPadding():Int
+		return MD3Metrics.size(16);
+
+	inline function itemLabelSize():Int
+		return MD3Metrics.text(15);
 
 	public function new(x:Float = 0, y:Float = 0, items:Array<String>, ?width:Float = 200, ?onSelect:Int->String->Void = null)
 	{
@@ -108,48 +115,63 @@ class MaterialMenu extends FlxSpriteGroup
 
 	function _onThemeChange():Void
 	{
-		if (panel != null) panel.color = MD3Theme.surfaceContainerHigh;
-		if (hoveredLayer != null) hoveredLayer.color = MD3Theme.stateLayerColor(MD3Theme.primary);
+		if (panel != null)
+			panel.color = MD3Theme.surfaceContainerHigh;
+		if (hoveredLayer != null)
+			hoveredLayer.color = MD3Theme.stateLayerColor(MD3Theme.primary);
 		for (label in itemLabels)
-			if (label != null) label.color = MD3Theme.onSurface;
+			if (label != null)
+				label.color = MD3Theme.onSurface;
 		for (divider in dividers)
-			if (divider != null) divider.color = MD3Theme.outlineVariant;
+			if (divider != null)
+				divider.color = MD3Theme.outlineVariant;
 	}
 
 	public function open():Void
 	{
-		if (isOpen) return;
+		if (isOpen)
+			return;
 		isOpen = true;
 		visible = true;
 		// Re-add at the end of the state's member list so the panel renders
 		// above every other component (FlxTypedGroup.add() appends to the end).
 		FlxG.state.remove(this, true);
 		FlxG.state.add(this);
-		if (openTween != null) openTween.cancel();
+		if (openTween != null)
+			openTween.cancel();
 		openTween = FlxTween.tween(this, {alpha: 1}, 0.15, {ease: FlxEase.cubeOut});
 	}
 
 	public function close():Void
 	{
-		if (!isOpen) return;
+		if (!isOpen)
+			return;
 		isOpen = false;
-		if (openTween != null) openTween.cancel();
+		if (openTween != null)
+			openTween.cancel();
 		openTween = FlxTween.tween(this, {alpha: 0}, 0.12, {
 			ease: FlxEase.cubeIn,
-			onComplete: function(_) { visible = false; }
+			onComplete: function(_)
+			{
+				visible = false;
+			}
 		});
 	}
 
 	public function toggle():Void
 	{
-		if (isOpen) close() else open();
+		if (isOpen)
+			close()
+		else
+			open();
 	}
 
 	override function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
 
-		if (!enabled || !isOpen) return;
+		if (!enabled || !isOpen)
+			return;
 
 		#if FLX_MOUSE
 		var mousePos = FlxG.mouse.getScreenPosition();
@@ -188,7 +210,9 @@ class MaterialMenu extends FlxSpriteGroup
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(_onThemeChange);
-		if (openTween != null) openTween.cancel();
+		if (openTween != null)
+			openTween.cancel();
 		super.destroy();
 	}
 }
+

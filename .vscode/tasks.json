@@ -1,0 +1,42 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "type": "lime",
+      "command": "test",
+      "group": {
+        "kind": "build",
+        "isDefault": true
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "Plus Engine: Format Haxe",
+      "type": "shell",
+      "command": "npm.cmd run format:haxe",
+      "group": "build",
+      "problemMatcher": []
+    },
+    {
+      "label": "Plus Engine: Check Haxe Format",
+      "type": "shell",
+      "command": "npm.cmd run check:haxe-format",
+      "group": "test",
+      "problemMatcher": []
+    },
+    {
+      "label": "Plus Engine: Watch Haxe Format",
+      "type": "shell",
+      "command": "npm.cmd run watch:haxe-format",
+      "isBackground": true,
+      "problemMatcher": []
+    },
+    {
+      "label": "Plus Engine: Watch Haxe Format (Verbose)",
+      "type": "shell",
+      "command": "npm.cmd run watch:haxe-format:verbose",
+      "isBackground": true,
+      "problemMatcher": []
+    }
+  ]
+}

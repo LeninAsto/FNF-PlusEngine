@@ -5,9 +5,12 @@ import objects.Character;
 
 class DarnellBlazinHandler
 {
-	public function new() {}
+	public function new()
+	{
+	}
 
 	var cantUppercut:Bool = false;
+
 	public function noteHit(note:Note)
 	{
 		// SPECIAL CASE: If Pico hits a poor note at low health (at 30% chance),
@@ -97,7 +100,7 @@ class DarnellBlazinHandler
 
 		cantUppercut = false;
 	}
-	
+
 	public function noteMiss(note:Note)
 	{
 		// SPECIAL CASE: Darnell prepared to uppercut last time and Pico missed! FINISH HIM!
@@ -207,8 +210,9 @@ class DarnellBlazinHandler
 				playBlockAnim();
 		}
 	}
-	
+
 	var alternate:Bool = false;
+
 	function doAlternate():String
 	{
 		alternate = !alternate;
@@ -310,12 +314,12 @@ class DarnellBlazinHandler
 		PlayState.instance.camGame.shake(0.0025, 0.15);
 		moveToBack();
 	}
-	
+
 	function willMissBeLethal()
 	{
 		return PlayState.instance.health <= 0.0 && !PlayState.instance.practiceMode;
 	}
-	
+
 	function wasNoteHitPoorly(rating:String)
 	{
 		return (rating == "bad" || rating == "shit");
@@ -325,12 +329,13 @@ class DarnellBlazinHandler
 	{
 		return PlayState.instance.health <= 0.3 * 2;
 	}
-	
+
 	function moveToBack()
 	{
 		var dadPos:Int = FlxG.state.members.indexOf(dadGroup);
 		var bfPos:Int = FlxG.state.members.indexOf(boyfriendGroup);
-		if(dadPos < bfPos) return;
+		if (dadPos < bfPos)
+			return;
 
 		FlxG.state.members[bfPos] = dadGroup;
 		FlxG.state.members[dadPos] = boyfriendGroup;
@@ -340,7 +345,8 @@ class DarnellBlazinHandler
 	{
 		var dadPos:Int = FlxG.state.members.indexOf(dadGroup);
 		var bfPos:Int = FlxG.state.members.indexOf(boyfriendGroup);
-		if(dadPos > bfPos) return;
+		if (dadPos > bfPos)
+			return;
 
 		FlxG.state.members[bfPos] = dadGroup;
 		FlxG.state.members[dadPos] = boyfriendGroup;
@@ -350,8 +356,17 @@ class DarnellBlazinHandler
 	var dad(get, never):Character;
 	var boyfriendGroup(get, never):FlxSpriteGroup;
 	var dadGroup(get, never):FlxSpriteGroup;
-	function get_boyfriend() return PlayState.instance.boyfriend;
-	function get_dad() return PlayState.instance.dad;
-	function get_boyfriendGroup() return PlayState.instance.boyfriendGroup;
-	function get_dadGroup() return PlayState.instance.dadGroup;
+
+	function get_boyfriend()
+		return PlayState.instance.boyfriend;
+
+	function get_dad()
+		return PlayState.instance.dad;
+
+	function get_boyfriendGroup()
+		return PlayState.instance.boyfriendGroup;
+
+	function get_dadGroup()
+		return PlayState.instance.dadGroup;
 }
+

@@ -9,9 +9,10 @@ import funkin.graphics.FunkinSprite;
 @:nullSafety
 class ABotAtlasSprite extends FunkinSprite
 {
-  public function new(x:Float = 0, y:Float = 0)
-  {
-    super(x, y);
-    loadTextureAtlas('characters/abot/abotSystem', 'shared');
-  }
+	public function new(x:Float = 0, y:Float = 0)
+	{
+		super(x, y);
+		loadTextureAtlas('characters/abot/abotSystem', 'shared');
+	}
 }
+

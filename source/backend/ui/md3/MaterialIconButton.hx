@@ -119,7 +119,8 @@ class MaterialIconButton extends FlxSpriteGroup
 
 	function updateAppearance():Void
 	{
-		if (container == null) return;
+		if (container == null)
+			return;
 
 		if (!enabled)
 		{
@@ -167,7 +168,8 @@ class MaterialIconButton extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 
-		if (!enabled) return;
+		if (!enabled)
+			return;
 
 		#if FLX_MOUSE
 		var mousePos = FlxG.mouse.getScreenPosition();
@@ -180,34 +182,46 @@ class MaterialIconButton extends FlxSpriteGroup
 		if (isOver && !isHovered)
 		{
 			isHovered = true;
-			if (hoverTween != null) hoverTween.cancel();
-			hoverTween = FlxTween.num(stateLayer.alpha, 1, 0.15, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			if (hoverTween != null)
+				hoverTween.cancel();
+			hoverTween = FlxTween.num(stateLayer.alpha, 1, 0.15, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 		else if (!isOver && isHovered)
 		{
 			isHovered = false;
-			if (hoverTween != null) hoverTween.cancel();
-			hoverTween = FlxTween.num(stateLayer.alpha, 0, 0.15, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			if (hoverTween != null)
+				hoverTween.cancel();
+			hoverTween = FlxTween.num(stateLayer.alpha, 0, 0.15, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 
 		if (FlxG.mouse.pressed && isOver && !isPressed)
 		{
 			isPressed = true;
-			if (pressTween != null) pressTween.cancel();
-			stateLayer.color = MD3Theme.stateLayerColor(
-				buttonType == FILLED ? MD3Theme.onPrimary : (buttonType == FILLED_TONAL ? MD3Theme.onSecondaryContainer : MD3Theme.primary),
-				true
-			);
-			pressTween = FlxTween.num(stateLayer.alpha, 1, 0.1, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			if (pressTween != null)
+				pressTween.cancel();
+			stateLayer.color = MD3Theme.stateLayerColor(buttonType == FILLED ? MD3Theme.onPrimary : (buttonType == FILLED_TONAL ? MD3Theme.onSecondaryContainer : MD3Theme.primary),
+				true);
+			pressTween = FlxTween.num(stateLayer.alpha, 1, 0.1, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 		else if (!FlxG.mouse.pressed && isPressed)
 		{
 			isPressed = false;
-			if (pressTween != null) pressTween.cancel();
-				stateLayer.color = isHovered ? MD3Theme.stateLayerColor(
-					buttonType == FILLED ? MD3Theme.onPrimary : (buttonType == FILLED_TONAL ? MD3Theme.onSecondaryContainer : MD3Theme.primary)
-				) : FlxColor.TRANSPARENT;
-			pressTween = FlxTween.num(stateLayer.alpha, isHovered ? 1.0 : 0.0, 0.1, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			if (pressTween != null)
+				pressTween.cancel();
+			stateLayer.color = isHovered ? MD3Theme.stateLayerColor(buttonType == FILLED ? MD3Theme.onPrimary : (buttonType == FILLED_TONAL ? MD3Theme.onSecondaryContainer : MD3Theme.primary)) : FlxColor.TRANSPARENT;
+			pressTween = FlxTween.num(stateLayer.alpha, isHovered ? 1.0 : 0.0, 0.1, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 
 		if (FlxG.mouse.justReleased && isOver && onClick != null)
@@ -218,8 +232,10 @@ class MaterialIconButton extends FlxSpriteGroup
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(updateAppearance);
-		if (hoverTween != null) hoverTween.cancel();
-		if (pressTween != null) pressTween.cancel();
+		if (hoverTween != null)
+			hoverTween.cancel();
+		if (pressTween != null)
+			pressTween.cancel();
 		super.destroy();
 	}
 }
@@ -231,3 +247,4 @@ enum IconButtonType
 	FILLED_TONAL;
 	OUTLINED;
 }
+

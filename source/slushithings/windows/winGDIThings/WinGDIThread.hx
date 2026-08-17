@@ -37,7 +37,7 @@ class WinGDIThread
 		{
 			trace('[WinGDIThread]: Windows GDI Thread running...');
 			runningThread = true;
-			
+
 			while (runningThread)
 			{
 				/**
@@ -122,3 +122,4 @@ class WinGDIThread
 		#end
 	}
 }
+

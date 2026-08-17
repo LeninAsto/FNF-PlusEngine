@@ -109,3 +109,4 @@ class VideoSprite extends flixel.FlxSprite
 	}
 }
 #end
+

@@ -9,3 +9,4 @@ package funkin.data;
 interface DefaultRegistryImpl
 {
 }
+

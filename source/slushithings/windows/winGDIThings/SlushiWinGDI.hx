@@ -382,3 +382,4 @@ class SLWinEffect_SetTitleTextToWindows extends SlushiWinGDIEffect
 	}
 }
 #end
+

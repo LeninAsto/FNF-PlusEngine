@@ -5,7 +5,6 @@ import flixel.FlxSubState;
 import debug.TraceDisplay;
 import psychlua.LuaUtils;
 import openfl.utils.Assets as OpenFlAssets;
-
 #if HSCRIPT_ALLOWED
 import psychlua.HScript;
 import psychlua.ScriptedClass.ScriptClassHandler;
@@ -13,7 +12,6 @@ import psychlua.ScriptedClass.ScriptTemplateBase;
 import crowplexus.hscript.Expr.Error as IrisError;
 import crowplexus.hscript.Printer;
 #end
-
 #if sys
 import sys.FileSystem;
 #end
@@ -25,6 +23,7 @@ class ScriptableSubstate extends MusicBeatSubstate
 	public static var instance:ScriptableSubstate;
 
 	public var substateName:String;
+
 	var _fallbackSubstate:FlxSubState;
 	var _fallbackTriggered:Bool = false;
 	var _closing:Bool = false;
@@ -50,7 +49,8 @@ class ScriptableSubstate extends MusicBeatSubstate
 
 	public function callSubstateMethod(methodName:String, ?args:Array<Dynamic>, ?defaultValue:Dynamic = null):Dynamic
 	{
-		if (args == null) args = [];
+		if (args == null)
+			args = [];
 
 		try
 		{
@@ -118,14 +118,16 @@ class ScriptableSubstate extends MusicBeatSubstate
 	public function hasParentStateMethod(methodName:String):Bool
 	{
 		var parent = getParentState();
-		if (parent == null || methodName == null || methodName.length < 1) return false;
+		if (parent == null || methodName == null || methodName.length < 1)
+			return false;
 		var method:Dynamic = Reflect.field(parent, methodName);
 		return method != null && Reflect.isFunction(method);
 	}
 
 	public function callParentStateMethod(methodName:String, ?args:Array<Dynamic>, ?defaultValue:Dynamic = null):Dynamic
 	{
-		if (args == null) args = [];
+		if (args == null)
+			args = [];
 
 		try
 		{
@@ -185,7 +187,8 @@ class ScriptableSubstate extends MusicBeatSubstate
 
 	function _resolveCallableMethodTarget(methodName:String):Dynamic
 	{
-		if (methodName == null || methodName.length < 1) return null;
+		if (methodName == null || methodName.length < 1)
+			return null;
 
 		var ownMethod:Dynamic = Reflect.field(this, methodName);
 		if (ownMethod != null && Reflect.isFunction(ownMethod))
@@ -203,9 +206,12 @@ class ScriptableSubstate extends MusicBeatSubstate
 
 	function _resolveFieldTarget(fieldName:String):Dynamic
 	{
-		if (fieldName == null || fieldName.length < 1) return null;
-		if (Reflect.hasField(this, fieldName)) return this;
-		if (_fallbackSubstate != null && Reflect.hasField(_fallbackSubstate, fieldName)) return _fallbackSubstate;
+		if (fieldName == null || fieldName.length < 1)
+			return null;
+		if (Reflect.hasField(this, fieldName))
+			return this;
+		if (_fallbackSubstate != null && Reflect.hasField(_fallbackSubstate, fieldName))
+			return _fallbackSubstate;
 		return null;
 	}
 
@@ -216,15 +222,18 @@ class ScriptableSubstate extends MusicBeatSubstate
 		#if sys
 		#if MODS_ALLOWED
 		var modded:String = Paths.modFolders(rel);
-		if (FileSystem.exists(modded)) return modded;
+		if (FileSystem.exists(modded))
+			return modded;
 		#end
 
 		var shared:String = Paths.getSharedPath(rel);
-		if (FileSystem.exists(shared)) return shared;
+		if (FileSystem.exists(shared))
+			return shared;
 		#end
 
 		var assetPath:String = Paths.getSharedPath(rel);
-		if (OpenFlAssets.exists(assetPath)) return assetPath;
+		if (OpenFlAssets.exists(assetPath))
+			return assetPath;
 
 		return null;
 	}
@@ -237,20 +246,25 @@ class ScriptableSubstate extends MusicBeatSubstate
 
 	public static function tryCreate(name:String, ?fallback:FlxSubState):FlxSubState
 	{
-		if (!overridesEnabled()) return fallback;
-		if (_consumeOverrideBypass(name)) return fallback;
+		if (!overridesEnabled())
+			return fallback;
+		if (_consumeOverrideBypass(name))
+			return fallback;
 		#if (HSCRIPT_ALLOWED && sys)
-		if (hasScript(name)) return new ScriptableSubstate(name, fallback);
+		if (hasScript(name))
+			return new ScriptableSubstate(name, fallback);
 		#end
 		#if (LUA_ALLOWED && sys)
-		if (psychlua.LuaSubstate.hasScript(name)) return new psychlua.LuaSubstate(name, false, null, fallback);
+		if (psychlua.LuaSubstate.hasScript(name))
+			return new psychlua.LuaSubstate(name, false, null, fallback);
 		#end
 		return fallback;
 	}
 
 	static function _consumeOverrideBypass(name:String):Bool
 	{
-		if (!_bypassNextOverrideFor.exists(name)) return false;
+		if (!_bypassNextOverrideFor.exists(name))
+			return false;
 		_bypassNextOverrideFor.remove(name);
 		return true;
 	}
@@ -269,15 +283,18 @@ class ScriptableSubstate extends MusicBeatSubstate
 		var path:String = findScript(substateName);
 		if (path == null)
 		{
-			if (_switchToFallback('script file not found')) return;
+			if (_switchToFallback('script file not found'))
+				return;
 		}
 		else if (!_loadScript(path))
 		{
-			if (_switchToFallback('script failed to load')) return;
+			if (_switchToFallback('script failed to load'))
+				return;
 		}
 		else if (!_hasScriptEntry())
 		{
-			if (_switchToFallback('script has no create entry')) return;
+			if (_switchToFallback('script has no create entry'))
+				return;
 		}
 		#end
 
@@ -318,7 +335,8 @@ class ScriptableSubstate extends MusicBeatSubstate
 		#end
 
 		super.destroy();
-		if (instance == this) instance = null;
+		if (instance == this)
+			instance = null;
 	}
 
 	override function beatHit():Void
@@ -406,36 +424,53 @@ class ScriptableSubstate extends MusicBeatSubstate
 			_script.set('persistentUpdate', this.persistentUpdate);
 			_script.set('persistentDraw', this.persistentDraw);
 
-			_script.set('setSharedVar', function(n:String, v:Dynamic) {
+			_script.set('setSharedVar', function(n:String, v:Dynamic)
+			{
 				MusicBeatState.globalVariables.set(n, v);
 				variables.set(n, v);
 				return v;
 			});
-			_script.set('getSharedVar', function(n:String, ?def:Dynamic = null):Dynamic {
-				if (MusicBeatState.globalVariables.exists(n)) return MusicBeatState.globalVariables.get(n);
-				if (variables.exists(n)) return variables.get(n);
+			_script.set('getSharedVar', function(n:String, ?def:Dynamic = null):Dynamic
+			{
+				if (MusicBeatState.globalVariables.exists(n))
+					return MusicBeatState.globalVariables.get(n);
+				if (variables.exists(n))
+					return variables.get(n);
 				return def;
 			});
-			_script.set('hasSharedVar', function(n:String):Bool
-				return MusicBeatState.globalVariables.exists(n) || variables.exists(n));
-			_script.set('removeSharedVar', function(n:String):Bool {
+			_script.set('hasSharedVar', function(n:String):Bool return MusicBeatState.globalVariables.exists(n) || variables.exists(n));
+			_script.set('removeSharedVar', function(n:String):Bool
+			{
 				var r = false;
-				if (MusicBeatState.globalVariables.remove(n)) r = true;
-				if (variables.remove(n)) r = true;
+				if (MusicBeatState.globalVariables.remove(n))
+					r = true;
+				if (variables.remove(n))
+					r = true;
 				return r;
 			});
 
-			_script.set('setPublicVar', function(n:String, v:Dynamic) { MusicBeatState.publicVariables.set(n, v); return v; });
-			_script.set('getPublicVar', function(n:String, ?def:Dynamic = null):Dynamic
-				return MusicBeatState.publicVariables.exists(n) ? MusicBeatState.publicVariables.get(n) : def);
+			_script.set('setPublicVar', function(n:String, v:Dynamic)
+			{
+				MusicBeatState.publicVariables.set(n, v);
+				return v;
+			});
+			_script.set('getPublicVar',
+				function(n:String, ?def:Dynamic = null):Dynamic return MusicBeatState.publicVariables.exists(n) ? MusicBeatState.publicVariables.get(n) : def);
 
-			_script.set('setStaticVar', function(n:String, v:Dynamic) { MusicBeatState.staticVariables.set(n, v); return v; });
-			_script.set('getStaticVar', function(n:String, ?def:Dynamic = null):Dynamic
-				return MusicBeatState.staticVariables.exists(n) ? MusicBeatState.staticVariables.get(n) : def);
+			_script.set('setStaticVar', function(n:String, v:Dynamic)
+			{
+				MusicBeatState.staticVariables.set(n, v);
+				return v;
+			});
+			_script.set('getStaticVar',
+				function(n:String, ?def:Dynamic = null):Dynamic return MusicBeatState.staticVariables.exists(n) ? MusicBeatState.staticVariables.get(n) : def);
 
-			_script.set('setStateVar', function(n:String, v:Dynamic) { variables.set(n, v); return v; });
-			_script.set('getStateVar', function(n:String, ?def:Dynamic = null):Dynamic
-				return variables.exists(n) ? variables.get(n) : def);
+			_script.set('setStateVar', function(n:String, v:Dynamic)
+			{
+				variables.set(n, v);
+				return v;
+			});
+			_script.set('getStateVar', function(n:String, ?def:Dynamic = null):Dynamic return variables.exists(n) ? variables.get(n) : def);
 
 			_script.set('addTouchPad', _addTouchPadScript);
 			_script.set('removeTouchPad', _removeTouchPadScript);
@@ -500,16 +535,18 @@ class ScriptableSubstate extends MusicBeatSubstate
 
 	function _hasScriptEntry():Bool
 	{
-		if (_scriptedObj != null) return _scriptedObj.hasMethod('create');
-		if (_script == null) return false;
+		if (_scriptedObj != null)
+			return _scriptedObj.hasMethod('create');
+		if (_script == null)
+			return false;
 
-		return _script.exists('onCreate')
-			|| _script.exists('create');
+		return _script.exists('onCreate') || _script.exists('create');
 	}
 
 	function _switchToFallback(reason:String):Bool
 	{
-		if (_fallbackTriggered || _fallbackSubstate == null) return false;
+		if (_fallbackTriggered || _fallbackSubstate == null)
+			return false;
 
 		_fallbackTriggered = true;
 		_bypassNextOverrideFor.set(substateName, true);
@@ -529,7 +566,8 @@ class ScriptableSubstate extends MusicBeatSubstate
 	function _callOnScript(method:String, args:Array<Dynamic>):Dynamic
 	{
 		#if HSCRIPT_ALLOWED
-		if (args == null) args = [];
+		if (args == null)
+			args = [];
 
 		try
 		{
@@ -567,7 +605,8 @@ class ScriptableSubstate extends MusicBeatSubstate
 	#if HSCRIPT_ALLOWED
 	function _syncScriptFields():Void
 	{
-		if (_script == null) return;
+		if (_script == null)
+			return;
 		if (_script.exists('persistentUpdate'))
 			this.persistentUpdate = _script.get('persistentUpdate');
 		if (_script.exists('persistentDraw'))
@@ -602,17 +641,21 @@ class ScriptableSubstate extends MusicBeatSubstate
 		#if sys
 		#if MODS_ALLOWED
 		var modded:String = Paths.modFolders(rel);
-		if (FileSystem.exists(modded)) return modded;
+		if (FileSystem.exists(modded))
+			return modded;
 		#end
 
 		var shared:String = Paths.getSharedPath(rel);
-		if (FileSystem.exists(shared)) return shared;
+		if (FileSystem.exists(shared))
+			return shared;
 		#end
 
 		var assetPath:String = Paths.getSharedPath(rel);
-		if (OpenFlAssets.exists(assetPath)) return assetPath;
+		if (OpenFlAssets.exists(assetPath))
+			return assetPath;
 
 		return null;
 	}
 	#end
 }
+

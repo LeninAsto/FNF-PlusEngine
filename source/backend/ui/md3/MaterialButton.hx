@@ -32,6 +32,7 @@ class MaterialButton extends FlxSpriteGroup
 
 	// Dimensions
 	public var buttonWidth:Float = 120;
+
 	static inline var OUTLINE_WIDTH:Int = 1;
 
 	// State
@@ -48,10 +49,17 @@ class MaterialButton extends FlxSpriteGroup
 	inline function stateLayerTargetAlpha(?pressed:Bool = false):Float
 		return pressed ? 0.12 : 0.08;
 
-	inline function buttonHeight():Int return MD3Metrics.size(44);
-	inline function labelSize():Int return MD3Metrics.text(15);
-	inline function cornerRadius():Int return MD3Metrics.corner(16, buttonWidth, buttonHeight());
-	inline function minHitHeight():Int return MD3Metrics.touch(buttonHeight());
+	inline function buttonHeight():Int
+		return MD3Metrics.size(44);
+
+	inline function labelSize():Int
+		return MD3Metrics.text(15);
+
+	inline function cornerRadius():Int
+		return MD3Metrics.corner(16, buttonWidth, buttonHeight());
+
+	inline function minHitHeight():Int
+		return MD3Metrics.touch(buttonHeight());
 
 	public function new(x:Float = 0, y:Float = 0, label:String = "Button", ?buttonType:ButtonType = FILLED, ?width:Float = 120, ?onClick:Void->Void = null)
 	{
@@ -183,7 +191,8 @@ class MaterialButton extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 
-		if (!enabled) return;
+		if (!enabled)
+			return;
 		if (!allowMouseInput)
 		{
 			isHovered = false;
@@ -197,39 +206,57 @@ class MaterialButton extends FlxSpriteGroup
 		var mousePos = FlxG.mouse.getScreenPosition();
 		var hitPadX = MD3Metrics.size(4);
 		var hitPadY = Std.int(Math.max(0, (minHitHeight() - buttonHeight()) / 2));
-		var isOver = mousePos.x >= x - hitPadX && mousePos.x <= x + buttonWidth + hitPadX &&
-			mousePos.y >= y - hitPadY && mousePos.y <= y + buttonHeight() + hitPadY;
+		var isOver = mousePos.x >= x - hitPadX
+			&& mousePos.x <= x + buttonWidth + hitPadX
+			&& mousePos.y >= y - hitPadY
+			&& mousePos.y <= y + buttonHeight() + hitPadY;
 
 		// Hover effect
 		if (isOver && !isHovered)
 		{
 			isHovered = true;
-			if (hoverTween != null) hoverTween.cancel();
+			if (hoverTween != null)
+				hoverTween.cancel();
 			stateLayer.color = stateLayerBaseColor();
-			hoverTween = FlxTween.num(stateLayer.alpha, stateLayerTargetAlpha(false), 0.15, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			hoverTween = FlxTween.num(stateLayer.alpha, stateLayerTargetAlpha(false), 0.15, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 		else if (!isOver && isHovered)
 		{
 			isHovered = false;
-			if (hoverTween != null) hoverTween.cancel();
-			hoverTween = FlxTween.num(stateLayer.alpha, 0, 0.15, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			if (hoverTween != null)
+				hoverTween.cancel();
+			hoverTween = FlxTween.num(stateLayer.alpha, 0, 0.15, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 
 		// Press effect
 		if (FlxG.mouse.pressed && isOver && !isPressed)
 		{
 			isPressed = true;
-			if (pressTween != null) pressTween.cancel();
+			if (pressTween != null)
+				pressTween.cancel();
 			stateLayer.color = stateLayerBaseColor();
-			pressTween = FlxTween.num(stateLayer.alpha, stateLayerTargetAlpha(true), 0.1, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			pressTween = FlxTween.num(stateLayer.alpha, stateLayerTargetAlpha(true), 0.1, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 		else if (!FlxG.mouse.pressed && isPressed)
 		{
 			isPressed = false;
-			if (pressTween != null) pressTween.cancel();
+			if (pressTween != null)
+				pressTween.cancel();
 			stateLayer.color = stateLayerBaseColor();
 			var targetAlpha = isHovered ? stateLayerTargetAlpha(false) : 0.0;
-			pressTween = FlxTween.num(stateLayer.alpha, targetAlpha, 0.1, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			pressTween = FlxTween.num(stateLayer.alpha, targetAlpha, 0.1, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 
 		// Click event
@@ -258,16 +285,17 @@ class MaterialButton extends FlxSpriteGroup
 
 	public function getDebugLayout():String
 	{
-		return 'group=(' + x + ', ' + y + ') width=' + buttonWidth
-			+ ' labelTextLocal=(' + (labelText.x - x) + ', ' + (labelText.y - y) + ', ' + labelText.width + 'x' + labelText.height + ')'
-			+ ' label="' + label + '"';
+		return 'group=(' + x + ', ' + y + ') width=' + buttonWidth + ' labelTextLocal=(' + (labelText.x - x) + ', ' + (labelText.y - y) + ', '
+			+ labelText.width + 'x' + labelText.height + ')' + ' label="' + label + '"';
 	}
 
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(updateAppearance);
-		if (hoverTween != null) hoverTween.cancel();
-		if (pressTween != null) pressTween.cancel();
+		if (hoverTween != null)
+			hoverTween.cancel();
+		if (pressTween != null)
+			pressTween.cancel();
 
 		super.destroy();
 	}
@@ -279,3 +307,4 @@ enum ButtonType
 	OUTLINED;
 	TEXT;
 }
+

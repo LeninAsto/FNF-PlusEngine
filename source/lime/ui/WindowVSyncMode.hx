@@ -9,3 +9,4 @@ enum abstract WindowVSyncMode(Int) from Int to Int
 	var ON = 1;
 	var ADAPTIVE = -1;
 }
+

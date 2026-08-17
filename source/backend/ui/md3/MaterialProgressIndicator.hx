@@ -35,6 +35,7 @@ class MaterialProgressIndicator extends FlxSpriteGroup
 
 	// Dimensions (MD3)
 	public var barWidth:Float = 240;
+
 	static inline var LINEAR_HEIGHT:Int = 4;
 	static inline var LINEAR_CORNER:Int = 2;
 	static inline var CIRCULAR_SIZE:Int = 48;
@@ -45,7 +46,7 @@ class MaterialProgressIndicator extends FlxSpriteGroup
 	var indeterminateTween:FlxTween;
 	var circleAngle:Float = 0;
 	var _circleArcLen:Float = 0; // drives arc-length oscillation
-	var _lastArcLen:Float = -1;  // last redrawn arc length (avoids unnecessary redraws)
+	var _lastArcLen:Float = -1; // last redrawn arc length (avoids unnecessary redraws)
 	var linearIndeterminate2:FlxSprite; // trailing segment for the two-bar wavy effect
 
 	public function new(x:Float = 0, y:Float = 0, ?indicatorType:ProgressType = LINEAR, ?width:Float = 240)
@@ -137,22 +138,26 @@ class MaterialProgressIndicator extends FlxSpriteGroup
 				var inRect = true;
 				if (px < radius && py < radius)
 				{
-					var dx = radius - px; var dy = radius - py;
+					var dx = radius - px;
+					var dy = radius - py;
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px >= width - radius && py < radius)
 				{
-					var dx = px - (width - radius); var dy = radius - py;
+					var dx = px - (width - radius);
+					var dy = radius - py;
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px < radius && py >= height - radius)
 				{
-					var dx = radius - px; var dy = py - (height - radius);
+					var dx = radius - px;
+					var dy = py - (height - radius);
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px >= width - radius && py >= height - radius)
 				{
-					var dx = px - (width - radius); var dy = py - (height - radius);
+					var dx = px - (width - radius);
+					var dy = py - (height - radius);
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 
@@ -224,7 +229,8 @@ class MaterialProgressIndicator extends FlxSpriteGroup
 	{
 		if (indicatorType == LINEAR)
 		{
-			if (linearFill == null) return;
+			if (linearFill == null)
+				return;
 			var w = barWidth;
 			linearFill.scale.x = Math.max(0.001, value);
 			// Positive offset anchors the scaled sprite to its LEFT edge
@@ -232,10 +238,11 @@ class MaterialProgressIndicator extends FlxSpriteGroup
 		}
 		else
 		{
-			if (circularFill == null) return;
+			if (circularFill == null)
+				return;
 			var s = CIRCULAR_SIZE;
 			circularFill.pixels.fillRect(circularFill.pixels.rect, FlxColor.TRANSPARENT);
-				drawCircularArc(circularFill, s, CIRCULAR_THICKNESS, MD3Theme.primary, 0, value * 360);
+			drawCircularArc(circularFill, s, CIRCULAR_THICKNESS, MD3Theme.primary, 0, value * 360);
 			circularFill.dirty = true;
 		}
 	}
@@ -243,7 +250,8 @@ class MaterialProgressIndicator extends FlxSpriteGroup
 	function set_value(v:Float):Float
 	{
 		value = Math.max(0, Math.min(1, v));
-		if (!indeterminate) applyValue();
+		if (!indeterminate)
+			applyValue();
 		return value;
 	}
 
@@ -253,15 +261,21 @@ class MaterialProgressIndicator extends FlxSpriteGroup
 
 		if (indicatorType == LINEAR)
 		{
-			if (linearFill == null || linearIndeterminate == null) return v;
+			if (linearFill == null || linearIndeterminate == null)
+				return v;
 			linearFill.visible = !v;
 			linearIndeterminate.visible = v;
-			if (linearIndeterminate2 != null) linearIndeterminate2.visible = v;
+			if (linearIndeterminate2 != null)
+				linearIndeterminate2.visible = v;
 
 			if (v)
 			{
 				// Cancel any legacy tween; animation is update-driven
-				if (indeterminateTween != null) { indeterminateTween.cancel(); indeterminateTween = null; }
+				if (indeterminateTween != null)
+				{
+					indeterminateTween.cancel();
+					indeterminateTween = null;
+				}
 				indeterminateTimer = 0;
 				linearIndeterminate.scale.x = 0.01;
 				linearIndeterminate.offset.x = (barWidth * 0.99) / 2;
@@ -275,7 +289,11 @@ class MaterialProgressIndicator extends FlxSpriteGroup
 			}
 			else
 			{
-				if (indeterminateTween != null) { indeterminateTween.cancel(); indeterminateTween = null; }
+				if (indeterminateTween != null)
+				{
+					indeterminateTween.cancel();
+					indeterminateTween = null;
+				}
 				linearIndeterminate.x = linearTrack.x;
 				linearIndeterminate.scale.x = 1;
 				linearIndeterminate.offset.x = 0;
@@ -295,7 +313,8 @@ class MaterialProgressIndicator extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 
-		if (!indeterminate) return;
+		if (!indeterminate)
+			return;
 
 		if (indicatorType == LINEAR && linearIndeterminate != null)
 		{
@@ -306,41 +325,42 @@ class MaterialProgressIndicator extends FlxSpriteGroup
 
 			// Bar 1: period 1.35 s, natural width 55 % of track
 			var BAR1_W:Float = 0.55;
-			var t1     = (indeterminateTimer % 1.35) / 1.35;
-			var lead1  = t1 * (1.0 + BAR1_W) - BAR1_W; // -BAR1_W → 1.0 over [0,1]
+			var t1 = (indeterminateTimer % 1.35) / 1.35;
+			var lead1 = t1 * (1.0 + BAR1_W) - BAR1_W; // -BAR1_W → 1.0 over [0,1]
 			var trail1 = lead1 + BAR1_W;
-			var vs1    = Math.max(0.0, lead1);
-			var ve1    = Math.min(1.0, trail1);
-			var s1     = Math.max(0.005, ve1 - vs1);
-			linearIndeterminate.scale.x  = s1;
+			var vs1 = Math.max(0.0, lead1);
+			var ve1 = Math.min(1.0, trail1);
+			var s1 = Math.max(0.005, ve1 - vs1);
+			linearIndeterminate.scale.x = s1;
 			linearIndeterminate.offset.x = (barWidth * (1.0 - s1)) / 2;
-			linearIndeterminate.x        = linearTrack.x + vs1 * barWidth;
+			linearIndeterminate.x = linearTrack.x + vs1 * barWidth;
 
 			// Bar 2: period 0.90 s, narrower (35 %), half-period out of phase
 			if (linearIndeterminate2 != null && linearIndeterminate2.visible)
 			{
 				var BAR2_W:Float = 0.35;
-				var t2     = ((indeterminateTimer + 0.45) % 0.90) / 0.90;
-				var lead2  = t2 * (1.0 + BAR2_W) - BAR2_W;
+				var t2 = ((indeterminateTimer + 0.45) % 0.90) / 0.90;
+				var lead2 = t2 * (1.0 + BAR2_W) - BAR2_W;
 				var trail2 = lead2 + BAR2_W;
-				var vs2    = Math.max(0.0, lead2);
-				var ve2    = Math.min(1.0, trail2);
-				var s2     = Math.max(0.005, ve2 - vs2);
-				linearIndeterminate2.scale.x  = s2;
+				var vs2 = Math.max(0.0, lead2);
+				var ve2 = Math.min(1.0, trail2);
+				var s2 = Math.max(0.005, ve2 - vs2);
+				linearIndeterminate2.scale.x = s2;
 				linearIndeterminate2.offset.x = (barWidth * (1.0 - s2)) / 2;
-				linearIndeterminate2.x        = linearTrack.x + vs2 * barWidth;
+				linearIndeterminate2.x = linearTrack.x + vs2 * barWidth;
 			}
 		}
 		else if (indicatorType == CIRCULAR && circularFill != null)
 		{
 			// Spin at a consistent pace
 			circleAngle += elapsed * 280;
-			if (circleAngle >= 360) circleAngle -= 360;
+			if (circleAngle >= 360)
+				circleAngle -= 360;
 
 			// Arc: grows 55 % of cycle (ease-out cubic), shrinks 45 % (smoothstep = ease-in-out).
 			// Using ease-in-out for the shrink avoids the abrupt &quot;snap&quot; of plain ease-in.
 			_circleArcLen += elapsed;
-			var cycleT     = (_circleArcLen % 1.5) / 1.5;
+			var cycleT = (_circleArcLen % 1.5) / 1.5;
 			var newArcLen:Float;
 			if (cycleT < 0.55)
 			{
@@ -350,7 +370,7 @@ class MaterialProgressIndicator extends FlxSpriteGroup
 			else
 			{
 				var shrinkT = (cycleT - 0.55) / 0.45;
-				var ease    = shrinkT * shrinkT * (3.0 - 2.0 * shrinkT); // smoothstep
+				var ease = shrinkT * shrinkT * (3.0 - 2.0 * shrinkT); // smoothstep
 				newArcLen = 270.0 - 240.0 * ease; // ease-in-out: smooth collapse
 			}
 
@@ -369,10 +389,14 @@ class MaterialProgressIndicator extends FlxSpriteGroup
 	{
 		if (indicatorType == LINEAR)
 		{
-			if (linearTrack != null) linearTrack.color = MD3Theme.surfaceVariant;
-			if (linearFill != null) linearFill.color = MD3Theme.primary;
-			if (linearIndeterminate != null) linearIndeterminate.color = MD3Theme.primary;
-			if (linearIndeterminate2 != null) linearIndeterminate2.color = MD3Theme.primary;
+			if (linearTrack != null)
+				linearTrack.color = MD3Theme.surfaceVariant;
+			if (linearFill != null)
+				linearFill.color = MD3Theme.primary;
+			if (linearIndeterminate != null)
+				linearIndeterminate.color = MD3Theme.primary;
+			if (linearIndeterminate2 != null)
+				linearIndeterminate2.color = MD3Theme.primary;
 		}
 		else
 		{
@@ -393,7 +417,8 @@ class MaterialProgressIndicator extends FlxSpriteGroup
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(_onThemeChange);
-		if (indeterminateTween != null) indeterminateTween.cancel();
+		if (indeterminateTween != null)
+			indeterminateTween.cancel();
 		super.destroy();
 	}
 }
@@ -403,3 +428,4 @@ enum ProgressType
 	LINEAR;
 	CIRCULAR;
 }
+

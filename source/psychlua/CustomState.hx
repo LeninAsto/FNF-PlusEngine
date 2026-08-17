@@ -16,7 +16,6 @@ package psychlua;
 //   - showError() displays a visual overlay for script errors.
 //   - callOnScripts / setOnScripts support exclusions and ignoreStops.
 //   - Shared/public/static variable helpers are exposed to scripts.
-
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxSubState;
@@ -27,18 +26,15 @@ import debug.TraceDisplay;
 import states.MainMenuState;
 import states.ModsMenuState;
 import psychlua.LuaUtils;
-
 #if HSCRIPT_ALLOWED
 import psychlua.HScript;
 import crowplexus.hscript.Expr.Error as IrisError;
 import crowplexus.hscript.Printer;
 import crowplexus.iris.Iris;
 #end
-
 #if LUA_ALLOWED
 import psychlua.FunkinLua;
 #end
-
 #if sys
 import sys.FileSystem;
 #end
@@ -138,7 +134,8 @@ class CustomState extends MusicBeatState
 
 		#if HSCRIPT_ALLOWED
 		for (script in hscriptArray)
-			if (script != null) script.destroy();
+			if (script != null)
+				script.destroy();
 		hscriptArray = [];
 		#end
 
@@ -218,12 +215,11 @@ class CustomState extends MusicBeatState
 	// ─────────────────────────────────────────────
 	// Script loading
 	// ─────────────────────────────────────────────
-
 	// Loads the main script for stateName plus every other .hx/.lua in the same folder.
 	public function loadScriptsFromFolder(name:String):Void
 	{
 		#if sys
-		var mainHxPath:String  = getScriptPath(name, '.hx');
+		var mainHxPath:String = getScriptPath(name, '.hx');
 		var mainLuaPath:String = getScriptPath(name, '.lua');
 		var scriptFolder:String = haxe.io.Path.directory(mainHxPath);
 		var mainFileName:String = haxe.io.Path.withoutDirectory(mainHxPath);
@@ -238,9 +234,11 @@ class CustomState extends MusicBeatState
 		{
 			for (file in FileSystem.readDirectory(scriptFolder))
 			{
-				if (!file.endsWith('.lua')) continue;
+				if (!file.endsWith('.lua'))
+					continue;
 				var full:String = haxe.io.Path.join([scriptFolder, file]);
-				if (full == mainLuaPath) continue;
+				if (full == mainLuaPath)
+					continue;
 				loadLuaScript(full);
 				trace('[CustomState] Loaded extra Lua: $file');
 			}
@@ -257,8 +255,10 @@ class CustomState extends MusicBeatState
 		{
 			for (file in FileSystem.readDirectory(scriptFolder))
 			{
-				if (!file.endsWith('.hx')) continue;
-				if (file == mainFileName) continue;
+				if (!file.endsWith('.hx'))
+					continue;
+				if (file == mainFileName)
+					continue;
 				var full:String = haxe.io.Path.join([scriptFolder, file]);
 				loadHScript(full);
 				trace('[CustomState] Loaded extra HScript: $file');
@@ -274,11 +274,16 @@ class CustomState extends MusicBeatState
 		#if sys
 		#if HSCRIPT_ALLOWED
 		var hxPath:String = getScriptPath(name, '.hx');
-		if (FileSystem.exists(hxPath)) { loadHScript(hxPath); return; }
+		if (FileSystem.exists(hxPath))
+		{
+			loadHScript(hxPath);
+			return;
+		}
 		#end
 		#if LUA_ALLOWED
 		var luaPath:String = getScriptPath(name, '.lua');
-		if (FileSystem.exists(luaPath)) loadLuaScript(luaPath);
+		if (FileSystem.exists(luaPath))
+			loadLuaScript(luaPath);
 		#end
 		#end
 	}
@@ -290,60 +295,80 @@ class CustomState extends MusicBeatState
 		{
 			var newScript:HScript = new HScript(null, path);
 
-			newScript.set('game',         this);
-			newScript.set('add',          this.add);
-			newScript.set('remove',       this.remove);
-			newScript.set('insert',       this.insert);
+			newScript.set('game', this);
+			newScript.set('add', this.add);
+			newScript.set('remove', this.remove);
+			newScript.set('insert', this.insert);
 			newScript.set('openSubState', this.openSubState);
-			newScript.set('stateName',    stateName);
-			newScript.set('customState',  this);
+			newScript.set('stateName', stateName);
+			newScript.set('customState', this);
 
 			// Shared variable helpers (persist across state changes via globalVariables)
-			newScript.set('setSharedVar', function(n:String, v:Dynamic) {
+			newScript.set('setSharedVar', function(n:String, v:Dynamic)
+			{
 				MusicBeatState.globalVariables.set(n, v);
 				variables.set(n, v);
 				return v;
 			});
-			newScript.set('getSharedVar', function(n:String, ?def:Dynamic = null):Dynamic {
-				if (MusicBeatState.globalVariables.exists(n)) return MusicBeatState.globalVariables.get(n);
-				if (variables.exists(n)) return variables.get(n);
+			newScript.set('getSharedVar', function(n:String, ?def:Dynamic = null):Dynamic
+			{
+				if (MusicBeatState.globalVariables.exists(n))
+					return MusicBeatState.globalVariables.get(n);
+				if (variables.exists(n))
+					return variables.get(n);
 				return def;
 			});
-			newScript.set('hasSharedVar',    function(n:String):Bool    return MusicBeatState.globalVariables.exists(n) || variables.exists(n));
-			newScript.set('removeSharedVar', function(n:String):Bool {
+			newScript.set('hasSharedVar', function(n:String):Bool return MusicBeatState.globalVariables.exists(n) || variables.exists(n));
+			newScript.set('removeSharedVar', function(n:String):Bool
+			{
 				var r = false;
-				if (MusicBeatState.globalVariables.remove(n)) r = true;
-				if (variables.remove(n)) r = true;
+				if (MusicBeatState.globalVariables.remove(n))
+					r = true;
+				if (variables.remove(n))
+					r = true;
 				return r;
 			});
-			newScript.set('clearSharedVars', function() {
+			newScript.set('clearSharedVars', function()
+			{
 				MusicBeatState.globalVariables.clear();
 				variables.clear();
 			});
 
 			// Public variables (shared between scripts in the same state)
-			newScript.set('setPublicVar', function(n:String, v:Dynamic) { MusicBeatState.publicVariables.set(n, v); return v; });
-			newScript.set('getPublicVar', function(n:String, ?def:Dynamic = null):Dynamic
-				return MusicBeatState.publicVariables.exists(n) ? MusicBeatState.publicVariables.get(n) : def);
+			newScript.set('setPublicVar', function(n:String, v:Dynamic)
+			{
+				MusicBeatState.publicVariables.set(n, v);
+				return v;
+			});
+			newScript.set('getPublicVar',
+				function(n:String, ?def:Dynamic = null):Dynamic return MusicBeatState.publicVariables.exists(n) ? MusicBeatState.publicVariables.get(n) : def);
 
 			// Static variables (persist across all states)
-			newScript.set('setStaticVar', function(n:String, v:Dynamic) { MusicBeatState.staticVariables.set(n, v); return v; });
-			newScript.set('getStaticVar', function(n:String, ?def:Dynamic = null):Dynamic
-				return MusicBeatState.staticVariables.exists(n) ? MusicBeatState.staticVariables.get(n) : def);
+			newScript.set('setStaticVar', function(n:String, v:Dynamic)
+			{
+				MusicBeatState.staticVariables.set(n, v);
+				return v;
+			});
+			newScript.set('getStaticVar',
+				function(n:String, ?def:Dynamic = null):Dynamic return MusicBeatState.staticVariables.exists(n) ? MusicBeatState.staticVariables.get(n) : def);
 
 			// State variables
-			newScript.set('setStateVar', function(n:String, v:Dynamic) { variables.set(n, v); return v; });
-			newScript.set('getStateVar', function(n:String, ?def:Dynamic = null):Dynamic
-				return variables.exists(n) ? variables.get(n) : def);
+			newScript.set('setStateVar', function(n:String, v:Dynamic)
+			{
+				variables.set(n, v);
+				return v;
+			});
+			newScript.set('getStateVar', function(n:String, ?def:Dynamic = null):Dynamic return variables.exists(n) ? variables.get(n) : def);
 
 			// Mobile helpers
-			newScript.set('addTouchPad',        function(d:String, a:String) addTouchPad(d, a));
-			newScript.set('removeTouchPad',      function() removeTouchPad());
-			newScript.set('addTouchPadCamera',   function(?t:Bool = false) addTouchPadCamera(t));
-			newScript.set('addMobileControls',   function(?t:Bool = false) addMobileControls(t));
-			newScript.set('removeMobileControls',function() removeMobileControls());
+			newScript.set('addTouchPad', function(d:String, a:String) addTouchPad(d, a));
+			newScript.set('removeTouchPad', function() removeTouchPad());
+			newScript.set('addTouchPadCamera', function(?t:Bool = false) addTouchPadCamera(t));
+			newScript.set('addMobileControls', function(?t:Bool = false) addMobileControls(t));
+			newScript.set('removeMobileControls', function() removeMobileControls());
 
-			if (newScript.exists('onCreate')) newScript.call('onCreate');
+			if (newScript.exists('onCreate'))
+				newScript.call('onCreate');
 			hscriptArray.push(newScript);
 		}
 		catch (e:IrisError)
@@ -364,10 +389,12 @@ class CustomState extends MusicBeatState
 	{
 		#if sys
 		var path:String = Paths.modFolders(scriptFile);
-		if (!FileSystem.exists(path)) path = Paths.getSharedPath(scriptFile);
+		if (!FileSystem.exists(path))
+			path = Paths.getSharedPath(scriptFile);
 		if (FileSystem.exists(path))
 		{
-			if (Iris.instances.exists(path)) return false;
+			if (Iris.instances.exists(path))
+				return false;
 			loadHScript(path);
 			return true;
 		}
@@ -395,58 +422,65 @@ class CustomState extends MusicBeatState
 	// Script callbacks
 	// ─────────────────────────────────────────────
 
-	public function callOnScripts(funcName:String, args:Array<Dynamic> = null,
-		ignoreStops:Bool = false,
-		exclusions:Array<String> = null,
-		excludeValues:Array<Dynamic> = null):Dynamic
+	public function callOnScripts(funcName:String, args:Array<Dynamic> = null, ignoreStops:Bool = false, exclusions:Array<String> = null,
+			excludeValues:Array<Dynamic> = null):Dynamic
 	{
 		var ret:Dynamic = callOnLuas(funcName, args, ignoreStops, exclusions, excludeValues);
-		if (ret == LuaUtils.Function_StopHScript || ret == LuaUtils.Function_StopAll) return ret;
+		if (ret == LuaUtils.Function_StopHScript || ret == LuaUtils.Function_StopAll)
+			return ret;
 
 		var hret:Dynamic = callOnHScript(funcName, args, ignoreStops, exclusions, excludeValues);
-		if (hret != null && hret != LuaUtils.Function_Continue) ret = hret;
+		if (hret != null && hret != LuaUtils.Function_Continue)
+			ret = hret;
 		return ret;
 	}
 
-	public function callOnLuas(funcName:String, args:Array<Dynamic> = null,
-		ignoreStops:Bool = false,
-		exclusions:Array<String> = null,
-		excludeValues:Array<Dynamic> = null):Dynamic
+	public function callOnLuas(funcName:String, args:Array<Dynamic> = null, ignoreStops:Bool = false, exclusions:Array<String> = null,
+			excludeValues:Array<Dynamic> = null):Dynamic
 	{
 		var ret:Dynamic = LuaUtils.Function_Continue;
 		#if LUA_ALLOWED
-		if (exclusions == null)    exclusions    = [];
-		if (excludeValues == null) excludeValues = [];
-		if (args == null)          args          = [];
+		if (exclusions == null)
+			exclusions = [];
+		if (excludeValues == null)
+			excludeValues = [];
+		if (args == null)
+			args = [];
 		excludeValues.push(LuaUtils.Function_Continue);
 
 		for (script in luaArray)
 		{
-			if (script == null || script.closed || exclusions.contains(script.scriptName)) continue;
+			if (script == null || script.closed || exclusions.contains(script.scriptName))
+				continue;
 			var v:Dynamic = script.call(funcName, args);
-			if ((v == LuaUtils.Function_StopLua || v == LuaUtils.Function_StopAll)
-				&& !excludeValues.contains(v) && !ignoreStops) { ret = v; break; }
-			if (v != null && !excludeValues.contains(v)) ret = v;
+			if ((v == LuaUtils.Function_StopLua || v == LuaUtils.Function_StopAll) && !excludeValues.contains(v) && !ignoreStops)
+			{
+				ret = v;
+				break;
+			}
+			if (v != null && !excludeValues.contains(v))
+				ret = v;
 		}
 		#end
 		return ret;
 	}
 
-	public function callOnHScript(funcName:String, args:Array<Dynamic> = null,
-		ignoreStops:Bool = false,
-		exclusions:Array<String> = null,
-		excludeValues:Array<Dynamic> = null):Dynamic
+	public function callOnHScript(funcName:String, args:Array<Dynamic> = null, ignoreStops:Bool = false, exclusions:Array<String> = null,
+			excludeValues:Array<Dynamic> = null):Dynamic
 	{
 		var ret:Dynamic = LuaUtils.Function_Continue;
 		#if HSCRIPT_ALLOWED
-		if (exclusions == null)    exclusions    = [];
-		if (excludeValues == null) excludeValues = [];
+		if (exclusions == null)
+			exclusions = [];
+		if (excludeValues == null)
+			excludeValues = [];
 		excludeValues.push(LuaUtils.Function_Continue);
 
 		for (script in hscriptArray)
 		{
 			@:privateAccess
-			if (script == null || !script.exists(funcName) || exclusions.contains(script.origin)) continue;
+			if (script == null || !script.exists(funcName) || exclusions.contains(script.origin))
+				continue;
 			try
 			{
 				var callValue = script.call(funcName, args);
@@ -454,8 +488,14 @@ class CustomState extends MusicBeatState
 				{
 					var v:Dynamic = callValue.returnValue;
 					if ((v == LuaUtils.Function_StopHScript || v == LuaUtils.Function_StopAll)
-						&& !excludeValues.contains(v) && !ignoreStops) { ret = v; break; }
-					if (v != null && !excludeValues.contains(v)) ret = v;
+						&& !excludeValues.contains(v)
+						&& !ignoreStops)
+					{
+						ret = v;
+						break;
+					}
+					if (v != null && !excludeValues.contains(v))
+						ret = v;
 				}
 			}
 			catch (e:Dynamic)
@@ -479,10 +519,12 @@ class CustomState extends MusicBeatState
 	public function setOnLuas(variable:String, arg:Dynamic, exclusions:Array<String> = null):Void
 	{
 		#if LUA_ALLOWED
-		if (exclusions == null) exclusions = [];
+		if (exclusions == null)
+			exclusions = [];
 		for (script in luaArray)
 		{
-			if (script == null || script.closed || exclusions.contains(script.scriptName)) continue;
+			if (script == null || script.closed || exclusions.contains(script.scriptName))
+				continue;
 			script.set(variable, arg);
 		}
 		#end
@@ -491,11 +533,13 @@ class CustomState extends MusicBeatState
 	public function setOnHScript(variable:String, arg:Dynamic, exclusions:Array<String> = null):Void
 	{
 		#if HSCRIPT_ALLOWED
-		if (exclusions == null) exclusions = [];
+		if (exclusions == null)
+			exclusions = [];
 		for (script in hscriptArray)
 		{
 			@:privateAccess
-			if (exclusions.contains(script.origin)) continue;
+			if (exclusions.contains(script.origin))
+				continue;
 			script.set(variable, arg);
 		}
 		#end
@@ -509,7 +553,8 @@ class CustomState extends MusicBeatState
 	{
 		#if (MODS_ALLOWED && sys)
 		var modPath:String = Paths.modFolders('scripts/states/$name$ext');
-		if (FileSystem.exists(modPath)) return modPath;
+		if (FileSystem.exists(modPath))
+			return modPath;
 		#end
 		return Paths.getSharedPath('scripts/states/$name$ext');
 	}
@@ -519,10 +564,12 @@ class CustomState extends MusicBeatState
 	{
 		#if sys
 		#if HSCRIPT_ALLOWED
-		if (FileSystem.exists(getScriptPath(name, '.hx'))) return true;
+		if (FileSystem.exists(getScriptPath(name, '.hx')))
+			return true;
 		#end
 		#if LUA_ALLOWED
-		if (FileSystem.exists(getScriptPath(name, '.lua'))) return true;
+		if (FileSystem.exists(getScriptPath(name, '.lua')))
+			return true;
 		#end
 		#end
 		return false;
@@ -534,10 +581,13 @@ class CustomState extends MusicBeatState
 
 	static function _fileName(path:String):String
 	{
-		if (path == null) return "unknown";
-		var p = path.split('/'); p = p[p.length - 1].split('\\');
+		if (path == null)
+			return "unknown";
+		var p = path.split('/');
+		p = p[p.length - 1].split('\\');
 		var n = p[p.length - 1];
 		var dot = n.lastIndexOf('.');
 		return dot >= 0 ? n.substr(0, dot) : n;
 	}
 }
+

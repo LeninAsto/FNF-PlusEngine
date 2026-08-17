@@ -10,7 +10,7 @@ class Highscore
 	public static var songScores:Map<String, Int> = new Map<String, Int>();
 	public static var songRating:Map<String, Float> = new Map<String, Float>();
 	public static var songAccuracySystem:Map<String, String> = new Map<String, String>();
-	
+
 	// Opponent Mode - Separate scores
 	public static var songScoresOpponent:Map<String, Int> = new Map<String, Int>();
 	public static var songRatingOpponent:Map<String, Float> = new Map<String, Float>();
@@ -29,9 +29,11 @@ class Highscore
 		setWeekScore(daWeek, 0);
 	}
 
-	public static function saveScore(song:String, score:Int = 0, ?diff:Int = 0, ?rating:Float = -1, ?isOpponentMode:Bool = false, ?accuracySystem:String = null):Void
+	public static function saveScore(song:String, score:Int = 0, ?diff:Int = 0, ?rating:Float = -1, ?isOpponentMode:Bool = false,
+			?accuracySystem:String = null):Void
 	{
-		if(song == null) return;
+		if (song == null)
+			return;
 		var daSong:String = formatSong(song, diff);
 
 		// Select the correct map based on the mode
@@ -45,16 +47,20 @@ class Highscore
 			{
 				setScore(daSong, score, isOpponentMode);
 				// Wife3 allows negative ratings and ratings greater than 1.0; we only save them if they were specified (other than -1).
-				if(rating != -1) setRating(daSong, rating, isOpponentMode);
-				if(accuracySystem != null) setAccuracySystem(daSong, accuracySystem, isOpponentMode);
+				if (rating != -1)
+					setRating(daSong, rating, isOpponentMode);
+				if (accuracySystem != null)
+					setAccuracySystem(daSong, accuracySystem, isOpponentMode);
 			}
 			// If the score is the same but the rating is better, update only the rating
 			else if (scoreMap.get(daSong) == score && rating != -1)
 			{
 				var currentRating:Float = getRating(song, diff, isOpponentMode);
-				if(rating > currentRating) {
+				if (rating > currentRating)
+				{
 					setRating(daSong, rating, isOpponentMode);
-					if(accuracySystem != null) setAccuracySystem(daSong, accuracySystem, isOpponentMode);
+					if (accuracySystem != null)
+						setAccuracySystem(daSong, accuracySystem, isOpponentMode);
 				}
 			}
 		}
@@ -62,8 +68,10 @@ class Highscore
 		{
 			setScore(daSong, score, isOpponentMode);
 			// Wife3 allows negative ratings and ratings greater than 1.0; we only save them if they were specified
-			if(rating != -1) setRating(daSong, rating, isOpponentMode);
-			if(accuracySystem != null) setAccuracySystem(daSong, accuracySystem, isOpponentMode);
+			if (rating != -1)
+				setRating(daSong, rating, isOpponentMode);
+			if (accuracySystem != null)
+				setAccuracySystem(daSong, accuracySystem, isOpponentMode);
 		}
 	}
 
@@ -76,7 +84,8 @@ class Highscore
 			if (weekScores.get(daWeek) < score)
 				setWeekScore(daWeek, score);
 		}
-		else setWeekScore(daWeek, score);
+		else
+			setWeekScore(daWeek, score);
 	}
 
 	/**
@@ -85,7 +94,7 @@ class Highscore
 	static function setScore(song:String, score:Int, isOpponentMode:Bool = false):Void
 	{
 		// Reminder that I don't need to format this song, it should come formatted!
-		if(isOpponentMode)
+		if (isOpponentMode)
 		{
 			songScoresOpponent.set(song, score);
 			FlxG.save.data.songScoresOpponent = songScoresOpponent;
@@ -97,6 +106,7 @@ class Highscore
 		}
 		FlxG.save.flush();
 	}
+
 	static function setWeekScore(week:String, score:Int):Void
 	{
 		// Reminder that I don't need to format this song, it should come formatted!
@@ -108,7 +118,7 @@ class Highscore
 	static function setRating(song:String, rating:Float, isOpponentMode:Bool = false):Void
 	{
 		// Reminder that I don't need to format this song, it should come formatted!
-		if(isOpponentMode)
+		if (isOpponentMode)
 		{
 			songRatingOpponent.set(song, rating);
 			FlxG.save.data.songRatingOpponent = songRatingOpponent;
@@ -123,7 +133,7 @@ class Highscore
 
 	static function setAccuracySystem(song:String, system:String, isOpponentMode:Bool = false):Void
 	{
-		if(isOpponentMode)
+		if (isOpponentMode)
 		{
 			songAccuracySystemOpponent.set(song, system);
 			FlxG.save.data.songAccuracySystemOpponent = songAccuracySystemOpponent;
@@ -140,7 +150,7 @@ class Highscore
 	{
 		var daSong:String = formatSong(song, diff);
 		var systemMap:Map<String, String> = isOpponentMode ? songAccuracySystemOpponent : songAccuracySystem;
-		
+
 		if (!systemMap.exists(daSong))
 			return 'Unknown';
 
@@ -156,7 +166,8 @@ class Highscore
 	public static function getVSliceRating(songId:String, difficulty:String, variation:String = 'default'):Float
 	{
 		var scoreData:Null<SaveScoreData> = getVSliceScoreData(songId, difficulty, variation);
-		if (scoreData == null || scoreData.tallies == null || scoreData.tallies.totalNotes <= 0) return 0;
+		if (scoreData == null || scoreData.tallies == null || scoreData.tallies.totalNotes <= 0)
+			return 0;
 		return Scoring.tallyCompletion(scoreData.tallies);
 	}
 
@@ -168,15 +179,20 @@ class Highscore
 	public static function getVSliceWeekScore(levelId:String, difficulty:String = 'normal'):Int
 	{
 		#if FEATURE_POLYMOD_MODS
-		if (levelId == null || levelId.length == 0) return 0;
-		if (difficulty == null || difficulty.length == 0) difficulty = 'normal';
+		if (levelId == null || levelId.length == 0)
+			return 0;
+		if (difficulty == null || difficulty.length == 0)
+			difficulty = 'normal';
 		try
 		{
-			if (Save.instance == null) Save.load();
+			if (Save.instance == null)
+				Save.load();
 			var scoreData:Null<SaveScoreData> = Save.instance.getLevelScore(levelId, difficulty);
 			return scoreData != null ? scoreData.score : 0;
 		}
-		catch (_:Dynamic) {}
+		catch (_:Dynamic)
+		{
+		}
 		#end
 		return 0;
 	}
@@ -184,34 +200,43 @@ class Highscore
 	static function getVSliceScoreData(songId:String, difficulty:String, variation:String = 'default'):Null<SaveScoreData>
 	{
 		#if FEATURE_POLYMOD_MODS
-		if (songId == null || songId.length == 0) return null;
-		if (difficulty == null || difficulty.length == 0) difficulty = 'normal';
+		if (songId == null || songId.length == 0)
+			return null;
+		if (difficulty == null || difficulty.length == 0)
+			difficulty = 'normal';
 		try
 		{
-			if (Save.instance == null) Save.load();
+			if (Save.instance == null)
+				Save.load();
 			var scoreData:Null<SaveScoreData> = Save.instance.getSongScore(songId, difficulty, variation);
-			if (scoreData != null) return scoreData;
+			if (scoreData != null)
+				return scoreData;
 
 			var suffixedDifficulty:String = getVSliceSuffixedDifficulty(difficulty, variation);
 			if (suffixedDifficulty != difficulty)
 			{
 				scoreData = Save.instance.getSongScore(songId, suffixedDifficulty);
-				if (scoreData != null) return scoreData;
+				if (scoreData != null)
+					return scoreData;
 			}
 
 			var normalizedSongId:String = Paths.formatToSongPath(songId);
 			if (normalizedSongId != songId)
 			{
 				scoreData = Save.instance.getSongScore(normalizedSongId, difficulty, variation);
-				if (scoreData != null) return scoreData;
+				if (scoreData != null)
+					return scoreData;
 				if (suffixedDifficulty != difficulty)
 				{
 					scoreData = Save.instance.getSongScore(normalizedSongId, suffixedDifficulty);
-					if (scoreData != null) return scoreData;
+					if (scoreData != null)
+						return scoreData;
 				}
 			}
 		}
-		catch (_:Dynamic) {}
+		catch (_:Dynamic)
+		{
+		}
 		#end
 		return null;
 	}
@@ -232,7 +257,7 @@ class Highscore
 	{
 		var daSong:String = formatSong(song, diff);
 		var scoreMap:Map<String, Int> = isOpponentMode ? songScoresOpponent : songScores;
-		
+
 		if (!scoreMap.exists(daSong))
 			setScore(daSong, 0, isOpponentMode);
 
@@ -243,7 +268,7 @@ class Highscore
 	{
 		var daSong:String = formatSong(song, diff);
 		var ratingMap:Map<String, Float> = isOpponentMode ? songRatingOpponent : songRating;
-		
+
 		if (!ratingMap.exists(daSong))
 			setRating(daSong, 0, isOpponentMode);
 
@@ -285,3 +310,4 @@ class Highscore
 			songAccuracySystemOpponent = FlxG.save.data.songAccuracySystemOpponent;
 	}
 }
+

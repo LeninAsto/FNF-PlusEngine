@@ -3,6 +3,7 @@ package objects.hxcodec.v2_5_0;
 #if hxvlc
 import flixel.FlxSprite;
 import objects.hxcodec.v2_5_0.MP4Handler;
+
 /**
  * Compatibility wrapper for hxCodec 3.x MP4Sprite using hxvlc 2.2.5
  * This class will play the video in the form of a FlxSprite, which you can control.
@@ -89,7 +90,13 @@ class MP4Sprite extends flixel.FlxSprite
 		trace("MP4Sprite.playVideo: hxvlc not available");
 	}
 
-	public function pause():Void {}
-	public function resume():Void {}
+	public function pause():Void
+	{
+	}
+
+	public function resume():Void
+	{
+	}
 }
 #end
+

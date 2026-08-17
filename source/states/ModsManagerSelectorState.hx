@@ -92,8 +92,10 @@ class ModsManagerSelectorState extends MusicBeatState
 	{
 		if (!selected)
 		{
-			if (controls.UI_UP_P) changeSelection(-1);
-			if (controls.UI_DOWN_P) changeSelection(1);
+			if (controls.UI_UP_P)
+				changeSelection(-1);
+			if (controls.UI_DOWN_P)
+				changeSelection(1);
 
 			if (controls.BACK)
 			{
@@ -117,7 +119,8 @@ class ModsManagerSelectorState extends MusicBeatState
 
 		for (text in optionTexts.members)
 		{
-			if (text == null) continue;
+			if (text == null)
+				continue;
 			var isSelected:Bool = text.ID == curSelected;
 			text.color = isSelected ? 0xFF00FFFF : FlxColor.WHITE;
 			text.alpha = isSelected ? 1 : 0.55;
@@ -127,7 +130,8 @@ class ModsManagerSelectorState extends MusicBeatState
 
 		for (description in optionDescriptions.members)
 		{
-			if (description == null) continue;
+			if (description == null)
+				continue;
 			var isSelected:Bool = description.ID == curSelected;
 			description.color = isSelected ? 0xFFBFFFFF : FlxColor.WHITE;
 			description.alpha = isSelected ? 0.95 : 0.5;
@@ -153,3 +157,4 @@ typedef ModManagerOption =
 	var description:String;
 	var vsliceMode:Bool;
 }
+

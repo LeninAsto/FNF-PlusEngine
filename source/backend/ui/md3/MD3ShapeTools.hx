@@ -74,12 +74,11 @@ class MD3ShapeTools
 		});
 	}
 
-	public static function fillRoundRectComplex(sprite:FlxSprite, width:Int, height:Int,
-		topLeft:Float, topRight:Float, bottomLeft:Float, bottomRight:Float,
-		?fillColor:FlxColor = 0xFFFFFFFF):Void
+	public static function fillRoundRectComplex(sprite:FlxSprite, width:Int, height:Int, topLeft:Float, topRight:Float, bottomLeft:Float, bottomRight:Float,
+			?fillColor:FlxColor = 0xFFFFFFFF):Void
 	{
-		var key = 'fillRoundRectComplex|' + width + '|' + height + '|' + f(topLeft) + '|' + f(topRight) + '|'
-			+ f(bottomLeft) + '|' + f(bottomRight) + '|' + fillColor;
+		var key = 'fillRoundRectComplex|' + width + '|' + height + '|' + f(topLeft) + '|' + f(topRight) + '|' + f(bottomLeft) + '|' + f(bottomRight) + '|'
+			+ fillColor;
 		render(sprite, width, height, key, function(shape:Shape)
 		{
 			shape.graphics.beginFill(rgb(fillColor), alpha(fillColor));
@@ -88,31 +87,40 @@ class MD3ShapeTools
 		});
 	}
 
-	public static function strokeRoundRect(sprite:FlxSprite, width:Int, height:Int, radius:Float,
-		thickness:Float = 1, ?strokeColor:FlxColor = 0xFFFFFFFF):Void
+	public static function strokeRoundRect(sprite:FlxSprite, width:Int, height:Int, radius:Float, thickness:Float = 1, ?strokeColor:FlxColor = 0xFFFFFFFF):Void
 	{
 		var key = 'strokeRoundRect|' + width + '|' + height + '|' + f(radius) + '|' + f(thickness) + '|' + strokeColor;
 		render(sprite, width, height, key, function(shape:Shape)
 		{
 			var inset = thickness * 0.5;
 			shape.graphics.lineStyle(thickness, rgb(strokeColor), alpha(strokeColor));
-			shape.graphics.drawRoundRect(inset, inset, Math.max(0, width - thickness), Math.max(0, height - thickness),
-				Math.max(0, radius * 2 - thickness), Math.max(0, radius * 2 - thickness));
+			shape.graphics.drawRoundRect(inset, inset, Math.max(0, width - thickness), Math.max(0, height - thickness), Math.max(0, radius * 2 - thickness),
+				Math.max(0, radius * 2 - thickness));
 		});
 	}
 
-	public static function fillAndStrokeRoundRect(sprite:FlxSprite, width:Int, height:Int, radius:Float,
-		thickness:Float, fillColor:FlxColor, strokeColor:FlxColor):Void
+	public static function fillAndStrokeRoundRect(sprite:FlxSprite, width:Int, height:Int, radius:Float, thickness:Float, fillColor:FlxColor,
+			strokeColor:FlxColor):Void
 	{
-		var key = 'fillAndStrokeRoundRect|' + width + '|' + height + '|' + f(radius) + '|' + f(thickness) + '|'
-			+ fillColor + '|' + strokeColor;
+		var key = 'fillAndStrokeRoundRect|'
+			+ width
+			+ '|'
+			+ height
+			+ '|'
+			+ f(radius)
+			+ '|'
+			+ f(thickness)
+			+ '|'
+			+ fillColor
+			+ '|'
+			+ strokeColor;
 		render(sprite, width, height, key, function(shape:Shape)
 		{
 			var inset = thickness * 0.5;
 			shape.graphics.lineStyle(thickness, rgb(strokeColor), alpha(strokeColor));
 			shape.graphics.beginFill(rgb(fillColor), alpha(fillColor));
-			shape.graphics.drawRoundRect(inset, inset, Math.max(0, width - thickness), Math.max(0, height - thickness),
-				Math.max(0, radius * 2 - thickness), Math.max(0, radius * 2 - thickness));
+			shape.graphics.drawRoundRect(inset, inset, Math.max(0, width - thickness), Math.max(0, height - thickness), Math.max(0, radius * 2 - thickness),
+				Math.max(0, radius * 2 - thickness));
 			shape.graphics.endFill();
 		});
 	}
@@ -129,8 +137,7 @@ class MD3ShapeTools
 		});
 	}
 
-	public static function strokeCircle(sprite:FlxSprite, size:Int, thickness:Float = 1,
-		?strokeColor:FlxColor = 0xFFFFFFFF):Void
+	public static function strokeCircle(sprite:FlxSprite, size:Int, thickness:Float = 1, ?strokeColor:FlxColor = 0xFFFFFFFF):Void
 	{
 		var key = 'strokeCircle|' + size + '|' + f(thickness) + '|' + strokeColor;
 		render(sprite, size, size, key, function(shape:Shape)
@@ -141,3 +148,4 @@ class MD3ShapeTools
 		});
 	}
 }
+

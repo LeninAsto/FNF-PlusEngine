@@ -13,30 +13,23 @@ class ModchartSettingsSubState extends BaseOptionsMenu
 		rpcTitle = 'Modchart Options Menu'; // for Discord Rich Presence
 
 		var option:Option = new Option('Modchart Debug Overlay',
-			'Shows NotITG-style modchart renderer stats.\nDisabled by default because it has a performance cost.',
-			'modchartDebug',
-			BOOL);
+			'Shows NotITG-style modchart renderer stats.\nDisabled by default because it has a performance cost.', 'modchartDebug', BOOL);
 		addOption(option);
 
 		// 3D Camera option
 		option = new Option('Enable 3D Cameras',
-			'Enables or disables 3D camera functionality.\nDisabling this may improve performance by skipping 3D transformations.',
-			'camera3dEnabled',
-			BOOL);
+			'Enables or disables 3D camera functionality.\nDisabling this may improve performance by skipping 3D transformations.', 'camera3dEnabled', BOOL);
 		addOption(option);
 
 		// Optimize Holds option
 		var option:Option = new Option('Optimize Hold Rendering',
-			'Optimizes hold arrow rendering for better performance.\nNOT recommended for complex modcharts as holds may look incorrect.',
-			'optimizeHolds',
+			'Optimizes hold arrow rendering for better performance.\nNOT recommended for complex modcharts as holds may look incorrect.', 'optimizeHolds',
 			BOOL);
 		addOption(option);
 
 		// Z Scale option
 		var option:Option = new Option('Z-Axis Scale',
-			'Scales the Z-axis values to control perceived depth.\nHigher values increase depth, lower values flatten it.',
-			'zScale',
-			FLOAT);
+			'Scales the Z-axis values to control perceived depth.\nHigher values increase depth, lower values flatten it.', 'zScale', FLOAT);
 		option.scrollSpeed = 10;
 		option.minValue = 0.1;
 		option.maxValue = 5.0;
@@ -47,3 +40,4 @@ class ModchartSettingsSubState extends BaseOptionsMenu
 		super();
 	}
 }
+

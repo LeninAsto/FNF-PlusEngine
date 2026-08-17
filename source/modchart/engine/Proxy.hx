@@ -7,7 +7,8 @@ import flixel.math.FlxPoint;
 import openfl.geom.Matrix;
 
 // TODO: ahcer esto xd lololololololo
-class Proxy extends FlxSprite {
+class Proxy extends FlxSprite
+{
 	public var source:PlayField;
 	public var playerSrc:Int = -1;
 
@@ -15,7 +16,8 @@ class Proxy extends FlxSprite {
 
 	var _skewMatrix:Matrix = new Matrix();
 
-	public function new(source:PlayField) {
+	public function new(source:PlayField)
+	{
 		this.source = source;
 
 		super();
@@ -28,3 +30,4 @@ class Proxy extends FlxSprite {
 		updateHitbox();
 	}
 }
+

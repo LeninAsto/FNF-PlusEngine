@@ -21,13 +21,11 @@ import psychlua.HScript.HScriptInfos;
 #end
 import openfl.events.KeyboardEvent;
 import flixel.util.FlxTimer;
-
 #if (linux || mac)
 import lime.graphics.Image;
 #end
 import backend.Highscore;
 import lime.system.System as LimeSystem;
-
 import slushithings.windows.WindowsAPI;
 
 // NATIVE API STUFF, YOU CAN IGNORE THIS AND SCROLL //
@@ -35,7 +33,6 @@ import slushithings.windows.WindowsAPI;
 @:cppInclude('./external/gamemode_client.h')
 @:cppFileCode('#define GAMEMODE_AUTO')
 #end
-
 // // // // // // // // //
 class Main extends Sprite
 {
@@ -59,12 +56,14 @@ class Main extends Sprite
 
 	// Window focus management
 	public static var focused:Bool = true;
+
 	var oldVol:Float = 1.0;
 	var newVol:Float = 0.2;
 	var focusStateTimer:FlxTimer;
 	var windowHasFocus:Bool = true;
 	var restoringFocusVolume:Bool = false;
 	var lastReportedVolume:Float = 1.0;
+
 	public static var focusMusicTween:FlxTween;
 
 	// You can pretty much ignore everything from here on - your code should go in your states.
@@ -103,7 +102,7 @@ class Main extends Sprite
 		#end
 
 		#if VIDEOS_ALLOWED
-		hxvlc.util.Handle.init(#if (hxvlc >= "1.8.0")  ['--no-lua'] #end);
+		hxvlc.util.Handle.init(#if (hxvlc >= "1.8.0") ['--no-lua'] #end);
 		#end
 
 		#if LUA_ALLOWED
@@ -115,54 +114,66 @@ class Main extends Sprite
 		Highscore.load();
 
 		#if HSCRIPT_ALLOWED
-		Iris.warn = function(x, ?pos:haxe.PosInfos) {
+		Iris.warn = function(x, ?pos:haxe.PosInfos)
+		{
 			Iris.logLevel(WARN, x, pos);
 			var newPos:HScriptInfos = cast pos;
-			if (newPos.showLine == null) newPos.showLine = true;
-			var msgInfo:String = (newPos.funcName != null ? '(${newPos.funcName}) - ' : '')  + '${newPos.fileName}:';
+			if (newPos.showLine == null)
+				newPos.showLine = true;
+			var msgInfo:String = (newPos.funcName != null ? '(${newPos.funcName}) - ' : '') + '${newPos.fileName}:';
 			#if LUA_ALLOWED
-			if (newPos.isLua == true) {
+			if (newPos.isLua == true)
+			{
 				msgInfo += 'HScript:';
 				newPos.showLine = false;
 			}
 			#end
-			if (newPos.showLine == true) {
+			if (newPos.showLine == true)
+			{
 				msgInfo += '${newPos.lineNumber}:';
 			}
 			msgInfo += ' $x';
 			if (PlayState.instance != null)
 				PlayState.instance.addTextToDebug('WARNING: $msgInfo', FlxColor.YELLOW);
 		}
-		Iris.error = function(x, ?pos:haxe.PosInfos) {
+		Iris.error = function(x, ?pos:haxe.PosInfos)
+		{
 			Iris.logLevel(ERROR, x, pos);
 			var newPos:HScriptInfos = cast pos;
-			if (newPos.showLine == null) newPos.showLine = true;
-			var msgInfo:String = (newPos.funcName != null ? '(${newPos.funcName}) - ' : '')  + '${newPos.fileName}:';
+			if (newPos.showLine == null)
+				newPos.showLine = true;
+			var msgInfo:String = (newPos.funcName != null ? '(${newPos.funcName}) - ' : '') + '${newPos.fileName}:';
 			#if LUA_ALLOWED
-			if (newPos.isLua == true) {
+			if (newPos.isLua == true)
+			{
 				msgInfo += 'HScript:';
 				newPos.showLine = false;
 			}
 			#end
-			if (newPos.showLine == true) {
+			if (newPos.showLine == true)
+			{
 				msgInfo += '${newPos.lineNumber}:';
 			}
 			msgInfo += ' $x';
 			if (PlayState.instance != null)
 				PlayState.instance.addTextToDebug('ERROR: $msgInfo', FlxColor.RED);
 		}
-		Iris.fatal = function(x, ?pos:haxe.PosInfos) {
+		Iris.fatal = function(x, ?pos:haxe.PosInfos)
+		{
 			Iris.logLevel(FATAL, x, pos);
 			var newPos:HScriptInfos = cast pos;
-			if (newPos.showLine == null) newPos.showLine = true;
-			var msgInfo:String = (newPos.funcName != null ? '(${newPos.funcName}) - ' : '')  + '${newPos.fileName}:';
+			if (newPos.showLine == null)
+				newPos.showLine = true;
+			var msgInfo:String = (newPos.funcName != null ? '(${newPos.funcName}) - ' : '') + '${newPos.fileName}:';
 			#if LUA_ALLOWED
-			if (newPos.isLua == true) {
+			if (newPos.isLua == true)
+			{
 				msgInfo += 'HScript:';
 				newPos.showLine = false;
 			}
 			#end
-			if (newPos.showLine == true) {
+			if (newPos.showLine == true)
+			{
 				msgInfo += '${newPos.lineNumber}:';
 			}
 			msgInfo += ' $x';
@@ -177,35 +188,37 @@ class Main extends Sprite
 		#if ACHIEVEMENTS_ALLOWED Achievements.load(); #end
 
 		#if mobile
-		FlxG.signals.postGameStart.addOnce(() -> {
+		FlxG.signals.postGameStart.addOnce(() ->
+		{
 			FlxG.scaleMode = new mobile.backend.MobileScaleMode();
 		});
 		#end
-		
+
 		addChild(new FlxGame(game.width, game.height, game.initialState, game.framerate, game.framerate, game.skipSplash, game.startFullscreen));
 		initializeMaterialVolumeTray();
 		backend.RenderInterpolation.install();
 
 		fpsVar = new FPSCounter(10, 3, 0xFFFFFF);
 		addChild(fpsVar);
-		
+
 		traceDisplay = new TraceDisplay(10, 100, 0xFFFFFF);
 		addChild(traceDisplay);
-		
+
 		// Agregar los botones de TraceDisplay y Debug para móvil
 		#if mobile
 		traceButton = new TraceButton();
 		addChild(traceButton);
 		#end
-		
+
 		Lib.current.stage.align = "tl";
 		Lib.current.stage.scaleMode = StageScaleMode.NO_SCALE;
-		   if(fpsVar != null) {
-			   // Posicionamiento inicial con márgenes constantes
-			   var marginX = 10;
-			   var marginY = 3;
-			   fpsVar.positionFPS(marginX, marginY, 1.0);
-		   }
+		if (fpsVar != null)
+		{
+			// Posicionamiento inicial con márgenes constantes
+			var marginX = 10;
+			var marginY = 3;
+			fpsVar.positionFPS(marginX, marginY, 1.0);
+		}
 
 		#if (linux || mac) // fix the app icon not showing up on the Linux Panel / Mac Dock
 		var icon = Image.fromFile("icon.png");
@@ -224,8 +237,8 @@ class Main extends Sprite
 		#if DISCORD_ALLOWED
 		DiscordClient.prepare();
 		#end
-		
-		#if desktop 
+
+		#if desktop
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, toggleFullScreen);
 		Screenshot.init(); // Initialize screenshot folder
 		#end
@@ -247,29 +260,34 @@ class Main extends Sprite
 
 		// shader coords fix
 		var resizeDebounceTimer:FlxTimer = null;
-		function handleGameResized():Void {
+		function handleGameResized():Void
+		{
 			ClientPrefs.applyFramePacing();
 			backend.RenderInterpolation.syncAllCameras();
 
 			// Only reposition the FPS counter, no scaling.
-			if(fpsVar != null) {
+			if (fpsVar != null)
+			{
 				var marginX = 10;
 				var marginY = 3;
 				fpsVar.positionFPS(marginX, marginY, 1.0);
 			}
-			
+
 			// Reposition TraceDisplay button.
 			#if mobile
-			if(traceButton != null) {
+			if (traceButton != null)
+			{
 				traceButton.updatePosition();
 			}
 			#end
-			
+
 			// Only reposition the watermark, no scaling.
 			positionWatermark();
-			
-			if (FlxG.cameras != null) {
-				for (cam in FlxG.cameras.list) {
+
+			if (FlxG.cameras != null)
+			{
+				for (cam in FlxG.cameras.list)
+				{
 					if (cam != null && cam.filters != null)
 						resetSpriteCache(cam.flashSprite);
 				}
@@ -279,11 +297,14 @@ class Main extends Sprite
 				resetSpriteCache(FlxG.game);
 		}
 
-		FlxG.signals.gameResized.add(function (w, h) {
-			if(resizeDebounceTimer == null) {
+		FlxG.signals.gameResized.add(function(w, h)
+		{
+			if (resizeDebounceTimer == null)
+			{
 				resizeDebounceTimer = new FlxTimer();
 			}
-			resizeDebounceTimer.start(0.05, function(_) {
+			resizeDebounceTimer.start(0.05, function(_)
+			{
 				handleGameResized();
 			});
 		});
@@ -337,27 +358,32 @@ class Main extends Sprite
 			FlxG.save.flush();
 	}
 
-	static function resetSpriteCache(sprite:Sprite):Void {
+	static function resetSpriteCache(sprite:Sprite):Void
+	{
 		@:privateAccess {
-		        sprite.__cacheBitmap = null;
+			sprite.__cacheBitmap = null;
 			sprite.__cacheBitmapData = null;
 		}
 	}
 
-	function toggleFullScreen(event:KeyboardEvent) {
+	function toggleFullScreen(event:KeyboardEvent)
+	{
 		if (Controls.instance.justReleased('fullscreen'))
 			backend.WindowMode.toggleFullscreen();
 	}
 
-	function positionWatermark():Void {
-		if (watermarkSprite != null && watermark != null) {
+	function positionWatermark():Void
+	{
+		if (watermarkSprite != null && watermark != null)
+		{
 			var marginX = 10;
 			var marginY = 10;
 			var stageW = openfl.Lib.current.stage.stageWidth;
 			watermarkSprite.x = stageW - watermark.width * Math.abs(watermark.scaleX) - marginX;
 			watermarkSprite.y = marginY;
 		}
-		if (watermark != null && watermark.parent == this) {
+		if (watermark != null && watermark.parent == this)
+		{
 			var stageW = Lib.current.stage.stageWidth;
 			var stageH = Lib.current.stage.stageHeight;
 			watermark.x = stageW - watermark.width * Math.abs(watermark.scaleX) + 110;
@@ -374,7 +400,8 @@ class Main extends Sprite
 	function onWindowFocusOut():Void
 	{
 		focused = false;
-		if (!ClientPrefs.data.lowerVolumeOnFocusLost) return;
+		if (!ClientPrefs.data.lowerVolumeOnFocusLost)
+			return;
 
 		oldVol = FlxG.sound.volume;
 		if (oldVol > 0.3)
@@ -393,7 +420,8 @@ class Main extends Sprite
 			}
 		}
 
-		if (focusMusicTween != null) focusMusicTween.cancel();
+		if (focusMusicTween != null)
+			focusMusicTween.cancel();
 		restoringFocusVolume = true;
 		focusMusicTween = FlxTween.tween(FlxG.sound, {volume: newVol}, 0.5, {
 			onComplete: function(_) focusMusicTween = null
@@ -402,17 +430,21 @@ class Main extends Sprite
 
 	function onWindowFocusIn():Void
 	{
-		new FlxTimer().start(0.2, function(tmr:FlxTimer) {
+		new FlxTimer().start(0.2, function(tmr:FlxTimer)
+		{
 			focused = true;
 		});
 
-		if (!restoringFocusVolume) return;
+		if (!restoringFocusVolume)
+			return;
 
 		// Normal global volume when focused
-		if (focusMusicTween != null) focusMusicTween.cancel();
+		if (focusMusicTween != null)
+			focusMusicTween.cancel();
 
 		focusMusicTween = FlxTween.tween(FlxG.sound, {volume: oldVol}, 0.5, {
-			onComplete: function(_) {
+			onComplete: function(_)
+			{
 				focusMusicTween = null;
 				restoringFocusVolume = false;
 			}
@@ -423,20 +455,25 @@ class Main extends Sprite
 	private function setupGame():Void
 	{
 		trace('\n\n' + backend.Native.buildSystemInfo());
-		
+
 		#if hxvlc
-		try {
+		try
+		{
 			hxvlc.util.Handle.init();
 			trace('hxvlc initialized successfully');
-		} catch(e:Dynamic) {
+		}
+		catch (e:Dynamic)
+		{
 			trace('hxvlc initialization failed: $e');
 		}
 		#end
-		
+
 		var flxGraphic = backend.Paths.image("watermark");
-		if (flxGraphic != null) {
+		if (flxGraphic != null)
+		{
 			var bmpData:openfl.display.BitmapData = flxGraphic.bitmap;
-			if (watermarkSprite != null && watermarkSprite.parent != null) {
+			if (watermarkSprite != null && watermarkSprite.parent != null)
+			{
 				watermarkSprite.parent.removeChild(watermarkSprite);
 			}
 			watermark = new openfl.display.Bitmap(bmpData);
@@ -450,14 +487,17 @@ class Main extends Sprite
 			watermarkSprite.alpha = 0.5;
 			watermarkSprite.visible = ClientPrefs.data.showWatermark;
 			openfl.Lib.current.stage.addChild(watermarkSprite);
-		} else {
+		}
+		else
+		{
 			trace('The watermark could not be loaded using backend.Paths.image("watermark").');
 		}
 
 		var imagePath = backend.Paths.getPath('images/watermark.png', IMAGE);
-		if (sys.FileSystem.exists(imagePath)) {
-		    if (watermark != null && watermark.parent != null)
-		        removeChild(watermark);
+		if (sys.FileSystem.exists(imagePath))
+		{
+			if (watermark != null && watermark.parent != null)
+				removeChild(watermark);
 			var bmpData = openfl.display.BitmapData.fromFile(imagePath);
 			watermark = new openfl.display.Bitmap(bmpData);
 			var scale = 0.85;
@@ -468,8 +508,9 @@ class Main extends Sprite
 			positionWatermark();
 			Lib.current.stage.addEventListener(openfl.events.Event.RESIZE, function(_) positionWatermark());
 		}
-		if (watermark != null) {
-		    watermark.visible = ClientPrefs.data.showWatermark;
+		if (watermark != null)
+		{
+			watermark.visible = ClientPrefs.data.showWatermark;
 		}
 	}
 }

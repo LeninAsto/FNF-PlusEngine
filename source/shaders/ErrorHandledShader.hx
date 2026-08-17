@@ -6,10 +6,15 @@ import lime.graphics.opengl.GLProgram;
 class ErrorHandledShader extends FlxShader implements IErrorHandler
 {
 	public static var brokenShaders:Map<String, Bool> = new Map<String, Bool>();
+
 	public var shaderName:String = '';
 	public var failed:Bool = false;
 	public var lastError:Dynamic = null;
-	public dynamic function onError(error:Dynamic):Void {}
+
+	public dynamic function onError(error:Dynamic):Void
+	{
+	}
+
 	public function new(?shaderName:String)
 	{
 		this.shaderName = shaderName;
@@ -34,10 +39,11 @@ class ErrorHandledShader extends FlxShader implements IErrorHandler
 
 	public static function isBroken(shaderName:String):Bool
 		return shaderName != null && brokenShaders.exists(shaderName) && brokenShaders.get(shaderName);
-	
+
 	public static function crashSave(shaderName:String, error:Dynamic, onError:Dynamic) // prevent the app from dying immediately
 	{
-		if(shaderName == null) shaderName = 'unnamed';
+		if (shaderName == null)
+			shaderName = 'unnamed';
 		brokenShaders.set(shaderName, true);
 		var alertTitle:String = 'Error on Shader: "$shaderName"';
 
@@ -67,11 +73,16 @@ class ErrorHandledRuntimeShader extends FlxRuntimeShader implements IErrorHandle
 	public var shaderName:String = '';
 	public var failed:Bool = false;
 	public var lastError:Dynamic = null;
-	public dynamic function onError(error:Dynamic):Void {}
+
+	public dynamic function onError(error:Dynamic):Void
+	{
+	}
+
 	public function new(?shaderName:String, ?fragmentSource:String, ?vertexSource:String)
 	{
 		this.shaderName = shaderName;
-		super(ShaderCompatibility.adaptRuntimeShaderCode(fragmentSource, shaderName, "fragment"), ShaderCompatibility.adaptRuntimeShaderCode(vertexSource, shaderName, "vertex"));
+		super(ShaderCompatibility.adaptRuntimeShaderCode(fragmentSource, shaderName, "fragment"),
+			ShaderCompatibility.adaptRuntimeShaderCode(vertexSource, shaderName, "vertex"));
 	}
 
 	override function __createGLProgram(vertexSource:String, fragmentSource:String):GLProgram
@@ -96,3 +107,4 @@ interface IErrorHandler
 	public var shaderName:String;
 	public dynamic function onError(error:Dynamic):Void;
 }
+

@@ -41,7 +41,8 @@ class ModchartConverterState extends MusicBeatState
 
 		var helpText = new FlxText(24, 102, 420,
 			'This tool performs a practical first-pass conversion.\n' +
-			'Reassign the steps, remove the NVMe radian helpers, and remember that fieldYaw is the name of the Plus side.', 16);
+			'Reassign the steps, remove the NVMe radian helpers, and remember that fieldYaw is the name of the Plus side.',
+			16);
 		helpText.setFormat(Paths.font('vcr.ttf'), 16, FlxColor.fromRGB(215, 225, 235), LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		helpText.scrollFactor.set();
 		helpText.fieldWidth = 420;
@@ -168,3 +169,4 @@ class ModchartConverterState extends MusicBeatState
 		].join('\n');
 	}
 }
+

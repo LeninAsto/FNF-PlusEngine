@@ -3,9 +3,9 @@ package states.stages.objects;
 enum SpraycanState
 {
 	WAITING;
-	ARCING;		// In the air.
-	SHOT;		// Hit by the player.
-	IMPACTED;	// Impacted the player.
+	ARCING; // In the air.
+	SHOT; // Hit by the player.
+	IMPACTED; // Impacted the player.
 }
 
 class SpraycanAtlasSprite extends FlxSpriteGroup
@@ -14,6 +14,7 @@ class SpraycanAtlasSprite extends FlxSpriteGroup
 
 	public var canAtlas:FlxAnimate;
 	public var explosion:FlxSprite;
+
 	public function new(x:Float = 0, y:Float = 0)
 	{
 		super();
@@ -38,9 +39,10 @@ class SpraycanAtlasSprite extends FlxSpriteGroup
 	}
 
 	public var cutscene:Bool = false;
+
 	public function finishCanAnimation()
 	{
-		switch(playingAnim)
+		switch (playingAnim)
 		{
 			case 'Can Start':
 				playHitPico();
@@ -48,7 +50,8 @@ class SpraycanAtlasSprite extends FlxSpriteGroup
 				canAtlas.visible = canAtlas.active = false;
 				currentState = WAITING;
 			case 'Hit Pico':
-				if(!cutscene) playHitExplosion();
+				if (!cutscene)
+					playHitExplosion();
 				canAtlas.visible = canAtlas.active = false;
 				currentState = WAITING;
 		}
@@ -80,9 +83,11 @@ class SpraycanAtlasSprite extends FlxSpriteGroup
 	}
 
 	var playingAnim:String;
+
 	public function playAnimation(name:String)
 	{
 		canAtlas.anim.play(name, true);
 		playingAnim = name;
 	}
 }
+

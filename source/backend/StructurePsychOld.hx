@@ -152,19 +152,20 @@ class StructurePsychOld
 
 	public static function resolveClientPrefsDataProperty(className:String, variable:String):String
 	{
-		if(variable == null || variable.length < 1) return variable;
+		if (variable == null || variable.length < 1)
+			return variable;
 
 		var resolvedClass:String = className;
-		if(classAliasMap.exists(resolvedClass))
+		if (classAliasMap.exists(resolvedClass))
 			resolvedClass = classAliasMap.get(resolvedClass);
 
-		if(resolvedClass != 'backend.ClientPrefs' && resolvedClass != 'ClientPrefs')
+		if (resolvedClass != 'backend.ClientPrefs' && resolvedClass != 'ClientPrefs')
 			return variable;
-		if(variable == 'data' || variable.startsWith('data.') || variable.startsWith('defaultData.'))
+		if (variable == 'data' || variable.startsWith('data.') || variable.startsWith('defaultData.'))
 			return variable;
 
 		var split:Array<String> = variable.split('.');
-		if(split.length < 1 || !clientPrefsDataAliasMap.exists(split[0]))
+		if (split.length < 1 || !clientPrefsDataAliasMap.exists(split[0]))
 			return variable;
 
 		split[0] = clientPrefsDataAliasMap.get(split[0]);
@@ -218,20 +219,24 @@ class StructurePsychOld
 
 	public static function warnLegacyLuaUsage(oldApi:String, newApi:String):Void
 	{
-		if(oldApi == null || newApi == null || oldApi == newApi) return;
+		if (oldApi == null || newApi == null || oldApi == newApi)
+			return;
 
 		var owner:String = '';
 		#if LUA_ALLOWED
-		if(psychlua.FunkinLua.lastCalledScript != null)
+		if (psychlua.FunkinLua.lastCalledScript != null)
 			owner = psychlua.FunkinLua.lastCalledScript.scriptName;
 		#end
 		var key:String = owner + '|' + oldApi + '->' + newApi;
-		if(warnedLegacyUsages.exists(key)) return;
+		if (warnedLegacyUsages.exists(key))
+			return;
 		warnedLegacyUsages.set(key, true);
 
 		#if LUA_ALLOWED
 		if (psychlua.FunkinLua.getBool('luaDebugMode') && psychlua.FunkinLua.getBool('luaDeprecatedWarnings'))
-			psychlua.FunkinLua.luaTrace('Legacy compatibility: "$oldApi" redirects to "$newApi". Use the exact Psych 1.0+ API/path or this mod may fail on vanilla Psych.', false, true, flixel.util.FlxColor.YELLOW);
+			psychlua.FunkinLua.luaTrace('Legacy compatibility: "$oldApi" redirects to "$newApi". Use the exact Psych 1.0+ API/path or this mod may fail on vanilla Psych.',
+				false,
+				true, flixel.util.FlxColor.YELLOW);
 		#elseif debug
 		trace('[Compatibility] "$oldApi" redirects to "$newApi"');
 		#end

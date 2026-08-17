@@ -19,7 +19,7 @@ class CrashHandler
 {
 	// Help link/repository to display in the event of a crash
 	public static final HELP_LINK:String = "https://github.com/LeninAsto/FNF-PlusEngine";
-	
+
 	// Fun error messages for null references
 	static final NULL_ERROR_MESSAGES:Array<String> = [
 		"Oops! The code gods are not pleased... null reference found!",
@@ -41,29 +41,30 @@ class CrashHandler
 		"Null reference? In MY engine? It's more likely than you think",
 		"Object not found. Did you check under the couch? (null)"
 	];
-	
+
 	/**
 	 * Adds a funny prefix to null-related error messages
 	 */
 	static function funnyNullMessage(originalMessage:String):String
 	{
-		if (originalMessage == null) return "Null error message (ironic, isn't it?)";
-		
+		if (originalMessage == null)
+			return "Null error message (ironic, isn't it?)";
+
 		var lowerMsg = originalMessage.toLowerCase();
-		var isNullError = lowerMsg.contains("null") || 
-		                  lowerMsg.contains("object reference") || 
-		                  lowerMsg.contains("null pointer") ||
-		                  lowerMsg.contains("null object");
-		
+		var isNullError = lowerMsg.contains("null")
+			|| lowerMsg.contains("object reference")
+			|| lowerMsg.contains("null pointer")
+			|| lowerMsg.contains("null object");
+
 		if (isNullError)
 		{
 			var funnyMsg = NULL_ERROR_MESSAGES[Std.random(NULL_ERROR_MESSAGES.length)];
 			return '$funnyMsg';
 		}
-		
+
 		return originalMessage;
 	}
-	
+
 	public static function init():Void
 	{
 		openfl.Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
@@ -91,10 +92,10 @@ class CrashHandler
 			var err = cast(e.error, ErrorEvent);
 			m = '${err.text}';
 		}
-		
+
 		// Add funny message for null errors
 		m = funnyNullMessage(m);
-		
+
 		var stack = haxe.CallStack.exceptionStack();
 		var stackLabelArr:Array<String> = [];
 		var stackLabel:String = "";
@@ -124,7 +125,7 @@ class CrashHandler
 
 		// Display the error in the console/terminal
 		trace('\n\n$m\n\n$stackLabel\n======================\nFor help, visit: $HELP_LINK');
-		
+
 		#if sys
 		saveErrorMessage('$m\n$stackLabel');
 		#end
@@ -149,9 +150,9 @@ class CrashHandler
 		}
 
 		log.push(haxe.CallStack.toString(haxe.CallStack.exceptionStack(true)));
-		
+
 		var errorLog = log.join('\n');
-		
+
 		// Display the error in the console/terminal
 		trace('=== CRITICAL ERROR ===');
 		trace(errorLog);
@@ -188,3 +189,4 @@ class CrashHandler
 	}
 	#end
 }
+

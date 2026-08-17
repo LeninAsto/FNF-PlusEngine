@@ -9,10 +9,11 @@ class MenuItem extends FlxSprite
 		super(x, y);
 		loadGraphic(Paths.image('storymenu/' + weekName));
 		antialiasing = ClientPrefs.data.antialiasing;
-		//trace('Test added: ' + WeekData.getWeekNumber(weekNum) + ' (' + weekNum + ')');
+		// trace('Test added: ' + WeekData.getWeekNumber(weekNum) + ' (' + weekNum + ')');
 	}
 
 	public var isFlashing(default, set):Bool = false;
+
 	private var _flashingElapsed:Float = 0;
 	final _flashColor = 0xFF33FFFF;
 	final flashes_ps:Int = 6;
@@ -36,3 +37,4 @@ class MenuItem extends FlxSprite
 		}
 	}
 }
+

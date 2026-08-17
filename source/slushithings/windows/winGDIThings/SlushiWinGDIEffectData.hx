@@ -21,3 +21,4 @@ class SlushiWinGDIEffectData
 		this.enabled = _enabled;
 	}
 }
+

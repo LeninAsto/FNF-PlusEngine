@@ -3,10 +3,10 @@ package backend;
 import backend.AssetLoader;
 import openfl.utils.AssetType;
 import openfl.utils.Assets;
-
 import haxe.Json;
 
-typedef ModsList = {
+typedef ModsList =
+{
 	enabled:Array<String>,
 	disabled:Array<String>,
 	all:Array<String>
@@ -43,10 +43,11 @@ class Mods
 	inline public static function pushGlobalMods() // prob a better way to do this but idc
 	{
 		globalMods = [];
-		for(mod in parseList().enabled)
+		for (mod in parseList().enabled)
 		{
 			var pack:Dynamic = getPack(mod);
-			if(pack != null && pack.runsGlobally) globalMods.push(mod);
+			if (pack != null && pack.runsGlobally)
+				globalMods.push(mod);
 		}
 		return globalMods;
 	}
@@ -56,7 +57,8 @@ class Mods
 		var list:Array<String> = [];
 		#if MODS_ALLOWED
 		var modsFolder:String = Paths.mods();
-		if(Paths.safeModPathExists(modsFolder)) {
+		if (Paths.safeModPathExists(modsFolder))
+		{
 			for (folder in Paths.readDirectory(modsFolder))
 			{
 				var path = haxe.io.Path.join([modsFolder, folder]);
@@ -73,7 +75,8 @@ class Mods
 		var list:Array<String> = [];
 		#if MODS_ALLOWED
 		var modsFolder:String = Paths.vsliceMods();
-		if(Paths.safeModPathExists(modsFolder)) {
+		if (Paths.safeModPathExists(modsFolder))
+		{
 			for (folder in Paths.safeReadDirectory(modsFolder))
 			{
 				var path = haxe.io.Path.join([modsFolder, folder]);
@@ -93,19 +96,22 @@ class Mods
 		return 'vslice_mods/';
 		#end
 	}
-	
+
 	inline public static function mergeAllTextsNamed(path:String, ?defaultDirectory:String = null, allowDuplicates:Bool = false)
 	{
-		if(defaultDirectory == null) defaultDirectory = Paths.getSharedPath();
+		if (defaultDirectory == null)
+			defaultDirectory = Paths.getSharedPath();
 		defaultDirectory = defaultDirectory.trim();
-		if(!defaultDirectory.endsWith('/')) defaultDirectory += '/';
-		if(!defaultDirectory.startsWith('assets/')) defaultDirectory = 'assets/$defaultDirectory';
+		if (!defaultDirectory.endsWith('/'))
+			defaultDirectory += '/';
+		if (!defaultDirectory.startsWith('assets/'))
+			defaultDirectory = 'assets/$defaultDirectory';
 
 		var mergedList:Array<String> = [];
 		var paths:Array<String> = directoriesWithFile(defaultDirectory, path);
 
 		var defaultPath:String = defaultDirectory + path;
-		if(paths.contains(defaultPath))
+		if (paths.contains(defaultPath))
 		{
 			paths.remove(defaultPath);
 			paths.insert(0, defaultPath);
@@ -115,7 +121,7 @@ class Mods
 		{
 			var list:Array<String> = CoolUtil.coolTextFile(file);
 			for (value in list)
-				if((allowDuplicates || !mergedList.contains(value)) && value.length > 0)
+				if ((allowDuplicates || !mergedList.contains(value)) && value.length > 0)
 					mergedList.push(value);
 		}
 		return mergedList;
@@ -124,37 +130,40 @@ class Mods
 	inline public static function directoriesWithFile(path:String, fileToFind:String, mods:Bool = true)
 	{
 		var foldersToCheck:Array<String> = [];
-		//Main folder
-		if(AssetLoader.exists(path + fileToFind, TEXT))
+		// Main folder
+		if (AssetLoader.exists(path + fileToFind, TEXT))
 			foldersToCheck.push(path + fileToFind);
 
 		// Week folder
-		if(Paths.currentLevel != null && Paths.currentLevel != path)
+		if (Paths.currentLevel != null && Paths.currentLevel != path)
 		{
 			var pth:String = Paths.getFolderPath(fileToFind, Paths.currentLevel);
-			if(!foldersToCheck.contains(pth) && AssetLoader.exists(pth, TEXT))
+			if (!foldersToCheck.contains(pth) && AssetLoader.exists(pth, TEXT))
 				foldersToCheck.push(pth);
 		}
 
 		#if MODS_ALLOWED
-		if(mods)
+		if (mods)
 		{
 			// Global mods first
-			for(mod in Mods.getGlobalMods())
+			for (mod in Mods.getGlobalMods())
 			{
 				var folder:String = Paths.mods(mod + '/' + fileToFind);
-				if(AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder)) foldersToCheck.push(folder);
+				if (AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder))
+					foldersToCheck.push(folder);
 			}
 
 			// Then "PsychEngine/mods/" main folder
 			var folder:String = Paths.mods(fileToFind);
-			if(AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder)) foldersToCheck.push(Paths.mods(fileToFind));
+			if (AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder))
+				foldersToCheck.push(Paths.mods(fileToFind));
 
 			// And lastly, the loaded mod's folder
-			if(Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0)
+			if (Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0)
 			{
 				var folder:String = Paths.mods(Mods.currentModDirectory + '/' + fileToFind);
-				if(AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder)) foldersToCheck.push(folder);
+				if (AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder))
+					foldersToCheck.push(folder);
 			}
 		}
 		#end
@@ -164,14 +173,20 @@ class Mods
 	public static function getPack(?folder:String = null):Dynamic
 	{
 		#if MODS_ALLOWED
-		if(folder == null) folder = Mods.currentModDirectory;
+		if (folder == null)
+			folder = Mods.currentModDirectory;
 
 		var path = Paths.mods(folder + '/pack.json');
-		if(AssetLoader.exists(path, TEXT)) {
-			try {
+		if (AssetLoader.exists(path, TEXT))
+		{
+			try
+			{
 				var rawJson:String = AssetLoader.loadText(path);
-				if(rawJson != null && rawJson.length > 0) return tjson.TJSON.parse(rawJson);
-			} catch(e:Dynamic) {
+				if (rawJson != null && rawJson.length > 0)
+					return tjson.TJSON.parse(rawJson);
+			}
+			catch (e:Dynamic)
+			{
 				trace(e);
 			}
 		}
@@ -180,16 +195,21 @@ class Mods
 	}
 
 	public static var updatedOnState:Bool = false;
-	inline public static function parseList():ModsList {
-		if(!updatedOnState) updateModList();
+
+	inline public static function parseList():ModsList
+	{
+		if (!updatedOnState)
+			updateModList();
 		var list:ModsList = {enabled: [], disabled: [], all: []};
 
 		#if MODS_ALLOWED
-		try {
+		try
+		{
 			for (mod in CoolUtil.coolTextFile(#if android StorageUtil.getModsListPath() #else Sys.getCwd() + 'modsList.txt' #end))
 			{
-				//trace('Mod: $mod');
-				if(mod.trim().length < 1) continue;
+				// trace('Mod: $mod');
+				if (mod.trim().length < 1)
+					continue;
 
 				var dat = mod.split("|");
 				list.all.push(dat[0]);
@@ -198,22 +218,28 @@ class Mods
 				else
 					list.disabled.push(dat[0]);
 			}
-		} catch(e) {
+		}
+		catch (e)
+		{
 			trace(e);
 		}
 		#end
 		return list;
 	}
 
-	inline public static function parseVSliceList():ModsList {
-		if(!updatedVSliceOnState) updateVSliceModList();
+	inline public static function parseVSliceList():ModsList
+	{
+		if (!updatedVSliceOnState)
+			updateVSliceModList();
 		var list:ModsList = {enabled: [], disabled: [], all: []};
 
 		#if MODS_ALLOWED
-		try {
+		try
+		{
 			for (mod in CoolUtil.coolTextFile(getVSliceListPath()))
 			{
-				if(mod.trim().length < 1) continue;
+				if (mod.trim().length < 1)
+					continue;
 
 				var dat = mod.split("|");
 				list.all.push(dat[0]);
@@ -222,7 +248,9 @@ class Mods
 				else
 					list.disabled.push(dat[0]);
 			}
-		} catch(e) {
+		}
+		catch (e)
+		{
 			trace(e);
 		}
 		#end
@@ -243,12 +271,15 @@ class Mods
 		var fileStr:String = '';
 		for (mod in list.all)
 		{
-			if(mod.trim().length < 1) continue;
+			if (mod.trim().length < 1)
+				continue;
 
-			if(fileStr.length > 0) fileStr += '\n';
+			if (fileStr.length > 0)
+				fileStr += '\n';
 
 			var on = '1';
-			if(list.disabled.contains(mod)) on = '0';
+			if (list.disabled.contains(mod))
+				on = '0';
 			fileStr += '$mod|$on';
 		}
 
@@ -257,7 +288,7 @@ class Mods
 		{
 			File.saveContent(path, fileStr);
 		}
-		catch(e:Dynamic)
+		catch (e:Dynamic)
 		{
 			trace('[Mods] Failed to save ${vsliceMode ? 'vsliceList.txt' : 'modsList.txt'}: $e');
 		}
@@ -267,39 +298,44 @@ class Mods
 		else
 			updatedOnState = true;
 	}
-	
+
 	public static function updateModList()
 	{
 		#if MODS_ALLOWED
 		// Find all that are already ordered
 		var list:Array<Array<Dynamic>> = [];
 		var added:Array<String> = [];
-		try {
+		try
+		{
 			for (mod in CoolUtil.coolTextFile(#if android StorageUtil.getModsListPath() #else Sys.getCwd() + 'modsList.txt' #end))
 			{
 				var dat:Array<String> = mod.split("|");
 				var folder:String = dat[0];
 				var folderPath:String = Paths.mods(folder);
-				if(folder.trim().length > 0 && Paths.safeModIsDirectory(folderPath) && !added.contains(folder))
+				if (folder.trim().length > 0 && Paths.safeModIsDirectory(folderPath) && !added.contains(folder))
 				{
 					added.push(folder);
 					list.push([folder, (dat[1] == "1")]);
 				}
 			}
-		} catch(e) {
+		}
+		catch (e)
+		{
 			trace(e);
 		}
-		
+
 		// Scan for folders that aren't on modsList.txt yet
 		for (folder in getModDirectories())
 		{
 			var folderPath:String = Paths.mods(folder);
-			if(folder.trim().length > 0 && Paths.safeModIsDirectory(folderPath) &&
-			!ignoreModFolders.contains(folder.toLowerCase()) && !added.contains(folder))
+			if (folder.trim().length > 0
+				&& Paths.safeModIsDirectory(folderPath)
+				&& !ignoreModFolders.contains(folder.toLowerCase())
+				&& !added.contains(folder))
 			{
 				added.push(folder);
-				list.push([folder, true]); //i like it false by default. -bb //Well, i like it True! -Shadow Mario (2022)
-				//Shadow Mario (2023): What the fuck was bb thinking
+				list.push([folder, true]); // i like it false by default. -bb //Well, i like it True! -Shadow Mario (2022)
+				// Shadow Mario (2023): What the fuck was bb thinking
 			}
 		}
 
@@ -307,7 +343,8 @@ class Mods
 		var fileStr:String = '';
 		for (values in list)
 		{
-			if(fileStr.length > 0) fileStr += '\n';
+			if (fileStr.length > 0)
+				fileStr += '\n';
 			fileStr += values[0] + '|' + (values[1] ? '1' : '0');
 		}
 
@@ -315,12 +352,12 @@ class Mods
 		{
 			File.saveContent(#if android StorageUtil.getModsListPath() #else Sys.getCwd() + 'modsList.txt' #end, fileStr);
 		}
-		catch(e:Dynamic)
+		catch (e:Dynamic)
 		{
 			trace('Failed to save modsList.txt: $e');
 		}
 		updatedOnState = true;
-		//trace('Saved modsList.txt');
+		// trace('Saved modsList.txt');
 		#end
 	}
 
@@ -329,26 +366,29 @@ class Mods
 		#if MODS_ALLOWED
 		var list:Array<Array<Dynamic>> = [];
 		var added:Array<String> = [];
-		try {
+		try
+		{
 			for (mod in CoolUtil.coolTextFile(getVSliceListPath()))
 			{
 				var dat:Array<String> = mod.split("|");
 				var folder:String = dat[0];
 				var folderPath:String = Paths.vsliceMods(folder);
-				if(folder.trim().length > 0 && Paths.safeModIsDirectory(folderPath) && !added.contains(folder))
+				if (folder.trim().length > 0 && Paths.safeModIsDirectory(folderPath) && !added.contains(folder))
 				{
 					added.push(folder);
 					list.push([folder, (dat.length < 2 || dat[1] == "1")]);
 				}
 			}
-		} catch(e) {
+		}
+		catch (e)
+		{
 			trace(e);
 		}
-		
+
 		for (folder in getVSliceModDirectories())
 		{
 			var folderPath:String = Paths.vsliceMods(folder);
-			if(folder.trim().length > 0 && Paths.safeModIsDirectory(folderPath) && !added.contains(folder))
+			if (folder.trim().length > 0 && Paths.safeModIsDirectory(folderPath) && !added.contains(folder))
 			{
 				added.push(folder);
 				list.push([folder, true]);
@@ -358,7 +398,8 @@ class Mods
 		var fileStr:String = '';
 		for (values in list)
 		{
-			if(fileStr.length > 0) fileStr += '\n';
+			if (fileStr.length > 0)
+				fileStr += '\n';
 			fileStr += values[0] + '|' + (values[1] ? '1' : '0');
 		}
 
@@ -366,7 +407,7 @@ class Mods
 		{
 			File.saveContent(getVSliceListPath(), fileStr);
 		}
-		catch(e:Dynamic)
+		catch (e:Dynamic)
 		{
 			trace('Failed to save vsliceList.txt: $e');
 		}
@@ -377,10 +418,10 @@ class Mods
 	public static function loadTopMod()
 	{
 		Mods.currentModDirectory = '';
-		
+
 		#if MODS_ALLOWED
 		var list:Array<String> = Mods.parseList().enabled;
-		if(list != null && list[0] != null)
+		if (list != null && list[0] != null)
 			Mods.currentModDirectory = list[0];
 		#end
 	}
@@ -388,10 +429,10 @@ class Mods
 	public static function loadTopVSliceMod()
 	{
 		Mods.currentVSliceModDirectory = '';
-		
+
 		#if MODS_ALLOWED
 		var list:Array<String> = Mods.parseVSliceList().enabled;
-		if(list != null && list[0] != null)
+		if (list != null && list[0] != null)
 			Mods.currentVSliceModDirectory = list[0];
 		#end
 	}

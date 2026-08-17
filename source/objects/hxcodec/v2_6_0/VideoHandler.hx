@@ -26,27 +26,31 @@ class VideoHandler extends HxvlcVideo
 
 	// Emulate VLCBitmap properties
 	public var isDisplaying(get, never):Bool;
+
 	private function get_isDisplaying():Bool
 	{
 		return _isPlaying && bitmapData != null;
 	}
 
 	public var videoWidth(get, never):Int;
+
 	private function get_videoWidth():Int
 	{
 		return bitmapData != null ? bitmapData.width : 0;
 	}
 
 	public var videoHeight(get, never):Int;
+
 	private function get_videoHeight():Int
 	{
 		return bitmapData != null ? bitmapData.height : 0;
 	}
 
 	// mrl property is inherited from hxvlc.openfl.Video
-
 	private var _location:String = null;
+
 	public var location(get, never):String;
+
 	private function get_location():String
 	{
 		return _location;
@@ -157,7 +161,10 @@ class VideoHandler extends HxvlcVideo
 	public function update(?E:Event):Void
 	{
 		#if FLX_KEYBOARD
-		if (canSkip && (FlxG.keys.anyJustPressed(skipKeys) #if android || FlxG.android.justReleased.BACK #end) && _isPlaying && isDisplaying)
+		if (canSkip
+			&& (FlxG.keys.anyJustPressed(skipKeys) #if android || FlxG.android.justReleased.BACK #end)
+			&& _isPlaying
+			&& isDisplaying)
 			onVLCEndReached();
 		#elseif android
 		if (canSkip && FlxG.android.justReleased.BACK && _isPlaying && isDisplaying)
@@ -179,7 +186,7 @@ class VideoHandler extends HxvlcVideo
 	{
 		var stageWidth = FlxG.stage.stageWidth;
 		var stageHeight = FlxG.stage.stageHeight;
-		
+
 		var appliedWidth:Float = stageHeight * (FlxG.width / FlxG.height);
 		var appliedHeight:Float = stageWidth * (FlxG.height / FlxG.width);
 
@@ -227,9 +234,21 @@ class VideoHandler
 		trace("VideoHandler.playVideo: hxvlc not available");
 	}
 
-	public function pause():Void {}
-	public function resume():Void {}
-	public function stop():Void {}
-	public function dispose():Void {}
+	public function pause():Void
+	{
+	}
+
+	public function resume():Void
+	{
+	}
+
+	public function stop():Void
+	{
+	}
+
+	public function dispose():Void
+	{
+	}
 }
 #end
+

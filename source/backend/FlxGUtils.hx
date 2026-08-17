@@ -6,12 +6,12 @@ import flixel.FlxObject;
 /**
  * Additional utilities for FlxG to ensure compatibility with older mods
  */
-class FlxGUtils 
+class FlxGUtils
 {
 	/**
-     * Adds support for addChildBelowMouse from previous versions
-     */
-	public static function addChildBelowMouse(object:FlxObject, ?IndexModifier:Int = 0):Void 
+	 * Adds support for addChildBelowMouse from previous versions
+	 */
+	public static function addChildBelowMouse(object:FlxObject, ?IndexModifier:Int = 0):Void
 	{
 		// In the current engine, we simply add to the state
 		FlxG.state.add(object);
@@ -20,9 +20,10 @@ class FlxGUtils
 	/**
 	 * Support for removeChild
 	 */
-	public static function removeChild(object:FlxObject):Void 
+	public static function removeChild(object:FlxObject):Void
 	{
 		if (FlxG.state.members.contains(object))
 			FlxG.state.remove(object);
 	}
 }
+

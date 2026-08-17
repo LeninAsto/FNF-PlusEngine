@@ -27,7 +27,6 @@ class MaterialCheckbox extends FlxSpriteGroup
 	var labelText:FlxText;
 
 	// State layers
-
 	// State
 	var isHovered:Bool = false;
 	var isPressed:Bool = false;
@@ -37,12 +36,23 @@ class MaterialCheckbox extends FlxSpriteGroup
 	var hoverTween:FlxTween;
 	var pressTween:FlxTween;
 
-	inline function containerSize():Int return MD3Metrics.size(20);
-	inline function checkboxRadius():Int return MD3Metrics.corner(4, containerSize(), containerSize());
-	inline function stateLayerSize():Int return MD3Metrics.touch(containerSize());
-	inline function iconSize():Int return MD3Metrics.size(18);
-	inline function labelSpacing():Int return MD3Metrics.size(10);
-	inline function labelSize():Int return MD3Metrics.text(15);
+	inline function containerSize():Int
+		return MD3Metrics.size(20);
+
+	inline function checkboxRadius():Int
+		return MD3Metrics.corner(4, containerSize(), containerSize());
+
+	inline function stateLayerSize():Int
+		return MD3Metrics.touch(containerSize());
+
+	inline function iconSize():Int
+		return MD3Metrics.size(18);
+
+	inline function labelSpacing():Int
+		return MD3Metrics.size(10);
+
+	inline function labelSize():Int
+		return MD3Metrics.text(15);
 
 	public function new(x:Float = 0, y:Float = 0, ?label:String = "", ?checked:Bool = false, ?onChange:Bool->Void = null)
 	{
@@ -169,45 +179,64 @@ class MaterialCheckbox extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 
-		if (!enabled) return;
+		if (!enabled)
+			return;
 
 		#if FLX_MOUSE
 		var offset = (stateLayerSize() - containerSize()) / 2;
 		var checkboxWidth = labelText != null ? (containerSize() + labelSpacing() + labelText.width) : containerSize();
 		var mousePos = FlxG.mouse.getScreenPosition();
-		var isOver = mousePos.x >= x - offset && mousePos.x <= x + checkboxWidth + offset &&
-			mousePos.y >= y - offset && mousePos.y <= y + containerSize() + offset;
+		var isOver = mousePos.x >= x - offset
+			&& mousePos.x <= x + checkboxWidth + offset
+			&& mousePos.y >= y - offset
+			&& mousePos.y <= y + containerSize() + offset;
 
 		// Hover effect
 		if (isOver && !isHovered)
 		{
 			isHovered = true;
-			if (hoverTween != null) hoverTween.cancel();
-				stateLayer.color = MD3Theme.stateLayerColor(MD3Theme.primary);
-			hoverTween = FlxTween.num(stateLayer.alpha, 1, 0.15, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			if (hoverTween != null)
+				hoverTween.cancel();
+			stateLayer.color = MD3Theme.stateLayerColor(MD3Theme.primary);
+			hoverTween = FlxTween.num(stateLayer.alpha, 1, 0.15, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 		else if (!isOver && isHovered)
 		{
 			isHovered = false;
-			if (hoverTween != null) hoverTween.cancel();
-			hoverTween = FlxTween.num(stateLayer.alpha, 0, 0.15, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			if (hoverTween != null)
+				hoverTween.cancel();
+			hoverTween = FlxTween.num(stateLayer.alpha, 0, 0.15, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
-		
+
 		// Press effect
 		if (FlxG.mouse.pressed && isOver && !isPressed)
 		{
 			isPressed = true;
-			if (pressTween != null) pressTween.cancel();
-				stateLayer.color = MD3Theme.stateLayerColor(MD3Theme.primary, true);
-			pressTween = FlxTween.num(stateLayer.alpha, 1, 0.1, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			if (pressTween != null)
+				pressTween.cancel();
+			stateLayer.color = MD3Theme.stateLayerColor(MD3Theme.primary, true);
+			pressTween = FlxTween.num(stateLayer.alpha, 1, 0.1, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 		else if (!FlxG.mouse.pressed && isPressed)
 		{
 			isPressed = false;
-			if (pressTween != null) pressTween.cancel();
-				stateLayer.color = isHovered ? MD3Theme.stateLayerColor(MD3Theme.primary) : FlxColor.TRANSPARENT;
+			if (pressTween != null)
+				pressTween.cancel();
+			stateLayer.color = isHovered ? MD3Theme.stateLayerColor(MD3Theme.primary) : FlxColor.TRANSPARENT;
 			var targetAlpha = isHovered ? 1.0 : 0.0;
-			pressTween = FlxTween.num(stateLayer.alpha, targetAlpha, 0.1, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			pressTween = FlxTween.num(stateLayer.alpha, targetAlpha, 0.1, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 
 		// Click event
@@ -228,13 +257,19 @@ class MaterialCheckbox extends FlxSpriteGroup
 			return checked;
 		}
 
-		if (checkTween != null) checkTween.cancel();
+		if (checkTween != null)
+			checkTween.cancel();
 
 		var targetAlpha = checked ? 1.0 : 0.0;
-		checkTween = FlxTween.num(checkIcon.alpha, targetAlpha, 0.15, {ease: FlxEase.cubeOut}, function(v) {
-			if (checkIcon != null) checkIcon.alpha = v;
+		checkTween = FlxTween.num(checkIcon.alpha, targetAlpha, 0.15, {ease: FlxEase.cubeOut}, function(v)
+		{
+			if (checkIcon != null)
+				checkIcon.alpha = v;
 		});
-		checkTween.onComplete = function(_) { updateAppearance(); };
+		checkTween.onComplete = function(_)
+		{
+			updateAppearance();
+		};
 
 		updateAppearance();
 
@@ -247,10 +282,14 @@ class MaterialCheckbox extends FlxSpriteGroup
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(updateAppearance);
-		if (checkTween != null) checkTween.cancel();
-		if (hoverTween != null) hoverTween.cancel();
-		if (pressTween != null) pressTween.cancel();
+		if (checkTween != null)
+			checkTween.cancel();
+		if (hoverTween != null)
+			hoverTween.cancel();
+		if (pressTween != null)
+			pressTween.cancel();
 
 		super.destroy();
 	}
 }
+

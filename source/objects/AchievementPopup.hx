@@ -6,10 +6,13 @@ import openfl.geom.Matrix;
 import flash.display.BitmapData;
 import openfl.Lib;
 
-class AchievementPopup extends openfl.display.Sprite {
+class AchievementPopup extends openfl.display.Sprite
+{
 	public var onFinish:Void->Void = null;
+
 	var alphaTween:FlxTween;
 	var lastScale:Float = 1;
+
 	public function new(achieve:String, onFinish:Void->Void)
 	{
 		super();
@@ -22,27 +25,31 @@ class AchievementPopup extends openfl.display.Sprite {
 		var graphic = null;
 		var hasAntialias:Bool = ClientPrefs.data.antialiasing;
 		var image:String = 'achievements/$achieve';
-		
+
 		var achievement:Achievement = null;
-		if(Achievements.exists(achieve)) achievement = Achievements.get(achieve);
+		if (Achievements.exists(achieve))
+			achievement = Achievements.get(achieve);
 
 		#if MODS_ALLOWED
 		var lastMod = Mods.currentModDirectory;
-		if(achievement != null) Mods.currentModDirectory = achievement.mod != null ? achievement.mod : '';
+		if (achievement != null)
+			Mods.currentModDirectory = achievement.mod != null ? achievement.mod : '';
 		#end
 
-		if(Paths.fileExists('images/$image-pixel.png', IMAGE))
+		if (Paths.fileExists('images/$image-pixel.png', IMAGE))
 		{
 			graphic = Paths.image('$image-pixel', false);
 			hasAntialias = false;
 		}
-		else graphic = Paths.image(image, false);
+		else
+			graphic = Paths.image(image, false);
 
 		#if MODS_ALLOWED
 		Mods.currentModDirectory = lastMod;
 		#end
 
-		if(graphic == null) graphic = Paths.image('unknownMod', false);
+		if (graphic == null)
+			graphic = Paths.image('unknownMod', false);
 
 		var sizeX = 100;
 		var sizeY = 100;
@@ -56,10 +63,12 @@ class AchievementPopup extends openfl.display.Sprite {
 		// achievement name/description
 		var name:String = 'Unknown';
 		var desc:String = 'Description not found';
-		if(achievement != null)
+		if (achievement != null)
 		{
-			if(achievement.name != null) name = Language.getPhrase('achievement_$achieve', achievement.name);
-			if(achievement.description != null)  desc = Language.getPhrase('description_$achieve', achievement.description);
+			if (achievement.name != null)
+				name = Language.getPhrase('achievement_$achieve', achievement.name);
+			if (achievement.description != null)
+				desc = Language.getPhrase('description_$achieve', achievement.description);
 		}
 
 		var textX = sizeX + imgX + 15;
@@ -79,7 +88,7 @@ class AchievementPopup extends openfl.display.Sprite {
 		FlxG.stage.addEventListener(Event.RESIZE, onResize);
 		addEventListener(Event.ENTER_FRAME, update);
 
-		FlxG.game.addChild(this); //Don't add it below mouse, or it will disappear once the game changes states
+		FlxG.game.addChild(this); // Don't add it below mouse, or it will disappear once the game changes states
 
 		// fix scale
 		lastScale = (FlxG.stage.stageHeight / FlxG.height);
@@ -91,6 +100,7 @@ class AchievementPopup extends openfl.display.Sprite {
 	}
 
 	var bitmaps:Array<BitmapData> = [];
+
 	function drawTextAt(text:FlxText, str:String, textX:Float, textY:Float)
 	{
 		text.text = str;
@@ -101,15 +111,16 @@ class AchievementPopup extends openfl.display.Sprite {
 		graphics.beginBitmapFill(clonedBitmap, new Matrix(1, 0, 0, 1, textX, textY), false, false);
 		graphics.drawRect(textX, textY, text.width + textX, text.height + textY);
 	}
-	
+
 	var lerpTime:Float = 0;
 	var countedTime:Float = 0;
 	var timePassed:Float = -1;
+
 	public var intendedY:Float = 0;
 
 	function update(e:Event)
 	{
-		if(timePassed < 0) 
+		if (timePassed < 0)
 		{
 			timePassed = Lib.getTimer();
 			return;
@@ -118,12 +129,13 @@ class AchievementPopup extends openfl.display.Sprite {
 		var time = Lib.getTimer();
 		var elapsed:Float = (time - timePassed) / 1000;
 		timePassed = time;
-		//trace('update called! $elapsed');
+		// trace('update called! $elapsed');
 
-		if(elapsed >= 0.5) return; //most likely passed through a loading
+		if (elapsed >= 0.5)
+			return; // most likely passed through a loading
 
 		countedTime += elapsed;
-		if(countedTime < 3)
+		if (countedTime < 3)
 		{
 			lerpTime = Math.min(1, lerpTime + elapsed);
 			y = ((FlxEase.elasticOut(lerpTime) * (intendedY + 130)) - 130) * lastScale;
@@ -131,7 +143,7 @@ class AchievementPopup extends openfl.display.Sprite {
 		else
 		{
 			y -= FlxG.height * 2 * elapsed * lastScale;
-			if(y <= -130 * lastScale)
+			if (y <= -130 * lastScale)
 				destroy();
 		}
 	}
@@ -150,7 +162,7 @@ class AchievementPopup extends openfl.display.Sprite {
 	public function destroy()
 	{
 		Achievements._popups.remove(this);
-		//trace('destroyed achievement, new count: ' + Achievements._popups.length);
+		// trace('destroyed achievement, new count: ' + Achievements._popups.length);
 
 		if (FlxG.game.contains(this))
 		{
@@ -165,7 +177,7 @@ class AchievementPopup extends openfl.display.Sprite {
 	{
 		for (clonedBitmap in bitmaps)
 		{
-			if(clonedBitmap != null)
+			if (clonedBitmap != null)
 			{
 				clonedBitmap.dispose();
 				clonedBitmap.disposeImage();
@@ -175,3 +187,4 @@ class AchievementPopup extends openfl.display.Sprite {
 	}
 }
 #end
+

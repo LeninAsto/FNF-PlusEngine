@@ -22,10 +22,10 @@ class StorageUtil
 	{
 		return #if android
 			resolveStorageDirectory(force)
-		#elseif ios 
-			lime.system.System.documentsDirectory 
-		#else 
-			Sys.getCwd() 
+		#elseif ios
+			lime.system.System.documentsDirectory
+		#else
+			Sys.getCwd()
 		#end;
 	}
 
@@ -46,11 +46,7 @@ class StorageUtil
 
 	public static function getSMDirectory():String
 	{
-		final baseDir = #if android 
-			getStorageDirectory()
-		#else 
-			'./' 
-		#end;
+		final baseDir = #if android getStorageDirectory() #else './' #end;
 		return Path.join([baseDir, 'sm']);
 	}
 
@@ -58,7 +54,7 @@ class StorageUtil
 	{
 		final folder = getSavesDirectory();
 		final filePath = Path.join([folder, fileName]);
-		
+
 		try
 		{
 			if (!FileSystem.exists(folder))
@@ -66,13 +62,15 @@ class StorageUtil
 
 			File.saveContent(filePath, fileData);
 			if (alert)
-				CoolUtil.showPopUp(Language.getPhrase('file_save_success', '{1} has been saved.', [fileName]), Language.getPhrase('mobile_success', "Success!"));
+				CoolUtil.showPopUp(Language.getPhrase('file_save_success', '{1} has been saved.', [fileName]),
+					Language.getPhrase('mobile_success', "Success!"));
 		}
 		catch (e:Dynamic)
 		{
 			final errorMsg = Std.string(e);
 			if (alert)
-				CoolUtil.showPopUp(Language.getPhrase('file_save_fail', '{1} couldn\'t be saved.\n({2})', [fileName, errorMsg]), Language.getPhrase('mobile_error', "Error!"));
+				CoolUtil.showPopUp(Language.getPhrase('file_save_fail', '{1} couldn\'t be saved.\n({2})', [fileName, errorMsg]),
+					Language.getPhrase('mobile_error', "Error!"));
 			else
 				trace('$fileName couldn\'t be saved. ($errorMsg)');
 		}
@@ -160,7 +158,8 @@ class StorageUtil
 	public static function getInternalStorageDirectory():String
 	{
 		final path = AndroidContext.getExternalFilesDir();
-		if (path != null && path.length > 0) {
+		if (path != null && path.length > 0)
+		{
 			ensureDirectory(path);
 			return path;
 		}
@@ -249,7 +248,8 @@ class StorageUtil
 
 		try
 		{
-			if (!FileSystem.exists(path)) {
+			if (!FileSystem.exists(path))
+			{
 				FileSystem.createDirectory(path);
 				trace('Created directory: $path');
 			}
@@ -268,12 +268,15 @@ class StorageUtil
 			return true;
 
 		final granted = AndroidPermissions.getGrantedPermissions();
-		
-		if (AndroidVersion.SDK_INT >= AndroidVersionCode.TIRAMISU) {
+
+		if (AndroidVersion.SDK_INT >= AndroidVersionCode.TIRAMISU)
+		{
 			return AndroidEnvironment.isExternalStorageManager();
-		} else {
-			return granted.contains('android.permission.READ_EXTERNAL_STORAGE') ||
-				   granted.contains('android.permission.WRITE_EXTERNAL_STORAGE');
+		}
+		else
+		{
+			return granted.contains('android.permission.READ_EXTERNAL_STORAGE')
+				|| granted.contains('android.permission.WRITE_EXTERNAL_STORAGE');
 		}
 	}
 
@@ -283,20 +286,17 @@ class StorageUtil
 		{
 			if (AndroidVersion.SDK_INT < AndroidVersionCode.TIRAMISU)
 			{
-				AndroidPermissions.requestPermissions([
-					'READ_EXTERNAL_STORAGE',
-					'WRITE_EXTERNAL_STORAGE'
-				]);
+				AndroidPermissions.requestPermissions(['READ_EXTERNAL_STORAGE', 'WRITE_EXTERNAL_STORAGE']);
 			}
 
-			if (AndroidVersion.SDK_INT >= AndroidVersionCode.R &&
-				!AndroidEnvironment.isExternalStorageManager())
+			if (AndroidVersion.SDK_INT >= AndroidVersionCode.R && !AndroidEnvironment.isExternalStorageManager())
 			{
 				AndroidSettings.requestSetting('MANAGE_APP_ALL_FILES_ACCESS_PERMISSION');
 			}
 		}
 
-		Timer.delay(function() {
+		Timer.delay(function()
+		{
 			var attempts = 0;
 			var maxAttempts = 15;
 
@@ -314,11 +314,9 @@ class StorageUtil
 				}
 				else
 				{
-					CoolUtil.showPopUp(
-						Language.getPhrase('permission_timeout',
-							'Permissions were not granted. Please grant them manually and restart the app.'),
-						Language.getPhrase('mobile_error', 'Error!')
-					);
+					CoolUtil.showPopUp(Language.getPhrase('permission_timeout',
+						'Permissions were not granted. Please grant them manually and restart the app.'),
+						Language.getPhrase('mobile_error', 'Error!'));
 				}
 			}
 			checkAndCreate();
@@ -331,17 +329,14 @@ class StorageUtil
 			return 'INTERNAL storage: no extra permission required.';
 
 		if (AndroidVersion.SDK_INT >= AndroidVersionCode.TIRAMISU)
-			return AndroidEnvironment.isExternalStorageManager()
-				? 'EXTERNAL storage: all-files access granted.'
-				: 'EXTERNAL storage: all-files access required.';
+			return
+				AndroidEnvironment.isExternalStorageManager() ? 'EXTERNAL storage: all-files access granted.' : 'EXTERNAL storage: all-files access required.';
 
 		final granted = AndroidPermissions.getGrantedPermissions();
 		final hasLegacyPermission = granted.contains('android.permission.READ_EXTERNAL_STORAGE')
 			|| granted.contains('android.permission.WRITE_EXTERNAL_STORAGE');
 
-		return hasLegacyPermission
-			? 'EXTERNAL storage: legacy storage permission granted.'
-			: 'EXTERNAL storage: legacy storage permission required.';
+		return hasLegacyPermission ? 'EXTERNAL storage: legacy storage permission granted.' : 'EXTERNAL storage: legacy storage permission required.';
 	}
 
 	private static function initializeStorageDirectories():Void
@@ -360,27 +355,30 @@ class StorageUtil
 
 		var allDirectoriesCreated = true;
 		var failedDirectories:Array<String> = [];
-		
-		for (dir in directories) {
-			if (!ensureDirectory(dir)) {
+
+		for (dir in directories)
+		{
+			if (!ensureDirectory(dir))
+			{
 				allDirectoriesCreated = false;
 				failedDirectories.push(dir);
 			}
 		}
 
-		if (!allDirectoriesCreated) {
-			final errorMsg = Language.getPhrase('create_directory_error', 
-				'Failed to create the following directories:\n{1}\n' +
-				'Please check storage permissions or available space.\n' +
+		if (!allDirectoriesCreated)
+		{
+			final errorMsg = Language.getPhrase('create_directory_error',
+				'Failed to create the following directories:\n{1}\n' + 'Please check storage permissions or available space.\n' +
 				'The app may not function correctly without these directories.',
 				[failedDirectories.join('\n')]);
-			
+
 			CoolUtil.showPopUp(errorMsg, Language.getPhrase('mobile_warning', "Warning!"));
 		}
 		else
 		{
 			#if android
-			Timer.delay(function() {
+			Timer.delay(function()
+			{
 				if (hasModsOrSMAssets())
 				{
 					trace('Starting automatic asset copy for mods and sm...');
@@ -464,7 +462,7 @@ class StorageUtil
 				{
 					var isModsAsset:Bool = assetPath.startsWith('mods/');
 					var isSMAsset:Bool = assetPath.startsWith('sm/');
-					
+
 					if (!isModsAsset && !isSMAsset)
 						continue;
 
@@ -651,7 +649,7 @@ class StorageUtil
 	public static function copyModsAndSMAssetsWithProgress(onProgress:(Int, Int) -> Void):Array<String>
 	{
 		var failedFiles:Array<String> = [];
-		
+
 		try
 		{
 			var allAssets:Array<String> = OpenFLAssets.list();
@@ -689,7 +687,7 @@ class StorageUtil
 				{
 					var isModsAsset:Bool = assetPath.startsWith('mods/');
 					var isSMAsset:Bool = assetPath.startsWith('sm/');
-					
+
 					if (!isModsAsset && !isSMAsset)
 					{
 						onProgress(current, total);
@@ -795,7 +793,7 @@ class StorageUtil
 	public static function verifyModsAndSMAssets():Array<String>
 	{
 		var missingFiles:Array<String> = [];
-		
+
 		try
 		{
 			var allAssets:Array<String> = OpenFLAssets.list();
@@ -821,7 +819,7 @@ class StorageUtil
 			{
 				var isModsAsset:Bool = assetPath.startsWith('mods/');
 				var isSMAsset:Bool = assetPath.startsWith('sm/');
-				
+
 				if (!isModsAsset && !isSMAsset)
 					continue;
 
@@ -874,7 +872,7 @@ class StorageUtil
 
 		return missingFiles;
 	}
-
 	#end
 	#end
 }
+

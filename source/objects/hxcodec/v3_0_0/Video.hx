@@ -12,6 +12,7 @@ class Video extends HxvlcVideo
 	private var _location:String = null;
 
 	public var onTextureSetup(get, never):Dynamic;
+
 	private function get_onTextureSetup():Dynamic
 	{
 		#if hxvlc
@@ -22,6 +23,7 @@ class Video extends HxvlcVideo
 	}
 
 	public var location(get, never):String;
+
 	private function get_location():String
 	{
 		return _location;
@@ -53,7 +55,7 @@ class Video extends HxvlcVideo
 	// - pause():Void
 	// - resume():Void
 	// - dispose():Void
-	// 
+	//
 	// Properties:
 	// - volume:Int (0-100)
 	// - isPlaying:Bool
@@ -92,9 +94,21 @@ class Video
 		return false;
 	}
 
-	public function stop():Void {}
-	public function pause():Void {}
-	public function resume():Void {}
-	public function dispose():Void {}
+	public function stop():Void
+	{
+	}
+
+	public function pause():Void
+	{
+	}
+
+	public function resume():Void
+	{
+	}
+
+	public function dispose():Void
+	{
+	}
 }
 #end
+

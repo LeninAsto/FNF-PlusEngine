@@ -26,10 +26,11 @@ class PsychUIRadioGroup extends FlxSpriteGroup
 	public var onClick:Void->Void;
 
 	var _hitbox:FlxObject;
+
 	public function new(x:Float, y:Float, labels:Array<String>, space:Float = 25, maxItems:Int = 0, ?isHorizontal:Bool = false, ?textWidth:Int = 100)
 	{
 		super(x, y);
-		
+
 		_hitbox = new FlxObject();
 
 		arrowUp = new FlxSprite().loadGraphic(Paths.image('psych-ui/arrow_up', 'embed'), true, 24, 18);
@@ -47,7 +48,8 @@ class PsychUIRadioGroup extends FlxSpriteGroup
 
 		this.space = space;
 		this.textWidth = textWidth;
-		@:bypassAccessor if(labels != null) this.labels = labels;
+		@:bypassAccessor if (labels != null)
+			this.labels = labels;
 		@:bypassAccessor this.stackHorizontal = isHorizontal;
 		this.maxItems = maxItems;
 	}
@@ -60,51 +62,52 @@ class PsychUIRadioGroup extends FlxSpriteGroup
 		_hitbox.y = y;
 		_hitbox.width = width;
 		_hitbox.height = height;
-		if(maxItems > 0 && maxItems < labels.length && FlxG.mouse.wheel != 0 && FlxG.mouse.overlaps(_hitbox, camera))
+		if (maxItems > 0 && maxItems < labels.length && FlxG.mouse.wheel != 0 && FlxG.mouse.overlaps(_hitbox, camera))
 		{
 			curScroll -= FlxG.mouse.wheel;
-			//trace('just scrolled: ' + FlxG.mouse.wheel);
+			// trace('just scrolled: ' + FlxG.mouse.wheel);
 		}
 
 		var baseY:Float = y + radios.length * space;
-		if(stackHorizontal) baseY = y + 25;
+		if (stackHorizontal)
+			baseY = y + 25;
 
 		var hasArrowUp:Bool = false;
 		var hasArrowDown:Bool = false;
-		if(arrowDown != null && arrowDown.exists && arrowDown.active)
+		if (arrowDown != null && arrowDown.exists && arrowDown.active)
 		{
 			arrowDown.x = x;
 			arrowDown.y = baseY;
 			hasArrowDown = true;
 		}
 
-		if(arrowUp != null && arrowUp.exists && arrowUp.active)
+		if (arrowUp != null && arrowUp.exists && arrowUp.active)
 		{
 			arrowUp.x = x;
 			arrowUp.y = baseY;
 			hasArrowUp = true;
-			if(hasArrowDown)
+			if (hasArrowDown)
 				arrowDown.x += arrowUp.width + 8;
 		}
 
-		if(FlxG.mouse.justPressed)
+		if (FlxG.mouse.justPressed)
 		{
-			if(hasArrowUp && maxItems > 0 && curScroll > 0 && FlxG.mouse.overlaps(arrowUp, camera))
+			if (hasArrowUp && maxItems > 0 && curScroll > 0 && FlxG.mouse.overlaps(arrowUp, camera))
 			{
 				curScroll--;
 				arrowUp.animation.play('press');
 			}
-			else if(hasArrowDown && maxItems > 0 && curScroll < (labels.length - maxItems) && FlxG.mouse.overlaps(arrowDown, camera))
+			else if (hasArrowDown && maxItems > 0 && curScroll < (labels.length - maxItems) && FlxG.mouse.overlaps(arrowDown, camera))
 			{
 				curScroll++;
 				arrowDown.animation.play('press');
 			}
 		}
-		else if(FlxG.mouse.released)
+		else if (FlxG.mouse.released)
 		{
-			if(hasArrowUp && arrowUp.animation.curAnim != null && arrowUp.animation.curAnim.name != 'normal')
+			if (hasArrowUp && arrowUp.animation.curAnim != null && arrowUp.animation.curAnim.name != 'normal')
 				arrowUp.animation.play('normal');
-			if(hasArrowDown && arrowDown.animation.curAnim != null && arrowDown.animation.curAnim.name != 'normal')
+			if (hasArrowDown && arrowDown.animation.curAnim != null && arrowDown.animation.curAnim.name != 'normal')
 				arrowDown.animation.play('normal');
 		}
 	}
@@ -113,10 +116,10 @@ class PsychUIRadioGroup extends FlxSpriteGroup
 	{
 		super.draw();
 
-		if(arrowUp != null && arrowUp.exists && arrowUp.active)
+		if (arrowUp != null && arrowUp.exists && arrowUp.active)
 			arrowUp.draw();
 
-		if(arrowDown != null && arrowDown.exists && arrowDown.active)
+		if (arrowDown != null && arrowDown.exists && arrowDown.active)
 			arrowDown.draw();
 	}
 
@@ -129,18 +132,19 @@ class PsychUIRadioGroup extends FlxSpriteGroup
 	}
 
 	public var curScroll(default, set):Int = 0;
+
 	function set_curScroll(v:Int)
 	{
 		var lastScroll:Int = curScroll;
-		if(maxItems > 0 && labels.length > maxItems)
+		if (maxItems > 0 && labels.length > maxItems)
 		{
 			curScroll = Std.int(FlxMath.bound(v, 0, labels.length - maxItems));
-			if(arrowUp != null && arrowUp.exists) 
+			if (arrowUp != null && arrowUp.exists)
 			{
 				arrowUp.visible = arrowUp.active = true;
 				arrowUp.alpha = (curScroll != 0) ? 1 : 0.4;
 			}
-			if(arrowDown != null && arrowDown.exists) 
+			if (arrowDown != null && arrowDown.exists)
 			{
 				arrowDown.visible = arrowDown.active = true;
 				arrowDown.alpha = (curScroll != (labels.length - maxItems)) ? 1 : 0.4;
@@ -149,18 +153,18 @@ class PsychUIRadioGroup extends FlxSpriteGroup
 		else
 		{
 			curScroll = 0;
-			if(arrowUp != null && arrowUp.exists) 
+			if (arrowUp != null && arrowUp.exists)
 			{
 				arrowUp.visible = arrowUp.active = false;
 				arrowUp.alpha = 1;
 			}
-			if(arrowDown != null && arrowDown.exists) 
+			if (arrowDown != null && arrowDown.exists)
 			{
 				arrowDown.visible = arrowDown.active = false;
 				arrowDown.alpha = 1;
 			}
 		}
-		if(curScroll != lastScroll)
+		if (curScroll != lastScroll)
 		{
 			checked += (lastScroll - curScroll);
 			updateRadioItems();
@@ -177,12 +181,13 @@ class PsychUIRadioGroup extends FlxSpriteGroup
 
 	function set_checked(v:Int)
 	{
-		checked = Std.int(FlxMath.bound(v, -1, Math.min(labels.length-1, radios.length-1)));
+		checked = Std.int(FlxMath.bound(v, -1, Math.min(labels.length - 1, radios.length - 1)));
 		@:bypassAccessor checkedRadio = null;
 		for (num => radio in radios)
 		{
 			radio.checked = (num == checked);
-			if(num == checked) @:bypassAccessor checkedRadio = radio;
+			if (num == checked)
+				@:bypassAccessor checkedRadio = radio;
 		}
 		return checked;
 	}
@@ -203,7 +208,7 @@ class PsychUIRadioGroup extends FlxSpriteGroup
 		for (num => radio in radios)
 		{
 			radio.checked = (v == radio);
-			if(v == radio)
+			if (v == radio)
 			{
 				checkedRadio = radio;
 				@:bypassAccessor checked = num;
@@ -217,7 +222,7 @@ class PsychUIRadioGroup extends FlxSpriteGroup
 		space = v;
 		for (num => radio in radios)
 		{
-			if(!stackHorizontal)
+			if (!stackHorizontal)
 				radio.y = y + num * space;
 			else
 				radio.x = x + num * (textWidth + space);
@@ -225,7 +230,6 @@ class PsychUIRadioGroup extends FlxSpriteGroup
 
 		return space;
 	}
-
 
 	function set_textWidth(v:Int)
 	{
@@ -247,7 +251,7 @@ class PsychUIRadioGroup extends FlxSpriteGroup
 
 	public function updateRadioItems()
 	{
-		if(maxItems > 0)
+		if (maxItems > 0)
 		{
 			for (radio in radios)
 				radio.kill();
@@ -256,30 +260,30 @@ class PsychUIRadioGroup extends FlxSpriteGroup
 			for (i in 0...maxItems)
 			{
 				var rad = _addNewRadio();
-				if(i >= labels.length)
+				if (i >= labels.length)
 					rad.visible = rad.active = false;
 			}
 		}
 		else
 		{
-			while(radios.length > labels.length)
+			while (radios.length > labels.length)
 			{
-				//kill extra radios
-				radios[radios.length-1].kill();
+				// kill extra radios
+				radios[radios.length - 1].kill();
 				radios.pop();
 			}
-			while(radios.length < labels.length)
+			while (radios.length < labels.length)
 			{
-				//recycle radios to fit number
+				// recycle radios to fit number
 				_addNewRadio();
 			}
 		}
-		
+
 		for (num => radio in radios)
 		{
 			radio.visible = radio.active = (num < labels.length || labels.length > maxItems);
 			radio.label = labels[num + curScroll] != null ? labels[num + curScroll] : '';
-			if(!stackHorizontal)
+			if (!stackHorizontal)
 			{
 				radio.x = x;
 				radio.y = y + num * space;
@@ -294,26 +298,34 @@ class PsychUIRadioGroup extends FlxSpriteGroup
 
 	override function set_cameras(v:Array<FlxCamera>)
 	{
-		if(arrowUp != null && arrowUp.exists) arrowUp.cameras = v;
-		if(arrowDown != null && arrowDown.exists) arrowDown.cameras = v;
+		if (arrowUp != null && arrowUp.exists)
+			arrowUp.cameras = v;
+		if (arrowDown != null && arrowDown.exists)
+			arrowDown.cameras = v;
 		return super.set_cameras(v);
 	}
 
 	override function set_camera(v:FlxCamera)
 	{
-		if(arrowUp != null && arrowUp.exists) arrowUp.camera = v;
-		if(arrowDown != null && arrowDown.exists) arrowDown.camera = v;
+		if (arrowUp != null && arrowUp.exists)
+			arrowUp.camera = v;
+		if (arrowDown != null && arrowDown.exists)
+			arrowDown.camera = v;
 		return super.set_camera(v);
 	}
 
 	public var broadcastRadioGroupEvent:Bool = true;
+
 	function _addNewRadio()
 	{
 		var radio:PsychUIRadioItem = cast recycle(PsychUIRadioItem);
-		radio.onClick = function() {
+		radio.onClick = function()
+		{
 			checkedRadio = radio;
-			if(onClick != null) onClick();
-			if(broadcastRadioGroupEvent) PsychUIEventHandler.event(CLICK_EVENT, this);
+			if (onClick != null)
+				onClick();
+			if (broadcastRadioGroupEvent)
+				PsychUIEventHandler.event(CLICK_EVENT, this);
 		};
 		radio.visible = radio.active = true;
 		radio.text.fieldWidth = textWidth;
@@ -329,6 +341,7 @@ class PsychUIRadioItem extends PsychUICheckBox
 		super(x, y, label, textWid);
 		broadcastCheckBoxEvent = false;
 	}
+
 	override function boxGraphic()
 	{
 		box.loadGraphic(Paths.image('psych-ui/radio', 'embed'), true, 16, 16);
@@ -337,3 +350,4 @@ class PsychUIRadioItem extends PsychUICheckBox
 		box.animation.play('false');
 	}
 }
+

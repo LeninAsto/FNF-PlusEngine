@@ -19,11 +19,11 @@ import objects.MaterialVolumeTray;
 //       └── MusicBeatState   (+ GlobalScript, HScript/Lua infrastructure)
 //           ├── TitleState / PlayState / etc.
 //           └── CustomState
-
 class BaseMusicBeatState extends FlxState
 {
 	// ─── Beat/step counters ───────────────────────────────────────────────────
 	public var curSection:Int = 0;
+
 	private var stepsToDo:Int = 0;
 
 	public var curStep:Int = 0;
@@ -34,7 +34,9 @@ class BaseMusicBeatState extends FlxState
 
 	// ─── Controls ─────────────────────────────────────────────────────────────
 	public var controls(get, never):Controls;
-	private function get_controls():Controls return Controls.instance;
+
+	private function get_controls():Controls
+		return Controls.instance;
 
 	// ─── Mobile controls ──────────────────────────────────────────────────────
 	public var touchPad:TouchPad;
@@ -65,15 +67,21 @@ class BaseMusicBeatState extends FlxState
 	public function addMobileControls(defaultDrawTarget:Bool = false):Void
 	{
 		var extraMode = MobileData.extraActions.get(ClientPrefs.data.extraButtons);
-		if (extraMode == null) extraMode = NONE;
+		if (extraMode == null)
+			extraMode = NONE;
 
 		switch (MobileData.mode)
 		{
-			case 0: mobileControls = new TouchPad('RIGHT_FULL', 'NONE', extraMode);
-			case 1: mobileControls = new TouchPad('LEFT_FULL', 'NONE', extraMode);
-			case 2: mobileControls = MobileData.getTouchPadCustom(new TouchPad('RIGHT_FULL', 'NONE', extraMode));
-			case 3: mobileControls = new Hitbox(extraMode);
-			case 4: mobileControls = new Hitbox(NONE, true);
+			case 0:
+				mobileControls = new TouchPad('RIGHT_FULL', 'NONE', extraMode);
+			case 1:
+				mobileControls = new TouchPad('LEFT_FULL', 'NONE', extraMode);
+			case 2:
+				mobileControls = MobileData.getTouchPadCustom(new TouchPad('RIGHT_FULL', 'NONE', extraMode));
+			case 3:
+				mobileControls = new Hitbox(extraMode);
+			case 4:
+				mobileControls = new Hitbox(NONE, true);
 		}
 
 		if (mobileControls != null && mobileControls.instance != null)
@@ -170,7 +178,8 @@ class BaseMusicBeatState extends FlxState
 	// ─── Beat/step update helpers ─────────────────────────────────────────────
 	function updateSection():Void
 	{
-		if (stepsToDo < 1) stepsToDo = Math.round(getBeatsOnSection() * 4);
+		if (stepsToDo < 1)
+			stepsToDo = Math.round(getBeatsOnSection() * 4);
 		while (curStep >= stepsToDo)
 		{
 			curSection++;
@@ -182,7 +191,8 @@ class BaseMusicBeatState extends FlxState
 
 	function rollbackSection():Void
 	{
-		if (curStep < 0) return;
+		if (curStep < 0)
+			return;
 		var lastSection:Int = curSection;
 		curSection = 0;
 		stepsToDo = 0;
@@ -191,11 +201,13 @@ class BaseMusicBeatState extends FlxState
 			if (PlayState.SONG.notes[i] != null)
 			{
 				stepsToDo += Math.round(getBeatsOnSection() * 4);
-				if (stepsToDo > curStep) break;
+				if (stepsToDo > curStep)
+					break;
 				curSection++;
 			}
 		}
-		if (curSection > lastSection) sectionHit();
+		if (curSection > lastSection)
+			sectionHit();
 	}
 
 	function updateBeat():Void
@@ -248,7 +260,8 @@ class BaseMusicBeatState extends FlxState
 			stage.curDecStep = curDecStep;
 			stage.stepHit();
 		});
-		if (curStep % 4 == 0) beatHit();
+		if (curStep % 4 == 0)
+			beatHit();
 	}
 
 	public function beatHit():Void
@@ -273,43 +286,54 @@ class BaseMusicBeatState extends FlxState
 	// ─── Transitions (no script hooks — MusicBeatState shadows these) ─────────
 	public static function switchState(nextState:FlxState = null):Void
 	{
-		if (nextState == null) nextState = FlxG.state;
+		if (nextState == null)
+			nextState = FlxG.state;
 		if (nextState == FlxG.state)
 		{
 			resetState();
 			return;
 		}
-		if (FlxTransitionableState.skipNextTransIn) FlxG.switchState(nextState);
-		else startTransition(nextState);
+		if (FlxTransitionableState.skipNextTransIn)
+			FlxG.switchState(nextState);
+		else
+			startTransition(nextState);
 		FlxTransitionableState.skipNextTransIn = false;
 	}
 
 	public static function resetState():Void
 	{
-		if (FlxTransitionableState.skipNextTransIn) FlxG.switchState(_makeCurrentStateReset());
-		else startTransition();
+		if (FlxTransitionableState.skipNextTransIn)
+			FlxG.switchState(_makeCurrentStateReset());
+		else
+			startTransition();
 		FlxTransitionableState.skipNextTransIn = false;
 	}
 
 	public static function startTransition(nextState:FlxState = null):Void
 	{
-		if (nextState == null) nextState = FlxG.state;
+		if (nextState == null)
+			nextState = FlxG.state;
 		GlobalLoadingOverlay.showPersistent();
 		FlxG.state.openSubState(new CustomFadeTransition(0.7, false));
-		if (nextState == FlxG.state) {
+		if (nextState == FlxG.state)
+		{
 			var resetFn = _makeCurrentStateReset();
 			CustomFadeTransition.finishCallback = function() FlxG.switchState(resetFn);
-		} else {
+		}
+		else
+		{
 			CustomFadeTransition.finishCallback = function() FlxG.switchState(nextState);
 		}
 	}
 
 	/** Builds a factory lambda that recreates the current state correctly.
 	 *  Avoids `FlxG.resetState()` breaking on states with constructor args (e.g. ScriptableState). */
-	static function _makeCurrentStateReset():()->flixel.FlxState {
+	static function _makeCurrentStateReset():() -> flixel.FlxState
+	{
 		#if (HSCRIPT_ALLOWED && sys)
 		var cs = FlxG.state;
-		if (cs is backend.ScriptableState) {
+		if (cs is backend.ScriptableState)
+		{
 			var name:String = (cast cs : backend.ScriptableState).stateName;
 			return () -> new backend.ScriptableState(name);
 		}
@@ -318,3 +342,4 @@ class BaseMusicBeatState extends FlxState
 		return () -> Type.createInstance(cls, []);
 	}
 }
+

@@ -2,15 +2,11 @@ package states.stages;
 
 import openfl.filters.ShaderFilter;
 import shaders.RainShader;
-
 import flixel.addons.display.FlxTiledSprite;
 import flixel.graphics.frames.FlxAtlasFrames;
-
 import substates.GameOverSubstate;
 import states.stages.objects.*;
-
 import objects.Note;
-
 import cutscenes.CutsceneHandler;
 
 enum NeneState
@@ -32,7 +28,7 @@ class PhillyStreets extends BaseStage
 	var rainShader:RainShader;
 	var rainShaderStartIntensity:Float = 0;
 	var rainShaderEndIntensity:Float = 0;
-	
+
 	var scrollingSky:FlxTiledSprite;
 	var phillyTraffic:BGSprite;
 
@@ -45,9 +41,10 @@ class PhillyStreets extends BaseStage
 
 	var darkenable:Array<FlxSprite> = [];
 	var abot:ABotSpeaker;
+
 	override function create()
 	{
-		if(!ClientPrefs.data.lowQuality)
+		if (!ClientPrefs.data.lowQuality)
 		{
 			var skyImage = Paths.image('phillyStreets/phillySkybox');
 			scrollingSky = new FlxTiledSprite(skyImage, skyImage.width + 400, skyImage.height, true, false);
@@ -57,7 +54,7 @@ class PhillyStreets extends BaseStage
 			scrollingSky.scale.set(0.65, 0.65);
 			add(scrollingSky);
 			darkenable.push(scrollingSky);
-		
+
 			var phillySkyline:BGSprite = new BGSprite('phillyStreets/phillySkyline', -545, -273, 0.2, 0.2);
 			add(phillySkyline);
 			darkenable.push(phillySkyline);
@@ -75,7 +72,7 @@ class PhillyStreets extends BaseStage
 		add(phillyHighwayLights);
 		darkenable.push(phillyHighwayLights);
 
-		if(!ClientPrefs.data.lowQuality)
+		if (!ClientPrefs.data.lowQuality)
 		{
 			var phillyHighwayLightsLightmap:BGSprite = new BGSprite('phillyStreets/phillyHighwayLights_lightmap', 284, 305, 1, 1);
 			phillyHighwayLightsLightmap.blend = ADD;
@@ -88,7 +85,7 @@ class PhillyStreets extends BaseStage
 		add(phillyHighway);
 		darkenable.push(phillyHighway);
 
-		if(!ClientPrefs.data.lowQuality)
+		if (!ClientPrefs.data.lowQuality)
 		{
 			var phillySmog:BGSprite = new BGSprite('phillyStreets/phillySmog', -6, 245, 0.8, 1);
 			add(phillySmog);
@@ -98,10 +95,12 @@ class PhillyStreets extends BaseStage
 			{
 				var car:BGSprite = new BGSprite('phillyStreets/phillyCars', 1200, 818, 0.9, 1, ['car1', 'car2', 'car3', 'car4'], false);
 				add(car);
-				switch(i)
+				switch (i)
 				{
-					case 0: phillyCars = car;
-					case 1: phillyCars2 = car;
+					case 0:
+						phillyCars = car;
+					case 1:
+						phillyCars2 = car;
 				}
 				darkenable.push(car);
 			}
@@ -121,8 +120,8 @@ class PhillyStreets extends BaseStage
 		var phillyForeground:BGSprite = new BGSprite('phillyStreets/phillyForeground', 88, 317, 1, 1);
 		add(phillyForeground);
 		darkenable.push(phillyForeground);
-		
-		if(!ClientPrefs.data.lowQuality)
+
+		if (!ClientPrefs.data.lowQuality)
 		{
 			picoFade = new FlxSprite();
 			picoFade.antialiasing = ClientPrefs.data.antialiasing;
@@ -134,23 +133,28 @@ class PhillyStreets extends BaseStage
 		abot = new ABotSpeaker(gfGroup.x, gfGroup.y + 550);
 		updateABotEye(true);
 		add(abot);
-		
-		if(ClientPrefs.data.shaders)
+
+		if (ClientPrefs.data.shaders)
 			setupRainShader();
 
 		var _song = PlayState.SONG;
-		if(_song.gameOverSound == null || _song.gameOverSound.trim().length < 1) GameOverSubstate.deathSoundName = 'fnf_loss_sfx-pico';
-		if(_song.gameOverLoop == null || _song.gameOverLoop.trim().length < 1) GameOverSubstate.loopSoundName = 'gameOver-pico';
-		if(_song.gameOverEnd == null || _song.gameOverEnd.trim().length < 1) GameOverSubstate.endSoundName = 'gameOverEnd-pico';
-		if(_song.gameOverChar == null || _song.gameOverChar.trim().length < 1) GameOverSubstate.characterName = 'pico-dead';
+		if (_song.gameOverSound == null || _song.gameOverSound.trim().length < 1)
+			GameOverSubstate.deathSoundName = 'fnf_loss_sfx-pico';
+		if (_song.gameOverLoop == null || _song.gameOverLoop.trim().length < 1)
+			GameOverSubstate.loopSoundName = 'gameOver-pico';
+		if (_song.gameOverEnd == null || _song.gameOverEnd.trim().length < 1)
+			GameOverSubstate.endSoundName = 'gameOverEnd-pico';
+		if (_song.gameOverChar == null || _song.gameOverChar.trim().length < 1)
+			GameOverSubstate.characterName = 'pico-dead';
 		setDefaultGF('nene');
-		
+
 		if (isStoryMode)
 		{
 			switch (songName)
 			{
 				case 'darnell':
-					if(!seenCutscene) setStartCallback(videoCutscene.bind('darnellCutscene'));
+					if (!seenCutscene)
+						setStartCallback(videoCutscene.bind('darnellCutscene'));
 				case '2hot':
 					setEndCallback(function()
 					{
@@ -167,20 +171,23 @@ class PhillyStreets extends BaseStage
 	}
 
 	var noteTypes:Array<String> = [];
+
 	override function createPost()
 	{
 		var unspawnNotes:Array<Note> = cast game.unspawnNotes;
 		for (note in unspawnNotes)
 		{
-			if(note == null) continue;
+			if (note == null)
+				continue;
 
-			//override animations for note types
-			switch(note.noteType)
+			// override animations for note types
+			switch (note.noteType)
 			{
 				case 'weekend-1-firegun':
 					note.blockHit = true;
 			}
-			if(!noteTypes.contains(note.noteType)) noteTypes.push(note.noteType);
+			if (!noteTypes.contains(note.noteType))
+				noteTypes.push(note.noteType);
 		}
 
 		spraycanPile = new BGSprite('SpraycanPile', 920, 1045, 1, 1);
@@ -188,11 +195,11 @@ class PhillyStreets extends BaseStage
 		add(spraycanPile);
 		darkenable.push(spraycanPile);
 
-		if(gf != null)
+		if (gf != null)
 		{
 			gf.animation.callback = function(name:String, frameNumber:Int, frameIndex:Int)
 			{
-				switch(currentNeneState)
+				switch (currentNeneState)
 				{
 					case STATE_PRE_RAISE:
 						if (name == 'danceLeft' && frameNumber >= 14)
@@ -208,10 +215,11 @@ class PhillyStreets extends BaseStage
 	}
 
 	var videoEnded:Bool = false;
+
 	function videoCutscene(?videoName:String = null)
 	{
 		game.inCutscene = true;
-		if(!videoEnded && videoName != null)
+		if (!videoEnded && videoName != null)
 		{
 			#if VIDEOS_ALLOWED
 			game.startVideo(videoName);
@@ -221,8 +229,7 @@ class PhillyStreets extends BaseStage
 				game.videoCutscene = null;
 				videoCutscene();
 			};
-
-			#else //Make a timer to prevent it from crashing due to sprites not being ready yet.
+			#else // Make a timer to prevent it from crashing due to sprites not being ready yet.
 			new FlxTimer().start(0.0, function(tmr:FlxTimer)
 			{
 				videoEnded = true;
@@ -231,7 +238,7 @@ class PhillyStreets extends BaseStage
 			#end
 			return;
 		}
-		
+
 		if (isStoryMode)
 		{
 			switch (songName)
@@ -243,6 +250,7 @@ class PhillyStreets extends BaseStage
 	}
 
 	var cutsceneHandler:CutsceneHandler;
+
 	function darnellCutscene()
 	{
 		moveCamera(false);
@@ -269,17 +277,17 @@ class PhillyStreets extends BaseStage
 		camHUD.alpha = 0;
 		gf.animation.finishCallback = function(name:String)
 		{
-			switch(name)
+			switch (name)
 			{
 				case 'danceLeft', 'danceRight':
 					gf.dance();
 			}
 		}
 		gf.dance();
-			
+
 		dad.animation.finishCallback = function(name:String)
 		{
-			switch(name)
+			switch (name)
 			{
 				case 'idle':
 					dad.dance();
@@ -289,51 +297,51 @@ class PhillyStreets extends BaseStage
 
 		final cutsceneDelay = 2.0;
 		boyfriend.playAnim('intro1', true);
-		cutsceneHandler.timer(0.7, function() //play music
+		cutsceneHandler.timer(0.7, function() // play music
 		{
 			cutsceneMusic.play();
 		});
-		cutsceneHandler.timer(cutsceneDelay, function() //zoom out to show off everything
+		cutsceneHandler.timer(cutsceneDelay, function() // zoom out to show off everything
 		{
 			moveCamera(true);
 			camFollow.x += 100;
-			FlxTween.tween(FlxG.camera.scroll, {x: camFollow.x + 100 - FlxG.width/2, y: camFollow.y - FlxG.height/2}, 2.5, {ease: FlxEase.quadInOut});
+			FlxTween.tween(FlxG.camera.scroll, {x: camFollow.x + 100 - FlxG.width / 2, y: camFollow.y - FlxG.height / 2}, 2.5, {ease: FlxEase.quadInOut});
 			FlxTween.tween(FlxG.camera, {zoom: 0.66}, 2.5, {ease: FlxEase.quadInOut});
 		});
-		cutsceneHandler.timer(cutsceneDelay + 3, function() //darnell lights can
+		cutsceneHandler.timer(cutsceneDelay + 3, function() // darnell lights can
 		{
 			dad.playAnim('lightCan', true);
 			lightCanSnd.play(true);
 		});
-		cutsceneHandler.timer(cutsceneDelay + 4, function() //pico reloads
+		cutsceneHandler.timer(cutsceneDelay + 4, function() // pico reloads
 		{
 			boyfriend.playAnim('cock', true);
-			FlxTween.tween(FlxG.camera.scroll, {x: camFollow.x + 180 - FlxG.width/2}, 0.4, {ease: FlxEase.backOut});
+			FlxTween.tween(FlxG.camera.scroll, {x: camFollow.x + 180 - FlxG.width / 2}, 0.4, {ease: FlxEase.backOut});
 			gunPrepSnd.play(true);
 		});
 		cutsceneHandler.timer(cutsceneDelay + 4.166, function() createCasing());
-		cutsceneHandler.timer(cutsceneDelay + 4.4, function() //darnell kicks can
+		cutsceneHandler.timer(cutsceneDelay + 4.4, function() // darnell kicks can
 		{
 			dad.playAnim('kickCan', true);
 			spraycan.playCanStart();
 			kickCanSnd.play(true);
 		});
-		cutsceneHandler.timer(cutsceneDelay + 4.8, function() //darnell knees can
+		cutsceneHandler.timer(cutsceneDelay + 4.8, function() // darnell knees can
 		{
 			dad.playAnim('kneeCan', true);
 			kneeCanSnd.play(true);
 		});
-		cutsceneHandler.timer(cutsceneDelay + 5.1, function() //pico fires at can
+		cutsceneHandler.timer(cutsceneDelay + 5.1, function() // pico fires at can
 		{
 			boyfriend.playAnim('intro2', true);
 			boyfriend.specialAnim = true;
 
 			FlxG.sound.play(Paths.soundRandom('shots/shot', 1, 4));
 
-			FlxTween.tween(FlxG.camera.scroll, {x: camFollow.x + 100 - FlxG.width/2}, 2.5, {ease: FlxEase.quadInOut});
+			FlxTween.tween(FlxG.camera.scroll, {x: camFollow.x + 100 - FlxG.width / 2}, 2.5, {ease: FlxEase.quadInOut});
 
 			spraycan.playCanShot();
-			new FlxTimer().start(1/24, function(_)
+			new FlxTimer().start(1 / 24, function(_)
 			{
 				darkenStageProps();
 			});
@@ -361,7 +369,8 @@ class PhillyStreets extends BaseStage
 
 			game.cameraSpeed = 0;
 			FlxTween.tween(FlxG.camera, {zoom: 0.77}, 2, {ease: FlxEase.sineInOut});
-			FlxTween.tween(FlxG.camera.scroll, {x: camFollow.x + 180 - FlxG.width/2}, 2, {ease: FlxEase.sineInOut, onComplete: function(_) game.cameraSpeed = 1});
+			FlxTween.tween(FlxG.camera.scroll, {x: camFollow.x + 180 - FlxG.width / 2}, 2,
+				{ease: FlxEase.sineInOut, onComplete: function(_) game.cameraSpeed = 1});
 			game.inCutscene = false;
 
 			spraycan.visible = spraycan.active = spraycan.cutscene = false;
@@ -377,12 +386,12 @@ class PhillyStreets extends BaseStage
 			boyfriend.dance();
 			dad.animation.finishCallback = null;
 			gf.animation.finishCallback = null;
-			
+
 			game.moveCameraSection();
 			game.cameraSpeed = 1;
 			FlxTween.cancelTweensOf(FlxG.camera);
 			FlxTween.cancelTweensOf(FlxG.camera.scroll);
-			FlxG.camera.scroll.set(camFollow.x - FlxG.width/2, camFollow.y - FlxG.height/2);
+			FlxG.camera.scroll.set(camFollow.x - FlxG.width / 2, camFollow.y - FlxG.height / 2);
 			FlxG.camera.zoom = defaultCamZoom;
 		};
 		FlxG.camera.fade(FlxColor.BLACK, 2, true, null, true);
@@ -390,12 +399,13 @@ class PhillyStreets extends BaseStage
 
 	function updateABotEye(finishInstantly:Bool = false)
 	{
-		if(PlayState.SONG.notes[Std.int(FlxMath.bound(curSection, 0, PlayState.SONG.notes.length - 1))].mustHitSection == true)
+		if (PlayState.SONG.notes[Std.int(FlxMath.bound(curSection, 0, PlayState.SONG.notes.length - 1))].mustHitSection == true)
 			abot.lookRight();
 		else
 			abot.lookLeft();
 
-		if(finishInstantly) abot.eyes.anim.curFrame = abot.eyes.anim.length - 1;
+		if (finishInstantly)
+			abot.eyes.anim.curFrame = abot.eyes.anim.length - 1;
 	}
 
 	override function startSong()
@@ -403,12 +413,13 @@ class PhillyStreets extends BaseStage
 		abot.snd = FlxG.sound.music;
 		gf.animation.finishCallback = onNeneAnimationFinished;
 	}
-	
+
 	function onNeneAnimationFinished(name:String)
 	{
-		if(!game.startedCountdown) return;
+		if (!game.startedCountdown)
+			return;
 
-		switch(currentNeneState)
+		switch (currentNeneState)
 		{
 			case STATE_RAISE, STATE_LOWER:
 				if (name == 'raiseKnife' || name == 'lowerKnife')
@@ -421,7 +432,7 @@ class PhillyStreets extends BaseStage
 				// Ignore.
 		}
 	}
-	
+
 	var casingGroup:FlxSpriteGroup;
 	var casingFrames:FlxAtlasFrames;
 	var gunPrepSnd:FlxSound;
@@ -429,19 +440,21 @@ class PhillyStreets extends BaseStage
 	var lightCanSnd:FlxSound;
 	var kickCanSnd:FlxSound;
 	var kneeCanSnd:FlxSound;
+
 	function precache()
 	{
 		var didCreateCan = false;
 		function createCan()
 		{
-			if(didCreateCan) return;
+			if (didCreateCan)
+				return;
 			spraycan = new SpraycanAtlasSprite(spraycanPile.x + 530, spraycanPile.y - 240);
 			add(spraycan);
 
 			lightCanSnd = new FlxSound();
 			FlxG.sound.list.add(lightCanSnd);
 			lightCanSnd.loadEmbedded(Paths.sound('Darnell_Lighter'));
-			
+
 			kickCanSnd = new FlxSound();
 			FlxG.sound.list.add(kickCanSnd);
 			kickCanSnd.loadEmbedded(Paths.sound('Kick_Can_UP'));
@@ -455,14 +468,15 @@ class PhillyStreets extends BaseStage
 		var didCreateCasing = false;
 		function precacheCasing()
 		{
-			if(didCreateCasing) return;
-			if(!ClientPrefs.data.lowQuality)
+			if (didCreateCasing)
+				return;
+			if (!ClientPrefs.data.lowQuality)
 			{
-				casingFrames = Paths.getSparrowAtlas('PicoBullet'); //precache
+				casingFrames = Paths.getSparrowAtlas('PicoBullet'); // precache
 				casingGroup = new FlxSpriteGroup();
 				add(casingGroup);
 			}
-			
+
 			gunPrepSnd = new FlxSound();
 			FlxG.sound.list.add(gunPrepSnd);
 			gunPrepSnd.loadEmbedded(Paths.sound('Gun_Prep'));
@@ -471,7 +485,7 @@ class PhillyStreets extends BaseStage
 
 		for (noteType in noteTypes)
 		{
-			switch(noteType)
+			switch (noteType)
 			{
 				case 'weekend-1-kickcan':
 					createCan();
@@ -483,10 +497,10 @@ class PhillyStreets extends BaseStage
 					bonkSnd.loadEmbedded(Paths.sound('Pico_Bonk'));
 			}
 		}
-		
-		if(isStoryMode && !seenCutscene)
+
+		if (isStoryMode && !seenCutscene)
 		{
-			switch(songName)
+			switch (songName)
 			{
 				case 'darnell':
 					createCan();
@@ -517,22 +531,26 @@ class PhillyStreets extends BaseStage
 		rainShader.intensity = rainShaderStartIntensity;
 		FlxG.camera.setFilters([new ShaderFilter(rainShader)]);
 	}
-	
+
 	var currentNeneState:NeneState = STATE_DEFAULT;
 	var animationFinished:Bool = false;
+
 	override function update(elapsed:Float)
 	{
-		if(scrollingSky != null) scrollingSky.scrollX -= elapsed * 22;
+		if (scrollingSky != null)
+			scrollingSky.scrollX -= elapsed * 22;
 
-		if(rainShader != null)
+		if (rainShader != null)
 		{
-			var remappedIntensityValue:Float = FlxMath.remapToRange(Conductor.songPosition, 0, (FlxG.sound.music != null ? FlxG.sound.music.length : 0), rainShaderStartIntensity, rainShaderEndIntensity);
+			var remappedIntensityValue:Float = FlxMath.remapToRange(Conductor.songPosition, 0, (FlxG.sound.music != null ? FlxG.sound.music.length : 0),
+				rainShaderStartIntensity, rainShaderEndIntensity);
 			rainShader.intensity = remappedIntensityValue;
 			rainShader.updateViewInfo(FlxG.width, FlxG.height, FlxG.camera);
 			rainShader.update(elapsed);
 		}
-		
-		if(gf == null || !game.startedCountdown) return;
+
+		if (gf == null || !game.startedCountdown)
+			return;
 
 		animationFinished = gf.isAnimationFinished();
 		transitionState();
@@ -603,42 +621,46 @@ class PhillyStreets extends BaseStage
 
 	override function beatHit()
 	{
-		//if(curBeat % 2 == 0) abot.beatHit();
-		switch(currentNeneState) {
+		// if(curBeat % 2 == 0) abot.beatHit();
+		switch (currentNeneState)
+		{
 			case STATE_READY:
 				if (blinkCountdown == 0)
 				{
 					gf.playAnim('idleKnife', false);
 					blinkCountdown = FlxG.random.int(MIN_BLINK_DELAY, MAX_BLINK_DELAY);
 				}
-				else blinkCountdown--;
+				else
+					blinkCountdown--;
 
 			default:
 				// In other states, don't interrupt the existing animation.
 		}
 
-		if(ClientPrefs.data.lowQuality) return;
+		if (ClientPrefs.data.lowQuality)
+			return;
 
 		if (FlxG.random.bool(10) && curBeat != (lastChange + changeInterval) && carInterruptable == true)
 		{
-			if(lightsStop == false)
+			if (lightsStop == false)
 				driveCar(phillyCars);
 			else
 				driveCarLights(phillyCars);
 		}
 
-		if(FlxG.random.bool(10) && curBeat != (lastChange + changeInterval) && car2Interruptable == true && lightsStop == false)
+		if (FlxG.random.bool(10) && curBeat != (lastChange + changeInterval) && car2Interruptable == true && lightsStop == false)
 			driveCarBack(phillyCars2);
 
-		if (curBeat == (lastChange + changeInterval)) changeLights(curBeat);
+		if (curBeat == (lastChange + changeInterval))
+			changeLights(curBeat);
 	}
-	
+
 	function changeLights(beat:Int):Void
 	{
 		lastChange = beat;
 		lightsStop = !lightsStop;
 
-		if(lightsStop)
+		if (lightsStop)
 		{
 			phillyTraffic.animation.play('greentored');
 			changeInterval = 20;
@@ -648,7 +670,8 @@ class PhillyStreets extends BaseStage
 			phillyTraffic.animation.play('redtogreen');
 			changeInterval = 30;
 
-			if(carWaiting == true) finishCarLights(phillyCars);
+			if (carWaiting == true)
+				finishCarLights(phillyCars);
 		}
 	}
 
@@ -674,12 +697,12 @@ class PhillyStreets extends BaseStage
 	{
 		carInterruptable = false;
 		FlxTween.cancelTweensOf(sprite);
-		var variant:Int = FlxG.random.int(1,4);
+		var variant:Int = FlxG.random.int(1, 4);
 		sprite.animation.play('car' + variant);
 		var extraOffset = [0, 0];
 		var duration:Float = 2;
 
-		switch(variant)
+		switch (variant)
 		{
 			case 1:
 				duration = FlxG.random.float(1, 1.7);
@@ -703,24 +726,28 @@ class PhillyStreets extends BaseStage
 			FlxPoint.get(1950 - offset[0] - 80, 980 - offset[1] + 15)
 		];
 
-		FlxTween.angle(sprite, rotations[0], rotations[1], duration, {ease: FlxEase.cubeOut} );
-		FlxTween.quadPath(sprite, path, duration, true, {ease: FlxEase.cubeOut, onComplete: function(_)
-		{
-			carWaiting = true;
-			if(lightsStop == false) finishCarLights(phillyCars);
-		}});
+		FlxTween.angle(sprite, rotations[0], rotations[1], duration, {ease: FlxEase.cubeOut});
+		FlxTween.quadPath(sprite, path, duration, true, {
+			ease: FlxEase.cubeOut,
+			onComplete: function(_)
+			{
+				carWaiting = true;
+				if (lightsStop == false)
+					finishCarLights(phillyCars);
+			}
+		});
 	}
-	
+
 	function driveCar(sprite:BGSprite):Void
 	{
 		carInterruptable = false;
 		FlxTween.cancelTweensOf(sprite);
-		var variant:Int = FlxG.random.int(1,4);
+		var variant:Int = FlxG.random.int(1, 4);
 		sprite.animation.play('car' + variant);
 
 		var extraOffset = [0, 0];
 		var duration:Float = 2;
-		switch(variant)
+		switch (variant)
 		{
 			case 1:
 				duration = FlxG.random.float(1, 1.7);
@@ -740,9 +767,9 @@ class PhillyStreets extends BaseStage
 
 		var rotations:Array<Int> = [-8, 18];
 		var path:Array<FlxPoint> = [
-				FlxPoint.get(1570 - offset[0], 1049 - offset[1] - 30),
-				FlxPoint.get(2400 - offset[0], 980 - offset[1] - 50),
-				FlxPoint.get(3102 - offset[0], 1127 - offset[1] + 40)
+			FlxPoint.get(1570 - offset[0], 1049 - offset[1] - 30),
+			FlxPoint.get(2400 - offset[0], 980 - offset[1] - 50),
+			FlxPoint.get(3102 - offset[0], 1127 - offset[1] + 40)
 		];
 
 		FlxTween.angle(sprite, rotations[0], rotations[1], duration);
@@ -753,12 +780,12 @@ class PhillyStreets extends BaseStage
 	{
 		car2Interruptable = false;
 		FlxTween.cancelTweensOf(sprite);
-		var variant:Int = FlxG.random.int(1,4);
+		var variant:Int = FlxG.random.int(1, 4);
 		sprite.animation.play('car' + variant);
 
 		var extraOffset = [0, 0];
 		var duration:Float = 2;
-		switch(variant)
+		switch (variant)
 		{
 			case 1:
 				duration = FlxG.random.float(1, 1.7);
@@ -778,9 +805,9 @@ class PhillyStreets extends BaseStage
 
 		var rotations:Array<Int> = [18, -8];
 		var path:Array<FlxPoint> = [
-				FlxPoint.get(3102 - offset[0], 1127 - offset[1] + 60),
-				FlxPoint.get(2400 - offset[0], 980 - offset[1] - 30),
-				FlxPoint.get(1570 - offset[0], 1049 - offset[1] - 10)
+			FlxPoint.get(3102 - offset[0], 1127 - offset[1] + 60),
+			FlxPoint.get(2400 - offset[0], 980 - offset[1] - 30),
+			FlxPoint.get(1570 - offset[0], 1049 - offset[1] - 10)
 		];
 
 		FlxTween.angle(sprite, rotations[0], rotations[1], duration);
@@ -790,13 +817,13 @@ class PhillyStreets extends BaseStage
 	override function goodNoteHit(note:Note)
 	{
 		// 10% chance of playing combo50/combo100 animations for Nene
-		if(FlxG.random.bool(10))
+		if (FlxG.random.bool(10))
 		{
-			switch(game.combo)
+			switch (game.combo)
 			{
 				case 50, 100:
 					var animToPlay:String = 'combo${game.combo}';
-					if(gf.animation.exists(animToPlay))
+					if (gf.animation.exists(animToPlay))
 					{
 						gf.playAnim(animToPlay);
 						gf.specialAnim = true;
@@ -804,7 +831,7 @@ class PhillyStreets extends BaseStage
 			}
 		}
 
-		switch(note.noteType)
+		switch (note.noteType)
 		{
 			case 'weekend-1-cockgun': // HE'S PULLING HIS COCK OUT
 				boyfriend.holdTimer = 0;
@@ -814,21 +841,22 @@ class PhillyStreets extends BaseStage
 
 				boyfriend.animation.callback = function(name:String, frameNumber:Int, frameIndex:Int)
 				{
-					switch(name)
+					switch (name)
 					{
 						case 'cock':
-							if(frameNumber == 3)
+							if (frameNumber == 3)
 							{
 								boyfriend.animation.callback = null;
 								createCasing();
 							}
-						default: boyfriend.animation.callback = null;
+						default:
+							boyfriend.animation.callback = null;
 					}
 				}
 
 				game.notes.forEachAlive(function(note:Note)
 				{
-					if(note.noteType == 'weekend-1-firegun')
+					if (note.noteType == 'weekend-1-firegun')
 						note.blockHit = false;
 				});
 				showPicoFade();
@@ -840,7 +868,7 @@ class PhillyStreets extends BaseStage
 				FlxG.sound.play(Paths.soundRandom('shots/shot', 1, 4));
 				spraycan.playCanShot();
 
-				new FlxTimer().start(1/24, function(tmr)
+				new FlxTimer().start(1 / 24, function(tmr)
 				{
 					darkenStageProps();
 				});
@@ -849,14 +877,15 @@ class PhillyStreets extends BaseStage
 
 	function createCasing()
 	{
-		if(ClientPrefs.data.lowQuality) return;
+		if (ClientPrefs.data.lowQuality)
+			return;
 
 		var casing:FlxSprite = new FlxSprite(boyfriend.x + 250, boyfriend.y + 100);
 		casing.frames = casingFrames;
 		casing.animation.addByPrefix('pop', 'Pop0', 24, false);
 		casing.animation.addByPrefix('idle', 'Bullet0', 24, true);
 		casing.animation.play('pop', true);
-		
+
 		casing.animation.callback = function(name:String, frameNumber:Int, frameIndex:Int)
 		{
 			if (name == 'pop' && frameNumber == 40)
@@ -864,20 +893,19 @@ class PhillyStreets extends BaseStage
 				// Get the end position of the bullet dynamically.
 				casing.x = casing.x + casing.frame.offset.x - 1;
 				casing.y = casing.y + casing.frame.offset.y + 1;
-		
+
 				casing.angle = 125.1; // Copied from FLA
-		
+
 				// Okay this is the neat part, we can set the velocity and angular acceleration to make it roll without editing update().
 				var randomFactorA:Float = FlxG.random.float(3, 10);
 				var randomFactorB:Float = FlxG.random.float(1.0, 2.0);
 				casing.velocity.x = 20 * randomFactorB;
 				casing.drag.x = randomFactorA * randomFactorB;
-		
-		
+
 				casing.angularVelocity = 100;
 				// Calculated to ensure angular acceleration is maintained through the whole roll.
 				casing.angularDrag = (casing.drag.x / casing.velocity.x) * 100;
-		
+
 				casing.animation.play('idle');
 				casing.animation.callback = null; // Save performance.
 			}
@@ -888,14 +916,14 @@ class PhillyStreets extends BaseStage
 	override function opponentNoteHit(note:Note)
 	{
 		var sndTime:Float = note.strumTime - Conductor.songPosition;
-		switch(note.noteType)
+		switch (note.noteType)
 		{
 			case 'weekend-1-lightcan':
 				dad.holdTimer = 0;
 				dad.playAnim('lightCan', true);
 				dad.specialAnim = true;
 				lightCanSnd.play(true, sndTime - 65);
-				
+
 				game.isCameraOnForcedPos = true;
 				game.defaultCamZoom += 0.1;
 				game.moveCamera(true);
@@ -910,8 +938,9 @@ class PhillyStreets extends BaseStage
 				camFollow.x += 250;
 				game.cameraSpeed = 1.5;
 				game.defaultCamZoom -= 0.1;
-				
-				new FlxTimer().start(1.1, function(_) {
+
+				new FlxTimer().start(1.1, function(_)
+				{
 					game.isCameraOnForcedPos = false;
 					game.moveCameraSection();
 					game.cameraSpeed = 1;
@@ -923,18 +952,19 @@ class PhillyStreets extends BaseStage
 				kneeCanSnd.play(true, sndTime - 22);
 		}
 	}
-	
+
 	var picoFlicker:FlxTimer = null;
+
 	override function noteMiss(note:Note)
 	{
-		switch(note.noteType)
+		switch (note.noteType)
 		{
 			case 'weekend-1-firegun':
 				boyfriend.playAnim('shootMISS', true);
 				boyfriend.specialAnim = true;
 				bonkSnd.play();
-				
-				if(picoFlicker != null)
+
+				if (picoFlicker != null)
 				{
 					picoFlicker.cancel();
 					picoFlicker.destroy();
@@ -945,31 +975,31 @@ class PhillyStreets extends BaseStage
 				{
 					if (name == 'shootMISS' && game.health > 0.0 && !game.practiceMode && game.gameOverTimer == null)
 					{
-						//FlxFlicker was crashing so fuck it, FlxTimer all the way
+						// FlxFlicker was crashing so fuck it, FlxTimer all the way
 						picoFlicker = new FlxTimer().start(1 / 30, function(tmr:FlxTimer)
 						{
 							boyfriend.visible = !boyfriend.visible;
-							if(tmr.loopsLeft == 0)
+							if (tmr.loopsLeft == 0)
 							{
 								boyfriend.visible = true;
 								picoFlicker = new FlxTimer().start(1 / 60, function(tmr2:FlxTimer)
 								{
 									boyfriend.visible = !boyfriend.visible;
-									if(tmr2.loopsLeft == 0)
+									if (tmr2.loopsLeft == 0)
 									{
 										boyfriend.visible = true;
-										//trace('test 2');
+										// trace('test 2');
 									}
 								}, 30);
 							}
 						}, 30);
-						//trace('test');
+						// trace('test');
 					}
 					boyfriend.animation.finishCallback = null;
 				}
-				
+
 				game.health -= 0.4;
-				if(game.health <= 0.0 && !game.practiceMode)
+				if (game.health <= 0.0 && !game.practiceMode)
 				{
 					GameOverSubstate.deathSoundName = 'fnf_loss_sfx-pico-explode';
 					GameOverSubstate.loopSoundName = 'gameOverStart-pico-explode';
@@ -980,7 +1010,8 @@ class PhillyStreets extends BaseStage
 
 	function showPicoFade()
 	{
-		if(ClientPrefs.data.lowQuality) return;
+		if (ClientPrefs.data.lowQuality)
+			return;
 
 		picoFade.setPosition(boyfriend.x, boyfriend.y);
 		picoFade.frames = boyfriend.frames;
@@ -995,7 +1026,7 @@ class PhillyStreets extends BaseStage
 		FlxTween.tween(picoFade.scale, {x: 1.3, y: 1.3}, 0.4);
 		FlxTween.tween(picoFade, {alpha: 0}, 0.4, {onComplete: (_) -> (picoFade.visible = false)});
 	}
-	
+
 	function darkenStageProps()
 	{
 		// Darken the background, then fade it back.
@@ -1003,7 +1034,7 @@ class PhillyStreets extends BaseStage
 		{
 			// If not excluded, darken.
 			sprite.color = 0xFF111111;
-			new FlxTimer().start(1/24, (tmr) ->
+			new FlxTimer().start(1 / 24, (tmr) ->
 			{
 				sprite.color = 0xFF222222;
 				FlxTween.color(sprite, 1.4, 0xFF222222, 0xFFFFFFFF);
@@ -1011,3 +1042,4 @@ class PhillyStreets extends BaseStage
 		}
 	}
 }
+

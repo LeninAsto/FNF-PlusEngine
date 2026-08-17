@@ -63,11 +63,16 @@ class WindowMode
 	{
 		#if desktop
 		var window = Lib.current.stage.window;
-		if (window == null) return;
+		if (window == null)
+			return;
 
-		try {
+		try
+		{
 			window.fullscreen = false;
-		} catch (_:Dynamic) {}
+		}
+		catch (_:Dynamic)
+		{
+		}
 		window.borderless = false;
 
 		exclusiveFullscreen = false;
@@ -89,7 +94,8 @@ class WindowMode
 	{
 		#if desktop
 		var window = Lib.current.stage.window;
-		if (window == null) return;
+		if (window == null)
+			return;
 
 		if (enable)
 		{
@@ -108,9 +114,13 @@ class WindowMode
 				borderlessFullscreen = false;
 			}
 
-			try {
+			try
+			{
 				window.fullscreen = true;
-			} catch (_:Dynamic) {}
+			}
+			catch (_:Dynamic)
+			{
+			}
 		}
 		else
 		{
@@ -133,7 +143,8 @@ class WindowMode
 	{
 		#if desktop
 		var window = Lib.current.stage.window;
-		if (window == null) return;
+		if (window == null)
+			return;
 
 		if (enable)
 		{
@@ -148,17 +159,25 @@ class WindowMode
 
 			if (exclusiveFullscreen)
 			{
-				try {
+				try
+				{
 					window.fullscreen = false;
-				} catch (_:Dynamic) {}
+				}
+				catch (_:Dynamic)
+				{
+				}
 				exclusiveFullscreen = false;
 			}
 
 			// Performance fullscreen: keep the backbuffer capped for shader-heavy songs.
 			// Borderless Fix uses the native monitor resolution.
-			try {
+			try
+			{
 				window.fullscreen = false;
-			} catch (_:Dynamic) {}
+			}
+			catch (_:Dynamic)
+			{
+			}
 			window.borderless = true;
 
 			var screenW = Std.int(Capabilities.screenResolutionX);
@@ -191,7 +210,8 @@ class WindowMode
 	{
 		#if desktop
 		var window = Lib.current.stage.window;
-		if (window == null) return;
+		if (window == null)
+			return;
 
 		if (enable)
 		{
@@ -206,15 +226,23 @@ class WindowMode
 
 			if (exclusiveFullscreen)
 			{
-				try {
+				try
+				{
 					window.fullscreen = false;
-				} catch (_:Dynamic) {}
+				}
+				catch (_:Dynamic)
+				{
+				}
 				exclusiveFullscreen = false;
 			}
 
-			try {
+			try
+			{
 				window.fullscreen = false;
-			} catch (_:Dynamic) {}
+			}
+			catch (_:Dynamic)
+			{
+			}
 			window.borderless = true;
 
 			var screenW = Std.int(Capabilities.screenResolutionX);
@@ -250,3 +278,4 @@ class WindowMode
 		}
 	}
 }
+

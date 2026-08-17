@@ -11,7 +11,13 @@ class MobileSettingsSubState extends BaseOptionsMenu
 {
 	final exControlTypes:Array<String> = ["NONE", "SINGLE", "DOUBLE"];
 	final hintOptions:Array<String> = ["No Gradient", "No Gradient (Old)", "Gradient", "Hidden"];
-	final fpsCounterOptions:Array<String> = ['Hidden', 'Visible No Background', 'Visible with Background', 'Basic Debug', 'Extended Debug'];
+	final fpsCounterOptions:Array<String> = [
+		'Hidden',
+		'Visible No Background',
+		'Visible with Background',
+		'Basic Debug',
+		'Extended Debug'
+	];
 	#if android
 	final storageOptions:Array<String> = ["INTERNAL", "EXTERNAL"];
 	#end
@@ -47,8 +53,7 @@ class MobileSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		option = new Option('Infinity Display',
-			'If checked, extends the viewport vertically for taller screens while keeping the classic 16:9 gameplay area.',
-			'infinityDisplay', BOOL);
+			'If checked, extends the viewport vertically for taller screens while keeping the classic 16:9 gameplay area.', 'infinityDisplay', BOOL);
 		option.onChange = () -> FlxG.scaleMode = new mobile.backend.MobileScaleMode();
 		addOption(option);
 		#end
@@ -68,16 +73,10 @@ class MobileSettingsSubState extends BaseOptionsMenu
 			BOOL);
 		addOption(option);
 
-		option = new Option('Touch Pointer',
-			'If checked, shows a touch pointer overlay for taps and drags.',
-			'showTouchPointer',
-			BOOL);
+		option = new Option('Touch Pointer', 'If checked, shows a touch pointer overlay for taps and drags.', 'showTouchPointer', BOOL);
 		addOption(option);
 
-		option = new Option('Mobile Trace Button',
-			'If checked, shows the trace touch button on mobile builds.',
-			'showMobileDebugButtons',
-			BOOL);
+		option = new Option('Mobile Trace Button', 'If checked, shows the trace touch button on mobile builds.', 'showMobileDebugButtons', BOOL);
 		option.onChange = () ->
 		{
 			if (Main.traceButton != null)
@@ -85,10 +84,7 @@ class MobileSettingsSubState extends BaseOptionsMenu
 		};
 		addOption(option);
 
-		option = new Option('FPS Counter Mode',
-			'Choose how much performance info is shown in the top-left overlay.',
-			'fpsCounterMode',
-			STRING,
+		option = new Option('FPS Counter Mode', 'Choose how much performance info is shown in the top-left overlay.', 'fpsCounterMode', STRING,
 			fpsCounterOptions);
 		option.onChange = () ->
 		{
@@ -102,15 +98,13 @@ class MobileSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		option = new Option('Align Receptors to Hitbox',
-			'If checked, aligns mobile receptors with hitbox lanes. Useful for some layouts, but it can break scripts.',
-			'mobileReceptorAlign',
-			BOOL);
+			'If checked, aligns mobile receptors with hitbox lanes. Useful for some layouts, but it can break scripts.', 'mobileReceptorAlign', BOOL);
 		addOption(option);
 
 		#if android
 		option = new Option('Mods Storage Location',
-			'Choose where Android mods and saved files should live.\nINTERNAL uses scoped app storage, EXTERNAL uses public storage.',
-			'storageType', STRING, storageOptions);
+			'Choose where Android mods and saved files should live.\nINTERNAL uses scoped app storage, EXTERNAL uses public storage.', 'storageType', STRING,
+			storageOptions);
 		option.onChange = () ->
 		{
 			StorageUtil.saveStorageTypePreference(curOption.getValue());
@@ -126,3 +120,4 @@ class MobileSettingsSubState extends BaseOptionsMenu
 		super();
 	}
 }
+

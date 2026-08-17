@@ -156,7 +156,9 @@ class FPSCounter extends Sprite
 	private var avgFrameTimeMs:Float = 0.0;
 
 	@:noCompletion private var times:Array<Float>;
+
 	public var os:String = '';
+
 	private var lastTextColorValue:Int = 0xFFFFFF;
 	private var pendingLayoutRefresh:Bool = true;
 
@@ -270,7 +272,17 @@ class FPSCounter extends Sprite
 
 		if (showCounter)
 		{
-			setBox(index++, Std.string(currentFPS) + ' FPS\nDelay: ' + formatFloat(frameTimeMs, 1) + ' / ' + formatFloat(avgFrameTimeMs, 1) + ' ms\nGC: ' + currentMemoryStr + ' / ' + peakMemoryStr, showBackground);
+			setBox(index++,
+				Std.string(currentFPS)
+				+ ' FPS\nDelay: '
+				+ formatFloat(frameTimeMs, 1)
+				+ ' / '
+				+ formatFloat(avgFrameTimeMs, 1)
+				+ ' ms\nGC: '
+				+ currentMemoryStr
+				+ ' / '
+				+ peakMemoryStr,
+				showBackground);
 
 			if (modAuthor != null && modAuthor.length > 0)
 				setBox(index++, modAuthor, showBackground);
@@ -343,8 +355,7 @@ class FPSCounter extends Sprite
 		avgFrameTimeMs = sum / frameTimesArray.length;
 
 		var targetWindowFramerate:Int = ClientPrefs.getTargetWindowFramerate();
-		if (FlxG.stage.window.frameRate != targetWindowFramerate
-			&& FlxG.stage.window.frameRate != FlxG.game.focusLostFramerate)
+		if (FlxG.stage.window.frameRate != targetWindowFramerate && FlxG.stage.window.frameRate != FlxG.game.focusLostFramerate)
 		{
 			FlxG.stage.window.frameRate = targetWindowFramerate;
 		}
@@ -816,6 +827,7 @@ private class FPSCounterBox extends Sprite
 	private var shownAmount:Float = 0;
 	private var hasBackground:Bool = false;
 	private var boxWidth:Float = 48;
+
 	private static inline var PADDING_X:Float = 8;
 	private static inline var PADDING_Y:Float = 5;
 	private static inline var INNER_DIFF:Int = 3;

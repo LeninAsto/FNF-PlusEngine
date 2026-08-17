@@ -9,8 +9,10 @@ import flixel.util.FlxColor;
 import flixel.util.FlxGradient;
 import states.MainMenuState;
 
-class CustomFadeTransition extends MusicBeatSubstate {
+class CustomFadeTransition extends MusicBeatSubstate
+{
 	public static var finishCallback:Void->Void;
+
 	var isTransIn:Bool = false;
 
 	public static var isTransitioning:Bool = false;
@@ -37,16 +39,20 @@ class CustomFadeTransition extends MusicBeatSubstate {
 	var activeTweens:Array<FlxTween> = [];
 	var transitionId:String;
 
-	static function generateId():String {
+	static function generateId():String
+	{
 		return 'transition_' + Date.now().getTime() + '_' + Math.floor(Math.random() * 1000);
 	}
 
-	public static function initCustomTransitionScript():Void {
+	public static function initCustomTransitionScript():Void
+	{
 		// Legacy hook preserved for compatibility.
 	}
 
-	public static function cancelCurrentTransition():Void {
-		if (currentTransition != null && !currentTransition.isDestroyed) {
+	public static function cancelCurrentTransition():Void
+	{
+		if (currentTransition != null && !currentTransition.isDestroyed)
+		{
 			currentTransition.forceClose();
 		}
 
@@ -55,20 +61,24 @@ class CustomFadeTransition extends MusicBeatSubstate {
 		finishCallback = null;
 	}
 
-	function addTween(tween:FlxTween):FlxTween {
-		if (tween != null) {
+	function addTween(tween:FlxTween):FlxTween
+	{
+		if (tween != null)
+		{
 			activeTweens.push(tween);
 		}
 		return tween;
 	}
 
-	public function new(duration:Float = 0.5, isTransIn:Bool) {
+	public function new(duration:Float = 0.5, isTransIn:Bool)
+	{
 		this.duration = duration;
 		this.isTransIn = isTransIn;
 		this.activeTweens = [];
 		this.transitionId = generateId();
 
-		if (currentTransition != null && currentTransition != this) {
+		if (currentTransition != null && currentTransition != this)
+		{
 			cancelCurrentTransition();
 		}
 
@@ -78,15 +88,18 @@ class CustomFadeTransition extends MusicBeatSubstate {
 		super();
 	}
 
-	override function create() {
+	override function create()
+	{
 		super.create();
 
-		if (currentTransition != this) {
+		if (currentTransition != this)
+		{
 			forceClose();
 			return;
 		}
 
-		try {
+		try
+		{
 			var cam:FlxCamera = new FlxCamera();
 			cam.bgColor = 0x00;
 
@@ -98,22 +111,28 @@ class CustomFadeTransition extends MusicBeatSubstate {
 			FlxG.cameras.add(cam, false);
 			cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
 
-			if (ClientPrefs.data.vanillaTransition) {
+			if (ClientPrefs.data.vanillaTransition)
+			{
 				createVanillaTransition();
-			} else {
+			}
+			else
+			{
 				createCustomTransition();
 			}
-		} catch (e:Dynamic) {
+		}
+		catch (e:Dynamic)
+		{
 			forceUnlock();
 		}
 	}
 
-	function createVanillaTransition():Void {
+	function createVanillaTransition():Void
+	{
 		var width:Int = Std.int(FlxG.width / Math.max(camera.zoom, 0.001));
 		var height:Int = Std.int(FlxG.height / Math.max(camera.zoom, 0.001));
 
 		var paddingX:Int = 10;
-		
+
 		transGradient = FlxGradient.createGradientFlxSprite(1, height, (isTransIn ? [0x0, FlxColor.BLACK] : [FlxColor.BLACK, 0x0]));
 		transGradient.scale.x = width + paddingX;
 		transGradient.x = -Std.int(paddingX / 2);
@@ -136,7 +155,8 @@ class CustomFadeTransition extends MusicBeatSubstate {
 			transGradient.y = -transGradient.height;
 	}
 
-	function createCustomTransition():Void {
+	function createCustomTransition():Void
+	{
 		var width:Int = FlxG.width;
 		var height:Int = FlxG.height;
 
@@ -184,10 +204,12 @@ class CustomFadeTransition extends MusicBeatSubstate {
 			createTransitionOut(width, height);
 	}
 
-	override function update(elapsed:Float):Void {
+	override function update(elapsed:Float):Void
+	{
 		super.update(elapsed);
 
-		if (ClientPrefs.data.vanillaTransition && transGradient != null) {
+		if (ClientPrefs.data.vanillaTransition && transGradient != null)
+		{
 			final height:Float = FlxG.height * Math.max(camera.zoom, 0.001);
 			final targetPos:Float = transGradient.height + 50 * Math.max(camera.zoom, 0.001);
 			if (duration > 0)
@@ -205,7 +227,8 @@ class CustomFadeTransition extends MusicBeatSubstate {
 		}
 	}
 
-	function createTransitionIn(width:Int, height:Int):Void {
+	function createTransitionIn(width:Int, height:Int):Void
+	{
 		topDoor.y = 0;
 		bottomDoor.y = 0;
 		iconSprite.alpha = 1;
@@ -220,13 +243,18 @@ class CustomFadeTransition extends MusicBeatSubstate {
 		add(waterMark);
 		add(eventText);
 
-		try {
+		try
+		{
 			FlxG.sound.play(Paths.sound('FadeTransition'), 0.4);
-		} catch (e:Dynamic) {}
+		}
+		catch (e:Dynamic)
+		{
+		}
 
 		topDoorTween = addTween(FlxTween.tween(topDoor, {y: -height}, duration, {
 			ease: FlxEase.expoInOut,
-			onStart: function(tween:FlxTween) {
+			onStart: function(tween:FlxTween)
+			{
 				if (isValidTransition() && eventText != null)
 					eventText.text = Language.getPhrase('trans_completed', 'Completed!');
 			}
@@ -234,8 +262,10 @@ class CustomFadeTransition extends MusicBeatSubstate {
 
 		bottomDoorTween = addTween(FlxTween.tween(bottomDoor, {y: height}, duration, {
 			ease: FlxEase.expoInOut,
-			onComplete: function(tween:FlxTween) {
-				if (isValidTransition()) {
+			onComplete: function(tween:FlxTween)
+			{
+				if (isValidTransition())
+				{
 					safeClose();
 				}
 			}
@@ -254,7 +284,8 @@ class CustomFadeTransition extends MusicBeatSubstate {
 		}));
 	}
 
-	function createTransitionOut(width:Int, height:Int):Void {
+	function createTransitionOut(width:Int, height:Int):Void
+	{
 		topDoor.y = -height;
 		bottomDoor.y = height;
 		iconSprite.alpha = 0;
@@ -287,13 +318,17 @@ class CustomFadeTransition extends MusicBeatSubstate {
 
 		bottomDoorTween = addTween(FlxTween.tween(bottomDoor, {y: 0}, duration, {
 			ease: FlxEase.expoInOut,
-			onComplete: function(tween:FlxTween) {
-				if (!isValidTransition()) return;
+			onComplete: function(tween:FlxTween)
+			{
+				if (!isValidTransition())
+					return;
 
 				iconTween = addTween(FlxTween.tween(iconSprite, {alpha: 1}, 0.3, {
 					ease: FlxEase.sineIn,
-					onComplete: function(tween:FlxTween) {
-						if (isValidTransition()) {
+					onComplete: function(tween:FlxTween)
+					{
+						if (isValidTransition())
+						{
 							safeFinishCallback();
 						}
 					}
@@ -302,12 +337,15 @@ class CustomFadeTransition extends MusicBeatSubstate {
 		}));
 	}
 
-	function isValidTransition():Bool {
+	function isValidTransition():Bool
+	{
 		return !isDestroyed && !isClosing && currentTransition == this;
 	}
 
-	function forceUnlock():Void {
-		if (currentTransition == this) {
+	function forceUnlock():Void
+	{
+		if (currentTransition == this)
+		{
 			isTransitioning = false;
 			currentTransition = null;
 		}
@@ -315,52 +353,72 @@ class CustomFadeTransition extends MusicBeatSubstate {
 		finishCallback = null;
 		cancelAllTweens();
 
-		if (!isDestroyed) {
+		if (!isDestroyed)
+		{
 			forceClose();
 		}
 	}
 
-	function forceClose():Void {
-		if (isDestroyed || isClosing) return;
+	function forceClose():Void
+	{
+		if (isDestroyed || isClosing)
+			return;
 
 		isClosing = true;
 
-		if (currentTransition == this) {
+		if (currentTransition == this)
+		{
 			isTransitioning = false;
 			currentTransition = null;
 		}
 
 		cancelAllTweens();
 
-		try {
+		try
+		{
 			close();
-		} catch (e:Dynamic) {}
+		}
+		catch (e:Dynamic)
+		{
+		}
 	}
 
-	function safeFinishCallback():Void {
-		if (!isValidTransition()) return;
+	function safeFinishCallback():Void
+	{
+		if (!isValidTransition())
+			return;
 
-		if (currentTransition == this) {
+		if (currentTransition == this)
+		{
 			isTransitioning = false;
 			currentTransition = null;
 		}
 
-		if (finishCallback != null) {
+		if (finishCallback != null)
+		{
 			var callback = finishCallback;
 			finishCallback = null;
-			try {
+			try
+			{
 				callback();
-			} catch (e:Dynamic) {}
+			}
+			catch (e:Dynamic)
+			{
+			}
 		}
 	}
 
-	function safeClose():Void {
-		if (!isValidTransition()) return;
+	function safeClose():Void
+	{
+		if (!isValidTransition())
+			return;
 
 		isClosing = true;
 
-		if (!ClientPrefs.data.vanillaTransition) {
-			if (currentTransition == this) {
+		if (!ClientPrefs.data.vanillaTransition)
+		{
+			if (currentTransition == this)
+			{
 				isTransitioning = false;
 				currentTransition = null;
 			}
@@ -368,116 +426,154 @@ class CustomFadeTransition extends MusicBeatSubstate {
 
 		cancelAllTweens();
 
-		try {
+		try
+		{
 			close();
-		} catch (e:Dynamic) {}
+		}
+		catch (e:Dynamic)
+		{
+		}
 	}
 
-	function cancelAllTweens():Void {
-		try {
-			for (tween in activeTweens) {
-				if (tween != null && !tween.finished) {
+	function cancelAllTweens():Void
+	{
+		try
+		{
+			for (tween in activeTweens)
+			{
+				if (tween != null && !tween.finished)
+				{
 					tween.cancel();
 				}
 			}
 			activeTweens = [];
 
-			if (topDoorTween != null) {
+			if (topDoorTween != null)
+			{
 				topDoorTween.cancel();
 				topDoorTween = null;
 			}
-			if (bottomDoorTween != null) {
+			if (bottomDoorTween != null)
+			{
 				bottomDoorTween.cancel();
 				bottomDoorTween = null;
 			}
-			if (textTween != null) {
+			if (textTween != null)
+			{
 				textTween.cancel();
 				textTween = null;
 			}
-			if (iconTween != null) {
+			if (iconTween != null)
+			{
 				iconTween.cancel();
 				iconTween = null;
 			}
-		} catch (e:Dynamic) {}
+		}
+		catch (e:Dynamic)
+		{
+		}
 	}
 
-	override function close() {
-		if (isDestroyed) return;
+	override function close()
+	{
+		if (isDestroyed)
+			return;
 
 		isDestroyed = true;
 		isClosing = true;
 
-		if (currentTransition == this) {
+		if (currentTransition == this)
+		{
 			isTransitioning = false;
 			currentTransition = null;
 		}
 
-		try {
+		try
+		{
 			cancelAllTweens();
 
-			if (ClientPrefs.data.vanillaTransition && finishCallback != null) {
+			if (ClientPrefs.data.vanillaTransition && finishCallback != null)
+			{
 				var callback = finishCallback;
 				finishCallback = null;
 				callback();
-			} else {
+			}
+			else
+			{
 				finishCallback = null;
 			}
 
 			super.close();
-		} catch (e:Dynamic) {
+		}
+		catch (e:Dynamic)
+		{
 			isTransitioning = false;
 			currentTransition = null;
 		}
 	}
 
-	override function destroy() {
-		if (isDestroyed) return;
+	override function destroy()
+	{
+		if (isDestroyed)
+			return;
 
 		isDestroyed = true;
 		isClosing = true;
 
-		if (currentTransition == this) {
+		if (currentTransition == this)
+		{
 			isTransitioning = false;
 			currentTransition = null;
 		}
 
-		try {
+		try
+		{
 			cancelAllTweens();
 			finishCallback = null;
 
-			if (topDoor != null) {
+			if (topDoor != null)
+			{
 				topDoor.destroy();
 				topDoor = null;
 			}
-			if (bottomDoor != null) {
+			if (bottomDoor != null)
+			{
 				bottomDoor.destroy();
 				bottomDoor = null;
 			}
-			if (waterMark != null) {
+			if (waterMark != null)
+			{
 				waterMark.destroy();
 				waterMark = null;
 			}
-			if (eventText != null) {
+			if (eventText != null)
+			{
 				eventText.destroy();
 				eventText = null;
 			}
-			if (iconSprite != null) {
+			if (iconSprite != null)
+			{
 				iconSprite.destroy();
 				iconSprite = null;
 			}
-			if (transBlack != null) {
+			if (transBlack != null)
+			{
 				transBlack.destroy();
 				transBlack = null;
 			}
-			if (transGradient != null) {
+			if (transGradient != null)
+			{
 				transGradient.destroy();
 				transGradient = null;
 			}
 
 			super.destroy();
-		} catch (e:Dynamic) {
+		}
+		catch (e:Dynamic)
+		{
 			isTransitioning = false;
 			currentTransition = null;
 		}
 	}
 }
+

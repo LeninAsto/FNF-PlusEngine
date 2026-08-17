@@ -149,8 +149,8 @@ class BreakTimerHud
 		}
 	}
 
-	public function updateDisplay(songPosition:Float, startingSong:Bool, playerStrums:FlxTypedGroup<StrumNote>, downScroll:Bool,
-		getCenterX:StrumNote->Float, getTopY:StrumNote->Float):Void
+	public function updateDisplay(songPosition:Float, startingSong:Bool, playerStrums:FlxTypedGroup<StrumNote>, downScroll:Bool, getCenterX:StrumNote->Float,
+			getTopY:StrumNote->Float):Void
 	{
 		if (text == null || indicator == null || playerStrums == null || playerStrums.length <= 0)
 			return;
@@ -265,3 +265,4 @@ class BreakTimerHud
 		lastDisplayValue = -1;
 	}
 }
+

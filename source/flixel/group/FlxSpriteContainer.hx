@@ -17,3 +17,4 @@ class FlxTypedSpriteContainer<T:FlxSprite> extends FlxTypedSpriteGroup<T>
 		super(X, Y, MaxSize);
 	}
 }
+

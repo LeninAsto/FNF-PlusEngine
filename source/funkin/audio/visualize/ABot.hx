@@ -6,8 +6,9 @@ import flixel.group.FlxSpriteGroup.FlxTypedSpriteGroup;
 @:nullSafety
 class ABot extends FlxTypedSpriteGroup<FlxSprite>
 {
-  public function new()
-  {
-    super();
-  }
+	public function new()
+	{
+		super();
+	}
 }
+

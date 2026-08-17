@@ -6,6 +6,7 @@ class BackgroundTank extends BGSprite
 	public var offsetY:Float = 1300;
 	public var tankSpeed:Float = 0;
 	public var tankAngle:Float = 0;
+
 	public function new()
 	{
 		super('tankRolling', 0, 0, 0.5, 0.5, ['BG tank w lighting'], true);
@@ -24,3 +25,4 @@ class BackgroundTank extends BGSprite
 		y = offsetY + 1100 * Math.sin(Math.PI / 180 * (tankAngle + 180));
 	}
 }
+

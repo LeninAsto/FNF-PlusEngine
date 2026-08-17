@@ -1,0 +1,21 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Lime Build+Debug",
+      "type": "lime",
+      "request": "launch"
+    },
+    {
+      "name": "Lime Debug (No Build)",
+      "type": "lime",
+      "request": "launch",
+      "preLaunchTask": null
+    },
+    {
+      "name": "HXCPP - Attach",
+      "type": "hxcpp",
+      "request": "attach"
+    }
+  ]
+}

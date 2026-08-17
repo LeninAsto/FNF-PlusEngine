@@ -1,0 +1,16 @@
+{
+  "name": "fnf-plusengine",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "format:haxe": "prettier --write \"source/**/*.hx\" \"docs/**/*.hx\"",
+    "format:haxe:file": "prettier --write",
+    "watch:haxe-format": "node tools/watch-haxe-format.mjs",
+    "watch:haxe-format:verbose": "node tools/watch-haxe-format.mjs --verbose",
+    "check:haxe-format": "prettier --check \"source/**/*.hx\" \"docs/**/*.hx\"",
+    "check:haxe-format:file": "prettier --check"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2"
+  }
+}

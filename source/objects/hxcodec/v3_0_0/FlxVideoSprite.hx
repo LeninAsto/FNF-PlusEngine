@@ -15,6 +15,7 @@ class FlxVideoSprite extends FlxSprite
 {
 	// Variables
 	public var bitmap(default, null):Video;
+
 	private var _shouldLoop:Bool = false;
 
 	public function new(x:Float = 0, y:Float = 0):Void
@@ -31,7 +32,8 @@ class FlxVideoSprite extends FlxSprite
 			bitmap.volume = Std.int((FlxG.sound.muted ? 0 : 1) * FlxG.sound.volume * 100);
 			#end
 		});
-		bitmap.onFormatSetup.add(() -> {
+		bitmap.onFormatSetup.add(() ->
+		{
 			if (bitmap.bitmapData != null)
 				loadGraphic(bitmap.bitmapData);
 		});
@@ -168,9 +170,21 @@ class FlxVideoSprite extends flixel.FlxSprite
 		return false;
 	}
 
-	public function stop():Void {}
-	public function pause():Void {}
-	public function resume():Void {}
-	public function togglePaused():Void {}
+	public function stop():Void
+	{
+	}
+
+	public function pause():Void
+	{
+	}
+
+	public function resume():Void
+	{
+	}
+
+	public function togglePaused():Void
+	{
+	}
 }
 #end
+

@@ -59,7 +59,8 @@ class MaterialBadge extends FlxSpriteGroup
 
 	function rebuild():Void
 	{
-		if (background == null) return;
+		if (background == null)
+			return;
 
 		if (count < 0)
 		{
@@ -122,22 +123,26 @@ class MaterialBadge extends FlxSpriteGroup
 				var inRect = true;
 				if (px < radius && py < radius)
 				{
-					var dx = radius - px; var dy = radius - py;
+					var dx = radius - px;
+					var dy = radius - py;
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px >= width - radius && py < radius)
 				{
-					var dx = px - (width - radius); var dy = radius - py;
+					var dx = px - (width - radius);
+					var dy = radius - py;
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px < radius && py >= height - radius)
 				{
-					var dx = radius - px; var dy = py - (height - radius);
+					var dx = radius - px;
+					var dy = py - (height - radius);
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px >= width - radius && py >= height - radius)
 				{
-					var dx = px - (width - radius); var dy = py - (height - radius);
+					var dx = px - (width - radius);
+					var dy = py - (height - radius);
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 
@@ -153,3 +158,4 @@ class MaterialBadge extends FlxSpriteGroup
 		super.destroy();
 	}
 }
+

@@ -27,3 +27,4 @@ class BackgroundDancer extends FlxSprite
 			animation.play('danceLeft', true);
 	}
 }
+

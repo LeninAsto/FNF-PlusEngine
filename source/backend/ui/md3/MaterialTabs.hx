@@ -36,6 +36,7 @@ class MaterialTabs extends FlxSpriteGroup
 
 	// Dimensions (MD3 specs)
 	public var tabsWidth:Float = 320;
+
 	static inline var TAB_HEIGHT:Int = 48;
 	static inline var INDICATOR_HEIGHT_PRIMARY:Int = 3;
 	static inline var INDICATOR_HEIGHT_SECONDARY:Int = 2;
@@ -73,7 +74,8 @@ class MaterialTabs extends FlxSpriteGroup
 			add(container);
 
 			var label = new FlxText(tabX, 0, tabWidth, tabs[i], tabType == PRIMARY ? LABEL_SIZE_PRIMARY : LABEL_SIZE_SECONDARY);
-			label.setFormat(Paths.font('NotoSans-Medium.ttf'), tabType == PRIMARY ? LABEL_SIZE_PRIMARY : LABEL_SIZE_SECONDARY, MD3Theme.onSurfaceVariant, CENTER);
+			label.setFormat(Paths.font('NotoSans-Medium.ttf'), tabType == PRIMARY ? LABEL_SIZE_PRIMARY : LABEL_SIZE_SECONDARY, MD3Theme.onSurfaceVariant,
+				CENTER);
 			label.antialiasing = ClientPrefs.data.antialiasing;
 			label.y = (TAB_HEIGHT - label.height) / 2;
 			tabLabels.push(label);
@@ -131,8 +133,10 @@ class MaterialTabs extends FlxSpriteGroup
 
 	function _onThemeChange():Void
 	{
-		if (background != null) background.color = MD3Theme.surfaceContainerLow;
-		if (indicator != null) indicator.color = MD3Theme.primary;
+		if (background != null)
+			background.color = MD3Theme.surfaceContainerLow;
+		if (indicator != null)
+			indicator.color = MD3Theme.primary;
 		for (i in 0...tabLabels.length)
 			tabLabels[i].color = i == selectedIndex ? MD3Theme.primary : MD3Theme.onSurfaceVariant;
 	}
@@ -147,7 +151,8 @@ class MaterialTabs extends FlxSpriteGroup
 		var targetX = x + index * tabWidth; // absolute world x = group.x + local tab offset
 		if (animate)
 		{
-			if (indicatorTween != null) indicatorTween.cancel();
+			if (indicatorTween != null)
+				indicatorTween.cancel();
 			indicatorTween = FlxTween.tween(indicator, {x: targetX}, 0.25, {ease: FlxEase.cubeOut});
 		}
 		else
@@ -158,7 +163,8 @@ class MaterialTabs extends FlxSpriteGroup
 
 	function set_selectedIndex(index:Int):Int
 	{
-		if (index < 0 || index >= tabs.length) return selectedIndex;
+		if (index < 0 || index >= tabs.length)
+			return selectedIndex;
 		selectedIndex = index;
 		applySelection(index);
 		if (onTabChanged != null)
@@ -170,7 +176,8 @@ class MaterialTabs extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 
-		if (!enabled) return;
+		if (!enabled)
+			return;
 
 		#if FLX_MOUSE
 		var mousePos = FlxG.mouse.getScreenPosition();
@@ -189,7 +196,8 @@ class MaterialTabs extends FlxSpriteGroup
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(_onThemeChange);
-		if (indicatorTween != null) indicatorTween.cancel();
+		if (indicatorTween != null)
+			indicatorTween.cancel();
 		super.destroy();
 	}
 }
@@ -199,3 +207,4 @@ enum TabType
 	PRIMARY;
 	SECONDARY;
 }
+

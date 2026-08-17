@@ -15,47 +15,48 @@ import haxe.ds.Either;
 @:nullSafety
 class DataWrite
 {
-  /**
-   * `@:jcustomwrite(funkin.data.DataWrite.dynamicValue)`
-   * @param value
-   * @return String
-   */
-  public static function dynamicValue(value:Dynamic):String
-  {
-    // Is this cheating? Yes. Do I care? No.
-    return SerializerUtil.toJSON(value);
-  }
+	/**
+	 * `@:jcustomwrite(funkin.data.DataWrite.dynamicValue)`
+	 * @param value
+	 * @return String
+	 */
+	public static function dynamicValue(value:Dynamic):String
+	{
+		// Is this cheating? Yes. Do I care? No.
+		return SerializerUtil.toJSON(value);
+	}
 
-  /**
-   *
-   * `@:jcustomwrite(funkin.data.DataWrite.semverVersion)`
-   */
-  public static function semverVersion(value:Version):String
-  {
-    return '"${value.toString()}"';
-  }
+	/**
+	 *
+	 * `@:jcustomwrite(funkin.data.DataWrite.semverVersion)`
+	 */
+	public static function semverVersion(value:Version):String
+	{
+		return '"${value.toString()}"';
+	}
 
-  /**
-   * `@:jcustomwrite(funkin.data.DataWrite.semverVersionRule)`
-   */
-  public static function semverVersionRule(value:VersionRule):String
-  {
-    return '"${value.toString()}"';
-  }
+	/**
+	 * `@:jcustomwrite(funkin.data.DataWrite.semverVersionRule)`
+	 */
+	public static function semverVersionRule(value:VersionRule):String
+	{
+		return '"${value.toString()}"';
+	}
 
-  /**
-   * `@:jcustomwrite(funkin.data.DataWrite.eitherFloatOrFloats)`
-   */
-  public static function eitherFloatOrFloats(value:Null<Either<Float, Array<Float>>>):String
-  {
-    switch (value)
-    {
-      case null:
-        return '${1.0}';
-      case Left(inner):
-        return '$inner';
-      case Right(inner):
-        return dynamicValue(inner);
-    }
-  }
+	/**
+	 * `@:jcustomwrite(funkin.data.DataWrite.eitherFloatOrFloats)`
+	 */
+	public static function eitherFloatOrFloats(value:Null<Either<Float, Array<Float>>>):String
+	{
+		switch (value)
+		{
+			case null:
+				return '${1.0}';
+			case Left(inner):
+				return '$inner';
+			case Right(inner):
+				return dynamicValue(inner);
+		}
+	}
 }
+

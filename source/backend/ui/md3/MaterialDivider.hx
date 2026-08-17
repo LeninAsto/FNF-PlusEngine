@@ -40,7 +40,8 @@ class MaterialDivider extends FlxSprite
 	function rebuild():Void
 	{
 		var insetedLength = Std.int(dividerLength - dividerInsetStart - dividerInsetEnd);
-		if (insetedLength < 1) insetedLength = 1;
+		if (insetedLength < 1)
+			insetedLength = 1;
 
 		if (!isVertical)
 		{
@@ -64,3 +65,4 @@ class MaterialDivider extends FlxSprite
 		super.destroy();
 	}
 }
+

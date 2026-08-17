@@ -14,7 +14,7 @@ class PsychUIButton extends FlxSpriteGroup
 
 	public var onChangeState:String->Void;
 	public var onClick:Void->Void;
-	
+
 	public var clickStyle:UIStyleData = {
 		bgColor: FlxColor.BLACK,
 		textColor: FlxColor.WHITE,
@@ -45,7 +45,7 @@ class PsychUIButton extends FlxSpriteGroup
 		add(text);
 		resize(wid, hei);
 		this.label = label;
-		
+
 		this.onClick = onClick;
 		forceCheckNext = true;
 	}
@@ -72,32 +72,34 @@ class PsychUIButton extends FlxSpriteGroup
 	public var isClicked:Bool = false;
 	public var forceCheckNext:Bool = false;
 	public var broadcastButtonEvent:Bool = true;
+
 	var _firstFrame:Bool = true;
+
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
 
-		if(_firstFrame)
+		if (_firstFrame)
 		{
 			bg.color = normalStyle.bgColor;
 			bg.alpha = normalStyle.bgAlpha;
 			text.color = normalStyle.textColor;
 			_firstFrame = false;
 		}
-		
-		if(isClicked && FlxG.mouse.released)
+
+		if (isClicked && FlxG.mouse.released)
 		{
 			forceCheckNext = true;
 			isClicked = false;
 		}
 
-		if(forceCheckNext || FlxG.mouse.justMoved || FlxG.mouse.justPressed)
+		if (forceCheckNext || FlxG.mouse.justMoved || FlxG.mouse.justPressed)
 		{
 			var overlapped:Bool = (FlxG.mouse.overlaps(bg, camera));
 
 			forceCheckNext = false;
 
-			if(!isClicked)
+			if (!isClicked)
 			{
 				var style:UIStyleData = (overlapped) ? hoverStyle : normalStyle;
 				bg.color = style.bgColor;
@@ -105,14 +107,16 @@ class PsychUIButton extends FlxSpriteGroup
 				text.color = style.textColor;
 			}
 
-			if(overlapped && FlxG.mouse.justPressed)
+			if (overlapped && FlxG.mouse.justPressed)
 			{
 				isClicked = true;
 				bg.color = clickStyle.bgColor;
 				bg.alpha = clickStyle.bgAlpha;
 				text.color = clickStyle.textColor;
-				if(onClick != null) onClick();
-				if(broadcastButtonEvent) PsychUIEventHandler.event(CLICK_EVENT, this);
+				if (onClick != null)
+					onClick();
+				if (broadcastButtonEvent)
+					PsychUIEventHandler.event(CLICK_EVENT, this);
 			}
 		}
 	}
@@ -123,12 +127,14 @@ class PsychUIButton extends FlxSpriteGroup
 		bg.updateHitbox();
 		text.fieldWidth = width;
 		text.x = bg.x;
-		text.y = bg.y + height/2 - text.height/2;
+		text.y = bg.y + height / 2 - text.height / 2;
 	}
 
 	function set_label(v:String)
 	{
-		if(text != null && text.exists) text.text = v;
+		if (text != null && text.exists)
+			text.text = v;
 		return (label = v);
 	}
 }
+

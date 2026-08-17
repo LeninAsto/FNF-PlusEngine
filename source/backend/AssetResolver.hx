@@ -47,3 +47,4 @@ class AssetResolver
 		return Paths.getSharedPath(file);
 	}
 }
+

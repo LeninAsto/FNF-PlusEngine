@@ -14,3 +14,4 @@ class FreeplayStateSelector
 		return ScriptableState.tryCreate('FreeplayState', new FreeplayState());
 	}
 }
+

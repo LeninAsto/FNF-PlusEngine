@@ -109,7 +109,8 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 		title.borderSize = 2;
 		add(title);
 
-		var hint:FlxText = new FlxText(72, 82, 1136, Language.getPhrase('theme_accent_color_hint', 'Preview real MD3 widgets while you drag the picker. ENTER confirms, BACK cancels.'), 16);
+		var hint:FlxText = new FlxText(72, 82, 1136,
+			Language.getPhrase('theme_accent_color_hint', 'Preview real MD3 widgets while you drag the picker. ENTER confirms, BACK cancels.'), 16);
 		hint.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		hint.borderSize = 1.5;
 		hint.alpha = 0.8;
@@ -147,7 +148,8 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 
 	function buildPicker():Void
 	{
-		var pickerHint:FlxText = new FlxText(18, 10, 320, Language.getPhrase('theme_accent_picker_hint', 'Wheel + luminance strip + palette, without turning into visual soup.'), 16);
+		var pickerHint:FlxText = new FlxText(18, 10, 320,
+			Language.getPhrase('theme_accent_picker_hint', 'Wheel + luminance strip + palette, without turning into visual soup.'), 16);
 		pickerHint.setFormat(Paths.font("vcr.ttf"), 16, MD3Theme.onSurfaceVariant, LEFT);
 		pickerBox.content.add(pickerHint);
 
@@ -219,7 +221,8 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 				applyColor(newColor);
 				FlxG.sound.play(Paths.sound('scrollMenu'), 0.6);
 			}
-			else FlxG.sound.play(Paths.sound('cancelMenu'), 0.6);
+			else
+				FlxG.sound.play(Paths.sound('cancelMenu'), 0.6);
 		});
 		previewBox.content.add(pasteButton);
 
@@ -235,7 +238,10 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 		});
 		previewBox.content.add(cancelButton);
 
-		var miniHint:FlxText = new FlxText(24, 416, 350, Language.getPhrase('theme_accent_mini_hint', 'The right side shows stock engine widgets tinted with your accent. If it looks cursed here, it would look cursed in menus too.'), 16);
+		var miniHint:FlxText = new FlxText(24, 416, 350,
+			Language.getPhrase('theme_accent_mini_hint',
+				'The right side shows stock engine widgets tinted with your accent. If it looks cursed here, it would look cursed in menus too.'),
+			16);
 		miniHint.setFormat(Paths.font("vcr.ttf"), 16, OptionsMenuTheme.bodyTextColor(), LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		miniHint.borderSize = 1.25;
 		miniHint.alpha = 0.95;
@@ -317,8 +323,10 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 		themeApplyTimer += elapsed;
 		previewRefreshTimer += elapsed;
 
-		if (FlxG.gamepads.anyJustPressed(ANY)) controls.controllerMode = true;
-		else if (FlxG.mouse.justPressed || FlxG.mouse.deltaScreenX != 0 || FlxG.mouse.deltaScreenY != 0) controls.controllerMode = false;
+		if (FlxG.gamepads.anyJustPressed(ANY))
+			controls.controllerMode = true;
+		else if (FlxG.mouse.justPressed || FlxG.mouse.deltaScreenX != 0 || FlxG.mouse.deltaScreenY != 0)
+			controls.controllerMode = false;
 		if (controls.controllerMode != _lastControllerMode)
 		{
 			FlxG.mouse.visible = !controls.controllerMode;
@@ -356,14 +364,13 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 			}
 			else if (pointerOverlaps(colorPalette))
 			{
-				var sampled = colorPalette.pixels.getPixel32(
-					Std.int((pointerX() - colorPalette.x) / colorPalette.scale.x),
-					Std.int((pointerY() - colorPalette.y) / colorPalette.scale.y)
-				);
+				var sampled = colorPalette.pixels.getPixel32(Std.int((pointerX() - colorPalette.x) / colorPalette.scale.x),
+					Std.int((pointerY() - colorPalette.y) / colorPalette.scale.y));
 				applyColor(sampled);
 				FlxG.sound.play(Paths.sound('scrollMenu'), 0.6);
 			}
-			else holdingOnObj = null;
+			else
+				holdingOnObj = null;
 		}
 
 		if (holdingOnObj != null)
@@ -408,7 +415,8 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 	{
 		flushPendingThemeColor();
 		flushPendingPreviewRefresh();
-		if (onConfirm != null) onConfirm();
+		if (onConfirm != null)
+			onConfirm();
 		close();
 	}
 
@@ -416,7 +424,8 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 	{
 		applyColor(originalColor, true);
 		setPreviewAnimationsEnabled(true);
-		if (onCancel != null) onCancel();
+		if (onCancel != null)
+			onCancel();
 		close();
 	}
 
@@ -444,12 +453,14 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 	{
 		pendingThemeColor = null;
 		themeApplyTimer = 0;
-		if (onApply != null) onApply(color);
+		if (onApply != null)
+			onApply(color);
 	}
 
 	function flushPendingThemeColor():Void
 	{
-		if (pendingThemeColor == null) return;
+		if (pendingThemeColor == null)
+			return;
 		commitThemeColor(pendingThemeColor);
 	}
 
@@ -464,7 +475,8 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 	{
 		customChip.label = Language.getPhrase('theme_accent_hex_label', 'HEX {1}', [currentColor.toHexString(false, false)]);
 		updatePickerVisuals();
-		if (!fullRefresh) return;
+		if (!fullRefresh)
+			return;
 
 		MD3ShapeTools.fillAndStrokeRoundRect(previewCard, 360, 110, 22, 3, OptionsMenuTheme.cardFill(true), OptionsMenuTheme.cardStroke(true));
 		previewAccent.color = OptionsMenuTheme.cardAccent(true);
@@ -504,18 +516,26 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 
 	function setPreviewAnimationsEnabled(enabled:Bool):Void
 	{
-		if (linearIndeterminate != null) linearIndeterminate.active = enabled;
-		if (circularIndeterminate != null) circularIndeterminate.active = enabled;
-		if (wavyLinearDeterminate != null) wavyLinearDeterminate.active = enabled;
-		if (wavyLinearIndeterminate != null) wavyLinearIndeterminate.active = enabled;
-		if (wavyCircularDeterminate != null) wavyCircularDeterminate.active = enabled;
-		if (wavyCircularIndeterminate != null) wavyCircularIndeterminate.active = enabled;
-		if (loadingIndicator != null) loadingIndicator.active = enabled;
+		if (linearIndeterminate != null)
+			linearIndeterminate.active = enabled;
+		if (circularIndeterminate != null)
+			circularIndeterminate.active = enabled;
+		if (wavyLinearDeterminate != null)
+			wavyLinearDeterminate.active = enabled;
+		if (wavyLinearIndeterminate != null)
+			wavyLinearIndeterminate.active = enabled;
+		if (wavyCircularDeterminate != null)
+			wavyCircularDeterminate.active = enabled;
+		if (wavyCircularIndeterminate != null)
+			wavyCircularIndeterminate.active = enabled;
+		if (loadingIndicator != null)
+			loadingIndicator.active = enabled;
 	}
 
 	function applyWavyColors(indicator:MaterialWavyProgressIndicator):Void
 	{
-		if (indicator == null) return;
+		if (indicator == null)
+			return;
 		var waveStart:Int = 0xFF000000 | (currentColor & 0x00FFFFFF);
 		var waveEnd:Int = FlxColor.interpolate(waveStart, 0xFFFFFFFF, 0.45);
 		var track:Int = FlxColor.interpolate(OptionsMenuTheme.cardFill(false), waveStart, 0.18);
@@ -543,7 +563,8 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 
 	function pointerOverlaps(obj:Dynamic):Bool
 	{
-		if (!controls.controllerMode) return FlxG.mouse.overlaps(obj);
+		if (!controls.controllerMode)
+			return FlxG.mouse.overlaps(obj);
 		return FlxG.overlap(controllerPointer, obj);
 	}
 
@@ -562,3 +583,4 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 		return !controls.controllerMode ? FlxG.mouse.getScreenPosition() : controllerPointer.getScreenPosition();
 	}
 }
+

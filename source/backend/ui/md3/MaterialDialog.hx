@@ -42,14 +42,23 @@ class MaterialDialog extends FlxSpriteGroup
 	var openTween:FlxTween;
 	var scrimTween:FlxTween;
 
-	inline function dialogPadding():Int return MD3Metrics.margin(20);
-	inline function dialogTitleSize():Int return MD3Metrics.text(20);
-	inline function dialogBodySize():Int return MD3Metrics.text(15);
-	inline function dialogSpacing():Int return MD3Metrics.size(12);
-	inline function dialogRadius():Int return MD3Metrics.corner(20, panelWidth, panelHeight);
+	inline function dialogPadding():Int
+		return MD3Metrics.margin(20);
+
+	inline function dialogTitleSize():Int
+		return MD3Metrics.text(20);
+
+	inline function dialogBodySize():Int
+		return MD3Metrics.text(15);
+
+	inline function dialogSpacing():Int
+		return MD3Metrics.size(12);
+
+	inline function dialogRadius():Int
+		return MD3Metrics.corner(20, panelWidth, panelHeight);
 
 	public function new(?title:String = "Dialog", ?body:String = "", ?confirmLabel:String = "Confirm", ?dismissLabel:String = "Cancel",
-		?onConfirm:Void->Void = null, ?onDismiss:Void->Void = null)
+			?onConfirm:Void->Void = null, ?onDismiss:Void->Void = null)
 	{
 		super(0, 0);
 
@@ -113,27 +122,21 @@ class MaterialDialog extends FlxSpriteGroup
 		confirmBaseX = panelX + panelWidth - padding - buttonWidth;
 		confirmBaseY = buttonRowY;
 
-		dismissButton = new MaterialButton(
-			dismissBaseX,
-			buttonRowY, dismissLabel, TEXT, buttonWidth,
-			function()
-			{
-				close();
-				if (this.onDismiss != null) this.onDismiss();
-			}
-		);
+		dismissButton = new MaterialButton(dismissBaseX, buttonRowY, dismissLabel, TEXT, buttonWidth, function()
+		{
+			close();
+			if (this.onDismiss != null)
+				this.onDismiss();
+		});
 		dismissButton.alpha = 0;
 		add(dismissButton);
 
-		confirmButton = new MaterialButton(
-			confirmBaseX,
-			buttonRowY, confirmLabel, FILLED, buttonWidth,
-			function()
-			{
-				close();
-				if (this.onConfirm != null) this.onConfirm();
-			}
-		);
+		confirmButton = new MaterialButton(confirmBaseX, buttonRowY, confirmLabel, FILLED, buttonWidth, function()
+		{
+			close();
+			if (this.onConfirm != null)
+				this.onConfirm();
+		});
 		confirmButton.alpha = 0;
 		add(confirmButton);
 
@@ -145,24 +148,33 @@ class MaterialDialog extends FlxSpriteGroup
 
 	function _onThemeChange():Void
 	{
-		if (scrim != null) scrim.makeGraphic(FlxG.width, FlxG.height, MD3Theme.scrimColor());
-		if (panel != null) panel.color = MD3Theme.surfaceContainerHigh;
-		if (titleText != null) titleText.color = MD3Theme.onSurface;
-		if (bodyText != null) bodyText.color = MD3Theme.onSurfaceVariant;
-		if (confirmButton != null) confirmButton.refreshTheme();
-		if (dismissButton != null) dismissButton.refreshTheme();
+		if (scrim != null)
+			scrim.makeGraphic(FlxG.width, FlxG.height, MD3Theme.scrimColor());
+		if (panel != null)
+			panel.color = MD3Theme.surfaceContainerHigh;
+		if (titleText != null)
+			titleText.color = MD3Theme.onSurface;
+		if (bodyText != null)
+			bodyText.color = MD3Theme.onSurfaceVariant;
+		if (confirmButton != null)
+			confirmButton.refreshTheme();
+		if (dismissButton != null)
+			dismissButton.refreshTheme();
 	}
 
 	public function open():Void
 	{
-		if (isOpen) return;
+		if (isOpen)
+			return;
 		isOpen = true;
 		visible = true;
 		focusedAction = 1;
 		refreshActionFocus();
 
-		if (openTween != null) openTween.cancel();
-		if (scrimTween != null) scrimTween.cancel();
+		if (openTween != null)
+			openTween.cancel();
+		if (scrimTween != null)
+			scrimTween.cancel();
 
 		scrimTween = FlxTween.tween(scrim, {alpha: 1}, 0.2, {ease: FlxEase.cubeOut});
 		openTween = FlxTween.tween(panel, {alpha: 1}, 0.2, {ease: FlxEase.cubeOut});
@@ -174,16 +186,22 @@ class MaterialDialog extends FlxSpriteGroup
 
 	public function close():Void
 	{
-		if (!isOpen) return;
+		if (!isOpen)
+			return;
 		isOpen = false;
 
-		if (openTween != null) openTween.cancel();
-		if (scrimTween != null) scrimTween.cancel();
+		if (openTween != null)
+			openTween.cancel();
+		if (scrimTween != null)
+			scrimTween.cancel();
 
 		scrimTween = FlxTween.tween(scrim, {alpha: 0}, 0.15, {ease: FlxEase.cubeIn});
 		openTween = FlxTween.tween(panel, {alpha: 0}, 0.15, {
 			ease: FlxEase.cubeIn,
-			onComplete: function(_) { visible = false; }
+			onComplete: function(_)
+			{
+				visible = false;
+			}
 		});
 		FlxTween.tween(titleText, {alpha: 0}, 0.15, {ease: FlxEase.cubeIn});
 		FlxTween.tween(bodyText, {alpha: 0}, 0.15, {ease: FlxEase.cubeIn});
@@ -205,7 +223,8 @@ class MaterialDialog extends FlxSpriteGroup
 
 	public function moveFocus(direction:Int):Void
 	{
-		if (direction == 0) return;
+		if (direction == 0)
+			return;
 		focusedAction = focusedAction == 1 ? 0 : 1;
 		refreshActionFocus();
 	}
@@ -214,7 +233,8 @@ class MaterialDialog extends FlxSpriteGroup
 	{
 		if (focusedAction == 1)
 		{
-			if (confirmButton.onClick != null) confirmButton.onClick();
+			if (confirmButton.onClick != null)
+				confirmButton.onClick();
 		}
 		else if (dismissButton.onClick != null)
 		{
@@ -224,24 +244,28 @@ class MaterialDialog extends FlxSpriteGroup
 
 	public function handlePointerTap(screenX:Float, screenY:Float):Bool
 	{
-		if (!isOpen) return false;
+		if (!isOpen)
+			return false;
 
 		if (isPointInsideButton(confirmButton, screenX, screenY))
 		{
-			if (confirmButton.onClick != null) confirmButton.onClick();
+			if (confirmButton.onClick != null)
+				confirmButton.onClick();
 			return true;
 		}
 
 		if (isPointInsideButton(dismissButton, screenX, screenY))
 		{
-			if (dismissButton.onClick != null) dismissButton.onClick();
+			if (dismissButton.onClick != null)
+				dismissButton.onClick();
 			return true;
 		}
 
 		if (!containsPoint(screenX, screenY))
 		{
 			close();
-			if (onDismiss != null) onDismiss();
+			if (onDismiss != null)
+				onDismiss();
 			return true;
 		}
 
@@ -255,16 +279,21 @@ class MaterialDialog extends FlxSpriteGroup
 
 	inline function isPointInsideButton(button:MaterialButton, screenX:Float, screenY:Float):Bool
 	{
-		if (button == null) return false;
+		if (button == null)
+			return false;
 
 		var buttonWidthScaled:Float = buttonWidth * button.scale.x;
 		var buttonHeightScaled:Float = buttonHeight * button.scale.y;
-		return screenX >= button.x && screenX <= button.x + buttonWidthScaled && screenY >= button.y && screenY <= button.y + buttonHeightScaled;
+		return screenX >= button.x
+			&& screenX <= button.x + buttonWidthScaled
+			&& screenY >= button.y
+			&& screenY <= button.y + buttonHeightScaled;
 	}
 
 	function refreshActionFocus():Void
 	{
-		if (confirmButton == null || dismissButton == null) return;
+		if (confirmButton == null || dismissButton == null)
+			return;
 
 		applyButtonFocus(confirmButton, focusedAction == 1, confirmBaseX, confirmBaseY);
 		applyButtonFocus(dismissButton, focusedAction == 0, dismissBaseX, dismissBaseY);
@@ -286,7 +315,8 @@ class MaterialDialog extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 
-		if (!isOpen) return;
+		if (!isOpen)
+			return;
 
 		#if FLX_MOUSE
 		// Click on scrim to dismiss
@@ -295,13 +325,13 @@ class MaterialDialog extends FlxSpriteGroup
 			var mousePos = FlxG.mouse.getScreenPosition();
 			var panelX = panel.x;
 			var panelY = panel.y;
-			var isOverPanel = mousePos.x >= panelX && mousePos.x <= panelX + panelWidth
-				&& mousePos.y >= panelY && mousePos.y <= panelY + panelHeight;
+			var isOverPanel = mousePos.x >= panelX && mousePos.x <= panelX + panelWidth && mousePos.y >= panelY && mousePos.y <= panelY + panelHeight;
 
 			if (!isOverPanel)
 			{
 				close();
-				if (onDismiss != null) onDismiss();
+				if (onDismiss != null)
+					onDismiss();
 			}
 		}
 		#end
@@ -310,8 +340,11 @@ class MaterialDialog extends FlxSpriteGroup
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(_onThemeChange);
-		if (openTween != null) openTween.cancel();
-		if (scrimTween != null) scrimTween.cancel();
+		if (openTween != null)
+			openTween.cancel();
+		if (scrimTween != null)
+			scrimTween.cancel();
 		super.destroy();
 	}
 }
+
