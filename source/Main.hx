@@ -430,6 +430,8 @@ class Main extends Sprite
 
 	function onWindowFocusIn():Void
 	{
+		ClientPrefs.applyFramePacing();
+
 		new FlxTimer().start(0.2, function(tmr:FlxTimer)
 		{
 			focused = true;

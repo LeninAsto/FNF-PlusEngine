@@ -233,9 +233,15 @@ class Achievements
 	{
 		// remove modded achievements
 		if ((_sortID + 1) > _originalLength)
+		{
+			var keysToRemove:Array<String> = [];
 			for (key => value in achievements)
 				if (value.mod != null)
-					achievements.remove(key);
+					keysToRemove.push(key);
+
+			for (key in keysToRemove)
+				achievements.remove(key);
+		}
 
 		_sortID = _originalLength - 1;
 

@@ -254,33 +254,42 @@ class BaseMusicBeatState extends FlxState
 	// ─── Beat/section callbacks (no scripts — used directly or overridden) ────
 	public function stepHit():Void
 	{
-		stagesFunc(function(stage:BaseStage)
+		for (stage in stages)
 		{
+			if (stage == null || !stage.exists || !stage.active)
+				continue;
+
 			stage.curStep = curStep;
 			stage.curDecStep = curDecStep;
 			stage.stepHit();
-		});
+		}
 		if (curStep % 4 == 0)
 			beatHit();
 	}
 
 	public function beatHit():Void
 	{
-		stagesFunc(function(stage:BaseStage)
+		for (stage in stages)
 		{
+			if (stage == null || !stage.exists || !stage.active)
+				continue;
+
 			stage.curBeat = curBeat;
 			stage.curDecBeat = curDecBeat;
 			stage.beatHit();
-		});
+		}
 	}
 
 	public function sectionHit():Void
 	{
-		stagesFunc(function(stage:BaseStage)
+		for (stage in stages)
 		{
+			if (stage == null || !stage.exists || !stage.active)
+				continue;
+
 			stage.curSection = curSection;
 			stage.sectionHit();
-		});
+		}
 	}
 
 	// ─── Transitions (no script hooks — MusicBeatState shadows these) ─────────

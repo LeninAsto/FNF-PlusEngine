@@ -85,12 +85,13 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		#end
 
 		#if !html5 // Apparently other framerates isn't correctly supported on Browser? Probably it has some V-Sync shit enabled by default, idk
-		var option:Option = new Option('Framerate Mode',
-			'Choose how the engine handles update/draw timing.\nBase matches Psych Engine, Fixed is lighter, Interpolated is smoother.\nRestart the game to apply changes.',
+		var option:Option = new Option('Framerate Mode', 'Choose how the engine handles update/draw timing.\nPsych matches the classic engine behavior.',
 			'framerateMode', STRING, ClientPrefs.FRAMERATE_MODES);
+		option.onChange = onChangeFramerate;
 		addOption(option);
 
-		var option:Option = new Option('Framerate', "Pretty self explanatory, isn't it?\nRestart the game to apply changes.", 'framerate', INT);
+		var option:Option = new Option('Framerate', "Pretty self explanatory, isn't it?", 'framerate', INT);
+		option.onChange = onChangeFramerate;
 		addOption(option);
 
 		final refreshRate:Int = FlxG.stage.application.window.displayMode.refreshRate;
@@ -133,6 +134,11 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		ClientPrefs.normalizeFPSCounterPrefs();
 		if (Main.fpsVar != null)
 			Main.fpsVar.applyPrefs();
+	}
+
+	function onChangeFramerate()
+	{
+		ClientPrefs.applyFramePacing();
 	}
 
 	override function changeSelection(change:Int = 0)

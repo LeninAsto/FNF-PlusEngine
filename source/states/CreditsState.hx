@@ -60,6 +60,13 @@ class CreditsState extends MusicBeatState
 				"03FC88"
 			],
 			[
+				'sirthegamercoder',
+				'sir',
+				'Indonesian translation and Helper coder of Plus Engine',
+				'https://bsky.app/profile/stgmd.bsky.social',
+				'7FDBFF'
+			],
+			[
 				'Andres',
 				'slushi',
 				'Creator and owner of several codes used based on the Slushi Engine',
@@ -67,18 +74,18 @@ class CreditsState extends MusicBeatState
 				'8FD9D1'
 			],
 			[
-				'sirthegamercoder',
-				'sir',
-				'Indonesian translation and others PRs',
-				'https://bsky.app/profile/stgmd.bsky.social',
-				'7FDBFF'
-			],
-			[
 				'TheoDev',
 				"theo",
 				"Owner, Lead coder of Funkin Modchart",
 				"https://github.com/TheoDevelops",
 				"FFB347"
+			],
+			[
+				"AutisticLulu",
+				"lulu",
+				"Psych Engine 1.0.x fixes and maintenance",
+				"https://github.com/MeguminBOT/FNF-PsychEngine",
+				"C7A0FF"
 			],
 			[
 				'That0neIdiot',

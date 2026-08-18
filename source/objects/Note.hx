@@ -95,6 +95,7 @@ class Note extends FlxSprite
 	public var colorSwap:ColorSwap;
 
 	public static var globalRgbShaders:Array<RGBPalette> = [];
+	public static var precachedHitsounds:Map<String, Bool> = new Map();
 
 	public var inEditor:Bool = false;
 
@@ -256,8 +257,14 @@ class Note extends FlxSprite
 			}
 			if (value != null && value.length > 1)
 				NoteTypesConfig.applyNoteTypeData(this, value);
-			if (hitsound != 'hitsound' && (ClientPrefs.data.hitSounds != "None" || hitsoundForce) && hitsoundVolume > 0)
+			if (hitsound != 'hitsound'
+				&& (ClientPrefs.data.hitSounds != "None" || hitsoundForce)
+				&& hitsoundVolume > 0
+				&& !precachedHitsounds.exists(hitsound))
+			{
+				precachedHitsounds.set(hitsound, true);
 				Paths.sound(hitsound); // precache new sound for being idiot-proof
+			}
 			noteType = value;
 		}
 		return value;

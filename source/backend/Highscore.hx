@@ -257,31 +257,20 @@ class Highscore
 	{
 		var daSong:String = formatSong(song, diff);
 		var scoreMap:Map<String, Int> = isOpponentMode ? songScoresOpponent : songScores;
-
-		if (!scoreMap.exists(daSong))
-			setScore(daSong, 0, isOpponentMode);
-
-		return scoreMap.get(daSong);
+		return scoreMap.exists(daSong) ? scoreMap.get(daSong) : 0;
 	}
 
 	public static function getRating(song:String, diff:Int, isOpponentMode:Bool = false):Float
 	{
 		var daSong:String = formatSong(song, diff);
 		var ratingMap:Map<String, Float> = isOpponentMode ? songRatingOpponent : songRating;
-
-		if (!ratingMap.exists(daSong))
-			setRating(daSong, 0, isOpponentMode);
-
-		return ratingMap.get(daSong);
+		return ratingMap.exists(daSong) ? ratingMap.get(daSong) : 0;
 	}
 
 	public static function getWeekScore(week:String, diff:Int):Int
 	{
 		var daWeek:String = formatSong(week, diff);
-		if (!weekScores.exists(daWeek))
-			setWeekScore(daWeek, 0);
-
-		return weekScores.get(daWeek);
+		return weekScores.exists(daWeek) ? weekScores.get(daWeek) : 0;
 	}
 
 	public static function load():Void

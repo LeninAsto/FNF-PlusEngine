@@ -281,6 +281,8 @@ class Paths
 	// haya I love you for the base cache dump I took to the max
 	public static function clearUnusedMemory()
 	{
+		var keysToRemove:Array<String> = [];
+
 		// clear non local assets in the tracked assets list
 		for (key in currentTrackedAssets.keys())
 		{
@@ -288,9 +290,12 @@ class Paths
 			if (!localTrackedAssets.contains(key) && !isAssetExcluded(key))
 			{
 				if (destroyGraphic(currentTrackedAssets.get(key)))
-					currentTrackedAssets.remove(key); // and remove the key from local cache map
+					keysToRemove.push(key); // and remove the key from local cache map
 			}
 		}
+
+		for (key in keysToRemove)
+			currentTrackedAssets.remove(key);
 
 		// Match Psych's cache cleanup behavior: free collected assets promptly.
 		System.gc();
@@ -302,12 +307,23 @@ class Paths
 	@:access(flixel.system.frontEnds.BitmapFrontEnd._cache)
 	public static function clearStoredMemory()
 	{
+		var graphicsToDestroy:Array<FlxGraphic> = [];
+
 		// clear anything not in the tracked assets list
 		for (key in FlxG.bitmap._cache.keys())
 		{
 			if (!currentTrackedAssets.exists(key))
-				destroyGraphic(FlxG.bitmap.get(key));
+			{
+				var graphic:FlxGraphic = FlxG.bitmap.get(key);
+				if (graphic != null)
+					graphicsToDestroy.push(graphic);
+			}
 		}
+
+		for (graphic in graphicsToDestroy)
+			destroyGraphic(graphic);
+
+		var soundsToRemove:Array<String> = [];
 
 		// clear all sounds that are cached
 		for (key => asset in currentTrackedSounds)
@@ -315,9 +331,13 @@ class Paths
 			if (!localTrackedAssets.contains(key) && !isAssetExcluded(key) && asset != null)
 			{
 				Assets.cache.clear(key);
-				currentTrackedSounds.remove(key);
+				soundsToRemove.push(key);
 			}
 		}
+
+		for (key in soundsToRemove)
+			currentTrackedSounds.remove(key);
+
 		// flags everything to be cleared out next unused memory clear
 		AssetCache.resetLocalTracking();
 		localTrackedAssets = AssetCache.localTrackedAssets;
@@ -328,6 +348,8 @@ class Paths
 	public static function freeGraphicsFromMemory()
 	{
 		var protectedGfx:Array<FlxGraphic> = [];
+		var keysToRemove:Array<String> = [];
+
 		function checkForGraphics(spr:Dynamic)
 		{
 			try
@@ -373,11 +395,14 @@ class Paths
 				if (!protectedGfx.contains(graphic))
 				{
 					if (destroyGraphic(graphic))
-						currentTrackedAssets.remove(key); // and remove the key from local cache map
+						keysToRemove.push(key); // and remove the key from local cache map
 					// trace('deleted $key');
 				}
 			}
 		}
+
+		for (key in keysToRemove)
+			currentTrackedAssets.remove(key);
 	}
 
 	static function destroyGraphic(graphic:FlxGraphic):Bool

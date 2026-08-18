@@ -553,7 +553,7 @@ class ClientPrefs
 	static function normalizeFramerateMode(mode:String):String
 	{
 		if (mode == null)
-			return 'Interpolated';
+			return 'Psych';
 
 		for (allowedMode in FRAMERATE_MODES)
 			if (allowedMode == mode)
@@ -563,7 +563,8 @@ class ClientPrefs
 		{
 			case 'psych': 'Psych';
 			case 'fixed': 'Fixed';
-			default: 'Interpolated';
+			case 'interpolated': 'Interpolated';
+			default: 'Psych';
 		};
 	}
 

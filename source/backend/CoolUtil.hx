@@ -14,6 +14,8 @@ class CoolUtil
 	public static var hasUpdate:Bool = false;
 	public static var latestVersion:String = "";
 	public static final haxeExtensions:Array<String> = ["hx", "hscript", "hsc", "hxs"];
+	static final displaySuffixRegex:EReg = ~/\s*\([^\)]*\)\s*$/;
+	static final colorWhitespaceRegex:EReg = ~/[\t\n\r]/;
 
 	public static function checkForUpdates(url:String = null):String
 	{
@@ -141,9 +143,8 @@ class CoolUtil
 		if (version == null)
 			return "";
 		var trimmed = version.trim();
-		var regex:EReg = ~/\s*\([^\)]*\)\s*$/;
-		if (regex.match(trimmed))
-			return regex.matchedLeft().trim();
+		if (displaySuffixRegex.match(trimmed))
+			return displaySuffixRegex.matchedLeft().trim();
 		return trimmed;
 	}
 
@@ -176,8 +177,7 @@ class CoolUtil
 
 	inline public static function colorFromString(color:String):FlxColor
 	{
-		var hideChars = ~/[\t\n\r]/;
-		var color:String = hideChars.split(color).join('').trim();
+		var color:String = colorWhitespaceRegex.split(color).join('').trim();
 		if (color.startsWith('0x'))
 			color = color.substring(color.length - 6);
 

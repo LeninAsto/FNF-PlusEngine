@@ -133,6 +133,8 @@ class MusicBeatState extends BaseMusicBeatState
 
 	public static var traceDisplay:TraceDisplay;
 	public static var timePassedOnState:Float = 0;
+	private static var _lastSavedFullscreen:Bool = false;
+	private static var _hasSavedFullscreen:Bool = false;
 
 	override function update(elapsed:Float)
 	{
@@ -163,8 +165,13 @@ class MusicBeatState extends BaseMusicBeatState
 			}
 		}
 
-		if (FlxG.save.data != null)
-			FlxG.save.data.fullscreen = backend.WindowMode.isFullscreen();
+		var fullscreen:Bool = backend.WindowMode.isFullscreen();
+		if (FlxG.save.data != null && (!_hasSavedFullscreen || _lastSavedFullscreen != fullscreen))
+		{
+			FlxG.save.data.fullscreen = fullscreen;
+			_lastSavedFullscreen = fullscreen;
+			_hasSavedFullscreen = true;
+		}
 
 		// Screenshot support with F5
 		#if desktop

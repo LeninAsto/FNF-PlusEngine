@@ -537,6 +537,8 @@ class PlayState extends MusicBeatState
 
 	override public function create()
 	{
+		Note.precachedHitsounds = new Map();
+
 		// Resetear contador de errores de scripts
 		#if LUA_ALLOWED
 		FunkinLua.lua_Errors = 0;

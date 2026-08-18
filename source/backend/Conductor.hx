@@ -48,10 +48,15 @@ class Conductor
 			bpm: bpm,
 			stepCrochet: stepCrochet
 		}
-		for (i in 0...Conductor.bpmChangeMap.length)
+		final map = Conductor.bpmChangeMap;
+		final len = map.length;
+		for (i in 0...len)
 		{
-			if (time >= Conductor.bpmChangeMap[i].songTime)
-				lastChange = Conductor.bpmChangeMap[i];
+			final evt = map[i];
+			if (time >= evt.songTime)
+				lastChange = evt;
+			else
+				break;
 		}
 
 		return lastChange;
@@ -65,10 +70,15 @@ class Conductor
 			bpm: bpm,
 			stepCrochet: stepCrochet
 		}
-		for (i in 0...Conductor.bpmChangeMap.length)
+		final map = Conductor.bpmChangeMap;
+		final len = map.length;
+		for (i in 0...len)
 		{
-			if (Conductor.bpmChangeMap[i].stepTime <= step)
-				lastChange = Conductor.bpmChangeMap[i];
+			final evt = map[i];
+			if (evt.stepTime <= step)
+				lastChange = evt;
+			else
+				break;
 		}
 
 		return lastChange;
