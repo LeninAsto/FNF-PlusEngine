@@ -3759,10 +3759,6 @@ class PlayState extends MusicBeatState
 		object.dirty = true;
 	}
 
-	/**
-	 * Actualiza las animaciones de los iconos basándose en el porcentaje actual de salud.
-	 * Útil para forzar la actualización cuando se cambian personajes.
-	 */
 	public function updateIconAnimations():Void
 	{
 		if (!iconsAnimations || healthBar == null || !healthBar.enabled)
@@ -3770,7 +3766,6 @@ class PlayState extends MusicBeatState
 
 		var healthPercent:Float = healthBar.percent / 100;
 
-		// Actualizar íconos animados con el nuevo sistema
 		if (iconP1 != null && iconP1.isAnimated)
 		{
 			iconP1.updateIconState(playOpponent ? healthPercent : 1 - healthPercent);
@@ -3781,18 +3776,20 @@ class PlayState extends MusicBeatState
 		}
 		if (iconGF != null && iconGF.visible && iconGF.isAnimated)
 		{
-			iconGF.updateIconState(playOpponent ? healthPercent : 1 - healthPercent);
+				if (gfIconSide == 'bf') {
+						iconGF.updateIconState(playOpponent ? healthPercent : 1 - healthPercent);
+				} else {
+						iconGF.updateIconState(playOpponent ? 1 - healthPercent : healthPercent);
+				}
 		}
 
-		// Sistema de frames para íconos estáticos (comportamiento original)
 		if (iconP1 != null && !iconP1.isAnimated)
 		{
-			// Opponent Mode: Invertir lógica de íconos cuando la barra va de izquierda a derecha
 			if (playOpponent)
 			{
-				iconP1.animation.curAnim.curFrame = (healthBar.percent > 80) ? 1 : 0; // Dad pierde cuando la barra está llena
+				iconP1.animation.curAnim.curFrame = (healthBar.percent > 80) ? 1 : 0;
 				if (iconP2 != null)
-					iconP2.animation.curAnim.curFrame = (healthBar.percent < 20) ? 1 : 0; // Boyfriend pierde cuando la barra está vacía
+					iconP2.animation.curAnim.curFrame = (healthBar.percent < 20) ? 1 : 0;
 			}
 			else
 			{
