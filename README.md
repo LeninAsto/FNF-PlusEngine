@@ -45,45 +45,45 @@ Contributions are welcome! If you have ideas, improvements, or fixes, feel free 
 
 # About Code Usage
 
-This project is **open to learn, build, and improve**.  
+This project is **open to learn, build, and improve**.
 You’re free to use it as a reference, a base, or a learning resource.
 
-Because code is not a buried treasure —  
+Because code is not a buried treasure —
 **code lives when it’s shared**.
 
-📚 **Learning > hoarding**  
-💡 **Sharing > flexing**  
+📚 **Learning > hoarding**
+💡 **Sharing > flexing**
 🚀 **Building > gatekeeping**
 
 I don’t really believe in the mindset of:
 > “Don’t touch my code, don't create other engine, don't use my engine's stuffs, bruh...”
 
-Bro…  
-**you’re not going to heaven with your private repository under your arm!** 
+Bro…
+**you’re not going to heaven with your private repository under your arm!**
 
 Source code is:
-- knowledge  
-- practice  
-- mistakes  
-- evolution  
+- knowledge
+- practice
+- mistakes
+- evolution
 
-If someone improves something I made, **respect** 🫡  
-That’s how this has always worked:  
+If someone improves something I made, **respect** 🫡
+That’s how this has always worked:
 learn from the past to build the future.
 
 ### ⚠️ Important note
-Don’t claim others’ work as your own or sell it as original.  
+Don’t claim others’ work as your own or sell it as original.
 Respect the effort, learn from it, and create something better.
 
-To those who share: thank you 💙  
-To those who hide code out of fear or envy:  
+To those who share: thank you 💙
+To those who hide code out of fear or envy:
 relax — progress doesn’t wait.
 
 **Happy coding.**
 
 ## Developer Credits:
-* Lenin Asto - Main Programmer for Plus Engine Fork
-* Legacy Odyssey - Co-Programmer for Plus Engine Fork
+* Lenin Asto - Main Programmer for Plus Engine
+* sirthegamercoder - Helper Programmer for Plus Engine
 
 ## Original Credits:
 * Shadow Mario - Main Programmer and Head of Psych Engine.

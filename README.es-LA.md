@@ -43,45 +43,45 @@ Creado con [contrib.rocks](https://contrib.rocks/).
 
 # Acerca del Uso del Código
 
-Este proyecto está **abierto para aprender, construir y mejorar**.  
+Este proyecto está **abierto para aprender, construir y mejorar**.
 Eres libre de usarlo como referencia, base o recurso de aprendizaje.
 
-Porque el código no es un tesoro enterrado —  
+Porque el código no es un tesoro enterrado —
 **el código vive cuando se comparte**.
 
-📚 **Aprender > acumular**  
-💡 **Compartir > presumir**  
+📚 **Aprender > acumular**
+💡 **Compartir > presumir**
 🚀 **Construir > restringir**
 
 Realmente no creo en la mentalidad de:
 > "No toques mi código, no crees otro motor, no uses las cosas de mi motor, bro..."
 
-Hermano…  
-**¡no vas a ir al cielo con tu repositorio privado bajo el brazo!** 
+Hermano…
+**¡no vas a ir al cielo con tu repositorio privado bajo el brazo!**
 
 El código fuente es:
-- conocimiento  
-- práctica  
-- errores  
-- evolución  
+- conocimiento
+- práctica
+- errores
+- evolución
 
-Si alguien mejora algo que hice, **respeto** 🫡  
-Así es como siempre ha funcionado esto:  
+Si alguien mejora algo que hice, **respeto** 🫡
+Así es como siempre ha funcionado esto:
 aprender del pasado para construir el futuro.
 
 ### ⚠️ Nota importante
-No reclames el trabajo de otros como tuyo ni lo vendas como original.  
+No reclames el trabajo de otros como tuyo ni lo vendas como original.
 Respeta el esfuerzo, aprende de ello y crea algo mejor.
 
-Para aquellos que comparten: gracias 💙  
-Para aquellos que ocultan código por miedo o envidia:  
+Para aquellos que comparten: gracias 💙
+Para aquellos que ocultan código por miedo o envidia:
 relájate — el progreso no espera.
 
 **Feliz codificación.**
 
 ## Créditos del Desarrollador:
-* Lenin Asto - Programador Principal del Fork de Plus Engine
-* Legacy Odyssey - Co-Programador del Fork de Plus Engine
+* Lenin Asto - Programador Principal de Plus Engine
+* sirthegamercoder - Programador auxiliar de Plus Engine
 
 ## Créditos Originales:
 * Shadow Mario - Programador Principal y Líder de Psych Engine.

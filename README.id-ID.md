@@ -43,45 +43,45 @@ Kontribusi sangat diharapkan! Jika Anda memiliki ide, perbaikan, atau pembaruan,
 
 # Tentang Penggunaan Kode
 
-Proyek ini **terbuka untuk dipelajari, dikembangkan, dan diperbaiki**.  
+Proyek ini **terbuka untuk dipelajari, dikembangkan, dan diperbaiki**.
 Anda bebas menggunakan kode ini sebagai referensi, dasar, atau sumber belajar.
 
-Karena kode bukanlah harta karun yang terkubur —  
+Karena kode bukanlah harta karun yang terkubur —
 **kode hidup ketika dibagikan**.
 
-📚 **Belajar > menimbun**  
-💡 **Berbagi > pamer**  
+📚 **Belajar > menimbun**
+💡 **Berbagi > pamer**
 🚀 **Membangun > menghalangi**
 
 Saya tidak percaya pada pola pikir:
 > “Jangan sentuh kode saya, jangan buat mesin lain, jangan gunakan barang-barang mesin saya, bro...”
 
-Bro...  
-**kamu tidak akan masuk surga dengan repositori pribadi di bawah lenganmu!**  
+Bro...
+**kamu tidak akan masuk surga dengan repositori pribadi di bawah lenganmu!**
 
-Kode sumber adalah:  
-- pengetahuan  
-- praktik  
-- kesalahan  
-- evolusi  
+Kode sumber adalah:
+- pengetahuan
+- praktik
+- kesalahan
+- evolusi
 
-Jika seseorang memperbaiki sesuatu yang saya buat, **hormati** 🫡  
-Begitulah cara kerjanya:  
+Jika seseorang memperbaiki sesuatu yang saya buat, **hormati** 🫡
+Begitulah cara kerjanya:
 belajar dari masa lalu untuk membangun masa depan.
 
 ### ⚠️ Catatan penting
-Jangan mengklaim karya orang lain sebagai milikmu atau menjualnya sebagai asli.  
+Jangan mengklaim karya orang lain sebagai milikmu atau menjualnya sebagai asli.
 Hormati usaha mereka, pelajari darinya, dan ciptakan sesuatu yang lebih baik.
 
-Bagi yang berbagi: terima kasih 💙  
-Bagi yang menyembunyikan kode karena takut atau iri:  
+Bagi yang berbagi: terima kasih 💙
+Bagi yang menyembunyikan kode karena takut atau iri:
 tenang — kemajuan tidak menunggu.
 
 **Selamat berkoding.**
 
 ## Kredit Pengembang:
-* Lenin Asto - Pengembang Utama untuk Fork Plus Engine
-* Legacy Odyssey - Co-Pengembang Kedua untuk Fork Plus Engine
+* Lenin Asto - Pengembang Utama untuk Plus Engine
+* sirthegamercoder - Pengembang Kedua untuk Plus Engine
 
 ## Kredit Asli:
 * Shadow Mario - Pengembang Utama dan Kepala Psych Engine.

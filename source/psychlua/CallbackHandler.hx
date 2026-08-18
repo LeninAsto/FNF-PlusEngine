@@ -21,7 +21,10 @@ class CallbackHandler
 				{
 					var script:FunkinLua = FunkinLua.getScriptFromState(l);
 					if (script != null)
+					{
 						cbf = script.callbacks.get(fname);
+						FunkinLua.lastCalledScript = script;
+					}
 				}
 				else
 					cbf = last.callbacks.get(fname);
