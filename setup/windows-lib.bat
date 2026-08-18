@@ -108,7 +108,7 @@ haxelib list
 
 REM ============================================================================
 REM Android-only VSlice/mobile helper. Install manually on Android machines:
-REM haxelib git extension-androidtools https://github.com/Psych-Plus-Team/extension-androidtools
+REM haxelib install extension-androidtools
 REM ============================================================================
 
 echo.
