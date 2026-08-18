@@ -387,7 +387,9 @@ class HScript extends Iris
 		set('StoryMenuState', states.StoryMenuState);
 		set('LoadingState', states.LoadingState);
 		set('CreditsState', states.CreditsState);
+		#if ACHIEVEMENTS_ALLOWED
 		set('AchievementsMenuState', states.AchievementsMenuState);
+		#end
 		set('MasterEditorMenu', states.editors.MasterEditorMenu);
 		set('FlashingState', states.FlashingState);
 		set('OptionsState', options.OptionsState);
