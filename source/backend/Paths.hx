@@ -486,7 +486,11 @@ class Paths
 
 	static public function image(key:String, ?parentFolder:String = null, ?allowGPU:Bool = true):FlxGraphic
 	{
-		key = Language.getFileTranslation('images/$key') + '.png';
+		key = key.replace('\\', '/');
+		key = key.startsWith('images/') ? key : 'images/$key';
+		key = Language.getFileTranslation(key);
+		if (!key.endsWith('.png'))
+			key += '.png';
 		var bitmap:BitmapData = null;
 		var resolvedFile:String = getPath(key, IMAGE, parentFolder, true);
 

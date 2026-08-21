@@ -37,9 +37,29 @@ class JNIUtil
 		final key:String = '$className::$methodName::$signature';
 
 		if (cache && !staticMethodCache.exists(key))
-			staticMethodCache.set(key, JNI.createStaticMethod(className, methodName, signature));
+		{
+			try
+			{
+				staticMethodCache.set(key, JNI.createStaticMethod(className, methodName, signature));
+			}
+			catch (e:Dynamic)
+			{
+				trace('Failed to create JNI static method $key: $e');
+				staticMethodCache.set(key, null);
+			}
+		}
 		else if (!cache)
-			return JNI.createStaticMethod(className, methodName, signature);
+		{
+			try
+			{
+				return JNI.createStaticMethod(className, methodName, signature);
+			}
+			catch (e:Dynamic)
+			{
+				trace('Failed to create JNI static method $key: $e');
+				return null;
+			}
+		}
 
 		return staticMethodCache.get(key);
 	}
@@ -61,9 +81,29 @@ class JNIUtil
 		final key:String = '$className::$methodName::$signature';
 
 		if (cache && !memberMethodCache.exists(key))
-			memberMethodCache.set(key, JNI.createMemberMethod(className, methodName, signature));
+		{
+			try
+			{
+				memberMethodCache.set(key, JNI.createMemberMethod(className, methodName, signature));
+			}
+			catch (e:Dynamic)
+			{
+				trace('Failed to create JNI member method $key: $e');
+				memberMethodCache.set(key, null);
+			}
+		}
 		else if (!cache)
-			return JNI.createMemberMethod(className, methodName, signature);
+		{
+			try
+			{
+				return JNI.createMemberMethod(className, methodName, signature);
+			}
+			catch (e:Dynamic)
+			{
+				trace('Failed to create JNI member method $key: $e');
+				return null;
+			}
+		}
 
 		return memberMethodCache.get(key);
 	}
@@ -85,9 +125,29 @@ class JNIUtil
 		final key:String = '$className::$fieldName::$signature';
 
 		if (cache && !staticFieldCache.exists(key))
-			staticFieldCache.set(key, JNI.createStaticField(className, fieldName, signature));
+		{
+			try
+			{
+				staticFieldCache.set(key, JNI.createStaticField(className, fieldName, signature));
+			}
+			catch (e:Dynamic)
+			{
+				trace('Failed to create JNI static field $key: $e');
+				staticFieldCache.set(key, null);
+			}
+		}
 		else if (!cache)
-			return JNI.createStaticField(className, fieldName, signature);
+		{
+			try
+			{
+				return JNI.createStaticField(className, fieldName, signature);
+			}
+			catch (e:Dynamic)
+			{
+				trace('Failed to create JNI static field $key: $e');
+				return null;
+			}
+		}
 
 		return staticFieldCache.get(key);
 	}
@@ -109,9 +169,29 @@ class JNIUtil
 		final key:String = '$className::$fieldName::$signature';
 
 		if (cache && !memberFieldCache.exists(key))
-			memberFieldCache.set(key, JNI.createMemberField(className, fieldName, signature));
+		{
+			try
+			{
+				memberFieldCache.set(key, JNI.createMemberField(className, fieldName, signature));
+			}
+			catch (e:Dynamic)
+			{
+				trace('Failed to create JNI member field $key: $e');
+				memberFieldCache.set(key, null);
+			}
+		}
 		else if (!cache)
-			return JNI.createMemberField(className, fieldName, signature);
+		{
+			try
+			{
+				return JNI.createMemberField(className, fieldName, signature);
+			}
+			catch (e:Dynamic)
+			{
+				trace('Failed to create JNI member field $key: $e');
+				return null;
+			}
+		}
 
 		return memberFieldCache.get(key);
 	}

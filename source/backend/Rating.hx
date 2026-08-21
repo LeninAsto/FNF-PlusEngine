@@ -42,7 +42,7 @@ class Rating
 		var isCodenameSystem:Bool = (ClientPrefs.data.systemScoreMultiplier == 'Codename'); // Check if it the System Score Multiplier was Codename
 
 		var rating:Rating = new Rating('sick');
-		rating.ratingMod = 0.9;
+		rating.ratingMod = ClientPrefs.data.useFlawlessRating ? 0.9 : 1;
 		rating.score = isCodenameSystem ? 300 : 350;
 		rating.noteSplash = true;
 		ratingsData.push(rating);

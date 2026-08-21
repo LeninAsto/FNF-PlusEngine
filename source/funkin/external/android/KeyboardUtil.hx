@@ -21,7 +21,15 @@ class KeyboardUtil
 		if (method == null)
 			return false;
 
-		return inline JNI.callStatic(method, []);
+		try
+		{
+			return JNI.callStatic(method, []);
+		}
+		catch (e:Dynamic)
+		{
+			trace('Failed to query keyboard connection state: $e');
+			return false;
+		}
 	}
 }
 #end

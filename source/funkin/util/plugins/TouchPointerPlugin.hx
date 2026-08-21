@@ -1,5 +1,6 @@
 package funkin.util.plugins;
 
+import backend.ClientPrefs;
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.FlxCamera;
@@ -48,6 +49,12 @@ class TouchPointerPlugin extends FlxTypedSpriteGroup<TouchPointer>
    */
   public static function initialize():Void
   {
+    if (instance != null && pointerCamera != null)
+    {
+      enabled = ClientPrefs.data.showTouchPointer;
+      return;
+    }
+
     pointerCamera = new FlxCamera();
     pointerCamera.bgColor.alpha = 0;
     instance = new TouchPointerPlugin();
@@ -109,8 +116,10 @@ class TouchPointerPlugin extends FlxTypedSpriteGroup<TouchPointer>
 
     FlxG.signals.preStateSwitch.add(function()
     {
-      instance.removeAll();
+      if (instance != null) instance.removeAll();
     });
+
+    enabled = ClientPrefs.data.showTouchPointer;
   }
 
   override public function update(elapsed:Float):Void

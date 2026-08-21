@@ -128,7 +128,6 @@
 	<haxelib name="flixel-animate" if="FEATURE_POLYMOD_MODS"/>
 	<haxelib name="FlxPartialSound" if="FEATURE_PARTIAL_SOUNDS"/>
 	<haxelib name="hxjsonast" if="FEATURE_POLYMOD_MODS"/>
-	<haxelib name="extension-androidtools" if="android FEATURE_POLYMOD_MODS"/>
 
 	<!--Psych stuff needed-->
 	<haxelib name="linc_luajit" if="LUA_ALLOWED"/>
@@ -262,6 +261,7 @@
 
 	<section if="android">
 		<assets path="art/icons/android/res" rename="app/src/main/res" type="template" />
+		<assets path="source/funkin/external/android/java/funkin" rename="app/src/main/java/funkin" type="template" />
 		<include path="source/mobile/include_android.xml" />
 	</section>
 </project>

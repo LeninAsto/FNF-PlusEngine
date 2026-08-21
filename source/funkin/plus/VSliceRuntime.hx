@@ -230,6 +230,7 @@ class VSliceRuntime
 			active = true;
 			VSlicePreferencesBridge.syncFromPlus();
 			VSlicePreferencesBridge.syncControlsFromPlus();
+			syncTouchPointer();
 			return;
 		}
 
@@ -252,12 +253,21 @@ class VSliceRuntime
 		VSlicePreferencesBridge.syncFromPlus();
 		if (PlayerSettings.player1 == null) PlayerSettings.init();
 		VSlicePreferencesBridge.syncControlsFromPlus();
+		syncTouchPointer();
 
 		PolymodHandler.loadModsByDir(dirs);
 		reloadRegistries();
 
 		initialized = true;
 		loadedSignature = signature;
+	}
+
+	public static function syncTouchPointer():Void
+	{
+		#if mobile
+		funkin.util.plugins.TouchPointerPlugin.initialize();
+		funkin.util.plugins.TouchPointerPlugin.enabled = backend.ClientPrefs.data.showTouchPointer;
+		#end
 	}
 
 	public static function getEnabledVSliceModDirs():Array<String>

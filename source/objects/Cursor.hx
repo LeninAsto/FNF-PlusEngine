@@ -1,248 +1,223 @@
 package objects;
 
 import lime.app.Future;
-import openfl.display.BitmapData;
 import openfl.Assets;
+import openfl.display.BitmapData;
 
 /**
- * Advanced cursor system for custom mouse cursors.
- * Based on the official Funkin' repository implementation.
+ * Global cursor system shared by Plus/Psych and the VSlice runtime.
+ * Based on the official Funkin' cursor set, using assets/images/cursor.
  */
 class Cursor
 {
-	/**
-	 * The current cursor mode.
-	 * Set this value to change the cursor graphic.
-	 */
 	public static var cursorMode(default, set):Null<CursorMode> = null;
 
-	/**
-	 * Show the cursor.
-	 */
 	public static inline function show():Void
 	{
 		FlxG.mouse.visible = true;
-		// Reset the cursor mode
 		Cursor.cursorMode = Default;
 	}
 
-	/**
-	 * Hide the cursor.
-	 */
 	public static inline function hide():Void
 	{
 		FlxG.mouse.visible = false;
-		// Reset the cursor mode
 		Cursor.cursorMode = null;
 	}
 
-	/**
-	 * Toggle cursor visibility.
-	 */
 	public static inline function toggle():Void
 	{
 		if (FlxG.mouse.visible)
-		{
 			hide();
-		}
 		else
-		{
 			show();
-		}
 	}
 
-	// Cursor parameters for each mode
 	public static final CURSOR_DEFAULT_PARAMS:CursorParams = {
-		graphic: "assets/shared/images/ui/cursor.png",
-		scale: 0.8,
-		offsetX: -5,
-		offsetY: -10,
+		graphic: cursorGraphic("cursor-default"),
+		scale: 1.0,
+		offsetX: 0,
+		offsetY: 0,
 	};
 	static var assetCursorDefault:Null<BitmapData> = null;
 
+	public static final CURSOR_CROSS_PARAMS:CursorParams = {
+		graphic: cursorGraphic("cursor-cross"),
+		scale: 1.0,
+		offsetX: 0,
+		offsetY: 0,
+	};
+	static var assetCursorCross:Null<BitmapData> = null;
+
+	public static final CURSOR_ERASER_PARAMS:CursorParams = {
+		graphic: cursorGraphic("cursor-eraser"),
+		scale: 1.0,
+		offsetX: 0,
+		offsetY: 0,
+	};
+	static var assetCursorEraser:Null<BitmapData> = null;
+
 	public static final CURSOR_POINTER_PARAMS:CursorParams = {
-		graphic: "assets/shared/images/ui/cursor.png",
-		scale: 0.8,
-		offsetX: -13,
-		offsetY: -10,
+		graphic: cursorGraphic("cursor-pointer"),
+		scale: 1.0,
+		offsetX: -8,
+		offsetY: 0,
 	};
 	static var assetCursorPointer:Null<BitmapData> = null;
 
 	public static final CURSOR_GRABBING_PARAMS:CursorParams = {
-		graphic: "assets/shared/images/ui/cursor.png",
-		scale: 0.8,
-		offsetX: -13,
-		offsetY: -10,
+		graphic: cursorGraphic("cursor-grabbing"),
+		scale: 1.0,
+		offsetX: -8,
+		offsetY: 0,
 	};
 	static var assetCursorGrabbing:Null<BitmapData> = null;
 
+	public static final CURSOR_HOURGLASS_PARAMS:CursorParams = {
+		graphic: cursorGraphic("cursor-hourglass"),
+		scale: 1.0,
+		offsetX: 0,
+		offsetY: 0,
+	};
+	static var assetCursorHourglass:Null<BitmapData> = null;
+
 	public static final CURSOR_TEXT_PARAMS:CursorParams = {
-		graphic: "assets/shared/images/ui/beam.png",
-		scale: 0.8,
-		offsetX: -1,
-		offsetY: -6,
+		graphic: cursorGraphic("cursor-text"),
+		scale: 0.2,
+		offsetX: 0,
+		offsetY: 0,
 	};
 	static var assetCursorText:Null<BitmapData> = null;
+
+	public static final CURSOR_TEXT_VERTICAL_PARAMS:CursorParams = {
+		graphic: cursorGraphic("cursor-text-vertical"),
+		scale: 0.2,
+		offsetX: 0,
+		offsetY: 0,
+	};
+	static var assetCursorTextVertical:Null<BitmapData> = null;
+
+	public static final CURSOR_ZOOM_IN_PARAMS:CursorParams = {
+		graphic: cursorGraphic("cursor-zoom-in"),
+		scale: 1.0,
+		offsetX: 0,
+		offsetY: 0,
+	};
+	static var assetCursorZoomIn:Null<BitmapData> = null;
+
+	public static final CURSOR_ZOOM_OUT_PARAMS:CursorParams = {
+		graphic: cursorGraphic("cursor-zoom-out"),
+		scale: 1.0,
+		offsetX: 0,
+		offsetY: 0,
+	};
+	static var assetCursorZoomOut:Null<BitmapData> = null;
+
+	public static final CURSOR_CROSSHAIR_PARAMS:CursorParams = {
+		graphic: cursorGraphic("cursor-crosshair"),
+		scale: 1.0,
+		offsetX: -16,
+		offsetY: -16,
+	};
+	static var assetCursorCrosshair:Null<BitmapData> = null;
+
+	public static final CURSOR_CELL_PARAMS:CursorParams = {
+		graphic: cursorGraphic("cursor-cell"),
+		scale: 1.0,
+		offsetX: -16,
+		offsetY: -16,
+	};
+	static var assetCursorCell:Null<BitmapData> = null;
+
+	public static final CURSOR_SCROLL_PARAMS:CursorParams = {
+		graphic: cursorGraphic("cursor-scroll"),
+		scale: 0.2,
+		offsetX: -15,
+		offsetY: -15,
+	};
+	static var assetCursorScroll:Null<BitmapData> = null;
+
+	static function cursorGraphic(name:String):String
+	{
+		return 'assets/images/cursor/$name.png';
+	}
 
 	static function set_cursorMode(value:Null<CursorMode>):Null<CursorMode>
 	{
 		if (value != null && cursorMode != value)
 		{
 			cursorMode = value;
-			setCursorGraphic(cursorMode);
+			loadCursorGraphicSync(cursorMode);
 		}
 		return cursorMode;
 	}
 
-	/**
-	 * Synchronous cursor loading.
-	 */
-	static function setCursorGraphic(?value:CursorMode = null):Void
+	static function loadCursorGraphicSync(?value:CursorMode = null):Void
 	{
-		if (value == null)
-		{
-			FlxG.mouse.unload();
-			return;
-		}
-
-		switch (value)
-		{
-			case Default:
-				if (assetCursorDefault == null)
-				{
-					var bitmapData:BitmapData = Assets.getBitmapData(CURSOR_DEFAULT_PARAMS.graphic);
-					assetCursorDefault = bitmapData;
-					applyCursorParams(assetCursorDefault, CURSOR_DEFAULT_PARAMS);
-				}
-				else
-				{
-					applyCursorParams(assetCursorDefault, CURSOR_DEFAULT_PARAMS);
-				}
-
-			case Pointer:
-				if (assetCursorPointer == null)
-				{
-					var bitmapData:BitmapData = Assets.getBitmapData(CURSOR_POINTER_PARAMS.graphic);
-					assetCursorPointer = bitmapData;
-					applyCursorParams(assetCursorPointer, CURSOR_POINTER_PARAMS);
-				}
-				else
-				{
-					applyCursorParams(assetCursorPointer, CURSOR_POINTER_PARAMS);
-				}
-
-			case Grabbing:
-				if (assetCursorGrabbing == null)
-				{
-					var bitmapData:BitmapData = Assets.getBitmapData(CURSOR_GRABBING_PARAMS.graphic);
-					assetCursorGrabbing = bitmapData;
-					applyCursorParams(assetCursorGrabbing, CURSOR_GRABBING_PARAMS);
-				}
-				else
-				{
-					applyCursorParams(assetCursorGrabbing, CURSOR_GRABBING_PARAMS);
-				}
-
-			case Text:
-				if (assetCursorText == null)
-				{
-					var bitmapData:BitmapData = Assets.getBitmapData(CURSOR_TEXT_PARAMS.graphic);
-					assetCursorText = bitmapData;
-					applyCursorParams(assetCursorText, CURSOR_TEXT_PARAMS);
-				}
-				else
-				{
-					applyCursorParams(assetCursorText, CURSOR_TEXT_PARAMS);
-				}
-
-			default:
-				FlxG.mouse.unload();
-		}
+		applyCursorParams(value);
 	}
 
-	/**
-	 * Asynchronous cursor loading.
-	 */
 	static function loadCursorGraphic(?value:CursorMode = null):Void
 	{
-		if (value == null)
+		applyCursorParams(value, true);
+	}
+
+	static function applyCursorParams(mode:Null<CursorMode>, async:Bool = false):Void
+	{
+		if (mode == null)
 		{
 			FlxG.mouse.unload();
 			return;
 		}
 
-		switch (value)
+		var data = switch (mode)
 		{
-			case Default:
-				if (assetCursorDefault == null)
-				{
-					var future:Future<BitmapData> = Assets.loadBitmapData(CURSOR_DEFAULT_PARAMS.graphic);
-					future.onComplete(function(bitmapData:BitmapData)
-					{
-						assetCursorDefault = bitmapData;
-						applyCursorParams(assetCursorDefault, CURSOR_DEFAULT_PARAMS);
-					});
-					future.onError(onCursorError.bind(Default));
-				}
-				else
-				{
-					applyCursorParams(assetCursorDefault, CURSOR_DEFAULT_PARAMS);
-				}
+			case Default: {cache: assetCursorDefault, params: CURSOR_DEFAULT_PARAMS, set: (bmp) -> assetCursorDefault = bmp};
+			case Cross: {cache: assetCursorCross, params: CURSOR_CROSS_PARAMS, set: (bmp) -> assetCursorCross = bmp};
+			case Eraser: {cache: assetCursorEraser, params: CURSOR_ERASER_PARAMS, set: (bmp) -> assetCursorEraser = bmp};
+			case Pointer: {cache: assetCursorPointer, params: CURSOR_POINTER_PARAMS, set: (bmp) -> assetCursorPointer = bmp};
+			case Grabbing: {cache: assetCursorGrabbing, params: CURSOR_GRABBING_PARAMS, set: (bmp) -> assetCursorGrabbing = bmp};
+			case Hourglass: {cache: assetCursorHourglass, params: CURSOR_HOURGLASS_PARAMS, set: (bmp) -> assetCursorHourglass = bmp};
+			case Text: {cache: assetCursorText, params: CURSOR_TEXT_PARAMS, set: (bmp) -> assetCursorText = bmp};
+			case TextVertical: {cache: assetCursorTextVertical, params: CURSOR_TEXT_VERTICAL_PARAMS, set: (bmp) -> assetCursorTextVertical = bmp};
+			case ZoomIn: {cache: assetCursorZoomIn, params: CURSOR_ZOOM_IN_PARAMS, set: (bmp) -> assetCursorZoomIn = bmp};
+			case ZoomOut: {cache: assetCursorZoomOut, params: CURSOR_ZOOM_OUT_PARAMS, set: (bmp) -> assetCursorZoomOut = bmp};
+			case Crosshair: {cache: assetCursorCrosshair, params: CURSOR_CROSSHAIR_PARAMS, set: (bmp) -> assetCursorCrosshair = bmp};
+			case Cell: {cache: assetCursorCell, params: CURSOR_CELL_PARAMS, set: (bmp) -> assetCursorCell = bmp};
+			case Scroll: {cache: assetCursorScroll, params: CURSOR_SCROLL_PARAMS, set: (bmp) -> assetCursorScroll = bmp};
+			default: null;
+		}
 
-			case Pointer:
-				if (assetCursorPointer == null)
-				{
-					var future:Future<BitmapData> = Assets.loadBitmapData(CURSOR_POINTER_PARAMS.graphic);
-					future.onComplete(function(bitmapData:BitmapData)
-					{
-						assetCursorPointer = bitmapData;
-						applyCursorParams(assetCursorPointer, CURSOR_POINTER_PARAMS);
-					});
-					future.onError(onCursorError.bind(Pointer));
-				}
-				else
-				{
-					applyCursorParams(assetCursorPointer, CURSOR_POINTER_PARAMS);
-				}
+		if (data == null)
+		{
+			FlxG.mouse.unload();
+			return;
+		}
 
-			case Grabbing:
-				if (assetCursorGrabbing == null)
-				{
-					var future:Future<BitmapData> = Assets.loadBitmapData(CURSOR_GRABBING_PARAMS.graphic);
-					future.onComplete(function(bitmapData:BitmapData)
-					{
-						assetCursorGrabbing = bitmapData;
-						applyCursorParams(assetCursorGrabbing, CURSOR_GRABBING_PARAMS);
-					});
-					future.onError(onCursorError.bind(Grabbing));
-				}
-				else
-				{
-					applyCursorParams(assetCursorGrabbing, CURSOR_GRABBING_PARAMS);
-				}
+		if (data.cache != null)
+		{
+			applyGraphic(data.cache, data.params);
+			return;
+		}
 
-			case Text:
-				if (assetCursorText == null)
-				{
-					var future:Future<BitmapData> = Assets.loadBitmapData(CURSOR_TEXT_PARAMS.graphic);
-					future.onComplete(function(bitmapData:BitmapData)
-					{
-						assetCursorText = bitmapData;
-						applyCursorParams(assetCursorText, CURSOR_TEXT_PARAMS);
-					});
-					future.onError(onCursorError.bind(Text));
-				}
-				else
-				{
-					applyCursorParams(assetCursorText, CURSOR_TEXT_PARAMS);
-				}
-
-			default:
-				FlxG.mouse.unload();
+		if (async)
+		{
+			var future:Future<BitmapData> = Assets.loadBitmapData(data.params.graphic);
+			future.onComplete((bitmapData:BitmapData) ->
+			{
+				data.set(bitmapData);
+				applyGraphic(bitmapData, data.params);
+			});
+			future.onError(onCursorError.bind(mode));
+		}
+		else
+		{
+			var bitmapData:BitmapData = Assets.getBitmapData(data.params.graphic);
+			data.set(bitmapData);
+			applyGraphic(bitmapData, data.params);
 		}
 	}
 
-	static inline function applyCursorParams(graphic:BitmapData, params:CursorParams):Void
+	static inline function applyGraphic(graphic:BitmapData, params:CursorParams):Void
 	{
 		FlxG.mouse.load(graphic, params.scale, params.offsetX, params.offsetY);
 	}
@@ -252,33 +227,41 @@ class Cursor
 		trace("Failed to load cursor graphic for cursor mode " + cursorMode + ": " + error);
 	}
 
-	/**
-	 * Clear all cached cursor graphics from memory.
-	 */
 	public static function clearCache():Void
 	{
 		assetCursorDefault = null;
+		assetCursorCross = null;
+		assetCursorEraser = null;
 		assetCursorPointer = null;
 		assetCursorGrabbing = null;
+		assetCursorHourglass = null;
 		assetCursorText = null;
+		assetCursorTextVertical = null;
+		assetCursorZoomIn = null;
+		assetCursorZoomOut = null;
+		assetCursorCrosshair = null;
+		assetCursorCell = null;
+		assetCursorScroll = null;
 	}
 }
 
-/**
- * Available cursor modes.
- * Add more modes as needed for your game.
- */
 enum CursorMode
 {
 	Default;
+	Cross;
+	Eraser;
 	Pointer;
 	Grabbing;
+	Hourglass;
 	Text;
+	TextVertical;
+	ZoomIn;
+	ZoomOut;
+	Crosshair;
+	Cell;
+	Scroll;
 }
 
-/**
- * Static data describing how a cursor should be rendered.
- */
 typedef CursorParams =
 {
 	graphic:String,
@@ -286,4 +269,3 @@ typedef CursorParams =
 	offsetX:Int,
 	offsetY:Int,
 }
-
