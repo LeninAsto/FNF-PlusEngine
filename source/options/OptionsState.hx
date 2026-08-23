@@ -16,6 +16,7 @@ class OptionsState extends MusicBeatState
 		'Visuals',
 		'Gameplay',
 		'Legacy',
+		#if MODS_ALLOWED 'Mod Security', #end
 		'VSlice',
 		#if MODCHARTS_NOTITG_ALLOWED 'Modchart' #end
 		#if TRANSLATIONS_ALLOWED, 'Language' #end,
@@ -72,6 +73,7 @@ class OptionsState extends MusicBeatState
 			case 'Visuals': Language.getPhrase('visuals_menu', 'Visual Settings');
 			case 'Gameplay': Language.getPhrase('gameplay_menu', 'Gameplay Settings');
 			case 'Legacy': Language.getPhrase('legacy_menu', 'Legacy Settings');
+			case 'Mod Security': Language.getPhrase('mod_security_checks_menu', 'Mod Security Checks');
 			case 'VSlice': Language.getPhrase('vslice_menu', 'VSlice Settings');
 			case 'Modchart': Language.getPhrase('modchart_menu', 'Modchart Settings');
 			case 'Language': Language.getPhrase('language_menu', 'Language');
@@ -147,6 +149,10 @@ class OptionsState extends MusicBeatState
 				openSubState(ScriptableSubstate.tryCreate('GameplaySettingsSubState', new options.GameplaySettingsSubState()));
 			case 'Legacy':
 				openSubState(ScriptableSubstate.tryCreate('LegacySettingsSubState', new options.LegacySettingsSubState()));
+			case 'Mod Security':
+				#if MODS_ALLOWED
+				openSubState(ScriptableSubstate.tryCreate('ModSecurityChecksSubState', new options.ModSecurityChecksSubState()));
+				#end
 			case 'VSlice':
 				openSubState(ScriptableSubstate.tryCreate('VSliceSettingsSubState', new options.VSliceSettingsSubState()));
 			case 'Modchart':

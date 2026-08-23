@@ -38,6 +38,7 @@ class HScript extends Iris
 	public var modFolder:String;
 	public var returnValue:Dynamic;
 	public var scriptName:String = '';
+	var hookCache:Map<String, Bool> = new Map();
 
 	#if LUA_ALLOWED
 	public var parentLua:FunkinLua;
@@ -152,6 +153,16 @@ class HScript extends Iris
 		#if LUA_ALLOWED
 		if (scriptName == null && parent != null)
 			scriptName = parent.scriptName;
+		if (parent != null && parent.modFolder != null)
+			this.modFolder = parent.modFolder;
+		#end
+		#if MODS_ALLOWED
+		if (this.modFolder != null && backend.ModSecurity.isBlocked(this.modFolder))
+		{
+			trace('Skipping HScript "$scriptName" from blocked/untrusted mod "${this.modFolder}"');
+			scriptThing = '';
+			manualRun = true;
+		}
 		#end
 		super(scriptThing, new IrisConfig(scriptName, false, false));
 		var customInterp:CustomInterp = new CustomInterp();
@@ -207,6 +218,7 @@ class HScript extends Iris
 	// Override set() to redirect old Psych Engine paths to Plus Engine paths
 	override public function set(key:String, value:Dynamic, allowOverride:Bool = true):Void
 	{
+		hookCache.remove(key);
 		// If the value is null and key looks like a class path, try to resolve it
 		if (value == null && key.contains('.'))
 		{
@@ -965,11 +977,17 @@ class HScript extends Iris
 		if (funcToRun == null || interp == null)
 			return null;
 
-		if (!exists(funcToRun))
+		var known:Null<Bool> = hookCache.get(funcToRun);
+		if (known != null && !known)
+			return null;
+		if (known == null && !exists(funcToRun))
 		{
+			hookCache.set(funcToRun, false);
 			Iris.error('No function named: $funcToRun', this.interp.posInfos());
 			return null;
 		}
+		if (known == null)
+			hookCache.set(funcToRun, true);
 
 		try
 		{
@@ -1006,6 +1024,21 @@ class HScript extends Iris
 			Iris.error('$e', pos);
 		}
 		return null;
+	}
+
+	public function definesHook(hook:String):Bool
+	{
+		if (hook == null || interp == null)
+			return false;
+
+		var known:Null<Bool> = hookCache.get(hook);
+		if (known != null)
+			return known;
+
+		var value:Dynamic = interp.variables.get(hook);
+		var defined:Bool = value != null && Reflect.isFunction(value);
+		hookCache.set(hook, defined);
+		return defined;
 	}
 
 	/**

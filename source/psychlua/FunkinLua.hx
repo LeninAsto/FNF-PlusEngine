@@ -37,6 +37,7 @@ class FunkinLua
 	public var closed:Bool = false;
 	public var context:LuaHostContext = null;
 	public var autoCallOnCreate:Bool = true;
+	var hookCache:Map<String, Bool> = new Map();
 
 	// Contador de errores de Lua para estadísticas
 	public static var lua_Errors:Int = 0;
@@ -84,6 +85,13 @@ class FunkinLua
 		if (myFolder[0] + '/' == Paths.mods()
 			&& (Mods.currentModDirectory == myFolder[1] || Mods.getGlobalMods().contains(myFolder[1]))) // is inside mods folder
 			this.modFolder = myFolder[1];
+
+		if (this.modFolder != null && backend.ModSecurity.isBlocked(this.modFolder))
+		{
+			trace('Skipping Lua script "$scriptName" from blocked/untrusted mod "${this.modFolder}"');
+			stop();
+			return;
+		}
 		#end
 
 		// Lua shit
@@ -2100,25 +2108,31 @@ class FunkinLua
 	{
 		if (closed)
 			return LuaUtils.Function_Continue;
+		if (lua == null)
+			return LuaUtils.Function_Continue;
+
+		var known:Null<Bool> = hookCache.get(func);
+		if (known != null && !known)
+			return LuaUtils.Function_Continue;
 
 		lastCalledFunction = func;
 		lastCalledScript = this;
 		try
 		{
-			if (lua == null)
-				return LuaUtils.Function_Continue;
-
 			Lua.getglobal(lua, func);
 			var type:Int = Lua.type(lua, -1);
 
 			if (type != Lua.LUA_TFUNCTION)
 			{
-				if (type > Lua.LUA_TNIL)
+				if (known == null && type > Lua.LUA_TNIL)
 					luaTrace("ERROR (" + func + "): attempt to call a " + LuaUtils.typeToString(type) + " value", false, false, FlxColor.RED);
 
+				hookCache.set(func, false);
 				Lua.pop(lua, 1);
 				return LuaUtils.Function_Continue;
 			}
+			if (known == null)
+				hookCache.set(func, true);
 
 			for (arg in args)
 				Convert.toLua(lua, arg);
@@ -2149,6 +2163,22 @@ class FunkinLua
 		return LuaUtils.Function_Continue;
 	}
 
+	public function definesHook(hook:String):Bool
+	{
+		if (closed || lua == null)
+			return false;
+
+		var known:Null<Bool> = hookCache.get(hook);
+		if (known != null)
+			return known;
+
+		Lua.getglobal(lua, hook);
+		var defined:Bool = Lua.type(lua, -1) == Lua.LUA_TFUNCTION;
+		Lua.pop(lua, 1);
+		hookCache.set(hook, defined);
+		return defined;
+	}
+
 	public function set(variable:String, data:Dynamic)
 	{
 		if (lua == null)
@@ -2156,6 +2186,7 @@ class FunkinLua
 			return;
 		}
 
+		hookCache.remove(variable);
 		Convert.toLua(lua, data);
 		Lua.setglobal(lua, variable);
 	}

@@ -21,7 +21,7 @@ class MaterialCheckbox extends FlxSpriteGroup
 	public var onChange:Bool->Void = null;
 
 	// Visual components
-	var container:FlxSprite;
+	var containerSprite:FlxSprite;
 	var checkIcon:FlxSprite;
 	var stateLayer:FlxSprite;
 	var labelText:FlxText;
@@ -73,10 +73,10 @@ class MaterialCheckbox extends FlxSpriteGroup
 		stateLayer.alpha = 0;
 		add(stateLayer);
 
-		// Create container
-		container = new FlxSprite(0, 0);
-		container.antialiasing = ClientPrefs.data.antialiasing;
-		add(container);
+		// Create containerSprite
+		containerSprite = new FlxSprite(0, 0);
+		containerSprite.antialiasing = ClientPrefs.data.antialiasing;
+		add(containerSprite);
 
 		// Create check icon
 		checkIcon = new FlxSprite(iconOffset, iconOffset);
@@ -105,7 +105,7 @@ class MaterialCheckbox extends FlxSpriteGroup
 	{
 		var size = containerSize();
 		var radius = checkboxRadius();
-		MD3ShapeTools.fillRoundRect(container, size, size, radius);
+		MD3ShapeTools.fillRoundRect(containerSprite, size, size, radius);
 		drawCheckmark(checkIcon);
 	}
 
@@ -125,7 +125,7 @@ class MaterialCheckbox extends FlxSpriteGroup
 
 	function updateAppearance():Void
 	{
-		if (container == null || checkIcon == null)
+		if (containerSprite == null || checkIcon == null)
 		{
 			return;
 		}
@@ -137,15 +137,15 @@ class MaterialCheckbox extends FlxSpriteGroup
 		{
 			if (checked)
 			{
-				MD3ShapeTools.fillRoundRect(container, containerSize(), containerSize(), checkboxRadius());
-				container.color = MD3Theme.primary;
+				MD3ShapeTools.fillRoundRect(containerSprite, containerSize(), containerSize(), checkboxRadius());
+				containerSprite.color = MD3Theme.primary;
 			}
 			else
 			{
-				MD3ShapeTools.strokeRoundRect(container, containerSize(), containerSize(), checkboxRadius(), 2, MD3Theme.disabledContentColor());
-				container.color = MD3Theme.surface;
+				MD3ShapeTools.strokeRoundRect(containerSprite, containerSize(), containerSize(), checkboxRadius(), 2, MD3Theme.disabledContentColor());
+				containerSprite.color = MD3Theme.surface;
 			}
-			container.alpha = 0.38;
+			containerSprite.alpha = 0.38;
 			checkIcon.color = MD3Theme.disabledContentColor();
 			checkIcon.alpha = checked ? 1 : 0;
 			if (labelText != null)
@@ -155,17 +155,17 @@ class MaterialCheckbox extends FlxSpriteGroup
 		{
 			if (checked)
 			{
-				MD3ShapeTools.fillRoundRect(container, containerSize(), containerSize(), checkboxRadius());
-				container.color = MD3Theme.primary;
-				container.alpha = 1;
+				MD3ShapeTools.fillRoundRect(containerSprite, containerSize(), containerSize(), checkboxRadius());
+				containerSprite.color = MD3Theme.primary;
+				containerSprite.alpha = 1;
 				checkIcon.color = MD3Theme.onPrimary;
 				checkIcon.alpha = 1;
 			}
 			else
 			{
-				MD3ShapeTools.strokeRoundRect(container, containerSize(), containerSize(), checkboxRadius(), 2, MD3Theme.outline);
-				container.color = FlxColor.TRANSPARENT;
-				container.alpha = 1;
+				MD3ShapeTools.strokeRoundRect(containerSprite, containerSize(), containerSize(), checkboxRadius(), 2, MD3Theme.outline);
+				containerSprite.color = FlxColor.TRANSPARENT;
+				containerSprite.alpha = 1;
 				checkIcon.color = MD3Theme.onPrimary;
 				checkIcon.alpha = 0;
 			}

@@ -1,0 +1,62 @@
+# Builds Psych Engine (community fork) for Android (arm64-v8a, debug APK).
+
+name: Build (Android)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  buildAndroid:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v5.6.0
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: krdlab/setup-haxe@v2.1.0
+        with:
+          haxe-version: 4.3.7
+
+      - name: Install Haxe dependencies
+        run: |
+          haxelib setup ~/haxelib
+          chmod +x ./setup/unix.sh ./setup/android.sh
+          ./setup/unix.sh
+          ./setup/android.sh
+
+      - name: Install Android SDK packages + NDK r21e
+        run: |
+          SDKMANAGER="$ANDROID_SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+          yes | "$SDKMANAGER" --licenses >/dev/null 2>&1 || true
+          "$SDKMANAGER" "platform-tools" "platforms;android-34" "build-tools;34.0.0" "ndk;21.4.7075529"
+
+      - name: Configure lime for Android
+        run: |
+          mkdir -p ~/.lime
+          cat > ~/.lime/config.xml <<EOF
+          <?xml version="1.0" encoding="utf-8"?>
+          <config>
+          	<define name="ANDROID_SDK" value="${ANDROID_SDK_ROOT}" />
+          	<define name="ANDROID_NDK_ROOT" value="${ANDROID_SDK_ROOT}/ndk/21.4.7075529" />
+          	<define name="ANDROID_SETUP" value="true" />
+          	<define name="JAVA_HOME" value="${JAVA_HOME}" />
+          </config>
+          EOF
+
+      - name: Create version tag
+        run: echo "${{ github.run_id }}" > VERSION
+
+      - name: Build APK (debug)
+        run: |
+          chmod +x ./art/buildScripts/build_android.sh
+          ./art/buildScripts/build_android.sh debug
+
+      - name: Publish artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: androidBuild
+          path: export/debug/android/bin/app/build/outputs/apk/debug/*.apk

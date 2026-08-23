@@ -21,14 +21,14 @@ class MaterialIconButton extends FlxSpriteGroup
 	public var buttonType:IconButtonType = STANDARD;
 
 	// Visual components
-	var container:FlxSprite;
+	var containerSprite:FlxSprite;
 	var outline:FlxSprite;
 	var stateLayer:FlxSprite;
 
 	/** Exposed so callers can load their icon graphic here. */
 	public var iconSprite:FlxSprite;
 
-	// Dimensions (MD3 specs — 40dp container, 24dp icon)
+	// Dimensions (MD3 specs — 40dp containerSprite, 24dp icon)
 	static inline var BUTTON_SIZE:Int = 40;
 	static inline var ICON_SIZE:Int = 24;
 	static inline var CORNER_RADIUS:Int = 20; // fully circular
@@ -46,11 +46,11 @@ class MaterialIconButton extends FlxSpriteGroup
 		this.buttonType = buttonType;
 		this.onClick = onClick;
 
-		// Container background
-		container = new FlxSprite(0, 0);
-		container.makeGraphic(BUTTON_SIZE, BUTTON_SIZE, FlxColor.TRANSPARENT);
-		drawCircle(container, BUTTON_SIZE);
-		add(container);
+		// containerSprite background
+		containerSprite = new FlxSprite(0, 0);
+		containerSprite.makeGraphic(BUTTON_SIZE, BUTTON_SIZE, FlxColor.TRANSPARENT);
+		drawCircle(containerSprite, BUTTON_SIZE);
+		add(containerSprite);
 
 		// Outline (OUTLINED only)
 		outline = new FlxSprite(0, 0);
@@ -119,44 +119,44 @@ class MaterialIconButton extends FlxSpriteGroup
 
 	function updateAppearance():Void
 	{
-		if (container == null)
+		if (containerSprite == null)
 			return;
 
 		if (!enabled)
 		{
-			container.color = MD3Theme.disabledContainerColor();
-			container.alpha = 0.12;
-			container.visible = buttonType != STANDARD && buttonType != OUTLINED;
+			containerSprite.color = MD3Theme.disabledContainerColor();
+			containerSprite.alpha = 0.12;
+			containerSprite.visible = buttonType != STANDARD && buttonType != OUTLINED;
 			outline.visible = false;
 			iconSprite.color = MD3Theme.disabledContentColor();
 			iconSprite.alpha = 0.38;
 			return;
 		}
 
-		container.alpha = 1;
+		containerSprite.alpha = 1;
 		iconSprite.alpha = 1;
 
 		switch (buttonType)
 		{
 			case STANDARD:
-				container.visible = false;
+				containerSprite.visible = false;
 				outline.visible = false;
 				iconSprite.color = MD3Theme.primary;
 				stateLayer.color = MD3Theme.stateLayerColor(MD3Theme.primary);
 			case FILLED:
-				container.visible = true;
-				container.color = MD3Theme.primary;
+				containerSprite.visible = true;
+				containerSprite.color = MD3Theme.primary;
 				outline.visible = false;
 				iconSprite.color = MD3Theme.onPrimary;
 				stateLayer.color = MD3Theme.stateLayerColor(MD3Theme.onPrimary);
 			case FILLED_TONAL:
-				container.visible = true;
-				container.color = MD3Theme.secondaryContainer;
+				containerSprite.visible = true;
+				containerSprite.color = MD3Theme.secondaryContainer;
 				outline.visible = false;
 				iconSprite.color = MD3Theme.onSecondaryContainer;
 				stateLayer.color = MD3Theme.stateLayerColor(MD3Theme.onSecondaryContainer);
 			case OUTLINED:
-				container.visible = false;
+				containerSprite.visible = false;
 				outline.visible = true;
 				drawCircleOutline(outline, BUTTON_SIZE, MD3Theme.outline);
 				iconSprite.color = MD3Theme.primary;

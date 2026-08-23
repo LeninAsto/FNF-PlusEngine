@@ -150,10 +150,14 @@ class PlayState extends MusicBeatState
 	// Script arrays - supporting multiple script types
 	#if LUA_ALLOWED
 	public var luaArray:Array<FunkinLua> = [];
+	var luaSubs:Map<String, Array<FunkinLua>> = new Map();
+	var subsLuaCount:Int = -1;
 	#end
 
 	#if HSCRIPT_ALLOWED
 	public var hscriptArray:Array<HScript> = [];
+	var hscriptSubs:Map<String, Array<HScript>> = new Map();
+	var subsHScriptCount:Int = -1;
 	#end
 
 	// holy moly psych 0.7.3
@@ -3953,7 +3957,7 @@ class PlayState extends MusicBeatState
 				persistentDraw = false;
 				FlxTimer.globalManager.clear();
 				FlxTween.globalManager.clear();
-				FlxG.camera.setFilters([]);
+				FlxG.camera.filters = [];
 
 				#if LUA_ALLOWED
 				modchartTweens.clear();
@@ -6546,7 +6550,7 @@ class PlayState extends MusicBeatState
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyPress);
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyRelease);
 
-		FlxG.camera.setFilters([]);
+		FlxG.camera.filters = [];
 
 		#if FLX_PITCH FlxG.sound.music.pitch = 1; #end
 		FlxG.animationTimeScale = 1;
@@ -7017,6 +7021,54 @@ class PlayState extends MusicBeatState
 		return result;
 	}
 
+	#if LUA_ALLOWED
+	function luaSubscribers(hook:String):Array<FunkinLua>
+	{
+		if (luaArray == null)
+			return [];
+		if (subsLuaCount != luaArray.length)
+		{
+			luaSubs.clear();
+			subsLuaCount = luaArray.length;
+		}
+
+		var found:Array<FunkinLua> = luaSubs.get(hook);
+		if (found != null)
+			return found;
+
+		found = [];
+		for (script in luaArray)
+			if (script != null && (script.closed || script.definesHook(hook)))
+				found.push(script);
+		luaSubs.set(hook, found);
+		return found;
+	}
+	#end
+
+	#if HSCRIPT_ALLOWED
+	function hscriptSubscribers(hook:String):Array<HScript>
+	{
+		if (hscriptArray == null)
+			return [];
+		if (subsHScriptCount != hscriptArray.length)
+		{
+			hscriptSubs.clear();
+			subsHScriptCount = hscriptArray.length;
+		}
+
+		var found:Array<HScript> = hscriptSubs.get(hook);
+		if (found != null)
+			return found;
+
+		found = [];
+		for (script in hscriptArray)
+			if (script != null && script.definesHook(hook))
+				found.push(script);
+		hscriptSubs.set(hook, found);
+		return found;
+	}
+	#end
+
 	public function callOnLuas(funcToCall:String, args:Array<Dynamic> = null, ignoreStops = false, exclusions:Array<String> = null,
 			excludeValues:Array<Dynamic> = null):Dynamic
 	{
@@ -7032,7 +7084,7 @@ class PlayState extends MusicBeatState
 			return returnVal;
 
 		var arr:Array<FunkinLua> = [];
-		for (script in luaArray.copy())
+		for (script in luaSubscribers(funcToCall))
 		{
 			if (script == null)
 				continue;
@@ -7065,6 +7117,11 @@ class PlayState extends MusicBeatState
 			for (script in arr)
 				if (luaArray != null)
 					luaArray.remove(script);
+		if (arr.length > 0)
+		{
+			luaSubs.clear();
+			subsLuaCount = luaArray != null ? luaArray.length : -1;
+		}
 		#end
 		return returnVal;
 	}
@@ -7087,10 +7144,9 @@ class PlayState extends MusicBeatState
 		if (len < 1)
 			return returnVal;
 
-		for (script in hscriptArray.copy())
+		for (script in hscriptSubscribers(funcToCall))
 		{
-			@:privateAccess
-			if (script == null || !script.exists(funcToCall) || exclusions.contains(script.origin))
+			if (script == null || exclusions.contains(script.origin))
 				continue;
 
 			var callValue = script.call(funcToCall, args);

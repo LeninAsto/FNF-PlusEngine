@@ -37,6 +37,7 @@ import states.TitleState;
 	public var gameOverVibration:Bool = false;
 	public var fpsRework:Bool = false;
 	public var framerateMode:String = 'Psych';
+	public var uncapFramerate:Bool = false;
 	public var mobileReceptorAlign:Bool = false; // Align receptors with hitbox lanes (mobile only, may break scripts)
 	#if windows
 	public var fullscreenMode:String = 'Borderless'; // 'Borderless', 'Borderless Fix', 'Exclusive'
@@ -179,6 +180,8 @@ import states.TitleState;
 	public var breakTimer:Bool = false; // Show timer when next notes are approaching
 	public var usePsychFreeplay:Bool = true; // Use Psych-style legacy Freeplay instead of PlusEngine Freeplay
 	public var useScriptableCustomStates:Bool = false; // Allow scripted state overrides through ScriptableState and CustomState
+	public var modSecurityEnabled:Bool = true; // Scan mod Lua/HScript before allowing sensitive APIs to run
+	public var modSecurityChecks:Map<String, Bool> = new Map();
 	public var dragCharacterToMove:Bool = false; // Allow to drag position character with cursor like in Codename Engine
 }
 
@@ -188,6 +191,8 @@ class ClientPrefs
 	public static var defaultData:SaveVariables = {};
 	public static var globalAntialiasing(get, set):Bool;
 	public static var judgementCounter:Bool = false;
+	public static inline var FRAMERATE_MAX:Int = 240;
+	public static inline var FRAMERATE_UNCAPPED:Int = 1000;
 	public static final FRAMERATE_MODES:Array<String> = ['Psych', 'Fixed', 'Interpolated'];
 
 	// Every key has two binds, add your key bind down here and then add your control on options/ControlsSubState.hx and Controls.hx
@@ -461,7 +466,14 @@ class ClientPrefs
 		var safeFramerate:Int = Std.int(Math.max(30, data.framerate));
 		var drawFramerate:Int = safeFramerate;
 
-		switch (data.framerateMode)
+		if (data.uncapFramerate)
+		{
+			FlxG.fixedTimestep = true;
+			FlxG.updateFramerate = FRAMERATE_MAX;
+			FlxG.drawFramerate = FRAMERATE_UNCAPPED;
+			FlxG.maxElapsed = 1 / FRAMERATE_MAX;
+		}
+		else switch (data.framerateMode)
 		{
 			case 'Psych':
 				FlxG.fixedTimestep = false;
@@ -540,6 +552,9 @@ class ClientPrefs
 
 	public static function getTargetWindowFramerate():Int
 	{
+		if (data.uncapFramerate)
+			return FRAMERATE_UNCAPPED;
+
 		var safeFramerate:Int = Std.int(Math.max(30, data.framerate));
 		return switch (normalizeFramerateMode(data.framerateMode))
 		{

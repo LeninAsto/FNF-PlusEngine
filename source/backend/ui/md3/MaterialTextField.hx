@@ -40,7 +40,6 @@ class MaterialTextField extends FlxSpriteGroup
 		return isFocused;
 
 	// Visual components
-	var container:FlxSprite;
 	var outline:FlxSprite;
 	var labelText:FlxText;
 	var inputText:FlxText;

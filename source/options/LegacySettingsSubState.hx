@@ -23,6 +23,17 @@ class LegacySettingsSubState extends BaseOptionsMenu
 			'usePsychFreeplay', BOOL);
 		addOption(option);
 
+		#if MODS_ALLOWED
+		var option:Option = new Option('Mod Security',
+			'If checked, scans mod Lua/HScript and skips scripts from mods with untrusted sensitive APIs.', 'modSecurityEnabled', BOOL);
+		option.onChange = function()
+		{
+			ClientPrefs.saveSettings();
+			backend.ModSecurity.rescanAll();
+		};
+		addOption(option);
+		#end
+
 		#if !mobile
 		var option:Option = new Option('Scriptable Custom States', 'If checked, lets mods override states through ScriptableState and CustomState.',
 			'useScriptableCustomStates', BOOL);

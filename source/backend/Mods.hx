@@ -436,5 +436,45 @@ class Mods
 			Mods.currentVSliceModDirectory = list[0];
 		#end
 	}
+
+	public static function getLaunchState(folder:String):String
+	{
+		#if MODS_ALLOWED
+		var pack:Dynamic = getPack(folder);
+		if (pack != null)
+		{
+			for (field in ['launchState', 'entryState', 'mainState'])
+			{
+				var value:Dynamic = Reflect.field(pack, field);
+				if (value != null)
+				{
+					var state:String = Std.string(value).trim();
+					if (state.length > 0)
+						return state;
+				}
+			}
+		}
+		#end
+		return 'MainMenuState';
+	}
+
+	public static function isLaunchable(folder:String):Bool
+	{
+		#if (MODS_ALLOWED && sys)
+		if (folder == null || folder.trim().length < 1)
+			return false;
+
+		var state:String = getLaunchState(folder);
+		var hxPath:String = Paths.mods('$folder/scripts/states/$state.hx');
+		if (FileSystem.exists(hxPath))
+			return true;
+		#if LUA_ALLOWED
+		var luaPath:String = Paths.mods('$folder/scripts/states/$state.lua');
+		if (FileSystem.exists(luaPath))
+			return true;
+		#end
+		#end
+		return false;
+	}
 }
 

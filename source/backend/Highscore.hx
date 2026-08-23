@@ -1,8 +1,10 @@
 package backend;
 
+#if FEATURE_POLYMOD_MODS
 import funkin.play.scoring.Scoring;
 import funkin.save.Save;
 import funkin.save.Save.SaveScoreData;
+#end
 
 class Highscore
 {
@@ -159,21 +161,33 @@ class Highscore
 
 	public static function getVSliceScore(songId:String, difficulty:String, variation:String = 'default'):Int
 	{
+		#if FEATURE_POLYMOD_MODS
 		var scoreData:Null<SaveScoreData> = getVSliceScoreData(songId, difficulty, variation);
 		return scoreData != null ? scoreData.score : 0;
+		#else
+		return 0;
+		#end
 	}
 
 	public static function getVSliceRating(songId:String, difficulty:String, variation:String = 'default'):Float
 	{
+		#if FEATURE_POLYMOD_MODS
 		var scoreData:Null<SaveScoreData> = getVSliceScoreData(songId, difficulty, variation);
 		if (scoreData == null || scoreData.tallies == null || scoreData.tallies.totalNotes <= 0)
 			return 0;
 		return Scoring.tallyCompletion(scoreData.tallies);
+		#else
+		return 0;
+		#end
 	}
 
 	public static function getVSliceAccuracySystem(songId:String, difficulty:String, variation:String = 'default'):String
 	{
+		#if FEATURE_POLYMOD_MODS
 		return getVSliceScoreData(songId, difficulty, variation) != null ? 'VSlice' : 'Unknown';
+		#else
+		return 'Unknown';
+		#end
 	}
 
 	public static function getVSliceWeekScore(levelId:String, difficulty:String = 'normal'):Int
@@ -197,9 +211,9 @@ class Highscore
 		return 0;
 	}
 
+	#if FEATURE_POLYMOD_MODS
 	static function getVSliceScoreData(songId:String, difficulty:String, variation:String = 'default'):Null<SaveScoreData>
 	{
-		#if FEATURE_POLYMOD_MODS
 		if (songId == null || songId.length == 0)
 			return null;
 		if (difficulty == null || difficulty.length == 0)
@@ -237,9 +251,9 @@ class Highscore
 		catch (_:Dynamic)
 		{
 		}
-		#end
 		return null;
 	}
+	#end
 
 	static function getVSliceSuffixedDifficulty(difficulty:String, variation:String):String
 	{

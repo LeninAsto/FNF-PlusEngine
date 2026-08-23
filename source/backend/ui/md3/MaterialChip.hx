@@ -29,7 +29,7 @@ class MaterialChip extends FlxSpriteGroup
 	public var onDelete:Void->Void = null; // INPUT chips only
 
 	// Visual components
-	var container:FlxSprite;
+	var containerSprite:FlxSprite;
 	var outline:FlxSprite;
 	var checkMark:FlxSprite;
 	var labelText:FlxText;
@@ -77,11 +77,11 @@ class MaterialChip extends FlxSpriteGroup
 
 		var w = Std.int(_calcWidth);
 
-		// Container background
-		container = new FlxSprite(0, 0);
-		container.makeGraphic(w, CHIP_HEIGHT, MD3Theme.surface);
-		drawRoundedRect(container, w, CHIP_HEIGHT, CORNER_RADIUS);
-		add(container);
+		// containerSprite background
+		containerSprite = new FlxSprite(0, 0);
+		containerSprite.makeGraphic(w, CHIP_HEIGHT, MD3Theme.surface);
+		drawRoundedRect(containerSprite, w, CHIP_HEIGHT, CORNER_RADIUS);
+		add(containerSprite);
 
 		// Outline
 		outline = new FlxSprite(0, 0);
@@ -263,12 +263,12 @@ class MaterialChip extends FlxSpriteGroup
 
 	function updateAppearance():Void
 	{
-		if (container == null)
+		if (containerSprite == null)
 			return;
 
 		if (!enabled)
 		{
-			container.color = MD3Theme.disabledContainerColor();
+			containerSprite.color = MD3Theme.disabledContainerColor();
 			outline.visible = false;
 			labelText.color = MD3Theme.disabledContentColor();
 			if (deleteIcon != null)
@@ -280,7 +280,7 @@ class MaterialChip extends FlxSpriteGroup
 
 		if (chipType == FILTER && selected)
 		{
-			container.color = MD3Theme.secondaryContainer;
+			containerSprite.color = MD3Theme.secondaryContainer;
 			outline.visible = false;
 			labelText.color = MD3Theme.onSecondaryContainer;
 			if (checkMark != null)
@@ -291,7 +291,7 @@ class MaterialChip extends FlxSpriteGroup
 		}
 		else
 		{
-			container.color = MD3Theme.surface;
+			containerSprite.color = MD3Theme.surface;
 			outline.visible = true;
 			drawOutline(outline, Std.int(_calcWidth), CHIP_HEIGHT, CORNER_RADIUS);
 			labelText.color = MD3Theme.onSurfaceVariant;

@@ -25,7 +25,7 @@ class MaterialFAB extends FlxSpriteGroup
 	public var fabSize:FABSize = REGULAR;
 
 	// Visual components
-	var container:FlxSprite;
+	var containerSprite:FlxSprite;
 	var shadow:FlxSprite;
 	var stateLayer:FlxSprite;
 
@@ -72,7 +72,7 @@ class MaterialFAB extends FlxSpriteGroup
 
 		if (isExtended)
 		{
-			// Extended FAB: measure label and build a pill-shaped container
+			// Extended FAB: measure label and build a pill-shaped containerSprite
 			var tempLabel = new FlxText(0, 0, 0, label, LABEL_SIZE);
 			var labelW = Std.int(tempLabel.width);
 			tempLabel.destroy();
@@ -95,12 +95,12 @@ class MaterialFAB extends FlxSpriteGroup
 		shadow.color = MD3Theme.shadowColor();
 		add(shadow);
 
-		// Container
-		container = new FlxSprite(0, 0);
-		container.makeGraphic(containerW, containerH, MD3Theme.tertiaryContainer);
-		drawRoundedRect(container, containerW, containerH, cornerRadius);
-		container.color = MD3Theme.tertiaryContainer;
-		add(container);
+		// containerSprite
+		containerSprite = new FlxSprite(0, 0);
+		containerSprite.makeGraphic(containerW, containerH, MD3Theme.tertiaryContainer);
+		drawRoundedRect(containerSprite, containerW, containerH, cornerRadius);
+		containerSprite.color = MD3Theme.tertiaryContainer;
+		add(containerSprite);
 
 		// State layer
 		stateLayer = new FlxSprite(0, 0);
@@ -237,8 +237,8 @@ class MaterialFAB extends FlxSpriteGroup
 	{
 		if (shadow != null)
 			shadow.color = MD3Theme.shadowColor();
-		if (container != null)
-			container.color = MD3Theme.tertiaryContainer;
+		if (containerSprite != null)
+			containerSprite.color = MD3Theme.tertiaryContainer;
 		if (iconSprite != null)
 			iconSprite.color = MD3Theme.onTertiaryContainer;
 		if (labelText != null)

@@ -25,7 +25,7 @@ class MaterialButton extends FlxSpriteGroup
 	public var buttonType:ButtonType = FILLED;
 
 	// Visual components
-	var container:FlxSprite;
+	var containerSprite:FlxSprite;
 	var outline:FlxSprite;
 	var stateLayer:FlxSprite;
 	var labelText:FlxText;
@@ -72,10 +72,10 @@ class MaterialButton extends FlxSpriteGroup
 
 		var height = buttonHeight();
 
-		// Create container background
-		container = new FlxSprite(0, 0);
-		container.antialiasing = ClientPrefs.data.antialiasing;
-		add(container);
+		// Create containerSprite background
+		containerSprite = new FlxSprite(0, 0);
+		containerSprite.antialiasing = ClientPrefs.data.antialiasing;
+		add(containerSprite);
 
 		// Create state layer (for hover/press effects)
 		stateLayer = new FlxSprite(0, 0);
@@ -105,14 +105,14 @@ class MaterialButton extends FlxSpriteGroup
 		var width = Std.int(buttonWidth);
 		var height = buttonHeight();
 		var radius = cornerRadius();
-		MD3ShapeTools.fillRoundRect(container, width, height, radius);
+		MD3ShapeTools.fillRoundRect(containerSprite, width, height, radius);
 		MD3ShapeTools.fillRoundRect(stateLayer, width, height, radius);
 		MD3ShapeTools.strokeRoundRect(outline, width, height, radius, OUTLINE_WIDTH);
 	}
 
 	function updateAppearance():Void
 	{
-		if (container == null || labelText == null || outline == null || stateLayer == null)
+		if (containerSprite == null || labelText == null || outline == null || stateLayer == null)
 		{
 			return;
 		}
@@ -124,19 +124,19 @@ class MaterialButton extends FlxSpriteGroup
 			switch (buttonType)
 			{
 				case FILLED:
-					container.visible = true;
-					container.color = MD3Theme.disabledContainerColor();
-					container.alpha = 1;
+					containerSprite.visible = true;
+					containerSprite.color = MD3Theme.disabledContainerColor();
+					containerSprite.alpha = 1;
 					outline.visible = false;
 					stateLayer.visible = true;
 					labelText.color = MD3Theme.disabledContentColor();
 				case OUTLINED:
-					container.visible = false;
+					containerSprite.visible = false;
 					outline.visible = true;
 					stateLayer.visible = true;
 					labelText.color = MD3Theme.disabledContentColor();
 				case TEXT:
-					container.visible = false;
+					containerSprite.visible = false;
 					outline.visible = false;
 					stateLayer.visible = true;
 					labelText.color = MD3Theme.disabledContentColor();
@@ -148,19 +148,19 @@ class MaterialButton extends FlxSpriteGroup
 			switch (buttonType)
 			{
 				case FILLED:
-					container.visible = true;
-					container.color = MD3Theme.primary;
-					container.alpha = 1;
+					containerSprite.visible = true;
+					containerSprite.color = MD3Theme.primary;
+					containerSprite.alpha = 1;
 					outline.visible = false;
 					stateLayer.visible = true;
 					labelText.color = MD3Theme.onPrimary;
 				case OUTLINED:
-					container.visible = false;
+					containerSprite.visible = false;
 					outline.visible = true;
 					stateLayer.visible = true;
 					labelText.color = MD3Theme.primary;
 				case TEXT:
-					container.visible = false;
+					containerSprite.visible = false;
 					outline.visible = false;
 					stateLayer.visible = true;
 					labelText.color = MD3Theme.primary;

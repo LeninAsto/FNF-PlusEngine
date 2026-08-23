@@ -1,6 +1,5 @@
 package states;
 
-import lime.app.Future;
 import sys.thread.FixedThreadPool;
 import haxe.Json;
 import lime.utils.Assets;
@@ -31,7 +30,11 @@ class LoadingState extends MusicBeatState
 	static var originalBitmapKeys:Map<String, String> = [];
 	static var requestedBitmaps:Map<String, BitmapData> = [];
 	static var mutex:Mutex;
+	static var progressMutex:Mutex = new Mutex();
 	static var threadPool:FixedThreadPool = null;
+
+	static inline var LOAD_STALL_TIMEOUT:Float = 30.0;
+	static inline var MAX_LOAD_THREADS:Int = 6;
 
 	// Timeout system
 	public static var returnState:FlxState = null; // Estado al que volver si falla la carga
@@ -201,6 +204,9 @@ class LoadingState extends MusicBeatState
 	}
 
 	var transitioning:Bool = false;
+	var watchLoaded:Int = -1;
+	var watchInit:Bool = false;
+	var stallTime:Float = 0;
 
 	override function update(elapsed:Float)
 	{
@@ -263,7 +269,25 @@ class LoadingState extends MusicBeatState
 				else
 					stateChangeDelay = Math.max(0, stateChangeDelay - elapsed);
 			}
-			intendedPercent = loaded / loadMax;
+			intendedPercent = (loadMax > 0) ? loaded / loadMax : 0;
+
+			if (!finishedLoading)
+			{
+				if (loaded != watchLoaded || initialThreadCompleted != watchInit)
+				{
+					watchLoaded = loaded;
+					watchInit = initialThreadCompleted;
+					stallTime = 0;
+				}
+				else if ((stallTime += elapsed) >= LOAD_STALL_TIMEOUT)
+				{
+					logLoadTimeout();
+					checkLoaded();
+					transitioning = true;
+					onLoad();
+					return;
+				}
+			}
 		}
 
 		if (curPercent != intendedPercent)
@@ -403,18 +427,36 @@ class LoadingState extends MusicBeatState
 		mutex = null;
 	}
 
+	static function logLoadTimeout()
+		trace('LoadingState watchdog: no progress for ${LOAD_STALL_TIMEOUT}s at $loaded/$loadMax (prepDone=$initialThreadCompleted); forcing completion.');
+
 	public static function checkLoaded():Bool
 	{
-		for (key => bitmap in requestedBitmaps)
+		var pending:Map<String, BitmapData> = null;
+		var pendingKeys:Map<String, String> = null;
+		if (mutex != null)
+			mutex.acquire();
+		if (requestedBitmaps.keys().hasNext())
 		{
-			if (bitmap != null && Paths.cacheBitmap(originalBitmapKeys.get(key), bitmap) != null)
-			{
-			} // trace('finished preloading image $key');
-			else
-				trace('failed to cache image $key');
+			pending = requestedBitmaps;
+			pendingKeys = originalBitmapKeys;
+			requestedBitmaps = new Map<String, BitmapData>();
+			originalBitmapKeys = new Map<String, String>();
 		}
-		requestedBitmaps.clear();
-		originalBitmapKeys.clear();
+		if (mutex != null)
+			mutex.release();
+
+		if (pending != null)
+		{
+			for (key => bitmap in pending)
+			{
+				if (bitmap != null && Paths.cacheBitmap(pendingKeys.get(key), bitmap) != null)
+				{
+				} // trace('finished preloading image $key');
+				else
+					trace('failed to cache image $key');
+			}
+		}
 		// trace('we checked if loaded');
 		return (loaded >= loadMax && initialThreadCompleted);
 	}
@@ -450,6 +492,9 @@ class LoadingState extends MusicBeatState
 		if (stopMusic && FlxG.sound.music != null)
 			FlxG.sound.music.stop();
 
+		var watchLoaded:Int = -1;
+		var watchInit:Bool = false;
+		var stallStart:Float = Sys.time();
 		while (true)
 		{
 			if (checkLoaded())
@@ -457,8 +502,19 @@ class LoadingState extends MusicBeatState
 				_loaded();
 				break;
 			}
-			else
-				Sys.sleep(0.001);
+			if (loaded != watchLoaded || initialThreadCompleted != watchInit)
+			{
+				watchLoaded = loaded;
+				watchInit = initialThreadCompleted;
+				stallStart = Sys.time();
+			}
+			else if (Sys.time() - stallStart >= LOAD_STALL_TIMEOUT)
+			{
+				logLoadTimeout();
+				_loaded();
+				break;
+			}
+			Sys.sleep(0.001);
 		}
 		return target;
 	}
@@ -483,13 +539,39 @@ class LoadingState extends MusicBeatState
 
 	static function _startPool()
 	{
+		if (threadPool != null)
+			return;
+		if (mutex == null)
+			mutex = new Mutex();
+
 		#if MULTITHREADED_LOADING
 		// Due to the Main thread and Discord thread, we decrease it by 2.
 		var threadCount:Int = Std.int(Math.max(1, CoolUtil.getCPUThreadsCount() - #if DISCORD_ALLOWED 2 #else 1 #end));
+		if (threadCount > MAX_LOAD_THREADS)
+			threadCount = MAX_LOAD_THREADS;
 		#else
 		var threadCount:Int = 1;
 		#end
 		threadPool = new FixedThreadPool(threadCount);
+	}
+
+	static function collectPreloadAssets(json:Dynamic, imgs:Array<String>, snds:Array<String>, mscs:Array<String>)
+	{
+		for (asset in Reflect.fields(json))
+		{
+			var filters:Int = Reflect.field(json, asset);
+			var asset:String = asset.trim();
+
+			if (filters < 0 || StageData.validateVisibility(filters))
+			{
+				if (asset.startsWith('images/'))
+					imgs.push(asset.substr('images/'.length));
+				else if (asset.startsWith('sounds/'))
+					snds.push(asset.substr('sounds/'.length));
+				else if (asset.startsWith('music/'))
+					mscs.push(asset.substr('music/'.length));
+			}
+		}
 	}
 
 	public static function prepareToSong()
@@ -514,86 +596,58 @@ class LoadingState extends MusicBeatState
 		songsToPrepare = [];
 
 		initialThreadCompleted = false;
-		var threadsCompleted:Int = 0;
-		var threadsMax:Int = 0;
-		function completedThread()
-		{
-			threadsCompleted++;
-			if (threadsCompleted == threadsMax)
-			{
-				clearInvalids();
-				startThreads();
-				initialThreadCompleted = true;
-			}
-		}
-
 		var song:SwagSong = PlayState.SONG;
 		var folder:String = Paths.formatToSongPath(Song.loadedSongName);
-		new Future<Bool>(() ->
+		threadPool.run(() ->
 		{
-			// LOAD NOTE IMAGE
-			var noteSkin:String = Note.getDefaultNoteSkinPath(PlayState.isPixelStage);
-			if (PlayState.SONG.arrowSkin != null && PlayState.SONG.arrowSkin.length > 1)
-				noteSkin = PlayState.SONG.arrowSkin;
-			noteSkin = Note.resolveNoteSkinPath(noteSkin, PlayState.isPixelStage);
-			imagesToPrepare.push(noteSkin);
-			//
-
-			// LOAD NOTE SPLASH IMAGE
-			var noteSplash:String = NoteSplash.getDefaultNoteSplashPath();
-			if (PlayState.SONG.splashSkin != null && PlayState.SONG.splashSkin.length > 0)
-				noteSplash = PlayState.SONG.splashSkin;
-			else
-				noteSplash += NoteSplash.getSplashSkinPostfix();
-			imagesToPrepare.push(noteSplash);
-
 			try
 			{
-				var path:String = Paths.json('$folder/preload');
-				var json:Dynamic = null;
+				// LOAD NOTE IMAGE
+				var noteSkin:String = Note.getDefaultNoteSkinPath(PlayState.isPixelStage);
+				if (PlayState.SONG.arrowSkin != null && PlayState.SONG.arrowSkin.length > 1)
+					noteSkin = PlayState.SONG.arrowSkin;
+				noteSkin = Note.resolveNoteSkinPath(noteSkin, PlayState.isPixelStage);
+				imagesToPrepare.push(noteSkin);
+				//
 
-				#if MODS_ALLOWED
-				var moddyFile:String = Paths.modsJson('$folder/preload');
-				if (FileSystem.exists(moddyFile))
-					json = Json.parse(File.getContent(moddyFile));
+				// LOAD NOTE SPLASH IMAGE
+				var noteSplash:String = NoteSplash.getDefaultNoteSplashPath();
+				if (PlayState.SONG.splashSkin != null && PlayState.SONG.splashSkin.length > 0)
+					noteSplash = PlayState.SONG.splashSkin;
 				else
-					json = Json.parse(File.getContent(path));
-				#else
-				json = Json.parse(Assets.getText(path));
-				#end
+					noteSplash += NoteSplash.getSplashSkinPostfix();
+				imagesToPrepare.push(noteSplash);
 
-				if (json != null)
+				try
 				{
-					var imgs:Array<String> = [];
-					var snds:Array<String> = [];
-					var mscs:Array<String> = [];
-					for (asset in Reflect.fields(json))
-					{
-						var filters:Int = Reflect.field(json, asset);
-						var asset:String = asset.trim();
+					var path:String = Paths.json('$folder/preload');
+					var json:Dynamic = null;
 
-						if (filters < 0 || StageData.validateVisibility(filters))
-						{
-							if (asset.startsWith('images/'))
-								imgs.push(asset.substr('images/'.length));
-							else if (asset.startsWith('sounds/'))
-								snds.push(asset.substr('sounds/'.length));
-							else if (asset.startsWith('music/'))
-								mscs.push(asset.substr('music/'.length));
-						}
+					#if MODS_ALLOWED
+					var moddyFile:String = Paths.modsJson('$folder/preload');
+					if (FileSystem.exists(moddyFile))
+						json = Json.parse(File.getContent(moddyFile));
+					else
+						json = Json.parse(File.getContent(path));
+					#else
+					json = Json.parse(Assets.getText(path));
+					#end
+
+					if (json != null)
+					{
+						var imgs:Array<String> = [];
+						var snds:Array<String> = [];
+						var mscs:Array<String> = [];
+						collectPreloadAssets(json, imgs, snds, mscs);
+						prepare(imgs, snds, mscs);
 					}
-					prepare(imgs, snds, mscs);
 				}
-			}
-			catch (e:Dynamic)
-			{
-			}
-			return true;
-		}, isIntrusive).then((_) -> new Future<Bool>(() ->
-			{
+				catch (e:Dynamic)
+				{
+				}
+
 				if (song.stage == null || song.stage.length < 1)
 					song.stage = StageData.vanillaSongStage(folder);
-
 				var stageData:StageFile = StageData.getStageFile(song.stage);
 				if (stageData != null)
 				{
@@ -601,23 +655,7 @@ class LoadingState extends MusicBeatState
 					var snds:Array<String> = [];
 					var mscs:Array<String> = [];
 					if (stageData.preload != null)
-					{
-						for (asset in Reflect.fields(stageData.preload))
-						{
-							var filters:Int = Reflect.field(stageData.preload, asset);
-							var asset:String = asset.trim();
-
-							if (filters < 0 || StageData.validateVisibility(filters))
-							{
-								if (asset.startsWith('images/'))
-									imgs.push(asset.substr('images/'.length));
-								else if (asset.startsWith('sounds/'))
-									snds.push(asset.substr('sounds/'.length));
-								else if (asset.startsWith('music/'))
-									mscs.push(asset.substr('music/'.length));
-							}
-						}
-					}
+						collectPreloadAssets(stageData.preload, imgs, snds, mscs);
 
 					if (stageData.objects != null)
 					{
@@ -656,46 +694,33 @@ class LoadingState extends MusicBeatState
 
 				if (player2 != player1)
 				{
-					threadsMax++;
-					threadPool.run(() ->
+					try
 					{
-						try
-						{
-							preloadCharacter(player2, prefixVocals);
-						}
-						catch (e:Dynamic)
-						{
-						}
-						completedThread();
-					});
-				}
-				if (!stageData.hide_girlfriend && gfVersion != player2 && gfVersion != player1)
-				{
-					threadsMax++;
-					threadPool.run(() ->
+						preloadCharacter(player2, prefixVocals);
+					}
+					catch (e:Dynamic)
 					{
-						try
-						{
-							preloadCharacter(gfVersion);
-						}
-						catch (e:Dynamic)
-						{
-						}
-						completedThread();
-					});
+					}
 				}
-
-				if (threadsCompleted == threadsMax)
+				if ((stageData == null || !stageData.hide_girlfriend) && gfVersion != player2 && gfVersion != player1)
 				{
-					clearInvalids();
-					startThreads();
-					initialThreadCompleted = true;
+					try
+					{
+						preloadCharacter(gfVersion);
+					}
+					catch (e:Dynamic)
+					{
+					}
 				}
-				return true;
-			}, isIntrusive)).onError((err:Dynamic) ->
+			}
+			catch (err:Dynamic)
 			{
 				trace('ERROR! while preparing song: $err');
-			});
+			}
+			clearInvalids();
+			startThreads();
+			initialThreadCompleted = true;
+		});
 	}
 
 	public static function clearInvalids()
@@ -783,7 +808,8 @@ class LoadingState extends MusicBeatState
 
 	public static function startThreads()
 	{
-		mutex = new Mutex();
+		if (mutex == null)
+			mutex = new Mutex();
 		loadMax = imagesToPrepare.length + soundsToPrepare.length + musicToPrepare.length + songsToPrepare.length;
 		loaded = 0;
 
@@ -835,9 +861,9 @@ class LoadingState extends MusicBeatState
 			{
 				trace('ERROR! fail on preloading $traceData: $e');
 			}
-			// mutex.acquire();
+			progressMutex.acquire();
 			loaded++;
-			// mutex.release();
+			progressMutex.release();
 		});
 	}
 
@@ -847,8 +873,12 @@ class LoadingState extends MusicBeatState
 		{
 			var path:String = Paths.getPath('characters/$char.json', TEXT);
 			#if MODS_ALLOWED
-			var character:Dynamic = Json.parse(File.getContent(path));
+			if (!FileSystem.exists(path) && !Assets.exists(path, TEXT))
+				return;
+			var character:Dynamic = Json.parse(FileSystem.exists(path) ? File.getContent(path) : Assets.getText(path));
 			#else
+			if (!Assets.exists(path, TEXT))
+				return;
 			var character:Dynamic = Json.parse(Assets.getText(path));
 			#end
 
@@ -911,10 +941,15 @@ class LoadingState extends MusicBeatState
 		{
 			if (#if sys FileSystem.exists(file) || #end OpenFlAssets.exists(file, SOUND))
 			{
-				var sound:Sound = #if sys Sound.fromFile(file) #else OpenFlAssets.getSound(file, false) #end;
-				mutex.acquire();
-				Paths.currentTrackedSounds.set(file, sound);
-				mutex.release();
+				var sound:Sound = #if mobile mobile.backend.AssetUtil.getSound(file)
+				#elseif sys Sound.fromFile(file)
+				#else OpenFlAssets.getSound(file, false) #end;
+				if (sound != null)
+				{
+					mutex.acquire();
+					Paths.currentTrackedSounds.set(file, sound);
+					mutex.release();
+				}
 			}
 			else if (beepOnNull)
 			{
@@ -945,17 +980,23 @@ class LoadingState extends MusicBeatState
 			{
 				if (#if sys FileSystem.exists(file) || #end OpenFlAssets.exists(file, IMAGE))
 				{
-					#if sys
+					#if mobile
+					var bitmap:BitmapData = mobile.backend.AssetUtil.getBitmap(file);
+					#elseif sys
 					var bitmap:BitmapData = BitmapData.fromFile(file);
 					#else
 					var bitmap:BitmapData = OpenFlAssets.getBitmapData(file, false);
 					#end
 
-					mutex.acquire();
-					requestedBitmaps.set(file, bitmap);
-					originalBitmapKeys.set(file, requestKey);
-					mutex.release();
-					return bitmap;
+					if (bitmap != null)
+					{
+						mutex.acquire();
+						requestedBitmaps.set(file, bitmap);
+						originalBitmapKeys.set(file, requestKey);
+						mutex.release();
+						return bitmap;
+					}
+					trace('image failed to decode: $key');
 				}
 				else
 					trace('no such image $key exists');
@@ -964,7 +1005,8 @@ class LoadingState extends MusicBeatState
 			mutex.acquire();
 			Paths.localTrackedAssets.push(file);
 			mutex.release();
-			return Paths.currentTrackedAssets.get(file).bitmap;
+			var tracked:flixel.graphics.FlxGraphic = Paths.currentTrackedAssets.get(file);
+			return (tracked != null) ? tracked.bitmap : null;
 		}
 		catch (e:haxe.Exception)
 		{

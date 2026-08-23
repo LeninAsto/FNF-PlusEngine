@@ -10,7 +10,7 @@ import flixel.util.FlxColor;
 import flixel.math.FlxMath;
 import backend.ui.md3.MD3Theme;
 #if mobile
-import funkin.mobile.backend.TouchUtil;
+import mobile.backend.TouchUtil;
 #end
 
 /**

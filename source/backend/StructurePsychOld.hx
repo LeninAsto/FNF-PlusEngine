@@ -181,13 +181,13 @@ class StructurePsychOld
 	 */
 	public static function resolveClass(className:String):Class<Dynamic>
 	{
-		var myClass:Dynamic = Type.resolveClass(className);
+		var myClass:Dynamic = safeResolveClass(className);
 
 		// If class not found, try aliases for backwards compatibility
 		if (myClass == null && classAliasMap.exists(className))
 		{
 			var newClassName = classAliasMap.get(className);
-			myClass = Type.resolveClass(newClassName);
+			myClass = safeResolveClass(newClassName);
 			if (myClass != null)
 			{
 				warnLegacyLuaUsage(className, newClassName);
@@ -215,6 +215,15 @@ class StructurePsychOld
 		}
 
 		return myClass;
+	}
+
+	static inline function safeResolveClass(className:String):Class<Dynamic>
+	{
+		#if MODS_ALLOWED
+		return ModSecurity.safeResolveClass(className);
+		#else
+		return Type.resolveClass(className);
+		#end
 	}
 
 	public static function warnLegacyLuaUsage(oldApi:String, newApi:String):Void

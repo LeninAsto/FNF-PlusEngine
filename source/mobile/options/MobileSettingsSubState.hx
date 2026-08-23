@@ -72,9 +72,14 @@ class MobileSettingsSubState extends BaseOptionsMenu
 			'If checked, the mobile controls color will be set to the notes color in your settings.\n(have effect during gameplay only)', 'dynamicColors',
 			BOOL);
 		addOption(option);
-
+		
 		option = new Option('Touch Pointer', 'If checked, shows a touch pointer overlay for taps and drags.', 'showTouchPointer', BOOL);
-		option.onChange = () -> funkin.plus.VSliceRuntime.syncTouchPointer();
+		option.onChange = () ->
+		{
+			#if vslice
+			funkin.plus.VSliceRuntime.syncTouchPointer();
+			#end
+		};
 		addOption(option);
 
 		option = new Option('Mobile Trace Button', 'If checked, shows the trace touch button on mobile builds.', 'showMobileDebugButtons', BOOL);

@@ -1,7 +1,5 @@
 package states.editors;
 
-import flixel.graphics.FlxGraphic;
-import flixel.system.debug.interaction.tools.Pointer.GraphicCursorCross;
 import flixel.util.FlxDestroyUtil;
 import openfl.net.FileReference;
 import openfl.events.Event;
@@ -114,9 +112,8 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 		addCharacter();
 
-		cameraFollowPointer = new FlxSprite().loadGraphic(FlxGraphic.fromClass(GraphicCursorCross));
-		cameraFollowPointer.setGraphicSize(40, 40);
-		cameraFollowPointer.updateHitbox();
+		cameraFollowPointer = new FlxSprite().makeGraphic(40, 40, FlxColor.WHITE);
+		cameraFollowPointer.alpha = 0.65;
 
 		healthBar = new Bar(30, FlxG.height - 75);
 		healthBar.scrollFactor.set();

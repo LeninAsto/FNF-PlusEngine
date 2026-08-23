@@ -10,11 +10,13 @@ import objects.MenuCharacter;
 import options.GameplayChangersSubstate;
 import substates.ResetScoreSubState;
 import backend.StageData;
+#if vslice
 import funkin.data.story.level.LevelRegistry;
 import funkin.play.PlayStatePlaylist;
 import funkin.play.song.Song as VSliceSong;
 import funkin.ui.story.Level;
 import funkin.ui.story.LevelProp;
+#end
 #if mobile
 import mobile.backend.MobileScaleMode;
 #end
@@ -38,7 +40,9 @@ class StoryMenuState extends MusicBeatState
 
 	public var grpWeekText:FlxTypedGroup<MenuItem>;
 	public var grpWeekCharacters:FlxTypedGroup<MenuCharacter>;
+	#if vslice
 	public var grpVSliceWeekProps:FlxTypedGroup<LevelProp>;
+	#end
 
 	public var grpLocks:FlxTypedGroup<FlxSprite>;
 
@@ -49,8 +53,10 @@ class StoryMenuState extends MusicBeatState
 
 	public var loadedWeeks:Array<WeekData> = [];
 
+	#if vslice
 	var vsliceWeeks:Map<String, Level> = new Map<String, Level>();
 	var currentVSliceProps:Array<LevelProp> = [];
+	#end
 
 	inline function safeX(x:Float):Float
 	{
@@ -78,7 +84,9 @@ class StoryMenuState extends MusicBeatState
 		persistentUpdate = persistentDraw = true;
 		PlayState.isStoryMode = true;
 		WeekData.reloadWeekFiles(true);
+		#if vslice
 		appendVSliceWeeks();
+		#end
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
@@ -121,7 +129,9 @@ class StoryMenuState extends MusicBeatState
 		add(blackBarThingie);
 
 		grpWeekCharacters = new FlxTypedGroup<MenuCharacter>();
+		#if vslice
 		grpVSliceWeekProps = new FlxTypedGroup<LevelProp>();
+		#end
 
 		grpLocks = new FlxTypedGroup<FlxSprite>();
 		add(grpLocks);
@@ -138,10 +148,14 @@ class StoryMenuState extends MusicBeatState
 			{
 				loadedWeeks.push(weekFile);
 				WeekData.setDirectoryFromWeek(weekFile);
+				#if vslice
 				var isVSliceWeek:Bool = isVSliceWeekId(WeekData.weeksList[i]);
 				var weekThing:MenuItem = new MenuItem(0, bgSprite.y + 396, isVSliceWeek ? 'week1' : WeekData.weeksList[i]);
 				if (isVSliceWeek)
 					applyVSliceWeekTitle(weekThing, WeekData.weeksList[i]);
+				#else
+				var weekThing:MenuItem = new MenuItem(0, bgSprite.y + 396, WeekData.weeksList[i]);
+				#end
 				weekThing.y += ((weekThing.height + 20) * num);
 				weekThing.ID = num;
 				weekThing.targetY = itemTargetY;
@@ -218,7 +232,9 @@ class StoryMenuState extends MusicBeatState
 		add(bgYellow);
 		add(bgSprite);
 		add(grpWeekCharacters);
+		#if vslice
 		add(grpVSliceWeekProps);
+		#end
 
 		var tracksSprite:FlxSprite = new FlxSprite(safeX(safeWidth() * 0.07 + 100), bgSprite.y + 425).loadGraphic(Paths.image('Menu_Tracks'));
 		tracksSprite.antialiasing = ClientPrefs.data.antialiasing;
@@ -366,11 +382,10 @@ class StoryMenuState extends MusicBeatState
 	var selectedWeek:Bool = false;
 	var stopspamming:Bool = false;
 
+	#if vslice
 	static inline var VSLICE_WEEK_PREFIX:String = '__vslice__';
-
 	function appendVSliceWeeks():Void
 	{
-		#if vslice
 		if (!funkin.plus.VSliceRuntime.shouldUseVSliceRuntime())
 			return;
 
@@ -408,7 +423,6 @@ class StoryMenuState extends MusicBeatState
 			WeekData.weeksList.push(fileName);
 			vsliceWeeks.set(fileName, level);
 		}
-		#end
 	}
 
 	inline function isVSliceWeekId(fileName:String):Bool
@@ -442,13 +456,16 @@ class StoryMenuState extends MusicBeatState
 			trace('Failed to load VSlice story title "${level.id}": $e');
 		}
 	}
+	#end
 
 	function selectWeek()
 	{
 		if (!weekIsLocked(loadedWeeks[curWeek].fileName))
 		{
+			#if vslice
 			if (selectVSliceWeek())
 				return;
+			#end
 
 			// We can't use Dynamic Array .copy() because that crashes HTML5, here's a workaround.
 			var songArray:Array<String> = [];
@@ -529,6 +546,7 @@ class StoryMenuState extends MusicBeatState
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 	}
 
+	#if vslice
 	function selectVSliceWeek():Bool
 	{
 		var leWeek:WeekData = loadedWeeks[curWeek];
@@ -675,6 +693,7 @@ class StoryMenuState extends MusicBeatState
 				prop.visible = false;
 		}
 	}
+	#end
 
 	function changeDifficulty(change:Int = 0):Void
 	{
@@ -705,10 +724,12 @@ class StoryMenuState extends MusicBeatState
 		lastDifficultyName = diff;
 
 		#if !switch
+		#if vslice
 		var vsliceLevel:Null<Level> = getVSliceLevel(loadedWeeks[curWeek].fileName);
 		if (vsliceLevel != null)
 			intendedScore = backend.Highscore.getVSliceWeekScore(loadedWeeks[curWeek].fileName.substr(VSLICE_WEEK_PREFIX.length), diff.toLowerCase());
 		else
+		#end
 			intendedScore = Highscore.getWeekScore(loadedWeeks[curWeek].fileName, curDifficulty);
 		#end
 	}
@@ -741,10 +762,12 @@ class StoryMenuState extends MusicBeatState
 		}
 
 		bgSprite.visible = true;
+		#if vslice
 		var vsliceLevel:Null<Level> = getVSliceLevel(leWeek.fileName);
 		if (vsliceLevel != null)
 			updateVSliceBackground(vsliceLevel);
 		else
+		#end
 		{
 			var assetName:String = leWeek.weekBackground;
 			if (assetName == null || assetName.length < 1)
@@ -760,9 +783,11 @@ class StoryMenuState extends MusicBeatState
 		var storyWeekIndex:Int = WeekData.getWeekIndex(leWeek.fileName);
 		PlayState.storyWeek = storyWeekIndex >= 0 ? storyWeekIndex : curWeek;
 
+		#if vslice
 		if (vsliceLevel != null)
 			Difficulty.copyFrom(vsliceLevel.getDifficulties().map(function(diff:String) return diff.toLowerCase()));
 		else
+		#end
 			Difficulty.loadFromWeek();
 		difficultySelectors.visible = unlocked;
 
@@ -782,9 +807,11 @@ class StoryMenuState extends MusicBeatState
 
 	function weekIsLocked(name:String):Bool
 	{
+		#if vslice
 		var vsliceLevel:Null<Level> = getVSliceLevel(name);
 		if (vsliceLevel != null)
 			return !vsliceLevel.isUnlocked();
+		#end
 
 		var leWeek:WeekData = WeekData.weeksLoaded.get(name);
 		if (leWeek == null)
@@ -797,6 +824,7 @@ class StoryMenuState extends MusicBeatState
 	function updateText()
 	{
 		var leWeek:WeekData = loadedWeeks[curWeek];
+		#if vslice
 		var vsliceLevel:Null<Level> = getVSliceLevel(leWeek.fileName);
 
 		if (vsliceLevel != null)
@@ -806,14 +834,19 @@ class StoryMenuState extends MusicBeatState
 			updateVSliceProps(vsliceLevel);
 		}
 		else
+		#end
 		{
 			grpWeekCharacters.visible = true;
+			#if vslice
 			grpVSliceWeekProps.visible = false;
 			clearVSliceProps();
+			#end
 		}
 
 		var weekArray:Array<String> = loadedWeeks[curWeek].weekCharacters;
+		#if vslice
 		if (vsliceLevel == null)
+		#end
 		{
 			for (i in 0...grpWeekCharacters.length)
 			{
@@ -822,11 +855,13 @@ class StoryMenuState extends MusicBeatState
 		}
 
 		var stringThing:Array<String> = [];
+		#if vslice
 		if (vsliceLevel != null)
 		{
 			stringThing = vsliceLevel.getSongDisplayNames(Difficulty.getString(curDifficulty, false).toLowerCase());
 		}
 		else
+		#end
 		{
 			for (i in 0...leWeek.songs.length)
 			{
@@ -845,10 +880,12 @@ class StoryMenuState extends MusicBeatState
 		txtTracklist.x = safeX((safeWidth() - txtTracklist.width) / 2 - safeWidth() * 0.35);
 
 		#if !switch
+		#if vslice
 		if (vsliceLevel != null)
 			intendedScore = backend.Highscore.getVSliceWeekScore(leWeek.fileName.substr(VSLICE_WEEK_PREFIX.length),
 				Difficulty.getString(curDifficulty, false).toLowerCase());
 		else
+		#end
 			intendedScore = Highscore.getWeekScore(loadedWeeks[curWeek].fileName, curDifficulty);
 		#end
 	}

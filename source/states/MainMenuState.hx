@@ -153,6 +153,9 @@ class MainMenuState extends MusicBeatState
 		#if CHECK_FOR_UPDATES
 		tryShowOutdatedWarning();
 		#end
+		#if MODS_ALLOWED
+		tryShowModSecurityWarning();
+		#end
 
 		FlxG.camera.follow(camFollow, null, 0.15);
 
@@ -162,6 +165,21 @@ class MainMenuState extends MusicBeatState
 		funkin.plus.VSlicePlusStateBridge.create(this);
 		#end
 	}
+
+	#if MODS_ALLOWED
+	function tryShowModSecurityWarning():Void
+	{
+		if (selectedSomethin || subState != null)
+			return;
+
+		var pending:Array<String> = backend.ModSecurity.getPendingMods();
+		if (pending.length < 1)
+			return;
+
+		persistentUpdate = false;
+		openSubState(backend.ScriptableSubstate.tryCreate('ModSecuritySubstate', new substates.ModSecuritySubstate(pending)));
+	}
+	#end
 
 	#if CHECK_FOR_UPDATES
 	function tryShowOutdatedWarning():Void

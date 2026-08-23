@@ -90,6 +90,12 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		option.onChange = onChangeFramerate;
 		addOption(option);
 
+		var option:Option = new Option('Uncap FPS',
+			'If checked, lets the renderer run as fast as possible while keeping updates bounded.\nUseful for high refresh displays, but it can increase battery/GPU usage.',
+			'uncapFramerate', BOOL);
+		option.onChange = onChangeFramerate;
+		addOption(option);
+
 		var option:Option = new Option('Framerate', "Pretty self explanatory, isn't it?", 'framerate', INT);
 		option.onChange = onChangeFramerate;
 		addOption(option);
@@ -126,7 +132,16 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 
 	#if native
 	function onChangeVSync()
-		lime.app.Application.current.window.vsync = ClientPrefs.data.vsync;
+	{
+		try
+		{
+			if (lime.app.Application.current != null
+				&& lime.app.Application.current.window != null
+				&& Reflect.hasField(lime.app.Application.current.window, 'vsync'))
+				Reflect.setProperty(lime.app.Application.current.window, 'vsync', ClientPrefs.data.vsync);
+		}
+		catch (_:Dynamic) {}
+	}
 	#end
 
 	function onChangeFPSCounterMode()
