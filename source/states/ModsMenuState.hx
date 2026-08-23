@@ -680,11 +680,45 @@ class ModsMenuState extends MusicBeatState {
 			modsList.enabled.remove(mod);
 			modsList.disabled.push(mod);
 		} else {
+			#if MODS_ALLOWED
+			if (!vsliceMode && ClientPrefs.data.modSecurityEnabled && backend.ModSecurity.hasFindings(mod)) {
+				FlxG.sound.play(Paths.sound('confirmMenu'), 0.6);
+				launchStatus.text = 'Sensitive scripts detected - choose TRUST to enable';
+				launchStatus.color = FlxColor.YELLOW;
+				openSubState(new substates.ModSecuritySubstate([mod], function(folder:String, allowed:Bool) {
+					if (allowed)
+					{
+						enableModAfterTrust(folder, m);
+					}
+					else
+					{
+						launchStatus.text = 'Activation denied - mod stayed disabled';
+						launchStatus.color = 0xFFFF6666;
+						applyView();
+					}
+				}, true));
+				return;
+			}
+			#end
 			modsList.disabled.remove(mod);
 			modsList.enabled.push(mod);
 		}
 		if (m.mustRestart)
 			waitingToRestart = true;
+		FlxG.sound.play(Paths.sound('scrollMenu'), 0.6);
+		applyView();
+	}
+
+	function enableModAfterTrust(folder:String, item:ModItem):Void {
+		if (folder == null || modsList == null)
+			return;
+		modsList.disabled.remove(folder);
+		if (!modsList.enabled.contains(folder))
+			modsList.enabled.push(folder);
+		if (item != null && item.mustRestart)
+			waitingToRestart = true;
+		launchStatus.text = 'Trusted - mod enabled';
+		launchStatus.color = 0xFF66FF66;
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.6);
 		applyView();
 	}
@@ -731,6 +765,10 @@ class ModsMenuState extends MusicBeatState {
 			var mod = item.folder;
 			var isDisabled = modsList.disabled.contains(mod);
 			if (anyDisabled && isDisabled) {
+				#if MODS_ALLOWED
+				if (!vsliceMode && ClientPrefs.data.modSecurityEnabled && backend.ModSecurity.hasFindings(mod))
+					continue;
+				#end
 				modsList.disabled.remove(mod);
 				modsList.enabled.push(mod);
 				if (item.mustRestart)
@@ -742,6 +780,27 @@ class ModsMenuState extends MusicBeatState {
 					waitingToRestart = true;
 			}
 		}
+		#if MODS_ALLOWED
+		if (anyDisabled && !vsliceMode && ClientPrefs.data.modSecurityEnabled) {
+			var risky:Array<String> = [];
+			for (item in view)
+				if (modsList.disabled.contains(item.folder) && backend.ModSecurity.hasFindings(item.folder))
+					risky.push(item.folder);
+			if (risky.length > 0) {
+				openSubState(new substates.ModSecuritySubstate(risky, function(folder:String, allowed:Bool) {
+					if (allowed) {
+						var item:ModItem = null;
+						for (candidate in view)
+							if (candidate.folder == folder) {
+								item = candidate;
+								break;
+							}
+						enableModAfterTrust(folder, item);
+					}
+				}, true));
+			}
+		}
+		#end
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.6);
 		applyView();
 	}

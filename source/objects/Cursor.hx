@@ -143,11 +143,11 @@ class Cursor
 
 	static function set_cursorMode(value:Null<CursorMode>):Null<CursorMode>
 	{
-		if (value != null && cursorMode != value)
-		{
-			cursorMode = value;
-			loadCursorGraphicSync(cursorMode);
-		}
+		if (cursorMode == value)
+			return cursorMode;
+
+		cursorMode = value;
+		loadCursorGraphicSync(cursorMode);
 		return cursorMode;
 	}
 
@@ -196,6 +196,13 @@ class Cursor
 		if (data.cache != null)
 		{
 			applyGraphic(data.cache, data.params);
+			return;
+		}
+
+		if (!Assets.exists(data.params.graphic))
+		{
+			onCursorError(mode, 'Missing asset: ${data.params.graphic}');
+			FlxG.mouse.unload();
 			return;
 		}
 

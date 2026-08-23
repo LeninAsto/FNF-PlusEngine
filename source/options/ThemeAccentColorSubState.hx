@@ -161,7 +161,7 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 		colorGradientSelector.offset.y = 5;
 		add(colorGradientSelector);
 
-		colorPalette = new FlxSprite(566, 530).loadGraphic(Paths.image('noteColorMenu/palette', false));
+		colorPalette = new FlxSprite(566, 530).loadGraphic(Paths.image('noteColorMenu/palette', null, false));
 		colorPalette.scale.set(12, 12);
 		colorPalette.updateHitbox();
 		colorPalette.antialiasing = false;

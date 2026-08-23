@@ -87,13 +87,15 @@ class Paths
 		}
 
 		// Handle "-pixel" suffix in name
+		if (uiName == "pixel")
+			isPixel = true;
 		if (uiName.endsWith("-pixel"))
 		{
 			uiName = uiName.substr(0, uiName.length - 6);
 			isPixel = true;
 		}
 
-		uiBasePath = uiName;
+		uiBasePath = uiName.endsWith("UI") ? uiName : uiName + "UI";
 		uiSuffix = isPixel ? "-pixel" : "";
 	}
 
@@ -114,7 +116,7 @@ class Paths
 	{
 		if (uiBasePath == null || uiBasePath.length == 0)
 			return "";
-		return uiBasePath + "UI/";
+		return uiBasePath + "/";
 	}
 
 	/**
@@ -443,10 +445,6 @@ class Paths
 	inline static public function hx(key:String, ?folder:String)
 		return getPath('scripts/states/$key/$key.hx', TEXT, folder, true);
 
-	// Flat single-file path for CustomState (scripts/states/{name}.hx)
-	inline static public function customState(key:String, ?folder:String)
-		return getPath('scripts/states/$key.hx', TEXT, folder, true);
-
 	inline static public function globalScript()
 		return getPath('scripts/GlobalScript.hx', TEXT, null, true);
 
@@ -755,8 +753,26 @@ class Paths
 	}
 
 	#if MODS_ALLOWED
+	static inline var BASE_GAME_MOD_FOLDER:String = 'Friday Night Funkin';
+	static inline var BASE_GAME_LOCAL_FOLDER:String = 'base_game';
+
 	static inline function normalizeModKey(key:String):String
 		return key == null ? '' : key.replace('\\', '/');
+
+	static function baseGameLocalPath(normalizedKey:String):String
+	{
+		if (normalizedKey == null || normalizedKey.length == 0)
+			return null;
+
+		if (normalizedKey == BASE_GAME_MOD_FOLDER)
+			return BASE_GAME_LOCAL_FOLDER;
+
+		var prefix:String = BASE_GAME_MOD_FOLDER + '/';
+		if (normalizedKey.startsWith(prefix))
+			return BASE_GAME_LOCAL_FOLDER + '/' + normalizedKey.substr(prefix.length);
+
+		return null;
+	}
 
 	static function addUniqueModsRoot(list:Array<String>, path:String):Void
 	{
@@ -981,6 +997,10 @@ class Paths
 			}
 		}
 
+		var baseGameFallback:String = baseGameLocalPath(normalizedModName);
+		if (baseGameFallback != null && safeModPathExists(baseGameFallback) && safeModIsDirectory(baseGameFallback))
+			return baseGameFallback;
+
 		return resolvedPath;
 	}
 
@@ -1001,6 +1021,10 @@ class Paths
 				break;
 			}
 		}
+
+		var baseGameFallback:String = baseGameLocalPath(normalizedKey);
+		if (baseGameFallback != null && safeModPathExists(baseGameFallback))
+			return baseGameFallback;
 
 		return resolvedPath;
 	}

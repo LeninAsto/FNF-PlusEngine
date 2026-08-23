@@ -10,7 +10,7 @@ using StringTools;
 
 /**
  * Lets VSlice mods keep using official `_merge/data/...` and `_append/data/...`
- * patches while Plus stores base-game assets under `assets/funkin/...`.
+ * patches while Plus stores Funkin compatibility assets under `assets/funkin/...`.
  */
 class VSliceNamespacedFileSystem implements IFileSystem
 {

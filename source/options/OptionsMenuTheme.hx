@@ -219,7 +219,7 @@ class OptionsMenuTheme
 
 	public static inline function menuBackgroundAlpha():Float
 	{
-		return 0.22;
+		return 0.34;
 	}
 
 	public static inline function panelSurfaceColor():Int

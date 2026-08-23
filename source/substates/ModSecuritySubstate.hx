@@ -80,6 +80,8 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 
 	var pending:Array<String>;
 	var currentIdx:Int = 0;
+	var activationPrompt:Bool = false;
+	var onDecision:String->Bool->Void = null;
 
 	var bg:FlxSprite;
 	var panelBorder:FlxSprite;
@@ -113,9 +115,11 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 	var blockCenterX:Float = 0;
 	var btnCenterY:Float = 0;
 
-	public function new(pending:Array<String>) {
+	public function new(pending:Array<String>, ?onDecision:String->Bool->Void, activationPrompt:Bool = false) {
 		super();
 		this.pending = pending;
+		this.onDecision = onDecision;
+		this.activationPrompt = activationPrompt;
 	}
 
 	override function create() {
@@ -287,12 +291,20 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 			// letting the user proactively trust/block even with nothing flagged.
 			titleTxt.text = 'Mod Security';
 			body.add('No sensitive APIs were detected in this mod\'s scripts.\n\n');
-			body.add('TRUST = scripts run normally.\n');
-			body.add('BLOCK = mod stays enabled, scripts skipped.');
+			if (activationPrompt) {
+				body.add('TRUST = enable the mod.\n');
+				body.add('BLOCK = keep the mod disabled.');
+			} else {
+				body.add('TRUST = scripts run normally.\n');
+				body.add('BLOCK = mod stays enabled, scripts skipped.');
+			}
 		} else {
 			titleTxt.text = 'Sensitive API Warning';
 			body.add('This mod\'s scripts use APIs that can be abused for harm.\n');
-			body.add('TRUST = scripts run normally.   BLOCK = mod stays enabled, scripts skipped.\n');
+			if (activationPrompt)
+				body.add('TRUST = enable the mod and run scripts.   BLOCK = keep the mod disabled.\n');
+			else
+				body.add('TRUST = scripts run normally.   BLOCK = mod stays enabled, scripts skipped.\n');
 			body.add('\nThis mod can:');
 			var anyCat:Bool = false;
 			final orderLen = CATEGORY_ORDER.length;
@@ -415,6 +427,8 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 
 		if (controls.BACK) {
 			FlxG.sound.play(Paths.sound('cancelMenu'), 0.6);
+			if (activationPrompt && onDecision != null && currentIdx < pending.length)
+				onDecision(pending[currentIdx], false);
 			close();
 			return;
 		}
@@ -441,7 +455,10 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 
 		if (controls.ACCEPT) {
 			FlxG.sound.play(Paths.sound('confirmMenu'), 0.6);
-			ModSecurity.setDecision(pending[currentIdx], onTrust);
+			var folder = pending[currentIdx];
+			ModSecurity.setDecision(folder, onTrust);
+			if (onDecision != null)
+				onDecision(folder, onTrust);
 			currentIdx++;
 			showCurrent();
 			updateOptions();

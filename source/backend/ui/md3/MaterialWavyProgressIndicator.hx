@@ -45,6 +45,9 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 	var phase:Float = 0;
 	var sweepPhase:Float = 0;
 	var redrawAccumulator:Float = 0;
+	var trackDirty:Bool = true;
+	var drawShape:Shape = new Shape();
+	var dotShape:Shape = new Shape();
 
 	static inline var REDRAW_INTERVAL:Float = 1 / 30;
 
@@ -102,6 +105,7 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 	{
 		useThemeTrackColor = false;
 		trackColor = color;
+		trackDirty = true;
 		applyResolvedColors();
 		redrawDynamic();
 	}
@@ -134,6 +138,7 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 		linearWave.antialiasing = ClientPrefs.data.antialiasing;
 		linearWave.makeGraphic(width, height, FlxColor.TRANSPARENT, true);
 		add(linearWave);
+		trackDirty = true;
 	}
 
 	function buildCircular():Void
@@ -150,20 +155,30 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 		circularWave.makeGraphic(size, size, FlxColor.TRANSPARENT, true);
 		add(circularWave);
 
+		trackDirty = true;
 		drawCircularTrack();
 	}
 
 	function set_value(nextValue:Float):Float
 	{
-		value = FlxMath.bound(nextValue, 0, 1);
-		redrawDynamic();
+		var bounded:Float = FlxMath.bound(nextValue, 0, 1);
+		if (value != bounded)
+		{
+			value = bounded;
+			trackDirty = true;
+			redrawDynamic();
+		}
 		return value;
 	}
 
 	function set_indeterminate(nextValue:Bool):Bool
 	{
-		indeterminate = nextValue;
-		redrawDynamic();
+		if (indeterminate != nextValue)
+		{
+			indeterminate = nextValue;
+			trackDirty = true;
+			redrawDynamic();
+		}
 		return indeterminate;
 	}
 
@@ -176,6 +191,7 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 			var height = linearHeight();
 			linearTrack.makeGraphic(width, height, FlxColor.TRANSPARENT, true);
 			linearWave.makeGraphic(width, height, FlxColor.TRANSPARENT, true);
+			trackDirty = true;
 		}
 		redrawDynamic();
 		return linearHeightScale;
@@ -183,6 +199,7 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 
 	function _onThemeChange():Void
 	{
+		trackDirty = true;
 		applyResolvedColors();
 		redrawDynamic();
 	}
@@ -206,7 +223,10 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 		}
 
 		if (circularTrack != null)
+		{
+			trackDirty = true;
 			drawCircularTrack();
+		}
 	}
 
 	inline function stripAlpha(color:FlxColor):FlxColor
@@ -259,7 +279,8 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 	{
 		if (linearWave == null)
 			return;
-		drawLinearTrack();
+		if (trackDirty || indeterminate)
+			drawLinearTrack();
 
 		var bitmap = linearWave.pixels;
 		bitmap.fillRect(bitmap.rect, FlxColor.TRANSPARENT);
@@ -299,8 +320,9 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 			return;
 		}
 
-		var shape = new Shape();
+		var shape = drawShape;
 		var graphics = shape.graphics;
+		graphics.clear();
 		var steps = Std.int(Math.max(16, Math.ceil((endX - startX) / 4.0)));
 		var previousX:Null<Float> = null;
 		var previousY:Null<Float> = null;
@@ -327,10 +349,11 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 		{
 			var dotRadius = Math.max(1.0, linearStopDotSize * 0.5);
 			var dotColor = resolveWaveColor(1);
-			var dotShape = new Shape();
-			dotShape.graphics.beginFill(stripAlpha(dotColor), colorAlpha(dotColor));
-			dotShape.graphics.drawCircle(width - dotRadius, centerY, dotRadius);
-			dotShape.graphics.endFill();
+			var dotGraphics = dotShape.graphics;
+			dotGraphics.clear();
+			dotGraphics.beginFill(stripAlpha(dotColor), colorAlpha(dotColor));
+			dotGraphics.drawCircle(width - dotRadius, centerY, dotRadius);
+			dotGraphics.endFill();
 			bitmap.draw(dotShape);
 		}
 		linearWave.dirty = true;
@@ -365,17 +388,20 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 		if (endX - startX <= 0.5)
 		{
 			linearTrack.dirty = true;
+			trackDirty = false;
 			return;
 		}
 
-		var shape = new Shape();
+		var shape = drawShape;
 		var graphics = shape.graphics;
+		graphics.clear();
 		graphics.lineStyle(stroke, stripAlpha(trackColor), colorAlpha(trackColor), false, null, ROUND, ROUND);
 		graphics.moveTo(startX, centerY);
 		graphics.lineTo(endX, centerY);
 
 		bitmap.draw(shape);
 		linearTrack.dirty = true;
+		trackDirty = false;
 	}
 
 	function drawCircularTrack():Void
@@ -392,8 +418,9 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 		radius = Math.max(1, radius);
 		var center = size * 0.5;
 
-		var shape = new Shape();
+		var shape = drawShape;
 		var graphics = shape.graphics;
+		graphics.clear();
 		graphics.lineStyle(thickness, stripAlpha(trackColor), colorAlpha(trackColor), false, null, ROUND, ROUND);
 
 		// Determinate circular: draw only the remaining (unfilled) arc, not a full background ring.
@@ -447,13 +474,15 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 
 		bitmap.draw(shape);
 		circularTrack.dirty = true;
+		trackDirty = false;
 	}
 
 	function drawCircularWave():Void
 	{
 		if (circularWave == null)
 			return;
-		drawCircularTrack();
+		if (trackDirty || indeterminate)
+			drawCircularTrack();
 
 		var bitmap = circularWave.pixels;
 		bitmap.fillRect(bitmap.rect, FlxColor.TRANSPARENT);
@@ -496,8 +525,9 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 			return;
 		}
 
-		var shape = new Shape();
+		var shape = drawShape;
 		var graphics = shape.graphics;
+		graphics.clear();
 
 		var steps = Std.int(Math.max(36, Math.ceil((sweep * baseRadius) / 3.0)));
 		var previousX:Null<Float> = null;
@@ -527,6 +557,8 @@ class MaterialWavyProgressIndicator extends FlxSpriteGroup
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(_onThemeChange);
+		drawShape = null;
+		dotShape = null;
 		super.destroy();
 	}
 }

@@ -704,8 +704,15 @@ class PlayState extends MusicBeatState
 		dadGroup = new FlxSpriteGroup(DAD_X, DAD_Y);
 		gfGroup = new FlxSpriteGroup(GF_X, GF_Y);
 
-		switch (curStage)
+		var loadedScriptedStage:Bool = false;
+		#if HSCRIPT_ALLOWED
+		loadedScriptedStage = psychlua.ScriptRegistry.loadStage(curStage) != null;
+		#end
+
+		if (!loadedScriptedStage)
 		{
+			switch (curStage)
+			{
 			case 'stage':
 				new StageWeek1(); // Week 1
 			case 'spooky':
@@ -730,6 +737,7 @@ class PlayState extends MusicBeatState
 				new PhillyBlazin(); // Weekend 1 - Blazin
 			case 'notitg':
 				new NotITG(); // StepMania NotITG stage - Stage negro vacío
+			}
 		}
 		if (isPixelStage)
 			introSoundsSuffix = '-pixel';
@@ -4609,7 +4617,6 @@ class PlayState extends MusicBeatState
 			'hype',
 			'two_keys',
 			'toastie'
-			#if BASE_GAME_FILES, 'debugger' #end
 		]);
 		#end
 
@@ -5109,6 +5116,48 @@ class PlayState extends MusicBeatState
 		return Math.max(0, Math.min(2.0, wife3Score));
 	}
 
+	private function resolvePopupSpriteKey(asset:String):String
+	{
+		var clean:String = asset == null ? '' : asset.replace('\\', '/');
+		if (clean.startsWith('images/'))
+			clean = clean.substr(7);
+		if (clean.endsWith('.png'))
+			clean = clean.substr(0, clean.length - 4);
+
+		var candidates:Array<String> = [];
+		function addCandidate(path:String):Void
+		{
+			if (path != null && path.length > 0 && !candidates.contains(path))
+				candidates.push(path);
+		}
+		function addPostfix(path:String):String
+		{
+			return (uiPostfix != null && uiPostfix.length > 0 && !path.endsWith(uiPostfix)) ? path + uiPostfix : path;
+		}
+
+		if (stageUI != "normal")
+		{
+			if (uiPrefix != null && uiPrefix.length > 0)
+				addCandidate(addPostfix(uiPrefix + clean));
+
+			if (isPixelStage)
+			{
+				addCandidate('pixelUI/' + addPostfix(clean));
+				addCandidate(addPostfix(clean));
+			}
+		}
+		addCandidate(clean);
+
+		for (candidate in candidates)
+		{
+			if (Paths.fileExists('images/$candidate.png', IMAGE))
+				return candidate;
+		}
+
+		trace('[PlayState] Missing popup sprite "$asset" for stageUI="$stageUI"; tried ${candidates.join(", ")}');
+		return candidates.length > 0 ? candidates[candidates.length - 1] : clean;
+	}
+
 	private function popUpScore(note:Note = null):Void
 	{
 		var noteDiff:Float = Math.abs(note.strumTime - Conductor.songPosition + ClientPrefs.data.ratingOffset);
@@ -5303,11 +5352,9 @@ class PlayState extends MusicBeatState
 			clearComboGroupSprites();
 
 		var placement:Float = getGameplaySafeX() + getGameplaySafeWidth() * 0.35;
-		var uiFolder:String = "";
 		var antialias:Bool = ClientPrefs.data.antialiasing;
 		if (stageUI != "normal")
 		{
-			uiFolder = uiPrefix + "UI/";
 			antialias = !isPixelStage;
 		}
 
@@ -5327,7 +5374,7 @@ class PlayState extends MusicBeatState
 				clearComboGroupSprites();
 
 			var rating:FlxSprite = new FlxSprite();
-			rating.loadGraphic(Paths.uiImage(daRating.image, true));
+			rating.loadGraphic(Paths.image(resolvePopupSpriteKey(daRating.image)));
 			rating.screenCenter();
 			rating.x = placement - 40;
 			rating.y -= 60;
@@ -5367,7 +5414,7 @@ class PlayState extends MusicBeatState
 				rating.updateHitbox();
 			}
 
-			var comboSpr:FlxSprite = new FlxSprite().loadGraphic(Paths.image(uiFolder + 'combo' + uiPostfix));
+			var comboSpr:FlxSprite = new FlxSprite().loadGraphic(Paths.image(resolvePopupSpriteKey('combo')));
 			comboSpr.screenCenter();
 			comboSpr.x = placement;
 			if (!useNfPopupStyle)
@@ -5420,7 +5467,7 @@ class PlayState extends MusicBeatState
 					break;
 
 				var digit:Int = Std.parseInt(comboStr.charAt(i));
-				var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(uiFolder + 'num' + digit + uiPostfix));
+				var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(resolvePopupSpriteKey('num' + digit)));
 				numScore.screenCenter();
 				var digitBaseY:Float = numScore.y + 80 - ClientPrefs.data.comboOffset[3];
 				numScore.x = startX + (43 * i) - 90;
@@ -5556,18 +5603,16 @@ class PlayState extends MusicBeatState
 			return;
 		}
 
-		var uiFolder:String = "";
 		var antialias:Bool = ClientPrefs.data.antialiasing;
 		if (stageUI != "normal")
 		{
-			uiFolder = uiPrefix + "UI/";
 			antialias = !isPixelStage;
 		}
 
 		var placement:Float = getGameplaySafeX() + getGameplaySafeWidth() * 0.35;
 		var breakSprite:FlxSprite = new FlxSprite();
 		// Determinar qué imagen usar
-		breakSprite.loadGraphic(Paths.image(uiFolder + 'miss' + uiPostfix));
+		breakSprite.loadGraphic(Paths.image(resolvePopupSpriteKey('miss')));
 
 		breakSprite.screenCenter();
 		breakSprite.x = placement - 40;
@@ -7494,11 +7539,6 @@ class PlayState extends MusicBeatState
 
 					case 'toastie':
 						unlock = (!ClientPrefs.data.cacheOnGPU && !ClientPrefs.data.shaders && ClientPrefs.data.lowQuality && !ClientPrefs.data.antialiasing);
-
-					#if BASE_GAME_FILES
-					case 'debugger':
-						unlock = (songName == 'test' && !usedPractice);
-					#end
 				}
 			}
 			else // any FC achievements, name should be "weekFileName_nomiss", e.g: "week3_nomiss";

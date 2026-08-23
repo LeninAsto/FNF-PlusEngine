@@ -3,6 +3,9 @@ package objects;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.FlxGraphic;
 import openfl.display.BitmapData;
+#if MODS_ALLOWED
+import backend.Mods;
+#end
 #if sys
 import sys.FileSystem;
 import sys.io.File;
@@ -35,6 +38,7 @@ class HealthIcon extends FlxSprite
 	}
 
 	private var iconOffsets:Array<Float> = [0, 0];
+	public static var verboseIconLoading:Bool = true;
 
 	public function changeIcon(char:String, ?allowGPU:Bool = true, ?forceAnimated:Bool = false)
 	{
@@ -42,24 +46,39 @@ class HealthIcon extends FlxSprite
 		{
 			try
 			{
+				var requestedChar:String = char;
 				#if (FEATURE_POLYMOD_MODS && MODS_ALLOWED && sys)
 				if (loadVSliceIcon(char, allowGPU, forceAnimated))
 				{
 					updateHitbox();
 					this.char = char;
 					antialiasing = ClientPrefs.data.antialiasing;
+					iconTrace('loaded VSlice icon "$requestedChar"');
 					return;
 				}
 				#end
 
 				var name:String = 'icons/' + char;
+				var currentModForTrace:String = '';
+				#if MODS_ALLOWED
+				currentModForTrace = Mods.currentModDirectory;
+				#end
+				iconTrace('request "$requestedChar" currentMod="$currentModForTrace"');
+				iconTrace('  try images/$name.png -> ${Paths.fileExists('images/' + name + '.png', IMAGE)}');
 				if (!Paths.fileExists('images/' + name + '.png', IMAGE))
+				{
 					name = 'icons/icon-' + char; // Older versions of psych engine's support
+					iconTrace('  try images/$name.png -> ${Paths.fileExists('images/' + name + '.png', IMAGE)}');
+				}
 				if (!Paths.fileExists('images/' + name + '.png', IMAGE))
+				{
+					iconTrace('  missing "$requestedChar"; falling back to icons/icon-face');
 					name = 'icons/icon-face'; // Prevents crash from missing icon
+				}
 
 				var xmlPath:String = name + '.xml';
 				isAnimated = forceAnimated || Paths.fileExists('images/' + xmlPath, TEXT);
+				iconTrace('  selected "$name" animated=$isAnimated');
 
 				if (isAnimated)
 				{
@@ -135,6 +154,7 @@ class HealthIcon extends FlxSprite
 
 				updateHitbox();
 				this.char = char;
+				iconTrace('loaded "$requestedChar" as "$name" size=${width}x${height}');
 
 				if (char.endsWith('-pixel'))
 					antialiasing = false;
@@ -161,6 +181,12 @@ class HealthIcon extends FlxSprite
 				}
 			}
 		}
+	}
+
+	static function iconTrace(message:String):Void
+	{
+		if (verboseIconLoading)
+			trace('[HealthIcon] ' + message);
 	}
 
 	#if (FEATURE_POLYMOD_MODS && MODS_ALLOWED && sys)
@@ -249,7 +275,7 @@ class HealthIcon extends FlxSprite
 
 	private function loadStaticIcon(name:String, allowGPU:Bool = true):Void
 	{
-		var graphic = Paths.image(name, allowGPU);
+		var graphic = Paths.image(name, null, allowGPU);
 		if (graphic == null)
 		{
 			trace('ERROR: Could not load graphic for icon: $name');

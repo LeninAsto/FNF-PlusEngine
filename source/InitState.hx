@@ -1,9 +1,5 @@
 package;
 
-#if (HSCRIPT_ALLOWED && MODS_ALLOWED && !mobile)
-import backend.ScriptableState;
-import psychlua.CustomState;
-#end
 import backend.Mods;
 import backend.Highscore;
 import backend.Language;
@@ -39,42 +35,6 @@ class InitialState extends MusicBeatState
 		FlxG.autoPause = ClientPrefs.data.autoPause;
 		#end
 
-		// ScriptableState.tryCreate checks mods then engine assets automatically.
-		// CustomState is kept as a fallback for old flat-callback scripts.
-		#if (HSCRIPT_ALLOWED && MODS_ALLOWED && !mobile)
-		if (ScriptableState.overridesEnabled())
-		{
-			var shouldAskFlashing = FlxG.save.data != null && FlxG.save.data.flashing == null && !FlashingState.leftState;
-			if (shouldAskFlashing)
-			{
-				var flashingScript = ScriptableState.tryCreate('FlashingState', new FlashingState());
-				if (flashingScript != null)
-				{
-					MusicBeatState.switchState(flashingScript);
-					return;
-				}
-				else if (CustomState.hasScript('FlashingState'))
-				{
-					MusicBeatState.switchState(new CustomState('FlashingState'));
-					return;
-				}
-			}
-
-			var titleScript = ScriptableState.tryCreate('TitleState', new TitleState());
-			if (titleScript != null)
-			{
-				MusicBeatState.switchState(titleScript);
-				return;
-			}
-			else if (CustomState.hasScript('TitleState'))
-			{
-				MusicBeatState.switchState(new CustomState('TitleState'));
-				return;
-			}
-		}
-		#end
-
-		// No mod states found, use default TitleState
 		MusicBeatState.switchState(new TitleState());
 	}
 }

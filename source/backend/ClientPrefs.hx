@@ -179,7 +179,7 @@ import states.TitleState;
 	public var heyIntro:Bool = false; // Boyfriend and Girlfriend do Hey! animation on countdown Go!
 	public var breakTimer:Bool = false; // Show timer when next notes are approaching
 	public var usePsychFreeplay:Bool = true; // Use Psych-style legacy Freeplay instead of PlusEngine Freeplay
-	public var useScriptableCustomStates:Bool = false; // Allow scripted state overrides through ScriptableState and CustomState
+	public var scriptDeprecationWarnings:Bool = true; // Show warnings for deprecated Lua/HScript compatibility APIs
 	public var modSecurityEnabled:Bool = true; // Scan mod Lua/HScript before allowing sensitive APIs to run
 	public var modSecurityChecks:Map<String, Bool> = new Map();
 	public var dragCharacterToMove:Bool = false; // Allow to drag position character with cursor like in Codename Engine

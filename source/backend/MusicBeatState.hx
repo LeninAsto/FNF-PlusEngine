@@ -24,15 +24,14 @@ import sys.FileSystem;
 // Hierarchy:
 //   BaseMusicBeatState (camera, beat, mobile, stages)
 //   └── MusicBeatState  (this file — + script hooks)
-//       ├── TitleState / PlayState / etc.
-//       └── CustomState
+//       └── TitleState / PlayState / etc.
 class MusicBeatState extends BaseMusicBeatState
 {
 	public static inline var Function_Continue:Int = 0;
 	public static inline var Function_Stop:Int = 1;
 
 	public static inline function stateScriptOverridesEnabled():Bool
-		return ClientPrefs.data.useScriptableCustomStates;
+		return false;
 
 	// Global scripts system
 	#if LUA_ALLOWED
@@ -70,7 +69,7 @@ class MusicBeatState extends BaseMusicBeatState
 	public var companionLuaScript:FunkinLua = null;
 	#end
 
-	// Optional constructor used by CustomState to pass script configuration
+	// Optional constructor used by scripted hosts to pass script configuration.
 	public function new(?scriptsAllowed:Bool = false, ?scriptName:String = null)
 	{
 		super();
@@ -122,11 +121,9 @@ class MusicBeatState extends BaseMusicBeatState
 		timePassedOnState = 0;
 
 		// Auto-load companion script for this specific state class.
-		// Skipped for ScriptableState/CustomState (they handle their own scripts),
-		// and when running inside them as sub-instances.
+		// Disabled while the state scripting layer is being rebuilt.
 		#if (HSCRIPT_ALLOWED && sys)
-		var isScriptDriven:Bool = (this is backend.ScriptableState) || (this is psychlua.CustomState);
-		if (!isScriptDriven && stateScriptOverridesEnabled())
+		if (stateScriptOverridesEnabled())
 			_loadCompanionScript();
 		#end
 	}
@@ -426,7 +423,7 @@ class MusicBeatState extends BaseMusicBeatState
 			companionScript.set('insert', this.insert);
 			companionScript.set('openSubState', this.openSubState);
 
-			// Shared/static var helpers (same API as CustomState)
+			// Shared/static var helpers for state companion scripts.
 			companionScript.set('setSharedVar', function(n:String, v:Dynamic)
 			{
 				MusicBeatState.globalVariables.set(n, v);
@@ -467,7 +464,7 @@ class MusicBeatState extends BaseMusicBeatState
 
 	/**
 	 * Calls a callback on the companion script(s).
-	 * On HScript: tries `onXxx` then bare `xxx` (CustomState convention).
+	 * On HScript: tries `onXxx` then bare `xxx` for legacy companion scripts.
 	 * On Lua: calls the function directly.
 	 */
 	public function callOnCompanionScript(funcName:String, args:Array<Dynamic> = null):Dynamic
@@ -757,7 +754,7 @@ class MusicBeatState extends BaseMusicBeatState
 				globalScript.execute();
 				trace('GlobalScript: Script parsed and executed successfully');
 
-				// Call onCreate if it exists (like PlayState and CustomState do)
+				// Call onCreate if it exists.
 				try
 				{
 					if (globalScript.exists('onCreate'))

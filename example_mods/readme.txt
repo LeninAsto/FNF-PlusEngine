@@ -6,13 +6,13 @@ https://github.com/ShadowMario/FNF-PsychEngine/wiki
 Read the Lua Script API here:
 https://shadowmario.github.io/psychengine.lua/
 
-Plus Engine adds extra mod paths for New Freeplay assets and scripted states/substates.
-The extracted My-Mod template already includes readme files for albumRoll, song metadata, states, and substates.
+Plus Engine adds extra mod paths for New Freeplay assets.
+The extracted My-Mod template already includes readme files for albumRoll and song metadata.
 
 You can also add or edit specific files without the mod template, you just have to re-create the path to said file.
 
 ABOUT EDITING:
-If you want to change something, for example, within assets/shared/images or assets/base_game/images,
+If you want to change something, for example, within assets/shared/images,
 said edited files *must* be put in mods/images, the engine will handle the rest.
 
 For song charts and New Freeplay metadata, it should look something like this:

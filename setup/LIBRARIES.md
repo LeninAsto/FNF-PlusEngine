@@ -65,7 +65,7 @@ with `-D vslice` / `FEATURE_POLYMOD_MODS`.
 | `flixel-animate` | `Psych-Plus-Team/flixel-animate` git `main` | VSlice AnimateAtlas package, imports `animate.*` |
 | `FlxPartialSound` | `FunkinCrew/FlxPartialSound` git `2f984e2...` | Partial audio loading |
 | `hxjsonast` | `nadako/hxjsonast` git `20e72cc...` | HScript/Polymod parser support |
-| `funkin.vis` | `FunkinCrew/funkVis` git `22b1ce0...` | Funkin base-game visualization |
+| `funkin.vis` | `FunkinCrew/funkVis` git `22b1ce0...` | Funkin audio visualization |
 | `grig.audio` | `grig.audio` git `cbf91e2...` | Audio analysis used by Funkin visualization |
 | `extension-androidtools` | Android-only | VSlice/mobile Android helpers |
 

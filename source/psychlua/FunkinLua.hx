@@ -101,7 +101,7 @@ class FunkinLua
 		set('Function_Stop', LuaUtils.Function_Stop);
 		set('Function_Continue', LuaUtils.Function_Continue);
 		set('luaDebugMode', false);
-		set('luaDeprecatedWarnings', true);
+		set('luaDeprecatedWarnings', ClientPrefs.data.scriptDeprecationWarnings);
 		set('inChartEditor', false);
 		set('cameraX', 0);
 		set('cameraY', 0);
@@ -412,32 +412,6 @@ class FunkinLua
 		Lua_helper.add_callback(lua, "getGlobalVar", function(varName:String, ?defaultValue:Dynamic = null)
 		{
 			return MusicBeatState.globalVariables.exists(varName) ? MusicBeatState.globalVariables.get(varName) : defaultValue;
-		});
-		Lua_helper.add_callback(lua, "switchLuaState", function(name:String)
-		{
-			MusicBeatState.switchState(backend.ScriptableState.tryCreate(name, new LuaState(name)));
-		});
-		Lua_helper.add_callback(lua, "openLuaSubstate", function(name:String, ?pauseGame:Bool = false)
-		{
-			var host:Dynamic = LuaUtils.getTargetInstance();
-			if (host != null && host.openSubState != null)
-			{
-				var sub = backend.ScriptableSubstate.tryCreate(name, new LuaSubstate(name, pauseGame, host));
-				host.openSubState(sub);
-				return true;
-			}
-			luaTrace('openLuaSubstate: current host cannot open substates.', false, false, FlxColor.RED);
-			return false;
-		});
-		Lua_helper.add_callback(lua, "closeLuaSubstate", function()
-		{
-			if (Std.isOfType(context.host, flixel.FlxSubState))
-			{
-				cast(context.host, flixel.FlxSubState).close();
-				return true;
-			}
-			luaTrace('closeLuaSubstate can only be used from a substate script.', false, false, FlxColor.YELLOW);
-			return false;
 		});
 		Lua_helper.add_callback(lua, "callStateFunction", function(funcName:String, ?args:Array<Dynamic> = null)
 		{
@@ -965,7 +939,7 @@ class FunkinLua
 		});
 		Lua_helper.add_callback(lua, "precacheImage", function(name:String, ?allowGPU:Bool = true)
 		{
-			Paths.image(name, allowGPU);
+			Paths.image(name, null, allowGPU);
 		});
 		Lua_helper.add_callback(lua, "precacheSound", function(name:String)
 		{
@@ -2291,11 +2265,6 @@ class FunkinLua
 			args = [];
 		if (target == null || funcName == null || funcName.length < 1)
 			return null;
-
-		if (Std.isOfType(target, LuaState))
-			return cast(target, LuaState).callOnLuas(funcName, args);
-		if (Std.isOfType(target, LuaSubstate))
-			return cast(target, LuaSubstate).callOnLuas(funcName, args);
 
 		var method:Dynamic = Reflect.field(target, funcName);
 		if (method != null && Reflect.isFunction(method))

@@ -1,0 +1,49 @@
+[
+	{
+		"save": "week1_nomiss",
+		"name": "She Calls Me Daddy Too",
+		"description": "Beat Week 1 on Hard with no Misses."
+	},
+	{
+		"save": "week2_nomiss",
+		"name": "No More Tricks",
+		"description": "Beat Week 2 on Hard with no Misses."
+	},
+	{
+		"save": "week3_nomiss",
+		"name": "Call Me The Hitman",
+		"description": "Beat Week 3 on Hard with no Misses."
+	},
+	{
+		"save": "week4_nomiss",
+		"name": "Lady Killer",
+		"description": "Beat Week 4 on Hard with no Misses."
+	},
+	{
+		"save": "week5_nomiss",
+		"name": "Missless Christmas",
+		"description": "Beat Week 5 on Hard with no Misses."
+	},
+	{
+		"save": "week6_nomiss",
+		"name": "Highscore!!",
+		"description": "Beat Week 6 on Hard with no Misses."
+	},
+	{
+		"save": "week7_nomiss",
+		"name": "God Effing Damn It!",
+		"description": "Beat Week 7 on Hard with no Misses."
+	},
+	{
+		"save": "weekend1_nomiss",
+		"name": "Just a Friendly Sparring",
+		"description": "Beat Weekend 1 on Hard with no Misses."
+	},
+	{
+		"save": "roadkill_enthusiast",
+		"name": "Roadkill Enthusiast",
+		"description": "Watch the Henchmen die 50 times.",
+		"maxScore": 50,
+		"maxDecimals": 0
+	}
+]

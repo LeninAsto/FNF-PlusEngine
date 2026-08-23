@@ -50,7 +50,6 @@
 
 	<section if="officialBuild">
 		<define name="TITLE_SCREEN_EASTER_EGG"/>
-		<define name="BASE_GAME_FILES" />
 	</section>
 	<define name="FUNKIN_ASSETS" if="vslice" />
 
@@ -79,6 +78,7 @@
 	<assets path="assets/fonts" />
 	<assets path="assets/shared" />
 	<assets path="assets/embed" embed="true"/>
+	<assets path="assets/cursor" rename="assets/images/cursor"/>
 	<assets path="assets/videos" if="VIDEOS_ALLOWED"/>
 	<assets path="assets/songs" />
 	<assets path="assets/week_assets" />
@@ -90,10 +90,6 @@
 		<assets path="assets/translations" rename="assets"/>
 	</section>
 
-	<section if="BASE_GAME_FILES">
-		<assets path="assets/base_game" rename="assets"/>
-	</section>
-
 	<section if="FUNKIN_ASSETS">
 		<assets path="assets/funkin" rename="assets/funkin"/>
 		<haxelib name="grig.audio"/>
@@ -103,6 +99,11 @@
 	<define name="CHECK_FOR_UPDATES" if="officialBuild"/>
 
 	<section if="MODS_ALLOWED">
+		<!-- Base content is shipped as a normal modpack, not as engine assets. -->
+		<assets path='base_game' rename='mods/Friday Night Funkin' embed='false' type='template' exclude="*.ogg" if="web"/>
+		<assets path='base_game' rename='mods/Friday Night Funkin' embed='false' type='template' exclude="*.mp3" unless="web || mac || mobile"/>
+		<assets path='base_game' rename='mods/Friday Night Funkin' embed='false' exclude="*.mp3" if="mac"/>
+		<assets path='base_game' rename='mods/Friday Night Funkin' embed='false' exclude="*.mp3" if="mobile"/>
 		<assets path='example_mods' rename='mods' embed='false' />
 		<assets path='example_sm' rename='sm' embed='false' />
 		<assets path='vslice_mods' embed='false' if="vslice"/>
@@ -119,7 +120,8 @@
 
 	<!-- _______________________________ Libraries ______________________________ -->
 
-	<haxelib name="flixel"/>
+	<haxelib name="lime" version="git"/>
+	<haxelib name="flixel" version="git"/>
 	<haxelib name="flixel-addons" />
 	<haxelib name="tjson" version="1.4.0"/>
 	<haxelib name="moonchart" unless="mac | ios"/>

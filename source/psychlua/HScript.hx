@@ -387,9 +387,6 @@ class HScript extends Iris
 		#if DISCORD_ALLOWED
 		set('Discord', backend.Discord.DiscordClient);
 		#end
-		set('CustomState', psychlua.CustomState);
-		set('ScriptableState', backend.ScriptableState);
-		set('ScriptableSubstate', backend.ScriptableSubstate);
 		set('PlayState', PlayState);
 		set('TitleState', states.TitleState);
 		set('MainMenuState', states.MainMenuState);
@@ -1044,7 +1041,7 @@ class HScript extends Iris
 	/**
 	 * Returns the ScriptClassHandler for a user-defined class by name,
 	 * or null if the script did not define such a class.
-	 * Used by ScriptableState to find and instantiate scripted state classes.
+	 * Used by legacy class helpers to find and instantiate script-declared classes.
 	 */
 	public function getScriptedClass(name:String):psychlua.ScriptedClass.ScriptClassHandler
 	{

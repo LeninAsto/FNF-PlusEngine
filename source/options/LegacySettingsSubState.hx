@@ -23,6 +23,11 @@ class LegacySettingsSubState extends BaseOptionsMenu
 			'usePsychFreeplay', BOOL);
 		addOption(option);
 
+		var option:Option = new Option('Script Deprecation Warnings',
+			'If checked, deprecated Lua/HScript compatibility APIs will print warnings to the debug console. Disable to silence noisy mods.',
+			'scriptDeprecationWarnings', BOOL);
+		addOption(option);
+
 		#if MODS_ALLOWED
 		var option:Option = new Option('Mod Security',
 			'If checked, scans mod Lua/HScript and skips scripts from mods with untrusted sensitive APIs.', 'modSecurityEnabled', BOOL);
@@ -31,12 +36,6 @@ class LegacySettingsSubState extends BaseOptionsMenu
 			ClientPrefs.saveSettings();
 			backend.ModSecurity.rescanAll();
 		};
-		addOption(option);
-		#end
-
-		#if !mobile
-		var option:Option = new Option('Scriptable Custom States', 'If checked, lets mods override states through ScriptableState and CustomState.',
-			'useScriptableCustomStates', BOOL);
 		addOption(option);
 		#end
 

@@ -17,8 +17,7 @@ import objects.MaterialVolumeTray;
 //   FlxState
 //   └── BaseMusicBeatState   (this file — pure beat/camera/mobile/stages)
 //       └── MusicBeatState   (+ GlobalScript, HScript/Lua infrastructure)
-//           ├── TitleState / PlayState / etc.
-//           └── CustomState
+//           └── TitleState / PlayState / etc.
 class BaseMusicBeatState extends FlxState
 {
 	// ─── Beat/step counters ───────────────────────────────────────────────────

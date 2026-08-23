@@ -29,6 +29,11 @@ interface IScriptCustomBehaviour
 	public function hset(name:String, val:Dynamic):Dynamic;
 }
 
+interface IScriptSuperProxyProvider
+{
+	public function getScriptSuperProxy():Dynamic;
+}
+
 // ─────────────────────────────────────────────────────────
 // Core handler: registered in customClasses map, acts as a
 // factory ("class object") for each user-defined class.
@@ -109,8 +114,18 @@ class ScriptClassHandler implements IScriptCustomConstructor
 		var instance:ScriptTemplateBase;
 		if (superCl != null)
 		{
-			// Create the Haxe superclass instance and wrap it
-			var superInstance:Dynamic = Type.createInstance(superCl, args);
+			// Scripted adapters can provide the native instance they are extending.
+			// This lets a scripted `extends BaseStage` run on the real BaseStage object
+			// already registered in PlayState instead of spawning a second dummy stage.
+			var superInstance:Dynamic = ogInterp.variables.get("__scriptedNativeSelf");
+			if (superInstance == null || !Std.isOfType(superInstance, superCl))
+			{
+				var nativeAdapter:Dynamic = ScriptedNativeFactory.create(this, superCl, args);
+				if (nativeAdapter != null)
+					return nativeAdapter;
+				superInstance = Type.createInstance(superCl, args);
+			}
+
 			instance = new ScriptTemplateBase();
 			instance.__superInstance = superInstance;
 		}
@@ -147,7 +162,10 @@ class ScriptClassHandler implements IScriptCustomConstructor
 		// Expose super so scripts can call super.method()
 		if (instance.__superInstance != null)
 		{
-			childInterp.variables.set("super", instance.__superInstance);
+			var superValue:Dynamic = instance.__superInstance;
+			if (Std.isOfType(superValue, IScriptSuperProxyProvider))
+				superValue = cast(superValue, IScriptSuperProxyProvider).getScriptSuperProxy();
+			childInterp.variables.set("super", superValue);
 		}
 
 		// Run custom constructor if defined
