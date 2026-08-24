@@ -17,8 +17,6 @@ import openfl.display.Shape;
  */
 class MaterialSlider extends FlxSpriteGroup
 {
-	static inline var TRACE_LAYOUT:Bool = false;
-
 	public var value(default, set):Float = 0.5;
 	public var min:Float = 0.0;
 	public var max:Float = 1.0;
@@ -43,6 +41,8 @@ class MaterialSlider extends FlxSpriteGroup
 	var wavePhase:Float = 0;
 	var currentTrackVisualHeight:Int = 0;
 	var needsStaticTrackRedraw:Bool = true;
+	var inactiveTrackClip:FlxRect = new FlxRect();
+	var activeWaveShape:Shape = new Shape();
 
 	// Interaction state
 	var isDragging:Bool = false;
@@ -131,13 +131,6 @@ class MaterialSlider extends FlxSpriteGroup
 		this.value = value;
 		updateVisuals(false);
 		MD3Theme.addListener(_onThemeChange);
-		traceLayout('create');
-	}
-
-	function traceLayout(reason:String):Void
-	{
-		if (!TRACE_LAYOUT)
-			return;
 	}
 
 	public function getDebugLayout():String
@@ -175,8 +168,9 @@ class MaterialSlider extends FlxSpriteGroup
 		var startX = stroke * 0.5;
 		var endX = Math.max(startX, drawWidth - stroke * 0.5);
 
-		var shape = new Shape();
+		var shape = activeWaveShape;
 		var graphics = shape.graphics;
+		graphics.clear();
 		graphics.lineStyle(stroke, MD3Theme.primary, 1, false, null, ROUND, ROUND);
 
 		var steps = Std.int(Math.max(10, Math.ceil((endX - startX) / 4.0)));
@@ -233,7 +227,6 @@ class MaterialSlider extends FlxSpriteGroup
 		layoutComponents(isDragging);
 		updateLabelPosition();
 		updateLabelText();
-		traceLayout(animate ? 'updateVisuals(animated)' : 'updateVisuals(static)');
 	}
 
 	function layoutComponents(pressed:Bool):Void
@@ -275,7 +268,8 @@ class MaterialSlider extends FlxSpriteGroup
 		}
 
 		trackInactive.visible = true;
-		trackInactive.clipRect = new FlxRect(clipStart, 0, visibleWidth, trackInactive.frameHeight);
+		inactiveTrackClip.set(clipStart, 0, visibleWidth, trackInactive.frameHeight);
+		trackInactive.clipRect = inactiveTrackClip;
 	}
 
 	function updateLabelPosition():Void
@@ -451,6 +445,8 @@ class MaterialSlider extends FlxSpriteGroup
 			labelTween.cancel();
 
 		onChange = null;
+		inactiveTrackClip = null;
+		activeWaveShape = null;
 
 		super.destroy();
 	}

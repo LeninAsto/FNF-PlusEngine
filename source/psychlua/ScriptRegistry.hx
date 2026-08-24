@@ -276,6 +276,8 @@ private class ScriptWorld
 
 			if (path.endsWith('.*'))
 				continue;
+			if (Iris.proxyImports.exists(path) || Iris.proxyImports.exists(Iris.resolveImportPath(path)))
+				continue;
 			if (Type.resolveClass(path) != null || Type.resolveEnum(path) != null)
 				continue;
 			if (!imports.contains(path))

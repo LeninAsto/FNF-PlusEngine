@@ -41,6 +41,7 @@ class MaterialLoadingIndicator extends FlxSpriteGroup
 	var _lastSecondary:Float = -1;
 	var _lastSoftness:Float = -1;
 	var _lastPhase:Float = -1;
+	var _drawShape:Shape = new Shape();
 
 	// Circular shape family. Each turn advances to the next preset.
 	// The sequence now mixes rounded blobs, ovals, and triangular silhouettes.
@@ -137,9 +138,15 @@ class MaterialLoadingIndicator extends FlxSpriteGroup
 		var baseRadius = frame * 0.29;
 		var col:FlxColor = showContainer ? MD3Theme.onPrimaryContainer : MD3Theme.primary;
 
-		_indicator.makeGraphic(frame, frame, FlxColor.TRANSPARENT, true);
-		var shape = new Shape();
-		shape.graphics.beginFill(col & 0xFFFFFF, ((col >> 24) & 0xFF) / 255);
+		if (_indicator.pixels == null || _indicator.frameWidth != frame || _indicator.frameHeight != frame)
+			_indicator.makeGraphic(frame, frame, FlxColor.TRANSPARENT, true);
+		else
+			_indicator.pixels.fillRect(_indicator.pixels.rect, FlxColor.TRANSPARENT);
+
+		var shape = _drawShape;
+		var graphics = shape.graphics;
+		graphics.clear();
+		graphics.beginFill(col & 0xFFFFFF, ((col >> 24) & 0xFF) / 255);
 
 		var steps = 96;
 		for (i in 0...steps + 1)
@@ -156,13 +163,12 @@ class MaterialLoadingIndicator extends FlxSpriteGroup
 			var py = FlxMath.bound(center + Math.sin(angle) * radius * scaleY, 1, frame - 1);
 
 			if (i == 0)
-				shape.graphics.moveTo(px, py);
+				graphics.moveTo(px, py);
 			else
-				shape.graphics.lineTo(px, py);
+				graphics.lineTo(px, py);
 		}
 
-		shape.graphics.endFill();
-		_indicator.pixels.fillRect(_indicator.pixels.rect, FlxColor.TRANSPARENT);
+		graphics.endFill();
 		_indicator.pixels.draw(shape, null, null, null, null, true);
 		_indicator.dirty = true;
 	}
@@ -227,6 +233,7 @@ class MaterialLoadingIndicator extends FlxSpriteGroup
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(_onThemeChange);
+		_drawShape = null;
 		super.destroy();
 	}
 }

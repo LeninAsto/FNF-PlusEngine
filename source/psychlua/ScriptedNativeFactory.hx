@@ -7,6 +7,7 @@ import flixel.FlxSubState;
 import flixel.group.FlxSpriteGroup;
 import backend.MusicBeatState;
 import backend.MusicBeatSubstate;
+import psychlua.ScriptedClass.IScriptCustomBehaviour;
 import psychlua.ScriptedClass.IScriptSuperProxyProvider;
 import psychlua.ScriptedClass.ScriptClassHandler;
 import psychlua.ScriptedClass.ScriptTemplateBase;
@@ -87,9 +88,74 @@ class ScriptedNativeFactory
 		Reflect.setField(fn, 'native', native);
 		return fn;
 	}
+
+	public static function getScriptAware(native:Dynamic, scriptInstance:ScriptTemplateBase, name:String):Dynamic
+	{
+		var nativeValue:Dynamic = getNative(native, name);
+		if (nativeValue != null)
+			return nativeValue;
+
+		if (scriptInstance != null && scriptInstance.hasScriptField(name))
+			return scriptInstance.getScriptField(name);
+
+		return null;
+	}
+
+	public static function setScriptAware(native:Dynamic, scriptInstance:ScriptTemplateBase, name:String, value:Dynamic):Dynamic
+	{
+		if (scriptInstance != null && scriptInstance.hasScriptField(name))
+			return scriptInstance.setScriptField(name, value);
+
+		setNative(native, name, value);
+		return value;
+	}
+
+	static function getNative(native:Dynamic, name:String):Dynamic
+	{
+		if (native == null)
+			return null;
+		try
+		{
+			var value:Dynamic = Reflect.getProperty(native, name);
+			if (value != null)
+				return value;
+		}
+		catch (e:Dynamic)
+		{
+		}
+		try
+		{
+			return Reflect.field(native, name);
+		}
+		catch (e:Dynamic)
+		{
+		}
+		return null;
+	}
+
+	static function setNative(native:Dynamic, name:String, value:Dynamic):Void
+	{
+		if (native == null)
+			return;
+		try
+		{
+			Reflect.setProperty(native, name, value);
+			return;
+		}
+		catch (e:Dynamic)
+		{
+		}
+		try
+		{
+			Reflect.setField(native, name, value);
+		}
+		catch (e:Dynamic)
+		{
+		}
+	}
 }
 
-class ScriptedFlxState extends FlxState implements IScriptSuperProxyProvider
+class ScriptedFlxState extends FlxState implements IScriptSuperProxyProvider implements IScriptCustomBehaviour
 {
 	var scriptInstance:ScriptTemplateBase;
 	var superProxy:Dynamic;
@@ -112,6 +178,12 @@ class ScriptedFlxState extends FlxState implements IScriptSuperProxyProvider
 		}
 		return superProxy;
 	}
+
+	public function hget(name:String):Dynamic
+		return ScriptedNativeFactory.getScriptAware(this, scriptInstance, name);
+
+	public function hset(name:String, val:Dynamic):Dynamic
+		return ScriptedNativeFactory.setScriptAware(this, scriptInstance, name, val);
 
 	function nativeSuperNew(args:Array<Dynamic>):Dynamic
 		return this;
@@ -152,7 +224,7 @@ class ScriptedFlxState extends FlxState implements IScriptSuperProxyProvider
 	}
 }
 
-class ScriptedFlxSubState extends FlxSubState implements IScriptSuperProxyProvider
+class ScriptedFlxSubState extends FlxSubState implements IScriptSuperProxyProvider implements IScriptCustomBehaviour
 {
 	var scriptInstance:ScriptTemplateBase;
 	var superProxy:Dynamic;
@@ -176,6 +248,12 @@ class ScriptedFlxSubState extends FlxSubState implements IScriptSuperProxyProvid
 		}
 		return superProxy;
 	}
+
+	public function hget(name:String):Dynamic
+		return ScriptedNativeFactory.getScriptAware(this, scriptInstance, name);
+
+	public function hset(name:String, val:Dynamic):Dynamic
+		return ScriptedNativeFactory.setScriptAware(this, scriptInstance, name, val);
 
 	function nativeSuperNew(args:Array<Dynamic>):Dynamic
 		return this;
@@ -227,7 +305,7 @@ class ScriptedFlxSubState extends FlxSubState implements IScriptSuperProxyProvid
 	}
 }
 
-class ScriptedMusicBeatState extends MusicBeatState implements IScriptSuperProxyProvider
+class ScriptedMusicBeatState extends MusicBeatState implements IScriptSuperProxyProvider implements IScriptCustomBehaviour
 {
 	var scriptInstance:ScriptTemplateBase;
 	var superProxy:Dynamic;
@@ -254,6 +332,12 @@ class ScriptedMusicBeatState extends MusicBeatState implements IScriptSuperProxy
 		return superProxy;
 	}
 
+	public function hget(name:String):Dynamic
+		return ScriptedNativeFactory.getScriptAware(this, scriptInstance, name);
+
+	public function hset(name:String, val:Dynamic):Dynamic
+		return ScriptedNativeFactory.setScriptAware(this, scriptInstance, name, val);
+
 	function nativeSuperNew(args:Array<Dynamic>):Dynamic
 		return this;
 
@@ -326,7 +410,7 @@ class ScriptedMusicBeatState extends MusicBeatState implements IScriptSuperProxy
 	}
 }
 
-class ScriptedMusicBeatSubstate extends MusicBeatSubstate implements IScriptSuperProxyProvider
+class ScriptedMusicBeatSubstate extends MusicBeatSubstate implements IScriptSuperProxyProvider implements IScriptCustomBehaviour
 {
 	var scriptInstance:ScriptTemplateBase;
 	var superProxy:Dynamic;
@@ -353,6 +437,12 @@ class ScriptedMusicBeatSubstate extends MusicBeatSubstate implements IScriptSupe
 		}
 		return superProxy;
 	}
+
+	public function hget(name:String):Dynamic
+		return ScriptedNativeFactory.getScriptAware(this, scriptInstance, name);
+
+	public function hset(name:String, val:Dynamic):Dynamic
+		return ScriptedNativeFactory.setScriptAware(this, scriptInstance, name, val);
 
 	function nativeSuperNew(args:Array<Dynamic>):Dynamic
 		return this;
@@ -437,7 +527,7 @@ class ScriptedMusicBeatSubstate extends MusicBeatSubstate implements IScriptSupe
 	}
 }
 
-class ScriptedFlxSprite extends FlxSprite implements IScriptSuperProxyProvider
+class ScriptedFlxSprite extends FlxSprite implements IScriptSuperProxyProvider implements IScriptCustomBehaviour
 {
 	var scriptInstance:ScriptTemplateBase;
 	var superProxy:Dynamic;
@@ -459,6 +549,12 @@ class ScriptedFlxSprite extends FlxSprite implements IScriptSuperProxyProvider
 		}
 		return superProxy;
 	}
+
+	public function hget(name:String):Dynamic
+		return ScriptedNativeFactory.getScriptAware(this, scriptInstance, name);
+
+	public function hset(name:String, val:Dynamic):Dynamic
+		return ScriptedNativeFactory.setScriptAware(this, scriptInstance, name, val);
 
 	function nativeSuperNew(args:Array<Dynamic>):Dynamic
 	{
@@ -495,7 +591,7 @@ class ScriptedFlxSprite extends FlxSprite implements IScriptSuperProxyProvider
 	}
 }
 
-class ScriptedFlxSpriteGroup extends FlxSpriteGroup implements IScriptSuperProxyProvider
+class ScriptedFlxSpriteGroup extends FlxSpriteGroup implements IScriptSuperProxyProvider implements IScriptCustomBehaviour
 {
 	var scriptInstance:ScriptTemplateBase;
 	var superProxy:Dynamic;
@@ -517,6 +613,12 @@ class ScriptedFlxSpriteGroup extends FlxSpriteGroup implements IScriptSuperProxy
 		}
 		return superProxy;
 	}
+
+	public function hget(name:String):Dynamic
+		return ScriptedNativeFactory.getScriptAware(this, scriptInstance, name);
+
+	public function hset(name:String, val:Dynamic):Dynamic
+		return ScriptedNativeFactory.setScriptAware(this, scriptInstance, name, val);
 
 	function nativeSuperNew(args:Array<Dynamic>):Dynamic
 	{

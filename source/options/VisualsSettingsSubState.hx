@@ -189,6 +189,15 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		option.onChange = syncPopupVisibility;
 
+		var option:Option = new Option('Show Early/Late Sprites',
+			'Shows Early or Late tags on the top corners of the rating sprite depending on hit timing.', 'showEarlyLateSprites', BOOL);
+		addOption(option);
+		option.onChange = syncPopupVisibility;
+
+		var option:Option = new Option('Show Hit MS', 'Shows the millisecond timing error next to judgement popups.', 'showHitMs', BOOL);
+		addOption(option);
+		option.onChange = syncPopupVisibility;
+
 		var option:Option = new Option('Combo and Rating in camGame',
 			'If enabled, Combo and Ratings will be rendered in the camGame layer instead of camHUD.', 'comboInGame', BOOL);
 		addOption(option);
@@ -238,40 +247,53 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		super();
 		add(notes);
 		add(splashes);
+		setPreviewActive(false);
 	}
 
 	var notesShown:Bool = false;
+	var lastPreviewVariable:String = null;
 
 	override function changeSelection(change:Int = 0)
 	{
 		super.changeSelection(change);
 
-		switch (curOption.variable)
-		{
-			case 'noteSkin', 'splashSkin', 'splashAlpha':
-				if (!notesShown)
-				{
-					for (note in notes.members)
-					{
-						FlxTween.cancelTweensOf(note);
-						FlxTween.tween(note, {y: noteY}, Math.abs(note.y / (200 + noteY)) / 3, {ease: FlxEase.quadInOut});
-					}
-				}
-				notesShown = true;
-				if (curOption.variable.startsWith('splash') && Math.abs(notes.members[0].y - noteY) < 25)
-					playNoteSplashes();
+		var previewVariable:String = curOption != null ? curOption.variable : null;
+		var shouldShowPreview:Bool = previewVariable == 'noteSkin' || previewVariable == 'splashSkin' || previewVariable == 'splashAlpha';
 
-			default:
-				if (notesShown)
+		if (shouldShowPreview)
+		{
+			setPreviewActive(true);
+			if (!notesShown)
+			{
+				for (note in notes.members)
 				{
-					for (note in notes.members)
-					{
-						FlxTween.cancelTweensOf(note);
-						FlxTween.tween(note, {y: -200}, Math.abs(note.y / (200 + noteY)) / 3, {ease: FlxEase.quadInOut});
-					}
+					if (note == null)
+						continue;
+					FlxTween.cancelTweensOf(note);
+					FlxTween.tween(note, {y: noteY}, Math.abs(note.y / (200 + noteY)) / 3, {ease: FlxEase.quadInOut});
 				}
-				notesShown = false;
+			}
+			notesShown = true;
+			if (previewVariable != lastPreviewVariable && previewVariable.startsWith('splash') && notes.members[0] != null && Math.abs(notes.members[0].y - noteY) < 25)
+				playNoteSplashes();
 		}
+		else
+		{
+			if (notesShown)
+			{
+				for (note in notes.members)
+				{
+					if (note == null)
+						continue;
+					FlxTween.cancelTweensOf(note);
+					FlxTween.tween(note, {y: -200}, Math.abs(note.y / (200 + noteY)) / 3, {ease: FlxEase.quadInOut});
+				}
+				hideNoteSplashes();
+			}
+			notesShown = false;
+		}
+
+		lastPreviewVariable = previewVariable;
 	}
 
 	var changedMusic:Bool = false;
@@ -416,6 +438,9 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 	function playNoteSplashes()
 	{
+		if (!notesShown)
+			return;
+
 		var rand:Int = 0;
 		if (splashes.members[0] != null && splashes.members[0].maxAnims > 1)
 			rand = FlxG.random.int(0, splashes.members[0].maxAnims - 1); // For playing the same random animation on all 4 splashes
@@ -456,6 +481,33 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 			if (splash.animation.curAnim != null)
 				splash.animation.curAnim.frameRate = FlxG.random.int(minFps, maxFps);
+		}
+	}
+
+	function hideNoteSplashes():Void
+	{
+		for (splash in splashes)
+		{
+			if (splash == null)
+				continue;
+			FlxTween.cancelTweensOf(splash);
+			splash.kill();
+		}
+		splashes.visible = false;
+		splashes.active = false;
+	}
+
+	function setPreviewActive(value:Bool):Void
+	{
+		if (notes != null)
+		{
+			notes.visible = value;
+			notes.active = false;
+		}
+		if (splashes != null)
+		{
+			splashes.visible = value;
+			splashes.active = value;
 		}
 	}
 

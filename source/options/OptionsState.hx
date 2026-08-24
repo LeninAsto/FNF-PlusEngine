@@ -51,8 +51,6 @@ class OptionsState extends MusicBeatState
 	public static var substateAnchorLabel:String = null;
 	public static inline var SUBSTATE_TITLE_X:Float = 75;
 	public static inline var SUBSTATE_TITLE_Y:Float = 45;
-	public static inline var SUBSTATE_TITLE_SCALE:Float = 0.86;
-	public static inline var SUBSTATE_TITLE_ALPHA:Float = 0.42;
 
 	public static function clearSubstateTransition():Void
 	{
@@ -348,6 +346,7 @@ class OptionsState extends MusicBeatState
 				continue;
 
 			var selected:Bool = item.index == curSelected;
+			var headerMode:Bool = substateVisualActive && selected;
 			var targetX:Float = cardTargetX(item.index);
 			var targetY:Float = cardTargetY(item.index) - gridScroll;
 			var targetScale:Float = selected ? 1.035 : 1;
@@ -357,10 +356,10 @@ class OptionsState extends MusicBeatState
 			{
 				if (selected)
 				{
-					targetX = SUBSTATE_TITLE_X;
+					targetX = selectedCardTargetX();
 					targetY = SUBSTATE_TITLE_Y;
-					targetScale = SUBSTATE_TITLE_SCALE;
-					targetAlpha = SUBSTATE_TITLE_ALPHA;
+					targetScale = 1;
+					targetAlpha = 1;
 				}
 				else
 				{
@@ -388,8 +387,14 @@ class OptionsState extends MusicBeatState
 					FlxMath.lerp(targetScale, item.scale.y, Math.exp(-elapsed * 10.2)));
 				item.alpha = FlxMath.lerp(targetAlpha, item.alpha, moveLerp);
 			}
+			if (item.headerMode != headerMode)
+				item.applyTheme(selected, false, headerMode);
+			item.syncLayout(headerMode);
 		}
 	}
+
+	function selectedCardTargetX():Float
+		return (FlxG.width - CARD_W) * 0.5;
 
 	function cardTargetX(index:Int):Float
 	{
@@ -435,7 +440,10 @@ class OptionsState extends MusicBeatState
 		if (grpOptions != null)
 			for (item in grpOptions.members)
 				if (item != null)
-					item.applyTheme(item.index == curSelected, force);
+				{
+					var selected:Bool = item.index == curSelected;
+					item.applyTheme(selected, force, substateVisualActive && selected);
+				}
 	}
 
 	function restoreCards():Void
@@ -569,7 +577,8 @@ class OptionsState extends MusicBeatState
 private class OptionCard extends FlxSpriteGroup
 {
 	static inline var MAX_DESCRIPTION_CHARS:Int = 96;
-	static inline var DOT_SIZE:Float = 14;
+	static inline var DOT_W:Float = 14;
+	static inline var DOT_H:Float = 34;
 	static inline var DOT_X:Float = 18;
 	static inline var CONTENT_X:Float = 46;
 
@@ -580,7 +589,9 @@ private class OptionCard extends FlxSpriteGroup
 	var title:FlxText;
 	var desc:FlxText;
 	var arrow:FlxText;
+	public var headerMode(default, null):Bool = false;
 	var lastSelected:Null<Bool> = null;
+	var lastHeaderMode:Null<Bool> = null;
 	var lastTheme:String = "";
 
 	public function new(index:Int, label:String, description:String, w:Float, h:Float)
@@ -627,24 +638,61 @@ private class OptionCard extends FlxSpriteGroup
 		return text.substr(0, MAX_DESCRIPTION_CHARS - 3).trim() + '...';
 	}
 
-	public function applyTheme(selected:Bool, force:Bool = false):Void
+	public function applyTheme(selected:Bool, force:Bool = false, headerMode:Bool = false):Void
 	{
 		var signature = OptionsMenuTheme.signature();
-		if (!force && lastSelected == selected && lastTheme == signature)
+		if (!force && lastSelected == selected && lastHeaderMode == headerMode && lastTheme == signature)
 			return;
 		lastSelected = selected;
+		lastHeaderMode = headerMode;
+		this.headerMode = headerMode;
 		lastTheme = signature;
 
 		var fill:Int = selected ? OptionsMenuTheme.difficultyCardFill(OptionsMenuTheme.current().accent, true) : OptionsMenuTheme.cardFill(false);
 		var stroke:Int = selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.panelOutlineColor();
 		bg.makeGraphic(Std.int(cardW), Std.int(cardH), FlxColor.TRANSPARENT, true);
+		bg.setPosition(x, y);
 		FlxSpriteUtil.drawRoundRect(bg, 0, 0, cardW, cardH, 8, 8, fill);
 		FlxSpriteUtil.drawRoundRect(bg, 0, 0, cardW, cardH, 8, 8, FlxColor.TRANSPARENT, {thickness: selected ? 2 : 1, color: stroke});
-		FlxSpriteUtil.drawRoundRect(bg, DOT_X, (cardH - DOT_SIZE) * 0.5, DOT_SIZE, DOT_SIZE, DOT_SIZE * 0.5, DOT_SIZE * 0.5,
-			selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.cardAccent(false));
+		if (!headerMode)
+			FlxSpriteUtil.drawRoundRect(bg, DOT_X, (cardH - DOT_H) * 0.5, DOT_W, DOT_H, DOT_W * 0.5, DOT_W * 0.5,
+				selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.cardAccent(false));
 
 		title.color = selected ? OptionsMenuTheme.cardTitleColor(true) : OptionsMenuTheme.cardTitleColor(false);
 		desc.color = selected ? OptionsMenuTheme.cardDescriptionColor(true) : OptionsMenuTheme.cardDescriptionColor(false);
 		arrow.color = selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.footerTextColor();
+		syncLayout(headerMode);
+	}
+
+	public function syncLayout(headerMode:Bool):Void
+	{
+		if (bg != null)
+			bg.setPosition(x, y);
+
+		if (headerMode)
+		{
+			title.x = x;
+			title.fieldWidth = cardW;
+			title.alignment = CENTER;
+			desc.x = x + 42;
+			desc.fieldWidth = cardW - 84;
+			desc.alignment = CENTER;
+			arrow.visible = false;
+		}
+		else
+		{
+			title.x = x + CONTENT_X;
+			title.fieldWidth = cardW - 106;
+			title.alignment = LEFT;
+			desc.x = x + CONTENT_X;
+			desc.fieldWidth = cardW - 106;
+			desc.alignment = LEFT;
+			arrow.visible = true;
+			arrow.x = x + cardW - 48;
+		}
+
+		title.y = y + 14;
+		desc.y = y + 44;
+		arrow.y = y + 24;
 	}
 }

@@ -3,6 +3,7 @@ package psychlua;
 import backend.StructurePsychOld;
 import crowplexus.hscript.Expr;
 import crowplexus.hscript.Interp;
+import psychlua.HScript.CustomInterp;
 
 // ─────────────────────────────────────────────────────────
 // Interfaces used by the scripted class system.
@@ -71,7 +72,7 @@ class ScriptClassHandler implements IScriptCustomConstructor
 	 */
 	public function hnew(args:Array<Dynamic>):Dynamic
 	{
-		var childInterp = new Interp();
+		var childInterp:Interp = Std.isOfType(ogInterp, CustomInterp) ? new CustomInterp() : new Interp();
 
 		// Copy all global variables from the parent interpreter so the
 		// instance can access things like FlxG, PlayState, etc.
@@ -95,6 +96,15 @@ class ScriptClassHandler implements IScriptCustomConstructor
 			var fromVar:Dynamic = ogInterp.variables.get(extend);
 			if (fromVar == null)
 				fromVar = ogInterp.imports.get(extend);
+			if (fromVar == null && extend.contains('.'))
+			{
+				var shortName:String = extend.substr(extend.lastIndexOf('.') + 1);
+				fromVar = ogInterp.variables.get(shortName);
+				if (fromVar == null)
+					fromVar = ogInterp.imports.get(shortName);
+			}
+			if (fromVar == null)
+				fromVar = ogInterp.getOrImportClass(extend);
 			if (Std.isOfType(fromVar, Class))
 			{
 				superCl = cast fromVar;
@@ -133,6 +143,9 @@ class ScriptClassHandler implements IScriptCustomConstructor
 		{
 			instance = new ScriptTemplateBase();
 		}
+
+		if (Std.isOfType(childInterp, CustomInterp))
+			cast(childInterp, CustomInterp).parentInstance = instance.__superInstance != null ? instance.__superInstance : instance;
 
 		// Wire the child interpreter to the instance
 		instance.__interp = childInterp;
@@ -204,18 +217,14 @@ class ScriptTemplateBase implements IScriptCustomBehaviour
 	public function hget(name:String):Dynamic
 	{
 		if (__interp == null)
-			return Reflect.getProperty(this, name);
-		// Property getter: get_name
-		var getter:Dynamic = __interp.variables.get('get_$name');
-		if (getter != null && Reflect.isFunction(getter))
-			return getter();
-		// Direct variable in script
-		if (__interp.variables.exists(name))
-			return __interp.variables.get(name);
+			return getPropertySafe(this, name);
+		var own:Dynamic = getScriptField(name);
+		if (own != null || hasScriptField(name))
+			return own;
 		// Forward to super instance
 		if (__superInstance != null)
-			return Reflect.getProperty(__superInstance, name);
-		return Reflect.getProperty(this, name);
+			return getPropertySafe(__superInstance, name);
+		return getPropertySafe(this, name);
 	}
 
 	public function hset(name:String, val:Dynamic):Dynamic
@@ -241,12 +250,85 @@ class ScriptTemplateBase implements IScriptCustomBehaviour
 		// Forward to super instance
 		if (__superInstance != null)
 		{
-			Reflect.setProperty(__superInstance, name, val);
+			setPropertySafe(__superInstance, name, val);
 			return val;
 		}
 		// Otherwise store in script variables
 		__interp.variables.set(name, val);
 		return val;
+	}
+
+	public function hasScriptField(name:String):Bool
+		return __interp != null && (__interp.variables.exists(name) || __interp.variables.exists('get_$name'));
+
+	public function getScriptField(name:String):Dynamic
+	{
+		if (__interp == null)
+			return null;
+		var getter:Dynamic = __interp.variables.get('get_$name');
+		if (getter != null && Reflect.isFunction(getter))
+			return getter();
+		if (__interp.variables.exists(name))
+			return __interp.variables.get(name);
+		return null;
+	}
+
+	public function setScriptField(name:String, val:Dynamic):Dynamic
+	{
+		if (__interp == null)
+			return val;
+		var setter:Dynamic = __interp.variables.get('set_$name');
+		if (setter != null && Reflect.isFunction(setter))
+		{
+			setter(val);
+			return val;
+		}
+		__interp.variables.set(name, val);
+		return val;
+	}
+
+	static function getPropertySafe(target:Dynamic, name:String):Dynamic
+	{
+		if (target == null)
+			return null;
+		try
+		{
+			var value:Dynamic = Reflect.getProperty(target, name);
+			if (value != null)
+				return value;
+		}
+		catch (e:Dynamic)
+		{
+		}
+		try
+		{
+			return Reflect.field(target, name);
+		}
+		catch (e:Dynamic)
+		{
+		}
+		return null;
+	}
+
+	static function setPropertySafe(target:Dynamic, name:String, value:Dynamic):Void
+	{
+		if (target == null)
+			return;
+		try
+		{
+			Reflect.setProperty(target, name, value);
+			return;
+		}
+		catch (e:Dynamic)
+		{
+		}
+		try
+		{
+			Reflect.setField(target, name, value);
+		}
+		catch (e:Dynamic)
+		{
+		}
 	}
 
 	/**

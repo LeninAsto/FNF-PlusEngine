@@ -22,8 +22,6 @@ import mobile.backend.TouchUtil;
  */
 class MaterialNumericStepper extends FlxSpriteGroup
 {
-	static inline var TRACE_LAYOUT:Bool = false;
-
 	// -----------------------------------------------------------------------
 	// Public API
 	// -----------------------------------------------------------------------
@@ -180,20 +178,13 @@ class MaterialNumericStepper extends FlxSpriteGroup
 
 		MD3Theme.addListener(_onThemeChange);
 		_onThemeChange();
-		traceLayout('create');
-	}
-
-	function traceLayout(reason:String):Void
-	{
-		if (!TRACE_LAYOUT)
-			return;
 	}
 
 	public function getDebugLayout():String
 	{
-		return 'group=(' + x + ', ' + y + ')' + ' width=' + stepperWidth + ' decrLocal=(' + (decrState.x - x) + ', ' + (decrState.y - y) + ', '
-			+ decrState.width + 'x' + decrState.height + ')' + ' incrLocal=(' + (incrState.x - x) + ', ' + (incrState.y - y) + ', ' + incrState.width + 'x'
-			+ incrState.height + ')' + ' valueTextLocal=(' + (valueText.x - x) + ', ' + (valueText.y - y) + ', ' + valueText.width + 'x' + valueText.height
+		return 'group=(' + x + ', ' + y + ')' + ' width=' + stepperWidth + ' decrLocal=(' + decrState.x + ', ' + decrState.y + ', '
+			+ decrState.width + 'x' + decrState.height + ')' + ' incrLocal=(' + incrState.x + ', ' + incrState.y + ', ' + incrState.width + 'x'
+			+ incrState.height + ')' + ' valueTextLocal=(' + valueText.x + ', ' + valueText.y + ', ' + valueText.width + 'x' + valueText.height
 			+ ')' + ' value=' + value;
 	}
 
@@ -210,9 +201,8 @@ class MaterialNumericStepper extends FlxSpriteGroup
 		if (valueText != null)
 		{
 			valueText.text = decimals > 0 ? Std.string(FlxMath.roundDecimal(v, decimals)) : Std.string(Std.int(v));
-			valueText.y = y + (controlHeight() - valueText.height) * 0.5;
+			valueText.y = (controlHeight() - valueText.height) * 0.5;
 		}
-		traceLayout('set_value');
 		return value;
 	}
 
@@ -224,7 +214,6 @@ class MaterialNumericStepper extends FlxSpriteGroup
 	{
 		var prev = value;
 		value += dir * step;
-		traceLayout('step(' + dir + ')');
 		if (value != prev && onChange != null)
 			onChange(value);
 	}

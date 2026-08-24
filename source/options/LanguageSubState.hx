@@ -95,7 +95,6 @@ class LanguageSubState extends MusicBeatSubstate
 			return;
 
 		layoutCards(elapsed);
-		refreshCardVisuals();
 
 		var mult:Int = (FlxG.keys.pressed.SHIFT) ? 4 : 1;
 		if (controls.UI_UP_P)
@@ -358,34 +357,44 @@ class LanguageSubState extends MusicBeatSubstate
 				card.y = FlxMath.lerp(targetY, card.y, moveLerp);
 				card.scale.set(FlxMath.lerp(targetScale, card.scale.x, moveLerp), FlxMath.lerp(targetScale, card.scale.y, moveLerp));
 			}
+			card.syncLayout();
 		}
 	}
 
 	function cardTargetY(index:Int):Float
 	{
-		var target:Float = CARD_SELECTED_Y;
-		if (index == curSelected)
-			return target;
+		var desiredScroll:Float = cardStackY(curSelected);
+		var maxScroll:Float = Math.max(0, cardsTotalHeight() + CARD_SELECTED_Y - (FlxG.height - 40));
+		var scroll:Float = FlxMath.bound(desiredScroll, 0, maxScroll);
+		return CARD_SELECTED_Y + cardStackY(index) - scroll;
+	}
 
-		if (index > curSelected)
+	function cardStackY(index:Int):Float
+	{
+		var y:Float = 0;
+		var max:Int = Std.int(Math.min(index, grpLanguages.members.length));
+		for (i in 0...max)
 		{
-			for (i in curSelected...index)
-			{
-				var card = getCardAt(i);
-				target += (card != null ? card.cardHeight : CARD_H) + CARD_GAP;
-			}
+			var card = getCardAt(i);
+			y += (card != null ? card.cardHeight : CARD_H) + CARD_GAP;
 		}
-		else
+		return y;
+	}
+
+	function cardsTotalHeight():Float
+	{
+		if (grpLanguages == null || grpLanguages.members.length == 0)
+			return 0;
+
+		var total:Float = 0;
+		for (i in 0...grpLanguages.members.length)
 		{
-			var i:Int = curSelected - 1;
-			while (i >= index)
-			{
-				var card = getCardAt(i);
-				target -= (card != null ? card.cardHeight : CARD_H) + CARD_GAP;
-				i--;
-			}
+			var card = getCardAt(i);
+			total += card != null ? card.cardHeight : CARD_H;
+			if (i < grpLanguages.members.length - 1)
+				total += CARD_GAP;
 		}
-		return target;
+		return total;
 	}
 
 	function getCardAt(index:Int):LanguageCard
@@ -428,9 +437,12 @@ private class LanguageCard extends FlxSpriteGroup
 {
 	static inline var MAX_EXAMPLE_CHARS:Int = 148;
 	static inline var MAX_CARD_HEIGHT:Float = 98;
-	static inline var DOT_SIZE:Float = 14;
+	static inline var DOT_W:Float = 14;
+	static inline var DOT_H:Float = 34;
 	static inline var DOT_X:Float = 18;
 	static inline var CONTENT_X:Float = 46;
+	static inline var TITLE_Y:Float = 12;
+	static inline var EXAMPLE_Y:Float = 43;
 	static inline var RIGHT_MARGIN:Float = 34;
 
 	public var index(default, null):Int;
@@ -496,15 +508,42 @@ private class LanguageCard extends FlxSpriteGroup
 	{
 		applied = value;
 		appliedText.text = applied ? Language.getPhrase('language_applied_badge', 'Active') : '';
+		positionMetaText();
 	}
 
 	function resizeToContent():Void
 	{
 		exampleText.updateHitbox();
-		cardHeight = FlxMath.bound(exampleText.y + exampleText.height + 14, minCardHeight, MAX_CARD_HEIGHT);
+		cardHeight = FlxMath.bound(EXAMPLE_Y + exampleText.height + 14, minCardHeight, MAX_CARD_HEIGHT);
 		bg.makeGraphic(Std.int(cardWidth), Std.int(cardHeight), FlxColor.TRANSPARENT, true);
-		codeText.x = cardWidth - RIGHT_MARGIN - 250;
-		appliedText.x = cardWidth - RIGHT_MARGIN - 72;
+		syncLayout();
+	}
+
+	function positionMetaText():Void
+	{
+		codeText.updateHitbox();
+		appliedText.updateHitbox();
+		codeText.x = x + cardWidth - RIGHT_MARGIN - 250;
+		appliedText.x = x + cardWidth - RIGHT_MARGIN - 72;
+		codeText.y = y + cardHeight * 0.5 - (codeText.height * codeText.scale.y) * 0.5 - 1;
+		appliedText.y = y + cardHeight * 0.5 - (appliedText.height * appliedText.scale.y) * 0.5 - 1;
+	}
+
+	public function syncLayout():Void
+	{
+		if (bg != null)
+			bg.setPosition(x, y);
+		if (title != null)
+		{
+			title.x = x + CONTENT_X;
+			title.y = y + TITLE_Y;
+		}
+		if (exampleText != null)
+		{
+			exampleText.x = x + CONTENT_X;
+			exampleText.y = y + EXAMPLE_Y;
+		}
+		positionMetaText();
 	}
 
 	function formatExample(value:String):String
@@ -530,15 +569,17 @@ private class LanguageCard extends FlxSpriteGroup
 		var fill:Int = selected ? OptionsMenuTheme.difficultyCardFill(OptionsMenuTheme.current().accent, true) : OptionsMenuTheme.cardFill(false);
 		var stroke:Int = selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.panelOutlineColor();
 		bg.makeGraphic(Std.int(cardWidth), Std.int(cardHeight), FlxColor.TRANSPARENT, true);
+		bg.setPosition(x, y);
 		FlxSpriteUtil.drawRoundRect(bg, 0, 0, cardWidth, cardHeight, 8, 8, fill);
 		FlxSpriteUtil.drawRoundRect(bg, 0, 0, cardWidth, cardHeight, 8, 8, FlxColor.TRANSPARENT, {thickness: selected ? 2 : 1, color: stroke});
-		FlxSpriteUtil.drawRoundRect(bg, DOT_X, (cardHeight - DOT_SIZE) * 0.5, DOT_SIZE, DOT_SIZE, DOT_SIZE * 0.5, DOT_SIZE * 0.5,
+		FlxSpriteUtil.drawRoundRect(bg, DOT_X, (cardHeight - DOT_H) * 0.5, DOT_W, DOT_H, DOT_W * 0.5, DOT_W * 0.5,
 			selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.cardAccent(false));
 
 		title.color = OptionsMenuTheme.cardTitleColor(selected);
 		codeText.color = selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.footerTextColor();
 		exampleText.color = OptionsMenuTheme.cardDescriptionColor(selected);
 		appliedText.color = selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.cardValueColor(false);
+		syncLayout();
 	}
 }
 #end

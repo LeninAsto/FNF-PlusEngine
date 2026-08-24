@@ -84,6 +84,8 @@ import states.TitleState;
 	public var showRating:Bool = true;
 	public var showCombo:Bool = false;
 	public var showComboNum:Bool = true;
+	public var showEarlyLateSprites:Bool = false;
+	public var showHitMs:Bool = false;
 	public var comboInGame:Bool = false;
 	public var nfRatingStyle:Bool = false;
 	public var showEndCountdown:Bool = false; // Enables/disables the end countdown
@@ -158,6 +160,7 @@ import states.TitleState;
 	];
 
 	public var comboOffset:Array<Int> = [0, 0, 0, 0];
+	public var hitMsOffset:Array<Int> = [0, 0];
 	public var keyViewerOffset:Array<Int> = [0, 0]; // X, Y offset for key viewer
 	public var keyViewerColor:String = 'Gray'; // Color name for key viewer
 	public var ratingOffset:Int = 0;

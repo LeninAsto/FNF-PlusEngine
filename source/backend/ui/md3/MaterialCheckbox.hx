@@ -17,6 +17,7 @@ class MaterialCheckbox extends FlxSpriteGroup
 {
 	public var checked(default, set):Bool = false;
 	public var enabled:Bool = true;
+	public var allowMouseInput:Bool = true;
 	public var label:String = "";
 	public var onChange:Bool->Void = null;
 
@@ -132,6 +133,9 @@ class MaterialCheckbox extends FlxSpriteGroup
 
 		redrawCheckbox();
 		stateLayer.color = MD3Theme.stateLayerColor(MD3Theme.primary);
+		stateLayer.visible = allowMouseInput;
+		if (!allowMouseInput)
+			stateLayer.alpha = 0;
 
 		if (!enabled)
 		{
@@ -143,11 +147,12 @@ class MaterialCheckbox extends FlxSpriteGroup
 			else
 			{
 				MD3ShapeTools.strokeRoundRect(containerSprite, containerSize(), containerSize(), checkboxRadius(), 2, MD3Theme.disabledContentColor());
-				containerSprite.color = MD3Theme.surface;
+				containerSprite.color = FlxColor.WHITE;
 			}
 			containerSprite.alpha = 0.38;
 			checkIcon.color = MD3Theme.disabledContentColor();
 			checkIcon.alpha = checked ? 1 : 0;
+			checkIcon.visible = checked;
 			if (labelText != null)
 				labelText.color = MD3Theme.disabledContentColor();
 		}
@@ -164,11 +169,12 @@ class MaterialCheckbox extends FlxSpriteGroup
 			else
 			{
 				MD3ShapeTools.strokeRoundRect(containerSprite, containerSize(), containerSize(), checkboxRadius(), 2, MD3Theme.outline);
-				containerSprite.color = FlxColor.TRANSPARENT;
+				containerSprite.color = FlxColor.WHITE;
 				containerSprite.alpha = 1;
 				checkIcon.color = MD3Theme.onPrimary;
 				checkIcon.alpha = 0;
 			}
+			checkIcon.visible = checked;
 
 			if (labelText != null)
 				labelText.color = MD3Theme.onSurfaceVariant;
@@ -179,7 +185,7 @@ class MaterialCheckbox extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 
-		if (!enabled)
+		if (!enabled || !allowMouseInput)
 			return;
 
 		#if FLX_MOUSE
@@ -250,10 +256,23 @@ class MaterialCheckbox extends FlxSpriteGroup
 	function set_checked(value:Bool):Bool
 	{
 		var oldValue = checked;
+		if (oldValue == value)
+			return checked;
+
 		checked = value;
 
 		if (checkIcon == null)
 		{
+			return checked;
+		}
+
+		if (!allowMouseInput)
+		{
+			if (checkTween != null)
+				checkTween.cancel();
+			updateAppearance();
+			if (oldValue != checked && onChange != null)
+				onChange(checked);
 			return checked;
 		}
 

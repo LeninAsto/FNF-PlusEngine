@@ -45,8 +45,7 @@ import objects.VideoSprite;
 import objects.JudCounter;
 import objects.Note.EventNote;
 import objects.*;
-import states.stages.*;
-import states.stages.objects.*;
+import states.stages.StageWeek1;
 #if windows
 import slushithings.windows.WindowsAPI;
 #end
@@ -706,7 +705,7 @@ class PlayState extends MusicBeatState
 
 		var loadedScriptedStage:Bool = false;
 		#if HSCRIPT_ALLOWED
-		loadedScriptedStage = psychlua.ScriptRegistry.loadStage(curStage) != null;
+		loadedScriptedStage = scripting.ScriptedStages.load(curStage) != null;
 		#end
 
 		if (!loadedScriptedStage)
@@ -715,28 +714,8 @@ class PlayState extends MusicBeatState
 			{
 			case 'stage':
 				new StageWeek1(); // Week 1
-			case 'spooky':
-				new Spooky(); // Week 2
-			case 'philly':
-				new Philly(); // Week 3
-			case 'limo':
-				new Limo(); // Week 4
-			case 'mall':
-				new Mall(); // Week 5 - Cocoa, Eggnog
-			case 'mallEvil':
-				new MallEvil(); // Week 5 - Winter Horrorland
-			case 'school':
-				new School(); // Week 6 - Senpai, Roses
-			case 'schoolEvil':
-				new SchoolEvil(); // Week 6 - Thorns
-			case 'tank':
-				new Tank(); // Week 7 - Ugh, Guns, Stress
-			case 'phillyStreets':
-				new PhillyStreets(); // Weekend 1 - Darnell, Lit Up, 2Hot
-			case 'phillyBlazin':
-				new PhillyBlazin(); // Weekend 1 - Blazin
-			case 'notitg':
-				new NotITG(); // StepMania NotITG stage - Stage negro vacío
+			default:
+				new StageWeek1();
 			}
 		}
 		if (isPixelStage)
@@ -4909,10 +4888,14 @@ class PlayState extends MusicBeatState
 	var comboPopupPool:Array<FlxSprite> = [];
 	var numberPopupPool:Array<FlxSprite> = [];
 	var breakPopupPool:Array<FlxSprite> = [];
+	var timingPopupPool:Array<FlxSprite> = [];
+	var timingTextPool:Array<FlxText> = [];
+	var activeTimingText:FlxText = null;
 
 	static inline final COMBO_POPUP_SCALE:Float = 0.6;
 	static inline final COMBO_NUMBER_SCALE:Float = 0.45;
-	static inline final BREAK_POPUP_SCALE:Float = 0.55;
+	static inline final BREAK_POPUP_SCALE:Float = 0.7;
+	static inline final TIMING_TAG_EDGE_RATIO:Float = 0.55;
 
 	// Stores HUD Objects in a Group
 	public var uiGroup:FlxSpriteGroup;
@@ -4933,6 +4916,8 @@ class PlayState extends MusicBeatState
 		}
 		var missPath = Paths.getUIPath('miss', true);
 		Paths.image(missPath);
+		Paths.image(resolvePopupSpriteKey('early'));
+		Paths.image(resolvePopupSpriteKey('late'));
 	}
 
 	inline function shouldUseGameplayRuntimeBridge():Bool
@@ -5027,8 +5012,11 @@ class PlayState extends MusicBeatState
 				comboGroup.members.shift();
 				continue;
 			}
-			comboGroup.remove(spr, true);
-			spr.destroy();
+
+			if (Std.isOfType(spr, FlxText))
+				releasePopupText(cast spr);
+			else
+				releasePopupSprite(spr, ratingPopupPool);
 		}
 	}
 
@@ -5074,7 +5062,7 @@ class PlayState extends MusicBeatState
 			return true;
 		if (ClientPrefs.data.hideHud)
 			return false;
-		return showRating || showCombo || showComboNum;
+		return showRating || showCombo || showComboNum || ClientPrefs.data.showEarlyLateSprites || ClientPrefs.data.showHitMs;
 	}
 
 	inline function shouldSpawnHoldSplashFor(note:Note):Bool
@@ -5097,15 +5085,84 @@ class PlayState extends MusicBeatState
 		gameplayRuntimeBridge = null;
 	}
 
-	private inline function releasePopupSprite(sprite:FlxSprite):Void
+	private function acquirePopupSprite(pool:Array<FlxSprite>):FlxSprite
+	{
+		var sprite:FlxSprite = pool.length > 0 ? pool.pop() : new FlxSprite();
+		FlxTween.cancelTweensOf(sprite);
+		FlxTween.cancelTweensOf(sprite.scale);
+		sprite.revive();
+		sprite.exists = true;
+		sprite.active = true;
+		sprite.visible = true;
+		sprite.alpha = 1;
+		sprite.angle = 0;
+		sprite.color = FlxColor.WHITE;
+		sprite.blend = null;
+		sprite.scale.set(1, 1);
+		sprite.velocity.set(0, 0);
+		sprite.acceleration.set(0, 0);
+		sprite.offset.set(0, 0);
+		sprite.scrollFactor.set(1, 1);
+		return sprite;
+	}
+
+	private function releasePopupSprite(sprite:FlxSprite, pool:Array<FlxSprite>):Void
 	{
 		if (sprite == null)
 			return;
+		FlxTween.cancelTweensOf(sprite);
+		FlxTween.cancelTweensOf(sprite.scale);
+		if (comboGroup != null)
+			comboGroup.remove(sprite, true);
 		sprite.kill();
 		sprite.visible = false;
 		sprite.active = false;
 		sprite.exists = false;
 		sprite.alpha = 0;
+		sprite.velocity.set(0, 0);
+		sprite.acceleration.set(0, 0);
+		if (pool != null && !pool.contains(sprite))
+			pool.push(sprite);
+	}
+
+	private function acquirePopupText():FlxText
+	{
+		var text:FlxText = timingTextPool.length > 0 ? timingTextPool.pop() : new FlxText(0, 0, 96, "", 18);
+		FlxTween.cancelTweensOf(text);
+		FlxTween.cancelTweensOf(text.scale);
+		text.revive();
+		text.exists = true;
+		text.active = true;
+		text.visible = true;
+		text.alpha = 1;
+		text.angle = 0;
+		text.scale.set(1, 1);
+		text.velocity.set(0, 0);
+		text.acceleration.set(0, 0);
+		text.scrollFactor.set(1, 1);
+		return text;
+	}
+
+	private function releasePopupText(text:FlxText):Void
+	{
+		if (text == null)
+			return;
+		if (activeTimingText == text)
+			activeTimingText = null;
+		FlxTween.cancelTweensOf(text);
+		FlxTween.cancelTweensOf(text.scale);
+		if (comboGroup != null)
+			comboGroup.remove(text, true);
+		text.kill();
+		text.visible = false;
+		text.active = false;
+		text.exists = false;
+		text.alpha = 0;
+		text.text = "";
+		text.velocity.set(0, 0);
+		text.acceleration.set(0, 0);
+		if (!timingTextPool.contains(text))
+			timingTextPool.push(text);
 	}
 
 	private function calculateWife3Score(timingError:Float):Float
@@ -5158,21 +5215,116 @@ class PlayState extends MusicBeatState
 		return candidates.length > 0 ? candidates[candidates.length - 1] : clean;
 	}
 
+	private function getTimingTagWindowLimit(judgement:Rating):Float
+	{
+		if (judgement == null)
+			return Math.max(0.5, ClientPrefs.data.sickWindow * TIMING_TAG_EDGE_RATIO);
+
+		var upperWindow:Float = judgement.hitWindow != null && judgement.hitWindow > 0 ? judgement.hitWindow : 0;
+		var lowerWindow:Float = 0;
+		var ratingIndex:Int = Rating.getIndex(ratingsData, judgement.name);
+		if (ratingIndex > 0 && ratingsData[ratingIndex - 1] != null && ratingsData[ratingIndex - 1].hitWindow != null)
+			lowerWindow = Math.max(0, ratingsData[ratingIndex - 1].hitWindow);
+
+		if (upperWindow <= 0)
+			upperWindow = Math.max(lowerWindow + 1, Conductor.safeZoneOffset / Math.max(0.001, playbackRate));
+
+		return lowerWindow + Math.max(1, upperWindow - lowerWindow) * TIMING_TAG_EDGE_RATIO;
+	}
+
+	private inline function shouldShowTimingTag(judgement:Rating, signedHitDiff:Float):Bool
+	{
+		return Math.abs(signedHitDiff) >= getTimingTagWindowLimit(judgement);
+	}
+
+	private function spawnTimingPopup(rating:FlxSprite, judgement:Rating, signedHitDiff:Float, showTimingSprite:Bool, showTimingMs:Bool, useNfPopupStyle:Bool,
+			antialias:Bool):Void
+	{
+		if (rating == null || comboGroup == null || (!showTimingSprite && !showTimingMs))
+			return;
+
+		var isEarly:Bool = signedHitDiff > 0;
+		var fadeDuration:Float = (useNfPopupStyle ? 0.12 : 0.2) / playbackRate;
+		var fadeDelay:Float = Conductor.crochet * (useNfPopupStyle ? 0.0016 : 0.001) / playbackRate;
+		var timingColor:FlxColor = isEarly ? 0xFF66D9FF : 0xFFFFD166;
+
+		if (showTimingSprite && shouldShowTimingTag(judgement, signedHitDiff))
+		{
+			var timingSpr:FlxSprite = acquirePopupSprite(timingPopupPool);
+			timingSpr.loadGraphic(Paths.image(resolvePopupSpriteKey(isEarly ? 'early' : 'late')));
+			timingSpr.antialiasing = antialias && !isPixelStage;
+			timingSpr.setGraphicSize(Std.int(Math.max(1, rating.width * 0.48)));
+			timingSpr.updateHitbox();
+			timingSpr.x = isEarly ? rating.x - timingSpr.width * 0.18 : rating.x + rating.width - timingSpr.width * 0.82;
+			timingSpr.y = rating.y - timingSpr.height * 0.82;
+			timingSpr.angle = isEarly ? -18 : 18;
+			timingSpr.velocity.set(rating.velocity.x, rating.velocity.y);
+			timingSpr.acceleration.set(rating.acceleration.x, rating.acceleration.y);
+			if (useNfPopupStyle)
+			{
+				timingSpr.scale.scale(1.1);
+				FlxTween.tween(timingSpr.scale, {x: timingSpr.scale.x / 1.1, y: timingSpr.scale.y / 1.1}, 0.12 / playbackRate, {ease: FlxEase.quadOut});
+			}
+			comboGroup.add(timingSpr);
+			FlxTween.tween(timingSpr, {alpha: 0}, fadeDuration, {
+				startDelay: fadeDelay,
+				onComplete: function(_)
+				{
+					releasePopupSprite(timingSpr, timingPopupPool);
+				}
+			});
+		}
+
+		if (showTimingMs)
+		{
+			if (activeTimingText != null)
+				releasePopupText(activeTimingText);
+
+			var timingText:FlxText = acquirePopupText();
+			activeTimingText = timingText;
+			timingText.text = Std.string(Std.int(Math.round(Math.abs(signedHitDiff)))) + 'ms';
+			timingText.setFormat(Paths.font("vcr.ttf"), 18, timingColor, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			timingText.borderSize = 1.25;
+			timingText.fieldWidth = 96;
+			timingText.updateHitbox();
+			timingText.x = getGameplaySafeX() + getGameplaySafeWidth() * 0.35 - timingText.fieldWidth * 0.5 + ClientPrefs.data.hitMsOffset[0];
+			timingText.y = rating.y + rating.height + 8 - ClientPrefs.data.hitMsOffset[1];
+			timingText.velocity.set(rating.velocity.x, rating.velocity.y - 12 * playbackRate);
+			timingText.acceleration.set(rating.acceleration.x, rating.acceleration.y);
+			if (useNfPopupStyle)
+			{
+				timingText.scale.set(1.12, 1.12);
+				FlxTween.tween(timingText.scale, {x: 1, y: 1}, 0.12 / playbackRate, {ease: FlxEase.quadOut});
+			}
+			comboGroup.add(timingText);
+			FlxTween.tween(timingText, {alpha: 0}, fadeDuration, {
+				startDelay: fadeDelay,
+				onComplete: function(_)
+				{
+					if (activeTimingText == timingText)
+						activeTimingText = null;
+					releasePopupText(timingText);
+				}
+			});
+		}
+	}
+
 	private function popUpScore(note:Note = null):Void
 	{
-		var noteDiff:Float = Math.abs(note.strumTime - Conductor.songPosition + ClientPrefs.data.ratingOffset);
+		var signedHitDiff:Float = (note.strumTime - Conductor.songPosition + ClientPrefs.data.ratingOffset) / playbackRate;
+		var noteDiff:Float = Math.abs(signedHitDiff);
 		vocals.volume = 1;
 
 		var score:Int = if (ClientPrefs.data.systemScoreMultiplier == 'Codename') 300 else 350;
 
 		// tryna do MS based judgment due to popular demand
-		var daRating:Rating = Conductor.judgeNote(ratingsData, noteDiff / playbackRate);
+		var daRating:Rating = Conductor.judgeNote(ratingsData, noteDiff);
 		lastJudName = daRating.name;
 
 		switch (ClientPrefs.data.accuracySystem)
 		{
 			case 'Wife3':
-				var noteDiff_ms:Float = Math.abs(noteDiff / playbackRate);
+				var noteDiff_ms:Float = noteDiff;
 				var wifeScore:Float = calculateWife3Score(noteDiff_ms);
 				wife3Scores.push(wifeScore);
 				wife3ScoreTotal += wifeScore;
@@ -5364,16 +5516,18 @@ class PlayState extends MusicBeatState
 			var showRatingSprite:Bool = !showStepmaniaJudgementOnly && !ClientPrefs.data.hideHud && showRating;
 			var showComboSprite:Bool = !ClientPrefs.data.hideHud && showCombo;
 			var showComboDigits:Bool = !ClientPrefs.data.hideHud && showComboNum;
+			var showTimingSprite:Bool = !showStepmaniaJudgementOnly && !ClientPrefs.data.hideHud && ClientPrefs.data.showEarlyLateSprites;
+			var showTimingMs:Bool = !showStepmaniaJudgementOnly && !ClientPrefs.data.hideHud && ClientPrefs.data.showHitMs;
 			if (showStepmaniaJudgementOnly)
 				showStepManiaJudgement(daRating.name);
-			if (!showStepmaniaJudgementOnly && !showRatingSprite && !showComboSprite && !showComboDigits)
+			if (!showStepmaniaJudgementOnly && !showRatingSprite && !showComboSprite && !showComboDigits && !showTimingSprite && !showTimingMs)
 				return;
 
 			var useNfPopupStyle:Bool = ClientPrefs.data.nfRatingStyle;
 			if (useNfPopupStyle)
 				clearComboGroupSprites();
 
-			var rating:FlxSprite = new FlxSprite();
+			var rating:FlxSprite = acquirePopupSprite(ratingPopupPool);
 			rating.loadGraphic(Paths.image(resolvePopupSpriteKey(daRating.image)));
 			rating.screenCenter();
 			rating.x = placement - 40;
@@ -5413,8 +5567,11 @@ class PlayState extends MusicBeatState
 				rating.scale.scale(1.16);
 				rating.updateHitbox();
 			}
+			comboGroup.add(rating);
+			spawnTimingPopup(rating, daRating, signedHitDiff, showTimingSprite, showTimingMs, useNfPopupStyle, antialias);
 
-			var comboSpr:FlxSprite = new FlxSprite().loadGraphic(Paths.image(resolvePopupSpriteKey('combo')));
+			var comboSpr:FlxSprite = acquirePopupSprite(comboPopupPool);
+			comboSpr.loadGraphic(Paths.image(resolvePopupSpriteKey('combo')));
 			comboSpr.screenCenter();
 			comboSpr.x = placement;
 			if (!useNfPopupStyle)
@@ -5440,8 +5597,6 @@ class PlayState extends MusicBeatState
 			comboSpr.y += 60;
 			if (!useNfPopupStyle)
 				comboSpr.velocity.x += FlxG.random.int(1, 10) * playbackRate;
-			comboGroup.add(rating);
-
 			var daLoop:Int = 0;
 			var xThing:Float = 0;
 			if (showComboSprite)
@@ -5467,7 +5622,8 @@ class PlayState extends MusicBeatState
 					break;
 
 				var digit:Int = Std.parseInt(comboStr.charAt(i));
-				var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(resolvePopupSpriteKey('num' + digit)));
+				var numScore:FlxSprite = acquirePopupSprite(numberPopupPool);
+				numScore.loadGraphic(Paths.image(resolvePopupSpriteKey('num' + digit)));
 				numScore.screenCenter();
 				var digitBaseY:Float = numScore.y + 80 - ClientPrefs.data.comboOffset[3];
 				numScore.x = startX + (43 * i) - 90;
@@ -5507,9 +5663,7 @@ class PlayState extends MusicBeatState
 							FlxTween.tween(numScore, {alpha: 0}, 0.12 / playbackRate, {
 								onComplete: function(tween:FlxTween)
 								{
-									if (comboGroup != null)
-										comboGroup.remove(numScore, true);
-									numScore.destroy();
+									releasePopupSprite(numScore, numberPopupPool);
 								}
 							});
 						}
@@ -5520,8 +5674,7 @@ class PlayState extends MusicBeatState
 					FlxTween.tween(numScore, {alpha: 0}, 0.2 / playbackRate, {
 						onComplete: function(tween:FlxTween)
 						{
-							comboGroup.remove(numScore, true);
-							numScore.destroy();
+							releasePopupSprite(numScore, numberPopupPool);
 						},
 						startDelay: Conductor.crochet * 0.002 / playbackRate
 					});
@@ -5551,9 +5704,7 @@ class PlayState extends MusicBeatState
 						FlxTween.tween(rating, {alpha: 0}, 0.12 / playbackRate, {
 							onComplete: function(tween:FlxTween)
 							{
-								if (comboGroup != null)
-									comboGroup.remove(rating, true);
-								rating.destroy();
+								releasePopupSprite(rating, ratingPopupPool);
 							}
 						});
 					}
@@ -5563,9 +5714,7 @@ class PlayState extends MusicBeatState
 						FlxTween.tween(comboSpr, {alpha: 0}, 0.12 / playbackRate, {
 							onComplete: function(tween:FlxTween)
 							{
-								if (comboGroup != null)
-									comboGroup.remove(comboSpr, true);
-								comboSpr.destroy();
+								releasePopupSprite(comboSpr, comboPopupPool);
 							}
 						});
 					}
@@ -5580,10 +5729,8 @@ class PlayState extends MusicBeatState
 				FlxTween.tween(comboSpr, {alpha: 0}, 0.2 / playbackRate, {
 					onComplete: function(tween:FlxTween)
 					{
-						comboGroup.remove(comboSpr, true);
-						comboGroup.remove(rating, true);
-						comboSpr.destroy();
-						rating.destroy();
+						releasePopupSprite(comboSpr, comboPopupPool);
+						releasePopupSprite(rating, ratingPopupPool);
 					},
 					startDelay: Conductor.crochet * 0.002 / playbackRate
 				});
@@ -5610,7 +5757,7 @@ class PlayState extends MusicBeatState
 		}
 
 		var placement:Float = getGameplaySafeX() + getGameplaySafeWidth() * 0.35;
-		var breakSprite:FlxSprite = new FlxSprite();
+		var breakSprite:FlxSprite = acquirePopupSprite(breakPopupPool);
 		// Determinar qué imagen usar
 		breakSprite.loadGraphic(Paths.image(resolvePopupSpriteKey('miss')));
 
@@ -5623,40 +5770,26 @@ class PlayState extends MusicBeatState
 		breakSprite.visible = !ClientPrefs.data.hideHud;
 		breakSprite.x += ClientPrefs.data.comboOffset[0];
 		breakSprite.y -= ClientPrefs.data.comboOffset[1];
-		breakSprite.antialiasing = antialias;
 
 		if (!PlayState.isPixelStage)
 		{
 			breakSprite.setGraphicSize(Std.int(breakSprite.width * BREAK_POPUP_SCALE));
+			breakSprite.antialiasing = antialias;
 		}
 		else
 		{
-			breakSprite.setGraphicSize(Std.int(breakSprite.width * daPixelZoom * 0.72));
+			breakSprite.setGraphicSize(Std.int(breakSprite.width * daPixelZoom * 0.85));
+			breakSprite.antialiasing = false;
 		}
 
 		breakSprite.updateHitbox();
-
-		if (!PlayState.isPixelStage)
-		{
-			breakSprite.scale.set(0.3, 0.3);
-			FlxTween.tween(breakSprite.scale, {x: BREAK_POPUP_SCALE, y: BREAK_POPUP_SCALE}, 0.08, {
-				ease: FlxEase.circOut
-			});
-		}
-		else
-		{
-			breakSprite.scale.set(1, 1);
-			FlxTween.tween(breakSprite.scale, {x: 3.8, y: 3.8}, 0.08, {
-				ease: FlxEase.circOut
-			});
-		}
 
 		comboGroup.add(breakSprite);
 
 		FlxTween.tween(breakSprite, {alpha: 0}, 0.2 / playbackRate, {
 			onComplete: function(tween:FlxTween)
 			{
-				breakSprite.destroy();
+				releasePopupSprite(breakSprite, breakPopupPool);
 			},
 			startDelay: Conductor.crochet * 0.002 / playbackRate
 		});

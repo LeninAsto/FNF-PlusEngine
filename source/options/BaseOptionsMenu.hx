@@ -5,6 +5,7 @@ import flixel.input.gamepad.FlxGamepadInputID;
 import flixel.input.keyboard.FlxKey;
 import flixel.text.FlxText.FlxTextBorderStyle;
 import flixel.util.FlxSpriteUtil;
+import backend.ui.md3.MaterialCheckbox;
 import options.Option;
 import backend.InputFormatter;
 #if mobile
@@ -27,6 +28,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	private var optionsArray:Array<Option>;
 
 	private var optionRows:FlxTypedGroup<OptionRowCard>;
+	private var rowStackCache:Array<Float> = [];
+	private var rowsHeightCache:Float = 0;
+	private var rowsLayoutDirty:Bool = true;
 
 	private var lastThemeSignature:String = "";
 	private var titleText:FlxText;
@@ -171,7 +175,6 @@ class BaseOptionsMenu extends MusicBeatSubstate
 			return;
 
 		layoutRows(elapsed);
-		refreshOptionAlphas();
 
 		if (curOption != null && !isOptionSelectable(curOption))
 			changeSelection(0);
@@ -614,7 +617,11 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 		var row:OptionRowCard = cast option.child;
 		if (row != null)
+		{
 			row.refreshFromOption();
+			if (row.consumeHeightChanged())
+				markRowsLayoutDirty();
+		}
 	}
 
 	function changeSelection(change:Int = 0)
@@ -696,6 +703,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		if (optionRows == null)
 			return;
 
+		ensureRowsLayoutCache();
 		var moveLerp:Float = elapsed <= 0 ? 0 : Math.exp(-elapsed * 12);
 		for (row in optionRows.members)
 		{
@@ -705,48 +713,93 @@ class BaseOptionsMenu extends MusicBeatSubstate
 			var selected:Bool = offset == 0;
 			var targetX:Float = safeOffsetX() + ROW_X + (selected ? 0 : 18);
 			var targetY:Float = rowTargetY(row.index);
-			var targetScale:Float = selected ? 1.02 : 0.96;
+			var targetScale:Float = 1;
+			var newX:Float = targetX;
+			var newY:Float = targetY;
+			var newScale:Float = targetScale;
 
 			if (instant)
 			{
-				row.x = targetX;
-				row.y = targetY;
-				row.scale.set(targetScale, targetScale);
+				newX = targetX;
+				newY = targetY;
+				newScale = targetScale;
 			}
 			else
 			{
-				row.x = FlxMath.lerp(targetX, row.x, moveLerp);
-				row.y = FlxMath.lerp(targetY, row.y, moveLerp);
-				row.scale.set(FlxMath.lerp(targetScale, row.scale.x, moveLerp), FlxMath.lerp(targetScale, row.scale.y, moveLerp));
+				newX = FlxMath.lerp(targetX, row.x, moveLerp);
+				newY = FlxMath.lerp(targetY, row.y, moveLerp);
+				newScale = FlxMath.lerp(targetScale, row.scale.x, moveLerp);
+			}
+
+			var onScreen:Bool = newY + row.rowHeight >= -90 && newY <= FlxG.height + 90;
+			row.visible = onScreen;
+			row.active = onScreen;
+			if (!onScreen && !instant)
+			{
+				row.x = newX;
+				row.y = newY;
+				row.scale.set(newScale, newScale);
+				continue;
+			}
+
+			if (instant || Math.abs(row.x - newX) > 0.05 || Math.abs(row.y - newY) > 0.05 || Math.abs(row.scale.x - newScale) > 0.001)
+			{
+				row.x = newX;
+				row.y = newY;
+				row.scale.set(newScale, newScale);
+				row.syncLayout();
 			}
 		}
 	}
 
 	function rowTargetY(index:Int):Float
 	{
-		var target:Float = ROW_SELECTED_Y;
-		if (optionRows == null || index == curSelected)
-			return target;
+		if (optionRows == null)
+			return ROW_SELECTED_Y;
 
-		if (index > curSelected)
+		var desiredScroll:Float = rowStackY(curSelected);
+		var maxScroll:Float = Math.max(0, rowsTotalHeight() + ROW_SELECTED_Y - (FlxG.height - 40));
+		var scroll:Float = FlxMath.bound(desiredScroll, 0, maxScroll);
+		return ROW_SELECTED_Y + rowStackY(index) - scroll;
+	}
+
+	function rowStackY(index:Int):Float
+	{
+		ensureRowsLayoutCache();
+		return (index >= 0 && index < rowStackCache.length) ? rowStackCache[index] : 0;
+	}
+
+	function rowsTotalHeight():Float
+	{
+		ensureRowsLayoutCache();
+		return rowsHeightCache;
+	}
+
+	function markRowsLayoutDirty():Void
+	{
+		rowsLayoutDirty = true;
+	}
+
+	function ensureRowsLayoutCache():Void
+	{
+		if (!rowsLayoutDirty)
+			return;
+		rowsLayoutDirty = false;
+		rowStackCache.resize(0);
+		rowsHeightCache = 0;
+		if (optionRows == null || optionRows.members.length == 0)
+			return;
+
+		var total:Float = 0;
+		for (i in 0...optionRows.members.length)
 		{
-			for (i in curSelected...index)
-			{
-				var row = getRowAt(i);
-				target += (row != null ? row.rowHeight : ROW_H) + ROW_GAP;
-			}
+			rowStackCache.push(total);
+			var row = getRowAt(i);
+			total += (row != null ? row.rowHeight : ROW_H);
+			if (i < optionRows.members.length - 1)
+				total += ROW_GAP;
 		}
-		else
-		{
-			var i:Int = curSelected - 1;
-			while (i >= index)
-			{
-				var row = getRowAt(i);
-				target -= (row != null ? row.rowHeight : ROW_H) + ROW_GAP;
-				i--;
-			}
-		}
-		return target;
+		rowsHeightCache = total;
 	}
 
 	function getRowAt(index:Int):OptionRowCard
@@ -815,6 +868,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 			optionsArray[i].child = row;
 			updateTextFrom(optionsArray[i]);
 		}
+		markRowsLayoutDirty();
 
 		if (optionsArray.length > 0)
 		{
@@ -835,15 +889,19 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 private class OptionRowCard extends FlxSpriteGroup
 {
-	static inline var MAX_DESCRIPTION_CHARS:Int = 132;
-	static inline var MAX_ROW_HEIGHT:Float = 92;
-	static inline var DOT_SIZE:Float = 14;
+	static inline var MAX_DESCRIPTION_CHARS:Int = 220;
+	static inline var MAX_ROW_HEIGHT:Float = 128;
+	static inline var DOT_W:Float = 14;
+	static inline var DOT_H:Float = 34;
 	static inline var DOT_X:Float = 18;
 	static inline var CONTENT_X:Float = 46;
+	static inline var TITLE_Y:Float = 11;
+	static inline var DESCRIPTION_Y:Float = 39;
+	static inline var TEXT_CONTROL_GAP:Float = 28;
 	static inline var CONTROL_MARGIN:Float = 34;
-	static inline var CONTROL_SIZE:Float = 30;
-	static inline var CHECK_DOT_SIZE:Float = 14;
-	static inline var VALUE_W:Float = 212;
+	static inline var CHECKBOX_SIZE:Float = 20;
+	static inline var VALUE_CONTROL_W:Float = 292;
+	static inline var VALUE_CONTROL_H:Float = 44;
 
 	public var index(default, null):Int;
 	public var rowWidth(default, null):Float;
@@ -855,14 +913,14 @@ private class OptionRowCard extends FlxSpriteGroup
 	var bg:FlxSprite;
 	var title:FlxText;
 	var description:FlxText;
-	var valueText:FlxText;
-	var leftArrow:FlxText;
-	var rightArrow:FlxText;
-	var checkBox:FlxSprite;
-	var checkDot:FlxSprite;
+	var valueControl:OptionValueControl;
+	var checkBox:MaterialCheckbox;
 	var lastSelected:Null<Bool> = null;
 	var lastTheme:String = "";
 	var valueLabel:String = "";
+	var lastName:String = null;
+	var lastDescription:String = null;
+	var heightChanged:Bool = false;
 
 	public function new(index:Int, option:Option, w:Float, h:Float)
 	{
@@ -876,36 +934,22 @@ private class OptionRowCard extends FlxSpriteGroup
 		bg = new FlxSprite().makeGraphic(Std.int(rowWidth), Std.int(rowHeight), FlxColor.TRANSPARENT, true);
 		add(bg);
 
-		title = new FlxText(CONTENT_X, 11, 430, option.name, 21);
+		title = new FlxText(0, 0, textColumnWidth(), option.name, 21);
 		title.setFormat(Paths.font("vcr.ttf"), 21, FlxColor.WHITE, LEFT);
 		title.antialiasing = ClientPrefs.data.antialiasing;
 		add(title);
 
-		description = new FlxText(CONTENT_X, 39, 610, formatDescription(option.description), 13);
-		description.setFormat(Paths.font("vcr.ttf"), 13, FlxColor.WHITE, LEFT);
+		description = new FlxText(0, 0, textColumnWidth(), formatDescription(option.description), 15);
+		description.setFormat(Paths.font("vcr.ttf"), 15, FlxColor.WHITE, LEFT);
 		description.antialiasing = ClientPrefs.data.antialiasing;
 		add(description);
 
-		leftArrow = new FlxText(0, 20, 24, "<", 20);
-		leftArrow.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, CENTER);
-		leftArrow.antialiasing = ClientPrefs.data.antialiasing;
-		add(leftArrow);
+		valueControl = new OptionValueControl(VALUE_CONTROL_W, VALUE_CONTROL_H);
+		add(valueControl);
 
-		valueText = new FlxText(0, 16, VALUE_W, "", 18);
-		valueText.setFormat(Paths.font("vcr.ttf"), 18, FlxColor.WHITE, CENTER);
-		valueText.antialiasing = ClientPrefs.data.antialiasing;
-		add(valueText);
-
-		rightArrow = new FlxText(0, 20, 24, ">", 20);
-		rightArrow.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, CENTER);
-		rightArrow.antialiasing = ClientPrefs.data.antialiasing;
-		add(rightArrow);
-
-		checkBox = new FlxSprite().makeGraphic(Std.int(CONTROL_SIZE), Std.int(CONTROL_SIZE), FlxColor.TRANSPARENT, true);
+		checkBox = new MaterialCheckbox(0, 0, "", false);
+		checkBox.allowMouseInput = false;
 		add(checkBox);
-
-		checkDot = new FlxSprite().makeGraphic(Std.int(CHECK_DOT_SIZE), Std.int(CHECK_DOT_SIZE), FlxColor.TRANSPARENT, true);
-		add(checkDot);
 
 		resizeToContent();
 		refreshFromOption();
@@ -917,16 +961,22 @@ private class OptionRowCard extends FlxSpriteGroup
 		if (option == null)
 			return;
 
-		title.text = option.name;
-		description.text = formatDescription(option.description);
-		resizeToContent();
+		var formattedDescription:String = formatDescription(option.description);
+		if (lastName != option.name || lastDescription != formattedDescription)
+		{
+			lastName = option.name;
+			lastDescription = formattedDescription;
+			title.text = option.name;
+			description.text = formattedDescription;
+			if (resizeToContent())
+				heightChanged = true;
+		}
 
 		var isBool:Bool = option.type == BOOL;
 		checkBox.visible = isBool;
-		checkDot.visible = isBool && Std.string(option.getValue()) == 'true';
-		leftArrow.visible = option.type != BOOL && option.type != KEYBIND;
-		rightArrow.visible = leftArrow.visible;
-		valueText.visible = !isBool;
+		checkBox.checked = isBool && Std.string(option.getValue()) == 'true';
+		valueControl.visible = !isBool;
+		valueControl.showArrows = option.type != KEYBIND;
 
 		if (isBool)
 			valueLabel = Std.string(option.getValue()) == 'true' ? 'ON' : 'OFF';
@@ -934,53 +984,73 @@ private class OptionRowCard extends FlxSpriteGroup
 			valueLabel = option.text != null ? option.text : Std.string(option.getValue());
 		else
 			valueLabel = option.text != null ? option.text : Std.string(option.getValue());
-		valueText.text = valueLabel;
+		valueControl.setText(valueLabel);
 		compactValueText();
 	}
 
-	function resizeToContent():Void
+	public function consumeHeightChanged():Bool
+	{
+		var changed:Bool = heightChanged;
+		heightChanged = false;
+		return changed;
+	}
+
+	function resizeToContent():Bool
 	{
 		if (description != null)
 			description.updateHitbox();
 
-		var descBottom:Float = description != null ? description.y + description.height : 54;
+		var oldHeight:Float = rowHeight;
+		var descBottom:Float = description != null ? DESCRIPTION_Y + description.height : 54;
 		rowHeight = FlxMath.bound(descBottom + 14, minRowHeight, MAX_ROW_HEIGHT);
 
-		if (bg != null)
-			bg.makeGraphic(Std.int(rowWidth), Std.int(rowHeight), FlxColor.TRANSPARENT, true);
+		syncLayout();
 
-		var controlY:Float = Math.max(12, (rowHeight - CONTROL_SIZE) * 0.5);
-		var controlX:Float = rowWidth - CONTROL_MARGIN - CONTROL_SIZE;
+		lastTheme = "";
+		return Math.abs(rowHeight - oldHeight) > 0.1;
+	}
+
+	public function syncLayout():Void
+	{
+		if (bg != null)
+			bg.setPosition(x, y);
+		if (title != null)
+		{
+			title.x = x + CONTENT_X;
+			title.y = y + TITLE_Y;
+			title.fieldWidth = textColumnWidth();
+		}
+		if (description != null)
+		{
+			description.x = x + CONTENT_X;
+			description.y = y + DESCRIPTION_Y;
+			description.fieldWidth = textColumnWidth();
+		}
+
+		var rowCenter:Float = y + rowHeight * 0.5;
+		var controlX:Float = x + rowWidth - CONTROL_MARGIN - CHECKBOX_SIZE;
 		if (checkBox != null)
 		{
 			checkBox.x = controlX;
-			checkBox.y = controlY;
+			checkBox.y = centeredY(CHECKBOX_SIZE, rowCenter);
 		}
-		if (checkDot != null)
+
+		if (valueControl != null)
 		{
-			checkDot.x = controlX + (CONTROL_SIZE - CHECK_DOT_SIZE) * 0.5;
-			checkDot.y = controlY + (CONTROL_SIZE - CHECK_DOT_SIZE) * 0.5;
+			valueControl.x = x + rowWidth - CONTROL_MARGIN - VALUE_CONTROL_W;
+			valueControl.y = centeredY(VALUE_CONTROL_H, rowCenter);
+			valueControl.syncLayout();
 		}
+	}
 
-		var valueRight:Float = rowWidth - CONTROL_MARGIN;
-		var rightArrowX:Float = valueRight - 24;
-		var valueTextX:Float = rightArrowX - VALUE_W - 4;
-		if (rightArrow != null)
-			rightArrow.x = rightArrowX;
-		if (valueText != null)
-			valueText.x = valueTextX;
-		if (leftArrow != null)
-			leftArrow.x = valueTextX - 28;
+	inline function centeredY(h:Float, center:Float):Float
+	{
+		return Math.ffloor(center - h * 0.5);
+	}
 
-		var arrowY:Float = controlY + (CONTROL_SIZE - 24) * 0.5;
-		if (leftArrow != null)
-			leftArrow.y = arrowY;
-		if (rightArrow != null)
-			rightArrow.y = arrowY;
-		if (valueText != null)
-			valueText.y = controlY - 2;
-
-		lastTheme = "";
+	inline function textColumnWidth():Float
+	{
+		return rowWidth - CONTENT_X - CONTROL_MARGIN - VALUE_CONTROL_W - TEXT_CONTROL_GAP;
 	}
 
 	function formatDescription(value:String):String
@@ -997,20 +1067,20 @@ private class OptionRowCard extends FlxSpriteGroup
 
 	public function setValueLabel(value:String):Void
 	{
-		valueLabel = value != null ? value : '';
-		valueText.text = valueLabel;
+		var nextValue:String = value != null ? value : '';
+		if (valueLabel == nextValue)
+			return;
+		valueLabel = nextValue;
+		if (valueControl != null)
+			valueControl.setText(valueLabel);
 		compactValueText();
 	}
 
 	function compactValueText():Void
 	{
-		valueText.scale.set(1, 1);
-		valueText.updateHitbox();
-		if (valueText.width > VALUE_W)
-		{
-			var scale:Float = Math.max(0.72, VALUE_W / valueText.width);
-			valueText.scale.set(scale, scale);
-		}
+		if (valueControl != null)
+			valueControl.compactText();
+		syncLayout();
 	}
 
 	public function applyTheme(selected:Bool, force:Bool = false):Void
@@ -1024,24 +1094,17 @@ private class OptionRowCard extends FlxSpriteGroup
 		var fill:Int = selected ? OptionsMenuTheme.difficultyCardFill(OptionsMenuTheme.current().accent, true) : OptionsMenuTheme.cardFill(false);
 		var stroke:Int = selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.panelOutlineColor();
 		bg.makeGraphic(Std.int(rowWidth), Std.int(rowHeight), FlxColor.TRANSPARENT, true);
+		bg.setPosition(x, y);
 		FlxSpriteUtil.drawRoundRect(bg, 0, 0, rowWidth, rowHeight, 8, 8, fill);
 		FlxSpriteUtil.drawRoundRect(bg, 0, 0, rowWidth, rowHeight, 8, 8, FlxColor.TRANSPARENT, {thickness: selected ? 2 : 1, color: stroke});
-		FlxSpriteUtil.drawRoundRect(bg, DOT_X, (rowHeight - DOT_SIZE) * 0.5, DOT_SIZE, DOT_SIZE, DOT_SIZE * 0.5, DOT_SIZE * 0.5,
+		FlxSpriteUtil.drawRoundRect(bg, DOT_X, (rowHeight - DOT_H) * 0.5, DOT_W, DOT_H, DOT_W * 0.5, DOT_W * 0.5,
 			selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.cardAccent(false));
 
 		title.color = OptionsMenuTheme.cardTitleColor(selected);
 		description.color = OptionsMenuTheme.cardDescriptionColor(selected);
-		valueText.color = OptionsMenuTheme.cardValueColor(selected);
-		leftArrow.color = selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.footerTextColor();
-		rightArrow.color = leftArrow.color;
-
-		checkBox.makeGraphic(Std.int(CONTROL_SIZE), Std.int(CONTROL_SIZE), FlxColor.TRANSPARENT, true);
-		FlxSpriteUtil.drawRoundRect(checkBox, 0, 0, CONTROL_SIZE, CONTROL_SIZE, 6, 6, OptionsMenuTheme.interactiveFill(checkDot.visible, selected));
-		FlxSpriteUtil.drawRoundRect(checkBox, 0, 0, CONTROL_SIZE, CONTROL_SIZE, 6, 6, FlxColor.TRANSPARENT,
-			{thickness: selected || checkDot.visible ? 2 : 1, color: checkDot.visible ? OptionsMenuTheme.current().accent : OptionsMenuTheme.neutralOutlineColor()});
-		checkDot.makeGraphic(Std.int(CHECK_DOT_SIZE), Std.int(CHECK_DOT_SIZE), FlxColor.TRANSPARENT, true);
-		FlxSpriteUtil.drawRoundRect(checkDot, 0, 0, CHECK_DOT_SIZE, CHECK_DOT_SIZE, CHECK_DOT_SIZE * 0.5, CHECK_DOT_SIZE * 0.5,
-			OptionsMenuTheme.current().accent);
+		if (valueControl != null)
+			valueControl.applyTheme(selected);
+		syncLayout();
 	}
 
 	function get_text():String
@@ -1051,5 +1114,162 @@ private class OptionRowCard extends FlxSpriteGroup
 	{
 		setValueLabel(value);
 		return valueLabel;
+	}
+}
+
+private class OptionValueControl extends FlxSpriteGroup
+{
+	static inline var BUTTON_W:Float = 44;
+	static inline var VALUE_PAD:Float = 6;
+
+	public var controlWidth(default, null):Float;
+	public var controlHeight(default, null):Float;
+	public var showArrows(default, set):Bool = true;
+
+	var bg:FlxSprite;
+	var leftState:FlxSprite;
+	var rightState:FlxSprite;
+	var leftDivider:FlxSprite;
+	var rightDivider:FlxSprite;
+	var leftArrow:FlxText;
+	var rightArrow:FlxText;
+	var valueText:FlxText;
+	var rawText:String = "";
+
+	public function new(w:Float, h:Float)
+	{
+		super();
+		controlWidth = w;
+		controlHeight = h;
+
+		bg = new FlxSprite();
+		add(bg);
+
+		leftState = new FlxSprite();
+		add(leftState);
+
+		rightState = new FlxSprite();
+		add(rightState);
+
+		leftDivider = new FlxSprite();
+		add(leftDivider);
+
+		rightDivider = new FlxSprite();
+		add(rightDivider);
+
+		leftArrow = new FlxText(0, 0, BUTTON_W, "<", 22);
+		leftArrow.setFormat(Paths.font("vcr.ttf"), 22, FlxColor.WHITE, CENTER);
+		leftArrow.antialiasing = ClientPrefs.data.antialiasing;
+		add(leftArrow);
+
+		rightArrow = new FlxText(0, 0, BUTTON_W, ">", 22);
+		rightArrow.setFormat(Paths.font("vcr.ttf"), 22, FlxColor.WHITE, CENTER);
+		rightArrow.antialiasing = ClientPrefs.data.antialiasing;
+		add(rightArrow);
+
+		valueText = new FlxText(BUTTON_W + VALUE_PAD, 0, controlWidth - BUTTON_W * 2 - VALUE_PAD * 2, "", 18);
+		valueText.setFormat(Paths.font("vcr.ttf"), 18, FlxColor.WHITE, CENTER);
+		valueText.antialiasing = ClientPrefs.data.antialiasing;
+		add(valueText);
+
+		layoutChildren();
+		applyTheme(false);
+	}
+
+	public function setText(value:String):Void
+	{
+		var nextText:String = value != null ? value : "";
+		if (rawText == nextText)
+			return;
+		rawText = nextText;
+		valueText.text = rawText;
+		compactText();
+	}
+
+	public function compactText():Void
+	{
+		valueText.scale.set(1, 1);
+		valueText.updateHitbox();
+		var maxTextW:Float = controlWidth - BUTTON_W * 2 - VALUE_PAD * 2;
+		if (valueText.width > maxTextW)
+		{
+			var scale:Float = Math.max(0.70, maxTextW / valueText.width);
+			valueText.scale.set(scale, scale);
+		}
+		layoutChildren();
+	}
+
+	public function syncLayout():Void
+	{
+		layoutChildren();
+	}
+
+	function layoutChildren():Void
+	{
+		bg.setPosition(x, y);
+
+		leftState.setPosition(x, y);
+		rightState.setPosition(x + controlWidth - BUTTON_W, y);
+
+		leftDivider.setPosition(x + BUTTON_W, y + 8);
+		rightDivider.setPosition(x + controlWidth - BUTTON_W - 1, y + 8);
+
+		leftArrow.x = x;
+		rightArrow.x = x + controlWidth - BUTTON_W;
+		valueText.x = x + BUTTON_W + VALUE_PAD;
+		valueText.fieldWidth = controlWidth - BUTTON_W * 2 - VALUE_PAD * 2;
+
+		centerText(leftArrow);
+		centerText(rightArrow);
+		centerText(valueText);
+	}
+
+	function centerText(text:FlxText):Void
+	{
+		if (text == null)
+			return;
+		text.updateHitbox();
+		text.y = y + Math.ffloor((controlHeight - text.height * text.scale.y) * 0.5 - 1);
+	}
+
+	public function applyTheme(selected:Bool):Void
+	{
+		var fill:Int = OptionsMenuTheme.interactiveFill(false, selected);
+		var stroke:Int = selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.neutralOutlineColor();
+		bg.makeGraphic(Std.int(controlWidth), Std.int(controlHeight), FlxColor.TRANSPARENT, true);
+		bg.setPosition(x, y);
+		FlxSpriteUtil.drawRoundRect(bg, 0, 0, controlWidth, controlHeight, 8, 8, fill);
+		FlxSpriteUtil.drawRoundRect(bg, 0, 0, controlWidth, controlHeight, 8, 8, FlxColor.TRANSPARENT, {thickness: selected ? 1.6 : 1, color: stroke});
+
+		leftState.makeGraphic(Std.int(BUTTON_W), Std.int(controlHeight), FlxColor.TRANSPARENT, true);
+		rightState.makeGraphic(Std.int(BUTTON_W), Std.int(controlHeight), FlxColor.TRANSPARENT, true);
+		layoutChildren();
+		FlxSpriteUtil.drawRoundRect(leftState, 0, 0, BUTTON_W, controlHeight, 8, 8, OptionsMenuTheme.interactiveFill(false, selected));
+		FlxSpriteUtil.drawRoundRect(rightState, 0, 0, BUTTON_W, controlHeight, 8, 8, OptionsMenuTheme.interactiveFill(false, selected));
+
+		leftDivider.makeGraphic(1, Std.int(controlHeight - 16), OptionsMenuTheme.neutralOutlineColor());
+		rightDivider.makeGraphic(1, Std.int(controlHeight - 16), OptionsMenuTheme.neutralOutlineColor());
+
+		leftArrow.color = selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.footerTextColor();
+		rightArrow.color = leftArrow.color;
+		valueText.color = OptionsMenuTheme.cardValueColor(selected);
+	}
+
+	function set_showArrows(value:Bool):Bool
+	{
+		showArrows = value;
+		if (leftArrow != null)
+			leftArrow.visible = value;
+		if (rightArrow != null)
+			rightArrow.visible = value;
+		if (leftDivider != null)
+			leftDivider.visible = value;
+		if (rightDivider != null)
+			rightDivider.visible = value;
+		if (leftState != null)
+			leftState.visible = value;
+		if (rightState != null)
+			rightState.visible = value;
+		return showArrows;
 	}
 }

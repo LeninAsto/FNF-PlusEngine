@@ -19,6 +19,7 @@ class NoteOffsetState extends MusicBeatState
 	var coolText:FlxText;
 	var rating:FlxSprite;
 	var comboNums:FlxSpriteGroup;
+	var hitMsText:FlxText;
 	var dumbTexts:FlxTypedGroup<FlxText>;
 	var keyViewer:KeyViewer;
 
@@ -88,6 +89,12 @@ class NoteOffsetState extends MusicBeatState
 		comboNums = new FlxSpriteGroup();
 		comboNums.cameras = [camHUD];
 		add(comboNums);
+
+		hitMsText = new FlxText(0, 0, 96, "23ms", 18);
+		hitMsText.setFormat(Paths.font("vcr.ttf"), 18, 0xFF66D9FF, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+		hitMsText.borderSize = 1.25;
+		hitMsText.cameras = [camHUD];
+		add(hitMsText);
 
 		var seperatedScore:Array<Int> = [];
 		for (i in 0...3)
@@ -180,8 +187,8 @@ class NoteOffsetState extends MusicBeatState
 	}
 
 	var holdTime:Float = 0;
-	var currentMode:Int = 0; // 0 = Note Delay, 1 = Combo Offset, 2 = KeyViewer Offset
-	var holdingObjectType:Null<Int> = null; // 0 = rating, 1 = combo, 2 = keyViewer
+	var currentMode:Int = 0; // 0 = Note Delay, 1 = Combo Offset, 2 = KeyViewer Offset, 3 = Hit MS Offset
+	var holdingObjectType:Null<Int> = null; // 0 = rating, 1 = combo, 2 = keyViewer, 3 = hit ms
 
 	var startMousePos:FlxPoint = new FlxPoint();
 	var startComboOffset:FlxPoint = new FlxPoint();
@@ -221,7 +228,7 @@ class NoteOffsetState extends MusicBeatState
 			_lastControllerMode = controls.controllerMode;
 		}
 
-		if (currentMode == 1 || currentMode == 2) // Combo Offset or KeyViewer Offset
+		if (currentMode == 1 || currentMode == 2 || currentMode == 3) // Combo Offset, KeyViewer Offset or Hit MS Offset
 		{
 			if (FlxG.keys.justPressed.ANY || FlxG.gamepads.anyJustPressed(ANY))
 			{
@@ -266,21 +273,29 @@ class NoteOffsetState extends MusicBeatState
 								case 0:
 									if (currentMode == 1) // Combo mode
 										ClientPrefs.data.comboOffset[0] -= addNum;
+									else if (currentMode == 3)
+										ClientPrefs.data.hitMsOffset[0] -= addNum;
 									else // KeyViewer mode
 										ClientPrefs.data.keyViewerOffset[0] -= addNum;
 								case 1:
 									if (currentMode == 1) // Combo mode
 										ClientPrefs.data.comboOffset[0] += addNum;
+									else if (currentMode == 3)
+										ClientPrefs.data.hitMsOffset[0] += addNum;
 									else // KeyViewer mode
 										ClientPrefs.data.keyViewerOffset[0] += addNum;
 								case 2:
 									if (currentMode == 1) // Combo mode
 										ClientPrefs.data.comboOffset[1] += addNum;
+									else if (currentMode == 3)
+										ClientPrefs.data.hitMsOffset[1] += addNum;
 									else // KeyViewer mode
 										ClientPrefs.data.keyViewerOffset[1] -= addNum;
 								case 3:
 									if (currentMode == 1) // Combo mode
 										ClientPrefs.data.comboOffset[1] -= addNum;
+									else if (currentMode == 3)
+										ClientPrefs.data.hitMsOffset[1] -= addNum;
 									else // KeyViewer mode
 										ClientPrefs.data.keyViewerOffset[1] += addNum;
 								case 4:
@@ -302,6 +317,8 @@ class NoteOffsetState extends MusicBeatState
 						repositionCombo();
 					else if (currentMode == 2)
 						repositionKeyViewer();
+					else if (currentMode == 3)
+						repositionHitMs();
 				}
 			}
 
@@ -337,8 +354,18 @@ class NoteOffsetState extends MusicBeatState
 				else
 					controllerPointer.getScreenPosition(startMousePos, camHUD);
 
+				if (currentMode == 3
+					&& startMousePos.x - hitMsText.x >= 0
+					&& startMousePos.x - hitMsText.x <= hitMsText.width
+					&& startMousePos.y - hitMsText.y >= 0
+					&& startMousePos.y - hitMsText.y <= hitMsText.height)
+				{
+					holdingObjectType = 3;
+					startComboOffset.x = ClientPrefs.data.hitMsOffset[0];
+					startComboOffset.y = ClientPrefs.data.hitMsOffset[1];
+				}
 				// Check KeyViewer first (mode 2)
-				if (currentMode == 2
+				else if (currentMode == 2
 					&& startMousePos.x - keyViewer.x >= 0
 					&& startMousePos.x - keyViewer.x <= keyViewer.width
 					&& startMousePos.y - keyViewer.y >= 0
@@ -375,6 +402,8 @@ class NoteOffsetState extends MusicBeatState
 			}
 			if (FlxG.mouse.justReleased || gamepadReleased)
 			{
+				if (holdingObjectType == 3)
+					ClientPrefs.saveSettings();
 				holdingObjectType = null;
 				// trace('dead');
 			}
@@ -394,6 +423,12 @@ class NoteOffsetState extends MusicBeatState
 						ClientPrefs.data.keyViewerOffset[0] = Math.round((mousePos.x - startMousePos.x) + startComboOffset.x);
 						ClientPrefs.data.keyViewerOffset[1] = Math.round((mousePos.y - startMousePos.y) + startComboOffset.y);
 						repositionKeyViewer();
+					}
+					else if (holdingObjectType == 3)
+					{
+						ClientPrefs.data.hitMsOffset[0] = Math.round((mousePos.x - startMousePos.x) + startComboOffset.x);
+						ClientPrefs.data.hitMsOffset[1] = -Math.round((mousePos.y - startMousePos.y) - startComboOffset.y);
+						repositionHitMs();
 					}
 					else // Combo (0 = rating, 1 = combo nums)
 					{
@@ -420,6 +455,13 @@ class NoteOffsetState extends MusicBeatState
 					ClientPrefs.data.keyViewerOffset[0] = 0;
 					ClientPrefs.data.keyViewerOffset[1] = 0;
 					repositionKeyViewer();
+				}
+				else if (currentMode == 3)
+				{
+					ClientPrefs.data.hitMsOffset[0] = 0;
+					ClientPrefs.data.hitMsOffset[1] = 0;
+					repositionHitMs();
+					ClientPrefs.saveSettings();
 				}
 			}
 		}
@@ -467,12 +509,13 @@ class NoteOffsetState extends MusicBeatState
 			|| (controls.controllerMode && FlxG.gamepads.anyJustPressed(START))
 			|| (touchPad != null && touchPad.buttonA.justPressed))
 		{
-			currentMode = (currentMode + 1) % 3; // Cycle through 0, 1, 2
+			currentMode = (currentMode + 1) % 4; // Cycle through 0, 1, 2, 3
 			updateMode();
 		}
 
 		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed))
 		{
+			ClientPrefs.saveSettings();
 			if (zoomTween != null)
 				zoomTween.cancel();
 			if (beatTween != null)
@@ -552,6 +595,7 @@ class NoteOffsetState extends MusicBeatState
 		comboNums.screenCenter();
 		comboNums.x = coolText.x - 90 + ClientPrefs.data.comboOffset[2];
 		comboNums.y += 80 - ClientPrefs.data.comboOffset[3];
+		repositionHitMs();
 		reloadTexts();
 	}
 
@@ -605,6 +649,20 @@ class NoteOffsetState extends MusicBeatState
 						dumbTexts.members[i].text = ClientPrefs.data.keyViewerColor;
 				}
 			}
+			else if (currentMode == 3)
+			{
+				switch (i)
+				{
+					case 0:
+						dumbTexts.members[i].text = Language.getPhrase('hit_ms_offset', 'Hit MS Offset:');
+					case 1:
+						dumbTexts.members[i].text = '[' + ClientPrefs.data.hitMsOffset[0] + ', ' + ClientPrefs.data.hitMsOffset[1] + ']';
+					case 2:
+						dumbTexts.members[i].text = Language.getPhrase('hit_ms_preview', 'Preview:');
+					case 3:
+						dumbTexts.members[i].text = hitMsText != null ? hitMsText.text : '';
+				}
+			}
 		}
 	}
 
@@ -624,6 +682,7 @@ class NoteOffsetState extends MusicBeatState
 		// Combo Offset mode (1)
 		rating.visible = (currentMode == 1);
 		comboNums.visible = (currentMode == 1);
+		hitMsText.visible = (currentMode == 3);
 		dumbTexts.visible = (currentMode == 1);
 
 		// KeyViewer Offset mode (2)
@@ -631,9 +690,12 @@ class NoteOffsetState extends MusicBeatState
 		if (currentMode == 2)
 			dumbTexts.visible = true; // Mostrar textos también en modo KeyViewer
 
+		if (currentMode == 3)
+			dumbTexts.visible = true;
+
 		controllerPointer.visible = false;
 		FlxG.mouse.visible = false;
-		if (currentMode == 1 || currentMode == 2) // Combo or KeyViewer mode
+		if (currentMode == 1 || currentMode == 2 || currentMode == 3) // Combo, KeyViewer or Hit MS mode
 		{
 			FlxG.mouse.visible = !controls.controllerMode;
 			controllerPointer.visible = controls.controllerMode;
@@ -661,6 +723,12 @@ class NoteOffsetState extends MusicBeatState
 				addTouchPad('NONE', 'A_B_C');
 				addTouchPadCamera();
 				reloadTexts(); // Actualizar textos para keyviewer
+			case 3:
+				str = Language.getPhrase('hit_ms_offset', 'Hit MS Offset');
+				addTouchPad('NONE', 'A_B_C');
+				addTouchPadCamera();
+				repositionHitMs();
+				reloadTexts();
 			default:
 				str = Language.getPhrase('note_delay', 'Note/Beat Delay');
 				addTouchPad('LEFT_RIGHT', 'A_B_C');
@@ -677,6 +745,15 @@ class NoteOffsetState extends MusicBeatState
 		keyViewer.centerOnScreen();
 		reloadTexts(); // Actualizar los textos con las nuevas posiciones
 		ClientPrefs.saveSettings();
+	}
+
+	function repositionHitMs()
+	{
+		if (hitMsText == null)
+			return;
+		hitMsText.x = coolText.x - hitMsText.fieldWidth * 0.5 + ClientPrefs.data.hitMsOffset[0];
+		hitMsText.y = rating.y + rating.height + 8 - ClientPrefs.data.hitMsOffset[1];
+		reloadTexts();
 	}
 
 	override function destroy()

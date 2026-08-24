@@ -18,7 +18,7 @@
 
 	<!--Minimum without FLX_NO_GAMEPAD: 11.8, without FLX_NO_NATIVE_CURSOR: 11.2-->
 	<set name="SWF_VERSION" value="11.8" />
-	
+
 	<!-- ______________________ PSYCH ENGINE CUSTOMIZATION ______________________ -->
 
 	<define name="MODS_ALLOWED" if="desktop || mobile" />
@@ -31,7 +31,7 @@
 	<define name="IRIS_DEBUG"/>
 	<define name="WINDOWS_FUNCTIONS_ALLOWED" if="desktop" />
 	<define name="GDI_ENABLED" if="windows" />
-	
+
 	<define name="MULTITHREADED_LOADING" if="cpp" /> <!-- UNCOMMENTING THIS LINE WILL ENABLE MULTITHREADED LOADING, WHICH IMPROVES LOADING TIMES, BUT WITH A LOW CHANCE FOR THE GAME FREEZE ON SONG LOAD -->
 	<define name="SHOW_LOADING_SCREEN" />
 	<define name="PSYCH_WATERMARKS"/> <!-- DELETE THIS TO REMOVE THE PSYCH LOGO FROM LOADING SCREEN -->
@@ -109,7 +109,7 @@
 		<assets path='vslice_mods' embed='false' if="vslice"/>
 		<assets path='list.txt' rename='modsList.txt' />
 	</section>
-	
+
 	<assets path='art/readme.txt' rename='do NOT readme.txt' unless="mobile" />
 
 	<!-- OpenAL config -->
@@ -139,6 +139,7 @@
 	<!--Psych stuff needed-->
 	<haxelib name="linc_luajit" if="LUA_ALLOWED"/>
 	<haxelib name="hscript-iris" version="git" if="HSCRIPT_ALLOWED"/>
+	<haxelib name="hxscript" version="git" if="HSCRIPT_ALLOWED"/>
 	<haxelib name="hxvlc" if="VIDEOS_ALLOWED"/>
 	<haxelib name="hxdiscord_rpc" if="DISCORD_ALLOWED"/>
 	<haxelib name="flxanimate"/>
@@ -162,7 +163,7 @@
 	<haxedef name="HXVLC_NO_SHARE_DIRECTORY" if="VIDEOS_ALLOWED" />
 	<haxedef name="HXVLC_EXPERIMENTAL_WINDOWSARM" if="windows HXCPP_ARM64" />
 	<define name="x86_BUILD" if="32bits" />
-	
+
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
 	<!--Enable the Flixel core recording system-->
@@ -188,16 +189,16 @@
 
 	<!--Disable the Flixel core focus lost screen-->
 	<haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />
-	
+
 	<!-- Show debug traces for hxCodec -->
 	<haxedef name="HXC_DEBUG_TRACE" if="debug" />
-	
+
 	<!--Disable the Flixel core debugger. Automatically gets set whenever you compile in release mode!-->
 	<haxedef name="FLX_NO_DEBUG" unless="debug" />
 
 	<!--Enable this for Nape release builds for a serious peformance improvement-->
 	<haxedef name="NAPE_RELEASE_BUILD" unless="debug" />
-	
+
 	<!--Used for crash handler-->
 	<section if="cpp">
 		<haxedef name="HXCPP_CHECK_POINTER" />
@@ -205,7 +206,7 @@
 		<haxedef name="HXCPP_STACK_TRACE" />
 		<haxedef name="HXCPP_CATCH_SEGV" />
 	</section>
-	
+
 	<!--Disable deprecated warnings-->
 	<haxedef name='no-deprecation-warnings' />
 
@@ -232,6 +233,7 @@
 
 	<haxedef name="hscriptPos" if="HSCRIPT_ALLOWED" />
 	<haxedef name="custom_classes" if="HSCRIPT_ALLOWED" />
+	<haxeflag name="--macro" value="macros.ScriptedBridgeMacro.generate()" if="HSCRIPT_ALLOWED" />
 	<haxedef name="POLYMOD_MOD_METADATA_FILE" value="_polymod_meta.json" if="FEATURE_POLYMOD_MODS" />
 	<haxedef name="POLYMOD_MOD_ICON_FILE" value="_polymod_icon.png" if="FEATURE_POLYMOD_MODS" />
 

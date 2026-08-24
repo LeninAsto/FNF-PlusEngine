@@ -14,8 +14,6 @@ import backend.ui.md3.MD3Theme;
  */
 class MaterialSwitch extends FlxSpriteGroup
 {
-	static inline var TRACE_LAYOUT:Bool = false;
-
 	public var checked(default, set):Bool = false;
 	public var enabled:Bool = true;
 	public var allowMouseInput:Bool = true;
@@ -80,7 +78,6 @@ class MaterialSwitch extends FlxSpriteGroup
 		// Set initial state without animation
 		updateVisuals(false);
 		MD3Theme.addListener(_onThemeChange);
-		traceLayout('create');
 	}
 
 	inline function getThumbCenter(isChecked:Bool):Float
@@ -97,12 +94,6 @@ class MaterialSwitch extends FlxSpriteGroup
 		thumb.x = x + thumbCenterX - thumb.width * 0.5;
 		thumb.y = y + trackHeight() * 0.5 - thumb.height * 0.5;
 		updateIconPosition();
-	}
-
-	function traceLayout(reason:String):Void
-	{
-		if (!TRACE_LAYOUT)
-			return;
 	}
 
 	public function getDebugLayout():String
@@ -233,7 +224,6 @@ class MaterialSwitch extends FlxSpriteGroup
 			thumbIcon.color = targetIconColor;
 		}
 
-		traceLayout(animate ? 'updateVisuals(animated)' : 'updateVisuals(static)');
 	}
 
 	function animateColor(sprite:FlxSprite, fromColor:FlxColor, toColor:FlxColor, duration:Float):Void
@@ -290,7 +280,6 @@ class MaterialSwitch extends FlxSpriteGroup
 			return;
 
 		checked = !checked;
-		traceLayout('toggle');
 
 		if (onChange != null)
 			onChange(checked);

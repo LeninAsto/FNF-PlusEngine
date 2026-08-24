@@ -1,9 +1,6 @@
 package backend.ui;
 
-import options.OptionsMenuTheme;
-
-class PsychUINumericStepper extends PsychUIInputText
-{
+class PsychUINumericStepper extends PsychUIInputText {
 	public static final CHANGE_EVENT = "numericstepper_change";
 
 	public var step:Float = 0;
@@ -18,8 +15,7 @@ class PsychUINumericStepper extends PsychUIInputText
 	public var value(default, set):Float;
 
 	public function new(x:Float = 0, y:Float = 0, step:Float = 1, defValue:Float = 0, min:Float = -999, max:Float = 999, decimals:Int = 0, ?wid:Int = 60,
-			?isPercent:Bool = false)
-	{
+			?isPercent:Bool = false) {
 		super(x, y, wid, '');
 		fieldWidth = Std.int(behindText.width + 2);
 		@:bypassAccessor this.decimals = decimals;
@@ -33,45 +29,35 @@ class PsychUINumericStepper extends PsychUIInputText
 		buttonPlus.animation.add('normal', [0], false);
 		buttonPlus.animation.add('pressed', [1], false);
 		buttonPlus.animation.play('normal');
-		buttonPlus.color = OptionsMenuTheme.current().accent;
 		add(buttonPlus);
 
 		buttonMinus = new FlxSprite(fieldWidth + buttonPlus.width).loadGraphic(Paths.image('psych-ui/stepper_minus', 'embed'), true, 16, 16);
 		buttonMinus.animation.add('normal', [0], false);
 		buttonMinus.animation.add('pressed', [1], false);
 		buttonMinus.animation.play('normal');
-		buttonMinus.color = OptionsMenuTheme.current().accent;
 		add(buttonMinus);
 
-		unfocus = function()
-		{
+		unfocus = function() {
 			_updateValue();
 			_internalOnChange();
 		}
 		value = defValue;
 	}
 
-	override function update(elapsed:Float)
-	{
+	override function update(elapsed:Float) {
 		super.update(elapsed);
 
-		if (FlxG.mouse.justPressed)
-		{
-			if (buttonPlus != null && buttonPlus.exists && FlxG.mouse.overlaps(buttonPlus, camera))
-			{
+		if (FlxG.mouse.justPressed) {
+			if (buttonPlus != null && buttonPlus.exists && FlxG.mouse.overlaps(buttonPlus, camera)) {
 				buttonPlus.animation.play('pressed');
 				value += step;
 				_internalOnChange();
-			}
-			else if (buttonMinus != null && buttonMinus.exists && FlxG.mouse.overlaps(buttonMinus, camera))
-			{
+			} else if (buttonMinus != null && buttonMinus.exists && FlxG.mouse.overlaps(buttonMinus, camera)) {
 				buttonMinus.animation.play('pressed');
 				value -= step;
 				_internalOnChange();
 			}
-		}
-		else if (FlxG.mouse.released)
-		{
+		} else if (FlxG.mouse.released) {
 			if (buttonPlus != null
 				&& buttonPlus.exists
 				&& buttonPlus.animation.curAnim != null
@@ -85,16 +71,14 @@ class PsychUINumericStepper extends PsychUIInputText
 		}
 	}
 
-	function set_value(v:Float)
-	{
+	function set_value(v:Float) {
 		value = Math.max(min, Math.min(max, v));
 		text = Std.string(isPercent ? (value * 100) : value);
 		_updateValue();
 		return value;
 	}
 
-	function set_min(v:Float)
-	{
+	function set_min(v:Float) {
 		min = v;
 		@:bypassAccessor if (min > max)
 			max = min;
@@ -103,8 +87,7 @@ class PsychUINumericStepper extends PsychUIInputText
 		return min;
 	}
 
-	function set_max(v:Float)
-	{
+	function set_max(v:Float) {
 		max = v;
 		@:bypassAccessor if (max < min)
 			min = max;
@@ -113,35 +96,33 @@ class PsychUINumericStepper extends PsychUIInputText
 		return max;
 	}
 
-	function set_decimals(v:Int)
-	{
+	function set_decimals(v:Int) {
 		decimals = v;
 		_updateFilter();
 		return decimals;
 	}
 
-	function set_isPercent(v:Bool)
-	{
+	function set_isPercent(v:Bool) {
 		var changed:Bool = (isPercent != v);
 		isPercent = v;
 		_updateFilter();
 
-		if (changed)
-		{
+		if (changed) {
 			text = Std.string(value * 100);
 			_updateValue();
 		}
 		return isPercent;
 	}
 
-	function _updateValue()
-	{
+	function _updateValue() {
 		var txt:String = text.replace('%', '');
+		// Strip stray minus signs that aren't the leading character. Note that
+		// String.replace returns a new string -- the previous code discarded it,
+		// so inputs like "1-2" silently kept the dash and parsed wrong.
 		if (txt.indexOf('-') > 0)
-			txt.replace('-', '');
+			txt = txt.charAt(0) + txt.substr(1).split('-').join('');
 
-		while (txt.indexOf('.') > -1 && txt.indexOf('.') != txt.lastIndexOf('.'))
-		{
+		while (txt.indexOf('.') > -1 && txt.indexOf('.') != txt.lastIndexOf('.')) {
 			var lastId = txt.lastIndexOf('.');
 			txt = txt.substr(0, lastId) + txt.substring(lastId + 1);
 		}
@@ -160,12 +141,10 @@ class PsychUINumericStepper extends PsychUIInputText
 		val = FlxMath.roundDecimal(val, decimals);
 		@:bypassAccessor value = val;
 
-		if (isPercent)
-		{
+		if (isPercent) {
 			text = Std.string(val * 100);
 			text += '%';
-		}
-		else
+		} else
 			text = Std.string(val);
 
 		if (caretIndex > text.length)
@@ -174,36 +153,26 @@ class PsychUINumericStepper extends PsychUIInputText
 			selectIndex = text.length;
 	}
 
-	function _updateFilter()
-	{
-		if (min < 0)
-		{
-			if (decimals > 0)
-			{
+	function _updateFilter() {
+		if (min < 0) {
+			if (decimals > 0) {
 				if (isPercent)
 					customFilterPattern = ~/[^0-9.%\-]*/g;
 				else
 					customFilterPattern = ~/[^0-9.\-]*/g;
-			}
-			else
-			{
+			} else {
 				if (isPercent)
 					customFilterPattern = ~/[^0-9%\-]*/g;
 				else
 					customFilterPattern = ~/[^0-9\-]*/g;
 			}
-		}
-		else
-		{
-			if (decimals > 0)
-			{
+		} else {
+			if (decimals > 0) {
 				if (isPercent)
 					customFilterPattern = ~/[^0-9.%]*/g;
 				else
 					customFilterPattern = ~/[^0-9.]*/g;
-			}
-			else
-			{
+			} else {
 				if (isPercent)
 					customFilterPattern = ~/[^0-9%]*/g;
 				else
@@ -214,18 +183,15 @@ class PsychUINumericStepper extends PsychUIInputText
 
 	public var broadcastStepperEvent:Bool = true;
 
-	function _internalOnChange()
-	{
+	function _internalOnChange() {
 		if (onValueChange != null)
 			onValueChange();
 		if (broadcastStepperEvent)
 			PsychUIEventHandler.event(CHANGE_EVENT, this);
 	}
 
-	override function setGraphicSize(width:Float = 0, height:Float = 0)
-	{
+	override function setGraphicSize(width:Float = 0, height:Float = 0) {
 		super.setGraphicSize(width, height);
 		behindText.setGraphicSize(width - 32, height - 2);
 	}
 }
-

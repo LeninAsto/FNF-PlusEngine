@@ -6,7 +6,6 @@ import flixel.util.FlxSort;
 import flixel.util.FlxDestroyUtil;
 import haxe.Json;
 import backend.Song;
-import states.stages.objects.TankmenBG;
 
 typedef CharacterFile =
 {
@@ -492,7 +491,6 @@ class Character extends FlxSprite
 					for (songNotes in section.sectionNotes)
 						animationNotes.push(songNotes);
 
-			TankmenBG.animationNotes = animationNotes;
 			animationNotes.sort(sortAnims);
 		}
 		catch (e:Dynamic)

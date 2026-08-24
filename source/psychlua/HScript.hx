@@ -101,10 +101,63 @@ class HScript extends Iris
 		{
 			// Configure Iris blocklist for security (system access, macros, etc.)
 			Iris.blocklistImports = ["sys.io", "sys.FileSystem", "Sys", "haxe.macro", "polymod", "hscript"];
-			Iris.proxyImports.set("flixel.Math.FlxPoint", CustomFlxPoint);
-			Iris.proxyImports.set("flash.filters.ShaderFilter", flash.filters.ShaderFilter);
+			registerIrisProxyImports();
 			true;
 		};
+
+	static function registerIrisProxyImports():Void
+	{
+		proxyImport("flash.filters.ShaderFilter", flash.filters.ShaderFilter);
+		proxyImport("openfl.filters.ShaderFilter", openfl.filters.ShaderFilter);
+		proxyImport("openfl.display.BlendMode", CustomBlendMode);
+
+		proxyImport("flixel.FlxG", CustomFlxG);
+		proxyImport("flixel.FlxSprite", flixel.FlxSprite);
+		proxyImport("flixel.FlxCamera", flixel.FlxCamera);
+		proxyImport("flixel.FlxObject", flixel.FlxObject);
+		proxyImport("flixel.FlxState", flixel.FlxState);
+		proxyImport("flixel.FlxSubState", flixel.FlxSubState);
+		proxyImport("flixel.FlxBasic", flixel.FlxBasic);
+		proxyImport("flixel.sound.FlxSound", flixel.sound.FlxSound);
+		proxyImport("flixel.group.FlxGroup", flixel.group.FlxGroup);
+		proxyImport("flixel.group.FlxSpriteGroup", flixel.group.FlxSpriteGroup);
+		proxyImport("flixel.math.FlxMath", CustomFlxMath);
+		proxyImport("flixel.math.FlxPoint", CustomFlxPoint);
+		proxyImport("flixel.Math.FlxPoint", CustomFlxPoint);
+		proxyImport("flixel.text.FlxText", flixel.text.FlxText);
+		proxyImport("flixel.text.FlxTextAlign", CustomFlxTextAlign);
+		proxyImport("flixel.text.FlxText.FlxTextAlign", CustomFlxTextAlign);
+		proxyImport("flixel.text.FlxTextBorderStyle", CustomFlxTextBorderStyle);
+		proxyImport("flixel.util.FlxAxes", CustomFlxAxes);
+		proxyImport("flixel.util.FlxColor", CustomFlxColor);
+		proxyImport("flixel.util.FlxPoint", CustomFlxPoint);
+		proxyImport("flixel.util.FlxTimer", flixel.util.FlxTimer);
+		proxyImport("flixel.util.FlxSave", flixel.util.FlxSave);
+		proxyImport("flixel.util.FlxSpriteUtil", flixel.util.FlxSpriteUtil);
+		proxyImport("flixel.util.FlxStringUtil", flixel.util.FlxStringUtil);
+		proxyImport("flixel.util.FlxArrayUtil", flixel.util.FlxArrayUtil);
+		proxyImport("flixel.tweens.FlxTween", flixel.tweens.FlxTween);
+		proxyImport("flixel.tweens.FlxEase", flixel.tweens.FlxEase);
+		proxyImport("flixel.effects.FlxFlicker", flixel.effects.FlxFlicker);
+		proxyImport("flixel.input.FlxInput", flixel.input.FlxInput);
+		proxyImport("flixel.input.FlxKey", flixel.input.keyboard.FlxKey.fromStringMap);
+		proxyImport("flixel.input.keyboard.FlxKey", flixel.input.keyboard.FlxKey.fromStringMap);
+		proxyImport("flixel.input.gamepad.FlxGamepadInputID", CustomFlxGamepadInputID);
+		proxyImport("flixel.system.scaleModes.RatioScaleMode", flixel.system.scaleModes.RatioScaleMode);
+		proxyImport("flixel.addons.transition.FlxTransitionableState", flixel.addons.transition.FlxTransitionableState);
+
+		proxyImport("haxe.Json", haxe.Json);
+		proxyImport("haxe.ds.IntMap", haxe.ds.IntMap);
+		proxyImport("haxe.ds.StringMap", haxe.ds.StringMap);
+		proxyImport("haxe.ds.ObjectMap", haxe.ds.ObjectMap);
+		proxyImport("backend.BaseStage", backend.BaseStage);
+	}
+
+	static inline function proxyImport(path:String, value:Dynamic):Void
+	{
+		if (!Iris.proxyImports.exists(path))
+			Iris.proxyImports.set(path, value);
+	}
 
 	override public function new(?parent:Dynamic, ?file:String, ?varsToBring:Any = null, ?manualRun:Bool = false)
 	{
@@ -274,6 +327,7 @@ class HScript extends Iris
 		set('FlxEase', flixel.tweens.FlxEase);
 		set('FlxColor', CustomFlxColor);
 		set('Countdown', backend.BaseStage.Countdown);
+		set('BaseStage', backend.BaseStage);
 		set('PlayState', PlayState);
 		set('Paths', Paths);
 		set('StorageUtil', mobile.backend.StorageUtil);
@@ -1386,6 +1440,25 @@ class CustomFlxColor
 		return cast FlxColor.gradient(Color1, Color2, Steps, Ease);
 }
 
+class CustomBlendMode
+{
+	public static var ADD(default, null):openfl.display.BlendMode = openfl.display.BlendMode.ADD;
+	public static var ALPHA(default, null):openfl.display.BlendMode = openfl.display.BlendMode.ALPHA;
+	public static var DARKEN(default, null):openfl.display.BlendMode = openfl.display.BlendMode.DARKEN;
+	public static var DIFFERENCE(default, null):openfl.display.BlendMode = openfl.display.BlendMode.DIFFERENCE;
+	public static var ERASE(default, null):openfl.display.BlendMode = openfl.display.BlendMode.ERASE;
+	public static var HARDLIGHT(default, null):openfl.display.BlendMode = openfl.display.BlendMode.HARDLIGHT;
+	public static var INVERT(default, null):openfl.display.BlendMode = openfl.display.BlendMode.INVERT;
+	public static var LAYER(default, null):openfl.display.BlendMode = openfl.display.BlendMode.LAYER;
+	public static var LIGHTEN(default, null):openfl.display.BlendMode = openfl.display.BlendMode.LIGHTEN;
+	public static var MULTIPLY(default, null):openfl.display.BlendMode = openfl.display.BlendMode.MULTIPLY;
+	public static var NORMAL(default, null):openfl.display.BlendMode = openfl.display.BlendMode.NORMAL;
+	public static var OVERLAY(default, null):openfl.display.BlendMode = openfl.display.BlendMode.OVERLAY;
+	public static var SCREEN(default, null):openfl.display.BlendMode = openfl.display.BlendMode.SCREEN;
+	public static var SHADER(default, null):openfl.display.BlendMode = openfl.display.BlendMode.SHADER;
+	public static var SUBTRACT(default, null):openfl.display.BlendMode = openfl.display.BlendMode.SUBTRACT;
+}
+
 class CustomFlxAxes
 {
 	public static var X(default, null):flixel.util.FlxAxes = flixel.util.FlxAxes.X;
@@ -1678,6 +1751,27 @@ class CustomInterp extends crowplexus.hscript.Interp
 		}
 
 		return Reflect.callMethod(o, f, args);
+	}
+
+	override public function getOrImportClass(name:String):Dynamic
+	{
+		var native:Dynamic = super.getOrImportClass(name);
+		if (native != null)
+			return native;
+
+		var resolvedName:String = Iris.resolveImportPath(name);
+		if (customClasses.exists(resolvedName))
+			return customClasses.get(resolvedName);
+		if (customClasses.exists(name))
+			return customClasses.get(name);
+
+		var shortName:String = Tools.last(resolvedName.split("."));
+		if (imports.exists(shortName))
+			return imports.get(shortName);
+		if (customClasses.exists(shortName))
+			return customClasses.get(shortName);
+
+		return null;
 	}
 
 	override function resolve(id:String):Dynamic

@@ -41,6 +41,9 @@ haxelib install flixel-ui 2.6.2 --quiet
 echo "[Plus/Psych] hscript-iris"
 haxelib git hscript-iris https://github.com/Psych-Plus-Team/hscript-iris
 
+echo "[Plus/Psych] hxscript"
+haxelib git hxscript https://github.com/Psych-Plus-Team/hxscript.git
+
 echo "[Plus/Psych] linc_luajit"
 haxelib git linc_luajit https://github.com/Psych-Plus-Team/linc_luajit
 
