@@ -37,6 +37,13 @@ class Mods
 	private static var globalMods:Array<String> = [];
 	private static var updatedVSliceOnState:Bool = false;
 
+	static inline function traceVSliceFreeplay(message:String):Void
+	{
+		#if (debug || VSLICE_FREEPLAY_TRACE)
+		trace('[VSliceFreeplayTrace] $message');
+		#end
+	}
+
 	inline public static function getGlobalMods()
 		return globalMods;
 
@@ -74,9 +81,12 @@ class Mods
 	{
 		var list:Array<String> = [];
 		#if MODS_ALLOWED
-		var modsFolder:String = Paths.vsliceMods();
-		if (Paths.safeModPathExists(modsFolder))
+		for (modsFolder in Paths.getVSliceModsRootDirectories())
 		{
+			traceVSliceFreeplay('scan root="$modsFolder" exists=${Paths.safeModPathExists(modsFolder)}');
+			if (!Paths.safeModPathExists(modsFolder))
+				continue;
+
 			for (folder in Paths.safeReadDirectory(modsFolder))
 			{
 				var path = haxe.io.Path.join([modsFolder, folder]);
@@ -84,6 +94,7 @@ class Mods
 					list.push(folder);
 			}
 		}
+		traceVSliceFreeplay('discovered vslice dirs=${list.join(",")}');
 		#end
 		return list;
 	}
@@ -254,6 +265,7 @@ class Mods
 			trace(e);
 		}
 		#end
+		traceVSliceFreeplay('parseVSliceList path="${getVSliceListPath()}" all=${list.all.join(",")} enabled=${list.enabled.join(",")} disabled=${list.disabled.join(",")}');
 		return list;
 	}
 
@@ -262,6 +274,19 @@ class Mods
 		#if android
 		return StorageUtil.getStorageDirectory() + 'vsliceList.txt';
 		#else
+		for (root in Paths.getVSliceModsRootDirectories())
+		{
+			var normalizedRoot:String = root.replace('\\', '/');
+			if (normalizedRoot.endsWith('/'))
+				normalizedRoot = normalizedRoot.substr(0, normalizedRoot.length - 1);
+			var listPath:String = haxe.io.Path.directory(normalizedRoot) + '/vsliceList.txt';
+			if (Paths.safeModPathExists(listPath))
+			{
+				traceVSliceFreeplay('using vslice list "$listPath" for root "$root"');
+				return listPath;
+			}
+		}
+		traceVSliceFreeplay('using fallback vslice list "${Sys.getCwd()}vsliceList.txt"');
 		return Sys.getCwd() + 'vsliceList.txt';
 		#end
 	}
@@ -388,6 +413,7 @@ class Mods
 		for (folder in getVSliceModDirectories())
 		{
 			var folderPath:String = Paths.vsliceMods(folder);
+			traceVSliceFreeplay('update list candidate folder="$folder" path="$folderPath" exists=${Paths.safeModIsDirectory(folderPath)}');
 			if (folder.trim().length > 0 && Paths.safeModIsDirectory(folderPath) && !added.contains(folder))
 			{
 				added.push(folder);
@@ -411,6 +437,7 @@ class Mods
 		{
 			trace('Failed to save vsliceList.txt: $e');
 		}
+		traceVSliceFreeplay('updateVSliceModList saved="${getVSliceListPath()}" entries="$fileStr"');
 		updatedVSliceOnState = true;
 		#end
 	}

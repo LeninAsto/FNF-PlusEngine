@@ -884,6 +884,7 @@ class Paths
 			addUniqueModsRoot(roots, StorageUtil.getStorageDirectory() + 'vslice_mods/');
 		#else
 		addUniqueModsRoot(roots, Sys.getCwd() + 'vslice_mods/');
+		addUniqueModsRoot(roots, Sys.getCwd() + 'export/release/windows/bin/vslice_mods/');
 		#end
 		return roots;
 	}

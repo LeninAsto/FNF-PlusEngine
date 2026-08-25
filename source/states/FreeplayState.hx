@@ -488,7 +488,7 @@ class FreeplayState extends MusicBeatState
 
 		var modName:String = songs[index].folder;
 		if (modName == null || modName == '')
-			modName = songs[index].isVSlice ? songs[index].vsliceMod : (songs[index].isStepMania ? "StepMania" : "Friday Night Funkin");
+			modName = songs[index].isVSlice ? (songs[index].vsliceMod != null && songs[index].vsliceMod.length > 0 ? songs[index].vsliceMod : "Friday Night Funkin") : (songs[index].isStepMania ? "StepMania" : "Friday Night Funkin");
 
 		var modText:FlxText = new FlxText(0, 0, 430, modName, 16);
 		modText.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -522,6 +522,9 @@ class FreeplayState extends MusicBeatState
 		var vsliceSongs:Array<Dynamic> = [];
 		#if FEATURE_POLYMOD_MODS
 		vsliceSongs = cast VSliceFreeplayBridge.listSongs();
+		trace('[VSliceFreeplayTrace] Plus Freeplay weeks=${WeekData.weeksList.length} vsliceSongs=${vsliceSongs.length}');
+		#else
+		trace('[VSliceFreeplayTrace] Plus Freeplay FEATURE_POLYMOD_MODS disabled');
 		#end
 
 		if (WeekData.weeksList.length < 1 && vsliceSongs.length < 1)
@@ -863,20 +866,25 @@ class FreeplayState extends MusicBeatState
 	function appendVSliceSongs(vsliceSongs:Array<Dynamic>):Void
 	{
 		#if FEATURE_POLYMOD_MODS
+		trace('[VSliceFreeplayTrace] Plus appendVSliceSongs count=${vsliceSongs.length} currentSongs=${songs.length}');
 		for (entry in vsliceSongs)
 		{
+			var diffs:Array<String> = entry.difficulties != null ? entry.difficulties.copy() : [];
+			trace('[VSliceFreeplayTrace] Plus append song display="${entry.displayName}" id="${entry.songId}" mod="${entry.modDir}" variation="${entry.variation}" diffs=${diffs.join(",")} root="${entry.rootPath}"');
 			var song:SongMetadata = new SongMetadata(entry.displayName, -1, entry.icon, entry.color);
 			song.folder = '';
 			song.isVSlice = true;
 			song.vsliceMod = entry.modDir;
 			song.vsliceSongId = entry.songId;
 			song.vsliceVariation = entry.variation;
-			song.vsliceDifficulties = entry.difficulties.copy();
+			song.vsliceDifficulties = diffs;
 			song.vsliceInstrumental = entry.instrumental;
+			song.vsliceRootPath = entry.rootPath;
 			song.vslicePreviewStartSeconds = entry.previewStartSeconds;
 			song.vslicePreviewEndSeconds = entry.previewEndSeconds;
 			songs.push(song);
 		}
+		trace('[VSliceFreeplayTrace] Plus appendVSliceSongs done totalSongs=${songs.length}');
 		#end
 	}
 
@@ -3825,6 +3833,7 @@ class SongMetadata
 	public var vsliceSongId:String = "";
 	public var vsliceVariation:String = "default";
 	public var vsliceDifficulties:Array<String> = [];
+	public var vsliceRootPath:String = "";
 	public var vsliceInstrumental:String = "";
 	public var vslicePreviewStartSeconds:Null<Float> = null;
 	public var vslicePreviewEndSeconds:Null<Float> = null;
@@ -3852,6 +3861,7 @@ class SongMetadata
 			color: color,
 			difficulties: vsliceDifficulties.copy(),
 			variation: vsliceVariation,
+			rootPath: vsliceRootPath,
 			instrumental: vsliceInstrumental,
 			previewStartSeconds: vslicePreviewStartSeconds,
 			previewEndSeconds: vslicePreviewEndSeconds

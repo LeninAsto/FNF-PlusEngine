@@ -18,6 +18,21 @@ class ModuleHandler
   static var modulePriorityOrder:Array<String> = [];
   static var callbacksBuilt:Bool = false;
 
+  static function getScriptedModuleClassNames():Array<String>
+  {
+    var listScriptClasses:Dynamic = Reflect.field(ScriptedModule, 'listScriptClasses');
+    if (listScriptClasses == null) return [];
+
+    var result:Dynamic = Reflect.callMethod(ScriptedModule, listScriptClasses, []);
+    return result == null ? [] : cast result;
+  }
+
+  static function createScriptedModule(moduleCls:String):Null<Module>
+  {
+    var scriptInit:Dynamic = Reflect.field(ScriptedModule, 'scriptInit');
+    return scriptInit == null ? null : cast Reflect.callMethod(ScriptedModule, scriptInit, [moduleCls, moduleCls]);
+  }
+
   /**
    * Parses and preloads the game's stage data and scripts when the game starts.
    *
@@ -29,11 +44,11 @@ class ModuleHandler
     clearModuleCache();
     trace("[MODULEHANDLER] Loading module cache...");
 
-    var scriptedModuleClassNames:Array<String> = ScriptedModule.listScriptClasses();
+    var scriptedModuleClassNames:Array<String> = getScriptedModuleClassNames();
     trace(' Instantiating ${scriptedModuleClassNames.length} modules...');
     for (moduleCls in scriptedModuleClassNames)
     {
-      var module:Null<Module> = ScriptedModule.scriptInit(moduleCls, moduleCls);
+      var module:Null<Module> = createScriptedModule(moduleCls);
       if (module != null)
       {
         trace('   Loaded module: ${moduleCls}');

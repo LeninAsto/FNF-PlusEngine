@@ -26,6 +26,8 @@ class BreakTimerHud
 	var nextNoteTime:Float = -1;
 	var lastNoteTime:Float = -1;
 	var lastDisplayValue:Int = -1;
+	var textScaleTween:FlxTween = null;
+	var indicatorScaleTween:FlxTween = null;
 
 	final minGapMs:Float;
 
@@ -60,6 +62,17 @@ class BreakTimerHud
 
 	public function destroyFrom(state:FlxState):Void
 	{
+		if (textScaleTween != null)
+		{
+			textScaleTween.cancel();
+			textScaleTween = null;
+		}
+		if (indicatorScaleTween != null)
+		{
+			indicatorScaleTween.cancel();
+			indicatorScaleTween = null;
+		}
+
 		if (text != null)
 		{
 			state.remove(text);
@@ -209,10 +222,26 @@ class BreakTimerHud
 
 				if (lastDisplayValue != displayValue)
 				{
+					if (textScaleTween != null)
+					{
+						textScaleTween.cancel();
+						textScaleTween = null;
+					}
+					if (indicatorScaleTween != null)
+					{
+						indicatorScaleTween.cancel();
+						indicatorScaleTween = null;
+					}
 					text.scale.set(1.5, 1.5);
 					indicator.scale.set(1.1, 1.1);
-					FlxTween.tween(text.scale, {x: 1, y: 1}, 0.2, {ease: FlxEase.circOut});
-					FlxTween.tween(indicator.scale, {x: 1, y: 1}, 0.2, {ease: FlxEase.circOut});
+					textScaleTween = FlxTween.tween(text.scale, {x: 1, y: 1}, 0.2, {
+						ease: FlxEase.circOut,
+						onComplete: _ -> textScaleTween = null
+					});
+					indicatorScaleTween = FlxTween.tween(indicator.scale, {x: 1, y: 1}, 0.2, {
+						ease: FlxEase.circOut,
+						onComplete: _ -> indicatorScaleTween = null
+					});
 					lastDisplayValue = displayValue;
 				}
 				return;
@@ -249,15 +278,28 @@ class BreakTimerHud
 
 	function clearDisplay():Void
 	{
+		if (textScaleTween != null)
+		{
+			textScaleTween.cancel();
+			textScaleTween = null;
+		}
+		if (indicatorScaleTween != null)
+		{
+			indicatorScaleTween.cancel();
+			indicatorScaleTween = null;
+		}
+
 		if (text != null)
 		{
 			text.visible = false;
+			text.alpha = 1;
 			text.scale.set(1, 1);
 		}
 
 		if (indicator != null)
 		{
 			indicator.visible = false;
+			indicator.alpha = 1;
 			indicator.value = 0;
 			indicator.scale.set(1, 1);
 		}

@@ -602,6 +602,19 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	{
 		if (option == null)
 			return;
+
+		if (option.type == BOOL)
+		{
+			var boolRow:OptionRowCard = cast option.child;
+			if (boolRow != null)
+			{
+				boolRow.refreshFromOption();
+				if (boolRow.consumeHeightChanged())
+					markRowsLayoutDirty();
+			}
+			return;
+		}
+
 		if (option.type == KEYBIND)
 		{
 			updateBind(null, option);
@@ -973,19 +986,35 @@ private class OptionRowCard extends FlxSpriteGroup
 		}
 
 		var isBool:Bool = option.type == BOOL;
-		checkBox.visible = isBool;
-		checkBox.checked = isBool && Std.string(option.getValue()) == 'true';
-		valueControl.visible = !isBool;
-		valueControl.showArrows = option.type != KEYBIND;
+		setCheckboxVisible(isBool);
+		setValueControlVisible(!isBool);
 
 		if (isBool)
-			valueLabel = Std.string(option.getValue()) == 'true' ? 'ON' : 'OFF';
+		{
+			valueLabel = "";
+			checkBox.syncChecked(Std.string(option.getValue()) == 'true');
+			valueControl.setText("");
+		}
 		else if (option.type == KEYBIND)
+		{
+			checkBox.syncChecked(false);
+			valueControl.showArrows = false;
 			valueLabel = option.text != null ? option.text : Std.string(option.getValue());
+		}
 		else
+		{
+			checkBox.syncChecked(false);
+			valueControl.showArrows = true;
 			valueLabel = option.text != null ? option.text : Std.string(option.getValue());
-		valueControl.setText(valueLabel);
-		compactValueText();
+		}
+
+		if (!isBool)
+		{
+			valueControl.setText(valueLabel);
+			compactValueText();
+		}
+		else
+			syncLayout();
 	}
 
 	public function consumeHeightChanged():Bool
@@ -1067,6 +1096,20 @@ private class OptionRowCard extends FlxSpriteGroup
 
 	public function setValueLabel(value:String):Void
 	{
+		if (option != null && option.type == BOOL)
+		{
+			valueLabel = "";
+			if (valueControl != null)
+			{
+				valueControl.setText("");
+				setValueControlVisible(false);
+			}
+			if (checkBox != null)
+				setCheckboxVisible(true);
+			syncLayout();
+			return;
+		}
+
 		var nextValue:String = value != null ? value : '';
 		if (valueLabel == nextValue)
 			return;
@@ -1081,6 +1124,20 @@ private class OptionRowCard extends FlxSpriteGroup
 		if (valueControl != null)
 			valueControl.compactText();
 		syncLayout();
+	}
+
+	function setCheckboxVisible(value:Bool):Void
+	{
+		if (checkBox == null)
+			return;
+		checkBox.setDisplayEnabled(value);
+	}
+
+	function setValueControlVisible(value:Bool):Void
+	{
+		if (valueControl == null)
+			return;
+		valueControl.setDisplayEnabled(value);
 	}
 
 	public function applyTheme(selected:Bool, force:Bool = false):Void
@@ -1176,6 +1233,14 @@ private class OptionValueControl extends FlxSpriteGroup
 		applyTheme(false);
 	}
 
+	public function setDisplayEnabled(value:Bool):Void
+	{
+		visible = value;
+		active = value;
+		exists = value;
+		applyChildVisibility();
+	}
+
 	public function setText(value:String):Void
 	{
 		var nextText:String = value != null ? value : "";
@@ -1222,6 +1287,7 @@ private class OptionValueControl extends FlxSpriteGroup
 		centerText(leftArrow);
 		centerText(rightArrow);
 		centerText(valueText);
+		applyChildVisibility();
 	}
 
 	function centerText(text:FlxText):Void
@@ -1258,18 +1324,62 @@ private class OptionValueControl extends FlxSpriteGroup
 	function set_showArrows(value:Bool):Bool
 	{
 		showArrows = value;
-		if (leftArrow != null)
-			leftArrow.visible = value;
-		if (rightArrow != null)
-			rightArrow.visible = value;
-		if (leftDivider != null)
-			leftDivider.visible = value;
-		if (rightDivider != null)
-			rightDivider.visible = value;
-		if (leftState != null)
-			leftState.visible = value;
-		if (rightState != null)
-			rightState.visible = value;
+		applyChildVisibility();
 		return showArrows;
+	}
+
+	function applyChildVisibility():Void
+	{
+		var enabled:Bool = visible && exists;
+		if (bg != null)
+		{
+			bg.visible = enabled;
+			bg.active = enabled;
+			bg.exists = enabled;
+		}
+		if (valueText != null)
+		{
+			valueText.visible = enabled;
+			valueText.active = enabled;
+			valueText.exists = enabled;
+		}
+
+		var arrowsEnabled:Bool = enabled && showArrows;
+		if (leftArrow != null)
+		{
+			leftArrow.visible = arrowsEnabled;
+			leftArrow.active = arrowsEnabled;
+			leftArrow.exists = arrowsEnabled;
+		}
+		if (rightArrow != null)
+		{
+			rightArrow.visible = arrowsEnabled;
+			rightArrow.active = arrowsEnabled;
+			rightArrow.exists = arrowsEnabled;
+		}
+		if (leftDivider != null)
+		{
+			leftDivider.visible = arrowsEnabled;
+			leftDivider.active = arrowsEnabled;
+			leftDivider.exists = arrowsEnabled;
+		}
+		if (rightDivider != null)
+		{
+			rightDivider.visible = arrowsEnabled;
+			rightDivider.active = arrowsEnabled;
+			rightDivider.exists = arrowsEnabled;
+		}
+		if (leftState != null)
+		{
+			leftState.visible = arrowsEnabled;
+			leftState.active = arrowsEnabled;
+			leftState.exists = arrowsEnabled;
+		}
+		if (rightState != null)
+		{
+			rightState.visible = arrowsEnabled;
+			rightState.active = arrowsEnabled;
+			rightState.exists = arrowsEnabled;
+		}
 	}
 }

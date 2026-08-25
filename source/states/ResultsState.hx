@@ -8,6 +8,10 @@ import backend.ClientPrefs;
 import states.FreeplayState;
 import states.StoryMenuState;
 import states.MainMenuState;
+#if FEATURE_POLYMOD_MODS
+import funkin.play.ResultState;
+import funkin.save.Save.SaveScoreData;
+#end
 #if mobile
 import mobile.backend.TouchUtil;
 #end
@@ -33,6 +37,7 @@ class ResultsState extends MusicBeatState
 	public var animatedMisses:Int = 0;
 	public var animatedCombo:Int = 0;
 	public var animatedAccuracy:Float = 0;
+	var usingFunkinResultState:Bool = false;
 
 	public var scoreText:FlxText;
 	public var flawlesss:FlxText;
@@ -58,6 +63,12 @@ class ResultsState extends MusicBeatState
 	override public function create()
 	{
 		super.create();
+
+		#if FEATURE_POLYMOD_MODS
+		usingFunkinResultState = true;
+		openFunkinResultState();
+		return;
+		#end
 
 		#if MODS_ALLOWED
 		if (params.isMod && params.modFolder != null && params.modFolder != "")
@@ -218,6 +229,8 @@ class ResultsState extends MusicBeatState
 	override public function update(elapsed:Float)
 	{
 		super.update(elapsed);
+		if (usingFunkinResultState)
+			return;
 
 		if (animatedScore < params.score)
 		{
@@ -339,5 +352,111 @@ class ResultsState extends MusicBeatState
 			return current + Math.ceil((target - current) * 0.2 + 1);
 		return target;
 	}
+
+	#if FEATURE_POLYMOD_MODS
+	function openFunkinResultState():Void
+	{
+		persistentUpdate = false;
+		persistentDraw = true;
+
+		if (FlxG.sound.music != null)
+			FlxG.sound.music.stop();
+
+		funkin.plus.VSliceRuntime.ensureBaseReady();
+
+		openSubState(new ResultState({
+			storyMode: boolParam('isWeek'),
+			title: stringParam('songName', 'Song'),
+			songId: Paths.formatToSongPath(stringParam('songName', 'song')),
+			characterId: 'bf',
+			difficultyId: Paths.formatToSongPath(stringParam('difficulty', 'normal')),
+			scoreData: makeFunkinScoreData(intParam('score')),
+			prevScoreData: makePreviousFunkinScoreData(),
+			isNewHighscore: isNewHighscore(),
+			isPracticeMode: boolParam('isPractice'),
+			isBotPlayMode: boolParam('isBotPlay'),
+			fromPlusPlayState: true
+		}));
+	}
+
+	function makeFunkinScoreData(score:Int):SaveScoreData
+	{
+		var missed:Int = intParam('misses');
+		var totalNotes:Int = intParam('totalNotes');
+		var sick:Int = intParam('flawlesss') + intParam('sicks');
+		var good:Int = intParam('goods');
+		var bad:Int = intParam('bads');
+		var shit:Int = intParam('shits');
+		var totalNotesHit:Int = totalNotes > 0 ? Std.int(Math.max(0, totalNotes - missed)) : sick + good + bad + shit;
+
+		return {
+			score: score,
+			tallies: {
+				sick: sick,
+				good: good,
+				bad: bad,
+				shit: shit,
+				missed: missed,
+				combo: intParam('maxCombo'),
+				maxCombo: intParam('maxCombo'),
+				totalNotesHit: totalNotesHit,
+				totalNotes: totalNotes > 0 ? totalNotes : totalNotesHit + missed
+			}
+		};
+	}
+
+	function makePreviousFunkinScoreData():Null<SaveScoreData>
+	{
+		var previous:Int = intParam('prevHighScore', -1);
+		if (previous < 0)
+			return null;
+
+		var previousData:SaveScoreData = makeFunkinScoreData(previous);
+		return previousData;
+	}
+
+	function isNewHighscore():Bool
+	{
+		var previous:Int = intParam('prevHighScore', -1);
+		return previous >= 0 && intParam('score') > previous;
+	}
+
+	function fieldParam(name:String):Dynamic
+	{
+		if (params == null || !Reflect.hasField(params, name))
+			return null;
+		return Reflect.field(params, name);
+	}
+
+	function stringParam(name:String, fallback:String = ''):String
+	{
+		var value:Dynamic = fieldParam(name);
+		return value == null ? fallback : Std.string(value);
+	}
+
+	function intParam(name:String, fallback:Int = 0):Int
+	{
+		var value:Dynamic = fieldParam(name);
+		if (value == null)
+			return fallback;
+		if (Std.isOfType(value, Int))
+			return value;
+		if (Std.isOfType(value, Float))
+			return Std.int(value);
+
+		var parsed:Null<Int> = Std.parseInt(Std.string(value));
+		return parsed == null ? fallback : parsed;
+	}
+
+	function boolParam(name:String):Bool
+	{
+		var value:Dynamic = fieldParam(name);
+		if (value == null)
+			return false;
+		if (Std.isOfType(value, Bool))
+			return value;
+		return Std.string(value).toLowerCase() == 'true';
+	}
+	#end
 }
 

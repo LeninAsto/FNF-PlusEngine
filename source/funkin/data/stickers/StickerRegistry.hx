@@ -83,12 +83,20 @@ class StickerRegistry extends BaseRegistry<StickerPack, StickerData, StickerEntr
 
 	function createScriptedEntry(clsName:String):StickerPack
 	{
-		return ScriptedStickerPack.scriptInit(clsName, 'unknown') ?? new StickerPack('unknown');
+		var scriptInit:Dynamic = Reflect.field(ScriptedStickerPack, 'scriptInit');
+		if (scriptInit == null) return new StickerPack('unknown');
+
+		var stickerPack:Null<StickerPack> = cast Reflect.callMethod(ScriptedStickerPack, scriptInit, [clsName, 'unknown']);
+		return stickerPack ?? new StickerPack('unknown');
 	}
 
 	function getScriptedClassNames():Array<String>
 	{
-		return ScriptedStickerPack.listScriptClasses();
+		var listScriptClasses:Dynamic = Reflect.field(ScriptedStickerPack, 'listScriptClasses');
+		if (listScriptClasses == null) return [];
+
+		var result:Dynamic = Reflect.callMethod(ScriptedStickerPack, listScriptClasses, []);
+		return result == null ? [] : cast result;
 	}
 }
 

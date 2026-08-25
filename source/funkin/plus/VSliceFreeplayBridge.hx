@@ -22,6 +22,7 @@ typedef VSliceFreeplaySong =
 	var color:Int;
 	var difficulties:Array<String>;
 	var variation:String;
+	var ?rootPath:String;
 	var ?instrumental:String;
 	var ?previewStartSeconds:Null<Float>;
 	var ?previewEndSeconds:Null<Float>;
@@ -33,19 +34,37 @@ typedef VSliceFreeplaySong =
  */
 class VSliceFreeplayBridge
 {
+	static inline function traceFreeplay(message:String):Void
+	{
+		#if (debug || VSLICE_FREEPLAY_TRACE)
+		trace('[VSliceFreeplayTrace] $message');
+		#end
+	}
+
 	public static function listSongs():Array<VSliceFreeplaySong>
 	{
 		var result:Array<VSliceFreeplaySong> = [];
+		#if sys
+		traceFreeplay('listSongs begin cwd="${Sys.getCwd()}"');
+		#else
+		traceFreeplay('listSongs begin no-sys');
+		#end
 		#if (FEATURE_POLYMOD_MODS && MODS_ALLOWED && sys)
 		var seen:Map<String, Bool> = [];
-		for (modDir in VSliceRuntime.getEnabledVSliceModDirs())
+		var enabledDirs:Array<String> = VSliceRuntime.getEnabledVSliceModDirs();
+		traceFreeplay('enabled vslice dirs=${enabledDirs.join(",")}');
+		for (modDir in enabledDirs)
 		{
 			var modRoot:String = Paths.vsliceMods(modDir);
+			traceFreeplay('mod="$modDir" root="$modRoot" exists=${FileSystem.exists(modRoot)} isDir=${FileSystem.exists(modRoot) && FileSystem.isDirectory(modRoot)}');
 			if (!FileSystem.exists(modRoot) || !FileSystem.isDirectory(modRoot)) continue;
 
 			collectLevelSongs(result, seen, modDir, modRoot);
 			collectLooseSongs(result, seen, modDir, modRoot);
 		}
+		traceFreeplay('listSongs result=${result.length}');
+		#else
+		traceFreeplay('listSongs skipped: FEATURE_POLYMOD_MODS/MODS_ALLOWED/sys not available');
 		#end
 		return result;
 	}
@@ -61,8 +80,11 @@ class VSliceFreeplayBridge
 			difficulty = song.difficulties[index];
 		}
 
+		if (song.modDir == null || song.modDir.length == 0)
+			VSliceRuntime.ensureBaseReady();
+
 		Mods.currentVSliceModDirectory = song.modDir;
-		trace('VSliceFreeplayBridge play "${song.songId}" difficulty "$difficulty" variation "${song.variation}" from mod "${song.modDir}".');
+		traceFreeplay('play "${song.songId}" difficulty "$difficulty" variation "${song.variation}" from mod "${song.modDir}".');
 		try
 		{
 			VSliceRuntime.loadPlayState(song.songId, difficulty, song.variation);
@@ -78,18 +100,26 @@ class VSliceFreeplayBridge
 	static function collectLevelSongs(result:Array<VSliceFreeplaySong>, seen:Map<String, Bool>, modDir:String, modRoot:String):Void
 	{
 		var levelsRoot:String = haxe.io.Path.join([modRoot, 'data', 'levels']);
+		traceFreeplay('collectLevelSongs mod="$modDir" levelsRoot="$levelsRoot" exists=${FileSystem.exists(levelsRoot)}');
 		if (!FileSystem.exists(levelsRoot)) return;
 
-		for (levelFile in sortedJsonFiles(levelsRoot))
+		var levelFiles:Array<String> = sortedJsonFiles(levelsRoot);
+		traceFreeplay('level files mod="$modDir" count=${levelFiles.length}');
+		for (levelFile in levelFiles)
 		{
 			try
 			{
 				var level:Dynamic = Json.parse(File.getContent(levelFile));
 				var songs:Array<Dynamic> = cast Reflect.field(level, 'songs');
-				if (songs == null) continue;
+				if (songs == null)
+				{
+					traceFreeplay('level "$levelFile" has no songs field');
+					continue;
+				}
 
 				var levelId:String = haxe.io.Path.withoutExtension(haxe.io.Path.withoutDirectory(levelFile));
 				var color:Int = parseColor(Reflect.field(level, 'background'), 0xFF9271FD);
+				traceFreeplay('level "$levelId" songs=${songs.length}');
 
 				for (songValue in songs)
 				{
@@ -107,9 +137,12 @@ class VSliceFreeplayBridge
 	static function collectLooseSongs(result:Array<VSliceFreeplaySong>, seen:Map<String, Bool>, modDir:String, modRoot:String):Void
 	{
 		var songsRoot:String = haxe.io.Path.join([modRoot, 'data', 'songs']);
+		traceFreeplay('collectLooseSongs mod="$modDir" songsRoot="$songsRoot" exists=${FileSystem.exists(songsRoot)}');
 		if (!FileSystem.exists(songsRoot)) return;
 
-		for (metadataPath in findMetadataFiles(songsRoot))
+		var metadataFiles:Array<String> = findMetadataFiles(songsRoot);
+		traceFreeplay('loose metadata mod="$modDir" count=${metadataFiles.length}');
+		for (metadataPath in metadataFiles)
 		{
 			var variationInfo = parseMetadataFileName(metadataPath);
 			if (variationInfo != null)
@@ -123,7 +156,9 @@ class VSliceFreeplayBridge
 	{
 		var songRoot:String = haxe.io.Path.join([modRoot, 'data', 'songs', songId]);
 		var variations:Array<String> = [];
-		for (metadataPath in sortedJsonFiles(songRoot))
+		var metadataFiles:Array<String> = sortedJsonFiles(songRoot);
+		traceFreeplay('addSongVariations mod="$modDir" song="$songId" level="$levelId" songRoot="$songRoot" metadataCount=${metadataFiles.length}');
+		for (metadataPath in metadataFiles)
 		{
 			var variationInfo = parseMetadataFileName(metadataPath);
 			if (variationInfo != null && variationInfo.songId == songId && variationInfo.variation != 'default' && !variations.contains(variationInfo.variation))
@@ -144,10 +179,18 @@ class VSliceFreeplayBridge
 		if (variation == null || variation.trim().length == 0) variation = 'default';
 
 		var key:String = '$modDir|$songId|$variation';
-		if (seen.exists(key)) return;
+		if (seen.exists(key))
+		{
+			traceFreeplay('skip duplicate "$key"');
+			return;
+		}
 
 		var metadata:Dynamic = loadMetadata(modRoot, songId, variation);
-		if (metadata == null) return;
+		if (metadata == null)
+		{
+			traceFreeplay('skip "$key": metadata null');
+			return;
+		}
 
 		var playData:Dynamic = Reflect.field(metadata, 'playData');
 		var characters:Dynamic = playData != null ? Reflect.field(playData, 'characters') : null;
@@ -161,6 +204,7 @@ class VSliceFreeplayBridge
 		var previewEnd:Null<Float> = parseOptionalSeconds(firstDynamic(playData, ['freeplayPrevEnd', 'previewEnd', 'songPreviewEnd']));
 
 		seen.set(key, true);
+		traceFreeplay('add song key="$key" display="$displayName" icon="$icon" diffs=${difficulties.join(",")} root="$modRoot"');
 		result.push({
 			songId: songId,
 			displayName: displayName,
@@ -170,6 +214,7 @@ class VSliceFreeplayBridge
 			color: metaColor,
 			difficulties: difficulties,
 			variation: variation,
+			rootPath: modRoot,
 			instrumental: instrumental,
 			previewStartSeconds: previewStart,
 			previewEndSeconds: previewEnd
@@ -180,7 +225,11 @@ class VSliceFreeplayBridge
 	{
 		if (song == null || song.modDir == null || song.songId == null) return null;
 
-		var songRoot:String = haxe.io.Path.join([Paths.vsliceMods(song.modDir), 'songs', song.songId]);
+		var rootPath:String = song.rootPath;
+		if (rootPath == null || rootPath.length == 0)
+			rootPath = (song.modDir == null || song.modDir.length == 0) ? haxe.io.Path.join([Sys.getCwd(), 'assets', 'funkin']) : Paths.vsliceMods(song.modDir);
+
+		var songRoot:String = haxe.io.Path.join([rootPath, 'songs', song.songId]);
 		var suffixes:Array<String> = [];
 		addAudioSuffix(suffixes, song.instrumental);
 		if (song.variation != null && song.variation != 'default' && song.variation != 'erect')
@@ -238,7 +287,11 @@ class VSliceFreeplayBridge
 		var path:String = haxe.io.Path.join([songRoot, '$songId-metadata$suffix.json']);
 		if (!FileSystem.exists(path) && suffix.length > 0)
 			path = haxe.io.Path.join([songRoot, '$songId-metadata.json']);
-		if (!FileSystem.exists(path)) return null;
+		if (!FileSystem.exists(path))
+		{
+			traceFreeplay('metadata missing song="$songId" variation="$variation" path="$path"');
+			return null;
+		}
 
 		try
 		{

@@ -2886,6 +2886,11 @@ class PlayState extends MusicBeatState
 
 		unspawnNotes.sort(sortByTime);
 
+		stagesFunc(function(stage:BaseStage) stage.notesGenerated(unspawnNotes));
+		#if HSCRIPT_ALLOWED
+		callOnScripts(scripting.ScriptHooks.NOTES_GENERATED, [unspawnNotes]);
+		#end
+
 		generatedMusic = true;
 
 		totalNotes = 0;
@@ -4614,7 +4619,9 @@ class PlayState extends MusicBeatState
 			{
 				if (ClientPrefs.data.resultsStateAtEnd && !cpuControlled)
 				{
+					#if !FEATURE_POLYMOD_MODS
 					FlxG.sound.playMusic(Paths.music('freakyMenu'), 0.7, true);
+					#end
 
 					MusicBeatState.switchState(backend.ScriptableState.tryCreate('ResultsState', new ResultsState({
 						score: songScore,

@@ -144,10 +144,6 @@ class RegistryMacro
   {
     var scriptedEntryClsName:String = entryType.pack.join('.') + '.Scripted' + entryType.name;
 
-    var getScriptedClassName:String = '${scriptedEntryClsName}';
-
-    var createScriptedEntry:String = '${scriptedEntryClsName}.scriptInit(clsName, "unknown")';
-
     var newJsonParser:String = 'new json2object.JsonParser<${dataType.module}.${dataType.name}>()';
 
     var dataFilePath:String = getRegistryDataFilePath(cls, fields);
@@ -176,12 +172,20 @@ class RegistryMacro
 
         function getScriptedClassNames()
         {
-          return ${Context.parse(getScriptedClassName, Context.currentPos())}.listScriptClasses();
+          var scriptedEntryClass:Dynamic = Type.resolveClass($v{scriptedEntryClsName});
+          if (scriptedEntryClass == null) return [];
+
+          var listScriptClasses:Dynamic = Reflect.field(scriptedEntryClass, 'listScriptClasses');
+          return listScriptClasses == null ? [] : cast Reflect.callMethod(scriptedEntryClass, listScriptClasses, []);
         }
 
         function createScriptedEntry(clsName:String)
         {
-          return ${Context.parse(createScriptedEntry, Context.currentPos())};
+          var scriptedEntryClass:Dynamic = Type.resolveClass($v{scriptedEntryClsName});
+          if (scriptedEntryClass == null) return null;
+
+          var scriptInit:Dynamic = Reflect.field(scriptedEntryClass, 'scriptInit');
+          return scriptInit == null ? null : Reflect.callMethod(scriptedEntryClass, scriptInit, [clsName, "unknown"]);
         }
 
         public function parseEntryData(id:String)

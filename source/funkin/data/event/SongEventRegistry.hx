@@ -63,14 +63,19 @@ class SongEventRegistry
 
 	static function registerScriptedEvents()
 	{
-		var scriptedEventClassNames:Array<String> = ScriptedSongEvent.listScriptClasses();
+		var scriptedEventClassNames:Array<String> = [];
+		var listScriptClasses:Dynamic = Reflect.field(ScriptedSongEvent, 'listScriptClasses');
+		if (listScriptClasses != null)
+			scriptedEventClassNames = cast Reflect.callMethod(ScriptedSongEvent, listScriptClasses, []);
+
 		trace('Instantiating ${scriptedEventClassNames.length} scripted song events...');
 		if (scriptedEventClassNames == null || scriptedEventClassNames.length == 0)
 			return;
 
 		for (eventCls in scriptedEventClassNames)
 		{
-			var event:Null<SongEvent> = ScriptedSongEvent.scriptInit(eventCls, "UKNOWN");
+			var scriptInit:Dynamic = Reflect.field(ScriptedSongEvent, 'scriptInit');
+			var event:Null<SongEvent> = scriptInit == null ? null : cast Reflect.callMethod(ScriptedSongEvent, scriptInit, [eventCls, "UNKNOWN"]);
 
 			if (event != null)
 			{

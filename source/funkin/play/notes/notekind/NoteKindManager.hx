@@ -24,6 +24,21 @@ class NoteKindManager
    */
   public static var noteKinds:Map<String, NoteKind> = [];
 
+  static function getScriptedNoteKindClassNames():Array<String>
+  {
+    var listScriptClasses:Dynamic = Reflect.field(ScriptedNoteKind, 'listScriptClasses');
+    if (listScriptClasses == null) return [];
+
+    var result:Dynamic = Reflect.callMethod(ScriptedNoteKind, listScriptClasses, []);
+    return result == null ? [] : cast result;
+  }
+
+  static function createScriptedNoteKind(scriptedClass:String):Null<NoteKind>
+  {
+    var scriptInit:Dynamic = Reflect.field(ScriptedNoteKind, 'scriptInit');
+    return scriptInit == null ? null : cast Reflect.callMethod(ScriptedNoteKind, scriptInit, [scriptedClass, 'unknown']);
+  }
+
   /**
    * Retrieve a note kind by its name.
    * @param noteKind The name of the note kind.
@@ -89,7 +104,7 @@ class NoteKindManager
    */
   public static function registerScriptedNoteKinds():Void
   {
-    var scriptedClassName:Array<String> = ScriptedNoteKind.listScriptClasses();
+    var scriptedClassName:Array<String> = getScriptedNoteKindClassNames();
     if (scriptedClassName.length > 0)
     {
       trace('Instantiating ${scriptedClassName.length} scripted note kind(s)...');
@@ -97,7 +112,8 @@ class NoteKindManager
       {
         try
         {
-          var script:NoteKind = ScriptedNoteKind.scriptInit(scriptedClass, 'unknown');
+          var script:Null<NoteKind> = createScriptedNoteKind(scriptedClass);
+          if (script == null) continue;
           trace(' Initialized scripted note kind: ${script.noteKind}');
           noteKinds.set(script.noteKind, script);
         }

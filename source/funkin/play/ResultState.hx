@@ -111,6 +111,46 @@ class ResultState extends MusicBeatSubState
 
   public var isChartingMode(get, never):Bool;
 
+  static function createScriptedFunkinSprite(scriptClass:String, x:Float, y:Float):Null<FunkinSprite>
+  {
+    try
+    {
+      var scriptInit:Dynamic = Reflect.field(ScriptedFunkinSprite, 'scriptInit');
+      if (scriptInit != null)
+      {
+        var scripted:Null<FunkinSprite> = cast Reflect.callMethod(ScriptedFunkinSprite, scriptInit, [scriptClass, x, y]);
+        if (scripted != null) return scripted;
+      }
+    }
+    catch (e:Dynamic)
+    {
+      trace('[ResultState] Failed scripted results sprite "$scriptClass"; using atlas fallback: $e');
+    }
+
+    return createResultsScriptFallback(scriptClass, x, y);
+  }
+
+  static function createResultsScriptFallback(scriptClass:String, x:Float, y:Float):Null<FunkinSprite>
+  {
+    var atlasPath:Null<String> = switch (scriptClass)
+    {
+      case 'BFBedPerfectResults': 'resultScreen/results-bf/resultsPERFECT/bed';
+      case 'BFShitResults': 'resultScreen/results-bf/resultsSHIT';
+      case 'PicoPerfectResults': 'resultScreen/results-pico/resultsPERFECT';
+      case 'PicoGreatResults': 'resultScreen/results-pico/resultsGREAT';
+      case 'PicoGoodResults': 'resultScreen/results-pico/resultsGOOD';
+      default: null;
+    }
+
+    if (atlasPath == null)
+    {
+      trace('[ResultState] No atlas fallback registered for results script "$scriptClass".');
+      return null;
+    }
+
+    return FunkinSprite.createTextureAtlas(x, y, atlasPath, 'shared');
+  }
+
   function get_isChartingMode():Bool
   {
     if (PlayState.instance != null) return PlayState.instance.isChartingMode;
@@ -208,9 +248,23 @@ class ResultState extends MusicBeatSubState
     soundSystem.zIndex = 1100;
     add(soundSystem);
 
-    // Fetch playable character data. Default to BF on the results screen if we can't find it.
-    playerCharacterId = PlayerRegistry.instance.getCharacterOwnerId(params.characterId) ?? 'bf';
+    // Fetch playable character data. Plus/Psych bridges always use BF to avoid
+    // Funkin player-card routing for characters that only exist as chart actors.
+    var requestedCharacterId:String = (params?.fromPlusPlayState ?? false) ? Constants.DEFAULT_CHARACTER : (params.characterId ?? Constants.DEFAULT_CHARACTER);
+    playerCharacterId = PlayerRegistry.instance.getCharacterOwnerId(requestedCharacterId) ?? Constants.DEFAULT_CHARACTER;
     playerCharacter = PlayerRegistry.instance.fetchEntry(playerCharacterId);
+    if (playerCharacter == null)
+    {
+      trace('[ResultState] Playable character "$playerCharacterId" was not loaded; reloading PlayerRegistry once.');
+      PlayerRegistry.instance.loadEntries();
+      playerCharacter = PlayerRegistry.instance.fetchEntry(playerCharacterId);
+    }
+    if (playerCharacter == null && playerCharacterId != Constants.DEFAULT_CHARACTER)
+    {
+      trace('[ResultState] Missing playable character "$playerCharacterId"; falling back to ${Constants.DEFAULT_CHARACTER}.');
+      playerCharacterId = Constants.DEFAULT_CHARACTER;
+      playerCharacter = PlayerRegistry.instance.fetchEntry(playerCharacterId);
+    }
 
     trace('Got playable character: ${playerCharacter?.getName()}');
     // Query JSON data based on the rank, then use that to build the animation(s) the player sees.
@@ -243,7 +297,7 @@ class ResultState extends MusicBeatSubState
           var xPos = offsets[0] + (FullScreenScaleMode.gameCutoutSize.x / 2);
           var yPos = offsets[1];
 
-          if (animData.scriptClass != null) animation = ScriptedFunkinSprite.scriptInit(animData.scriptClass, xPos, yPos);
+          if (animData.scriptClass != null) animation = createScriptedFunkinSprite(animData.scriptClass, xPos, yPos);
           else
             animation = FunkinSprite.createTextureAtlas(xPos, yPos, animPath, animLibrary);
 
@@ -307,7 +361,7 @@ class ResultState extends MusicBeatSubState
           @:nullSafety(Off)
           var animation:Null<FunkinSprite> = null;
 
-          if (animData.scriptClass != null) animation = ScriptedFunkinSprite.scriptInit(animData.scriptClass,
+          if (animData.scriptClass != null) animation = createScriptedFunkinSprite(animData.scriptClass,
             offsets[0] + (FullScreenScaleMode.gameCutoutSize.x / 2), offsets[1]);
           else
             animation = FunkinSprite.createSparrow(offsets[0] + (FullScreenScaleMode.gameCutoutSize.x / 2), offsets[1], animPath);
@@ -512,12 +566,21 @@ class ResultState extends MusicBeatSubState
     new FlxTimer().start(rank.getMusicDelay(), _ ->
     {
       var musicPath = getMusicPath(playerCharacter, rank);
-      var introMusic:String = Paths.music('$musicPath/$musicPath-intro');
+      var introMusic:String = Paths.music('$musicPath/$musicPath-intro', 'shared');
+      var mainMusic:String = Paths.music('$musicPath/$musicPath', 'shared');
+      var hasMainMusic:Bool = Assets.exists(mainMusic);
+      if (!hasMainMusic)
+      {
+        trace('[ResultState] Missing results music "$mainMusic"; falling back to freakyMenu/freakyMenu.');
+        musicPath = 'freakyMenu/freakyMenu';
+        introMusic = Paths.music('$musicPath/$musicPath-intro', 'shared');
+        mainMusic = Paths.music(musicPath, 'shared');
+        if (!Assets.exists(mainMusic))
+          mainMusic = Paths.music(musicPath);
+      }
 
       if (Assets.exists(introMusic))
       {
-        var mainMusic:String = Paths.music('$musicPath/$musicPath'); // wraps how FunkinSound load audios
-
         // preload the loop music
         @:nullSafety(Off)
         var musicLoop:FunkinSound = FunkinSound.load(mainMusic, 1.0, true, true, false, false, null, null, true);
@@ -545,7 +608,7 @@ class ResultState extends MusicBeatSubState
         });
         else
         {
-          resultsMusic = FunkinSound.load(Paths.music(getMusicPath(playerCharacter, rank) + '/' + getMusicPath(playerCharacter, rank)), 1.0, true, false, true);
+          resultsMusic = FunkinSound.load(mainMusic, 1.0, true, false, true);
         }
       }
     });
@@ -829,7 +892,15 @@ class ResultState extends MusicBeatSubState
       }
     }
 
-    if (controls.PAUSE_P || controls.ACCEPT_P #if mobile || TouchUtil.pressAction() #end)
+    var didAccept:Bool = false;
+    var playerControls = PlayerSettings.player1 == null ? null : PlayerSettings.player1.controls;
+    if (playerControls != null)
+      didAccept = playerControls.PAUSE_P || playerControls.ACCEPT_P;
+    #if mobile
+    didAccept = didAccept || TouchUtil.pressAction();
+    #end
+
+    if (didAccept)
     {
       if (busy) return;
       if (_parentState is funkin.ui.debug.results.ResultsDebugSubState)
@@ -884,7 +955,9 @@ class ResultState extends MusicBeatSubState
 
       // Determining the target state(s) to go to.
       // Default to main menu because that's better than `null`.
-      var targetState:FlxState = backend.ScriptableState.tryCreate('MainMenuState', new states.MainMenuState());
+      var fromPlusPlayState:Bool = params?.fromPlusPlayState ?? false;
+      trace('[ResultState] fromPlusPlayState=$fromPlusPlayState storyMode=${params?.storyMode ?? false}');
+      var targetState:FlxState = fromPlusPlayState ? backend.ScriptableState.tryCreate('MainMenuState', new states.MainMenuState()) : new funkin.ui.mainmenu.MainMenuState();
       var targetStateFactory:Null<Void->StickerSubState> = null;
       var shouldTween = false;
       var shouldUseSubstate = false;
@@ -906,7 +979,7 @@ class ResultState extends MusicBeatSubState
 
       if (params.storyMode)
       {
-        if (PlayerRegistry.instance.hasNewCharacter())
+        if (!fromPlusPlayState && PlayerRegistry.instance.hasNewCharacter())
         {
           // New character, display the notif.
           targetState = new StoryMenuState(null);
@@ -931,7 +1004,7 @@ class ResultState extends MusicBeatSubState
           //     stickerPack: stickerPackId
           //   });
           targetStateFactory = () -> new StickerSubState({
-            targetState: (sticker) -> new states.StoryMenuState(),
+            targetState: (sticker) -> fromPlusPlayState ? new states.StoryMenuState() : new StoryMenuState(sticker),
             stickerPack: stickerPackId,
             playOutOnTarget: true
           });
@@ -957,7 +1030,7 @@ class ResultState extends MusicBeatSubState
             this.close();
             return;
           }
-          targetState = states.FreeplayStateSelector.create();
+          targetState = fromPlusPlayState ? states.FreeplayStateSelector.create() : FreeplayState.build();
         }
         else
         {
@@ -974,7 +1047,7 @@ class ResultState extends MusicBeatSubState
           shouldTween = false;
           shouldUseSubstate = true;
           targetStateFactory = () -> new StickerSubState({
-            targetState: (sticker) -> states.FreeplayStateSelector.create(),
+            targetState: (sticker) -> fromPlusPlayState ? states.FreeplayStateSelector.create() : FreeplayState.build(null, sticker),
             stickerPack: stickerPackId,
             playOutOnTarget: true
           });
@@ -1154,4 +1227,10 @@ typedef ResultsStateParams =
    * Forces to do the rank slamming animation in freeplay for debug purposes
    */
   var ?forceRankSlam:Bool;
+
+  /**
+   * True when this ResultState was opened by Plus Engine's Psych PlayState bridge.
+   * In that case, transitions return to Plus menus and avoid Funkin-specific player routing.
+   */
+  var ?fromPlusPlayState:Bool;
 };

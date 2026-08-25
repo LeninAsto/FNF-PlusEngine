@@ -3,6 +3,9 @@ package funkin;
 import openfl.utils.Future;
 import openfl.utils.AssetType;
 import funkin.util.macro.ConsoleMacro;
+#if sys
+import sys.FileSystem;
+#end
 
 using StringTools;
 
@@ -53,8 +56,51 @@ class Assets implements ConsoleClass
 				return variant;
 		}
 
+		#if sys
+		for (variant in namespacedVariants(path))
+		{
+			var physicalVariant:Null<String> = resolvePhysicalPath(variant);
+			if (physicalVariant != null)
+				return physicalVariant;
+		}
+
+		var physicalPath:Null<String> = resolvePhysicalPath(path);
+		if (physicalPath != null)
+			return physicalPath;
+		#end
+
 		return path;
 	}
+
+	#if sys
+	static function resolvePhysicalPath(path:String):Null<String>
+	{
+		if (path == null || path.length == 0)
+			return null;
+
+		var assetPath:String = path;
+		var colonIndex:Int = assetPath.indexOf(':');
+		if (colonIndex != -1)
+			assetPath = assetPath.substr(colonIndex + 1);
+
+		assetPath = assetPath.replace('\\', '/');
+		var candidates:Array<String> = [];
+		if (haxe.io.Path.isAbsolute(assetPath))
+			candidates.push(assetPath);
+		else
+		{
+			candidates.push(Sys.getCwd() + assetPath);
+			candidates.push(assetPath);
+		}
+
+		for (candidate in candidates)
+		{
+			if (FileSystem.exists(candidate) && !FileSystem.isDirectory(candidate))
+				return candidate;
+		}
+		return null;
+	}
+	#end
 
 	/**
 	 * Get the file system path for an asset
@@ -184,6 +230,13 @@ class Assets implements ConsoleClass
 		for (variant in namespacedVariants(path))
 			if (openfl.utils.Assets.exists(variant, type))
 				return true;
+		#if sys
+		for (variant in namespacedVariants(path))
+			if (resolvePhysicalPath(variant) != null)
+				return true;
+		if (resolvePhysicalPath(path) != null)
+			return true;
+		#end
 		return false;
 	}
 

@@ -18,7 +18,7 @@ class ScriptRegistry {
 	public static inline var STAGE_PACKAGE:String = 'stages';
 	public static inline var BASE_GAME_MOD:String = 'Friday Night Funkin';
 	public static inline var SHARED_WORLD:String = '';
-	public static var verbose:Bool = true;
+	public static var verbose:Bool = false;
 
 	static var worlds:Map<String, ScriptWorld> = new Map();
 
@@ -43,7 +43,7 @@ class ScriptRegistry {
 				return null;
 			}
 
-			trace('[ScriptRegistry] stage "$stage" -> $fullName from ${resolved.mod} (${resolved.file})');
+			trace('[ScriptRegistry] stage "$stage" -> $fullName');
 			return cast inst;
 		}
 
@@ -77,10 +77,15 @@ class ScriptRegistry {
 
 		makeSafe(cls);
 
+		if (cls.failed || !cls.initialized) {
+			HScript.error('Scripted type "$path" did not initialize; check the previous hxscript error for the real cause.', errPos(path));
+			return null;
+		}
+
 		try {
 			return cls.typeCreateInstance(args == null ? [] : args);
 		} catch (e:haxe.Exception) {
-			HScript.error('Failed to instantiate "$path": ${e.message}', errPos(path));
+			HScript.error('Failed to instantiate "$path": ${e.details()}', errPos(path));
 			return null;
 		}
 	}
@@ -138,7 +143,7 @@ class ScriptRegistry {
 		if (world == null) {
 			world = new ScriptWorld(key);
 			worlds.set(key, world);
-			trace('[ScriptRegistry] created world="${key.length > 0 ? key : "<shared>"}"');
+			log('created world="${key.length > 0 ? key : "<shared>"}"');
 		}
 		return world;
 	}
@@ -150,14 +155,14 @@ class ScriptRegistry {
 			return;
 		world.dispose();
 		worlds.remove(key);
-		trace('[ScriptRegistry] disposed world="${key.length > 0 ? key : "<shared>"}"');
+		log('disposed world="${key.length > 0 ? key : "<shared>"}"');
 	}
 
 	public static function dispose():Void {
 		for (world in worlds)
 			world.dispose();
 		worlds.clear();
-		trace('[ScriptRegistry] disposed all worlds');
+		log('disposed all worlds');
 	}
 
 	public static function makeSafe(cls:ScriptedClass):Void {
@@ -267,15 +272,15 @@ class ScriptWorld {
 		var hadError:Bool = false;
 		module.onParsingError = function(e:haxe.Exception) {
 			hadError = true;
-			HScript.error('Parse error in "$file": ${e.message}', errPos(path));
+			HScript.error('Parse error in "$file": ${e.details()}', errPos(path));
 		};
 		module.onProgramError = function(e:haxe.Exception) {
 			hadError = true;
-			HScript.error('Runtime error in "$file": ${e.message}', errPos(path));
+			HScript.error('Runtime error in "$file": ${e.details()}', errPos(path));
 		};
 		module.onTypeError = function(e:haxe.Exception, type:IScriptedType) {
 			hadError = true;
-			HScript.error('Type error in "${type.name}" from "$file": ${e.message}', errPos(path));
+			HScript.error('Type error in "${type.name}" from "$file": ${e.details()}', errPos(path));
 		};
 
 		if (hadError) {
@@ -287,7 +292,7 @@ class ScriptWorld {
 		files.set(path, file);
 		environment.addModule(module);
 		added.push(module);
-		trace('[ScriptRegistry] loaded class="$path" file="$file" world="${mod.length > 0 ? mod : "<shared>"}" types=${Lambda.count(module.types)}');
+		ScriptRegistry.log('loaded class="$path" file="$file" world="${mod.length > 0 ? mod : "<shared>"}" types=${Lambda.count(module.types)}');
 
 		for (dependency in scriptedImports(module))
 			if (!load(dependency, null, added)) {

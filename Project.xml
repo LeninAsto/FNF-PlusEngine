@@ -36,12 +36,17 @@
 	<define name="SHOW_LOADING_SCREEN" />
 	<define name="PSYCH_WATERMARKS"/> <!-- DELETE THIS TO REMOVE THE PSYCH LOGO FROM LOADING SCREEN -->
 	<define name="VIDEOS_ALLOWED" if="desktop || mobile" unless="32bits"/> <!-- Videos are now always enabled for desktop/mobile builds -->
-	<define name="FEATURE_POLYMOD_MODS" if="vslice" />
-	<define name="FEATURE_PARTIAL_SOUNDS" if="vslice" />
-	<define name="FEATURE_VIDEO_PLAYBACK" if="VIDEOS_ALLOWED vslice" />
-	<define name="FEATURE_OPEN_URL" if="vslice" />
-	<define name="FEATURE_GHOST_TAPPING" if="vslice" />
-	<define name="FEATURE_LAG_ADJUSTMENT" if="vslice" />
+	<define name="VSLICE_ENABLED" if="vslice" />
+	<define name="VSLICE_ENABLED" if="officialBuild" />
+	<section if="VSLICE_ENABLED">
+		<define name="FEATURE_POLYMOD_MODS" />
+		<define name="FEATURE_PARTIAL_SOUNDS" />
+		<define name="FEATURE_VIDEO_PLAYBACK" if="VIDEOS_ALLOWED" />
+		<define name="FEATURE_OPEN_URL" />
+		<define name="FEATURE_GHOST_TAPPING" />
+		<define name="FEATURE_LAG_ADJUSTMENT" />
+		<define name="FUNKIN_ASSETS" />
+	</section>
 	<define name="FEATURE_TOUCH_CONTROLS" if="mobile vslice" />
 	<define name="FEATURE_DEBUG_FUNCTIONS" if="debug vslice" />
 	<define name="FEATURE_DEBUG_DISPLAY" if="debug vslice" unless="mobile" />
@@ -51,8 +56,6 @@
 	<section if="officialBuild">
 		<define name="TITLE_SCREEN_EASTER_EGG"/>
 	</section>
-	<define name="FUNKIN_ASSETS" if="vslice" />
-
 	<!-- ____________________________ Window Settings ___________________________ -->
 
 	<!--These window settings apply to all targets-->
@@ -92,8 +95,7 @@
 
 	<section if="FUNKIN_ASSETS">
 		<assets path="assets/funkin" rename="assets/funkin"/>
-		<haxelib name="grig.audio"/>
-		<haxelib name="funkin.vis"/>
+		<assets path="assets/funkin/shared/music" rename="assets/funkin/shared/music" type="music"/>
 	</section>
 
 	<define name="CHECK_FOR_UPDATES" if="officialBuild"/>
@@ -106,7 +108,7 @@
 		<assets path='base_game' rename='mods/Friday Night Funkin' embed='false' exclude="*.mp3" if="mobile"/>
 		<assets path='example_mods' rename='mods' embed='false' />
 		<assets path='example_sm' rename='sm' embed='false' />
-		<assets path='vslice_mods' embed='false' if="vslice"/>
+		<assets path='vslice_mods' embed='false' if="VSLICE_ENABLED"/>
 		<assets path='list.txt' rename='modsList.txt' />
 	</section>
 
@@ -125,6 +127,8 @@
 	<haxelib name="flixel-addons" />
 	<haxelib name="tjson" version="1.4.0"/>
 	<haxelib name="moonchart" unless="mac | ios"/>
+	<haxelib name="grig.audio"/>
+	<haxelib name="funkin.vis"/>
 
 	<haxelib name="polymod" if="FEATURE_POLYMOD_MODS"/>
 	<haxelib name="json2object" if="FEATURE_POLYMOD_MODS"/>
@@ -270,7 +274,7 @@
 
 	<section if="android">
 		<assets path="art/icons/android/res" rename="app/src/main/res" type="template" />
-		<assets path="source/funkin/external/android/java/funkin" rename="app/src/main/java/funkin" type="template" if="vslice" />
+		<assets path="source/funkin/external/android/java/funkin" rename="app/src/main/java/funkin" type="template" if="VSLICE_ENABLED" />
 		<include path="source/mobile/include_android.xml" />
 	</section>
 </project>

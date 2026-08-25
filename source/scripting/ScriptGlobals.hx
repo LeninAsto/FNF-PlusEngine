@@ -11,6 +11,11 @@ class ScriptGlobals {
 	static var keepScriptError:Class<ScriptError> = ScriptError;
 	static var keepScriptBytes:Class<ScriptBytes> = ScriptBytes;
 	static var keepScriptDraw:Class<ScriptDraw> = ScriptDraw;
+	static var keepABotSpectrum:Class<objects.ABotSpectrum> = objects.ABotSpectrum;
+	static var keepPsychFlxAnimate:Class<backend.PsychFlxAnimate> = backend.PsychFlxAnimate;
+	static var keepCutsceneHandler:Class<cutscenes.CutsceneHandler> = cutscenes.CutsceneHandler;
+	static var keepRainShader:Class<shaders.RainShader> = shaders.RainShader;
+	static var keepGameOverSubstate:Class<substates.GameOverSubstate> = substates.GameOverSubstate;
 
 	public static final TYPE_IMPORTS:Array<String> = [
 		'backend.Paths',
@@ -22,6 +27,7 @@ class ScriptGlobals {
 		'backend.ClientPrefs',
 		'backend.Conductor',
 		'backend.BaseStage',
+		'backend.PsychFlxAnimate',
 		'backend.Difficulty',
 		'backend.Mods',
 		'backend.Language',
@@ -33,6 +39,7 @@ class ScriptGlobals {
 		'objects.Bar',
 		'objects.Character',
 		'objects.HealthIcon',
+		'objects.ABotSpectrum',
 		'objects.Note',
 		'objects.NoteSplash',
 		'objects.StrumNote',
@@ -41,8 +48,11 @@ class ScriptGlobals {
 		'scripting.ScriptBytes',
 		'scripting.ScriptDraw',
 		'scripting.ScriptError',
+		'cutscenes.CutsceneHandler',
+		'shaders.RainShader',
 		'states.PlayState',
 		'states.LoadingState',
+		'substates.GameOverSubstate',
 		'flixel.FlxG',
 		'flixel.FlxBasic',
 		'flixel.FlxObject',
@@ -63,6 +73,7 @@ class ScriptGlobals {
 		'flixel.ui.FlxButton',
 		'flixel.ui.FlxBar',
 		'flixel.addons.display.FlxBackdrop',
+		'flixel.addons.display.FlxTiledSprite',
 		'flixel.addons.display.FlxRuntimeShader',
 		'flixel.effects.FlxFlicker',
 		'flixel.addons.transition.FlxTransitionableState',
@@ -103,7 +114,6 @@ class ScriptGlobals {
 		for (path in TYPE_IMPORTS) {
 			if (TypeCollection.main.fromPath(path) == null) {
 				skippedCount++;
-				trace('[ScriptGlobals] skipped missing type: $path');
 				continue;
 			}
 

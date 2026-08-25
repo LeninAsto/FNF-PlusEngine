@@ -164,7 +164,13 @@ typedef PlayStateParams =
    * Whether the note data should be mirrored horizontally.
    * @default `false`
    */
-  ?mirrored:Bool
+  ?mirrored:Bool,
+  /**
+   * Plus/Psych launched this Funkin PlayState and expects Results to return
+   * through the Plus freeplay selector instead of Funkin's player cards menu.
+   * @default `false`
+   */
+  ?fromPlusFreeplay:Bool
 }
 
 /**
@@ -745,6 +751,7 @@ class PlayState extends MusicBeatSubState
   static final MUSIC_EASE_RATIO:Float = 42;
 
   var mirrorSongData:Bool = false;
+  var returnResultsToPlusFreeplay:Bool = false;
 
   // TODO: Refactor or document
   var generatedMusic:Bool = false;
@@ -784,6 +791,7 @@ class PlayState extends MusicBeatSubState
     overrideMusic = params.overrideMusic ?? false;
     previousCameraFollowPoint = params.cameraFollowPoint;
     mirrorSongData = params.mirrored ?? false;
+    returnResultsToPlusFreeplay = params.fromPlusFreeplay ?? false;
 
     // Basic object initialization
 
@@ -824,7 +832,18 @@ class PlayState extends MusicBeatSubState
     opponentStrumline = new Strumline(noteStyle, false, strumScrollSpeed);
 
     // Healthbar
-    healthBarBG = FunkinSprite.create(0, 0, 'healthBar');
+    var healthBarPath:String = Paths.image('healthBar');
+    if (Assets.exists(healthBarPath, openfl.utils.AssetType.IMAGE))
+    {
+      healthBarBG = FunkinSprite.create(0, 0, 'healthBar');
+    }
+    else
+    {
+      FlxG.log.warn('[VSliceHUD] Missing healthBar asset "$healthBarPath"; using generated fallback.');
+      healthBarBG = new FunkinSprite(0, 0);
+      healthBarBG.makeSolidColor(601, 19, 0xFF000000);
+      healthBarBG.alpha = 0.55;
+    }
     healthBar = new FlxBar(0, 0, RIGHT_TO_LEFT, Std.int(healthBarBG.width - 8), Std.int(healthBarBG.height - 8), null, 0, 2);
     scoreText = new FlxBitmapText(0, 0, '', FlxBitmapFont.fromAngelCode(Paths.font("vcr-bmp.png"), Paths.font("vcr-bmp.fnt")));
 
@@ -4073,7 +4092,7 @@ class PlayState extends MusicBeatSubState
       songId: currentChart.song.id,
       difficultyId: currentDifficulty,
       variationId: currentVariation,
-      characterId: currentChart.characters.player,
+      characterId: returnResultsToPlusFreeplay ? Constants.DEFAULT_CHARACTER : currentChart.characters.player,
       title: PlayStatePlaylist.isStoryMode ? ('${PlayStatePlaylist.campaignTitle}') : ('${currentChart.songName} by ${currentChart.songArtist}'),
       prevScoreData: prevScoreData,
       scoreData: {
@@ -4093,6 +4112,7 @@ class PlayState extends MusicBeatSubState
       isNewHighscore: isNewHighscore,
       isPracticeMode: isPracticeMode,
       isBotPlayMode: isBotPlayMode,
+      fromPlusPlayState: returnResultsToPlusFreeplay,
     });
     this.persistentDraw = false;
     openSubState(res);
@@ -4100,7 +4120,7 @@ class PlayState extends MusicBeatSubState
 
   function shouldReturnDirectlyToPlusFreeplay():Bool
   {
-    return !PlayStatePlaylist.isStoryMode && (isPracticeMode || isBotPlayMode);
+    return returnResultsToPlusFreeplay && !PlayStatePlaylist.isStoryMode && (isPracticeMode || isBotPlayMode);
   }
 
   function returnToPlusFreeplay():Void

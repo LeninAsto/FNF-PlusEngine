@@ -20,6 +20,9 @@ import openfl.media.Sound;
 import openfl.media.SoundChannel;
 import openfl.media.SoundMixer;
 import openfl.utils.AssetType;
+#if sys
+import sys.FileSystem;
+#end
 
 using StringTools;
 
@@ -474,10 +477,41 @@ class FunkinSound extends FlxSound implements ICloneable<FunkinSound>
 			{
 				return candidate;
 			}
+
+			#if sys
+			var physicalPath:Null<String> = resolvePhysicalSoundPath(candidate);
+			if (physicalPath != null)
+				return physicalPath;
+			#end
 		}
 
 		return Assets.resolvePath(path, AssetType.SOUND);
 	}
+
+	#if sys
+	static function resolvePhysicalSoundPath(path:String):Null<String>
+	{
+		if (path == null || path.length == 0)
+			return null;
+
+		var assetPath:String = path;
+		var colonIndex:Int = assetPath.indexOf(':');
+		if (colonIndex != -1)
+			assetPath = assetPath.substr(colonIndex + 1);
+
+		assetPath = assetPath.replace('\\', '/');
+		var candidates:Array<String> = [assetPath];
+		if (!haxe.io.Path.isAbsolute(assetPath))
+			candidates.push(Sys.getCwd() + assetPath);
+
+		for (candidate in candidates)
+		{
+			if (FileSystem.exists(candidate) && !FileSystem.isDirectory(candidate))
+				return candidate;
+		}
+		return null;
+	}
+	#end
 
 	public static function load(embeddedSound:FlxSoundAsset, volume:Float = 1.0, looped:Bool = false, autoDestroy:Bool = false, autoPlay:Bool = false,
 			persist:Bool = false, ?onComplete:Void->Void, ?onLoad:Void->Void, important:Bool = false):Null<FunkinSound>
@@ -493,7 +527,13 @@ class FunkinSound extends FlxSound implements ICloneable<FunkinSound>
 		if (embeddedSound is String)
 		{
 			soundLabel = cast embeddedSound;
-			embeddedSound = resolveVSliceSoundPath(soundLabel);
+			var resolvedSound:String = resolveVSliceSoundPath(soundLabel);
+			#if sys
+			if (FileSystem.exists(resolvedSound) && !FileSystem.isDirectory(resolvedSound))
+				embeddedSound = Sound.fromFile(resolvedSound);
+			else
+			#end
+				embeddedSound = resolvedSound;
 		}
 
 		var sound:FunkinSound = pool.recycle(construct);

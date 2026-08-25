@@ -127,7 +127,8 @@ class VSliceRuntime
 			targetVariation: variation,
 			practiceMode: VSlicePreferencesBridge.practiceMode(),
 			botPlayMode: VSlicePreferencesBridge.botPlayMode(),
-			playbackRate: VSlicePreferencesBridge.playbackRate()
+			playbackRate: VSlicePreferencesBridge.playbackRate(),
+			fromPlusFreeplay: true
 		};
 
 		LoadingState.loadPlayState(params, true);
@@ -163,7 +164,7 @@ class VSliceRuntime
 	#if (MODS_ALLOWED && sys)
 	static function findImplicitOnlyVariationInMod(songId:String, modDir:String):Null<String>
 	{
-		var modRoot:String = haxe.io.Path.join([modsRoot(), modDir]);
+		var modRoot:String = Paths.vsliceMods(modDir);
 		var songRoot:String = haxe.io.Path.join([modRoot, 'data', 'songs', songId]);
 		if (!FileSystem.exists(songRoot) || !FileSystem.isDirectory(songRoot)) return null;
 
@@ -221,20 +222,28 @@ class VSliceRuntime
 		return requestedVariation;
 	}
 
-	public static function ensureReady():Void
+	public static function ensureBaseReady():Void
+	{
+		ensureReady(true);
+	}
+
+	public static function ensureReady(forceBaseRuntime:Bool = false):Void
 	{
 		var dirs:Array<String> = getEnabledVSliceModDirs();
 		var signature:String = dirs.join('|');
+		if (forceBaseRuntime && signature.length == 0)
+			signature = '__base__';
+
 		if (initialized && loadedSignature == signature)
 		{
-			active = true;
+			active = dirs.length > 0 || forceBaseRuntime;
 			VSlicePreferencesBridge.syncFromPlus();
 			VSlicePreferencesBridge.syncControlsFromPlus();
 			syncTouchPointer();
 			return;
 		}
 
-		active = dirs.length > 0;
+		active = dirs.length > 0 || forceBaseRuntime;
 		if (!active) return;
 
 		if (!saveInitialized)
@@ -255,7 +264,8 @@ class VSliceRuntime
 		VSlicePreferencesBridge.syncControlsFromPlus();
 		syncTouchPointer();
 
-		PolymodHandler.loadModsByDir(dirs);
+		if (dirs.length > 0)
+			PolymodHandler.loadModsByDir(dirs);
 		reloadRegistries();
 
 		initialized = true;
@@ -309,7 +319,7 @@ class VSliceRuntime
 		var seen:Map<String, Bool> = [];
 		for (dir in getEnabledVSliceModDirs())
 		{
-			var root:String = haxe.io.Path.join([modsRoot(), dir]);
+			var root:String = Paths.vsliceMods(dir);
 			var optionsRoot:String = haxe.io.Path.join([root, 'scripts', 'modules', 'options']);
 			var files:Array<String> = [];
 			collectFiles(optionsRoot, '.hxc', files);
@@ -357,7 +367,7 @@ class VSliceRuntime
 	{
 		#if sys
 		if (dir == null || dir.trim().length == 0) return false;
-		var root:String = haxe.io.Path.join([modsRoot(), dir]);
+		var root:String = Paths.vsliceMods(dir);
 		if (!FileSystem.exists(root) || !FileSystem.isDirectory(root)) return false;
 
 		if (FileSystem.exists(haxe.io.Path.join([root, '_polymod_meta.json']))) return true;

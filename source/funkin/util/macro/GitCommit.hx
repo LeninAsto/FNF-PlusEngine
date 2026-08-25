@@ -73,9 +73,28 @@ class GitCommit
   public static macro function getGitHasLocalChanges():haxe.macro.Expr.ExprOf<Bool>
   {
     #if !display
-    var branchProcess = new sys.io.Process('git', ['diff', '--quiet']);
+    if (haxe.macro.Context.defined('skip_git_dirty_check'))
+      return macro $v{false};
 
-    return macro $v{branchProcess.exitCode(true) == 1};
+    var dirty:Bool = true;
+    var process:sys.io.Process = null;
+    try
+    {
+      process = new sys.io.Process('git', ['status', '--porcelain', '--untracked-files=no']);
+      var stdout:String = process.stdout.readAll().toString();
+      var stderr:String = process.stderr.readAll().toString();
+      var exit:Int = process.exitCode();
+      dirty = exit == 0 ? StringTools.trim(stdout).length > 0 : true;
+    }
+    catch (e:Dynamic)
+    {
+      dirty = true;
+    }
+
+    if (process != null)
+      process.close();
+
+    return macro $v{dirty};
     #else
     // `#if display` is used for code completion. In this case we just assume true.
     return macro $v{true};

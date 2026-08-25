@@ -17,8 +17,12 @@ class ScriptHooks {
 	public static inline var OPPONENT_NOTE_HIT_PRE:String = 'opponentNoteHitPre';
 	public static inline var NOTE_MISS:String = 'noteMiss';
 	public static inline var NOTE_MISS_PRESS:String = 'noteMissPress';
+	public static inline var NOTES_GENERATED:String = 'notesGenerated';
 	public static inline var EVENT_EARLY_TRIGGER:String = 'eventEarlyTrigger';
 	public static inline var UPDATE_SCORE_PRE:String = 'preUpdateScore';
+	public static inline var GAME_OVER_START:String = 'onGameOverStart';
+	public static inline var GAME_OVER_CONFIRM:String = 'onGameOverConfirm';
+	public static inline var SONG_EXIT:String = 'onSongExit';
 
 	public static final ALIASES:Map<String, String> = [
 		'onGoodNoteHit' => GOOD_NOTE_HIT,

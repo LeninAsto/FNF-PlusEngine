@@ -77,6 +77,27 @@ import funkin.mobile.input.ControlsHandler;
 @:nullSafety
 class FreeplayState extends MusicBeatSubState
 {
+  static function getScriptedBackingCardClassNames():Array<String>
+  {
+    var listScriptClasses:Dynamic = Reflect.field(ScriptedBackingCard, 'listScriptClasses');
+    if (listScriptClasses == null) return [];
+
+    var result:Dynamic = Reflect.callMethod(ScriptedBackingCard, listScriptClasses, []);
+    return result == null ? [] : cast result;
+  }
+
+  static function createScriptedBackingCard(cardClass:String):Null<BackingCard>
+  {
+    var scriptInit:Dynamic = Reflect.field(ScriptedBackingCard, 'scriptInit');
+    return scriptInit == null ? null : cast Reflect.callMethod(ScriptedBackingCard, scriptInit, [cardClass, "unknown"]);
+  }
+
+  static function createScriptedFreeplayDJ(scriptedClass:Dynamic, scriptClass:String, x:Float, y:Float, characterId:String):Null<BaseFreeplayDJ>
+  {
+    var scriptInit:Dynamic = Reflect.field(scriptedClass, 'scriptInit');
+    return scriptInit == null ? null : cast Reflect.callMethod(scriptedClass, scriptInit, [scriptClass, x, y, characterId]);
+  }
+
   //
   // Params
   //
@@ -315,10 +336,10 @@ class FreeplayState extends MusicBeatSubState
     }
     else
     {
-      var allScriptedCards:Array<String> = ScriptedBackingCard.listScriptClasses();
+      var allScriptedCards:Array<String> = getScriptedBackingCardClassNames();
       for (cardClass in allScriptedCards)
       {
-        var card:Null<BackingCard> = ScriptedBackingCard.scriptInit(cardClass, "unknown");
+        var card:Null<BackingCard> = createScriptedBackingCard(cardClass);
         if (card == null) continue;
         if (card.currentCharacter == currentCharacterId)
         {
@@ -398,6 +419,7 @@ class FreeplayState extends MusicBeatSubState
     songs.push(null);
 
     // programmatically adds the songs via LevelRegistry and SongRegistry
+    var songsAddedFromLevels:Int = 0;
     for (levelId in LevelRegistry.instance.listSortedLevelIds())
     {
       var level:Null<Level> = LevelRegistry.instance.fetchEntry(levelId);
@@ -419,6 +441,26 @@ class FreeplayState extends MusicBeatSubState
         }
 
         songs.push(new FreeplaySongData(songId, level, this));
+        songsAddedFromLevels++;
+      }
+    }
+
+    if (songsAddedFromLevels == 0)
+    {
+      var songIds:Array<String> = SongRegistry.instance.listEntryIds();
+      songIds.sort(SortUtil.alphabetically);
+      trace(' WARNING '.warning() + ' No VSlice levels found; building Freeplay directly from ${songIds.length} song entries.');
+
+      for (songId in songIds)
+      {
+        var song:Null<Song> = SongRegistry.instance.fetchEntry(songId, {variation: currentVariation});
+        if (song == null)
+        {
+          trace(' WARNING '.warning() + ' Could not find song with id (${songId})');
+          continue;
+        }
+
+        songs.push(new FreeplaySongData(songId, null, this));
       }
     }
 
@@ -889,17 +931,17 @@ class FreeplayState extends MusicBeatSubState
     switch (renderType)
     {
       case "animateatlas":
-        dj = (scriptClass != "") ? (ScriptedAnimateAtlasFreeplayDJ.scriptInit(scriptClass, x, y,
-          characterId)) : (new AnimateAtlasFreeplayDJ(x, y, characterId));
+        dj = (scriptClass != "") ? createScriptedFreeplayDJ(ScriptedAnimateAtlasFreeplayDJ, scriptClass, x, y,
+          characterId) : (new AnimateAtlasFreeplayDJ(x, y, characterId));
       case "sparrow":
-        dj = (scriptClass != "") ? (ScriptedSparrowFreeplayDJ.scriptInit(scriptClass, x, y, characterId)) : (new SparrowFreeplayDJ(x, y, characterId));
+        dj = (scriptClass != "") ? createScriptedFreeplayDJ(ScriptedSparrowFreeplayDJ, scriptClass, x, y, characterId) : (new SparrowFreeplayDJ(x, y, characterId));
       case 'multisparrow':
-        dj = (scriptClass != "") ? (ScriptedMultiSparrowFreeplayDJ.scriptInit(scriptClass, x, y,
-          characterId)) : (new MultiSparrowFreeplayDJ(x, y, characterId));
+        dj = (scriptClass != "") ? createScriptedFreeplayDJ(ScriptedMultiSparrowFreeplayDJ, scriptClass, x, y,
+          characterId) : (new MultiSparrowFreeplayDJ(x, y, characterId));
       case 'packer':
-        dj = (scriptClass != "") ? (ScriptedPackerFreeplayDJ.scriptInit(scriptClass, x, y, characterId)) : (new PackerFreeplayDJ(x, y, characterId));
+        dj = (scriptClass != "") ? createScriptedFreeplayDJ(ScriptedPackerFreeplayDJ, scriptClass, x, y, characterId) : (new PackerFreeplayDJ(x, y, characterId));
       case 'custom':
-        dj = (scriptClass != "") ? (ScriptedBaseFreeplayDJ.scriptInit(scriptClass, x, y, characterId)) :
+        dj = (scriptClass != "") ? createScriptedFreeplayDJ(ScriptedBaseFreeplayDJ, scriptClass, x, y, characterId) :
           {
             // force-skip intro only in fallback, since you can specify onIntroDone.dispatch in ScriptedBaseFreeplayDJ, and this is goddamn fallback
             forceSkipIntro = true;
@@ -3317,7 +3359,7 @@ class FreeplaySongData
     return _levelId;
   }
 
-  var _levelId:String;
+  var _levelId:Null<String>;
 
   final songId:String;
 
@@ -3368,10 +3410,10 @@ class FreeplaySongData
 
   public var instance:FreeplayState;
 
-  public function new(songId:String, levelData:Level, instance:FreeplayState)
+  public function new(songId:String, levelData:Null<Level>, instance:FreeplayState)
   {
     this.songId = songId;
-    _levelId = levelData.id;
+    _levelId = levelData?.id;
     this.instance = instance;
   }
 

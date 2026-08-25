@@ -1,11 +1,14 @@
 package backend;
 
 import flixel.FlxBasic;
+import flixel.FlxCamera;
 import flixel.FlxObject;
 import flixel.FlxSubState;
 import flixel.group.FlxGroup;
+import flixel.group.FlxSpriteGroup;
 import objects.Note;
 import objects.Character;
+import substates.GameOverSubstate;
 
 enum Countdown
 {
@@ -134,8 +137,21 @@ class BaseStage extends FlxBasic
 	{
 	}
 
+	public function notesGenerated(notes:Array<Dynamic>)
+	{
+	}
+
 	public function noteMissPress(direction:Int)
 	{
+	}
+
+	public function gameOverStart(gameOver:GameOverSubstate)
+	{
+	}
+
+	public function gameOverLoopStart(gameOver:GameOverSubstate):Bool
+	{
+		return false;
 	}
 
 	// Things to replace FlxGroup stuff and inject sprites directly into the state

@@ -59,8 +59,8 @@ class GameOverSubstate extends MusicBeatSubstate
 	var charX:Float = 0;
 	var charY:Float = 0;
 
-	var overlay:FlxSprite;
-	var overlayConfirmOffsets:FlxPoint = FlxPoint.get();
+	public var overlay:FlxSprite;
+	public var overlayConfirmOffsets:FlxPoint = FlxPoint.get();
 
 	override function create()
 	{
@@ -97,7 +97,10 @@ class GameOverSubstate extends MusicBeatSubstate
 		PlayState.instance.callOnScripts('onGameOverStart', []);
 		FlxG.sound.music.loadEmbedded(Paths.music(loopSoundName), true);
 
-		if (characterName == 'pico-dead')
+		for (stage in PlayState.instance.stages)
+			stage.gameOverStart(this);
+
+		if (overlay == null && characterName == 'pico-dead')
 		{
 			overlay = new FlxSprite(boyfriend.x + 205, boyfriend.y - 80);
 			overlay.frames = Paths.getSparrowAtlas('Pico_Death_Retry');
@@ -190,24 +193,34 @@ class GameOverSubstate extends MusicBeatSubstate
 			}
 			else if (justPlayedLoop)
 			{
-				switch (PlayState.SONG.stage)
+				var handled:Bool = false;
+				for (stage in PlayState.instance.stages)
 				{
-					case 'tank':
-						coolStartDeath(0.2);
+					if (stage.gameOverLoopStart(this))
+						handled = true;
+				}
 
-						var exclude:Array<Int> = [];
-						// if(!ClientPrefs.cursing) exclude = [1, 3, 8, 13, 17, 21];
+				if (!handled)
+				{
+					switch (PlayState.SONG.stage)
+					{
+						case 'tank':
+							coolStartDeath(0.2);
 
-						FlxG.sound.play(Paths.sound('jeffGameover/jeffGameover-' + FlxG.random.int(1, 25, exclude)), 1, false, null, true, function()
-						{
-							if (!isEnding)
+							var exclude:Array<Int> = [];
+							// if(!ClientPrefs.cursing) exclude = [1, 3, 8, 13, 17, 21];
+
+							FlxG.sound.play(Paths.sound('jeffGameover/jeffGameover-' + FlxG.random.int(1, 25, exclude)), 1, false, null, true, function()
 							{
-								FlxG.sound.music.fadeIn(0.2, 1, 4);
-							}
-						});
+								if (!isEnding)
+								{
+									FlxG.sound.music.fadeIn(0.2, 1, 4);
+								}
+							});
 
-					default:
-						coolStartDeath();
+						default:
+							coolStartDeath();
+					}
 				}
 			}
 
@@ -219,9 +232,9 @@ class GameOverSubstate extends MusicBeatSubstate
 		PlayState.instance.callOnScripts('onUpdatePost', [elapsed]);
 	}
 
-	var isEnding:Bool = false;
+	public var isEnding:Bool = false;
 
-	function coolStartDeath(?volume:Float = 1):Void
+	public function coolStartDeath(?volume:Float = 1):Void
 	{
 		FlxG.sound.music.play(true);
 		FlxG.sound.music.volume = volume;

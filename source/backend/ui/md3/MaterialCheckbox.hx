@@ -181,6 +181,55 @@ class MaterialCheckbox extends FlxSpriteGroup
 		}
 	}
 
+	public function setDisplayEnabled(value:Bool):Void
+	{
+		visible = value;
+		active = value;
+		exists = value;
+
+		if (!value)
+		{
+			if (checkTween != null)
+				checkTween.cancel();
+			if (hoverTween != null)
+				hoverTween.cancel();
+			if (pressTween != null)
+				pressTween.cancel();
+			isHovered = false;
+			isPressed = false;
+			for (member in members)
+			{
+				if (member == null)
+					continue;
+				member.visible = false;
+				member.active = false;
+				member.exists = false;
+			}
+			return;
+		}
+
+		for (member in members)
+		{
+			if (member == null)
+				continue;
+			member.exists = true;
+			member.active = true;
+			member.visible = true;
+		}
+		updateAppearance();
+	}
+
+	public function syncChecked(value:Bool):Void
+	{
+		if (checkTween != null)
+			checkTween.cancel();
+		var callback = onChange;
+		onChange = null;
+		checked = value;
+		onChange = callback;
+		updateAppearance();
+	}
+
 	override function update(elapsed:Float):Void
 	{
 		super.update(elapsed);

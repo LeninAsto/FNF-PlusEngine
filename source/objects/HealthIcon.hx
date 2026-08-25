@@ -38,7 +38,7 @@ class HealthIcon extends FlxSprite
 	}
 
 	private var iconOffsets:Array<Float> = [0, 0];
-	public static var verboseIconLoading:Bool = true;
+	public static var verboseIconLoading:Bool = false;
 
 	public function changeIcon(char:String, ?allowGPU:Bool = true, ?forceAnimated:Bool = false)
 	{

@@ -230,13 +230,6 @@ class PhillyStreets extends BaseStage {
 	}
 
 	override function createPost():Void {
-		for (n in PlayState.SONG.noteList) {
-			var nt:String = (n.type != null) ? n.type : '';
-			if (!noteTypes.contains(nt)) {
-				noteTypes.push(nt);
-			}
-		}
-
 		spraycanPile = backdrop('SpraycanPile', 920, 1045, 1, 1);
 		precache();
 		add(spraycanPile);
@@ -254,7 +247,16 @@ class PhillyStreets extends BaseStage {
 
 	// override animations for note types
 	override function notesGenerated(notes:Array<Dynamic>):Void {
+		if (notes == null) {
+			return;
+		}
+
 		for (note in notes) {
+			var nt:String = (note.type != null) ? note.type : '';
+			if (!noteTypes.contains(nt)) {
+				noteTypes.push(nt);
+			}
+
 			if (note.type == 'weekend-1-firegun') {
 				note.blockHit = true;
 			}

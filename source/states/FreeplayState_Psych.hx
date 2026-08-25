@@ -77,6 +77,9 @@ class FreeplayState_Psych extends MusicBeatState
 		var vsliceSongs:Array<Dynamic> = [];
 		#if FEATURE_POLYMOD_MODS
 		vsliceSongs = cast VSliceFreeplayBridge.listSongs();
+		trace('[VSliceFreeplayTrace] Psych Freeplay weeks=${WeekData.weeksList.length} vsliceSongs=${vsliceSongs.length}');
+		#else
+		trace('[VSliceFreeplayTrace] Psych Freeplay FEATURE_POLYMOD_MODS disabled');
 		#end
 
 		if (WeekData.weeksList.length < 1 && vsliceSongs.length < 1)
@@ -248,17 +251,25 @@ class FreeplayState_Psych extends MusicBeatState
 	function appendVSliceSongs(vsliceSongs:Array<Dynamic>):Void
 	{
 		#if FEATURE_POLYMOD_MODS
+		trace('[VSliceFreeplayTrace] Psych appendVSliceSongs count=${vsliceSongs.length} currentSongs=${songs.length}');
 		for (entry in vsliceSongs)
 		{
+			var diffs:Array<String> = entry.difficulties != null ? entry.difficulties.copy() : [];
+			trace('[VSliceFreeplayTrace] Psych append song display="${entry.displayName}" id="${entry.songId}" mod="${entry.modDir}" variation="${entry.variation}" diffs=${diffs.join(",")} root="${entry.rootPath}"');
 			var song:SongMetadataPsych = new SongMetadataPsych(entry.displayName, -1, entry.icon, entry.color);
 			song.folder = '';
 			song.isVSlice = true;
 			song.vsliceMod = entry.modDir;
 			song.vsliceSongId = entry.songId;
 			song.vsliceVariation = entry.variation;
-			song.vsliceDifficulties = entry.difficulties.copy();
+			song.vsliceDifficulties = diffs;
+			song.vsliceRootPath = entry.rootPath;
+			song.vsliceInstrumental = entry.instrumental;
+			song.vslicePreviewStartSeconds = entry.previewStartSeconds;
+			song.vslicePreviewEndSeconds = entry.previewEndSeconds;
 			songs.push(song);
 		}
+		trace('[VSliceFreeplayTrace] Psych appendVSliceSongs done totalSongs=${songs.length}');
 		#end
 	}
 
@@ -794,6 +805,10 @@ class SongMetadataPsych
 	public var vsliceSongId:String = "";
 	public var vsliceVariation:String = "default";
 	public var vsliceDifficulties:Array<String> = [];
+	public var vsliceRootPath:String = "";
+	public var vsliceInstrumental:String = "";
+	public var vslicePreviewStartSeconds:Null<Float> = null;
+	public var vslicePreviewEndSeconds:Null<Float> = null;
 
 	public function new(song:String, week:Int, songCharacter:String, color:Int)
 	{
@@ -817,7 +832,11 @@ class SongMetadataPsych
 			icon: songCharacter,
 			color: color,
 			difficulties: vsliceDifficulties.copy(),
-			variation: vsliceVariation
+			variation: vsliceVariation,
+			rootPath: vsliceRootPath,
+			instrumental: vsliceInstrumental,
+			previewStartSeconds: vslicePreviewStartSeconds,
+			previewEndSeconds: vslicePreviewEndSeconds
 		};
 	}
 	#end
