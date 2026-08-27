@@ -87,13 +87,6 @@ class CreditsState extends MusicBeatState
 				"https://github.com/MeguminBOT/FNF-PsychEngine",
 				"C7A0FF"
 			],
-			[
-				'That0neIdiot',
-				"that0ne",
-				"Miss rating sprite",
-				"https://www.youtube.com/@That0neIdiotGB",
-				"FFFFFF"
-			],
 			[''],
 			['Mobile Porting Team'],
 			[
