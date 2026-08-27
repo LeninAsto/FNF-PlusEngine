@@ -102,10 +102,8 @@
 
 	<section if="MODS_ALLOWED">
 		<!-- Base content is shipped as a normal modpack, not as engine assets. -->
-		<assets path='base_game' rename='mods/Friday Night Funkin' embed='false' type='template' exclude="*.ogg" if="web"/>
-		<assets path='base_game' rename='mods/Friday Night Funkin' embed='false' type='template' exclude="*.mp3" unless="web || mac || mobile"/>
-		<assets path='base_game' rename='mods/Friday Night Funkin' embed='false' exclude="*.mp3" if="mac"/>
-		<assets path='base_game' rename='mods/Friday Night Funkin' embed='false' exclude="*.mp3" if="mobile"/>
+		<assets path='base_game' rename='mods/Friday Night Funkin' embed='false' type='template'/>
+		<assets path='base_game' rename='mods/Friday Night Funkin' embed='false'/>
 		<assets path='example_mods' rename='mods' embed='false' />
 		<assets path='example_sm' rename='sm' embed='false' />
 		<assets path='vslice_mods' embed='false' if="VSLICE_ENABLED"/>
