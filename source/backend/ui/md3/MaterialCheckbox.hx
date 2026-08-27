@@ -104,10 +104,19 @@ class MaterialCheckbox extends FlxSpriteGroup
 
 	function redrawCheckbox():Void
 	{
+		drawContainer(false, MD3Theme.outline);
+		drawCheckmark(checkIcon);
+	}
+
+	function drawContainer(filled:Bool, color:FlxColor):Void
+	{
 		var size = containerSize();
 		var radius = checkboxRadius();
-		MD3ShapeTools.fillRoundRect(containerSprite, size, size, radius);
-		drawCheckmark(checkIcon);
+		containerSprite.color = FlxColor.WHITE;
+		if (filled)
+			MD3ShapeTools.fillRoundRect(containerSprite, size, size, radius, color);
+		else
+			MD3ShapeTools.strokeRoundRect(containerSprite, size, size, radius, 2, color);
 	}
 
 	function drawCheckmark(sprite:FlxSprite):Void
@@ -133,21 +142,17 @@ class MaterialCheckbox extends FlxSpriteGroup
 
 		redrawCheckbox();
 		stateLayer.color = MD3Theme.stateLayerColor(MD3Theme.primary);
-		stateLayer.visible = allowMouseInput;
-		if (!allowMouseInput)
-			stateLayer.alpha = 0;
+		resetStateLayerIfNeeded();
 
 		if (!enabled)
 		{
 			if (checked)
 			{
-				MD3ShapeTools.fillRoundRect(containerSprite, containerSize(), containerSize(), checkboxRadius());
-				containerSprite.color = MD3Theme.primary;
+				drawContainer(true, MD3Theme.primary);
 			}
 			else
 			{
-				MD3ShapeTools.strokeRoundRect(containerSprite, containerSize(), containerSize(), checkboxRadius(), 2, MD3Theme.disabledContentColor());
-				containerSprite.color = FlxColor.WHITE;
+				drawContainer(false, MD3Theme.disabledContentColor());
 			}
 			containerSprite.alpha = 0.38;
 			checkIcon.color = MD3Theme.disabledContentColor();
@@ -160,16 +165,14 @@ class MaterialCheckbox extends FlxSpriteGroup
 		{
 			if (checked)
 			{
-				MD3ShapeTools.fillRoundRect(containerSprite, containerSize(), containerSize(), checkboxRadius());
-				containerSprite.color = MD3Theme.primary;
+				drawContainer(true, MD3Theme.primary);
 				containerSprite.alpha = 1;
 				checkIcon.color = MD3Theme.onPrimary;
 				checkIcon.alpha = 1;
 			}
 			else
 			{
-				MD3ShapeTools.strokeRoundRect(containerSprite, containerSize(), containerSize(), checkboxRadius(), 2, MD3Theme.outline);
-				containerSprite.color = FlxColor.WHITE;
+				drawContainer(false, MD3Theme.outline);
 				containerSprite.alpha = 1;
 				checkIcon.color = MD3Theme.onPrimary;
 				checkIcon.alpha = 0;
@@ -189,14 +192,7 @@ class MaterialCheckbox extends FlxSpriteGroup
 
 		if (!value)
 		{
-			if (checkTween != null)
-				checkTween.cancel();
-			if (hoverTween != null)
-				hoverTween.cancel();
-			if (pressTween != null)
-				pressTween.cancel();
-			isHovered = false;
-			isPressed = false;
+			resetInteractionVisuals(true);
 			for (member in members)
 			{
 				if (member == null)
@@ -223,6 +219,7 @@ class MaterialCheckbox extends FlxSpriteGroup
 	{
 		if (checkTween != null)
 			checkTween.cancel();
+		resetInteractionVisuals(false);
 		var callback = onChange;
 		onChange = null;
 		checked = value;
@@ -306,7 +303,10 @@ class MaterialCheckbox extends FlxSpriteGroup
 	{
 		var oldValue = checked;
 		if (oldValue == value)
+		{
+			resetInteractionVisuals(false);
 			return checked;
+		}
 
 		checked = value;
 
@@ -350,14 +350,40 @@ class MaterialCheckbox extends FlxSpriteGroup
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(updateAppearance);
-		if (checkTween != null)
+		resetInteractionVisuals(true);
+
+		super.destroy();
+	}
+
+	function resetStateLayerIfNeeded():Void
+	{
+		if (stateLayer == null)
+			return;
+		var stateEnabled:Bool = allowMouseInput && visible && exists;
+		stateLayer.visible = stateEnabled;
+		stateLayer.active = stateEnabled;
+		stateLayer.exists = stateEnabled;
+		if (!stateEnabled)
+			stateLayer.alpha = 0;
+	}
+
+	function resetInteractionVisuals(cancelCheckTween:Bool):Void
+	{
+		if (cancelCheckTween && checkTween != null)
 			checkTween.cancel();
 		if (hoverTween != null)
 			hoverTween.cancel();
 		if (pressTween != null)
 			pressTween.cancel();
-
-		super.destroy();
+		isHovered = false;
+		isPressed = false;
+		if (stateLayer != null)
+		{
+			stateLayer.alpha = 0;
+			stateLayer.visible = false;
+			stateLayer.active = false;
+			stateLayer.exists = false;
+		}
 	}
 }
 

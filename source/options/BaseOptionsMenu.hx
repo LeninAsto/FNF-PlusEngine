@@ -752,6 +752,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 				row.x = newX;
 				row.y = newY;
 				row.scale.set(newScale, newScale);
+				row.syncLayout();
 				continue;
 			}
 
@@ -985,36 +986,53 @@ private class OptionRowCard extends FlxSpriteGroup
 				heightChanged = true;
 		}
 
-		var isBool:Bool = option.type == BOOL;
-		setCheckboxVisible(isBool);
-		setValueControlVisible(!isBool);
+		switch (option.type)
+		{
+			case BOOL:
+				valueLabel = "";
+				if (valueControl != null)
+				{
+					valueControl.showArrows = false;
+					valueControl.setText("");
+					setValueControlVisible(false);
+				}
+				if (checkBox != null)
+				{
+					setCheckboxVisible(true);
+					checkBox.syncChecked(boolValue(option.getValue()));
+				}
+				syncLayout();
 
-		if (isBool)
-		{
-			valueLabel = "";
-			checkBox.syncChecked(Std.string(option.getValue()) == 'true');
-			valueControl.setText("");
-		}
-		else if (option.type == KEYBIND)
-		{
-			checkBox.syncChecked(false);
-			valueControl.showArrows = false;
-			valueLabel = option.text != null ? option.text : Std.string(option.getValue());
-		}
-		else
-		{
-			checkBox.syncChecked(false);
-			valueControl.showArrows = true;
-			valueLabel = option.text != null ? option.text : Std.string(option.getValue());
-		}
+			case KEYBIND:
+				if (checkBox != null)
+				{
+					checkBox.syncChecked(false);
+					setCheckboxVisible(false);
+				}
+				if (valueControl != null)
+				{
+					valueControl.showArrows = false;
+					setValueControlVisible(true);
+				}
+				valueLabel = option.text != null ? option.text : Std.string(option.getValue());
+				valueControl.setText(valueLabel);
+				compactValueText();
 
-		if (!isBool)
-		{
-			valueControl.setText(valueLabel);
-			compactValueText();
+			default:
+				if (checkBox != null)
+				{
+					checkBox.syncChecked(false);
+					setCheckboxVisible(false);
+				}
+				if (valueControl != null)
+				{
+					valueControl.showArrows = true;
+					setValueControlVisible(true);
+				}
+				valueLabel = option.text != null ? option.text : Std.string(option.getValue());
+				valueControl.setText(valueLabel);
+				compactValueText();
 		}
-		else
-			syncLayout();
 	}
 
 	public function consumeHeightChanged():Bool
@@ -1101,11 +1119,15 @@ private class OptionRowCard extends FlxSpriteGroup
 			valueLabel = "";
 			if (valueControl != null)
 			{
+				valueControl.showArrows = false;
 				valueControl.setText("");
 				setValueControlVisible(false);
 			}
 			if (checkBox != null)
+			{
 				setCheckboxVisible(true);
+				checkBox.syncChecked(boolValue(option.getValue()));
+			}
 			syncLayout();
 			return;
 		}
@@ -1117,6 +1139,13 @@ private class OptionRowCard extends FlxSpriteGroup
 		if (valueControl != null)
 			valueControl.setText(valueLabel);
 		compactValueText();
+	}
+
+	function boolValue(value:Dynamic):Bool
+	{
+		if (Std.isOfType(value, Bool))
+			return value;
+		return Std.string(value).toLowerCase() == 'true';
 	}
 
 	function compactValueText():Void

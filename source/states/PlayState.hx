@@ -7011,7 +7011,7 @@ class PlayState extends MusicBeatState
 			return;
 
 		var anim:String = playerChar.getAnimationName();
-		if (playerChar.holdTimer > Conductor.stepCrochet * (0.0011 #if FLX_PITCH / FlxG.sound.music.pitch #end) * playerChar.singDuration
+		if (playerChar.holdTimer > Conductor.stepCrochet * (0.0011 #if FLX_PITCH / (FlxG.sound.music != null ? FlxG.sound.music.pitch : 1) #end) * playerChar.singDuration
 			&& anim.startsWith('sing') && !anim.endsWith('miss'))
 			playerChar.dance();
 	}
@@ -7042,7 +7042,7 @@ class PlayState extends MusicBeatState
 			return;
 
 		var anim:String = opponentChar.getAnimationName();
-		if (opponentChar.holdTimer > Conductor.stepCrochet * (0.0011 #if FLX_PITCH / FlxG.sound.music.pitch #end) * opponentChar.singDuration
+		if (opponentChar.holdTimer > Conductor.stepCrochet * (0.0011 #if FLX_PITCH / (FlxG.sound.music != null ? FlxG.sound.music.pitch : 1) #end) * opponentChar.singDuration
 			&& anim.startsWith('sing') && !anim.endsWith('miss'))
 			opponentChar.dance();
 	}

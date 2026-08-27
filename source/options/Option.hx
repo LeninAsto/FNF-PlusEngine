@@ -55,7 +55,7 @@ class Option
 		this.description = Language.getPhrase('description_$_translationKey', description);
 		this.variable = variable;
 		this.type = type;
-		this.options = options;
+		this.options = options != null ? options : [];
 
 		if (this.type != KEYBIND)
 			this.defaultValue = Reflect.getProperty(ClientPrefs.defaultData, variable);
@@ -77,8 +77,8 @@ class Option
 				scrollSpeed = 0.5;
 				decimals = 2;
 			case STRING:
-				if (options.length > 0)
-					defaultValue = options[0];
+				if (this.options.length > 0)
+					defaultValue = this.options[0];
 				if (defaultValue == null)
 					defaultValue = '';
 
@@ -96,7 +96,7 @@ class Option
 			switch (type)
 			{
 				case STRING:
-					var num:Int = options.indexOf(getValue());
+					var num:Int = this.options.indexOf(getValue());
 					if (num > -1)
 						curOption = num;
 
