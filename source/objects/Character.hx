@@ -195,7 +195,7 @@ class Character extends FlxSprite
 
 		#if flxanimate
 		var animToFind:String = Paths.getPath('images/' + json.image + '/Animation.json', TEXT);
-		if (AssetLoader.exists(animToFind, TEXT))
+		if (AssetLoader.exists(animToFind, TEXT) && (isVSlice || !hasClassicAtlas(json.image)))
 			isAnimateAtlas = true;
 		#end
 
@@ -287,6 +287,22 @@ class Character extends FlxSprite
 			copyAtlasValues();
 		#end
 		// trace('Loaded file to character ' + curCharacter);
+	}
+
+	function hasClassicAtlas(image:String):Bool
+	{
+		for (key in image.split(','))
+		{
+			key = StringTools.trim(key);
+			if (key.length < 1)
+				continue;
+
+			if (AssetLoader.exists(Paths.getPath('images/$key.xml', TEXT), TEXT)
+				|| AssetLoader.exists(Paths.getPath('images/$key.json', TEXT), TEXT)
+				|| AssetLoader.exists(Paths.getPath('images/$key.txt', TEXT), TEXT))
+				return true;
+		}
+		return false;
 	}
 
 	override function update(elapsed:Float)

@@ -57,14 +57,7 @@ class Main extends Sprite
 	// Window focus management
 	public static var focused:Bool = true;
 
-	var oldVol:Float = 1.0;
-	var newVol:Float = 0.2;
-	var focusStateTimer:FlxTimer;
-	var windowHasFocus:Bool = true;
-	var restoringFocusVolume:Bool = false;
 	var lastReportedVolume:Float = 1.0;
-
-	public static var focusMusicTween:FlxTween;
 
 	// You can pretty much ignore everything from here on - your code should go in your states.
 
@@ -257,7 +250,7 @@ class Main extends Sprite
 		catch (_:Dynamic) {}
 
 		#if (cpp && windows)
-		// Add window close handler for fade out effect
+		// Add window close handler for optional fade out effect
 		Application.current.window.onClose.add(onWindowClose);
 		// Add window focus handlers
 		Application.current.window.onFocusIn.add(onWindowFocusIn);
@@ -346,16 +339,16 @@ class Main extends Sprite
 
 	function onVolumeChanged(volume:Float):Void
 	{
-		if (materialVolumeTray == null)
-			return;
-
 		lastReportedVolume = volume;
-		materialVolumeTray.showVolume(volume);
+		preserveSavedMasterVolume(FlxG.sound.volume, true);
+
+		if (materialVolumeTray != null)
+			materialVolumeTray.showVolume(volume);
 	}
 
 	function preserveSavedMasterVolume(targetVolume:Float, ?flush:Bool = false):Void
 	{
-		if (FlxG.save == null)
+		if (FlxG.save == null || !FlxG.save.isBound)
 			return;
 
 		FlxG.save.data.volume = targetVolume;
@@ -400,38 +393,13 @@ class Main extends Sprite
 	#if (cpp && windows)
 	function onWindowClose():Void
 	{
-		WindowsAPI.fadeOutAndExit();
+		if (!ClientPrefs.data.instantWindowClose)
+			WindowsAPI.fadeOutAndExit();
 	}
 
 	function onWindowFocusOut():Void
 	{
 		focused = false;
-		if (!ClientPrefs.data.lowerVolumeOnFocusLost)
-			return;
-
-		oldVol = FlxG.sound.volume;
-		if (oldVol > 0.3)
-		{
-			newVol = 0.3;
-		}
-		else
-		{
-			if (oldVol > 0.1)
-			{
-				newVol = 0.1;
-			}
-			else
-			{
-				newVol = 0;
-			}
-		}
-
-		if (focusMusicTween != null)
-			focusMusicTween.cancel();
-		restoringFocusVolume = true;
-		focusMusicTween = FlxTween.tween(FlxG.sound, {volume: newVol}, 0.5, {
-			onComplete: function(_) focusMusicTween = null
-		});
 	}
 
 	function onWindowFocusIn():Void
@@ -441,21 +409,6 @@ class Main extends Sprite
 		new FlxTimer().start(0.2, function(tmr:FlxTimer)
 		{
 			focused = true;
-		});
-
-		if (!restoringFocusVolume)
-			return;
-
-		// Normal global volume when focused
-		if (focusMusicTween != null)
-			focusMusicTween.cancel();
-
-		focusMusicTween = FlxTween.tween(FlxG.sound, {volume: oldVol}, 0.5, {
-			onComplete: function(_)
-			{
-				focusMusicTween = null;
-				restoringFocusVolume = false;
-			}
 		});
 	}
 	#end

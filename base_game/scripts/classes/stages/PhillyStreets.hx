@@ -252,12 +252,12 @@ class PhillyStreets extends BaseStage {
 		}
 
 		for (note in notes) {
-			var nt:String = (note.type != null) ? note.type : '';
+			var nt:String = noteTypeOf(note);
 			if (!noteTypes.contains(nt)) {
 				noteTypes.push(nt);
 			}
 
-			if (note.type == 'weekend-1-firegun') {
+			if (nt == 'weekend-1-firegun') {
 				note.blockHit = true;
 			}
 		}
@@ -486,9 +486,7 @@ class PhillyStreets extends BaseStage {
 			} else if (noteType == 'weekend-1-cockgun') {
 				precacheCasing();
 			} else if (noteType == 'weekend-1-firegun') {
-				bonkSnd = new FlxSound();
-				FlxG.sound.list.add(bonkSnd);
-				bonkSnd.loadEmbedded(Paths.sound('Pico_Bonk'));
+				precacheBonk();
 			}
 		}
 
@@ -543,6 +541,16 @@ class PhillyStreets extends BaseStage {
 		gunPrepSnd = new FlxSound();
 		FlxG.sound.list.add(gunPrepSnd);
 		gunPrepSnd.loadEmbedded(Paths.sound('Gun_Prep'));
+	}
+
+	function precacheBonk():Void {
+		if (bonkSnd != null) {
+			return;
+		}
+
+		bonkSnd = new FlxSound();
+		FlxG.sound.list.add(bonkSnd);
+		bonkSnd.loadEmbedded(Paths.sound('Pico_Bonk'));
 	}
 
 	function setupRainShader():Void {
@@ -822,6 +830,8 @@ class PhillyStreets extends BaseStage {
 	}
 
 	override function goodNoteHit(note:Dynamic):Void {
+		var noteType:String = noteTypeOf(note);
+
 		// 10% chance of playing combo50/combo100 animations for Nene
 		if (FlxG.random.bool(10)) {
 			var combo:Int = PlayState.instance.combo;
@@ -834,11 +844,17 @@ class PhillyStreets extends BaseStage {
 			}
 		}
 
-		if (note.type == 'weekend-1-cockgun') { // HE'S PULLING HIS COCK OUT
+		if (noteType == 'weekend-1-cockgun') { // HE'S PULLING HIS COCK OUT
+			if (gunPrepSnd == null) {
+				precacheCasing();
+			}
+
 			boyfriend.holdTimer = 0;
 			boyfriend.playAnim('cock', true);
 			boyfriend.specialAnim = true;
-			gunPrepSnd.play();
+			if (gunPrepSnd != null) {
+				gunPrepSnd.play();
+			}
 
 			boyfriend.animation.callback = function(name:String, frameNumber:Int, frameIndex:Int):Void {
 				if (name == 'cock') {
@@ -853,18 +869,24 @@ class PhillyStreets extends BaseStage {
 
 			for (field in PlayState.instance.noteFields) {
 				for (active in field.active) {
-					if (active.data.type == 'weekend-1-firegun') {
+					if (active != null && active.data != null && noteTypeOf(active.data) == 'weekend-1-firegun') {
 						active.data.blockHit = false;
 					}
 				}
 			}
 			showPicoFade();
-		} else if (note.type == 'weekend-1-firegun') {
+		} else if (noteType == 'weekend-1-firegun') {
+			if (spraycan == null) {
+				createCan();
+			}
+
 			boyfriend.holdTimer = 0;
 			boyfriend.playAnim('shoot', true);
 			boyfriend.specialAnim = true;
 			FlxG.sound.play(Paths.soundRandom('shots/shot', 1, 4));
-			spraycan.playCanShot();
+			if (spraycan != null) {
+				spraycan.playCanShot();
+			}
 
 			new FlxTimer().start(1 / 24, function(tmr:FlxTimer):Void {
 				darkenStageProps();
@@ -909,25 +931,40 @@ class PhillyStreets extends BaseStage {
 	}
 
 	override function opponentNoteHit(note:Dynamic):Void {
-		var sndTime:Float = note.time - Conductor.songPosition;
+		var noteType:String = noteTypeOf(note);
+		var sndTime:Float = noteTimeOf(note) - Conductor.songPosition;
 
-		if (note.type == 'weekend-1-lightcan') {
+		if (noteType == 'weekend-1-lightcan') {
+			if (lightCanSnd == null) {
+				createCan();
+			}
+
 			dad.holdTimer = 0;
 			dad.playAnim('lightCan', true);
 			dad.specialAnim = true;
-			lightCanSnd.play(true, sndTime - 65);
+			if (lightCanSnd != null) {
+				lightCanSnd.play(true, sndTime - 65);
+			}
 
 			PlayState.instance.isCameraOnForcedPos = true;
 			PlayState.instance.defaultCamZoom += 0.1;
 			moveCamera(true);
 			PlayState.instance.cameraSpeed = 2;
 			camFollow.x -= 100;
-		} else if (note.type == 'weekend-1-kickcan') {
+		} else if (noteType == 'weekend-1-kickcan') {
+			if (spraycan == null || kickCanSnd == null) {
+				createCan();
+			}
+
 			dad.holdTimer = 0;
 			dad.playAnim('kickCan', true);
 			dad.specialAnim = true;
-			kickCanSnd.play(true, sndTime - 50);
-			spraycan.playCanStart();
+			if (kickCanSnd != null) {
+				kickCanSnd.play(true, sndTime - 50);
+			}
+			if (spraycan != null) {
+				spraycan.playCanStart();
+			}
 			camFollow.x += 250;
 			PlayState.instance.cameraSpeed = 1.5;
 			PlayState.instance.defaultCamZoom -= 0.1;
@@ -937,22 +974,34 @@ class PhillyStreets extends BaseStage {
 				moveCameraSection();
 				PlayState.instance.cameraSpeed = 1;
 			});
-		} else if (note.type == 'weekend-1-kneecan') {
+		} else if (noteType == 'weekend-1-kneecan') {
+			if (kneeCanSnd == null) {
+				createCan();
+			}
+
 			dad.holdTimer = 0;
 			dad.playAnim('kneeCan', true);
 			dad.specialAnim = true;
-			kneeCanSnd.play(true, sndTime - 22);
+			if (kneeCanSnd != null) {
+				kneeCanSnd.play(true, sndTime - 22);
+			}
 		}
 	}
 
 	override function noteMiss(note:Dynamic):Void {
-		if (note.type != 'weekend-1-firegun') {
+		if (noteTypeOf(note) != 'weekend-1-firegun') {
 			return;
+		}
+
+		if (bonkSnd == null) {
+			precacheBonk();
 		}
 
 		boyfriend.playAnim('shootMISS', true);
 		boyfriend.specialAnim = true;
-		bonkSnd.play();
+		if (bonkSnd != null) {
+			bonkSnd.play();
+		}
 
 		if (picoFlicker != null) {
 			picoFlicker.cancel();
@@ -988,6 +1037,26 @@ class PhillyStreets extends BaseStage {
 			GameOverSubstate.loopSoundName = 'gameOverStart-pico-explode';
 			GameOverSubstate.characterName = 'pico-explosion-dead';
 		}
+	}
+
+	function noteTypeOf(note:Dynamic):String {
+		if (note == null) {
+			return '';
+		}
+		if (note.noteType != null) {
+			return note.noteType;
+		}
+		return note.type != null ? note.type : '';
+	}
+
+	function noteTimeOf(note:Dynamic):Float {
+		if (note == null) {
+			return Conductor.songPosition;
+		}
+		if (note.strumTime != null) {
+			return note.strumTime;
+		}
+		return note.time != null ? note.time : Conductor.songPosition;
 	}
 
 	/**

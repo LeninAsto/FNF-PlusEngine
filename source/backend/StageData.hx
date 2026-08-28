@@ -37,10 +37,13 @@ enum abstract LoadFilters(Int) from Int from UInt to Int to UInt
 
 class StageData
 {
+	public static inline var DEFAULT_STAGE:String = 'stage';
+	public static inline var DEFAULT_STAGE_DIRECTORY:String = 'week1';
+
 	public static function dummy():StageFile
 	{
 		return {
-			directory: "",
+			directory: DEFAULT_STAGE_DIRECTORY,
 			defaultZoom: 0.9,
 			stageUI: "normal",
 
@@ -72,14 +75,17 @@ class StageData
 		else if (Song.loadedSongName != null)
 			stage = vanillaSongStage(Paths.formatToSongPath(Song.loadedSongName));
 		else
-			stage = 'stage';
+			stage = DEFAULT_STAGE;
 
 		var stageFile:StageFile = getStageFile(stage);
-		forceNextDirectory = (stageFile != null) ? stageFile.directory : ''; // preventing crashes
+		forceNextDirectory = (stageFile != null) ? stageFile.directory : DEFAULT_STAGE_DIRECTORY; // preventing crashes
 	}
 
 	public static function getStageFile(stage:String):StageFile
 	{
+		if (stage == null || stage.length < 1)
+			stage = DEFAULT_STAGE;
+
 		try
 		{
 			var path:String = Paths.getPath('stages/' + stage + '.json', TEXT, null, true);
@@ -91,6 +97,10 @@ class StageData
 		{
 			trace('StageData error on "$stage": $e');
 		}
+
+		if (stage != DEFAULT_STAGE)
+			return getStageFile(DEFAULT_STAGE);
+
 		return dummy();
 	}
 
@@ -115,7 +125,7 @@ class StageData
 			case 'ugh' | 'guns' | 'stress':
 				return 'tank';
 		}
-		return 'stage';
+		return DEFAULT_STAGE;
 	}
 
 	public static var reservedNames:Array<String> = ['gf', 'gfGroup', 'dad', 'dadGroup', 'boyfriend', 'boyfriendGroup']; // blocks these names from being used on stage editor's name input text

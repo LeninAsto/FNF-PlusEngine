@@ -15,8 +15,8 @@ class LegacySettingsSubState extends BaseOptionsMenu
 			'vanillaTransition', BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Lower Volume When Window Loses Focus', 'If checked, lowers the game volume while the window is not focused.',
-			'lowerVolumeOnFocusLost', BOOL);
+		var option:Option = new Option('Instant Window Close', 'If checked, closing the game exits instantly instead of fading the window out.',
+			'instantWindowClose', BOOL);
 		addOption(option);
 
 		var option:Option = new Option('Use Psych Freeplay', 'If checked, uses the classic Psych Engine Freeplay state instead of the PlusEngine Freeplay.',

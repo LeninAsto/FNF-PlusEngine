@@ -56,7 +56,7 @@ import states.TitleState;
 	public var showWatermark:Bool = false;
 	public var flashing:Bool = true;
 	public var autoPause:Bool = true;
-	public var lowerVolumeOnFocusLost:Bool = false;
+	public var instantWindowClose:Bool = true;
 	public var antialiasing:Bool = true;
 	#if windows
 	public var changeWindowBorderColorWithNoteHit:Bool = false; // Changes window border color on note hit (Windows 11 only)

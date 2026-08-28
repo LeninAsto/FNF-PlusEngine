@@ -10,6 +10,7 @@ import openfl.geom.Point;
 import objects.Character;
 import objects.HealthIcon;
 import objects.Bar;
+import states.stages.StageWeek1 as BackgroundStage;
 import states.editors.content.Prompt;
 import states.editors.content.PsychJsonPrinter;
 
@@ -1275,12 +1276,13 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 	inline function loadBG()
 	{
 		var lastLoaded = Paths.currentLevel;
-		Paths.currentLevel = assetFolder;
+		Paths.setCurrentLevel(assetFolder);
 
 		/////////////
 		// bg data //
 		/////////////
-		camEditor.bgColor = 0xFF666666;
+		camEditor.bgColor = FlxColor.TRANSPARENT;
+		new BackgroundStage();
 
 		dadPosition.set(100, 100);
 		bfPosition.set(770, 100);
