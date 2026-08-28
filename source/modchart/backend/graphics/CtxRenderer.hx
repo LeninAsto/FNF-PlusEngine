@@ -53,6 +53,12 @@ class CtxRenderer {
 	public var dbgPathQuality:Float = 1.0;
 
 	public function alloc(n:Int) {
+		if (queue != null)
+		{
+			for (i in 0...count)
+				queue[i] = null;
+		}
+
 		if (queue == null || n > capacity)
 		{
 			queue = new Vector<DrawCommand>(n);
@@ -290,8 +296,9 @@ class CtxRenderer {
 				}
 				cameraBounds.set(camera.viewMarginLeft, camera.viewMarginTop, camera.viewWidth, camera.viewHeight);
 
-				final scrollFactorX = item.parent != null ? item.parent.scrollFactor.x : 0;
-				final scrollFactorY = item.parent != null ? item.parent.scrollFactor.y : 0;
+				final scrollFactor = item.parent != null ? item.parent.scrollFactor : null;
+				final scrollFactorX = scrollFactor != null ? scrollFactor.x : 0;
+				final scrollFactorY = scrollFactor != null ? scrollFactor.y : 0;
 				final cameraScrollX = camera.scroll != null ? camera.scroll.x : 0;
 				final cameraScrollY = camera.scroll != null ? camera.scroll.y : 0;
 				final point = FlxPoint.weak(cameraScrollX * -scrollFactorX, cameraScrollY * -scrollFactorY);
@@ -309,8 +316,22 @@ class CtxRenderer {
 	}
 
 	public function append(dc:DrawCommand) {
+		if (dc == null || ctx == null || ctx.parent == null || dc.vertices == null || dc.indices == null || dc.uvs == null)
+			return;
+
 		@:privateAccess
-		queue[count++] = ctx.parent.transformCmd(dc);
+		var transformed = ctx.parent.transformCmd(dc);
+		if (transformed == null)
+			return;
+		if (count >= capacity)
+		{
+			final nextCapacity = capacity + 64;
+			var grown = new Vector<DrawCommand>(nextCapacity);
+			Vector.blit(queue, 0, grown, 0, capacity);
+			queue = grown;
+			capacity = nextCapacity;
+		}
+		queue[count++] = transformed;
 		if (collectDebugStats)
 		{
 			dbgDrawCmds++;
