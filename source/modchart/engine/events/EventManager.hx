@@ -17,6 +17,9 @@ class EventManager {
 	private var eventCount:Int = 0;
 	public var totalEvents(get, never):Int;
 	inline function get_totalEvents():Int return eventCount;
+	private var activeEvents:Array<Event> = [];
+	private var nextEventIndex:Int = 0;
+	private var lastBeat:Float = Math.NEGATIVE_INFINITY;
 
 	private var pf:PlayField;
 
@@ -50,16 +53,37 @@ class EventManager {
 	}
 
 	public function update(curBeat:Float) {
-		for (i in 0...eventCount) {
-			var ev = eventList[i];
-			if (ev.beat >= curBeat) {
-				ev.active = false;
-				for (j in i...eventCount)
-					eventList[j].active = false;
+		if (curBeat < lastBeat)
+			resetTimelineState();
+		lastBeat = curBeat;
+
+		while (nextEventIndex < eventCount) {
+			var ev = eventList[nextEventIndex];
+			if (ev == null || ev.beat >= curBeat)
 				break;
+			ev.active = true;
+			activeEvents.push(ev);
+			nextEventIndex++;
+		}
+
+		var index = 0;
+		while (index < activeEvents.length) {
+			var ev = activeEvents[index];
+			if (ev == null || ev.fired) {
+				if (ev != null)
+					ev.active = false;
+				activeEvents.splice(index, 1);
+				continue;
 			}
+
 			ev.active = true;
 			ev.update(curBeat);
+			if (ev.fired) {
+				ev.active = false;
+				activeEvents.splice(index, 1);
+			} else {
+				index++;
+			}
 		}
 	}
 
@@ -110,5 +134,17 @@ class EventManager {
 			}
 		}
 		return len;
+	}
+
+	private function resetTimelineState():Void {
+		nextEventIndex = 0;
+		activeEvents.resize(0);
+		for (i in 0...eventCount) {
+			var ev = eventList[i];
+			if (ev == null)
+				continue;
+			ev.active = false;
+			ev.fired = false;
+		}
 	}
 }

@@ -336,7 +336,7 @@ class LuaModchart
 			var targetBeat:Null<Float> = null;
 
 			if (Std.isOfType(nameOrBeat, String))
-				name = Std.string(nameOrBeat).trim();
+				targetBeat = toFloat(nameOrBeat, Math.NaN);
 			else if (nameOrBeat != null)
 				targetBeat = toFloat(nameOrBeat, Math.NaN);
 
@@ -1089,10 +1089,7 @@ class LuaModchart
 
 	private static function isNamedPlayfield(field:Dynamic):Bool
 	{
-		return field != null
-			&& Std.isOfType(field, String)
-			&& Std.string(field).trim().length > 0
-			&& Std.parseInt(Std.string(field).trim()) == null;
+		return false;
 	}
 
 	private static function resolveFieldIndex(field:Dynamic, defaultField:Int = -1):Int

@@ -59,7 +59,7 @@ import psychlua.HScript;
 import mobile.backend.StorageUtil;
 import mobile.backend.MobileScaleMode;
 #end
-#if LUA_ALLOWED
+#if MODCHARTS_NOTITG_ALLOWED
 import modchart.Manager;
 #end
 #if HSCRIPT_ALLOWED
@@ -412,6 +412,10 @@ class PlayState extends MusicBeatState
 	var modchartWarningShown:Bool = false;
 	var isShowingModchartWarning:Bool = false;
 	#if MODCHARTS_NOTITG_ALLOWED
+	public var modchartManagerEnabled:Bool = true;
+	public var modchartControlsStrumRender:Bool = true;
+	public var modchartBridgeLegacyProperties:Bool = false;
+
 	var modchartDebugTxt:FlxText = null;
 	var modchartDebugEnabled:Bool = false;
 	var modchartDebugAccum:Float = 0;
@@ -419,6 +423,7 @@ class PlayState extends MusicBeatState
 	var modchartAverageFPS:Float = 0;
 	var modchartDebugRefresh:Float = 0;
 	var modchartInitCallback:Void->Void = null;
+	var modchartInitCalled:Bool = false;
 	#end
 
 	// Variables para mantener animación hold
@@ -1165,6 +1170,11 @@ class PlayState extends MusicBeatState
 
 		resetRPC();
 
+		generateStaticArrowsIfNeeded(false);
+		#if MODCHARTS_NOTITG_ALLOWED
+		ensureModchartManager();
+		#end
+
 		stagesFunc(function(stage:BaseStage) stage.createPost());
 		callOnScripts('onCreatePost');
 
@@ -1214,6 +1224,15 @@ class PlayState extends MusicBeatState
 	function hasModchart():Bool
 	{
 		#if MODCHARTS_NOTITG_ALLOWED
+		return detectModchartInitFunction();
+		#else
+		return false;
+		#end
+	}
+
+	#if MODCHARTS_NOTITG_ALLOWED
+	function detectModchartInitFunction():Bool
+	{
 		var hasModchartFunction:Bool = false;
 
 		#if LUA_ALLOWED
@@ -1250,10 +1269,8 @@ class PlayState extends MusicBeatState
 		#end
 
 		return hasModchartFunction;
-		#else
-		return false;
-		#end
 	}
+	#end
 
 	function showModchartWarning():Void
 	{
@@ -1350,6 +1367,10 @@ class PlayState extends MusicBeatState
 	function initModchart()
 	{
 		#if MODCHARTS_NOTITG_ALLOWED
+		if (!detectModchartInitFunction() || modchartInitCalled)
+			return;
+		modchartInitCalled = true;
+
 		// Verificar si algún script tiene la función onInitModchart
 		var hasModchartFunction:Bool = false;
 
@@ -1400,9 +1421,9 @@ class PlayState extends MusicBeatState
 		{
 			if (Manager.instance == null)
 			{
-				var manager = new Manager();
-				add(manager);
-				trace("Modchart Manager initialized successfully");
+				ensureModchartManager();
+				if (Manager.instance == null)
+					return;
 			}
 			setOnScripts('instance', Manager.instance);
 			setOnScripts('manager', Manager.instance);
@@ -1436,6 +1457,30 @@ class PlayState extends MusicBeatState
 	}
 
 	#if MODCHARTS_NOTITG_ALLOWED
+	function ensureModchartManager():Void
+	{
+		if (!modchartManagerEnabled)
+			return;
+
+		if (Manager.instance == null)
+		{
+			var manager = new Manager();
+			if (noteGroup != null)
+				noteGroup.insert(0, manager);
+			else
+				add(manager);
+		}
+
+		if (Manager.instance != null)
+		{
+			Manager.instance.cameras = [camHUD];
+			setOnScripts('instance', Manager.instance);
+			setOnScripts('manager', Manager.instance);
+			setOnScripts('modManager', Manager.instance);
+			setOnScripts('modchartManager', Manager.instance);
+		}
+	}
+
 	function createModchartDebugOverlay():Void
 	{
 		if (modchartDebugTxt != null || Manager.instance == null)
@@ -1964,19 +2009,10 @@ class PlayState extends MusicBeatState
 				skipArrowStartTween = true;
 
 			canPause = true;
-			generateStaticArrows(0);
-			generateStaticArrows(1);
-			for (i in 0...playerStrums.length)
-			{
-				setOnScripts('defaultPlayerStrumX' + i, playerStrums.members[i].x);
-				setOnScripts('defaultPlayerStrumY' + i, playerStrums.members[i].y);
-			}
-			for (i in 0...opponentStrums.length)
-			{
-				setOnScripts('defaultOpponentStrumX' + i, opponentStrums.members[i].x);
-				setOnScripts('defaultOpponentStrumY' + i, opponentStrums.members[i].y);
-				// if(ClientPrefs.data.middleScroll) opponentStrums.members[i].visible = false;
-			}
+			generateStaticArrowsIfNeeded(true);
+			#if MODCHARTS_NOTITG_ALLOWED
+			ensureModchartManager();
+			#end
 
 			startedCountdown = true;
 			Conductor.songPosition = -Conductor.crochet * 5 + Conductor.offset;
@@ -2981,6 +3017,8 @@ class PlayState extends MusicBeatState
 	}
 
 	public var skipArrowStartTween:Bool = false; // for lua
+	var staticArrowsGenerated:Bool = false;
+	var staticArrowIntroTweenStarted:Bool = false; // for early modchart manager setup
 
 	private function generateStaticArrows(player:Int):Void
 	{
@@ -3004,19 +3042,7 @@ class PlayState extends MusicBeatState
 			// Determinar si esta strum es del jugador considerando opponent mode
 			var isPlayerStrum:Bool = playOpponent ? (player == 0) : (player == 1);
 
-			var targetAlpha:Float = 1;
-			if (!isPlayerStrum) // Es una strum del oponente (no controlada por el jugador)
-			{
-				// En StepMania, ocultar completamente las strums del oponente
-				if (isStepManiaChart)
-				{
-					targetAlpha = 0;
-				}
-				else if (!ClientPrefs.data.opponentStrums)
-					targetAlpha = 0;
-				else if (ClientPrefs.data.middleScroll)
-					targetAlpha = 0.35;
-			}
+			var targetAlpha:Float = getStaticStrumTargetAlpha(isPlayerStrum);
 
 			var babyArrow:StrumNote = new StrumNote(strumLineX, strumLineY, i, player);
 			#if mobile
@@ -3024,14 +3050,7 @@ class PlayState extends MusicBeatState
 				babyArrow.downScroll = true;
 			#end
 			babyArrow.downScroll = ClientPrefs.data.downScroll;
-			if (!isStoryMode && !skipArrowStartTween)
-			{
-				// babyArrow.y -= 10;
-				babyArrow.alpha = 0;
-				FlxTween.tween(babyArrow, {/*y: babyArrow.y + 10,*/ alpha: targetAlpha}, 1, {ease: FlxEase.circOut, startDelay: 0.5 + (0.2 * i)});
-			}
-			else
-				babyArrow.alpha = targetAlpha;
+			babyArrow.alpha = (!isStoryMode && !skipArrowStartTween) ? 0 : targetAlpha;
 
 			// Opponent Mode: Invertir las strums
 			// player=1 normalmente va a playerStrums (boyfriend), pero en modo opponent debe ir a opponentStrums (porque ahora boyfriend es IA)
@@ -3064,6 +3083,82 @@ class PlayState extends MusicBeatState
 			if (isPlayerStrum && ClientPrefs.data.mobileReceptorAlign)
 				babyArrow.x = getMobileAlignedReceptorX(i, babyArrow.width);
 			#end
+		}
+	}
+
+	function generateStaticArrowsIfNeeded(startIntroTween:Bool = false):Void
+	{
+		if (!staticArrowsGenerated)
+		{
+			generateStaticArrows(0);
+			generateStaticArrows(1);
+			staticArrowsGenerated = true;
+			exposeDefaultStrumPositions();
+		}
+
+		if (startIntroTween)
+			startStaticArrowIntroTweensIfNeeded();
+	}
+
+	function exposeDefaultStrumPositions():Void
+	{
+		for (i in 0...playerStrums.length)
+		{
+			var strum = playerStrums.members[i];
+			if (strum == null)
+				continue;
+			setOnScripts('defaultPlayerStrumX' + i, strum.x);
+			setOnScripts('defaultPlayerStrumY' + i, strum.y);
+		}
+		for (i in 0...opponentStrums.length)
+		{
+			var strum = opponentStrums.members[i];
+			if (strum == null)
+				continue;
+			setOnScripts('defaultOpponentStrumX' + i, strum.x);
+			setOnScripts('defaultOpponentStrumY' + i, strum.y);
+		}
+	}
+
+	function getStaticStrumTargetAlpha(isPlayerStrum:Bool):Float
+	{
+		if (isPlayerStrum)
+			return 1;
+		if (isStepManiaChart)
+			return 0;
+		if (!ClientPrefs.data.opponentStrums)
+			return 0;
+		if (ClientPrefs.data.middleScroll)
+			return 0.35;
+		return 1;
+	}
+
+	function startStaticArrowIntroTweensIfNeeded():Void
+	{
+		if (staticArrowIntroTweenStarted)
+			return;
+
+		staticArrowIntroTweenStarted = true;
+		tweenStaticStrumGroup(opponentStrums, false);
+		tweenStaticStrumGroup(playerStrums, true);
+	}
+
+	function tweenStaticStrumGroup(group:FlxTypedGroup<StrumNote>, isPlayerStrum:Bool):Void
+	{
+		for (i in 0...group.length)
+		{
+			var strum = group.members[i];
+			if (strum == null)
+				continue;
+
+			var targetAlpha = getStaticStrumTargetAlpha(isPlayerStrum);
+			if (!isStoryMode && !skipArrowStartTween)
+			{
+				strum.alpha = 0;
+				FlxTween.tween(strum, {alpha: targetAlpha}, 1, {ease: FlxEase.circOut, startDelay: 0.5 + (0.2 * i)});
+			}
+			else
+				strum.alpha = targetAlpha;
 		}
 	}
 

@@ -2,6 +2,7 @@ package modchart.backend.graphics;
 
 import flixel.FlxBasic;
 import flixel.FlxCamera;
+import flixel.FlxObject;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.tile.FlxDrawTrianglesItem;
 import flixel.math.FlxPoint;
@@ -10,6 +11,7 @@ import flixel.system.FlxAssets.FlxShader;
 import flixel.util.FlxSignal;
 import flixel.util.FlxSort;
 import haxe.ds.IntMap;
+import haxe.ds.ObjectMap;
 import haxe.ds.Vector;
 import modchart.backend.graphics.renderers.*;
 import modchart.engine.PlayField;
@@ -31,6 +33,9 @@ class CtxRenderer {
 
 	var queue:Vector<DrawCommand>;
 	var count:Int = 0;
+	var capacity:Int = 0;
+	var suppressedVisibility:ObjectMap<FlxObject, Bool> = new ObjectMap();
+	var suppressedObjects:Array<FlxObject> = [];
 
 	/** Debug stats — populated each frame by emit(). */
 	public var dbgDrawCmds:Int = 0;
@@ -48,7 +53,11 @@ class CtxRenderer {
 	public var dbgPathQuality:Float = 1.0;
 
 	public function alloc(n:Int) {
-		queue = new Vector<DrawCommand>(n);
+		if (queue == null || n > capacity)
+		{
+			queue = new Vector<DrawCommand>(n);
+			capacity = n;
+		}
 		count = 0;
 	}
 
@@ -153,7 +162,7 @@ class CtxRenderer {
 				attachmentCount = attachmentCount + curItems[3].length;
 		}
 
-		pathCount = receptorCount;
+		pathCount = Config.RENDER_ARROW_PATHS ? receptorCount : 0;
 
 		if (collectDebugStats)
 		{
@@ -191,8 +200,6 @@ class CtxRenderer {
 				if (pathCount > 0) {
 					// iterate through receptors, yes
 					for (receptor in curItems[0]) {
-						if (!getVisibility(receptor))
-							continue;
 						var _ = emitPathCmd(receptor);
 						if (_ != null) {
 							if (collectDebugStats)
@@ -312,9 +319,30 @@ class CtxRenderer {
 	}
 
 	private function getVisibility(obj:flixel.FlxObject) {
+		if (obj == null)
+			return false;
+
+		if (!suppressedVisibility.exists(obj))
+		{
+			suppressedVisibility.set(obj, obj.visible);
+			suppressedObjects.push(obj);
+		}
+
 		@:bypassAccessor obj.visible = false;
 		return obj._fmVisible;
 	}
 
-	public function dispose() {}
+	public function restoreSuppressedVisibility():Void {
+		for (obj in suppressedObjects)
+		{
+			if (obj != null && suppressedVisibility.exists(obj))
+				@:bypassAccessor obj.visible = suppressedVisibility.get(obj);
+		}
+		suppressedObjects.resize(0);
+		suppressedVisibility = new ObjectMap();
+	}
+
+	public function dispose() {
+		restoreSuppressedVisibility();
+	}
 }

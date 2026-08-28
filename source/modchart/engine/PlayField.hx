@@ -353,10 +353,31 @@ final class PlayField extends FlxSprite
 		}
 	}
 
-	private inline function __makePathCacheKey(pos:Vector3, data:ArrowData, posDiff:Float, allowVis:Bool, allowPos:Bool, transformMode:Int):String
+	private inline function __makePathCacheKey(pos:Vector3, data:ArrowData, posDiff:Float, allowVis:Bool, allowPos:Bool, transformMode:Int):Int
 	{
-		return
-			'${state.frameId}|${pos.x}|${pos.y}|${pos.z}|${data.hitTime}|${data.distance}|${data.sourceTime}|${data.lane}|${data.player}|${data.isTapArrow ? 1 : 0}|${data.straightHolds ? 1 : 0}|${posDiff}|${allowVis ? 1 : 0}|${allowPos ? 1 : 0}|${Std.int(transformMode)}';
+		var hash = 17;
+		hash = __mixPathHash(hash, state.frameId);
+		hash = __mixPathHash(hash, __quantizePathFloat(pos.x));
+		hash = __mixPathHash(hash, __quantizePathFloat(pos.y));
+		hash = __mixPathHash(hash, __quantizePathFloat(pos.z));
+		hash = __mixPathHash(hash, __quantizePathFloat(data.hitTime));
+		hash = __mixPathHash(hash, __quantizePathFloat(data.distance));
+		hash = __mixPathHash(hash, __quantizePathFloat(data.sourceTime));
+		hash = __mixPathHash(hash, data.lane);
+		hash = __mixPathHash(hash, data.player);
+		hash = __mixPathHash(hash, data.isTapArrow ? 1 : 0);
+		hash = __mixPathHash(hash, data.straightHolds ? 1 : 0);
+		hash = __mixPathHash(hash, __quantizePathFloat(posDiff));
+		hash = __mixPathHash(hash, allowVis ? 1 : 0);
+		hash = __mixPathHash(hash, allowPos ? 1 : 0);
+		hash = __mixPathHash(hash, Std.int(transformMode));
+		return hash;
 	}
+
+	private inline function __mixPathHash(hash:Int, value:Int):Int
+		return (hash * 31) ^ value;
+
+	private inline function __quantizePathFloat(value:Float):Int
+		return Std.int(value * 1000);
 }
 

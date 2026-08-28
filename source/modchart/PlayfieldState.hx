@@ -1,6 +1,6 @@
 package modchart;
 
-import haxe.ds.StringMap;
+import haxe.ds.IntMap;
 import modchart.backend.core.ModifierOutput;
 import modchart.backend.core.VisualParameters;
 import modchart.backend.math.Vector3;
@@ -18,7 +18,7 @@ final class PlayfieldState
 	public var songPosition(default, null):Float = 0;
 	public var beat(default, null):Float = 0;
 
-	private var __pathCache:StringMap<ModifierOutput> = new StringMap();
+	private var __pathCache:IntMap<ModifierOutput> = new IntMap();
 
 	public function new()
 	{
@@ -27,19 +27,19 @@ final class PlayfieldState
 	public inline function beginFrame(frameId:Int, songPosition:Float, beat:Float):Void
 	{
 		if (this.frameId != frameId)
-			__pathCache = new StringMap();
+			__pathCache.clear();
 
 		this.frameId = frameId;
 		this.songPosition = songPosition;
 		this.beat = beat;
 	}
 
-	public inline function getCachedPath(key:String):Null<ModifierOutput>
+	public inline function getCachedPath(key:Int):Null<ModifierOutput>
 	{
 		return __pathCache.get(key);
 	}
 
-	public inline function setCachedPath(key:String, output:ModifierOutput):ModifierOutput
+	public inline function setCachedPath(key:Int, output:ModifierOutput):ModifierOutput
 	{
 		__pathCache.set(key, output);
 		return output;
