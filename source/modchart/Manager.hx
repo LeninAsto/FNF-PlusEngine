@@ -8,7 +8,6 @@ import haxe.ds.Vector;
 import modchart.backend.core.Node.NodeFunction;
 import modchart.engine.events.types.CallbackEvent;
 import psychlua.LuaUtils;
-import states.PlayState;
 
 using StringTools;
 
@@ -564,7 +563,9 @@ final class Manager extends FlxBasic
 	 */
 	override function draw():Void
 	{
-		if (!__primary || !shouldRenderModchart())
+		final shouldRender = __primary && shouldRenderModchart();
+
+		if (!shouldRender)
 		{
 			if (__wasRendering && renderer != null)
 				renderer.restoreSuppressedVisibility();

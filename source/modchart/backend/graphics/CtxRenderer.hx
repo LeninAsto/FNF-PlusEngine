@@ -1,7 +1,6 @@
 package modchart.backend.graphics;
 
 import flixel.FlxBasic;
-import flixel.FlxCamera;
 import flixel.FlxObject;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.tile.FlxDrawTrianglesItem;
@@ -16,6 +15,7 @@ import haxe.ds.Vector;
 import modchart.backend.graphics.renderers.*;
 import modchart.engine.PlayField;
 import openfl.display.BlendMode;
+import openfl.geom.ColorTransform;
 
 using modchart.backend.util.SortUtil;
 
@@ -36,6 +36,8 @@ class CtxRenderer {
 	var capacity:Int = 0;
 	var suppressedVisibility:ObjectMap<FlxObject, Bool> = new ObjectMap();
 	var suppressedObjects:Array<FlxObject> = [];
+	var cameraColorTransform:ColorTransform = new ColorTransform();
+	var cameraGradientTransforms:NativeVector<ColorTransform> = new NativeVector<ColorTransform>(0);
 
 	/** Debug stats — populated each frame by emit(). */
 	public var dbgDrawCmds:Int = 0;
@@ -274,7 +276,7 @@ class CtxRenderer {
 			}
 		}
 
-		queue.nullSort((a, b) -> return b.zIndex - a.zIndex);
+		sortActiveQueue();
 
 		var i = 0;
 		while (i < count) {
@@ -284,7 +286,7 @@ class CtxRenderer {
 				continue;
 			}
 			for (camera in item.cameras) {
-				if (camera == null)
+				if (camera == null || !camera.exists || !camera.visible || camera.alpha <= 0.0001)
 					continue;
 				var dc = camera.startTrianglesBatch(item.graphic, item.antialiasing, item.isColored, item.blend, item.hasColorOffsets, item.shader);
 				if (dc == null)
@@ -305,9 +307,10 @@ class CtxRenderer {
 
 				if (item.color != null)
 					dc.addTriangles(item.vertices, item.indices, item.uvs, emptyVec, point, cameraBounds,
-						item.color);
+						getCameraColorTransform(item.color, camera.alpha));
 				else if (item.colors != null)
-					dc.addGradientTriangles(item.vertices, item.indices, item.uvs, point, cameraBounds, item.colors);
+					dc.addGradientTriangles(item.vertices, item.indices, item.uvs, point, cameraBounds,
+						getCameraGradientTransforms(item.colors, camera.alpha));
 			}
 			i++;
 		}
@@ -336,6 +339,82 @@ class CtxRenderer {
 		{
 			dbgDrawCmds++;
 			dbgVertices += dc.vertices != null ? Std.int(dc.vertices.length / 2) : 0;
+		}
+	}
+
+	private function getCameraColorTransform(source:ColorTransform, cameraAlpha:Float):ColorTransform {
+		if (cameraAlpha >= 0.999)
+			return source;
+
+		cameraColorTransform.redMultiplier = source.redMultiplier;
+		cameraColorTransform.greenMultiplier = source.greenMultiplier;
+		cameraColorTransform.blueMultiplier = source.blueMultiplier;
+		cameraColorTransform.alphaMultiplier = source.alphaMultiplier * cameraAlpha;
+		cameraColorTransform.redOffset = source.redOffset;
+		cameraColorTransform.greenOffset = source.greenOffset;
+		cameraColorTransform.blueOffset = source.blueOffset;
+		cameraColorTransform.alphaOffset = source.alphaOffset;
+		return cameraColorTransform;
+	}
+
+	private function getCameraGradientTransforms(source:NativeVector<ColorTransform>, cameraAlpha:Float):NativeVector<ColorTransform> {
+		if (cameraAlpha >= 0.999)
+			return source;
+
+		if (cameraGradientTransforms == null || cameraGradientTransforms.length != source.length)
+		{
+			cameraGradientTransforms = new NativeVector<ColorTransform>(source.length);
+			for (i in 0...source.length)
+				cameraGradientTransforms[i] = new ColorTransform();
+		}
+
+		for (i in 0...source.length)
+		{
+			final from = source[i];
+			var to = cameraGradientTransforms[i];
+			if (to == null)
+			{
+				to = new ColorTransform();
+				cameraGradientTransforms[i] = to;
+			}
+
+			if (from == null)
+			{
+				to.redMultiplier = 1;
+				to.greenMultiplier = 1;
+				to.blueMultiplier = 1;
+				to.alphaMultiplier = cameraAlpha;
+				to.redOffset = 0;
+				to.greenOffset = 0;
+				to.blueOffset = 0;
+				to.alphaOffset = 0;
+				continue;
+			}
+
+			to.redMultiplier = from.redMultiplier;
+			to.greenMultiplier = from.greenMultiplier;
+			to.blueMultiplier = from.blueMultiplier;
+			to.alphaMultiplier = from.alphaMultiplier * cameraAlpha;
+			to.redOffset = from.redOffset;
+			to.greenOffset = from.greenOffset;
+			to.blueOffset = from.blueOffset;
+			to.alphaOffset = from.alphaOffset;
+		}
+
+		return cameraGradientTransforms;
+	}
+
+	private function sortActiveQueue():Void {
+		var i = 1;
+		while (i < count) {
+			var current = queue[i];
+			var j = i - 1;
+			while (j >= 0 && queue[j] != null && current != null && queue[j].zIndex < current.zIndex) {
+				queue[j + 1] = queue[j];
+				j--;
+			}
+			queue[j + 1] = current;
+			i++;
 		}
 	}
 
