@@ -867,13 +867,7 @@ class PhillyStreets extends BaseStage {
 				}
 			};
 
-			for (field in PlayState.instance.noteFields) {
-				for (active in field.active) {
-					if (active != null && active.data != null && noteTypeOf(active.data) == 'weekend-1-firegun') {
-						active.data.blockHit = false;
-					}
-				}
-			}
+			unlockFiregunNotes();
 			showPicoFade();
 		} else if (noteType == 'weekend-1-firegun') {
 			if (spraycan == null) {
@@ -1043,20 +1037,61 @@ class PhillyStreets extends BaseStage {
 		if (note == null) {
 			return '';
 		}
-		if (note.noteType != null) {
-			return note.noteType;
+		var noteType:Dynamic = Reflect.field(note, 'noteType');
+		if (noteType != null) {
+			return Std.string(noteType);
 		}
-		return note.type != null ? note.type : '';
+		var type:Dynamic = Reflect.field(note, 'type');
+		return type != null ? Std.string(type) : '';
 	}
 
 	function noteTimeOf(note:Dynamic):Float {
 		if (note == null) {
 			return Conductor.songPosition;
 		}
-		if (note.strumTime != null) {
-			return note.strumTime;
+		var strumTime:Dynamic = Reflect.field(note, 'strumTime');
+		if (strumTime != null) {
+			return strumTime;
 		}
-		return note.time != null ? note.time : Conductor.songPosition;
+		var time:Dynamic = Reflect.field(note, 'time');
+		return time != null ? time : Conductor.songPosition;
+	}
+
+	function unlockFiregunNotes():Void {
+		if (PlayState.instance == null) {
+			return;
+		}
+
+		if (PlayState.instance.noteFields != null) {
+			for (field in PlayState.instance.noteFields) {
+				if (field == null || field.active == null) {
+					continue;
+				}
+				for (active in field.active) {
+					if (active != null && active.data != null) {
+						unlockFiregunNote(active.data);
+					}
+				}
+			}
+		}
+
+		if (PlayState.instance.notes != null && PlayState.instance.notes.members != null) {
+			for (note in PlayState.instance.notes.members) {
+				unlockFiregunNote(note);
+			}
+		}
+
+		if (PlayState.instance.unspawnNotes != null) {
+			for (note in PlayState.instance.unspawnNotes) {
+				unlockFiregunNote(note);
+			}
+		}
+	}
+
+	function unlockFiregunNote(note:Dynamic):Void {
+		if (note != null && noteTypeOf(note) == 'weekend-1-firegun') {
+			note.blockHit = false;
+		}
 	}
 
 	/**

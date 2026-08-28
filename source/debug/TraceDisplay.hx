@@ -34,6 +34,7 @@ enum TraceType
 	ERROR;
 	LUA_ERROR;
 	HSCRIPT_ERROR;
+	HXS_ERROR;
 	WARNING;
 	INFO;
 }
@@ -194,12 +195,15 @@ class TraceDisplay extends Sprite
 
 			// Agregar a nuestro display
 			var errorText = 'HSCRIPT ERROR: $message';
+			var fileName:String = null;
 			if (pos != null && pos.fileName != null)
 			{
-				var sourceLabel = formatSourceLabel(pos.fileName);
+				fileName = Std.string(pos.fileName);
+				var sourceLabel = formatSourceLabel(fileName);
 				errorText = 'HSCRIPT ERROR in $sourceLabel: $message';
 			}
-			addTraceDirectly(errorText, HSCRIPT_ERROR, 0xFF4444);
+			var type = hscriptTraceType(errorText, fileName);
+			addTraceDirectly(errorText, type, displayColorForType(type, 0xFF4444));
 		};
 		#end
 	}
@@ -357,7 +361,8 @@ class TraceDisplay extends Sprite
 				var sourceLabel = instance.formatSourceLabel(fileName);
 				errorText = 'HSCRIPT ERROR in $sourceLabel: $text';
 			}
-			instance.addTraceDirectly(errorText, HSCRIPT_ERROR, 0xFF4444);
+			var type = instance.hscriptTraceType(errorText, fileName);
+			instance.addTraceDirectly(errorText, type, instance.displayColorForType(type, 0xFF4444));
 		}
 	}
 
@@ -387,6 +392,10 @@ class TraceDisplay extends Sprite
 	{
 		var rgb = color & 0x00FFFFFF;
 		var lower = Std.string(text).toLowerCase();
+		if (looksLikeHxsError(lower, null))
+			return HXS_ERROR;
+		if (lower.indexOf('hscript') != -1 || lower.indexOf('hsc') != -1 || lower.indexOf('hxscript') != -1)
+			return HSCRIPT_ERROR;
 		if (rgb == 0xFF0000 || lower.indexOf('error') != -1 || lower.indexOf('fatal') != -1)
 			return LUA_ERROR;
 		if (deprecated || rgb == 0xFFFF00 || rgb == 0xFFAA00 || lower.indexOf('warning') != -1 || lower.indexOf('warn') != -1
@@ -403,10 +412,31 @@ class TraceDisplay extends Sprite
 		{
 			case LUA_ERROR | ERROR: 0xFF6666;
 			case HSCRIPT_ERROR: 0xFF4444;
+			case HXS_ERROR: 0xFF55AA;
 			case WARNING: 0xFFAA00;
 			case INFO: 0x00AAFF;
 			case NORMAL: color & 0x00FFFFFF;
 		};
+	}
+
+	private function hscriptTraceType(text:String, ?fileName:String):TraceType
+		return looksLikeHxsError(Std.string(text).toLowerCase(), fileName) ? HXS_ERROR : HSCRIPT_ERROR;
+
+	private function looksLikeHxsError(lowerText:String, ?fileName:String):Bool
+	{
+		var source = fileName != null ? fileName.split("\\").join("/").toLowerCase() : '';
+		return source.indexOf('/scripts/classes/') != -1
+			|| source.indexOf('scripts/classes/') == 0
+			|| source.indexOf('/classes/') != -1
+			|| source.indexOf('classes/') == 0
+			|| StringTools.endsWith(source, '.hxs')
+			|| StringTools.endsWith(source, '.hxc')
+			|| lowerText.indexOf('scripterror') != -1
+			|| lowerText.indexOf('scriptednative') != -1
+			|| lowerText.indexOf('scriptedclass') != -1
+			|| lowerText.indexOf('scripted class') != -1
+			|| lowerText.indexOf('polymodscriptclass') != -1
+			|| lowerText.indexOf('stages.') != -1;
 	}
 
 	private function enforceTraceLimits():Void
@@ -436,6 +466,7 @@ class TraceDisplay extends Sprite
 			case ERROR: "[ERROR] ";
 			case LUA_ERROR: "[LUA-ERR] ";
 			case HSCRIPT_ERROR: "[HSC-ERR] ";
+			case HXS_ERROR: "[HXS-ERR] ";
 			case WARNING: "[WARN] ";
 			case INFO: "[INFO] ";
 			case NORMAL: "";

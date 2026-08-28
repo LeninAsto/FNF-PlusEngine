@@ -607,6 +607,10 @@ class ScriptedFlxSpriteGroup extends FlxSpriteGroup implements IScriptSuperProxy
 		if (superProxy == null)
 		{
 			var methods:Map<String, Dynamic> = [];
+			methods.set('add', nativeSuperAdd);
+			methods.set('insert', nativeSuperInsert);
+			methods.set('remove', nativeSuperRemove);
+			methods.set('clear', nativeSuperClear);
 			methods.set('update', nativeSuperUpdate);
 			methods.set('destroy', nativeSuperDestroy);
 			superProxy = ScriptedNativeFactory.makeSuperFunction(this, nativeSuperNew, methods);
@@ -626,6 +630,18 @@ class ScriptedFlxSpriteGroup extends FlxSpriteGroup implements IScriptSuperProxy
 		y = ScriptedNativeFactory.numberArg(args, 1, y);
 		return this;
 	}
+
+	function nativeSuperAdd(sprite:FlxSprite):FlxSprite
+		return super.add(sprite);
+
+	function nativeSuperInsert(position:Int, sprite:FlxSprite):FlxSprite
+		return super.insert(position, sprite);
+
+	function nativeSuperRemove(sprite:FlxSprite, splice:Bool = false):FlxSprite
+		return super.remove(sprite, splice);
+
+	function nativeSuperClear():Void
+		super.clear();
 
 	function nativeSuperUpdate(elapsed:Float):Void
 		super.update(elapsed);

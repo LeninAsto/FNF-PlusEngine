@@ -1810,6 +1810,30 @@ class CustomInterp extends crowplexus.hscript.Interp
 			return v;
 		}
 
+		// Scripted classes often call inherited methods like add(), remove() or insert()
+		// without writing this./super.; resolve them from the native parent too.
+		if (parentInstance != null)
+		{
+			try
+			{
+				var v = Reflect.getProperty(parentInstance, id);
+				if (v != null)
+					return v;
+			}
+			catch (e:Dynamic)
+			{
+			}
+			try
+			{
+				var v = Reflect.field(parentInstance, id);
+				if (v != null)
+					return v;
+			}
+			catch (e:Dynamic)
+			{
+			}
+		}
+
 		// Check global variables (MusicBeatState)
 		if (MusicBeatState.getVariables().exists(id))
 		{
