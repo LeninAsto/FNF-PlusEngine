@@ -495,11 +495,6 @@ class Mods
 		var hxPath:String = Paths.mods('$folder/scripts/states/$state.hx');
 		if (FileSystem.exists(hxPath))
 			return true;
-		#if LUA_ALLOWED
-		var luaPath:String = Paths.mods('$folder/scripts/states/$state.lua');
-		if (FileSystem.exists(luaPath))
-			return true;
-		#end
 		#end
 		return false;
 	}

@@ -445,13 +445,6 @@ class MainMenuState extends MusicBeatState
 					switch (option)
 					{
 						case 'story_mode':
-							#if FEATURE_POLYMOD_MODS
-							if (funkin.plus.VSliceRuntime.shouldUseVSliceRuntime())
-							{
-								MusicBeatState.switchState(funkin.plus.VSliceRuntime.createStoryMenuState());
-								return;
-							}
-							#end
 							MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
 						case 'freeplay':
 							MusicBeatState.switchState(FreeplayStateSelector.create());

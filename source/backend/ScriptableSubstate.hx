@@ -12,22 +12,12 @@ class ScriptableSubstate extends MusicBeatSubstate {
 	}
 
 	public static inline function overridesEnabled():Bool
-		return true;
+		return false;
 
 	public static function hasScript(name:String):Bool
-		return name != null && name.length > 0 && scripting.ScriptRegistry.resolveClassFile('substates.$name') != null;
+		return false;
 
 	public static function tryCreate(name:String, ?fallback:FlxSubState, ?args:Array<Dynamic>):FlxSubState {
-		if (!hasScript(name))
-			return fallback;
-
-		var created:Dynamic = scripting.ScriptRegistry.instantiate('substates.$name', args);
-		if (created != null && Std.isOfType(created, FlxSubState)) {
-			trace('[ScriptableSubstate] loaded substates.$name');
-			return cast created;
-		}
-
-		trace('[ScriptableSubstate] substates.$name did not create a FlxSubState.');
 		return fallback;
 	}
 }

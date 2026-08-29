@@ -2,9 +2,6 @@ package backend;
 
 import flixel.FlxSubState;
 import debug.TraceDisplay;
-#if LUA_ALLOWED
-import psychlua.FunkinLua;
-#end
 #if HSCRIPT_ALLOWED
 import psychlua.HScript;
 import crowplexus.hscript.Expr.Error as IrisError;
@@ -16,7 +13,7 @@ import sys.FileSystem;
 #end
 
 // Script layer on top of BaseMusicBeatSubstate.
-// Adds GlobalScript forwarding and per-substate HScript/Lua callbacks.
+// Adds beat callbacks and keeps substate script hooks disabled while the layer is rebuilt.
 //
 // Hierarchy:
 //   BaseMusicBeatSubstate (beat, mobile controls)
@@ -32,11 +29,6 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 	public var variables:Map<String, Dynamic> = new Map<String, Dynamic>();
 
 	var _companionClosing:Bool = false;
-
-	// MusicBeatSubstate specific scripts (run on all MusicBeatSubstate instances)
-	#if LUA_ALLOWED
-	public static var musicBeatSubstateLuaScript:FunkinLua = null;
-	#end
 
 	#if HSCRIPT_ALLOWED
 	public static var musicBeatSubstateScript:HScript = null;
@@ -55,10 +47,6 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 	#if HSCRIPT_ALLOWED
 	public var companionScript:HScript = null;
 	#end
-	#if LUA_ALLOWED
-	public var companionLuaScript:FunkinLua = null;
-	#end
-
 	public function new()
 	{
 		super();
@@ -173,13 +161,6 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 			companionScript = null;
 		}
 		#end
-		#if LUA_ALLOWED
-		if (companionLuaScript != null)
-		{
-			companionLuaScript.stop();
-			companionLuaScript = null;
-		}
-		#end
 	}
 
 	// ── Companion script helpers ─────────────────────────────────────────────────
@@ -205,34 +186,6 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 			if (FileSystem.exists(shared))
 				path = shared;
 		}
-
-		#if LUA_ALLOWED
-		var luaRel:String = 'scripts/substates/$clsName.lua';
-		var luaPath:String = null;
-		#if MODS_ALLOWED
-		var moddedLua:String = Paths.modFolders(luaRel);
-		if (FileSystem.exists(moddedLua))
-			luaPath = moddedLua;
-		#end
-		if (luaPath == null)
-		{
-			var sharedLua:String = Paths.getSharedPath(luaRel);
-			if (FileSystem.exists(sharedLua))
-				luaPath = sharedLua;
-		}
-		if (luaPath != null)
-		{
-			try
-			{
-				var ctx = new psychlua.LuaHostContext(psychlua.LuaHostKind.SUBSTATE, clsName, this, getParentState(), variables, null);
-				companionLuaScript = new FunkinLua(luaPath, ctx);
-			}
-			catch (e:Dynamic)
-			{
-				trace('[CompanionSubstate] Lua error in $luaPath: $e');
-			}
-		}
-		#end
 
 		if (path == null)
 			return;
@@ -296,15 +249,6 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 		var ret:Dynamic = LuaUtils.Function_Continue;
 		if (!MusicBeatState.stateScriptOverridesEnabled())
 			return ret;
-
-		#if LUA_ALLOWED
-		if (companionLuaScript != null)
-		{
-			var v = companionLuaScript.call(funcName, args);
-			if (v != null && v != LuaUtils.Function_Continue)
-				ret = v;
-		}
-		#end
 
 		#if HSCRIPT_ALLOWED
 		if (companionScript != null)

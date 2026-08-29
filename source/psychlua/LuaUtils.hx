@@ -445,16 +445,71 @@ class LuaUtils
 		variables.remove(tag);
 	}
 
-	public static function cancelTween(tag:String) {
-		if(!tag.startsWith('tween_')) tag = 'tween_' + LuaUtils.formatVariable(tag);
+	static inline function normalizeTweenTag(tag:String):String {
+		var formatted:String = formatVariable(tag);
+		return formatted.startsWith('tween_') ? formatted.substr('tween_'.length) : formatted;
+	}
+
+	public static function storeTween(tag:String, tween:FlxTween):String {
+		if(tag == null || tween == null) return null;
+
+		var rawTag:String = normalizeTweenTag(tag);
+		var prefixedTag:String = 'tween_' + rawTag;
+		#if LUA_ALLOWED
+		if(PlayState.instance != null)
+			PlayState.instance.modchartTweens.set(rawTag, tween);
+		#end
+		MusicBeatState.getVariables().set(prefixedTag, tween);
+		return rawTag;
+	}
+
+	public static function removeTween(tag:String):Void {
+		if(tag == null) return;
+
+		var rawTag:String = normalizeTweenTag(tag);
+		var prefixedTag:String = 'tween_' + rawTag;
+		#if LUA_ALLOWED
+		if(PlayState.instance != null)
+		{
+			PlayState.instance.modchartTweens.remove(rawTag);
+			PlayState.instance.modchartTweens.remove(prefixedTag);
+		}
+		#end
 		var variables = MusicBeatState.getVariables();
-		var twn:FlxTween = variables.get(tag);
-		if(twn != null)
+		variables.remove(rawTag);
+		variables.remove(prefixedTag);
+	}
+
+	public static function cancelTween(tag:String) {
+		if(tag == null) return;
+
+		var rawTag:String = normalizeTweenTag(tag);
+		var prefixedTag:String = 'tween_' + rawTag;
+		var found:Array<FlxTween> = [];
+		#if LUA_ALLOWED
+		if(PlayState.instance != null)
+		{
+			var legacyTween:FlxTween = PlayState.instance.modchartTweens.get(rawTag);
+			if(legacyTween != null) found.push(legacyTween);
+
+			var prefixedTween:FlxTween = PlayState.instance.modchartTweens.get(prefixedTag);
+			if(prefixedTween != null && found.indexOf(prefixedTween) < 0) found.push(prefixedTween);
+		}
+		#end
+
+		var variables = MusicBeatState.getVariables();
+		var rawTween:FlxTween = variables.get(rawTag);
+		if(rawTween != null && found.indexOf(rawTween) < 0) found.push(rawTween);
+
+		var tween:FlxTween = variables.get(prefixedTag);
+		if(tween != null && found.indexOf(tween) < 0) found.push(tween);
+
+		for(twn in found)
 		{
 			twn.cancel();
 			twn.destroy();
-			variables.remove(tag);
 		}
+		removeTween(rawTag);
 	}
 
 	public static function cancelTimer(tag:String) {

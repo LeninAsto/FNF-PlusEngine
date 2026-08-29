@@ -11,17 +11,13 @@ import states.TitleState;
 
 /**
  * InitialState - Decides which state to start with.
- * Loads mods first, then checks if the top mod has custom state scripts
- * and loads them; otherwise goes to the default TitleState.
+ * Loads mods first, then goes to the default TitleState.
  */
 class InitialState extends MusicBeatState
 {
 	override function create()
 	{
-		// Initialize GlobalScript before anything else
-		// This is the first state created, so FlxG.state now exists
 		#if HSCRIPT_ALLOWED
-		backend.MusicBeatState.initGlobalScript();
 		backend.CustomFadeTransition.initCustomTransitionScript();
 		#end
 

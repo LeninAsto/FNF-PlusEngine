@@ -4,9 +4,6 @@ import debug.TraceDisplay;
 import flixel.FlxState;
 import objects.GlobalLoadingOverlay;
 import backend.ui.md3.NetworkCheckToast;
-#if LUA_ALLOWED
-import psychlua.FunkinLua;
-#end
 #if HSCRIPT_ALLOWED
 import psychlua.HScript;
 import crowplexus.hscript.Expr.Error as IrisError;
@@ -19,7 +16,7 @@ import sys.FileSystem;
 #end
 
 // Script layer on top of BaseMusicBeatState.
-// Adds GlobalScript, per-state HScript/Lua infrastructure and beat callbacks.
+// Adds beat callbacks and keeps state script hooks disabled while the layer is rebuilt.
 //
 // Hierarchy:
 //   BaseMusicBeatState (camera, beat, mobile, stages)
@@ -33,10 +30,8 @@ class MusicBeatState extends BaseMusicBeatState
 	public static inline function stateScriptOverridesEnabled():Bool
 		return false;
 
-	// Global scripts system
-	#if LUA_ALLOWED
-	public static var globalLuaScript:FunkinLua = null;
-	#end
+	public static inline function stateScriptHooksEnabled():Bool
+		return false;
 
 	#if HSCRIPT_ALLOWED
 	public static var globalScript:HScript = null;
@@ -65,10 +60,6 @@ class MusicBeatState extends BaseMusicBeatState
 	#if HSCRIPT_ALLOWED
 	public var companionScript:HScript = null;
 	#end
-	#if LUA_ALLOWED
-	public var companionLuaScript:FunkinLua = null;
-	#end
-
 	// Optional constructor used by scripted hosts to pass script configuration.
 	public function new(?scriptsAllowed:Bool = false, ?scriptName:String = null)
 	{
@@ -338,13 +329,6 @@ class MusicBeatState extends BaseMusicBeatState
 			companionScript = null;
 		}
 		#end
-		#if LUA_ALLOWED
-		if (companionLuaScript != null)
-		{
-			companionLuaScript.stop();
-			companionLuaScript = null;
-		}
-		#end
 	}
 
 	// ─── Companion script helpers ──────────────────────────────────────────────
@@ -378,35 +362,6 @@ class MusicBeatState extends BaseMusicBeatState
 			if (FileSystem.exists(shared))
 				path = shared;
 		}
-
-		#if LUA_ALLOWED
-		// Also check for a Lua companion
-		var luaRel:String = 'scripts/states/$clsName.lua';
-		var luaPath:String = null;
-		#if MODS_ALLOWED
-		var moddedLua:String = Paths.modFolders(luaRel);
-		if (FileSystem.exists(moddedLua))
-			luaPath = moddedLua;
-		#end
-		if (luaPath == null)
-		{
-			var sharedLua:String = Paths.getSharedPath(luaRel);
-			if (FileSystem.exists(sharedLua))
-				luaPath = sharedLua;
-		}
-		if (luaPath != null)
-		{
-			try
-			{
-				var ctx = new psychlua.LuaHostContext(psychlua.LuaHostKind.STATE, clsName, this, this, variables, null);
-				companionLuaScript = new FunkinLua(luaPath, ctx);
-			}
-			catch (e:Dynamic)
-			{
-				trace('[CompanionScript] Lua error in $luaPath: $e');
-			}
-		}
-		#end
 
 		if (path == null)
 			return;
@@ -475,15 +430,6 @@ class MusicBeatState extends BaseMusicBeatState
 		if (!MusicBeatState.stateScriptOverridesEnabled())
 			return ret;
 
-		#if LUA_ALLOWED
-		if (companionLuaScript != null)
-		{
-			var v = companionLuaScript.call(funcName, args);
-			if (v != null && v != LuaUtils.Function_Continue)
-				ret = v;
-		}
-		#end
-
 		#if HSCRIPT_ALLOWED
 		if (companionScript != null)
 		{
@@ -542,33 +488,13 @@ class MusicBeatState extends BaseMusicBeatState
 
 	public static function initGlobalScript():Void
 	{
+		if (!stateScriptHooksEnabled())
+			return;
+
 		#if MODS_ALLOWED
 		Mods.loadTopMod();
 		#end
 
-		// Try to load Lua GlobalScript first
-		#if (LUA_ALLOWED && sys)
-		if (globalLuaScript == null)
-		{
-			#if MODS_ALLOWED
-			var luaPath:String = Paths.modFolders('scripts/GlobalScript.lua');
-			if (!FileSystem.exists(luaPath))
-				luaPath = Paths.getSharedPath('scripts/GlobalScript.lua');
-			#else
-			var luaPath:String = Paths.getSharedPath('scripts/GlobalScript.lua');
-			#end
-
-			if (FileSystem.exists(luaPath))
-			{
-				trace('Loading Global Lua Script from: $luaPath');
-				var ctx = new psychlua.LuaHostContext(psychlua.LuaHostKind.GLOBAL, 'GlobalScript', FlxG.state, FlxG.state, globalVariables, null);
-				globalLuaScript = new FunkinLua(luaPath, ctx);
-				trace('GlobalScript (Lua) initialized successfully');
-			}
-		}
-		#end
-
-		// Then load HScript GlobalScript
 		if (globalScript != null)
 			return; // Already initialized
 
@@ -817,18 +743,9 @@ class MusicBeatState extends BaseMusicBeatState
 			public static function callOnGlobalScript(funcToCall:String, args:Array<Dynamic> = null):Dynamic
 			{
 				var returnVal:Dynamic = LuaUtils.Function_Continue;
+				if (!stateScriptHooksEnabled())
+					return returnVal;
 
-				// Call on global Lua script first
-				#if LUA_ALLOWED
-				if (globalLuaScript != null)
-				{
-					var ret:Dynamic = globalLuaScript.call(funcToCall, args != null ? args : []);
-					if (ret != null && ret != LuaUtils.Function_Continue)
-						returnVal = ret;
-				}
-				#end
-
-				// Then call on global HScript
 				#if HSCRIPT_ALLOWED
 				if (globalScript != null && globalScript.exists(funcToCall))
 				{
