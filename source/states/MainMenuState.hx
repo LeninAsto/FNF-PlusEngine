@@ -161,9 +161,6 @@ class MainMenuState extends MusicBeatState
 
 		addTouchPad('NONE', 'E_X');
 
-		#if vslice
-		funkin.plus.VSlicePlusStateBridge.create(this);
-		#end
 	}
 
 	#if MODS_ALLOWED
@@ -285,10 +282,6 @@ class MainMenuState extends MusicBeatState
 
 	override function update(elapsed:Float)
 	{
-		#if vslice
-		funkin.plus.VSlicePlusStateBridge.update(elapsed, true);
-		#end
-
 		if (FlxG.sound.music != null && FlxG.sound.music.volume < 0.8)
 			FlxG.sound.music.volume = Math.min(FlxG.sound.music.volume + 0.5 * elapsed, 0.8);
 

@@ -1,16 +1,39 @@
 package states;
 
+import backend.AssetLoader;
+import backend.ClientPrefs;
 import backend.MusicBeatState;
 import backend.Paths;
-import backend.LocaleUtils;
-import backend.Language;
-import backend.ClientPrefs;
-import states.FreeplayState;
-import states.StoryMenuState;
-import states.MainMenuState;
-#if FEATURE_POLYMOD_MODS
-import funkin.play.ResultState;
-import funkin.save.Save.SaveScoreData;
+import flixel.FlxBasic;
+import flixel.FlxCamera;
+import flixel.FlxG;
+import flixel.FlxSprite;
+import flixel.addons.display.FlxBackdrop;
+import flixel.effects.FlxFlicker;
+import flixel.graphics.frames.FlxBitmapFont;
+import flixel.group.FlxGroup.FlxTypedGroup;
+import flixel.math.FlxAngle;
+import flixel.math.FlxMath;
+import flixel.math.FlxPoint;
+import flixel.math.FlxRect;
+import flixel.sound.FlxSound;
+import flixel.text.FlxBitmapText;
+import flixel.tweens.FlxEase;
+import flixel.tweens.FlxTween;
+import flixel.util.FlxColor;
+import flixel.util.FlxGradient;
+import flixel.util.FlxSort;
+import flixel.util.FlxTimer;
+import objects.results.ClearPercentCounter;
+import objects.results.LeftMaskShader;
+import objects.results.ResultScore;
+import objects.results.TallyCounter;
+import openfl.display.BitmapData;
+import openfl.geom.Matrix;
+import openfl.utils.AssetType;
+import substates.StickerSubState;
+#if flxanimate
+import backend.PsychFlxAnimate;
 #end
 #if mobile
 import mobile.backend.TouchUtil;
@@ -21,365 +44,563 @@ import backend.Mods;
 
 class ResultsState extends MusicBeatState
 {
-	public var menuBG:FlxSprite;
-	public var backdropImage:FlxSprite;
-	public var flxGroupImage:FlxSprite;
-	public var songInstrumental:String = "";
-	public var canRetry:Bool = true;
-	public var params:Dynamic;
+	final params:Dynamic;
+	final scoreData:ResultScoreData;
+	final rank:ResultRank;
 
-	public var animatedScore:Int = 0;
-	public var animatedFlawlesss:Int = 0;
-	public var animatedSicks:Int = 0;
-	public var animatedGoods:Int = 0;
-	public var animatedBads:Int = 0;
-	public var animatedShits:Int = 0;
-	public var animatedMisses:Int = 0;
-	public var animatedCombo:Int = 0;
-	public var animatedAccuracy:Float = 0;
-	var usingFunkinResultState:Bool = false;
+	final songName:FlxBitmapText;
+	final difficulty:FlxSprite;
+	final clearPercentSmall:ClearPercentCounter;
+	final maskShaderSongName:LeftMaskShader = new LeftMaskShader();
+	final maskShaderDifficulty:LeftMaskShader = new LeftMaskShader();
 
-	public var scoreText:FlxText;
-	public var flawlesss:FlxText;
-	public var sicks:FlxText;
-	public var goods:FlxText;
-	public var bads:FlxText;
-	public var shits:FlxText;
-	public var misses:FlxText;
-	public var comboText:FlxText;
-	public var accText:FlxText;
+	final resultsAnim:FlxSprite;
+	final ratingsPopin:FlxSprite;
+	final scorePopin:FlxSprite;
+	final bgFlash:FlxSprite;
+	final highscoreNew:FlxSprite;
+	final score:ResultScore;
+	final rankBg:FlxSprite;
 
-	public static var use24HourFormat:Null<Bool> = true;
-	public static var dateFormat:String = "MM/DD/YYYY";
+	final cameraBG:FlxCamera;
+	final cameraScroll:FlxCamera;
+	final cameraEverything:FlxCamera;
+
+	var blackTopBar:FlxSprite = new FlxSprite();
+	var characterAnimations:Array<ResultCharacterAnimation> = [];
+	var introMusicAudio:FlxSound = null;
+	var resultsMusic:FlxSound = null;
+	var movingSongStuff:Bool = false;
+	var speedOfTween:FlxPoint = FlxPoint.get(-1, 1);
+	var clearPercentTarget:Int = 100;
+	var clearPercentLerp:Int = 0;
+	var busy:Bool = false;
 
 	public function new(params:Dynamic)
 	{
 		super();
 		this.params = params;
+		scoreData = makeScoreData();
+		rank = ResultRankTools.calculateRank(scoreData);
 
-		LocaleUtils.loadDeviceDateTimeSettings();
+		cameraBG = new FlxCamera(0, 0, FlxG.width, FlxG.height);
+		cameraScroll = new FlxCamera(0, 0, FlxG.width, Math.round(FlxG.height * 1.2));
+		cameraEverything = new FlxCamera(0, 0, FlxG.width, FlxG.height);
+
+		var fontLetters:String = "AaBbCcDdEeFfGgHhiIJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz:1234567890().-";
+		songName = new FlxBitmapText(FlxBitmapFont.fromMonospace(Paths.image("resultScreen/tardlingSpritesheet"), fontLetters, FlxPoint.get(49, 61)));
+		songName.text = stringParam('songName', 'Song');
+		songName.letterSpacing = -15;
+		songName.angle = -4.4;
+		songName.visible = false;
+
+		difficulty = new FlxSprite(555);
+		clearPercentSmall = new ClearPercentCounter(FlxG.width / 2 + 300, FlxG.height / 2 - 100, 100, true);
+		clearPercentSmall.visible = false;
+
+		bgFlash = FlxGradient.createGradientFlxSprite(FlxG.width, FlxG.height, [0xFFFFF1A6, 0xFFFFF1BE], 90);
+		resultsAnim = createSparrow(FlxG.width - 1480, -10, "resultScreen/results");
+		ratingsPopin = createSparrow(-135, 135, "resultScreen/ratingsPopin");
+		scorePopin = createSparrow(-180, 515, "resultScreen/scorePopin");
+		highscoreNew = new FlxSprite(44, 557);
+		score = new ResultScore(35, 305, 10, scoreData.score);
+		rankBg = new FlxSprite();
 	}
 
-	override public function create()
+	override function create():Void
 	{
-		super.create();
-
-		#if FEATURE_POLYMOD_MODS
-		usingFunkinResultState = true;
-		openFunkinResultState();
-		return;
-		#end
-
-		#if MODS_ALLOWED
-		if (params.isMod && params.modFolder != null && params.modFolder != "")
-		{
-			Mods.currentModDirectory = params.modFolder;
-		}
-		#end
-
-		menuBG = new FlxSprite();
-		menuBG.loadGraphic(Paths.image('menuBG'));
-		menuBG.setGraphicSize(FlxG.width, FlxG.height);
-		menuBG.updateHitbox();
-		menuBG.alpha = 1.0;
-		add(menuBG);
-
-		backdropImage = new FlxSprite();
-		backdropImage.loadGraphic(Paths.image('ui/results/backdrop'));
-		backdropImage.setGraphicSize(FlxG.width, FlxG.height + 1);
-		backdropImage.updateHitbox();
-		backdropImage.alpha = 0.8;
-		add(backdropImage);
-
-		flxGroupImage = new FlxSprite();
-		flxGroupImage.loadGraphic(Paths.image('ui/results/flxgroup'));
-		flxGroupImage.setGraphicSize(FlxG.width, FlxG.height + 1);
-		flxGroupImage.updateHitbox();
-		flxGroupImage.alpha = 0.4;
-		add(flxGroupImage);
-
-		if (!FlxG.sound.music.playing || FlxG.sound.music.length <= 0)
-		{
-			FlxG.sound.playMusic(Paths.music('freakyMenu'), 0.7, true);
-		}
-
-		var infoWidth = 700;
-		var songAndDiff = '${params.songName} [${params.difficulty}]';
-		var modOrGame = params.isMod && params.modFolder != null && params.modFolder != "" ? params.modFolder : "Friday Night Funkin'";
-		var now = Date.now();
-
-		var dateStr = LocaleUtils.formatDateTimeAccordingToDevice(now);
-
-		var resulText = new FlxText(500, 12, infoWidth, Language.getPhrase('results_title', 'Results'), 60);
-		resulText.setFormat(Paths.font("NotoSans-Medium.ttf"), 60, FlxColor.WHITE, "right");
-		add(resulText);
-
-		var topText = new FlxText(10, 5, infoWidth, songAndDiff, 28);
-		topText.setFormat(Paths.font("NotoSans-Medium.ttf"), 28, FlxColor.WHITE, "left");
-		add(topText);
-
-		var modText = new FlxText(10, 39, infoWidth, modOrGame, 22);
-		modText.setFormat(Paths.font("NotoSans-Medium.ttf"), 22, FlxColor.WHITE, "left");
-		add(modText);
-
-		var playedText = new FlxText(10, 65, infoWidth, Language.getPhrase('results_played_on', 'Played on') + ' $dateStr', 18);
-		playedText.setFormat(Paths.font("NotoSans-Medium.ttf"), 18, FlxColor.WHITE, "left");
-		add(playedText);
-
-		var scoreY = 130;
-		var scoreStr = StringTools.lpad("0", "0", 8);
-		var scoreLabel = new FlxText(60, scoreY, 400, Language.getPhrase('results_score', 'Score') + ':', 34);
-		scoreLabel.setFormat(Paths.font("NotoSans-Medium.ttf"), 34, FlxColor.WHITE, "left");
-		add(scoreLabel);
-
-		scoreText = new FlxText(240, scoreY - 10, 400, scoreStr, 44);
-		scoreText.setFormat(Paths.font("NotoSans-Medium.ttf"), 44, FlxColor.WHITE, "left");
-		add(scoreText);
-
-		var leftX = 30;
-		var rightX = 300;
-		var judgY = 235;
-		var judgSpacing = 90; // More space
-
-		flawlesss = new FlxText(leftX, judgY, 340, Language.getPhrase('judgement_flawlesss', 'flawlesss') + ': 0', 32);
-		flawlesss.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, 0xFFA17FFF, "left");
-		flawlesss.visible = ClientPrefs.data.useFlawlessRating;
-		add(flawlesss);
-
-		sicks = new FlxText(rightX, judgY, 340, Language.getPhrase('judgement_sicks', 'Sicks') + ': 0', 32);
-		sicks.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, 0xFF7FC9FF, "left");
-		add(sicks);
-
-		goods = new FlxText(leftX, judgY + judgSpacing, 340, Language.getPhrase('judgement_goods', 'Goods') + ': 0', 32);
-		goods.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, 0xFF7FFF8E, "left");
-		add(goods);
-
-		bads = new FlxText(rightX, judgY + judgSpacing, 340, Language.getPhrase('judgement_bads', 'Bads') + ': 0', 32);
-		bads.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, 0xFF888888, "left");
-		add(bads);
-
-		shits = new FlxText(leftX, judgY + judgSpacing * 2, 340, Language.getPhrase('judgement_shits', 'Shits') + ': 0', 32);
-		shits.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, 0xFFFF7F7F, "left");
-		add(shits);
-
-		misses = new FlxText(rightX, judgY + judgSpacing * 2, 340, Language.getPhrase('judgement_misses', 'Misses') + ': 0', 32);
-		misses.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, FlxColor.RED, "left");
-		add(misses);
-
-		comboText = new FlxText(leftX, judgY + judgSpacing * 3 - 14, 700, Language.getPhrase('judgement_max_combo', 'Highest Combo') + ': 0', 26);
-		comboText.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, FlxColor.WHITE, "left");
-		add(comboText);
-
-		accText = new FlxText(leftX, judgY + judgSpacing * 3 + 20, 700, Language.getPhrase('results_accuracy', 'Accuracy') + ': 0%', 26);
-		accText.setFormat(Paths.font("NotoSans-Medium.ttf"), 32, FlxColor.WHITE, "left");
-		add(accText);
-
-		if (!ClientPrefs.data.useFlawlessRating)
-		{
-			sicks.setPosition(leftX, judgY);
-			goods.setPosition(rightX, judgY);
-			bads.setPosition(leftX, judgY + judgSpacing);
-			shits.setPosition(rightX, judgY + judgSpacing);
-			misses.setPosition(leftX, judgY + judgSpacing * 2);
-		}
-
-		var ratingLetter = params.ratingName != null ? params.ratingName : "";
-		var ratingFC = params.ratingFC != null ? params.ratingFC : "";
-		var ratingW = 400;
-		var ratingX = FlxG.width - 525;
-		var ratingY = judgY + 25;
-		var ratingText = new FlxText(ratingX, ratingY, ratingW, ratingLetter, 70);
-		ratingText.setFormat(Paths.font("NotoSans-Medium.ttf"), 70, FlxColor.YELLOW, "center");
-		add(ratingText);
-
-		var fcText = new FlxText(ratingX, ratingY + 90, ratingW, ratingFC, 54);
-		fcText.setFormat(Paths.font("NotoSans-Medium.ttf"), 54, FlxColor.CYAN, "center");
-		add(fcText);
-
-		var yBottom = FlxG.height - 110;
-		if (params.isPractice != null && params.isPractice)
-		{
-			var practiceText = new FlxText(0, yBottom, FlxG.width, Language.getPhrase('results_practice_mode', 'Played in practice mode'), 22);
-			practiceText.setFormat(Paths.font("NotoSans-Medium.ttf"), 22, FlxColor.YELLOW, "center");
-			add(practiceText);
-			yBottom += 28;
-		}
-
-		var engineInfo = Language.getPhrase('psych_engine_version', 'Psych Engine v')
-			+ MainMenuState.psychEngineVersion
-			+ "\nFNF API v"
-			+ MainMenuState.fnfApiVersion;
-		var engineText = new FlxText(0, FlxG.height - 100, FlxG.width, engineInfo, 25);
-		engineText.setFormat(Paths.font("NotoSans-Medium.ttf"), 25, FlxColor.CYAN, "center");
-		add(engineText);
-
-		#if mobile
-		var continueText = new FlxText(50, FlxG.height - 75, 0, Language.getPhrase('results_press_enter_mobile', 'Press A\nto Continue'), 26);
-		#else
-		var continueText = new FlxText(50, FlxG.height - 75, 0, Language.getPhrase('results_press_enter', 'Press Enter\nto Continue'), 26);
-		#end
-		continueText.setFormat(Paths.font("NotoSans-Medium.ttf"), 26, FlxColor.WHITE, "center");
-		add(continueText);
-
-		#if mobile
-		addTouchPad('NONE', 'A');
-		#end
-	}
-
-	override public function update(elapsed:Float)
-	{
-		super.update(elapsed);
-		if (usingFunkinResultState)
-			return;
-
-		if (animatedScore < params.score)
-		{
-			animatedScore += Math.ceil((params.score - animatedScore) * 0.2 + 1);
-			if (animatedScore > params.score)
-				animatedScore = params.score;
-			scoreText.text = StringTools.lpad(Std.string(animatedScore), "0", 8);
-			return;
-		}
-		scoreText.text = StringTools.lpad(Std.string(animatedScore), "0", 8);
-
-		if (ClientPrefs.data.useFlawlessRating && animatedFlawlesss < params.flawlesss)
-		{
-			animatedFlawlesss = animateInt(animatedFlawlesss, params.flawlesss);
-			flawlesss.text = Language.getPhrase('judgement_flawlesss', 'Flawlesss') + ': $animatedFlawlesss';
-			return;
-		}
-		if (ClientPrefs.data.useFlawlessRating)
-			flawlesss.text = Language.getPhrase('judgement_flawlesss', 'Flawlesss') + ': $animatedFlawlesss';
-		if (animatedSicks < params.sicks)
-		{
-			animatedSicks = animateInt(animatedSicks, params.sicks);
-			sicks.text = Language.getPhrase('judgement_sicks', 'Sicks') + ': $animatedSicks';
-			return;
-		}
-		sicks.text = Language.getPhrase('judgement_sicks', 'Sicks') + ': $animatedSicks';
-
-		if (animatedGoods < params.goods)
-		{
-			animatedGoods = animateInt(animatedGoods, params.goods);
-			goods.text = Language.getPhrase('judgement_goods', 'Goods') + ': $animatedGoods';
-			return;
-		}
-		goods.text = Language.getPhrase('judgement_goods', 'Goods') + ': $animatedGoods';
-
-		if (animatedBads < params.bads)
-		{
-			animatedBads = animateInt(animatedBads, params.bads);
-			bads.text = Language.getPhrase('judgement_bads', 'Bads') + ': $animatedBads';
-			return;
-		}
-		bads.text = Language.getPhrase('judgement_bads', 'Bads') + ': $animatedBads';
-
-		if (animatedShits < params.shits)
-		{
-			animatedShits = animateInt(animatedShits, params.shits);
-			shits.text = Language.getPhrase('judgement_shits', 'Shits') + ': $animatedShits';
-			return;
-		}
-		shits.text = Language.getPhrase('judgement_shits', 'Shits') + ': $animatedShits';
-
-		if (animatedMisses < params.misses)
-		{
-			animatedMisses = animateInt(animatedMisses, params.misses);
-			misses.text = Language.getPhrase('judgement_misses', 'Misses') + ': $animatedMisses';
-			return;
-		}
-		misses.text = Language.getPhrase('judgement_misses', 'Misses') + ': $animatedMisses';
-
-		if (animatedCombo < params.maxCombo)
-		{
-			animatedCombo = animateInt(animatedCombo, params.maxCombo);
-			comboText.text = Language.getPhrase('judgement_max_combo', 'Highest Combo') + ': $animatedCombo';
-			return;
-		}
-		comboText.text = Language.getPhrase('judgement_max_combo', 'Highest Combo') + ': $animatedCombo';
-
-		if (animatedAccuracy < params.accuracy)
-		{
-			animatedAccuracy += (params.accuracy - animatedAccuracy) * 0.2 + 0.1;
-			if (animatedAccuracy > params.accuracy)
-				animatedAccuracy = params.accuracy;
-
-			var accPercent:Float = Math.round(animatedAccuracy * 1000) / 10;
-			accText.text = Language.getPhrase('results_accuracy', 'Accuracy') + ': ' + Std.string(accPercent) + '%';
-			return;
-		}
-
-		var accPercent:Float = Math.round(animatedAccuracy * 1000) / 10;
-		accText.text = Language.getPhrase('results_accuracy', 'Accuracy') + ': ' + Std.string(accPercent) + '%';
-
-		var shouldContinue:Bool = false;
-
-		if (FlxG.keys.justPressed.ENTER)
-			shouldContinue = true;
-
-		if (controls.ACCEPT)
-			shouldContinue = true;
-
-		#if mobile
-		if (TouchUtil.justPressed)
-			shouldContinue = true;
-
-		if (FlxG.touches.getFirst() != null && FlxG.touches.getFirst().justPressed)
-			shouldContinue = true;
-		#end
-
-		if (shouldContinue)
-		{
-			#if MODS_ALLOWED
-			Mods.currentModDirectory = '';
-			#end
-
-			// If it's a full week, return to the Story Menu; otherwise, return to Freeplay
-			if (params.isWeek != null && params.isWeek == true)
-			{
-				MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
-			}
-			else
-			{
-				MusicBeatState.switchState(FreeplayStateSelector.create());
-			}
-		}
-	}
-
-	function animateInt(current:Int, target:Int):Int
-	{
-		if (current < target)
-			return current + Math.ceil((target - current) * 0.2 + 1);
-		return target;
-	}
-
-	#if FEATURE_POLYMOD_MODS
-	function openFunkinResultState():Void
-	{
-		persistentUpdate = false;
-		persistentDraw = true;
-
 		if (FlxG.sound.music != null)
 			FlxG.sound.music.stop();
 
-		funkin.plus.VSliceRuntime.ensureBaseReady();
+		#if MODS_ALLOWED
+		if (boolParam('isMod') && stringParam('modFolder').length > 0)
+			Mods.currentModDirectory = stringParam('modFolder');
+		#end
 
-		openSubState(new ResultState({
-			storyMode: boolParam('isWeek'),
-			title: stringParam('songName', 'Song'),
-			songId: Paths.formatToSongPath(stringParam('songName', 'song')),
-			characterId: 'bf',
-			difficultyId: Paths.formatToSongPath(stringParam('difficulty', 'normal')),
-			scoreData: makeFunkinScoreData(intParam('score')),
-			prevScoreData: makePreviousFunkinScoreData(),
-			isNewHighscore: isNewHighscore(),
-			isPracticeMode: boolParam('isPractice'),
-			isBotPlayMode: boolParam('isBotPlay'),
-			fromPlusPlayState: true
+		cameraScroll.canvas.rotation = -3.8;
+		cameraBG.bgColor = FlxColor.MAGENTA;
+		cameraScroll.bgColor = FlxColor.TRANSPARENT;
+		cameraEverything.bgColor = FlxColor.TRANSPARENT;
+
+		FlxG.cameras.add(cameraBG, false);
+		FlxG.cameras.add(cameraScroll, false);
+		FlxG.cameras.add(cameraEverything, false);
+		FlxG.cameras.setDefaultDrawTarget(cameraEverything, true);
+		camera = cameraEverything;
+		FlxG.camera.zoom = 1.0;
+
+		addZ(FlxGradient.createGradientFlxSprite(FlxG.width, FlxG.height, [0xFFFECC5C, 0xFFFDC05C], 90), 10, [cameraBG]);
+		bgFlash.scrollFactor.set();
+		bgFlash.visible = false;
+		addZ(bgFlash, 20);
+
+		var soundSystem:FlxSprite = createSparrow(-15, -180, 'resultScreen/soundSystem');
+		soundSystem.animation.addByPrefix("idle", "sound system", 24, false);
+		soundSystem.visible = false;
+		new FlxTimer().start(8 / 24, _ ->
+		{
+			soundSystem.animation.play("idle");
+			soundSystem.visible = true;
+		});
+		addZ(soundSystem, 1100);
+
+		for (animData in getBFResultsAnimations(rank))
+			buildCharacterAnimation(animData);
+
+		var diffSpr:String = 'diff_${Paths.formatToSongPath(stringParam('difficulty', 'normal'))}';
+		if (!Paths.fileExists('images/resultScreen/$diffSpr.png', AssetType.IMAGE, true))
+			diffSpr = 'diff_normal';
+		difficulty.loadGraphic(Paths.image("resultScreen/" + diffSpr));
+		addZ(difficulty, 1000);
+		addZ(songName, 1000);
+
+		blackTopBar.loadGraphic(createResultsBar());
+		blackTopBar.y = -blackTopBar.height;
+		FlxTween.tween(blackTopBar, {y: 0}, 7 / 24, {ease: FlxEase.quartOut, startDelay: 3 / 24, onComplete: _ -> songName.visible = true});
+		addZ(blackTopBar, 1010);
+
+		difficulty.y += (blackTopBar.height - 148);
+		clearPercentSmall.y += (blackTopBar.height - 148);
+		songName.y += (blackTopBar.height - 148);
+
+		var angleRad = songName.angle * Math.PI / 180;
+		speedOfTween.x = -1.0 * Math.cos(angleRad);
+		speedOfTween.y = -1.0 * Math.sin(angleRad);
+		timerThenSongName(1.0, false);
+
+		songName.shader = maskShaderSongName;
+		difficulty.shader = maskShaderDifficulty;
+		maskShaderDifficulty.swagMaskX = difficulty.x - 30;
+
+		resultsAnim.animation.addByPrefix("result", "results instance 1", 24, false);
+		resultsAnim.visible = false;
+		new FlxTimer().start(6 / 24, _ ->
+		{
+			resultsAnim.visible = true;
+			resultsAnim.animation.play("result");
+		});
+		addZ(resultsAnim, 1200);
+
+		ratingsPopin.animation.addByPrefix("idle", "Categories", 24, false);
+		ratingsPopin.visible = false;
+		new FlxTimer().start(21 / 24, _ ->
+		{
+			ratingsPopin.visible = true;
+			ratingsPopin.animation.play("idle");
+		});
+		addZ(ratingsPopin, 1200);
+
+		scorePopin.animation.addByPrefix("score", "tally score", 24, false);
+		scorePopin.visible = false;
+		new FlxTimer().start(36 / 24, _ ->
+		{
+			scorePopin.visible = true;
+			scorePopin.animation.play("score");
+		});
+		addZ(scorePopin, 1200);
+
+		new FlxTimer().start(37 / 24, _ ->
+		{
+			score.visible = true;
+			score.animateNumbers();
+			startRankTallySequence();
+		});
+		new FlxTimer().start(rank.getBFDelay(), _ -> afterRankTallySequence());
+		new FlxTimer().start(rank.getFlashDelay(), _ -> displayRankText());
+
+		highscoreNew.frames = Paths.getSparrowAtlas("resultScreen/highscoreNew");
+		highscoreNew.animation.addByPrefix("new", "highscoreAnim0", 24, false);
+		highscoreNew.visible = false;
+		new FlxTimer().start(rank.getHighscoreDelay(), _ ->
+		{
+			if (boolParam('isNewHighscore') || isNewHighscore())
+			{
+				highscoreNew.visible = true;
+				highscoreNew.animation.play("new");
+				highscoreNew.animation.onFinish.add(_ -> highscoreNew.animation.play("new", true, false, 16));
+			}
+		});
+		addZ(highscoreNew, 1200);
+
+		addTallies();
+		score.visible = false;
+		addZ(score, 1200);
+
+		new FlxTimer().start(rank.getMusicDelay(), _ -> playResultsMusic(rank));
+
+		rankBg.makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		rankBg.alpha = 0;
+		addZ(rankBg, 99999);
+		sortByZ();
+
+		super.create();
+	}
+
+	function addTallies():Void
+	{
+		var ratingGrp:FlxTypedGroup<TallyCounter> = new FlxTypedGroup<TallyCounter>();
+		ratingGrp.zIndex = 1200;
+		add(ratingGrp);
+		var hStuf:Int = 50;
+		var extraYOffset:Float = 7;
+		ratingGrp.add(new TallyCounter(375, hStuf * 3, scoreData.tallies.totalNotesHit));
+		ratingGrp.add(new TallyCounter(375, hStuf * 4, scoreData.tallies.maxCombo));
+		hStuf += 4;
+		ratingGrp.add(new TallyCounter(230, (hStuf * 5) + extraYOffset, scoreData.tallies.sick, 0xFF89E59E));
+		ratingGrp.add(new TallyCounter(210, (hStuf * 6) + extraYOffset, scoreData.tallies.good, 0xFF89C9E5));
+		ratingGrp.add(new TallyCounter(190, (hStuf * 7) + extraYOffset, scoreData.tallies.bad, 0xFFE6CF8A));
+		ratingGrp.add(new TallyCounter(220, (hStuf * 8) + extraYOffset, scoreData.tallies.shit, 0xFFE68AE6));
+		ratingGrp.add(new TallyCounter(260, (hStuf * 9) + extraYOffset, scoreData.tallies.missed, 0xFFC68AE6));
+
+		for (ind => rating in ratingGrp.members)
+		{
+			rating.visible = false;
+			new FlxTimer().start((0.3 * ind) + 1.20, _ ->
+			{
+				rating.visible = true;
+				FlxTween.tween(rating, {curNumber: rating.neededNumber}, 0.5, {ease: FlxEase.quartOut});
+			});
+		}
+	}
+
+	function startRankTallySequence():Void
+	{
+		bgFlash.visible = true;
+		bgFlash.alpha = 1;
+		FlxTween.tween(bgFlash, {alpha: 0}, 5 / 24);
+
+		var clearPercentFloat = scoreData.tallies.totalNotes == 0 ? 0.0 : ResultRankTools.tallyCompletion(scoreData.tallies) * 100;
+		clearPercentTarget = Math.floor(clearPercentFloat);
+		clearPercentLerp = Std.int(Math.max(0, clearPercentTarget - 36));
+
+		var clearPercentCounter = new ClearPercentCounter(FlxG.width / 2 + 190, FlxG.height / 2 - 70, clearPercentLerp);
+		addZ(clearPercentCounter, 450);
+		FlxTween.tween(clearPercentCounter, {curNumber: clearPercentTarget}, 58 / 24, {
+			ease: FlxEase.quartOut,
+			onUpdate: _ ->
+			{
+				clearPercentCounter.curNumber = Math.round(clearPercentCounter.curNumber);
+				if (clearPercentLerp != clearPercentCounter.curNumber)
+				{
+					clearPercentLerp = clearPercentCounter.curNumber;
+					FlxG.sound.play(Paths.sound('scrollMenu'), 0.75);
+				}
+			},
+			onComplete: _ ->
+			{
+				FlxG.sound.play(Paths.sound('confirmMenu'));
+				clearPercentCounter.curNumber = clearPercentTarget;
+				clearPercentCounter.flash(true);
+				new FlxTimer().start(0.4, _ -> clearPercentCounter.flash(false));
+				new FlxTimer().start(0.25, _ ->
+				{
+					FlxTween.tween(clearPercentCounter, {alpha: 0}, 0.5, {
+						startDelay: 0.5,
+						ease: FlxEase.quartOut,
+						onComplete: _ -> remove(clearPercentCounter)
+					});
+				});
+			}
+		});
+		sortByZ();
+	}
+
+	function displayRankText():Void
+	{
+		bgFlash.visible = true;
+		bgFlash.alpha = 1;
+		FlxTween.tween(bgFlash, {alpha: 0}, 14 / 24);
+
+		var rankTextVert = new FlxBackdrop(Paths.image(rank.getVerTextAsset()), Y, 0, 30);
+		rankTextVert.x = FlxG.width - 44;
+		rankTextVert.y = 100;
+		addZ(rankTextVert, 990);
+		FlxFlicker.flicker(rankTextVert, 2 / 24 * 3, 2 / 24, true);
+		new FlxTimer().start(30 / 24, _ -> rankTextVert.velocity.y = -80);
+
+		for (i in 0...12)
+		{
+			var rankTextBack = new FlxBackdrop(Paths.image(rank.getHorTextAsset()), X, 10, 0);
+			rankTextBack.x = FlxG.width / 2 - 320;
+			rankTextBack.y = 50 + (135 * i / 2) + 10;
+			rankTextBack.cameras = [cameraScroll];
+			rankTextBack.velocity.x = (i % 2 == 0) ? -7.0 : 7.0;
+			addZ(rankTextBack, 100);
+		}
+		sortByZ();
+	}
+
+	function afterRankTallySequence():Void
+	{
+		showSmallClearPercent();
+		for (anim in characterAnimations)
+		{
+			new FlxTimer().start(anim.delay, _ ->
+			{
+				anim.sprite.visible = true;
+				playCharacterAnim(anim);
+				if (anim.sound != null && anim.sound.length > 0)
+					FlxG.sound.play(Paths.sound(anim.sound), 1.0);
+			});
+		}
+	}
+
+	function showSmallClearPercent():Void
+	{
+		addZ(clearPercentSmall, 1000);
+		clearPercentSmall.visible = true;
+		clearPercentSmall.flash(true);
+		new FlxTimer().start(0.4, _ -> clearPercentSmall.flash(false));
+		clearPercentSmall.curNumber = clearPercentTarget;
+		new FlxTimer().start(2.5, _ -> movingSongStuff = true);
+		sortByZ();
+	}
+
+	function timerThenSongName(timerLength:Float = 3.0, autoScroll:Bool = true):Void
+	{
+		movingSongStuff = false;
+		difficulty.x = 555;
+		var diffYTween:Float = 122;
+		difficulty.y = -difficulty.height;
+		FlxTween.tween(difficulty, {y: diffYTween + (blackTopBar.height - 148)}, 0.5, {ease: FlxEase.expoOut, startDelay: 0.8});
+
+		clearPercentSmall.x = (difficulty.x + difficulty.width) + 60;
+		clearPercentSmall.y = -clearPercentSmall.height;
+		FlxTween.tween(clearPercentSmall, {y: (122 - 5) + (blackTopBar.height - 148)}, 0.5, {ease: FlxEase.expoOut, startDelay: 0.85});
+
+		songName.y = -songName.height;
+		var offset:Float = -(songName.width * 0.5) * Math.sin(songName.angle * FlxAngle.TO_RAD) - 10;
+		FlxTween.tween(songName, {y: (diffYTween - 25 - offset) + (blackTopBar.height - 148)}, 0.5, {ease: FlxEase.expoOut, startDelay: 0.9});
+		songName.x = clearPercentSmall.x + 94;
+
+		new FlxTimer().start(timerLength, _ ->
+		{
+			var tempSpeed = FlxPoint.get(speedOfTween.x, speedOfTween.y);
+			speedOfTween.set(0, 0);
+			FlxTween.tween(speedOfTween, {x: tempSpeed.x, y: tempSpeed.y}, 0.7, {ease: FlxEase.quadIn});
+			movingSongStuff = autoScroll;
+		});
+	}
+
+	override function draw():Void
+	{
+		super.draw();
+		songName.clipRect = FlxRect.get(Math.max(0, 520 - songName.x), 0, FlxG.width, songName.height);
+		clearPercentSmall.forEachAlive(spr -> spr.clipRect = FlxRect.get(Math.max(0, 520 - spr.x), 0, FlxG.width, spr.height));
+	}
+
+	override function update(elapsed:Float):Void
+	{
+		maskShaderDifficulty.swagSprX = difficulty.x;
+		if (movingSongStuff)
+		{
+			var speedX:Float = speedOfTween.x * 60 * elapsed;
+			var speedY:Float = speedOfTween.y * 60 * elapsed;
+			songName.x += speedX;
+			difficulty.x += speedX;
+			clearPercentSmall.x += speedX;
+			songName.y += speedY;
+			difficulty.y += speedY;
+			clearPercentSmall.y += speedY;
+			if (songName.x + songName.width < 100)
+				timerThenSongName();
+		}
+
+		var shouldContinue:Bool = controls.ACCEPT || FlxG.keys.justPressed.ENTER;
+		#if mobile
+		shouldContinue = shouldContinue || TouchUtil.justPressed || (FlxG.touches.getFirst() != null && FlxG.touches.getFirst().justPressed);
+		#end
+
+		if (shouldContinue && !busy)
+			acceptResults();
+
+		super.update(elapsed);
+	}
+
+	function acceptResults():Void
+	{
+		busy = true;
+		fadeOutResultsAudio();
+		var target = boolParam('isWeek') ? () -> new states.StoryMenuState() : () -> states.FreeplayStateSelector.create();
+		openSubState(new StickerSubState({
+			targetState: _ -> target(),
+			stickerPack: 'default',
+			playOutOnTarget: true
 		}));
 	}
 
-	function makeFunkinScoreData(score:Int):SaveScoreData
+	function fadeOutResultsAudio():Void
+	{
+		for (sound in [introMusicAudio, resultsMusic, FlxG.sound.music])
+		{
+			if (sound == null)
+				continue;
+			FlxTween.tween(sound, {volume: 0}, 0.8, {onComplete: _ -> sound.stop()});
+		}
+	}
+
+	function playResultsMusic(rank:ResultRank):Void
+	{
+		var musicPath:String = rank.getMusicPath();
+		var introKey:String = '$musicPath/$musicPath-intro';
+		var loopKey:String = '$musicPath/$musicPath';
+		if (assetExists('music/$introKey.${Paths.SOUND_EXT}', AssetType.SOUND))
+		{
+			introMusicAudio = FlxG.sound.load(Paths.music(introKey), 1.0, false);
+			introMusicAudio.onComplete = () -> FlxG.sound.playMusic(Paths.music(loopKey), 1.0, true);
+			introMusicAudio.play();
+		}
+		else
+			FlxG.sound.playMusic(Paths.music(loopKey), 1.0, true);
+	}
+
+	function buildCharacterAnimation(animData:ResultAnimationData):Void
+	{
+		var sprite:FlxSprite = null;
+		if (animData.renderType == 'sparrow')
+		{
+			sprite = createSparrow(animData.offsets[0], animData.offsets[1], animData.assetPath);
+			sprite.animation.addByPrefix('idle', '', 24, false);
+			if (animData.loopFrame != null)
+				sprite.animation.onFinish.add(_ -> sprite.animation.play('idle', true, false, animData.loopFrame));
+		}
+		else
+			sprite = createAnimate(animData.offsets[0], animData.offsets[1], animData.assetPath);
+
+		if (sprite == null)
+			return;
+
+		sprite.visible = false;
+		sprite.scale.set(animData.scale, animData.scale);
+		sprite.updateHitbox();
+		characterAnimations.push({sprite: sprite, data: animData, delay: animData.delay, sound: animData.sound});
+		addZ(sprite, animData.zIndex);
+	}
+
+	function playCharacterAnim(anim:ResultCharacterAnimation):Void
+	{
+		#if flxanimate
+		if (Std.isOfType(anim.sprite, PsychFlxAnimate))
+		{
+			var atlas:PsychFlxAnimate = cast anim.sprite;
+			var start:String = anim.data.startFrameLabel == null ? '' : anim.data.startFrameLabel;
+			atlas.anim.play(start, true);
+			if (anim.data.loopFrameLabel != null)
+				atlas.anim.onComplete.add(() -> atlas.anim.play(anim.data.loopFrameLabel, true));
+			else if (anim.data.loopFrame != null)
+				atlas.anim.onComplete.add(() -> atlas.anim.play('', true, false, anim.data.loopFrame));
+			return;
+		}
+		#end
+		anim.sprite.animation.play('idle', true);
+	}
+
+	function createSparrow(x:Float, y:Float, key:String):FlxSprite
+	{
+		var spr = new FlxSprite(x, y);
+		spr.frames = Paths.getSparrowAtlas(key);
+		return spr;
+	}
+
+	function createAnimate(x:Float, y:Float, key:String):FlxSprite
+	{
+		#if flxanimate
+		var spr = new PsychFlxAnimate(x, y);
+		spr.showPivot = false;
+		try
+		{
+			Paths.loadAnimateAtlas(spr, key);
+		}
+		catch (e:Dynamic)
+		{
+			trace('[ResultsState] Could not load AnimateAtlas "$key": $e');
+			return null;
+		}
+		return spr;
+		#else
+		return null;
+		#end
+	}
+
+	function getBFResultsAnimations(rank:ResultRank):Array<ResultAnimationData>
+	{
+		var naughty:Bool = ClientPrefs.data.vsliceNaughtyness;
+		return switch (rank)
+		{
+			case PERFECT_GOLD | PERFECT:
+				naughty ? [
+					anim('animateatlas', 'resultScreen/results-bf/resultsPERFECT/bed', [403, -305], 500, 0, 1, 'INTRO', null, 'LOOP START'),
+					anim('animateatlas', 'resultScreen/results-bf/resultsPERFECT/hearts', [630, 300], 501, 4.41, 1, '', 43)
+				] : [
+					anim('animateatlas', 'resultScreen/results-bf/resultsPERFECT/bed', [403, -305], 500, 0, 1, 'INTRO 2', null, 'LOOP 2'),
+					anim('animateatlas', 'resultScreen/results-bf/resultsPERFECT/tickleFight', [413, 314], 501, 4.41, 0.6, '', null, 'LOOP', 'tickleFight')
+				];
+			case EXCELLENT:
+				[anim('animateatlas', 'resultScreen/results-bf/resultsEXCELLENT', [560.85, -410.35], 500, 0, 1, '', 29)];
+			case GREAT:
+				[
+					anim('animateatlas', 'resultScreen/results-bf/resultsGREAT/gf', [563.364, -123.186], 499, 0.25, 0.93, '', 9),
+					anim('animateatlas', 'resultScreen/results-bf/resultsGREAT/bf', [655.3, -247.95], 500, 0, 0.93, '', 15)
+				];
+			case GOOD:
+				[
+					anim('animateatlas', 'resultScreen/results-bf/resultsGOOD/bf', [645.4, -214.8], 501, 0, 1, '', 14),
+					anim('sparrow', 'resultScreen/results-bf/resultsGOOD/resultGirlfriendGOOD', [629, 323], 500, 0.91, 1, '', 9)
+				];
+			case SHIT:
+				[anim('animateatlas', 'resultScreen/results-bf/resultsSHIT', [570.5, -390.5], 500, 0, 1, '', null, 'Loop Start')];
+		}
+	}
+
+	function anim(renderType:String, assetPath:String, offsets:Array<Float>, zIndex:Int, delay:Float = 0, scale:Float = 1, startFrameLabel:String = '',
+			?loopFrame:Int, ?loopFrameLabel:String, ?sound:String):ResultAnimationData
+	{
+		return {
+			renderType: renderType,
+			assetPath: assetPath,
+			offsets: offsets,
+			zIndex: zIndex,
+			delay: delay,
+			scale: scale,
+			startFrameLabel: startFrameLabel,
+			loopFrame: loopFrame,
+			loopFrameLabel: loopFrameLabel,
+			sound: sound
+		};
+	}
+
+	function addZ(obj:FlxBasic, z:Int, ?cameras:Array<FlxCamera>):FlxBasic
+	{
+		if (Std.isOfType(obj, FlxSprite))
+			(cast obj:FlxSprite).scrollFactor.set();
+		obj.zIndex = z;
+		if (cameras != null)
+			obj.cameras = cameras;
+		add(obj);
+		return obj;
+	}
+
+	function sortByZ():Void
+		members.sort((a, b) -> FlxSort.byValues(FlxSort.ASCENDING, a == null ? 0 : a.zIndex, b == null ? 0 : b.zIndex));
+
+	function createResultsBar():BitmapData
+	{
+		final width:Int = Math.ceil(FlxG.width * 1.011);
+		final mainBitmap = new BitmapData(width, Math.ceil(width / 8.7), true, 0xFF000000);
+		final bitmap = new BitmapData(width, Math.ceil(width / 8.7), true, 0);
+		final rect = mainBitmap.rect.clone();
+		final matrix = new Matrix();
+		matrix.rotate(-3.8 * Math.PI / 180);
+		matrix.translate(-15, 0);
+		rect.width -= 15;
+		bitmap.draw(mainBitmap, matrix, rect, true);
+		return bitmap;
+	}
+
+	function assetExists(key:String, type:AssetType):Bool
+		return AssetLoader.exists(Paths.getPath(key, type, null, false), type);
+
+	function makeScoreData():ResultScoreData
 	{
 		var missed:Int = intParam('misses');
 		var totalNotes:Int = intParam('totalNotes');
@@ -388,9 +609,8 @@ class ResultsState extends MusicBeatState
 		var bad:Int = intParam('bads');
 		var shit:Int = intParam('shits');
 		var totalNotesHit:Int = totalNotes > 0 ? Std.int(Math.max(0, totalNotes - missed)) : sick + good + bad + shit;
-
 		return {
-			score: score,
+			score: intParam('score'),
 			tallies: {
 				sick: sick,
 				good: good,
@@ -405,16 +625,6 @@ class ResultsState extends MusicBeatState
 		};
 	}
 
-	function makePreviousFunkinScoreData():Null<SaveScoreData>
-	{
-		var previous:Int = intParam('prevHighScore', -1);
-		if (previous < 0)
-			return null;
-
-		var previousData:SaveScoreData = makeFunkinScoreData(previous);
-		return previousData;
-	}
-
 	function isNewHighscore():Bool
 	{
 		var previous:Int = intParam('prevHighScore', -1);
@@ -422,11 +632,7 @@ class ResultsState extends MusicBeatState
 	}
 
 	function fieldParam(name:String):Dynamic
-	{
-		if (params == null || !Reflect.hasField(params, name))
-			return null;
-		return Reflect.field(params, name);
-	}
+		return params != null && Reflect.hasField(params, name) ? Reflect.field(params, name) : null;
 
 	function stringParam(name:String, fallback:String = ''):String
 	{
@@ -443,7 +649,6 @@ class ResultsState extends MusicBeatState
 			return value;
 		if (Std.isOfType(value, Float))
 			return Std.int(value);
-
 		var parsed:Null<Int> = Std.parseInt(Std.string(value));
 		return parsed == null ? fallback : parsed;
 	}
@@ -457,6 +662,168 @@ class ResultsState extends MusicBeatState
 			return value;
 		return Std.string(value).toLowerCase() == 'true';
 	}
-	#end
 }
 
+typedef ResultScoreData =
+{
+	var score:Int;
+	var tallies:ResultTallyData;
+}
+
+typedef ResultTallyData =
+{
+	var sick:Int;
+	var good:Int;
+	var bad:Int;
+	var shit:Int;
+	var missed:Int;
+	var combo:Int;
+	var maxCombo:Int;
+	var totalNotesHit:Int;
+	var totalNotes:Int;
+}
+
+typedef ResultAnimationData =
+{
+	var renderType:String;
+	var assetPath:String;
+	var offsets:Array<Float>;
+	var zIndex:Int;
+	var delay:Float;
+	var scale:Float;
+	var startFrameLabel:String;
+	var ?loopFrame:Null<Int>;
+	var ?loopFrameLabel:Null<String>;
+	var ?sound:Null<String>;
+}
+
+typedef ResultCharacterAnimation =
+{
+	var sprite:FlxSprite;
+	var data:ResultAnimationData;
+	var delay:Float;
+	var ?sound:Null<String>;
+}
+
+enum abstract ResultRank(String)
+{
+	var PERFECT_GOLD;
+	var PERFECT;
+	var EXCELLENT;
+	var GREAT;
+	var GOOD;
+	var SHIT;
+
+	public function getMusicPath():String
+	{
+		return switch (abstract)
+		{
+			case PERFECT_GOLD | PERFECT: 'resultsPERFECT';
+			case EXCELLENT: 'resultsEXCELLENT';
+			case GREAT | GOOD: 'resultsNORMAL';
+			case SHIT: 'resultsSHIT';
+		}
+	}
+
+	public function getBFDelay():Float
+	{
+		return switch (abstract)
+		{
+			case PERFECT_GOLD | PERFECT: 95 / 24;
+			case EXCELLENT: 97 / 24;
+			case GREAT | GOOD | SHIT: 95 / 24;
+		}
+	}
+
+	public function getFlashDelay():Float
+	{
+		return switch (abstract)
+		{
+			case PERFECT_GOLD | PERFECT: 129 / 24;
+			case EXCELLENT: 122 / 24;
+			case GREAT: 109 / 24;
+			case GOOD: 107 / 24;
+			case SHIT: 186 / 24;
+		}
+	}
+
+	public function getHighscoreDelay():Float
+	{
+		return switch (abstract)
+		{
+			case PERFECT_GOLD | PERFECT | EXCELLENT: 140 / 24;
+			case GREAT: 129 / 24;
+			case GOOD: 127 / 24;
+			case SHIT: 207 / 24;
+		}
+	}
+
+	public function getMusicDelay():Float
+	{
+		return switch (abstract)
+		{
+			case PERFECT_GOLD | PERFECT: 95 / 24;
+			case EXCELLENT: 0;
+			case GREAT: 5 / 24;
+			case GOOD: 3 / 24;
+			case SHIT: 2 / 24;
+		}
+	}
+
+	public function getHorTextAsset():String
+	{
+		return switch (abstract)
+		{
+			case PERFECT_GOLD | PERFECT: 'resultScreen/rankText/rankScrollPERFECT';
+			case EXCELLENT: 'resultScreen/rankText/rankScrollEXCELLENT';
+			case GREAT: 'resultScreen/rankText/rankScrollGREAT';
+			case GOOD: 'resultScreen/rankText/rankScrollGOOD';
+			case SHIT: 'resultScreen/rankText/rankScrollLOSS';
+		}
+	}
+
+	public function getVerTextAsset():String
+	{
+		return switch (abstract)
+		{
+			case PERFECT_GOLD | PERFECT: 'resultScreen/rankText/rankTextPERFECT';
+			case EXCELLENT: 'resultScreen/rankText/rankTextEXCELLENT';
+			case GREAT: 'resultScreen/rankText/rankTextGREAT';
+			case GOOD: 'resultScreen/rankText/rankTextGOOD';
+			case SHIT: 'resultScreen/rankText/rankTextLOSS';
+		}
+	}
+}
+
+class ResultRankTools
+{
+	static inline var RANK_PERFECT_THRESHOLD:Float = 1.00;
+	static inline var RANK_EXCELLENT_THRESHOLD:Float = 0.90;
+	static inline var RANK_GREAT_THRESHOLD:Float = 0.80;
+	static inline var RANK_GOOD_THRESHOLD:Float = 0.60;
+
+	public static function calculateRank(scoreData:Null<ResultScoreData>):ResultRank
+	{
+		if (scoreData == null || scoreData.tallies == null || scoreData.tallies.totalNotes <= 0)
+			return SHIT;
+		if (scoreData.tallies.sick == scoreData.tallies.totalNotes)
+			return PERFECT_GOLD;
+		var completionAmount:Float = tallyCompletion(scoreData.tallies);
+		if (completionAmount == RANK_PERFECT_THRESHOLD)
+			return PERFECT;
+		if (completionAmount >= RANK_EXCELLENT_THRESHOLD)
+			return EXCELLENT;
+		if (completionAmount >= RANK_GREAT_THRESHOLD)
+			return GREAT;
+		if (completionAmount >= RANK_GOOD_THRESHOLD)
+			return GOOD;
+		return SHIT;
+	}
+
+	public static function tallyCompletion(tallies:ResultTallyData):Float
+	{
+		if (tallies == null || tallies.totalNotes <= 0)
+			return 0.0;
+		return FlxMath.bound((tallies.sick + tallies.good - tallies.missed) / tallies.totalNotes, 0, 1);
+	}
+}

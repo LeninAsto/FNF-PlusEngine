@@ -33,7 +33,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			changeNoteSkin(note);
 			notes.add(note);
 
-			var splash:NoteSplash = new NoteSplash(0, 0, NoteSplash.getDefaultNoteSplashPath() + NoteSplash.getSplashSkinPostfix());
+			var splash:NoteSplash = new NoteSplash(0, 0, NoteSplash.resolveNoteSplashPath(null, PlayState.isPixelStage));
 			splash.inEditor = true;
 			splash.babyArrow = note;
 			splash.ID = i;
@@ -429,7 +429,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 	function onChangeSplashSkin()
 	{
-		var skin:String = NoteSplash.getDefaultNoteSplashPath() + NoteSplash.getSplashSkinPostfix();
+		var skin:String = NoteSplash.resolveNoteSplashPath(null, PlayState.isPixelStage);
 		for (splash in splashes)
 			splash.loadSplash(skin);
 

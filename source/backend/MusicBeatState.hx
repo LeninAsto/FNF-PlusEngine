@@ -46,6 +46,8 @@ class MusicBeatState extends BaseMusicBeatState
 	public var stateScripts:Array<Dynamic> = [];
 	public var scriptsAllowed:Bool = true;
 	public var scriptName:String = null;
+	public var scriptOwnerMod:String = null;
+	public var isScriptedState:Bool = false;
 
 	// Companion script — loaded automatically alongside any hardcoded state.
 	// Path: scripts/states/{ClassName}.hx (or .lua), searched in mod → global mods → assets/shared.
@@ -93,10 +95,6 @@ class MusicBeatState extends BaseMusicBeatState
 
 		super.create();
 
-		#if vslice
-		funkin.plus.VSlicePlusStateBridge.create(this);
-		#end
-
 		if (!skip)
 		{
 			// Call scripts before fade in - if they return Function_Stop, they handle their own transition
@@ -127,10 +125,6 @@ class MusicBeatState extends BaseMusicBeatState
 	override function update(elapsed:Float)
 	{
 		NetworkCheckToast.updateRequests();
-
-		#if vslice
-		funkin.plus.VSlicePlusStateBridge.update(elapsed);
-		#end
 
 		// everyStep();
 		var oldStep:Int = curStep;
@@ -240,6 +234,16 @@ class MusicBeatState extends BaseMusicBeatState
 	{
 		#if (HSCRIPT_ALLOWED && sys)
 		var cs = FlxG.state;
+		if (cs is backend.MusicBeatState)
+		{
+			var scripted:backend.MusicBeatState = cast cs;
+			if (scripted.isScriptedState && scripted.scriptName != null)
+			{
+				var name:String = scripted.scriptName;
+				var owner:String = scripted.scriptOwnerMod;
+				return () -> scripting.ScriptedStates.loadStateFromMod(name, [], owner);
+			}
+		}
 		if (cs is backend.ScriptableState)
 		{
 			var name:String = (cast cs : backend.ScriptableState).stateName;
@@ -316,10 +320,6 @@ class MusicBeatState extends BaseMusicBeatState
 
 	override function destroy():Void
 	{
-		#if vslice
-		funkin.plus.VSlicePlusStateBridge.destroy(this);
-		#end
-
 		super.destroy();
 
 		#if HSCRIPT_ALLOWED

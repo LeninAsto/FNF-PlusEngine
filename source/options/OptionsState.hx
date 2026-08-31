@@ -23,15 +23,10 @@ class OptionsState extends MusicBeatState
 		'Gameplay',
 		'Legacy',
 		#if MODS_ALLOWED 'Mod Security', #end
-		'VSlice',
 		#if MODCHARTS_NOTITG_ALLOWED 'Modchart' #end
 		#if TRANSLATIONS_ALLOWED, 'Language' #end,
 		#if mobile 'Mobile' #end
 	];
-	#if vslice
-	var vsliceOptionCategories:Map<String, Dynamic> = [];
-	#end
-
 	private var grpOptions:FlxTypedGroup<OptionCard>;
 	private static var curSelected:Int = 0;
 
@@ -63,11 +58,6 @@ class OptionsState extends MusicBeatState
 
 	function getDisplayLabel(label:String):String
 	{
-		#if vslice
-		if (vsliceOptionCategories != null && vsliceOptionCategories.exists(label))
-			return label;
-		#end
-
 		return switch (label)
 		{
 			case 'Note Colors': Language.getPhrase('notes', 'Note Colors');
@@ -77,7 +67,6 @@ class OptionsState extends MusicBeatState
 			case 'Gameplay': Language.getPhrase('gameplay_menu', 'Gameplay Settings');
 			case 'Legacy': Language.getPhrase('legacy_menu', 'Legacy Settings');
 			case 'Mod Security': Language.getPhrase('mod_security_checks_menu', 'Mod Security Checks');
-			case 'VSlice': Language.getPhrase('vslice_menu', 'VSlice Settings');
 			case 'Modchart': Language.getPhrase('modchart_menu', 'Modchart Settings');
 			case 'Language': Language.getPhrase('language_menu', 'Language');
 			case 'Mobile': Language.getPhrase('mobile_settings', 'Mobile Settings');
@@ -97,7 +86,6 @@ class OptionsState extends MusicBeatState
 			case 'Gameplay': Language.getPhrase('options_desc_gameplay', 'Adjust play rules, scrolling and assist options.');
 			case 'Legacy': Language.getPhrase('options_desc_legacy', 'Psych compatibility, warnings and classic behavior.');
 			case 'Mod Security': Language.getPhrase('options_desc_mod_security', 'Choose which sensitive script checks are enabled.');
-			case 'VSlice': Language.getPhrase('options_desc_vslice', 'Configure VSlice compatibility features.');
 			case 'Modchart': Language.getPhrase('options_desc_modchart', 'Configure NotITG-style modchart behavior.');
 			case 'Language': Language.getPhrase('options_desc_language', 'Choose the engine language.');
 			case 'Mobile': Language.getPhrase('options_desc_mobile', 'Edit mobile controls and touch settings.');
@@ -134,11 +122,6 @@ class OptionsState extends MusicBeatState
 			beginSubstateTransition(label);
 		}
 
-		#if vslice
-		if (openVSliceOptionCategory(label))
-			return;
-		#end
-
 		switch (label)
 		{
 			case 'Note Colors':
@@ -160,8 +143,6 @@ class OptionsState extends MusicBeatState
 				#if MODS_ALLOWED
 				openSubState(ScriptableSubstate.tryCreate('ModSecurityChecksSubState', new options.ModSecurityChecksSubState()));
 				#end
-			case 'VSlice':
-				openSubState(ScriptableSubstate.tryCreate('VSliceSettingsSubState', new options.VSliceSettingsSubState()));
 			case 'Modchart':
 				openSubState(ScriptableSubstate.tryCreate('ModchartSettingsSubState', new options.ModchartSettingsSubState()));
 			case 'Adjust Delay and Combo':
@@ -176,27 +157,10 @@ class OptionsState extends MusicBeatState
 		}
 	}
 
-	#if vslice
-	function openVSliceOptionCategory(label:String):Bool
-	{
-		if (vsliceOptionCategories == null || !vsliceOptionCategories.exists(label))
-			return false;
-
-		var category:Dynamic = vsliceOptionCategories.get(label);
-		clearSubstateTransition();
-		MusicBeatState.switchState(funkin.plus.VSliceRuntime.createOptionsState(category.pageId));
-		return true;
-	}
-	#end
-
 	override function create()
 	{
 		#if DISCORD_ALLOWED
 		DiscordClient.changePresence("Options Menu", null);
-		#end
-
-		#if vslice
-		appendVSliceOptionCategories();
 		#end
 
 		OptionsMenuTheme.syncAccent();
@@ -233,21 +197,6 @@ class OptionsState extends MusicBeatState
 		callOnCompanionScript('onOptionsMenuCreatePost', [getOptionsCopy()]);
 		new FlxTimer().start(INTRO_DURATION + 0.06, function(_) optionsIntroActive = false);
 	}
-
-	#if vslice
-	function appendVSliceOptionCategories():Void
-	{
-		vsliceOptionCategories = [];
-		for (category in funkin.plus.VSliceRuntime.listOptionCategories())
-		{
-			var label:String = 'VSlice: ${category.label}';
-			if (options.contains(label))
-				continue;
-			options.push(label);
-			vsliceOptionCategories.set(label, category);
-		}
-	}
-	#end
 
 	override function closeSubState()
 	{

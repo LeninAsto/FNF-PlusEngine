@@ -6,10 +6,6 @@ import openfl.display.BitmapData;
 #if MODS_ALLOWED
 import backend.Mods;
 #end
-#if sys
-import sys.FileSystem;
-import sys.io.File;
-#end
 
 class HealthIcon extends FlxSprite
 {
@@ -47,16 +43,6 @@ class HealthIcon extends FlxSprite
 			try
 			{
 				var requestedChar:String = char;
-				#if (FEATURE_POLYMOD_MODS && MODS_ALLOWED && sys)
-				if (loadVSliceIcon(char, allowGPU, forceAnimated))
-				{
-					updateHitbox();
-					this.char = char;
-					antialiasing = ClientPrefs.data.antialiasing;
-					iconTrace('loaded VSlice icon "$requestedChar"');
-					return;
-				}
-				#end
 
 				var name:String = 'icons/' + char;
 				var currentModForTrace:String = '';
@@ -188,90 +174,6 @@ class HealthIcon extends FlxSprite
 		if (verboseIconLoading)
 			trace('[HealthIcon] ' + message);
 	}
-
-	#if (FEATURE_POLYMOD_MODS && MODS_ALLOWED && sys)
-	function loadVSliceIcon(char:String, allowGPU:Bool = true, forceAnimated:Bool = false):Bool
-	{
-		if (Mods.currentVSliceModDirectory == null || Mods.currentVSliceModDirectory.length == 0)
-			return false;
-
-		var modDir:String = Mods.currentVSliceModDirectory;
-		var candidates:Array<String> = ['images/icons/$char', 'images/icons/icon-$char'];
-
-		for (candidate in candidates)
-		{
-			var pngPath:String = Paths.vsliceMods('$modDir/$candidate.png');
-			if (!FileSystem.exists(pngPath))
-				continue;
-
-			var key:String = 'vslice:$modDir:$candidate';
-			var graphic:FlxGraphic = FlxG.bitmap.get(key);
-			if (graphic == null)
-			{
-				var bitmap:BitmapData = BitmapData.fromFile(pngPath);
-				if (bitmap == null)
-					continue;
-				graphic = FlxG.bitmap.add(bitmap, false, key);
-			}
-
-			var xmlPath:String = Paths.vsliceMods('$modDir/$candidate.xml');
-			isAnimated = forceAnimated || FileSystem.exists(xmlPath);
-			if (isAnimated && FileSystem.exists(xmlPath))
-			{
-				try
-				{
-					frames = FlxAtlasFrames.fromSparrow(graphic, File.getContent(xmlPath));
-					animation.addByPrefix('normal', 'normal', animFPS, true, isPlayer);
-					if (animation.getByName('normal') == null)
-						animation.addByPrefix(char, '', animFPS, true, isPlayer);
-					animation.play(animation.getByName('normal') != null ? 'normal' : char);
-					iconOffsets[0] = (width - 150) / 2;
-					iconOffsets[1] = (height - 150) / 2;
-					return true;
-				}
-				catch (e:Dynamic)
-				{
-					trace('Error loading VSlice animated icon for $char: $e');
-				}
-			}
-
-			isAnimated = false;
-			loadStaticIconGraphic(graphic);
-			return true;
-		}
-
-		return false;
-	}
-
-	function loadStaticIconGraphic(graphic:FlxGraphic):Void
-	{
-		var iSize:Float = 1.0;
-		if (graphic.width > 0 && graphic.height > 0)
-		{
-			iSize = Math.round(graphic.width / graphic.height);
-			if (iSize <= 0)
-				iSize = 1.0;
-		}
-
-		loadGraphic(graphic, true, Math.floor(graphic.width / iSize), Math.floor(graphic.height));
-
-		if (width > 0 && height > 0)
-		{
-			iconOffsets[0] = (width - 150) / iSize;
-			iconOffsets[1] = (height - 150) / iSize;
-		}
-		else
-		{
-			iconOffsets[0] = iconOffsets[1] = 0;
-		}
-
-		if (frames != null && frames.frames != null && frames.frames.length > 0)
-		{
-			animation.add(char, [for (i in 0...frames.frames.length) i], 0, false, isPlayer);
-			animation.play(char);
-		}
-	}
-	#end
 
 	private function loadStaticIcon(name:String, allowGPU:Bool = true):Void
 	{

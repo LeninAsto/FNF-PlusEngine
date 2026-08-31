@@ -36,10 +36,6 @@ import haxe.io.Path;
 #if mobile
 import mobile.backend.StorageUtil;
 #end
-#if FEATURE_POLYMOD_MODS
-import funkin.plus.VSliceFreeplayBridge;
-import funkin.plus.VSliceFreeplayBridge.VSliceFreeplaySong;
-#end
 import haxe.Json;
 
 class FreeplayState extends MusicBeatState
@@ -469,14 +465,12 @@ class FreeplayState extends MusicBeatState
 		grpSongs.add(songText);
 
 		var previousModDirectory:String = Mods.currentModDirectory;
-		var previousVSliceModDirectory:String = Mods.currentVSliceModDirectory;
 		if (!songs[index].isStepMania)
 			Mods.currentModDirectory = songs[index].folder;
-		Mods.currentVSliceModDirectory = songs[index].isVSlice ? songs[index].vsliceMod : '';
 
 		var characterName = songs[index].songCharacter;
 		if (characterName == null || characterName == "")
-			characterName = songs[index].isVSlice ? "face" : (songs[index].isStepMania ? "stepmania" : "bf");
+			characterName = songs[index].isStepMania ? "stepmania" : "bf";
 
 		var icon:HealthIcon = new HealthIcon(characterName);
 		icon.scale.set(0.8, 0.8);
@@ -484,11 +478,10 @@ class FreeplayState extends MusicBeatState
 		iconArray[index] = icon;
 		iconGroup.add(icon);
 		Mods.currentModDirectory = previousModDirectory;
-		Mods.currentVSliceModDirectory = previousVSliceModDirectory;
 
 		var modName:String = songs[index].folder;
 		if (modName == null || modName == '')
-			modName = songs[index].isVSlice ? (songs[index].vsliceMod != null && songs[index].vsliceMod.length > 0 ? songs[index].vsliceMod : "Friday Night Funkin") : (songs[index].isStepMania ? "StepMania" : "Friday Night Funkin");
+			modName = songs[index].isStepMania ? "StepMania" : "Friday Night Funkin";
 
 		var modText:FlxText = new FlxText(0, 0, 430, modName, 16);
 		modText.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -519,15 +512,7 @@ class FreeplayState extends MusicBeatState
 		final accept:String = (controls.mobileC) ? "A" : "ACCEPT";
 		final reject:String = (controls.mobileC) ? "B" : "BACK";
 
-		var vsliceSongs:Array<Dynamic> = [];
-		#if FEATURE_POLYMOD_MODS
-		vsliceSongs = cast VSliceFreeplayBridge.listSongs();
-		trace('[VSliceFreeplayTrace] Plus Freeplay weeks=${WeekData.weeksList.length} vsliceSongs=${vsliceSongs.length}');
-		#else
-		trace('[VSliceFreeplayTrace] Plus Freeplay FEATURE_POLYMOD_MODS disabled');
-		#end
-
-		if (WeekData.weeksList.length < 1 && vsliceSongs.length < 1)
+		if (WeekData.weeksList.length < 1)
 		{
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
@@ -574,7 +559,6 @@ class FreeplayState extends MusicBeatState
 
 		// Cargar archivos StepMania (.sm)
 		loadStepManiaFiles();
-		appendVSliceSongs(vsliceSongs);
 
 		bg = new FlxSprite();
 		bgTransition = new FlxSprite();
@@ -863,31 +847,6 @@ class FreeplayState extends MusicBeatState
 		songs.push(new SongMetadata(songName, weekNum, songCharacter, color));
 	}
 
-	function appendVSliceSongs(vsliceSongs:Array<Dynamic>):Void
-	{
-		#if FEATURE_POLYMOD_MODS
-		trace('[VSliceFreeplayTrace] Plus appendVSliceSongs count=${vsliceSongs.length} currentSongs=${songs.length}');
-		for (entry in vsliceSongs)
-		{
-			var diffs:Array<String> = entry.difficulties != null ? entry.difficulties.copy() : [];
-			trace('[VSliceFreeplayTrace] Plus append song display="${entry.displayName}" id="${entry.songId}" mod="${entry.modDir}" variation="${entry.variation}" diffs=${diffs.join(",")} root="${entry.rootPath}"');
-			var song:SongMetadata = new SongMetadata(entry.displayName, -1, entry.icon, entry.color);
-			song.folder = '';
-			song.isVSlice = true;
-			song.vsliceMod = entry.modDir;
-			song.vsliceSongId = entry.songId;
-			song.vsliceVariation = entry.variation;
-			song.vsliceDifficulties = diffs;
-			song.vsliceInstrumental = entry.instrumental;
-			song.vsliceRootPath = entry.rootPath;
-			song.vslicePreviewStartSeconds = entry.previewStartSeconds;
-			song.vslicePreviewEndSeconds = entry.previewEndSeconds;
-			songs.push(song);
-		}
-		trace('[VSliceFreeplayTrace] Plus appendVSliceSongs done totalSongs=${songs.length}');
-		#end
-	}
-
 	function songMatchesFilter(song:SongMetadata, queryLower:String):Bool
 	{
 		if (song == null || queryLower == null || queryLower.length == 0)
@@ -945,11 +904,7 @@ class FreeplayState extends MusicBeatState
 
 		try
 		{
-			if (selectedSong != null && selectedSong.isVSlice)
-			{
-				resolvedBpm = 102;
-			}
-			else if (selectedSong != null && selectedSong.isStepMania)
+			if (selectedSong != null && selectedSong.isStepMania)
 			{
 				#if sys
 				var smDiffName:String = (selectedSong.smDifficulties != null && selectedSong.smDifficulties.length > 0) ? Paths.formatToSongPath(selectedSong.smDifficulties[Std.int(FlxMath.bound(curDifficulty,
@@ -1381,14 +1336,6 @@ class FreeplayState extends MusicBeatState
 				destroyFreeplayVocals();
 				FlxG.sound.music.volume = 0;
 
-				if (songs[curSelected].isVSlice)
-				{
-					playInstPreview();
-					updateSongInfoCardLayout();
-					updateTexts(elapsed);
-					return;
-				}
-
 				Mods.currentModDirectory = songs[curSelected].folder;
 
 				// Load all available difficulties for this song before loading the chart
@@ -1483,15 +1430,6 @@ class FreeplayState extends MusicBeatState
 			else
 			{
 				persistentUpdate = false;
-				if (songs[curSelected].isVSlice)
-				{
-					stopMusicPlay = true;
-					destroyFreeplayVocals();
-					#if FEATURE_POLYMOD_MODS
-					VSliceFreeplayBridge.play(songs[curSelected].toVSliceEntry(), difficultySelector.curSelected);
-					#end
-					return;
-				}
 
 				var songLowercase:String = Paths.formatToSongPath(songs[curSelected].songName);
 				var poop:String = Highscore.formatSong(songLowercase, difficultySelector.curSelected);
@@ -1702,17 +1640,8 @@ class FreeplayState extends MusicBeatState
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 
 		#if !switch
-		if (songs[curSelected].isVSlice)
-		{
-			var diffName:String = Difficulty.list[difficultySelector.curSelected] ?? 'normal';
-			intendedScore = Highscore.getVSliceScore(songs[curSelected].vsliceSongId, diffName, songs[curSelected].vsliceVariation);
-			intendedRating = Highscore.getVSliceRating(songs[curSelected].vsliceSongId, diffName, songs[curSelected].vsliceVariation);
-		}
-		else
-		{
-			intendedScore = Highscore.getScore(songs[curSelected].songName, difficultySelector.curSelected, viewingOpponentScores);
-			intendedRating = Highscore.getRating(songs[curSelected].songName, difficultySelector.curSelected, viewingOpponentScores);
-		}
+		intendedScore = Highscore.getScore(songs[curSelected].songName, difficultySelector.curSelected, viewingOpponentScores);
+		intendedRating = Highscore.getRating(songs[curSelected].songName, difficultySelector.curSelected, viewingOpponentScores);
 		#end
 
 		// Actualizar textos de score cuando cambia la selección
@@ -1751,20 +1680,13 @@ class FreeplayState extends MusicBeatState
 		}
 
 		// Para canciones de StepMania, no cambiar el directorio de mod
-		if (songs[curSelected].isVSlice)
+		if (!songs[curSelected].isStepMania)
 		{
-			Mods.currentModDirectory = '';
-			Mods.currentVSliceModDirectory = songs[curSelected].vsliceMod;
-		}
-		else if (!songs[curSelected].isStepMania)
-		{
-			Mods.currentVSliceModDirectory = '';
 			Mods.currentModDirectory = songs[curSelected].folder;
 		}
 		else
 		{
 			Mods.currentModDirectory = '';
-			Mods.currentVSliceModDirectory = '';
 		}
 
 		PlayState.storyWeek = songs[curSelected].week;
@@ -1806,14 +1728,7 @@ class FreeplayState extends MusicBeatState
 			return;
 		}
 
-		if (songs[curSelected].isVSlice)
-		{
-			if (songs[curSelected].vsliceDifficulties != null && songs[curSelected].vsliceDifficulties.length > 0)
-				Difficulty.list = songs[curSelected].vsliceDifficulties.copy();
-			else
-				Difficulty.list = ['normal'];
-		}
-		else if (songs[curSelected].isStepMania)
+		if (songs[curSelected].isStepMania)
 		{
 			if (songs[curSelected].smDifficulties != null && songs[curSelected].smDifficulties.length > 0)
 				Difficulty.list = songs[curSelected].smDifficulties.copy();
@@ -1889,8 +1804,7 @@ class FreeplayState extends MusicBeatState
 			return;
 
 		loadBaseDifficultiesForSelection();
-		if (!songs[requestIndex].isVSlice)
-			detectAndLoadAllDifficulties();
+		detectAndLoadAllDifficulties();
 
 		if (Difficulty.list == null || Difficulty.list.length == 0)
 			Difficulty.list = ['Normal'];
@@ -1940,14 +1854,6 @@ class FreeplayState extends MusicBeatState
 				Difficulty.list = ['Normal'];
 				trace('No SM difficulties found, using default');
 			}
-			return;
-		}
-
-		if (songs[curSelected].isVSlice)
-		{
-			Difficulty.list = songs[curSelected].vsliceDifficulties != null
-				&& songs[curSelected].vsliceDifficulties.length > 0 ? songs[curSelected].vsliceDifficulties.copy() : ['normal'];
-			curDifficulty = Std.int(FlxMath.bound(curDifficulty, 0, Difficulty.list.length - 1));
 			return;
 		}
 
@@ -2768,13 +2674,6 @@ class FreeplayState extends MusicBeatState
 			return ['Normal'];
 		}
 
-		if (song.isVSlice)
-		{
-			if (song.vsliceDifficulties != null && song.vsliceDifficulties.length > 0)
-				return song.vsliceDifficulties.copy();
-			return ['normal'];
-		}
-
 		if (Difficulty.list != null && Difficulty.list.length > 0)
 			return Difficulty.list.copy();
 
@@ -2786,24 +2685,6 @@ class FreeplayState extends MusicBeatState
 		var totalNotes:Int = 0;
 		var longestDuration:Float = 0;
 		var songKey:String = Paths.formatToSongPath(song.songName);
-		if (song.isVSlice)
-		{
-			return {
-				songName: song.songName,
-				folder: song.vsliceMod,
-				coverKey: 'albumRoll/$songKey',
-				cardKey: 'albumRoll/cards/$songKey',
-				cardMode: 'background',
-				author: song.vsliceMod,
-				links: null,
-				licenses: ['no-licenses'],
-				licenseText: null,
-				bpm: capturedBpm > 0 ? capturedBpm : 102,
-				durationMs: 0,
-				noteCount: 0,
-				difficultyNames: diffNames != null ? diffNames.copy() : []
-			};
-		}
 
 		var meta:FreeplaySongMeta = loadSongMeta(song);
 		var metaDurationMs:Float = meta != null
@@ -2850,7 +2731,7 @@ class FreeplayState extends MusicBeatState
 
 	function loadSongMeta(song:SongMetadata):FreeplaySongMeta
 	{
-		if (song == null || song.isStepMania || song.isVSlice)
+		if (song == null || song.isStepMania)
 			return null;
 
 		var songKey:String = Paths.formatToSongPath(song.songName);
@@ -3169,11 +3050,11 @@ class FreeplayState extends MusicBeatState
 			return;
 
 		var meta:FreeplaySongMeta = loadSongMeta(song);
-		if (meta == null && !song.isVSlice)
+		if (meta == null)
 			return;
 
-		var startSeconds:Null<Float> = song.isVSlice ? song.vslicePreviewStartSeconds : meta.previewStartSeconds;
-		var endSeconds:Null<Float> = song.isVSlice ? song.vslicePreviewEndSeconds : meta.previewEndSeconds;
+		var startSeconds:Null<Float> = meta.previewStartSeconds;
+		var endSeconds:Null<Float> = meta.previewEndSeconds;
 		var startMs:Float = startSeconds != null ? startSeconds * 1000 : 0;
 		var endMs:Float = endSeconds != null ? endSeconds * 1000 : 0;
 		if (!Math.isNaN(startMs) && FlxG.sound.music.length > 0)
@@ -3271,17 +3152,7 @@ class FreeplayState extends MusicBeatState
 			// Fallback for single-threaded targets (web, etc.): load synchronously.
 			try
 			{
-				var filePath:String = getInstPreviewFilePath(songs[requestedIndex]);
-				if (songs[requestedIndex].isVSlice)
-				{
-					if (filePath == null || filePath.length == 0)
-						return;
-					FlxG.sound.playMusic(AssetLoader.loadSound(filePath), 0, true);
-				}
-				else
-				{
-					FlxG.sound.playMusic(Paths.inst(Paths.formatToSongPath(songs[requestedIndex].songName)), 0, true);
-				}
+				FlxG.sound.playMusic(Paths.inst(Paths.formatToSongPath(songs[requestedIndex].songName)), 0, true);
 				applySongPreviewStart(songs[requestedIndex]);
 				FlxG.sound.music.fadeIn(1.0, 0, 0.7);
 				instSound = FlxG.sound.music;
@@ -3308,15 +3179,6 @@ class FreeplayState extends MusicBeatState
 	{
 		if (song == null)
 			return null;
-		if (song.isVSlice)
-		{
-			#if FEATURE_POLYMOD_MODS
-			return VSliceFreeplayBridge.resolveInstPath(song.toVSliceEntry());
-			#else
-			return null;
-			#end
-		}
-
 		return Paths.getPath(Language.getFileTranslation('${Paths.formatToSongPath(song.songName)}/Inst') + '.${Paths.SOUND_EXT}', SOUND, 'songs', true);
 	}
 
@@ -3324,15 +3186,6 @@ class FreeplayState extends MusicBeatState
 	{
 		if (song == null)
 			return null;
-		if (song.isVSlice)
-		{
-			#if FEATURE_POLYMOD_MODS
-			return VSliceFreeplayBridge.resolveInstPath(song.toVSliceEntry());
-			#else
-			return null;
-			#end
-		}
-
 		return Paths.getPath(Language.getFileTranslation('${Paths.formatToSongPath(song.songName)}/Inst') + '.${Paths.SOUND_EXT}', SOUND, 'songs', true);
 	}
 
@@ -3828,15 +3681,6 @@ class SongMetadata
 	public var isStepMania:Bool = false; // Identificador para canciones SM
 	public var smFolder:String = ""; // Carpeta original del archivo .sm
 	public var smDifficulties:Array<String> = []; // Nombres de las dificultades del .sm
-	public var isVSlice:Bool = false;
-	public var vsliceMod:String = "";
-	public var vsliceSongId:String = "";
-	public var vsliceVariation:String = "default";
-	public var vsliceDifficulties:Array<String> = [];
-	public var vsliceRootPath:String = "";
-	public var vsliceInstrumental:String = "";
-	public var vslicePreviewStartSeconds:Null<Float> = null;
-	public var vslicePreviewEndSeconds:Null<Float> = null;
 
 	public function new(song:String, week:Int, songCharacter:String, color:Int)
 	{
@@ -3848,26 +3692,6 @@ class SongMetadata
 		if (this.folder == null)
 			this.folder = '';
 	}
-
-	#if FEATURE_POLYMOD_MODS
-	public function toVSliceEntry():VSliceFreeplaySong
-	{
-		return {
-			songId: vsliceSongId,
-			displayName: songName,
-			modDir: vsliceMod,
-			levelId: '',
-			icon: songCharacter,
-			color: color,
-			difficulties: vsliceDifficulties.copy(),
-			variation: vsliceVariation,
-			rootPath: vsliceRootPath,
-			instrumental: vsliceInstrumental,
-			previewStartSeconds: vslicePreviewStartSeconds,
-			previewEndSeconds: vslicePreviewEndSeconds
-		};
-	}
-	#end
 }
 
 typedef FreeplayChartSummary =
@@ -3937,8 +3761,7 @@ class DifficultySelector
 		// Solo cargar dificultades desde semana si NO es StepMania
 		if (FreeplayState.instance != null && FreeplayState.instance.songs[FreeplayState.curSelected] != null)
 		{
-			if (!FreeplayState.instance.songs[FreeplayState.curSelected].isStepMania
-				&& !FreeplayState.instance.songs[FreeplayState.curSelected].isVSlice)
+			if (!FreeplayState.instance.songs[FreeplayState.curSelected].isStepMania)
 			{
 				Difficulty.loadFromWeek();
 			}
@@ -3992,19 +3815,9 @@ class DifficultySelector
 			var score:Int = 0;
 			var accuracy:Float = 0;
 			var accSystem:String = 'Unknown';
-			if (song.isVSlice)
-			{
-				var diffName:String = Difficulty.list[diffIndex] ?? 'normal';
-				score = Highscore.getVSliceScore(song.vsliceSongId, diffName, song.vsliceVariation);
-				accuracy = Highscore.getVSliceRating(song.vsliceSongId, diffName, song.vsliceVariation);
-				accSystem = Highscore.getVSliceAccuracySystem(song.vsliceSongId, diffName, song.vsliceVariation);
-			}
-			else
-			{
-				score = Highscore.getScore(songName, diffIndex, FreeplayState.viewingOpponentScores);
-				accuracy = Highscore.getRating(songName, diffIndex, FreeplayState.viewingOpponentScores);
-				accSystem = Highscore.getAccuracySystem(songName, diffIndex, FreeplayState.viewingOpponentScores);
-			}
+			score = Highscore.getScore(songName, diffIndex, FreeplayState.viewingOpponentScores);
+			accuracy = Highscore.getRating(songName, diffIndex, FreeplayState.viewingOpponentScores);
+			accSystem = Highscore.getAccuracySystem(songName, diffIndex, FreeplayState.viewingOpponentScores);
 
 			var accPercent:String = '';
 			if (accuracy > 0)

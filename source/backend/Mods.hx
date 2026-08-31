@@ -15,7 +15,7 @@ typedef ModsList =
 class Mods
 {
 	static public var currentModDirectory:String = '';
-	static public var currentVSliceModDirectory:String = '';
+	static public var launchedMod:String = null;
 	public static final ignoreModFolders:Array<String> = [
 		'characters',
 		'custom_events',
@@ -35,15 +35,6 @@ class Mods
 	];
 
 	private static var globalMods:Array<String> = [];
-	private static var updatedVSliceOnState:Bool = false;
-
-	static inline function traceVSliceFreeplay(message:String):Void
-	{
-		#if (debug || VSLICE_FREEPLAY_TRACE)
-		trace('[VSliceFreeplayTrace] $message');
-		#end
-	}
-
 	inline public static function getGlobalMods()
 		return globalMods;
 
@@ -75,37 +66,6 @@ class Mods
 		}
 		#end
 		return list;
-	}
-
-	inline public static function getVSliceModDirectories():Array<String>
-	{
-		var list:Array<String> = [];
-		#if MODS_ALLOWED
-		for (modsFolder in Paths.getVSliceModsRootDirectories())
-		{
-			traceVSliceFreeplay('scan root="$modsFolder" exists=${Paths.safeModPathExists(modsFolder)}');
-			if (!Paths.safeModPathExists(modsFolder))
-				continue;
-
-			for (folder in Paths.safeReadDirectory(modsFolder))
-			{
-				var path = haxe.io.Path.join([modsFolder, folder]);
-				if (Paths.safeModIsDirectory(path) && !list.contains(folder))
-					list.push(folder);
-			}
-		}
-		traceVSliceFreeplay('discovered vslice dirs=${list.join(",")}');
-		#end
-		return list;
-	}
-
-	inline public static function getVSliceModsRoot():String
-	{
-		#if MODS_ALLOWED
-		return Paths.vsliceMods();
-		#else
-		return 'vslice_mods/';
-		#end
 	}
 
 	inline public static function mergeAllTextsNamed(path:String, ?defaultDirectory:String = null, allowDuplicates:Bool = false)
@@ -238,60 +198,7 @@ class Mods
 		return list;
 	}
 
-	inline public static function parseVSliceList():ModsList
-	{
-		if (!updatedVSliceOnState)
-			updateVSliceModList();
-		var list:ModsList = {enabled: [], disabled: [], all: []};
-
-		#if MODS_ALLOWED
-		try
-		{
-			for (mod in CoolUtil.coolTextFile(getVSliceListPath()))
-			{
-				if (mod.trim().length < 1)
-					continue;
-
-				var dat = mod.split("|");
-				list.all.push(dat[0]);
-				if (dat.length < 2 || dat[1] == "1")
-					list.enabled.push(dat[0]);
-				else
-					list.disabled.push(dat[0]);
-			}
-		}
-		catch (e)
-		{
-			trace(e);
-		}
-		#end
-		traceVSliceFreeplay('parseVSliceList path="${getVSliceListPath()}" all=${list.all.join(",")} enabled=${list.enabled.join(",")} disabled=${list.disabled.join(",")}');
-		return list;
-	}
-
-	public static function getVSliceListPath():String
-	{
-		#if android
-		return StorageUtil.getStorageDirectory() + 'vsliceList.txt';
-		#else
-		for (root in Paths.getVSliceModsRootDirectories())
-		{
-			var normalizedRoot:String = root.replace('\\', '/');
-			if (normalizedRoot.endsWith('/'))
-				normalizedRoot = normalizedRoot.substr(0, normalizedRoot.length - 1);
-			var listPath:String = haxe.io.Path.directory(normalizedRoot) + '/vsliceList.txt';
-			if (Paths.safeModPathExists(listPath))
-			{
-				traceVSliceFreeplay('using vslice list "$listPath" for root "$root"');
-				return listPath;
-			}
-		}
-		traceVSliceFreeplay('using fallback vslice list "${Sys.getCwd()}vsliceList.txt"');
-		return Sys.getCwd() + 'vsliceList.txt';
-		#end
-	}
-
-	public static function saveList(list:ModsList, vsliceMode:Bool = false):Void
+	public static function saveList(list:ModsList):Void
 	{
 		var fileStr:String = '';
 		for (mod in list.all)
@@ -308,20 +215,17 @@ class Mods
 			fileStr += '$mod|$on';
 		}
 
-		var path:String = vsliceMode ? getVSliceListPath() : (#if android StorageUtil.getModsListPath() #else Sys.getCwd() + 'modsList.txt' #end);
+		var path:String = #if android StorageUtil.getModsListPath() #else Sys.getCwd() + 'modsList.txt' #end;
 		try
 		{
 			File.saveContent(path, fileStr);
 		}
 		catch (e:Dynamic)
 		{
-			trace('[Mods] Failed to save ${vsliceMode ? 'vsliceList.txt' : 'modsList.txt'}: $e');
+			trace('[Mods] Failed to save modsList.txt: $e');
 		}
 
-		if (vsliceMode)
-			updatedVSliceOnState = true;
-		else
-			updatedOnState = true;
+		updatedOnState = true;
 	}
 
 	public static function updateModList()
@@ -386,62 +290,6 @@ class Mods
 		#end
 	}
 
-	public static function updateVSliceModList()
-	{
-		#if MODS_ALLOWED
-		var list:Array<Array<Dynamic>> = [];
-		var added:Array<String> = [];
-		try
-		{
-			for (mod in CoolUtil.coolTextFile(getVSliceListPath()))
-			{
-				var dat:Array<String> = mod.split("|");
-				var folder:String = dat[0];
-				var folderPath:String = Paths.vsliceMods(folder);
-				if (folder.trim().length > 0 && Paths.safeModIsDirectory(folderPath) && !added.contains(folder))
-				{
-					added.push(folder);
-					list.push([folder, (dat.length < 2 || dat[1] == "1")]);
-				}
-			}
-		}
-		catch (e)
-		{
-			trace(e);
-		}
-
-		for (folder in getVSliceModDirectories())
-		{
-			var folderPath:String = Paths.vsliceMods(folder);
-			traceVSliceFreeplay('update list candidate folder="$folder" path="$folderPath" exists=${Paths.safeModIsDirectory(folderPath)}');
-			if (folder.trim().length > 0 && Paths.safeModIsDirectory(folderPath) && !added.contains(folder))
-			{
-				added.push(folder);
-				list.push([folder, true]);
-			}
-		}
-
-		var fileStr:String = '';
-		for (values in list)
-		{
-			if (fileStr.length > 0)
-				fileStr += '\n';
-			fileStr += values[0] + '|' + (values[1] ? '1' : '0');
-		}
-
-		try
-		{
-			File.saveContent(getVSliceListPath(), fileStr);
-		}
-		catch (e:Dynamic)
-		{
-			trace('Failed to save vsliceList.txt: $e');
-		}
-		traceVSliceFreeplay('updateVSliceModList saved="${getVSliceListPath()}" entries="$fileStr"');
-		updatedVSliceOnState = true;
-		#end
-	}
-
 	public static function loadTopMod()
 	{
 		Mods.currentModDirectory = '';
@@ -450,17 +298,6 @@ class Mods
 		var list:Array<String> = Mods.parseList().enabled;
 		if (list != null && list[0] != null)
 			Mods.currentModDirectory = list[0];
-		#end
-	}
-
-	public static function loadTopVSliceMod()
-	{
-		Mods.currentVSliceModDirectory = '';
-
-		#if MODS_ALLOWED
-		var list:Array<String> = Mods.parseVSliceList().enabled;
-		if (list != null && list[0] != null)
-			Mods.currentVSliceModDirectory = list[0];
 		#end
 	}
 
@@ -485,18 +322,79 @@ class Mods
 		return 'MainMenuState';
 	}
 
+	public static inline function getEntryState(folder:String):String
+		return getLaunchState(folder);
+
+	public static function getMenuMusic(folder:String):String
+	{
+		var value:Dynamic = getPackField(folder, 'menuMusic');
+		if (value != null)
+		{
+			var music:String = Std.string(value).trim();
+			if (music.length > 0)
+				return music;
+		}
+		return 'freakyMenu';
+	}
+
+	public static function getLuaMode(folder:String):String
+	{
+		var value:Dynamic = getPackField(folder, 'luaMode');
+		if (value != null)
+		{
+			var mode:String = Std.string(value).trim().toLowerCase();
+			if (mode == 'raw' || mode == 'compat')
+				return mode;
+		}
+		return 'compat';
+	}
+
+	public static function isNativeMobile(folder:String):Bool
+		return packBool(folder, 'nativeMobile', false);
+
+	public static function compileScripts(folder:String):Bool
+		return packBool(folder, 'compileScripts', false);
+
+	public static function noteCompatibilityMode(folder:String):Bool
+		return packBool(folder, 'compatibilityMode', false) || packBool(folder, 'legacyMode', false);
+
 	public static function isLaunchable(folder:String):Bool
 	{
-		#if (MODS_ALLOWED && sys)
+		#if (MODS_ALLOWED && sys && HSCRIPT_ALLOWED)
 		if (folder == null || folder.trim().length < 1)
 			return false;
 
 		var state:String = getLaunchState(folder);
-		var hxPath:String = Paths.mods('$folder/scripts/states/$state.hx');
-		if (FileSystem.exists(hxPath))
-			return true;
+		for (relative in scripting.ScriptRegistry.classPaths(scripting.ScriptRegistry.STATE_PACKAGE + '.' + state))
+		{
+			var hxPath:String = Paths.mods('$folder/$relative');
+			if (Paths.safeModPathExists(hxPath))
+				return true;
+		}
 		#end
 		return false;
+	}
+
+	static function getPackField(folder:String, field:String):Dynamic
+	{
+		#if MODS_ALLOWED
+		var pack:Dynamic = getPack(folder);
+		return pack == null ? null : Reflect.field(pack, field);
+		#else
+		return null;
+		#end
+	}
+
+	static function packBool(folder:String, field:String, fallback:Bool):Bool
+	{
+		var value:Dynamic = getPackField(folder, field);
+		if (value == null)
+			return fallback;
+		if (Std.isOfType(value, Bool))
+			return cast value;
+
+		var text:String = Std.string(value).trim().toLowerCase();
+		return text == 'true' || text == '1' || text == 'yes' || text == 'on';
 	}
 }
 

@@ -78,10 +78,11 @@ class NoteSplash extends FlxSprite
 
 		if (splash == null)
 		{
-			splash = getDefaultNoteSplashPath() + getSplashSkinPostfix();
+			splash = null;
 			if (PlayState.SONG != null && PlayState.SONG.splashSkin != null && PlayState.SONG.splashSkin.length > 0)
 				splash = PlayState.SONG.splashSkin;
 		}
+		splash = resolveNoteSplashPath(splash, PlayState.isPixelStage);
 
 		texture = splash;
 		frames = null;
@@ -94,7 +95,7 @@ class NoteSplash extends FlxSprite
 		}
 		else
 		{
-			frames = Paths.getSparrowAtlas(texture);
+			frames = getSplashAtlas(texture);
 			if (frames != null)
 			{
 				framesCache.set(atlasPath, frames);
@@ -103,7 +104,7 @@ class NoteSplash extends FlxSprite
 		}
 		if (frames == null)
 		{
-			texture = getDefaultNoteSplashPath() + getSplashSkinPostfix();
+			texture = resolveNoteSplashPath(null, PlayState.isPixelStage);
 			atlasPath = 'images/$texture';
 			if (framesCache.exists(atlasPath))
 			{
@@ -112,7 +113,7 @@ class NoteSplash extends FlxSprite
 			}
 			else
 			{
-				frames = Paths.getSparrowAtlas(texture);
+				frames = getSplashAtlas(texture);
 				if (frames != null)
 				{
 					framesCache.set(atlasPath, frames);
@@ -121,7 +122,7 @@ class NoteSplash extends FlxSprite
 			}
 			if (frames == null)
 			{
-				texture = defaultNoteSplash;
+				texture = resolveSplashCandidate(defaultNoteSplash, PlayState.isPixelStage);
 				atlasPath = 'images/$texture';
 				if (framesCache.exists(atlasPath))
 				{
@@ -130,7 +131,7 @@ class NoteSplash extends FlxSprite
 				}
 				else
 				{
-					frames = Paths.getSparrowAtlas(texture);
+					frames = getSplashAtlas(texture);
 					if (frames != null)
 					{
 						framesCache.set(atlasPath, frames);
@@ -282,11 +283,11 @@ class NoteSplash extends FlxSprite
 
 		if (!inEditor)
 		{
-			var loadedTexture:String = getDefaultNoteSplashPath() + getSplashSkinPostfix();
+			var loadedTexture:String = resolveNoteSplashPath(null, PlayState.isPixelStage);
 			if (note != null && note.noteSplashData.texture != null)
-				loadedTexture = note.noteSplashData.texture;
+				loadedTexture = resolveNoteSplashPath(note.noteSplashData.texture, PlayState.isPixelStage, false);
 			else if (PlayState.SONG != null && PlayState.SONG.splashSkin != null && PlayState.SONG.splashSkin.length > 0)
-				loadedTexture = PlayState.SONG.splashSkin;
+				loadedTexture = resolveNoteSplashPath(PlayState.SONG.splashSkin, PlayState.isPixelStage, false);
 
 			if (texture != loadedTexture)
 				loadSplash(loadedTexture);
@@ -508,15 +509,114 @@ class NoteSplash extends FlxSprite
 		return skin;
 	}
 
-	public static function getDefaultNoteSplashPath():String
+	static function getSplashAtlas(splash:String):Dynamic
+	{
+		if (!splashPathExists(splash, false, true))
+			return null;
+		return Paths.getSparrowAtlas(splash);
+	}
+
+	public static function splashPathExists(splash:String, ?pixel:Null<Bool>, ?rawOnly:Bool = false):Bool
+	{
+		if (splash == null || splash.length < 1)
+			return false;
+
+		var rawExists:Bool = Paths.fileExists('images/' + splash + '.png', IMAGE) && Paths.fileExists('images/' + splash + '.xml', TEXT);
+		if (rawOnly || rawExists)
+			return rawExists;
+
+		var usePixel:Bool = PlayState.isPixelStage;
+		if (pixel != null)
+			usePixel = pixel;
+
+		if (usePixel)
+		{
+			var pixelSplash:String = splash;
+			if (!pixelSplash.startsWith('pixelUI/'))
+				pixelSplash = 'pixelUI/' + pixelSplash;
+			if (Paths.fileExists('images/' + pixelSplash + '.png', IMAGE) && Paths.fileExists('images/' + pixelSplash + '.xml', TEXT))
+				return true;
+
+			var noRgbPixelSplash:String = pixelSplash.replace('pixelUI/' + defaultNoteSplash, 'pixelUI/' + noRgbNoteSplash);
+			if (noRgbPixelSplash != pixelSplash
+				&& Paths.fileExists('images/' + noRgbPixelSplash + '.png', IMAGE)
+				&& Paths.fileExists('images/' + noRgbPixelSplash + '.xml', TEXT))
+				return true;
+		}
+
+		return false;
+	}
+
+	static function resolveSplashCandidate(splash:String, ?pixel:Null<Bool>):String
+	{
+		if (splash == null || splash.length < 1)
+			return null;
+
+		var usePixel:Bool = PlayState.isPixelStage;
+		if (pixel != null)
+			usePixel = pixel;
+
+		if (usePixel)
+		{
+			var pixelSplash:String = splash;
+			if (!pixelSplash.startsWith('pixelUI/'))
+				pixelSplash = 'pixelUI/' + pixelSplash;
+			if (splashPathExists(pixelSplash, false, true))
+				return pixelSplash;
+
+			var noRgbPixelSplash:String = pixelSplash.replace('pixelUI/' + defaultNoteSplash, 'pixelUI/' + noRgbNoteSplash);
+			if (noRgbPixelSplash != pixelSplash && splashPathExists(noRgbPixelSplash, false, true))
+				return noRgbPixelSplash;
+		}
+
+		if (splashPathExists(splash, false, true))
+			return splash;
+
+		if (!usePixel && splash.startsWith('pixelUI/'))
+		{
+			var normalSplash:String = splash.substr('pixelUI/'.length);
+			if (splashPathExists(normalSplash, false, true))
+				return normalSplash;
+		}
+
+		return splash;
+	}
+
+	public static function getDefaultNoteSplashPath(?pixel:Null<Bool>):String
 	{
 		var preferred:String = ClientPrefs.data.noteRGB ? defaultNoteSplash : noRgbNoteSplash;
 		var fallback:String = ClientPrefs.data.noteRGB ? noRgbNoteSplash : defaultNoteSplash;
-		if (Paths.fileExists('images/' + preferred + '.png', IMAGE))
-			return preferred;
-		if (Paths.fileExists('images/' + fallback + '.png', IMAGE))
-			return fallback;
+		var resolved:String = resolveSplashCandidate(preferred, pixel);
+		if (splashPathExists(resolved, false, true))
+			return resolved;
+		resolved = resolveSplashCandidate(fallback, pixel);
+		if (splashPathExists(resolved, false, true))
+			return resolved;
 		return defaultNoteSplash;
+	}
+
+	public static function resolveNoteSplashPath(?splash:String, ?pixel:Null<Bool>, ?useSkinPostfix:Bool = true):String
+	{
+		if (splash == null || splash.length < 1)
+			splash = getDefaultNoteSplashPath(pixel);
+
+		if (useSkinPostfix)
+		{
+			var postfix:String = getSplashSkinPostfix();
+			if (postfix.length > 0)
+			{
+				var customSplash:String = splash + postfix;
+				var resolvedCustom:String = resolveSplashCandidate(customSplash, pixel);
+				if (splashPathExists(resolvedCustom, false, true))
+					return resolvedCustom;
+			}
+		}
+
+		var resolved:String = resolveSplashCandidate(splash, pixel);
+		if (splashPathExists(resolved, false, true))
+			return resolved;
+
+		return getDefaultNoteSplashPath(pixel);
 	}
 
 	public static function createConfig():NoteSplashConfig

@@ -20,8 +20,11 @@ haxelib git lime https://github.com/Psych-Plus-Team/lime.git
 echo [Core] openfl 9.5.0
 haxelib install openfl 9.5.0 --quiet
 
+echo [Core - 3D] away3d
+haxelib git away3d https://github.com/openfl/away3d.git
+
 REM ============================================================================
-REM HaxeFlixel stack - required by Plus/Psych and VSlice runtime.
+REM HaxeFlixel stack - required by Plus/Psych.
 REM ============================================================================
 echo [Flixel] flixel
 haxelib git flixel https://github.com/Psych-Plus-Team/flixel
@@ -38,7 +41,6 @@ haxelib install flixel-ui 2.6.2 --quiet
 REM ============================================================================
 REM Plus/Psych runtime - classic engine systems and classic mods.
 REM flxanimate is the Psych/Plus animation package: imports are flxanimate.*.
-REM Do not replace it with flixel-animate; VSlice uses a separate animate.* lib.
 REM ============================================================================
 echo [Plus/Psych] hscript-iris
 haxelib git hscript-iris https://github.com/Psych-Plus-Team/hscript-iris.git
@@ -68,51 +70,16 @@ echo [Optional] hxvlc 2.2.6
 haxelib install hxvlc 2.2.6 --quiet --skip-dependencies
 
 REM ============================================================================
-REM VSlice runtime / Polymod - needed when compiling with -D vslice or
-REM FEATURE_POLYMOD_MODS. These are required for source/funkin compatibility.
-REM polymod and flixel-animate intentionally use the Psych-Plus-Team forks.
-REM flixel-animate is the VSlice/Funkin animation package: imports are animate.*.
+REM Lightweight audio visualization used by Plus/Psych UI helpers.
 REM ============================================================================
-echo [VSlice] polymod fork
-haxelib git polymod https://github.com/Psych-Plus-Team/polymod master
-
-echo [VSlice] json2object
-haxelib git json2object https://github.com/FunkinCrew/json2object 59e0467c953d1f26e3cbf2a070f140e2d2e8457d
-
-echo [VSlice] jsonpatch 1.1.0
-haxelib install jsonpatch 1.1.0 --quiet
-
-echo [VSlice] jsonpath 1.1.0
-haxelib install jsonpath 1.1.0 --quiet
-
-echo [VSlice] thx.core git
-haxelib git thx.core https://github.com/fponticelli/thx.core 2bf2b992e06159510f595554e6b952e47922f128
-
-echo [VSlice] thx.semver git
-haxelib git thx.semver https://github.com/fponticelli/thx.semver bdb191fe7cf745c02a980749906dbf22719e200b
-
-echo [VSlice] flixel-animate fork
-haxelib git flixel-animate https://github.com/Psych-Plus-Team/flixel-animate main
-
-echo [VSlice] FlxPartialSound
-haxelib git FlxPartialSound https://github.com/FunkinCrew/FlxPartialSound.git 2f984e244f1544ca98c0e03b9b21ae570f07ac55
-
-echo [VSlice] hxjsonast
-haxelib git hxjsonast https://github.com/nadako/hxjsonast/ 20e72cc68c823496359775ac1f06500e67f189d5
-
-echo [VSlice/Base Game] funkin.vis
+echo [Audio Viz] funkin.vis
 haxelib git funkin.vis https://github.com/FunkinCrew/funkVis 22b1ce089dd924f15cdc4632397ef3504d464e90
 
-echo [VSlice/Base Game] grig.audio
+echo [Audio Viz] grig.audio
 haxelib git grig.audio https://gitlab.com/haxe-grig/grig.audio.git cbf91e2180fd2e374924fe74844086aab7891666
 
 echo [Check libraries]
 haxelib list
-
-REM ============================================================================
-REM Android-only VSlice/mobile helper. Install manually on Android machines:
-REM haxelib install extension-androidtools
-REM ============================================================================
 
 echo.
 echo Finished installing libraries!

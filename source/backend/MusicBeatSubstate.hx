@@ -27,6 +27,9 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 
 	// Variables map for substate-specific data
 	public var variables:Map<String, Dynamic> = new Map<String, Dynamic>();
+	public var scriptName:String = null;
+	public var scriptOwnerMod:String = null;
+	public var isScriptedSubstate:Bool = false;
 
 	var _companionClosing:Bool = false;
 

@@ -36,6 +36,8 @@ class FunkinLua
 	public var modFolder:String = null;
 	public var closed:Bool = false;
 	public var context:LuaHostContext = null;
+	public var luaMode(default, null):String = 'compat';
+	public var rawLua(default, null):Bool = false;
 	public var autoCallOnCreate:Bool = true;
 	var hookCache:Map<String, Bool> = new Map();
 
@@ -94,6 +96,11 @@ class FunkinLua
 		}
 		#end
 
+		luaMode = resolveLuaMode();
+		rawLua = false; // Real Lua/proxy mode is not enabled yet; luaMode is exposed as the requested mode.
+		context.modFolder = this.modFolder;
+		context.luaMode = luaMode;
+
 		// Lua shit
 		set('Function_StopLua', LuaUtils.Function_StopLua);
 		set('Function_StopHScript', LuaUtils.Function_StopHScript);
@@ -111,6 +118,9 @@ class FunkinLua
 
 		set('PlusVersion', MainMenuState.plusEngineVersion.trim());
 		set('modFolder', this.modFolder);
+		set('luaMode', luaMode);
+		set('requestedLuaMode', luaMode);
+		set('rawLua', rawLua);
 		set('scriptHostType', Std.string(context.kind));
 		set('inPlayState', context.isPlayState() && game != null);
 		set('stateName', context.name);
@@ -383,6 +393,14 @@ class FunkinLua
 		{
 			return Std.string(context.kind);
 		});
+		Lua_helper.add_callback(lua, "getLuaMode", function()
+		{
+			return luaMode;
+		});
+		Lua_helper.add_callback(lua, "isRawLua", function()
+		{
+			return rawLua;
+		});
 		Lua_helper.add_callback(lua, "getStateName", function()
 		{
 			return context.name;
@@ -425,6 +443,33 @@ class FunkinLua
 			var sub:Dynamic = parent != null ? Reflect.getProperty(parent, 'subState') : null;
 			return callHostFunction(sub, funcName, args);
 		});
+
+		#if HSCRIPT_ALLOWED
+		Lua_helper.add_callback(lua, "switchToState", function(name:String, ?args:Array<Dynamic>)
+		{
+			return scripting.ScriptedStates.switchToState(name, args);
+		});
+		Lua_helper.add_callback(lua, "openScriptedSubstate", function(name:String, ?args:Array<Dynamic>)
+		{
+			return scripting.ScriptedStates.openSubstate(name, args);
+		});
+		Lua_helper.add_callback(lua, "launchMod", function(folder:String)
+		{
+			return scripting.ScriptedStates.launchMod(folder);
+		});
+		Lua_helper.add_callback(lua, "exitToEngine", function()
+		{
+			scripting.ScriptedStates.exitToEngine();
+		});
+		Lua_helper.add_callback(lua, "setExitTarget", function(name:String)
+		{
+			PlayState.setExitTarget(name);
+		});
+		Lua_helper.add_callback(lua, "exitToState", function(name:String)
+		{
+			PlayState.exitToState(name);
+		});
+		#end
 
 		Lua_helper.add_callback(lua, "addLuaScript", function(luaFile:String, ?ignoreAlreadyRunning:Bool = false)
 		{
@@ -2020,6 +2065,7 @@ class FunkinLua
 		ShaderFunctions.implement(this);
 		DeprecatedFunctions.implement(this);
 		LegacyCompatFunctions.implement(this);
+		#if AWAY3D_ALLOWED Mesh3DFunctions.implement(this); #end
 		#if MODCHARTS_NOTITG_ALLOWED LuaModchart.implement(this); #end
 		#if WINDOWS_FUNCTIONS_ALLOWED WindowsFunctions.implement(this); #end
 		#if (WINDOWS_FUNCTIONS_ALLOWED && GDI_ENABLED) WindowsGDIFunctions.implement(this); #end
@@ -2069,6 +2115,49 @@ class FunkinLua
 
 		if (autoCallOnCreate)
 			call('onCreate', []);
+	}
+
+	static inline var LUAMODE_SCAN_BYTES:Int = 1024;
+
+	function resolveLuaMode():String
+	{
+		var directive:Null<String> = scanLuaModeDirective();
+		if (directive != null)
+			return directive;
+
+		#if MODS_ALLOWED
+		if (modFolder != null && modFolder.length > 0)
+			return Mods.getLuaMode(modFolder);
+		#end
+
+		return 'compat';
+	}
+
+	function scanLuaModeDirective():Null<String>
+	{
+		try
+		{
+			if (!FileSystem.exists(scriptName))
+				return null;
+
+			var raw:String = File.getContent(scriptName);
+			if (raw == null || raw.length < 1)
+				return null;
+
+			var head:String = raw.length > LUAMODE_SCAN_BYTES ? raw.substr(0, LUAMODE_SCAN_BYTES) : raw;
+			var idx:Int = head.indexOf('@luamode');
+			if (idx < 0)
+				return null;
+
+			var rest:String = head.substr(idx + 8, 32).toLowerCase();
+			if (rest.indexOf('raw') >= 0)
+				return 'raw';
+			if (rest.indexOf('compat') >= 0)
+				return 'compat';
+		}
+		catch (_:Dynamic) {}
+
+		return null;
 	}
 
 	// main
@@ -2168,6 +2257,9 @@ class FunkinLua
 		closed = true;
 
 		scriptsByState.remove(this);
+		#if AWAY3D_ALLOWED
+		Mesh3DRenderer.removeByOwner(scriptName);
+		#end
 
 		if (lua == null)
 		{

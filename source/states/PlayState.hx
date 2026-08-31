@@ -433,6 +433,7 @@ class PlayState extends MusicBeatState
 	public static var campaignMisses:Int = 0;
 	public static var seenCutscene:Bool = false;
 	public static var deathCounter:Int = 0;
+	public static var returnToScriptedState:String = null;
 
 	// Variables para acumular estadísticas de toda la semana
 	public static var campaignFlawlesss:Int = 0;
@@ -4458,6 +4459,46 @@ class PlayState extends MusicBeatState
 
 	public var transitioning = false;
 
+	public static function exitToScriptedStateIfNeeded():Bool
+	{
+		#if HSCRIPT_ALLOWED
+		var explicitTarget:String = returnToScriptedState;
+		returnToScriptedState = null;
+
+		if (Mods.launchedMod == null || Mods.launchedMod.length < 1 || !Mods.isLaunchable(Mods.launchedMod))
+			return false;
+
+		var target:String = explicitTarget;
+		if (target == null || target.length < 1)
+			target = scripting.ScriptedStates.activeScriptedState;
+		if (target == null || target.length < 1)
+			target = Mods.getEntryState(Mods.launchedMod);
+		if (target == null || target.length < 1)
+			return false;
+
+		FlxG.sound.playMusic(Paths.music(Mods.getMenuMusic(Mods.launchedMod)), 0);
+		MusicBeatState.switchState(new scripting.ScriptedStates.ScriptedReturnState(target, scripting.ScriptedStates.ResolveScope.LAUNCHED));
+		return true;
+		#else
+		return false;
+		#end
+	}
+
+	public static function setExitTarget(name:String):Void
+	{
+		returnToScriptedState = name;
+	}
+
+	public static function exitToState(name:String):Void
+	{
+		returnToScriptedState = name;
+		if (exitToScriptedStateIfNeeded())
+			return;
+
+		FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
+		MusicBeatState.switchState(states.FreeplayStateSelector.create());
+	}
+
 	public function endSong()
 	{
 		mobileControls.instance.visible = #if !android touchPad.visible = #end
@@ -4522,9 +4563,7 @@ class PlayState extends MusicBeatState
 			{
 				if (ClientPrefs.data.resultsStateAtEnd && !cpuControlled)
 				{
-					#if !FEATURE_POLYMOD_MODS
 					FlxG.sound.playMusic(Paths.music('freakyMenu'), 0.7, true);
-					#end
 
 					MusicBeatState.switchState(backend.ScriptableState.tryCreate('ResultsState', new ResultsState({
 						score: songScore,
@@ -4552,12 +4591,15 @@ class PlayState extends MusicBeatState
 				else
 				{
 					trace('WENT BACK TO FREEPLAY??');
-					Mods.loadTopMod();
 					#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
 
 					canResync = false;
-					MusicBeatState.switchState(FreeplayStateSelector.create());
-					FlxG.sound.playMusic(Paths.music('freakyMenu'));
+					if (!exitToScriptedStateIfNeeded())
+					{
+						Mods.loadTopMod();
+						MusicBeatState.switchState(FreeplayStateSelector.create());
+						FlxG.sound.playMusic(Paths.music('freakyMenu'));
+					}
 					changedDifficulty = false;
 					transitioning = true;
 					return true;

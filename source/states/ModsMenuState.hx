@@ -6,7 +6,6 @@ import backend.ScriptableState;
 import flixel.FlxBasic;
 import flixel.graphics.FlxGraphic;
 import flash.geom.Rectangle;
-import haxe.Json;
 import flixel.util.FlxSpriteUtil;
 import objects.AttachedSprite;
 import options.ModSettingsSubState;
@@ -79,7 +78,7 @@ class ModsMenuState extends MusicBeatState {
 
 	public function new(startMod:String = null, vsliceMode:Bool = false, returnToSelector:Bool = false) {
 		this.startMod = startMod;
-		this.vsliceMode = vsliceMode;
+		this.vsliceMode = false;
 		this.returnToSelector = returnToSelector;
 		super();
 	}
@@ -89,11 +88,8 @@ class ModsMenuState extends MusicBeatState {
 		Paths.clearUnusedMemory();
 		persistentUpdate = false;
 
-		modsList = vsliceMode ? Mods.parseVSliceList() : Mods.parseList();
-		if (vsliceMode)
-			Mods.loadTopVSliceMod();
-		else
-			Mods.loadTopMod();
+		modsList = Mods.parseList();
+		Mods.loadTopMod();
 
 		#if DISCORD_ALLOWED
 		DiscordClient.changePresence("In the Mod Browser", null);
@@ -143,7 +139,7 @@ class ModsMenuState extends MusicBeatState {
 
 		modsGroup = new FlxTypedGroup<ModItem>();
 		for (mod in modsList.all)
-			modsGroup.add(new ModItem(mod, vsliceMode));
+			modsGroup.add(new ModItem(mod));
 
 		// ---- Right: Banner ----
 		var rightX = listX + listW + 16;
@@ -227,8 +223,7 @@ class ModsMenuState extends MusicBeatState {
 		add(modsGroup);
 
 		hintBar = new FlxText(margin, FlxG.height - 18, FlxG.width - margin * 2,
-			vsliceMode ? 'UP/DOWN Select   L/R Reorder   SPACE On/Off (SHIFT=All)   F Filter   / Search   ESC Exit'
-				: 'UP/DOWN Select   L/R Reorder   ENTER Launch   SPACE On/Off (SHIFT=All)   TAB Settings   Y Security   F Filter   / Search   ESC Exit',
+			'UP/DOWN Select   L/R Reorder   ENTER Launch   SPACE On/Off (SHIFT=All)   TAB Settings   Y Security   F Filter   / Search   ESC Exit',
 			15);
 		hintBar.setFormat(Paths.font("vcr.ttf"), 15, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		hintBar.alpha = 0.7;
@@ -398,9 +393,9 @@ class ModsMenuState extends MusicBeatState {
 					toggleSelected();
 			} else if (controls.ACCEPT)
 				launchSelected();
-			else if (!vsliceMode && (FlxG.keys.justPressed.TAB || FlxG.gamepads.anyJustPressed(X)))
+			else if (FlxG.keys.justPressed.TAB || FlxG.gamepads.anyJustPressed(X))
 				openSelectedSettings();
-			else if (!vsliceMode && FlxG.keys.justPressed.Y)
+			else if (FlxG.keys.justPressed.Y)
 				openSelectedSecurity();
 			else if (FlxG.keys.justPressed.F)
 				cycleFilter();
@@ -414,11 +409,8 @@ class ModsMenuState extends MusicBeatState {
 			nextAttempt -= elapsed;
 			if (nextAttempt < 0) {
 				nextAttempt = 1;
-				if (vsliceMode)
-					@:privateAccess Mods.updateVSliceModList();
-				else
-					@:privateAccess Mods.updateModList();
-				modsList = vsliceMode ? Mods.parseVSliceList() : Mods.parseList();
+				@:privateAccess Mods.updateModList();
+				modsList = Mods.parseList();
 				if (modsList.all.length > 0) {
 					trace('mod(s) found! reloading');
 					reload();
@@ -593,7 +585,7 @@ class ModsMenuState extends MusicBeatState {
 		descHeader.visible = descTxt.visible = true;
 		descHeader.y = cy;
 		cy += 28;
-		descTxt.text = trimTo(m.desc + (m.vsliceMode ? m.getVSliceDetails() : ''), 320);
+		descTxt.text = trimTo(m.desc, 320);
 		descTxt.y = cy;
 		cy += descTxt.height + 16;
 
@@ -620,17 +612,14 @@ class ModsMenuState extends MusicBeatState {
 		var enabled = !modsList.disabled.contains(m.folder);
 		enableBtn.setText(enabled ? Language.getPhrase('disable_button', 'DISABLE') : Language.getPhrase('enable_button', 'ENABLE'));
 		settingsBtn.enabled = (m.settings != null && m.settings.length > 0);
-		launchBtn.enabled = !vsliceMode && enabled && m.launchable;
+		launchBtn.enabled = enabled && m.launchable;
 
 		updateLaunchStatus(m, enabled);
 	}
 
 	function updateLaunchStatus(m:ModItem, enabled:Bool) {
 		#if HSCRIPT_ALLOWED
-		if (vsliceMode) {
-			launchStatus.text = 'VSlice mod list';
-			launchStatus.color = FlxColor.GRAY;
-		} else if (!enabled) {
+		if (!enabled) {
 			launchStatus.text = 'Disabled - enable to launch';
 			launchStatus.color = FlxColor.GRAY;
 		} else if (m.launchable) {
@@ -654,7 +643,7 @@ class ModsMenuState extends MusicBeatState {
 		var m = currentMod();
 		if (m == null)
 			return;
-		if (vsliceMode || modsList.disabled.contains(m.folder) || !Mods.isLaunchable(m.folder)) {
+		if (modsList.disabled.contains(m.folder) || !Mods.isLaunchable(m.folder)) {
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			return;
 		}
@@ -663,9 +652,8 @@ class ModsMenuState extends MusicBeatState {
 		persistentUpdate = false;
 		FlxG.mouse.visible = false;
 		FlxG.autoPause = ClientPrefs.data.autoPause;
-		Mods.currentModDirectory = m.folder;
-		Mods.pushGlobalMods();
-		MusicBeatState.switchState(ScriptableState.tryCreate(Mods.getLaunchState(m.folder), new MainMenuState()));
+		if (!scripting.ScriptedStates.launchMod(m.folder))
+			MusicBeatState.switchState(new MainMenuState());
 		#else
 		FlxG.sound.play(Paths.sound('cancelMenu'));
 		#end
@@ -681,7 +669,7 @@ class ModsMenuState extends MusicBeatState {
 			modsList.disabled.push(mod);
 		} else {
 			#if MODS_ALLOWED
-			if (!vsliceMode && ClientPrefs.data.modSecurityEnabled && backend.ModSecurity.hasFindings(mod)) {
+			if (ClientPrefs.data.modSecurityEnabled && backend.ModSecurity.hasFindings(mod)) {
 				FlxG.sound.play(Paths.sound('confirmMenu'), 0.6);
 				launchStatus.text = 'Sensitive scripts detected - choose TRUST to enable';
 				launchStatus.color = FlxColor.YELLOW;
@@ -766,7 +754,7 @@ class ModsMenuState extends MusicBeatState {
 			var isDisabled = modsList.disabled.contains(mod);
 			if (anyDisabled && isDisabled) {
 				#if MODS_ALLOWED
-				if (!vsliceMode && ClientPrefs.data.modSecurityEnabled && backend.ModSecurity.hasFindings(mod))
+				if (ClientPrefs.data.modSecurityEnabled && backend.ModSecurity.hasFindings(mod))
 					continue;
 				#end
 				modsList.disabled.remove(mod);
@@ -781,7 +769,7 @@ class ModsMenuState extends MusicBeatState {
 			}
 		}
 		#if MODS_ALLOWED
-		if (anyDisabled && !vsliceMode && ClientPrefs.data.modSecurityEnabled) {
+		if (anyDisabled && ClientPrefs.data.modSecurityEnabled) {
 			var risky:Array<String> = [];
 			for (item in view)
 				if (modsList.disabled.contains(item.folder) && backend.ModSecurity.hasFindings(item.folder))
@@ -896,7 +884,7 @@ class ModsMenuState extends MusicBeatState {
 		FlxTransitionableState.skipNextTransIn = true;
 		FlxTransitionableState.skipNextTransOut = true;
 		var m = currentMod();
-		MusicBeatState.switchState(new ModsMenuState(m != null ? m.folder : null, vsliceMode, returnToSelector));
+		MusicBeatState.switchState(new ModsMenuState(m != null ? m.folder : null, false, returnToSelector));
 	}
 
 	function exitMenu() {
@@ -914,7 +902,7 @@ class ModsMenuState extends MusicBeatState {
 			}
 			FlxG.camera.fade(FlxColor.BLACK, 0.5, false, FlxG.resetGame, false);
 		} else {
-			MusicBeatState.switchState(ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
+			MusicBeatState.switchState(new MainMenuState());
 		}
 
 		persistentUpdate = false;
@@ -923,17 +911,9 @@ class ModsMenuState extends MusicBeatState {
 	}
 
 	function saveTxt() {
-		Mods.saveList(modsList, vsliceMode);
-		if (vsliceMode)
-		{
-			Mods.parseVSliceList();
-			Mods.loadTopVSliceMod();
-		}
-		else
-		{
-			Mods.parseList();
-			Mods.loadTopMod();
-		}
+		Mods.saveList(modsList);
+		Mods.parseList();
+		Mods.loadTopMod();
 	}
 }
 
@@ -952,7 +932,6 @@ class ModItem extends FlxSpriteGroup {
 	public var folder:String = 'unknownMod';
 	public var mustRestart:Bool = false;
 	public var settings:Array<Dynamic> = null;
-	public var vsliceMode:Bool = false;
 
 	// Mod-browser content. Banner = banner.png (else the animated pack icon).
 	// Features = features.txt or pack.json "features". Changelog = changelog.txt
@@ -969,11 +948,10 @@ class ModItem extends FlxSpriteGroup {
 		super();
 
 		this.folder = folder;
-		this.vsliceMode = vsliceMode;
-		pack = vsliceMode ? getVSliceMeta(folder) : Mods.getPack(folder);
+		pack = Mods.getPack(folder);
 
 		var path:String = Paths.mods('$folder/data/settings.json');
-		if (!vsliceMode && FileSystem.exists(path)) {
+		if (FileSystem.exists(path)) {
 			try {
 				settings = cast tjson.TJSON.parse(File.getContent(path));
 			} catch (e:Dynamic) {
@@ -1002,9 +980,9 @@ class ModItem extends FlxSpriteGroup {
 		add(text);
 
 		var isPixel = false;
-		var file:String = vsliceMode ? Paths.vsliceMods('$folder/_polymod_icon.png') : Paths.mods('$folder/pack.png');
+		var file:String = Paths.mods('$folder/pack.png');
 		if (!FileSystem.exists(file)) {
-			file = vsliceMode ? Paths.vsliceMods('$folder/pack-pixel.png') : Paths.mods('$folder/pack-pixel.png');
+			file = Paths.mods('$folder/pack-pixel.png');
 			isPixel = true;
 		}
 
@@ -1015,21 +993,13 @@ class ModItem extends FlxSpriteGroup {
 			isPixel = false;
 
 		if (FileSystem.exists(file)) {
-			if (vsliceMode) {
-				icon.loadGraphic(Paths.cacheBitmap(file, bmp));
-				icon.setGraphicSize(75, 75);
-				icon.updateHitbox();
-			} else {
-				icon.loadGraphic(Paths.cacheBitmap(file, bmp), true, 150, 150);
-				if (isPixel)
-					icon.antialiasing = false;
-			}
+			icon.loadGraphic(Paths.cacheBitmap(file, bmp), true, 150, 150);
+			if (isPixel)
+				icon.antialiasing = false;
 		} else
 			icon.loadGraphic(Paths.image('unknownMod'), true, 150, 150);
-		if (!vsliceMode) {
-			icon.scale.set(0.5, 0.5);
-			icon.updateHitbox();
-		}
+		icon.scale.set(0.5, 0.5);
+		icon.updateHitbox();
 
 		this.name = folder;
 		if (pack != null) {
@@ -1050,32 +1020,32 @@ class ModItem extends FlxSpriteGroup {
 		text.text = this.name;
 
 		// Banner: banner.png only; otherwise the detail panel uses the icon.
-		var bannerFile:String = vsliceMode ? Paths.vsliceMods('$folder/banner.png') : Paths.mods('$folder/banner.png');
+		var bannerFile:String = Paths.mods('$folder/banner.png');
 		bannerPath = FileSystem.exists(bannerFile) ? bannerFile : null;
 
 		// Logo: logo.png replaces the mod-name text in the banner if present.
-		var logoFile:String = vsliceMode ? Paths.vsliceMods('$folder/logo.png') : Paths.mods('$folder/logo.png');
+		var logoFile:String = Paths.mods('$folder/logo.png');
 		logoPath = FileSystem.exists(logoFile) ? logoFile : null;
 
 		// Features: features.txt, else pack.json "features" (array or string).
-		var featFile:String = vsliceMode ? Paths.vsliceMods('$folder/features.txt') : Paths.mods('$folder/features.txt');
+		var featFile:String = Paths.mods('$folder/features.txt');
 		if (FileSystem.exists(featFile))
 			features = File.getContent(featFile);
 		else if (pack != null && pack.features != null)
 			features = (pack.features is Array) ? (cast(pack.features, Array<Dynamic>)).join('\n') : Std.string(pack.features);
 
 		// Changelog: changelog.txt, else pack.json "changelog".
-		var clFile:String = vsliceMode ? Paths.vsliceMods('$folder/changelog.txt') : Paths.mods('$folder/changelog.txt');
+		var clFile:String = Paths.mods('$folder/changelog.txt');
 		if (FileSystem.exists(clFile))
 			changelog = File.getContent(clFile);
 		else if (pack != null && pack.changelog != null)
 			changelog = (pack.changelog is Array) ? (cast(pack.changelog, Array<Dynamic>)).join('\n') : Std.string(pack.changelog);
 
 		#if HSCRIPT_ALLOWED
-		launchable = !vsliceMode && Mods.isLaunchable(folder);
+		launchable = Mods.isLaunchable(folder);
 		#end
 
-		if (bmp != null && !vsliceMode) {
+		if (bmp != null) {
 			totalFrames = Math.floor(bmp.width / 150) * Math.floor(bmp.height / 150);
 			icon.animation.add("icon", [for (i in 0...totalFrames) i], iconFps);
 			icon.animation.play("icon");
@@ -1084,92 +1054,6 @@ class ModItem extends FlxSpriteGroup {
 		selectBg.updateHitbox();
 	}
 
-	function getVSliceMeta(folder:String):Dynamic
-	{
-		var metaPath:String = Paths.vsliceMods('$folder/_polymod_meta.json');
-		if (FileSystem.exists(metaPath))
-		{
-			try
-			{
-				return Json.parse(File.getContent(metaPath));
-			}
-			catch (e:Dynamic)
-			{
-				trace('[ModsMenuState] Failed to parse _polymod_meta.json for $folder: $e');
-			}
-		}
-		return null;
-	}
-
-	public function getVSliceDetails():String
-	{
-		if (!vsliceMode || pack == null)
-			return '';
-
-		var lines:Array<String> = [];
-		addMetaLine(lines, 'Version', ['mod_version', 'modVersion', 'version']);
-		addMetaLine(lines, 'API', ['api_version', 'apiVersion', 'api']);
-		addMetaLine(lines, 'License', ['license']);
-
-		var contributors:String = getContributorsSummary();
-		if (contributors.length > 0)
-			lines.push('Contributors: ' + contributors);
-
-		return lines.length > 0 ? '\n\n' + lines.join('\n') : '';
-	}
-
-	function addMetaLine(lines:Array<String>, label:String, fields:Array<String>):Void
-	{
-		for (field in fields)
-		{
-			var value:Dynamic = Reflect.field(pack, field);
-			if (value == null)
-				continue;
-
-			var text:String = Std.string(value).trim();
-			if (text.length > 0)
-			{
-				lines.push(label + ': ' + text);
-				return;
-			}
-		}
-	}
-
-	function getContributorsSummary():String
-	{
-		var contributors:Dynamic = Reflect.field(pack, 'contributors');
-		if (contributors == null)
-			contributors = Reflect.field(pack, 'authors');
-		if (contributors == null)
-			contributors = Reflect.field(pack, 'author');
-		if (contributors == null)
-			return '';
-
-		if (Std.isOfType(contributors, Array))
-		{
-			var names:Array<String> = [];
-			for (entry in cast(contributors, Array<Dynamic>))
-			{
-				var name:String = null;
-				if (Std.isOfType(entry, String))
-					name = Std.string(entry);
-				else if (entry != null)
-				{
-					var raw:Dynamic = Reflect.field(entry, 'name');
-					if (raw == null)
-						raw = Reflect.field(entry, 'username');
-					if (raw != null)
-						name = Std.string(raw);
-				}
-				if (name != null && name.trim().length > 0)
-					names.push(name.trim());
-			}
-			return names.join(', ');
-		}
-
-		var text:String = Std.string(contributors).trim();
-		return text;
-	}
 }
 
 class MenuButton extends FlxSpriteGroup {

@@ -16,6 +16,8 @@ using StringTools;
 class ScriptRegistry {
 	public static final CLASS_ROOTS:Array<String> = ['scripts/classes/', 'classes/'];
 	public static inline var STAGE_PACKAGE:String = 'stages';
+	public static inline var STATE_PACKAGE:String = 'states';
+	public static inline var SUBSTATE_PACKAGE:String = 'substates';
 	public static inline var BASE_GAME_MOD:String = 'Friday Night Funkin';
 	public static inline var SHARED_WORLD:String = '';
 	public static var verbose:Bool = false;
@@ -75,6 +77,26 @@ class ScriptRegistry {
 		if (cls == null)
 			return null;
 
+		return instantiateClass(path, cls, args);
+	}
+
+	public static function instantiateResolved(path:String, file:String, mod:String, ?args:Array<Dynamic>):Dynamic {
+		if (file == null || file.length < 1)
+			return instantiate(path, args, mod);
+
+		var type:IScriptedType = worldFor(mod).resolve(path, file);
+		if (type == null)
+			return null;
+
+		if (!(type is ScriptedClass)) {
+			HScript.error('Scripted type "$path" is not a class', errPos(path));
+			return null;
+		}
+
+		return instantiateClass(path, cast type, args);
+	}
+
+	static function instantiateClass(path:String, cls:ScriptedClass, ?args:Array<Dynamic>):Dynamic {
 		makeSafe(cls);
 
 		if (cls.failed || !cls.initialized) {

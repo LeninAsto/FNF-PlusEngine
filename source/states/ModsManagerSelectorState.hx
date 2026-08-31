@@ -30,11 +30,6 @@ class ModsManagerSelectorState extends MusicBeatState
 				label: Language.getPhrase('mods_manager_plus', 'Plus / Psych Mods'),
 				description: Language.getPhrase('mods_manager_plus_desc', 'Classic mods from the mods folder.'),
 				vsliceMode: false
-			},
-			{
-				label: Language.getPhrase('mods_manager_vslice', 'VSlice Mods'),
-				description: Language.getPhrase('mods_manager_vslice_desc', 'Official Funkin/Polymod mods from vslice_mods.'),
-				vsliceMode: true
 			}
 		];
 
@@ -142,12 +137,7 @@ class ModsManagerSelectorState extends MusicBeatState
 	{
 		selected = true;
 		FlxG.sound.play(Paths.sound('confirmMenu'));
-
-		var option:ModManagerOption = options[curSelected];
-		if (option.vsliceMode)
-			MusicBeatState.switchState(backend.ScriptableState.tryCreate('ModsMenuState', new ModsMenuState(null, true, true)));
-		else
-			MusicBeatState.switchState(backend.ScriptableState.tryCreate('ModsMenuState', new ModsMenuState(null, false, true)));
+		MusicBeatState.switchState(backend.ScriptableState.tryCreate('ModsMenuState', new ModsMenuState(null, false, true)));
 	}
 }
 

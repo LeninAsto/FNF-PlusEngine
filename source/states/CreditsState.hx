@@ -7,7 +7,6 @@ import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
-import haxe.Json;
 
 class CreditsState extends MusicBeatState
 {
@@ -46,7 +45,6 @@ class CreditsState extends MusicBeatState
 		#if MODS_ALLOWED
 		for (mod in Mods.parseList().enabled)
 			pushModCreditsToList(mod);
-		pushVSliceModCreditsToList();
 		#end
 
 		var defaultList:Array<Array<String>> = [
@@ -493,85 +491,6 @@ class CreditsState extends MusicBeatState
 		}
 	}
 
-	function pushVSliceModCreditsToList():Void
-	{
-		var addedAny:Bool = false;
-		var seen:Map<String, Bool> = new Map<String, Bool>();
-
-		for (folder in Mods.parseVSliceList().enabled)
-		{
-			var metaPath:String = Paths.vsliceMods(folder + '/_polymod_meta.json');
-			if (!FileSystem.exists(metaPath))
-				continue;
-
-			try
-			{
-				var meta:Dynamic = Json.parse(File.getContent(metaPath));
-				var title:String = getMetaString(meta, ['title', 'name', 'id'], folder);
-				var contributors:Dynamic = Reflect.field(meta, 'contributors');
-				if (contributors == null || !Std.isOfType(contributors, Array))
-					continue;
-
-				if (!addedAny)
-				{
-					creditsStuff.push(['']);
-					creditsStuff.push(['VSlice Mod Contributors']);
-					addedAny = true;
-				}
-
-				creditsStuff.push([title]);
-				for (entry in (cast contributors : Array<Dynamic>))
-				{
-					var name:String = '';
-					var role:String = '';
-					var url:String = '';
-
-					if (Std.isOfType(entry, String))
-						name = Std.string(entry);
-					else
-					{
-						name = getMetaString(entry, ['name'], '');
-						role = getMetaString(entry, ['role'], '');
-						url = getMetaString(entry, ['url', 'link'], '');
-					}
-
-					name = name.trim();
-					if (name.length < 1)
-						continue;
-
-					var key:String = (name + '|' + url).toLowerCase();
-					if (seen.exists(key))
-						continue;
-					seen.set(key, true);
-
-					var desc:String = role.length > 0 ? role + ' - ' + title : 'Contributor - ' + title;
-					creditsStuff.push([name, '', desc, url, 'D8B4FE']);
-				}
-			}
-			catch (e:Dynamic)
-			{
-				trace('[CreditsState] Failed to parse VSlice credits for $folder: $e');
-			}
-		}
-
-		if (addedAny)
-			creditsStuff.push(['']);
-	}
-
-	function getMetaString(meta:Dynamic, fields:Array<String>, fallback:String):String
-	{
-		for (field in fields)
-		{
-			var value:Dynamic = Reflect.field(meta, field);
-			if (value == null)
-				continue;
-
-			var text:String = Std.string(value).trim();
-			if (text.length > 0)
-				return text;
-		}
-		return fallback;
-	}
 	#end
 
 	private function unselectableCheck(num:Int):Bool

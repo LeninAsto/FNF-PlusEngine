@@ -150,6 +150,18 @@ class ScriptGlobals {
 		set('removeVar', removeVar);
 		set('debugPrint', debugPrint);
 		set('switchState', switchState);
+		set('switchToState', function(name:String, ?args:Array<Dynamic>):Bool return ScriptedStates.switchToState(name, args));
+		set('openScriptedSubstate', function(name:String, ?args:Array<Dynamic>):Bool return ScriptedStates.openSubstate(name, args));
+		set('launchMod', function(folder:String):Bool return ScriptedStates.launchMod(folder));
+		set('exitToEngine', function():Void {
+			ScriptedStates.exitToEngine();
+		});
+		set('setExitTarget', function(name:String):Void {
+			states.PlayState.setExitTarget(name);
+		});
+		set('exitToState', function(name:String):Void {
+			states.PlayState.exitToState(name);
+		});
 		set('buildScripted', function(path:String, ?args:Array<Dynamic>):Dynamic return ScriptRegistry.instantiate(path, args, mod));
 		set('scriptedClass', function(path:String):Dynamic return ScriptRegistry.resolveClass(path, mod));
 		set('getModSetting', function(saveTag:String, ?modName:String):Dynamic {

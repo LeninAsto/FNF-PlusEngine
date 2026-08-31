@@ -188,6 +188,27 @@ class Main extends Sprite
 		});
 		#end
 
+		#if HSCRIPT_ALLOWED
+		FlxG.signals.preStateCreate.add(function(state:FlxState)
+		{
+			if (state != null && Std.isOfType(state, backend.MusicBeatState))
+			{
+				var musicState:backend.MusicBeatState = cast state;
+				if (musicState.isScriptedState)
+				{
+					#if MODS_ALLOWED
+					if (musicState.scriptOwnerMod != null)
+					{
+						Mods.currentModDirectory = musicState.scriptOwnerMod;
+						Mods.pushGlobalMods();
+					}
+					#end
+					musicState.initPsychCamera();
+				}
+			}
+		});
+		#end
+
 		addChild(new FlxGame(game.width, game.height, game.initialState, game.framerate, game.framerate, game.skipSplash, game.startFullscreen));
 		initializeMaterialVolumeTray();
 		backend.RenderInterpolation.install();

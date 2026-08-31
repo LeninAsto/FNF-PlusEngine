@@ -492,18 +492,22 @@ class PauseSubState extends MusicBeatSubstate
 					OptionsState.onPlayState = true;
 				case "Exit to menu":
 					#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
+					PlayState.instance.callOnScripts(scripting.ScriptHooks.SONG_EXIT);
 					PlayState.deathCounter = 0;
 					PlayState.seenCutscene = false;
 
 					PlayState.instance.canResync = false;
 
-					Mods.loadTopMod();
-					if (PlayState.isStoryMode)
-						MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
-					else
-						MusicBeatState.switchState(states.FreeplayStateSelector.create());
+					if (!PlayState.exitToScriptedStateIfNeeded())
+					{
+						Mods.loadTopMod();
+						if (PlayState.isStoryMode)
+							MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
+						else
+							MusicBeatState.switchState(states.FreeplayStateSelector.create());
 
-					FlxG.sound.playMusic(Paths.music('freakyMenu'));
+						FlxG.sound.playMusic(Paths.music('freakyMenu'));
+					}
 					PlayState.changedDifficulty = false;
 					PlayState.chartingMode = false;
 					FlxG.camera.followLerp = 0;

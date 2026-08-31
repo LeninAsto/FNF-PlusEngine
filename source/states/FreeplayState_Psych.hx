@@ -16,10 +16,6 @@ import sys.io.File;
 import haxe.io.Path;
 #end
 import haxe.Json;
-#if FEATURE_POLYMOD_MODS
-import funkin.plus.VSliceFreeplayBridge;
-import funkin.plus.VSliceFreeplayBridge.VSliceFreeplaySong;
-#end
 
 class FreeplayState_Psych extends MusicBeatState
 {
@@ -74,15 +70,7 @@ class FreeplayState_Psych extends MusicBeatState
 		final accept:String = (controls.mobileC) ? "A" : "ACCEPT";
 		final reject:String = (controls.mobileC) ? "B" : "BACK";
 
-		var vsliceSongs:Array<Dynamic> = [];
-		#if FEATURE_POLYMOD_MODS
-		vsliceSongs = cast VSliceFreeplayBridge.listSongs();
-		trace('[VSliceFreeplayTrace] Psych Freeplay weeks=${WeekData.weeksList.length} vsliceSongs=${vsliceSongs.length}');
-		#else
-		trace('[VSliceFreeplayTrace] Psych Freeplay FEATURE_POLYMOD_MODS disabled');
-		#end
-
-		if (WeekData.weeksList.length < 1 && vsliceSongs.length < 1)
+		if (WeekData.weeksList.length < 1)
 		{
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
@@ -120,7 +108,6 @@ class FreeplayState_Psych extends MusicBeatState
 			}
 		}
 		Mods.loadTopMod();
-		appendVSliceSongs(vsliceSongs);
 
 		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
@@ -139,10 +126,8 @@ class FreeplayState_Psych extends MusicBeatState
 			songText.scaleX = Math.min(1, 980 / songText.width);
 			songText.snapToPosition();
 
-			Mods.currentModDirectory = songs[i].isVSlice ? '' : songs[i].folder;
-			Mods.currentVSliceModDirectory = songs[i].isVSlice ? songs[i].vsliceMod : '';
+			Mods.currentModDirectory = songs[i].folder;
 			var icon:HealthIcon = new HealthIcon(songs[i].songCharacter);
-			Mods.currentVSliceModDirectory = '';
 			icon.sprTracker = songText;
 
 			songText.visible = songText.active = songText.isMenuItem = false;
@@ -246,31 +231,6 @@ class FreeplayState_Psych extends MusicBeatState
 	public function addSong(songName:String, weekNum:Int, songCharacter:String, color:Int)
 	{
 		songs.push(new SongMetadataPsych(songName, weekNum, songCharacter, color));
-	}
-
-	function appendVSliceSongs(vsliceSongs:Array<Dynamic>):Void
-	{
-		#if FEATURE_POLYMOD_MODS
-		trace('[VSliceFreeplayTrace] Psych appendVSliceSongs count=${vsliceSongs.length} currentSongs=${songs.length}');
-		for (entry in vsliceSongs)
-		{
-			var diffs:Array<String> = entry.difficulties != null ? entry.difficulties.copy() : [];
-			trace('[VSliceFreeplayTrace] Psych append song display="${entry.displayName}" id="${entry.songId}" mod="${entry.modDir}" variation="${entry.variation}" diffs=${diffs.join(",")} root="${entry.rootPath}"');
-			var song:SongMetadataPsych = new SongMetadataPsych(entry.displayName, -1, entry.icon, entry.color);
-			song.folder = '';
-			song.isVSlice = true;
-			song.vsliceMod = entry.modDir;
-			song.vsliceSongId = entry.songId;
-			song.vsliceVariation = entry.variation;
-			song.vsliceDifficulties = diffs;
-			song.vsliceRootPath = entry.rootPath;
-			song.vsliceInstrumental = entry.instrumental;
-			song.vslicePreviewStartSeconds = entry.previewStartSeconds;
-			song.vslicePreviewEndSeconds = entry.previewEndSeconds;
-			songs.push(song);
-		}
-		trace('[VSliceFreeplayTrace] Psych appendVSliceSongs done totalSongs=${songs.length}');
-		#end
 	}
 
 	function weekIsLocked(name:String):Bool
@@ -419,14 +379,6 @@ class FreeplayState_Psych extends MusicBeatState
 		}
 		else if (FlxG.keys.justPressed.SPACE || touchActionReleased(touchPad.buttonX))
 		{
-			if (songs[curSelected].isVSlice)
-			{
-				FlxG.sound.play(Paths.sound('cancelMenu'), 0.35);
-				updateTexts(elapsed);
-				super.update(elapsed);
-				return;
-			}
-
 			if (instPlaying != curSelected && !player.playingMusic)
 			{
 				destroyFreeplayVocals();
@@ -503,15 +455,6 @@ class FreeplayState_Psych extends MusicBeatState
 		else if ((controls.ACCEPT || touchActionReleased(touchPad.buttonA)) && !player.playingMusic)
 		{
 			persistentUpdate = false;
-			if (songs[curSelected].isVSlice)
-			{
-				stopMusicPlay = true;
-				destroyFreeplayVocals();
-				#if FEATURE_POLYMOD_MODS
-				VSliceFreeplayBridge.play(songs[curSelected].toVSliceEntry(), curDifficulty);
-				#end
-				return;
-			}
 
 			var songLowercase:String = Paths.formatToSongPath(songs[curSelected].songName);
 			var poop:String = Highscore.formatSong(songLowercase, curDifficulty);
@@ -654,21 +597,9 @@ class FreeplayState_Psych extends MusicBeatState
 			}
 		}
 
-		if (songs[curSelected].isVSlice)
-		{
-			Mods.currentModDirectory = '';
-			Mods.currentVSliceModDirectory = songs[curSelected].vsliceMod;
-			PlayState.storyWeek = -1;
-			Difficulty.list = songs[curSelected].vsliceDifficulties != null
-				&& songs[curSelected].vsliceDifficulties.length > 0 ? songs[curSelected].vsliceDifficulties.copy() : ['normal'];
-		}
-		else
-		{
-			Mods.currentVSliceModDirectory = '';
-			Mods.currentModDirectory = songs[curSelected].folder;
-			PlayState.storyWeek = songs[curSelected].week;
-			Difficulty.loadFromWeek();
-		}
+		Mods.currentModDirectory = songs[curSelected].folder;
+		PlayState.storyWeek = songs[curSelected].week;
+		Difficulty.loadFromWeek();
 
 		var savedDiff:String = songs[curSelected].lastDifficulty;
 		var lastDiff:Int = Difficulty.list.indexOf(lastDifficultyName);
@@ -800,15 +731,6 @@ class SongMetadataPsych
 	public var color:Int = -7179779;
 	public var folder:String = "";
 	public var lastDifficulty:String = null;
-	public var isVSlice:Bool = false;
-	public var vsliceMod:String = "";
-	public var vsliceSongId:String = "";
-	public var vsliceVariation:String = "default";
-	public var vsliceDifficulties:Array<String> = [];
-	public var vsliceRootPath:String = "";
-	public var vsliceInstrumental:String = "";
-	public var vslicePreviewStartSeconds:Null<Float> = null;
-	public var vslicePreviewEndSeconds:Null<Float> = null;
 
 	public function new(song:String, week:Int, songCharacter:String, color:Int)
 	{
@@ -820,25 +742,5 @@ class SongMetadataPsych
 		if (this.folder == null)
 			this.folder = '';
 	}
-
-	#if FEATURE_POLYMOD_MODS
-	public function toVSliceEntry():VSliceFreeplaySong
-	{
-		return {
-			songId: vsliceSongId,
-			displayName: songName,
-			modDir: vsliceMod,
-			levelId: '',
-			icon: songCharacter,
-			color: color,
-			difficulties: vsliceDifficulties.copy(),
-			variation: vsliceVariation,
-			rootPath: vsliceRootPath,
-			instrumental: vsliceInstrumental,
-			previewStartSeconds: vslicePreviewStartSeconds,
-			previewEndSeconds: vslicePreviewEndSeconds
-		};
-	}
-	#end
 }
 

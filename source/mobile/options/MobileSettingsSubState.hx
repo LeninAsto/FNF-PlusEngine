@@ -74,12 +74,6 @@ class MobileSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		
 		option = new Option('Touch Pointer', 'If checked, shows a touch pointer overlay for taps and drags.', 'showTouchPointer', BOOL);
-		option.onChange = () ->
-		{
-			#if vslice
-			funkin.plus.VSliceRuntime.syncTouchPointer();
-			#end
-		};
 		addOption(option);
 
 		option = new Option('Mobile Trace Button', 'If checked, shows the trace touch button on mobile builds.', 'showMobileDebugButtons', BOOL);
