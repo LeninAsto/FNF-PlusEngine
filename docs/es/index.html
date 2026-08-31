@@ -1,0 +1,164 @@
+<!doctype html>
+<html lang="es" data-theme="auto">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plus Engine</title>
+    <meta
+      name="description"
+      content="Portal de documentación de Plus Engine con resumen del proyecto, video de presentación y enlaces a Psych y Plus."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="../assets/favicon.ico" />
+    <link rel="stylesheet" href="../assets/site.css" />
+    <script defer src="../assets/site.js"></script>
+  </head>
+  <body class="welcome-body">
+    <div class="ambient ambient-a"></div>
+    <div class="ambient ambient-b"></div>
+
+    <header class="topbar">
+      <a class="brand" href="../">
+        <img src="../assets/pluslogo.png" alt="Plus Engine" class="brand-logo plus-logo" />
+      </a>
+      <nav class="top-actions">
+        <a class="text-link" href="../">English</a>
+        <a class="text-link" href="./">Español</a>
+        <button id="themeToggle" class="icon-btn" type="button" aria-label="Cambiar tema">
+          Tema: Auto
+        </button>
+      </nav>
+    </header>
+
+    <main class="welcome-main">
+      <section class="hero card home-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Plus Engine</p>
+          <h1>Resumen del proyecto y portal de documentación</h1>
+          <p>
+            Plus Engine está basado en Psych 1.0.4 y mantiene una dirección de modcharts
+            inspirada en NotITG. Además, soporta reproducción de video hxcodec desde las
+            versiones 0.6.3 y 0.7.3 de Psych mod.
+          </p>
+          <p>
+            Este portal presenta el resumen del proyecto, las rutas de documentación de Psych y
+            Plus, y el material de presentación del engine.
+          </p>
+          <div class="cta-row">
+            <a class="btn btn-filled" href="psych/">API Lua de Psych</a>
+            <a class="btn btn-outlined" href="plus/">API Lua de Plus</a>
+          </div>
+        </div>
+
+        <img
+          src="../assets/pluslogo.png"
+          alt="Logo de Plus Engine"
+          class="home-logo"
+          draggable="false"
+        />
+      </section>
+
+      <section class="home-grid">
+        <article class="card home-card wide">
+          <h2>Resumen del proyecto</h2>
+          <p>
+            El archivo README describe Plus Engine como una bifurcación basada en Haxe, que cuenta con una
+            interfaz de Material Design, compatibilidad con Android, diversas opciones de idioma y
+            herramientas de modificación que conservan la estructura original del motor.
+          </p>
+          <div class="stat-grid">
+            <div class="stat-box">
+              <div class="stat-label">Base</div>
+              <div class="stat-value">Psych 1.0.4</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Video</div>
+              <div class="stat-value">hxvlc</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Idiomas</div>
+              <div class="stat-value">5+</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Plataforma</div>
+              <div class="stat-value">Multi</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card home-card half">
+          <h2>Puntos clave del README</h2>
+          <ul class="plain-list">
+            <li>Modcharts inspirados en NotITG.</li>
+            <li>Presentación Material Design para el portal de documentación.</li>
+            <li>Soporte para móvil, escritorio y dominios personalizados.</li>
+            <li>Versiones en varios idiomas para el portal y las páginas.</li>
+            <li>Créditos, colaboradores y enlaces comunitarios visibles.</li>
+          </ul>
+        </article>
+
+        <article class="card home-card half">
+          <h2>Video de presentación</h2>
+          <p class="sidebar-copy">
+            Vista previa local de la introducción del proyecto usando <code>present.mp4</code>.
+          </p>
+          <div style="margin-top: 0.8rem;">
+            <video class="video-frame" controls preload="metadata" poster="../assets/pluslogo.png">
+              <source src="../assets/videos/present.mp4" type="video/mp4" />
+              Tu navegador no soporta el elemento de video.
+            </video>
+          </div>
+        </article>
+
+        <article class="card home-card third">
+          <h2>Visitas</h2>
+          <p class="sidebar-copy">Contador de visitas de la portada principal.</p>
+          <div class="stat-grid" style="grid-template-columns: 1fr;">
+            <div class="stat-box">
+              <div class="stat-label">Visitas totales</div>
+              <div class="stat-value"><span data-visit-counter>0</span></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card home-card third">
+          <h2>Comunidad</h2>
+          <div class="contact-grid">
+            <div class="contact-box">
+              <strong>Discord</strong>
+              <span>Servidor de comunidad para novedades, soporte y modding.</span>
+              <div class="mini-actions">
+                <a class="mini-pill" href="https://discord.gg/EBvUWcMdqV" target="_blank" rel="noreferrer">Abrir Discord</a>
+              </div>
+            </div>
+            <div class="contact-box">
+              <strong>WhatsApp</strong>
+              <span>Canal de contacto directo para seguimiento rápido.</span>
+              <div class="mini-actions">
+                <a class="mini-pill" href="https://wa.me/51936521805" target="_blank" rel="noreferrer">Abrir WhatsApp</a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card home-card third">
+          <h2>Accesos rápidos</h2>
+          <div class="page-links">
+            <a href="psych/">Docs de Psych<small>Diseño clásico con estilo Material</small></a>
+            <a href="plus/">Docs de Plus<small>Callbacks de video y notas del engine</small></a>
+            <a href="../">English<small>Volver al portal principal</small></a>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer-note">
+      <p>Portal de documentación de Plus Engine.</p>
+    </footer>
+  </body>
+</html>

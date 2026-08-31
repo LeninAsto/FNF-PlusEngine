@@ -1,0 +1,217 @@
+﻿<!doctype html>
+<html lang="es" data-theme="auto">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Psych Engine - API de Lua</title>
+    <meta
+      name="description"
+      content="Rework con Material Design de la portada clÃ¡sica de la API Lua de Psych Engine."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="../../assets/favicon.ico" />
+    <link rel="stylesheet" href="../../assets/site.css" />
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body class="docs-body psych-page">
+    <div class="ambient ambient-a"></div>
+    <div class="ambient ambient-b"></div>
+
+    <header class="topbar">
+      <a class="brand psych-brand" href="../../">
+        <img src="../../assets/logo.png" alt="Logo de Psych Engine" class="brand-logo psych-logo" />
+        <span class="psych-brand-copy">
+          <span class="psych-brand-title">Psych Engine</span>
+          <span class="psych-brand-subtitle">API de Lua</span>
+        </span>
+      </a>
+      <nav class="top-actions">
+        <a class="text-link" href="../../">Inicio</a>
+        <a class="text-link" href="../../psych/">English</a>
+        <button id="themeToggle" class="icon-btn" type="button" aria-label="Cambiar tema">
+          Tema
+        </button>
+      </nav>
+    </header>
+
+    <main class="psych-layout">
+      <aside class="card psych-sidebar" aria-label="NavegaciÃ³n de pÃ¡gina">
+        <div class="sidebar-block">
+          <p class="eyebrow">Inicio Psych</p>
+          <h2>Estructura clÃ¡sica, skin Material</h2>
+          <p class="sidebar-copy">
+            Esta pÃ¡gina conserva el layout original de Psych, pero con una presentaciÃ³n mÃ¡s limpia
+            y estilo Material.
+          </p>
+        </div>
+
+        <div class="sidebar-search">
+          <label for="sectionSearch">Buscar secciones</label>
+          <input
+            id="sectionSearch"
+            class="search-field"
+            type="search"
+            placeholder="Inicio, funciones, script..."
+          />
+        </div>
+
+        <nav class="section-nav" aria-label="Accesos rÃ¡pidos">
+          <a href="#home-page">PÃ¡gina principal</a>
+          <a href="#vscode-extension">ExtensiÃ³n de VS Code</a>
+          <a href="#running-script">CÃ³mo correr un script</a>
+          <a href="#functions">Funciones</a>
+          <a href="#other-pages">Otras pÃ¡ginas</a>
+        </nav>
+
+        <div class="sidebar-footer">
+          La estructura vieja sigue viva, solo que mÃ¡s bonita y menos Ã¡spera.
+        </div>
+      </aside>
+
+      <section class="psych-main">
+        <article class="card psych-hero" id="home-page" data-searchable="true">
+          <div class="hero-copy">
+            <p class="eyebrow">Psych Engine</p>
+            <h1>API de Lua</h1>
+            <p>
+              Este sitio estÃ¡ inspirado en el sitio de Flixel API, asÃ­ que respeto total por ese
+              clÃ¡sico.
+            </p>
+            <p>
+              Estas pÃ¡ginas estÃ¡n pensadas para Psych Engine 1.0+, asÃ­ que puede que no sean
+              fiables para versiones viejas. El soporte para otras versiones ya se abandonÃ³ y no
+              se aÃ±adirÃ¡ aquÃ­.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-filled" href="#functions">Ver funciones</a>
+              <a class="btn btn-outlined" href="../../">Volver al inicio</a>
+            </div>
+          </div>
+
+          <img
+            width="400"
+            src="../../assets/logo.png"
+            alt="Logo de Psych Engine"
+            class="hero-logo"
+            draggable="false"
+          />
+        </article>
+
+        <article class="card section-card" id="vscode-extension" data-searchable="true">
+          <h2>ExtensiÃ³n de VS Code</h2>
+          <p>
+            <a href="https://gamebanana.com/tools/10716" target="_blank" rel="noreferrer">
+              Se recomienda mucho instalarla
+            </a>
+            , porque autocompleta nombres de funciones. Ojo, es una herramienta no oficial.
+          </p>
+        </article>
+
+        <article class="card section-card" id="running-script" data-searchable="true">
+          <h2>CÃ³mo correr un script</h2>
+          <p>Hay 6 tipos de scripts LUA que puedes usar:</p>
+          <ul class="psych-list">
+            <li>
+              <strong>Script de stage:</strong> Solo se ejecuta si el stage de la canciÃ³n estÃ¡
+              cargado en el chart actual; debe tener el mismo nombre que el JSON del stage y estar
+              dentro de <span class="code-pill">mods/My-Mod/stages/</span>.
+            </li>
+            <li>
+              <strong>Script de tipo de nota:</strong> Solo se ejecuta si el tipo de nota se estÃ¡
+              usando en el chart actual; debe estar dentro
+              <span class="code-pill">mods/My-Mod/custom_notetypes/</span>.
+            </li>
+            <li>
+              <strong>Script de evento:</strong> Solo se ejecuta si ese evento se usa en el chart;
+              debe estar dentro <span class="code-pill">mods/My-Mod/custom_events/</span>.
+            </li>
+            <li>
+              <strong>Script(s) de canciÃ³n:</strong> Deben guardarse dentro de la carpeta del
+              chart de la canciÃ³n; solo corren en esa canciÃ³n, sin importar dificultad, stage ni
+              nada mÃ¡s.
+            </li>
+            <li>
+              <strong>Script de personaje:</strong> Solo se ejecuta si el personaje indicado se
+              usa en la canciÃ³n. Puedes usar las variables
+              <a href="../pages/variables/">dadName, boyfriendName y gfName</a> para
+              revisar el nombre del personaje actual; debe ir en
+              <span class="code-pill">mods/My-Mod/characters/</span>.
+            </li>
+            <li>
+              <strong>Script general:</strong> Debe ir en
+              <span class="code-pill">mods/My-Mod/scripts/</span>, y se ejecuta en todas las
+              canciones mientras el mod estÃ© cargado.
+            </li>
+          </ul>
+        </article>
+
+        <article class="card section-card" id="functions" data-searchable="true">
+          <h2>Funciones</h2>
+          <p>Hay 22 pÃ¡ginas disponibles con 212 funciones:</p>
+          <div class="page-links">
+            <a href="../pages/playstate/">Funciones de PlayState<small>Jugabilidad general y flujo de canciones</small></a>
+            <a href="../pages/reflection/">Funciones de Reflection<small>Leer y escribir propiedades, llamar mÃ©todos</small></a>
+            <a href="../pages/spritesheet/">Funciones de Spritesheet<small>Sprites Lua y animaciones</small></a>
+            <a href="../pages/flxanimate/">Funciones de FlxAnimate<small>Atlases de animaciÃ³n</small></a>
+            <a href="../pages/text/">Funciones de Texto<small>Objetos de texto y formato</small></a>
+            <a href="../pages/sound/">Funciones de Sonido<small>ReproducciÃ³n y control de audio</small></a>
+            <a href="../pages/shaders/">Funciones de Shaders<small>Carga de shaders y uniforms</small></a>
+            <a href="../pages/camera/">Funciones de CÃ¡mara<small>Movimiento y efectos de cÃ¡mara</small></a>
+            <a href="../pages/input/">Funciones de Entrada<small>Teclado, mouse y gamepads</small></a>
+            <a href="../pages/tween/">Funciones de Tween<small>Animaciones suaves</small></a>
+            <a href="../pages/timer/">Funciones de Timer<small>Herramientas de tiempo</small></a>
+            <a href="../pages/character/">Funciones de Personaje<small>Ayudas del estado del personaje</small></a>
+            <a href="../pages/file/">Funciones de Archivos<small>Lectura y escritura de archivos</small></a>
+            <a href="../pages/translations/">Funciones de Idioma/TraducciÃ³n<small>Soporte de texto localizado</small></a>
+            <a href="../pages/achievements/">Funciones de Logros<small>Estado y desbloqueo de logros</small></a>
+            <a href="../pages/substate/">Funciones de Subestado<small>Ciclo de vida de substates</small></a>
+            <a href="../pages/precache/">Funciones de Precarga<small>Preparar recursos antes de usarlos</small></a>
+            <a href="../pages/score/">Funciones de PuntuaciÃ³n<small>Puntaje y rendimiento</small></a>
+            <a href="../pages/savedata/">Funciones de Guardado<small>Persistencia de datos</small></a>
+            <a href="../pages/script/">Funciones de Script<small>EjecuciÃ³n y callbacks</small></a>
+            <a href="../pages/discord/">Funciones de Discord<small>Presencia en Discord</small></a>
+            <a href="../pages/uncategorized/">Funciones sin categorÃ­a<small>Referencias varias</small></a>
+          </div>
+        </article>
+
+        <article class="card section-card" id="other-pages" data-searchable="true">
+          <h2>Otras pÃ¡ginas</h2>
+          <div class="page-links">
+            <a href="../pages/variables/">Lista de 106 variables<small>Valores compartidos y flags</small></a>
+            <a href="../pages/snippets/">Fragmentos de cÃ³digo<small>Patrones Lua reutilizables</small></a>
+          </div>
+          <div class="inline-note">
+            La lista sigue intacta, solo que con mÃ¡s aire y estilo Material para que no se vea
+            como archivo rescatado del 2018.
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      (() => {
+        const input = document.getElementById("sectionSearch");
+        const cards = Array.from(document.querySelectorAll("[data-searchable='true']"));
+
+        if (!input) {
+          return;
+        }
+
+        input.addEventListener("input", () => {
+          const query = input.value.toLowerCase().trim();
+          cards.forEach((card) => {
+            const matches = !query || card.textContent.toLowerCase().includes(query);
+            card.hidden = !matches;
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>
+
+

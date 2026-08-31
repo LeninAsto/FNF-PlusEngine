@@ -1,0 +1,173 @@
+<!doctype html>
+<html lang="en" data-theme="auto">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plus Engine</title>
+    <meta
+      name="description"
+      content="Plus Engine documentation hub with project overview, presentation video, and navigation to Psych and Plus docs."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="assets/favicon.ico" />
+    <link rel="stylesheet" href="assets/site.css" />
+    <script defer src="assets/site.js"></script>
+  </head>
+  <body class="welcome-body">
+    <div class="ambient ambient-a"></div>
+    <div class="ambient ambient-b"></div>
+
+    <header class="topbar">
+      <a class="brand" href="./">
+        <img src="assets/pluslogo.png" alt="Plus Engine" class="brand-logo plus-logo" />
+      </a>
+      <nav class="top-actions">
+        <a class="text-link" href="./">English</a>
+        <a class="text-link" href="es/">Español</a>
+        <button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle theme">
+          Theme: Auto
+        </button>
+      </nav>
+    </header>
+
+    <main class="welcome-main">
+      <section class="hero card home-hero">
+        <div class="hero-copy">
+          <p class="eyebrow">Plus Engine</p>
+          <h1>Project overview and documentation portal</h1>
+          <p>
+            Plus Engine is based on Psych 1.0.4 and retains a modchart direction inspired by
+            NotITG. The engine also supports hxcodec video playback from Psych mod versions
+            0.6.3 and 0.7.3.
+          </p>
+          <p>
+            This hub presents the project summary, the documentation routes for Psych and Plus,
+            and the presentation media for the project.
+          </p>
+          <div class="cta-row">
+            <a class="btn btn-filled" href="psych/">Psych Lua API</a>
+            <a class="btn btn-outlined" href="plus/">Plus Lua API</a>
+          </div>
+        </div>
+
+        <img
+          src="assets/pluslogo.png"
+          alt="Plus Engine logo"
+          class="home-logo"
+          draggable="false"
+        />
+      </section>
+
+      <section class="home-grid">
+        <article class="card home-card wide">
+          <h2>Project summary</h2>
+          <p>
+            The README describes Plus Engine as a fork with Haxe root, Material
+            Design presentation, Android support, multiple language options, and modding-friendly
+            tooling that keeps the original engine structure intact.
+          </p>
+          <div class="stat-grid">
+            <div class="stat-box">
+              <div class="stat-label">Base</div>
+              <div class="stat-value">Psych 1.0.4</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Video support</div>
+              <div class="stat-value">hxvlc</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Languages</div>
+              <div class="stat-value">5+</div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Platform</div>
+              <div class="stat-value">Multi</div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card home-card half">
+          <h2>README highlights</h2>
+          <ul class="plain-list">
+            <li>Modcharts inspired by NotITG.</li>
+            <li>Material Design presentation for the documentation portal.</li>
+            <li>Support for mobile, desktop, and custom domains.</li>
+            <li>Multiple language versions for the hub and docs.</li>
+            <li>Credits, contributors, and community links kept visible.</li>
+          </ul>
+        </article>
+
+        <article class="card home-card half">
+          <h2>Presentation video</h2>
+          <p class="sidebar-copy">
+            Embedded preview of the project introduction. If the browser blocks the embed, use the
+            external link below.
+          </p>
+          <div style="margin-top: 0.8rem;">
+            <iframe
+              class="video-frame"
+              src="https://www.youtube-nocookie.com/embed/ZQEBBj7YqzU"
+              title="Plus Engine presentation video"
+              loading="lazy"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+            ></iframe>
+          </div>
+          <div class="mini-actions" style="margin-top: 0.8rem;">
+            <a class="mini-pill" href="https://youtu.be/ZQEBBj7YqzU" target="_blank" rel="noreferrer">Open on YouTube</a>
+          </div>
+        </article>
+
+        <article class="card home-card third">
+          <h2>Visits</h2>
+          <p class="sidebar-copy">Visit counter for the landing page.</p>
+          <div class="stat-grid" style="grid-template-columns: 1fr;">
+            <div class="stat-box">
+              <div class="stat-label">Total visits</div>
+              <div class="stat-value"><span data-visit-counter>0</span></div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card home-card third">
+          <h2>Community</h2>
+          <div class="contact-grid">
+            <div class="contact-box">
+              <strong>Discord</strong>
+              <span>Community server for updates, support, and modding discussion.</span>
+              <div class="mini-actions">
+                <a class="mini-pill" href="https://discord.gg/EBvUWcMdqV" target="_blank" rel="noreferrer">Open Discord</a>
+              </div>
+            </div>
+            <div class="contact-box">
+              <strong>WhatsApp</strong>
+              <span>Direct contact channel for quick follow-up.</span>
+              <div class="mini-actions">
+                <a class="mini-pill" href="https://wa.me/51936521805" target="_blank" rel="noreferrer">Open WhatsApp</a>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="card home-card third">
+          <h2>Quick links</h2>
+          <div class="page-links">
+            <a href="psych/">Psych docs<small>Classic layout with Material styling</small></a>
+            <a href="plus/">Plus docs<small>Video callbacks and engine notes</small></a>
+            <a href="es/">Español<small>Localized hub and pages</small></a>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <footer class="footer-note">
+      <p>Plus Engine documentation hub.</p>
+    </footer>
+  </body>
+</html>

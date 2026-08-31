@@ -1,0 +1,61 @@
+﻿<!doctype html>
+<html lang="es" data-theme="auto">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Psych Engine - Tween Functions</title>
+    <meta name="description" content="" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="icon" href="../../../assets/favicon.ico" />
+    <link rel="stylesheet" href="../../../assets/site.css" />
+    <script defer src="../../../assets/site.js"></script>
+    <script defer src="../../../assets/psych.js"></script>
+    <script defer src="../../../assets/pages.js"></script>
+  </head>
+  <body class="docs-body psych-page" data-page="tween" data-lang="es">
+    <div class="ambient ambient-a"></div>
+    <div class="ambient ambient-b"></div>
+
+    <header class="topbar">
+      <a class="brand psych-brand" href="../../index.html">
+        <img src="../../../assets/logo.png" alt="Psych Engine Logo" class="brand-logo psych-logo" />
+        <span class="psych-brand-copy">
+          <span class="psych-brand-title">Psych Engine</span>
+          <span class="psych-brand-subtitle">Lua Script API</span>
+        </span>
+      </a>
+      <nav class="top-actions">
+        <a class="text-link" href="../../index.html">Home</a>
+        <a class="text-link" href="../../plus/index.html">Plus</a>
+        <button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle theme">Theme</button>
+      </nav>
+    </header>
+
+    <main class="psych-layout">
+      <aside class="card psych-sidebar" aria-label="Page navigation">
+        <div class="sidebar-block">
+          <p class="eyebrow">Psych Pages</p>
+          <h2>Choose a section</h2>
+          <p class="sidebar-copy">Folder-based routes keep the URLs clean and make the docs easier to grow later.</p>
+        </div>
+
+        <div class="sidebar-search">
+          <label for="pageSearch">Search pages</label>
+          <input id="pageSearch" class="search-field" type="search" placeholder="PlayState, variables, snippets..." />
+        </div>
+
+        <nav id="pageNav" class="section-nav" aria-label="Page list"></nav>
+      </aside>
+
+      <section id="pageContent" class="psych-main" aria-live="polite"></section>
+    </main>
+  </body>
+</html>
+
+
+
+
+
+

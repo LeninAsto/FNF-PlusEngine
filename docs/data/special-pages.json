@@ -1,0 +1,966 @@
+﻿{
+    "variables":  {
+                      "sections":  [
+                                       {
+                                           "title":  {
+                                                         "en":  "Lua Scripting Variables",
+                                                         "es":  "Variables de scripting Lua"
+                                                     },
+                                           "items":  [
+                                                         {
+                                                             "name":  "luaDebugMode",
+                                                             "description":  {
+                                                                                 "en":  "Toggles showing script errors. Default value: false.",
+                                                                                 "es":  "Activa mostrar errores de scripts. Valor por defecto: false."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "luaDeprecatedWarnings",
+                                                             "description":  {
+                                                                                 "en":  "Shows warnings for functions that should be replaced. Requires luaDebugMode.",
+                                                                                 "es":  "Muestra avisos de funciones que deberian reemplazarse. Requiere luaDebugMode."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "scriptName",
+                                                             "description":  {
+                                                                                 "en":  "Location of the Lua script currently running.",
+                                                                                 "es":  "Ubicacion del script Lua que se esta ejecutando."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "modFolder",
+                                                             "description":  {
+                                                                                 "en":  "Mod folder where the Lua script is running.",
+                                                                                 "es":  "Carpeta del mod donde se ejecuta el script Lua."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "currentModDirectory",
+                                                             "description":  {
+                                                                                 "en":  "Custom week mod folder currently active; empty on base-game weeks.",
+                                                                                 "es":  "Carpeta del mod de la week custom activa; vacia en weeks base."
+                                                                             }
+                                                         }
+                                                     ]
+                                       },
+                                       {
+                                           "title":  {
+                                                         "en":  "Psych Engine Information Variables",
+                                                         "es":  "Variables de informacion de Psych Engine"
+                                                     },
+                                           "items":  [
+                                                         {
+                                                             "name":  "version",
+                                                             "description":  {
+                                                                                 "en":  "Psych Engine version string.",
+                                                                                 "es":  "Texto de version de Psych Engine."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "buildTarget",
+                                                             "description":  {
+                                                                                 "en":  "Build target, such as windows, windows_x86, or linux.",
+                                                                                 "es":  "Target de compilacion, como windows, windows_x86 o linux."
+                                                                             }
+                                                         }
+                                                     ]
+                                       },
+                                       {
+                                           "title":  {
+                                                         "en":  "Function Return Variables",
+                                                         "es":  "Variables de retorno de funciones"
+                                                     },
+                                           "items":  [
+                                                         {
+                                                             "name":  "Function_StopLua",
+                                                             "description":  {
+                                                                                 "en":  "Stops the callback only for the next Lua scripts.",
+                                                                                 "es":  "Detiene el callback solo para los siguientes scripts Lua."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "Function_StopHScript",
+                                                             "description":  {
+                                                                                 "en":  "Stops the callback only for the next HScript scripts.",
+                                                                                 "es":  "Detiene el callback solo para los siguientes scripts HScript."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "Function_StopAll",
+                                                             "description":  {
+                                                                                 "en":  "Stops the callback for the next Lua scripts and HScripts.",
+                                                                                 "es":  "Detiene el callback para los siguientes scripts Lua y HScripts."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "Function_Stop",
+                                                             "description":  {
+                                                                                 "en":  "Cancels callbacks such as startCountdown or endSong; commonly used for cutscenes.",
+                                                                                 "es":  "Cancela callbacks como startCountdown o endSong; se usa mucho en cutscenes."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "Function_Continue",
+                                                             "description":  {
+                                                                                 "en":  "Lets the engine continue normally after the script runs.",
+                                                                                 "es":  "Permite que el engine continue normal despues de ejecutar el script."
+                                                                             }
+                                                         }
+                                                     ]
+                                       },
+                                       {
+                                           "title":  {
+                                                         "en":  "flixel.FlxG Variables",
+                                                         "es":  "Variables de flixel.FlxG"
+                                                     },
+                                           "items":  [
+                                                         {
+                                                             "name":  "screenWidth",
+                                                             "description":  {
+                                                                                 "en":  "Current FlxG screen width.",
+                                                                                 "es":  "Ancho actual de pantalla de FlxG."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "screenHeight",
+                                                             "description":  {
+                                                                                 "en":  "Current FlxG screen height.",
+                                                                                 "es":  "Alto actual de pantalla de FlxG."
+                                                                             }
+                                                         }
+                                                     ]
+                                       },
+                                       {
+                                           "title":  {
+                                                         "en":  "Song Variables",
+                                                         "es":  "Variables de cancion"
+                                                     },
+                                           "items":  [
+                                                         {
+                                                             "name":  "songName",
+                                                             "description":  {
+                                                                                 "en":  "Instrumental name as seen in the pause screen.",
+                                                                                 "es":  "Nombre del instrumental como aparece en pausa."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "songPath",
+                                                             "description":  {
+                                                                                 "en":  "Formatted songName in lowercase with spaces replaced by hyphens.",
+                                                                                 "es":  "songName formateado en minusculas y con espacios reemplazados por guiones."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "loadedSongName",
+                                                             "description":  {
+                                                                                 "en":  "Song name selected from Freeplay or Story Menu.",
+                                                                                 "es":  "Nombre de la cancion seleccionada desde Freeplay o Story Menu."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "loadedSongPath",
+                                                             "description":  {
+                                                                                 "en":  "Formatted loadedSongName in lowercase with hyphens.",
+                                                                                 "es":  "loadedSongName formateado en minusculas y con guiones."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "bpm",
+                                                             "description":  {
+                                                                                 "en":  "Starting BPM of the song.",
+                                                                                 "es":  "BPM inicial de la cancion."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "songLength",
+                                                             "description":  {
+                                                                                 "en":  "Song duration in milliseconds.",
+                                                                                 "es":  "Duracion de la cancion en milisegundos."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "startedCountdown",
+                                                             "description":  {
+                                                                                 "en":  "Whether the countdown already started; starts as false.",
+                                                                                 "es":  "Indica si el conteo ya empezo; inicia en false."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "seenCutscene",
+                                                             "description":  {
+                                                                                 "en":  "False on the first try; true after restart or death, useful for cutscene checks.",
+                                                                                 "es":  "False en el primer intento; true al reiniciar o morir, util para revisar cutscenes."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "inGameOver",
+                                                             "description":  {
+                                                                                 "en":  "Whether the game is currently in the Game Over screen.",
+                                                                                 "es":  "Indica si el juego esta en la pantalla de Game Over."
+                                                                             }
+                                                         }
+                                                     ]
+                                       },
+                                       {
+                                           "title":  {
+                                                         "en":  "Chart Variables",
+                                                         "es":  "Variables de chart"
+                                                     },
+                                           "items":  [
+                                                         {
+                                                             "name":  "chartPath",
+                                                             "description":  {
+                                                                                 "en":  "Directory of the chart, including the file extension.",
+                                                                                 "es":  "Ruta del chart, incluyendo la extension del archivo."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "curStage",
+                                                             "description":  {
+                                                                                 "en":  "Current song stage as seen in the Chart Editor.",
+                                                                                 "es":  "Stage actual de la cancion como aparece en Chart Editor."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "scrollSpeed",
+                                                             "description":  {
+                                                                                 "en":  "Starting scroll speed.",
+                                                                                 "es":  "Velocidad inicial del scroll."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "hasVocals",
+                                                             "description":  {
+                                                                                 "en":  "Whether the song has vocals enabled.",
+                                                                                 "es":  "Indica si la cancion tiene voces activadas."
+                                                                             }
+                                                         }
+                                                     ]
+                                       },
+                                       {
+                                           "title":  {
+                                                         "en":  "Difficulty Variables",
+                                                         "es":  "Variables de dificultad"
+                                                     },
+                                           "items":  [
+                                                         {
+                                                             "name":  "difficulty",
+                                                             "description":  {
+                                                                                 "en":  "Difficulty ID.",
+                                                                                 "es":  "ID de la dificultad."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "difficultyName",
+                                                             "description":  {
+                                                                                 "en":  "Original difficulty name.",
+                                                                                 "es":  "Nombre original de la dificultad."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "difficultyPath",
+                                                             "description":  {
+                                                                                 "en":  "Difficulty formatted as a lowercase suffix; empty on Normal.",
+                                                                                 "es":  "Dificultad formateada como sufijo en minusculas; vacia en Normal."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "difficultyNameTranslation",
+                                                             "description":  {
+                                                                                 "en":  "Translated difficulty name.",
+                                                                                 "es":  "Nombre traducido de la dificultad."
+                                                                             }
+                                                         }
+                                                     ]
+                                       },
+                                       {
+                                           "title":  {
+                                                         "en":  "Story Mode/Week Variables",
+                                                         "es":  "Variables de Story Mode y Week"
+                                                     },
+                                           "items":  [
+                                                         {
+                                                             "name":  "isStoryMode",
+                                                             "description":  {
+                                                                                 "en":  "Boolean value for the current game mode.",
+                                                                                 "es":  "Valor booleano del modo de juego actual."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "weekRaw",
+                                                             "description":  {
+                                                                                 "en":  "Current week ID.",
+                                                                                 "es":  "ID de la week actual."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "week",
+                                                             "description":  {
+                                                                                 "en":  "Week name as found in the weeks folder.",
+                                                                                 "es":  "Nombre de la week como se encuentra en la carpeta weeks."
+                                                                             }
+                                                         }
+                                                     ]
+                                       },
+                                       {
+                                           "title":  {
+                                                         "en":  "Section Variables",
+                                                         "es":  "Variables de seccion"
+                                                     },
+                                           "items":  [
+                                                         {
+                                                             "name":  "curBpm",
+                                                             "description":  {
+                                                                                 "en":  "BPM at the current section.",
+                                                                                 "es":  "BPM de la seccion actual."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "curSection",
+                                                             "description":  {
+                                                                                 "en":  "Current section ID.",
+                                                                                 "es":  "ID de la seccion actual."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "curBeat",
+                                                             "description":  {
+                                                                                 "en":  "Current beat ID.",
+                                                                                 "es":  "ID del beat actual."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "curStep",
+                                                             "description":  {
+                                                                                 "en":  "Current step ID.",
+                                                                                 "es":  "ID del step actual."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "curDecBeat",
+                                                             "description":  {
+                                                                                 "en":  "Current beat with decimal progress toward the next beat.",
+                                                                                 "es":  "Beat actual con progreso decimal hacia el siguiente beat."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "curDecStep",
+                                                             "description":  {
+                                                                                 "en":  "Current step with decimal progress toward the next step.",
+                                                                                 "es":  "Step actual con progreso decimal hacia el siguiente step."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "crochet",
+                                                             "description":  {
+                                                                                 "en":  "Milliseconds per beat in the current section.",
+                                                                                 "es":  "Milisegundos por beat en la seccion actual."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "stepCrochet",
+                                                             "description":  {
+                                                                                 "en":  "Milliseconds per step in the current section.",
+                                                                                 "es":  "Milisegundos por step en la seccion actual."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "mustHitSection",
+                                                             "description":  {
+                                                                                 "en":  "Whether the current section targets the player.",
+                                                                                 "es":  "Indica si la seccion actual pertenece al jugador."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "altAnim",
+                                                             "description":  {
+                                                                                 "en":  "Whether the current section has alt animation enabled.",
+                                                                                 "es":  "Indica si la seccion actual tiene alt animation activado."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "gfSection",
+                                                             "description":  {
+                                                                                 "en":  "Whether the current section targets Girlfriend.",
+                                                                                 "es":  "Indica si la seccion actual pertenece a Girlfriend."
+                                                                             }
+                                                         }
+                                                     ]
+                                       },
+                                       {
+                                           "title":  {
+                                                         "en":  "Score Variables",
+                                                         "es":  "Variables de puntuacion"
+                                                     },
+                                           "items":  [
+                                                         {
+                                                             "name":  "score",
+                                                             "description":  {
+                                                                                 "en":  "Current score.",
+                                                                                 "es":  "Puntaje actual."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "misses",
+                                                             "description":  {
+                                                                                 "en":  "Current missed notes.",
+                                                                                 "es":  "Notas falladas actuales."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "hits",
+                                                             "description":  {
+                                                                                 "en":  "Current hit notes.",
+                                                                                 "es":  "Notas acertadas actuales."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "combo",
+                                                             "description":  {
+                                                                                 "en":  "Current note combo; starts at 0.",
+                                                                                 "es":  "Combo actual de notas; inicia en 0."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "deaths",
+                                                             "description":  {
+                                                                                 "en":  "How many times the player has died so far.",
+                                                                                 "es":  "Cantidad de veces que el jugador ha muerto hasta ahora."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "rating",
+                                                             "description":  {
+                                                                                 "en":  "Rating percentage from 0 to 1.",
+                                                                                 "es":  "Porcentaje de rating de 0 a 1."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "ratingName",
+                                                             "description":  {
+                                                                                 "en":  "Current rating label, such as Sick or Good.",
+                                                                                 "es":  "Etiqueta actual del rating, como Sick o Good."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "ratingFC",
+                                                             "description":  {
+                                                                                 "en":  "Full-combo state, such as Clear, SDBC, FC, GFC, or SFC.",
+                                                                                 "es":  "Estado de full combo, como Clear, SDBC, FC, GFC o SFC."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "totalPlayed",
+                                                             "description":  {
+                                                                                 "en":  "Misses plus hits; used for rating calculation.",
+                                                                                 "es":  "Fallos mas aciertos; usado para calcular el rating."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "totalNotesHit",
+                                                             "description":  {
+                                                                                 "en":  "Accumulated hit score used for rating calculation.",
+                                                                                 "es":  "Puntaje acumulado de aciertos usado para calcular el rating."
+                                                                             }
+                                                         }
+                                                     ]
+                                       },
+                                       {
+                                           "title":  {
+                                                         "en":  "Gameplay Modifiers Variables",
+                                                         "es":  "Variables de modificadores de gameplay"
+                                                     },
+                                           "items":  [
+                                                         {
+                                                             "name":  "playbackRate",
+                                                             "description":  {
+                                                                                 "en":  "Song playback multiplier. Default value: 1.",
+                                                                                 "es":  "Multiplicador de reproduccion de la cancion. Valor por defecto: 1."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "healthGainMult",
+                                                             "description":  {
+                                                                                 "en":  "Health gain multiplier. Default value: 1.",
+                                                                                 "es":  "Multiplicador de ganancia de vida. Valor por defecto: 1."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "healthLossMult",
+                                                             "description":  {
+                                                                                 "en":  "Health loss multiplier. Default value: 1.",
+                                                                                 "es":  "Multiplicador de perdida de vida. Valor por defecto: 1."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "instakillOnMiss",
+                                                             "description":  {
+                                                                                 "en":  "Whether missing instantly kills the player. Default value: false.",
+                                                                                 "es":  "Indica si fallar mata al jugador al instante. Valor por defecto: false."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "practice",
+                                                             "description":  {
+                                                                                 "en":  "Whether practice mode is enabled. Default value: false.",
+                                                                                 "es":  "Indica si practice mode esta activado. Valor por defecto: false."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "botPlay",
+                                                             "description":  {
+                                                                                 "en":  "Whether botplay is enabled. Default value: false.",
+                                                                                 "es":  "Indica si botplay esta activado. Valor por defecto: false."
+                                                                             }
+                                                         }
+                                                     ]
+                                       },
+                                       {
+                                           "title":  {
+                                                         "en":  "Strum Notes Variables",
+                                                         "es":  "Variables de strum notes"
+                                                     },
+                                           "items":  [
+                                                         {
+                                                             "name":  "defaultPlayerStrumX0",
+                                                             "description":  {
+                                                                                 "en":  "Player left note default X: 732.",
+                                                                                 "es":  "X por defecto de la nota izquierda del jugador: 732."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultPlayerStrumY0",
+                                                             "description":  {
+                                                                                 "en":  "Player left note default Y: 50 upscroll, 570 downscroll.",
+                                                                                 "es":  "Y por defecto de la nota izquierda del jugador: 50 upscroll, 570 downscroll."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultPlayerStrumX1",
+                                                             "description":  {
+                                                                                 "en":  "Player down note default X: 844.",
+                                                                                 "es":  "X por defecto de la nota abajo del jugador: 844."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultPlayerStrumY1",
+                                                             "description":  {
+                                                                                 "en":  "Player down note default Y: 50 upscroll, 570 downscroll.",
+                                                                                 "es":  "Y por defecto de la nota abajo del jugador: 50 upscroll, 570 downscroll."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultPlayerStrumX2",
+                                                             "description":  {
+                                                                                 "en":  "Player up note default X: 956.",
+                                                                                 "es":  "X por defecto de la nota arriba del jugador: 956."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultPlayerStrumY2",
+                                                             "description":  {
+                                                                                 "en":  "Player up note default Y: 50 upscroll, 570 downscroll.",
+                                                                                 "es":  "Y por defecto de la nota arriba del jugador: 50 upscroll, 570 downscroll."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultPlayerStrumX3",
+                                                             "description":  {
+                                                                                 "en":  "Player right note default X: 1068.",
+                                                                                 "es":  "X por defecto de la nota derecha del jugador: 1068."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultPlayerStrumY3",
+                                                             "description":  {
+                                                                                 "en":  "Player right note default Y: 50 upscroll, 570 downscroll.",
+                                                                                 "es":  "Y por defecto de la nota derecha del jugador: 50 upscroll, 570 downscroll."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultOpponentStrumX0",
+                                                             "description":  {
+                                                                                 "en":  "Opponent left note default X: 92.",
+                                                                                 "es":  "X por defecto de la nota izquierda del oponente: 92."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultOpponentStrumY0",
+                                                             "description":  {
+                                                                                 "en":  "Opponent left note default Y: 50 upscroll, 570 downscroll.",
+                                                                                 "es":  "Y por defecto de la nota izquierda del oponente: 50 upscroll, 570 downscroll."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultOpponentStrumX1",
+                                                             "description":  {
+                                                                                 "en":  "Opponent down note default X: 204.",
+                                                                                 "es":  "X por defecto de la nota abajo del oponente: 204."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultOpponentStrumY1",
+                                                             "description":  {
+                                                                                 "en":  "Opponent down note default Y: 50 upscroll, 570 downscroll.",
+                                                                                 "es":  "Y por defecto de la nota abajo del oponente: 50 upscroll, 570 downscroll."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultOpponentStrumX2",
+                                                             "description":  {
+                                                                                 "en":  "Opponent up note default X: 316.",
+                                                                                 "es":  "X por defecto de la nota arriba del oponente: 316."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultOpponentStrumY2",
+                                                             "description":  {
+                                                                                 "en":  "Opponent up note default Y: 50 upscroll, 570 downscroll.",
+                                                                                 "es":  "Y por defecto de la nota arriba del oponente: 50 upscroll, 570 downscroll."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultOpponentStrumX3",
+                                                             "description":  {
+                                                                                 "en":  "Opponent right note default X: 428.",
+                                                                                 "es":  "X por defecto de la nota derecha del oponente: 428."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultOpponentStrumY3",
+                                                             "description":  {
+                                                                                 "en":  "Opponent right note default Y: 50 upscroll, 570 downscroll.",
+                                                                                 "es":  "Y por defecto de la nota derecha del oponente: 50 upscroll, 570 downscroll."
+                                                                             }
+                                                         }
+                                                     ]
+                                       },
+                                       {
+                                           "title":  {
+                                                         "en":  "Character Variables",
+                                                         "es":  "Variables de personajes"
+                                                     },
+                                           "items":  [
+                                                         {
+                                                             "name":  "defaultBoyfriendX",
+                                                             "description":  {
+                                                                                 "en":  "Player group X from the stage JSON.",
+                                                                                 "es":  "X del grupo del jugador segun el JSON del stage."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultBoyfriendY",
+                                                             "description":  {
+                                                                                 "en":  "Player group Y from the stage JSON.",
+                                                                                 "es":  "Y del grupo del jugador segun el JSON del stage."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultOpponentX",
+                                                             "description":  {
+                                                                                 "en":  "Opponent group X from the stage JSON.",
+                                                                                 "es":  "X del grupo del oponente segun el JSON del stage."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultOpponentY",
+                                                             "description":  {
+                                                                                 "en":  "Opponent group Y from the stage JSON.",
+                                                                                 "es":  "Y del grupo del oponente segun el JSON del stage."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultGirlfriendX",
+                                                             "description":  {
+                                                                                 "en":  "Girlfriend group X from the stage JSON.",
+                                                                                 "es":  "X del grupo de Girlfriend segun el JSON del stage."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "defaultGirlfriendY",
+                                                             "description":  {
+                                                                                 "en":  "Girlfriend group Y from the stage JSON.",
+                                                                                 "es":  "Y del grupo de Girlfriend segun el JSON del stage."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "boyfriendName",
+                                                             "description":  {
+                                                                                 "en":  "Current player character JSON name without extension.",
+                                                                                 "es":  "Nombre JSON del personaje jugador actual sin extension."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "dadName",
+                                                             "description":  {
+                                                                                 "en":  "Current opponent character JSON name without extension.",
+                                                                                 "es":  "Nombre JSON del oponente actual sin extension."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "gfName",
+                                                             "description":  {
+                                                                                 "en":  "Current Girlfriend character JSON name without extension.",
+                                                                                 "es":  "Nombre JSON de Girlfriend actual sin extension."
+                                                                             }
+                                                         }
+                                                     ]
+                                       },
+                                       {
+                                           "title":  {
+                                                         "en":  "backend.ClientPrefs Variables",
+                                                         "es":  "Variables de backend.ClientPrefs"
+                                                     },
+                                           "items":  [
+                                                         {
+                                                             "name":  "downscroll",
+                                                             "description":  {
+                                                                                 "en":  "Downscroll preference. Default value: false.",
+                                                                                 "es":  "Preferencia de downscroll. Valor por defecto: false."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "middlescroll",
+                                                             "description":  {
+                                                                                 "en":  "Middlescroll preference. Default value: false.",
+                                                                                 "es":  "Preferencia de middlescroll. Valor por defecto: false."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "framerate",
+                                                             "description":  {
+                                                                                 "en":  "Configured framerate. Default value: 60.",
+                                                                                 "es":  "Framerate configurado. Valor por defecto: 60."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "ghostTapping",
+                                                             "description":  {
+                                                                                 "en":  "Allows pressing with no note penalty. Default value: true.",
+                                                                                 "es":  "Permite presionar sin nota sin penalizacion. Valor por defecto: true."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "hideHud",
+                                                             "description":  {
+                                                                                 "en":  "Hides HUD elements. Default value: false.",
+                                                                                 "es":  "Oculta elementos del HUD. Valor por defecto: false."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "timeBarType",
+                                                             "description":  {
+                                                                                 "en":  "Selected time bar mode. Default value: Time Left.",
+                                                                                 "es":  "Modo seleccionado de la barra de tiempo. Valor por defecto: Time Left."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "scoreZoom",
+                                                             "description":  {
+                                                                                 "en":  "Enables score text zoom on hit. Default value: true.",
+                                                                                 "es":  "Activa el zoom del texto de score al acertar. Valor por defecto: true."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "cameraZoomOnBeat",
+                                                             "description":  {
+                                                                                 "en":  "Enables camera zoom pulses on beat. Default value: true.",
+                                                                                 "es":  "Activa pulsos de zoom de camara por beat. Valor por defecto: true."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "flashingLights",
+                                                             "description":  {
+                                                                                 "en":  "Enables flashing light effects. Default value: true.",
+                                                                                 "es":  "Activa efectos de luces parpadeantes. Valor por defecto: true."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "noteOffset",
+                                                             "description":  {
+                                                                                 "en":  "Input/audio note offset. Default value: 0.",
+                                                                                 "es":  "Offset de notas para input/audio. Valor por defecto: 0."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "healthBarAlpha",
+                                                             "description":  {
+                                                                                 "en":  "Health bar opacity. Default value: 1.0.",
+                                                                                 "es":  "Opacidad de la barra de vida. Valor por defecto: 1.0."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "noResetButton",
+                                                             "description":  {
+                                                                                 "en":  "Disables reset button behavior. Default value: false.",
+                                                                                 "es":  "Desactiva el comportamiento del boton reset. Valor por defecto: false."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "lowQuality",
+                                                             "description":  {
+                                                                                 "en":  "Low quality preference. Default value: false.",
+                                                                                 "es":  "Preferencia de baja calidad. Valor por defecto: false."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "shadersEnabled",
+                                                             "description":  {
+                                                                                 "en":  "Whether shaders are enabled. Default value: true.",
+                                                                                 "es":  "Indica si los shaders estan activados. Valor por defecto: true."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "guitarHeroSustains",
+                                                             "description":  {
+                                                                                 "en":  "Uses Guitar Hero style sustains. Default value: true.",
+                                                                                 "es":  "Usa sustains estilo Guitar Hero. Valor por defecto: true."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "noteSkin",
+                                                             "description":  {
+                                                                                 "en":  "Selected note skin. Default value: Default.",
+                                                                                 "es":  "Note skin seleccionada. Valor por defecto: Default."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "splashSkin",
+                                                             "description":  {
+                                                                                 "en":  "Selected note splash skin. Default value: Psych.",
+                                                                                 "es":  "Note splash skin seleccionada. Valor por defecto: Psych."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "splashAlpha",
+                                                             "description":  {
+                                                                                 "en":  "Note splash opacity. Default value: 0.6.",
+                                                                                 "es":  "Opacidad del note splash. Valor por defecto: 0.6."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "noteSkinPostfix",
+                                                             "description":  {
+                                                                                 "en":  "Noteskin file path postfix, such as -future, -chip, or empty.",
+                                                                                 "es":  "Postfijo de ruta del noteskin, como -future, -chip o vacio."
+                                                                             }
+                                                         },
+                                                         {
+                                                             "name":  "splashSkinPostfix",
+                                                             "description":  {
+                                                                                 "en":  "Note splash file path postfix, such as -diamond, -vanilla, or empty.",
+                                                                                 "es":  "Postfijo de ruta de note splashes, como -diamond, -vanilla o vacio."
+                                                                             }
+                                                         }
+                                                     ]
+                                       }
+                                   ]
+                  },
+    "snippets":  {
+                     "groups":  [
+                                    {
+                                        "title":  {
+                                                      "en":  "Starter Files",
+                                                      "es":  "Archivos iniciales"
+                                                  },
+                                        "links":  [
+                                                      {
+                                                          "label":  {
+                                                                        "en":  "Mod Folder sample",
+                                                                        "es":  "Ejemplo de carpeta de mod"
+                                                                    },
+                                                          "href":  "https://github.com/ShadowMario/FNF-PsychEngine/blob/main/example_mods/modTemplate.zip"
+                                                      },
+                                                      {
+                                                          "label":  {
+                                                                        "en":  "Sample Script with callbacks",
+                                                                        "es":  "Script de ejemplo con callbacks"
+                                                                    },
+                                                          "href":  "https://github.com/ShadowMario/FNF-PsychEngine/blob/main/docs/scripts/TemplateScript.lua"
+                                                      }
+                                                  ]
+                                    },
+                                    {
+                                        "title":  {
+                                                      "en":  "Cutscene Scripts",
+                                                      "es":  "Scripts de cinemÃ¡ticas"
+                                                  },
+                                        "links":  [
+                                                      {
+                                                          "label":  {
+                                                                        "en":  "Example Video/Dialogue on Bopeebo",
+                                                                        "es":  "Ejemplo de video/diÃ¡logo en Bopeebo"
+                                                                    },
+                                                          "href":  "https://drive.google.com/file/d/1o6B9Vq00a8Jo8-PtSqSo6_3PSbT5HhXg"
+                                                      },
+                                                      {
+                                                          "label":  {
+                                                                        "en":  "Drag and Drop Dialogue Script",
+                                                                        "es":  "Script de diÃ¡logo arrastrar y soltar"
+                                                                    },
+                                                          "href":  "https://drive.google.com/file/d/15SMMmz5xpNompGne6S7GgEjfqEOu48xx"
+                                                      }
+                                                  ]
+                                    },
+                                    {
+                                        "title":  {
+                                                      "en":  "Note Types and Events",
+                                                      "es":  "Tipos de nota y eventos"
+                                                  },
+                                        "links":  [
+                                                      {
+                                                          "label":  {
+                                                                        "en":  "Custom Event example - Opponent Fade",
+                                                                        "es":  "Ejemplo de evento custom - Opponent Fade"
+                                                                    },
+                                                          "href":  "https://drive.google.com/file/d/1ysrKh-C7u9hb-uF2HUDs2fo8ch1QszPe"
+                                                      },
+                                                      {
+                                                          "label":  {
+                                                                        "en":  "Custom Note Type TXT example",
+                                                                        "es":  "Ejemplo TXT de custom note type"
+                                                                    },
+                                                          "href":  "https://pastebin.com/raw/Uh3gs2db"
+                                                      }
+                                                  ]
+                                    },
+                                    {
+                                        "title":  {
+                                                      "en":  "Stages and Gameplay",
+                                                      "es":  "Stages y gameplay"
+                                                  },
+                                        "links":  [
+                                                      {
+                                                          "label":  {
+                                                                        "en":  "Week 1-6 stages recreated in Lua",
+                                                                        "es":  "Stages de Week 1-6 recreados en Lua"
+                                                                    },
+                                                          "href":  "https://drive.google.com/file/d/1BRfDxMsImUYedF4wTRn0Y3HYU_hv7zrF"
+                                                      },
+                                                      {
+                                                          "label":  {
+                                                                        "en":  "Tween example - Boyfriend gets bigger",
+                                                                        "es":  "Ejemplo de tween - Boyfriend crece"
+                                                                    },
+                                                          "href":  "https://pastebin.com/raw/qtNwJ3vu"
+                                                      },
+                                                      {
+                                                          "label":  {
+                                                                        "en":  "Animated Sprite example",
+                                                                        "es":  "Ejemplo de sprite animado"
+                                                                    },
+                                                          "href":  "https://pastebin.com/raw/QcB5zXYx"
+                                                      },
+                                                      {
+                                                          "label":  {
+                                                                        "en":  "setPropertyFromClass example",
+                                                                        "es":  "Ejemplo de setPropertyFromClass"
+                                                                    },
+                                                          "href":  "https://pastebin.com/raw/0bGRzRzA"
+                                                      }
+                                                  ]
+                                    }
+                                ]
+                 }
+}

@@ -1,0 +1,118 @@
+{
+  "order": [
+    "playstate",
+    "reflection",
+    "spritesheet",
+    "flxanimate",
+    "text",
+    "sound",
+    "shaders",
+    "camera",
+    "input",
+    "tween",
+    "timer",
+    "character",
+    "file",
+    "translations",
+    "achievements",
+    "substate",
+    "precache",
+    "score",
+    "savedata",
+    "script",
+    "discord",
+    "uncategorized",
+    "variables",
+    "snippets"
+  ],
+  "categories": {
+    "playstate": {
+      "en": { "title": "PlayState Functions", "summary": "General functions related to game state, songs, and cutscenes." },
+      "es": { "title": "Funciones de PlayState", "summary": "Funciones generales relacionadas con el estado del juego, canciones y cinemáticas." }
+    },
+    "reflection": {
+      "en": { "title": "Reflection Functions", "summary": "Get and set properties from objects and call their methods." },
+      "es": { "title": "Funciones de Reflection", "summary": "Obtiene y cambia propiedades de objetos y llama a sus métodos." }
+    },
+    "spritesheet": {
+      "en": { "title": "Spritesheet Functions", "summary": "Display, animate, and manipulate images on screen using Lua Sprites." },
+      "es": { "title": "Funciones de Spritesheet", "summary": "Muestra, anima y manipula imágenes en pantalla usando Lua Sprites." }
+    },
+    "flxanimate": {
+      "en": { "title": "FlxAnimate Functions", "summary": "Work with Adobe Animate Atlas and advanced animation symbols." },
+      "es": { "title": "Funciones de FlxAnimate", "summary": "Trabaja con atlases de Adobe Animate y símbolos de animación avanzados." }
+    },
+    "text": {
+      "en": { "title": "Text Functions", "summary": "Create, style, and update Lua text objects on screen." },
+      "es": { "title": "Funciones de Texto", "summary": "Crea, da estilo y actualiza textos de Lua en pantalla." }
+    },
+    "sound": {
+      "en": { "title": "Sound Functions", "summary": "Play and control sounds and music with volume and pitch control." },
+      "es": { "title": "Funciones de Sonido", "summary": "Reproduce y controla sonidos y música con volumen y tono." }
+    },
+    "shaders": {
+      "en": { "title": "Shaders Functions", "summary": "Load and manage custom shaders with uniform updates." },
+      "es": { "title": "Funciones de Shaders", "summary": "Carga y administra shaders personalizados con actualización de uniforms." }
+    },
+    "camera": {
+      "en": { "title": "Camera Functions", "summary": "Control camera movement, follow points, and effects like shake, flash, and fade." },
+      "es": { "title": "Funciones de Cámara", "summary": "Controla el movimiento de la cámara, puntos de seguimiento y efectos como sacudidas, flashes y fade." }
+    },
+    "input": {
+      "en": { "title": "Input Functions", "summary": "Detect keyboard, mouse, and gamepad input." },
+      "es": { "title": "Funciones de Entrada", "summary": "Detecta entrada de teclado, mouse y gamepad." }
+    },
+    "tween": {
+      "en": { "title": "Tween Functions", "summary": "Create smooth animations over time for objects and values." },
+      "es": { "title": "Funciones de Tween", "summary": "Crea animaciones suaves con el paso del tiempo para objetos y valores." }
+    },
+    "timer": {
+      "en": { "title": "Timer Functions", "summary": "Schedule delayed callbacks and timed events." },
+      "es": { "title": "Funciones de Timer", "summary": "Programa callbacks retrasados y eventos temporizados." }
+    },
+    "character": {
+      "en": { "title": "Character Functions", "summary": "Interact with character state, animation, and offsets." },
+      "es": { "title": "Funciones de Personaje", "summary": "Interactúa con el estado, animación y offsets de personajes." }
+    },
+    "file": {
+      "en": { "title": "File I/O Functions", "summary": "Read, write, and inspect files from Lua." },
+      "es": { "title": "Funciones de Archivos", "summary": "Lee, escribe e inspecciona archivos desde Lua." }
+    },
+    "translations": {
+      "en": { "title": "Language/Translation Functions", "summary": "Work with localized text and language data." },
+      "es": { "title": "Funciones de Idioma/Traducción", "summary": "Trabaja con texto localizado y datos de idioma." }
+    },
+    "achievements": {
+      "en": { "title": "Achievements Functions", "summary": "Read and set achievement state and progress." },
+      "es": { "title": "Funciones de Logros", "summary": "Lee y ajusta el estado y progreso de los logros." }
+    },
+    "substate": {
+      "en": { "title": "Substate Functions", "summary": "Manage substates and their lifecycle." },
+      "es": { "title": "Funciones de Subestado", "summary": "Administra substates y su ciclo de vida." }
+    },
+    "precache": {
+      "en": { "title": "Precache Functions", "summary": "Warm up assets before they are needed." },
+      "es": { "title": "Funciones de Precarga", "summary": "Prepara recursos antes de que se necesiten." }
+    },
+    "score": {
+      "en": { "title": "Score Functions", "summary": "Inspect score, rating, and performance data." },
+      "es": { "title": "Funciones de Puntuación", "summary": "Consulta puntaje, rating y datos de rendimiento." }
+    },
+    "savedata": {
+      "en": { "title": "Save Data Functions", "summary": "Read and write persistent save values." },
+      "es": { "title": "Funciones de Guardado", "summary": "Lee y escribe valores persistentes del guardado." }
+    },
+    "script": {
+      "en": { "title": "Script Functions", "summary": "Control script execution and callbacks." },
+      "es": { "title": "Funciones de Script", "summary": "Controla la ejecución de scripts y callbacks." }
+    },
+    "discord": {
+      "en": { "title": "Discord Functions", "summary": "Update Discord rich presence and status." },
+      "es": { "title": "Funciones de Discord", "summary": "Actualiza la presencia enriquecida y estado de Discord." }
+    },
+    "uncategorized": {
+      "en": { "title": "Uncategorized Functions", "summary": "Miscellaneous helpers that do not fit a single category." },
+      "es": { "title": "Funciones sin categoría", "summary": "Ayudas varias que no encajan en una sola categoría." }
+    }
+  }
+}

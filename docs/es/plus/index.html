@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="es" data-theme="auto">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Plus API de Lua</title>
+    <meta name="description" content="Hub de API Lua de Plus separado en video, modchart, modifiers, variables, Windows y GDI." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="icon" href="../../assets/favicon.ico" />
+    <link rel="stylesheet" href="../../assets/site.css" />
+    <script defer src="../../assets/site.js"></script>
+  </head>
+  <body class="plus-body">
+    <header class="topbar">
+      <a class="brand" href="../"><img src="../../assets/pluslogo.png" alt="Plus Engine" class="brand-logo plus-logo" /></a>
+      <nav class="top-actions">
+        <a class="text-link" href="../psych/">Psych</a>
+        <a class="text-link" href="../../plus/">English</a>
+        <button id="themeToggle" class="icon-btn" type="button" aria-label="Cambiar tema">Tema</button>
+      </nav>
+    </header>
+
+    <main class="page-main under-wrap">
+      <section class="card under-card">
+        <p class="eyebrow">Plus API de Lua</p>
+        <h1>Documentación Plus organizada</h1>
+        <p>
+          Las docs de Plus ahora están separadas como Psych: callbacks de video, funciones de
+          modchart, modifiers, variables, helpers de Windows y helpers GDI. Cada ruta sale de
+          presets JSON.
+        </p>
+        <div class="page-links" style="margin-top: 1rem;">
+          <a href="pages/video/">Funciones de video<small>Callbacks Lua de VideoSprite y hxvlc</small></a>
+          <a href="pages/modchart/">Funciones de modchart<small>set, ease, add, queue, playfields, callbacks</small></a>
+          <a href="pages/modifiers/">Modifiers<small>Modifier, aliases/submodifiers, descripción y espacio de video</small></a>
+          <a href="pages/variables/">Variables<small>Valores de video, modchart, Windows y GDI</small></a>
+          <a href="pages/windows/">Funciones de Windows<small>Callbacks de ventana/sistema con advertencia</small></a>
+          <a href="pages/gdi/">Funciones GDI<small>Efectos GDI experimentales con advertencia fuerte</small></a>
+        </div>
+      </section>
+
+      <section class="home-grid">
+        <article class="card home-card third"><h2>Video</h2><p class="sidebar-copy">Precarga, reproduce, pausa, reanuda, elimina e inspecciona sprites de video con tag.</p></article>
+        <article class="card home-card third"><h2>Modchart</h2><p class="sidebar-copy">Registra modifiers y programa eventos por beat con set/ease/add/callback.</p></article>
+        <article class="card home-card third"><h2>Modifiers</h2><p class="sidebar-copy">Lista de modifiers compilados con aliases y espacio para agregar videos de ejemplo después.</p></article>
+        <article class="card home-card half"><h2>Advertencia Windows/GDI</h2><p class="sidebar-copy">Las funciones Windows y GDI pueden afectar escritorio, taskbar, wallpaper, estado de ventana, capturas y efectos visuales. Déjalas opt-in y bien explicadas.</p></article>
+        <article class="card home-card half"><h2>Base de fuente</h2><p class="sidebar-copy">Los nombres fueron revisados contra el branch público dev: <code>LuaVideo.hx</code>, <code>LuaModchart.hx</code>, <code>WindowsFunctions.hx</code> y <code>WindowsGDIFunctions.hx</code>.</p></article>
+      </section>
+    </main>
+  </body>
+</html>

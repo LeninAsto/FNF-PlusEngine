@@ -1,0 +1,10 @@
+/index.html / 301
+/psych/index.html /psych/ 301
+/plus/index.html /plus/ 301
+/es/index.html /es/ 301
+/es/psych/index.html /es/psych/ 301
+/es/plus/index.html /es/plus/ 301
+/pages/:section/index.html /pages/:section/ 301
+/es/pages/:section/index.html /es/pages/:section/ 301
+/plus/pages/:section/index.html /plus/pages/:section/ 301
+/es/plus/pages/:section/index.html /es/plus/pages/:section/ 301

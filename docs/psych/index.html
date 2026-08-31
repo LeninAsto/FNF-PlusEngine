@@ -1,0 +1,217 @@
+﻿<!doctype html>
+<html lang="en" data-theme="auto">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Psych Engine - Lua Script API</title>
+    <meta
+      name="description"
+      content="Material Design rebuild of the classic Psych Engine Lua Script API home page."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" href="../assets/favicon.ico" />
+    <link rel="stylesheet" href="../assets/site.css" />
+    <script defer src="../assets/site.js"></script>
+  </head>
+  <body class="docs-body psych-page">
+    <div class="ambient ambient-a"></div>
+    <div class="ambient ambient-b"></div>
+
+    <header class="topbar">
+      <a class="brand psych-brand" href="../">
+        <img src="../assets/logo.png" alt="Psych Engine Logo" class="brand-logo psych-logo" />
+        <span class="psych-brand-copy">
+          <span class="psych-brand-title">Psych Engine</span>
+          <span class="psych-brand-subtitle">Lua Script API</span>
+        </span>
+      </a>
+      <nav class="top-actions">
+        <a class="text-link" href="../">Home</a>
+        <a class="text-link" href="../plus/">Plus</a>
+        <a class="text-link" href="../es/psych/">EspaÃ±ol</a>
+        <button id="themeToggle" class="icon-btn" type="button" aria-label="Toggle theme">
+          Theme
+        </button>
+      </nav>
+    </header>
+
+    <main class="psych-layout">
+      <aside class="card psych-sidebar" aria-label="Page navigation">
+        <div class="sidebar-block">
+          <p class="eyebrow">Psych Home</p>
+          <h2>Classic structure, Material skin</h2>
+          <p class="sidebar-copy">
+            This page keeps the original Psych home layout and content, but swaps the chrome for
+            a cleaner Material-style presentation.
+          </p>
+        </div>
+
+        <div class="sidebar-search">
+          <label for="sectionSearch">Search sections</label>
+          <input
+            id="sectionSearch"
+            class="search-field"
+            type="search"
+            placeholder="Home, functions, script..."
+          />
+        </div>
+
+        <nav class="section-nav" aria-label="Quick links">
+          <a href="#home-page">Home Page</a>
+          <a href="#vscode-extension">VS Code Extension</a>
+          <a href="#running-script">Running a Script</a>
+          <a href="#functions">Functions</a>
+          <a href="#other-pages">Other Pages</a>
+        </nav>
+
+        <div class="sidebar-footer">
+          The old-school doc layout stays intact. We just made it less crusty, more polished.
+        </div>
+      </aside>
+
+      <section class="psych-main">
+        <article class="card psych-hero" id="home-page" data-searchable="true">
+          <div class="hero-copy">
+            <p class="eyebrow">Psych Engine</p>
+            <h1>Lua Script API</h1>
+            <p>
+              This site is highly inspired by Flixel API's site, so huge props to them.
+            </p>
+            <p>
+              These pages are intended for Psych Engine 1.0+, so it might not be reliable for
+              older versions. Support for other versions has been abandoned and will not be added
+              to these pages.
+            </p>
+            <div class="hero-actions">
+              <a class="btn btn-filled" href="#functions">Browse Functions</a>
+              <a class="btn btn-outlined" href="../">Back to Hub</a>
+            </div>
+          </div>
+
+          <img
+            width="400"
+            src="../assets/logo.png"
+            alt="Psych Engine Logo"
+            class="hero-logo"
+            draggable="false"
+          />
+        </article>
+
+        <article class="card section-card" id="vscode-extension" data-searchable="true">
+          <h2>VS Code Extension</h2>
+          <p>
+            <a href="https://gamebanana.com/tools/10716" target="_blank" rel="noreferrer">
+              It's highly recommended for you to install it
+            </a>
+            , as it auto-completes function names. This is an unofficial tool though.
+          </p>
+        </article>
+
+        <article class="card section-card" id="running-script" data-searchable="true">
+          <h2>Running a Script</h2>
+          <p>There are 6 types of LUA Scripts you can run:</p>
+          <ul class="psych-list">
+            <li>
+              <strong>Stage Script:</strong> It will only run if the song's stage is loaded in the
+              current chart, it should have the same name as your stage's .JSON file and should be
+              inside <span class="code-pill">mods/My-Mod/stages/</span>.
+            </li>
+            <li>
+              <strong>Note Type Script:</strong> It will only run if the named Note Type is being
+              used in the current chart, it should be inside
+              <span class="code-pill">mods/My-Mod/custom_notetypes/</span>.
+            </li>
+            <li>
+              <strong>Event Script:</strong> It will only run if the said Event is being used on
+              the chart, it should be located inside
+              <span class="code-pill">mods/My-Mod/custom_events/</span>.
+            </li>
+            <li>
+              <strong>Song Script(s):</strong> They should be saved inside the song's chart
+              folder, it will only run in this specific song, no matter the Difficulty, Stage or
+              anything else.
+            </li>
+            <li>
+              <strong>Character Script:</strong> It will only be run if the specified character is
+              used on the current Song. You can use variables
+              <a href="../pages/variables/">dadName, boyfriendName and gfName</a> to check the
+              current character used's name. (if dadName == 'pico' for example), should be in
+              <span class="code-pill">mods/My-Mod/characters/</span>.
+            </li>
+            <li>
+              <strong>General Script:</strong> It should be saved in
+              <span class="code-pill">mods/My-Mod/scripts/</span>, it will always run in every
+              Song as long as the Mod is loaded.
+            </li>
+          </ul>
+        </article>
+
+        <article class="card section-card" id="functions" data-searchable="true">
+          <h2>Functions</h2>
+          <p>There are 22 pages available with 212 functions:</p>
+          <div class="page-links">
+            <a href="../pages/playstate/">PlayState Functions<small>General gameplay and song flow</small></a>
+            <a href="../pages/reflection/">Reflection Functions<small>Property access and method calls</small></a>
+            <a href="../pages/spritesheet/">Spritesheet Functions<small>Lua sprites and animation helpers</small></a>
+            <a href="../pages/flxanimate/">FlxAnimate Functions<small>Animate atlas helpers</small></a>
+            <a href="../pages/text/">Text Functions<small>Text objects and formatting</small></a>
+            <a href="../pages/sound/">Sound Functions<small>Audio playback and control</small></a>
+            <a href="../pages/shaders/">Shaders Functions<small>Shader loading and uniforms</small></a>
+            <a href="../pages/camera/">Camera Functions<small>Camera movement and effects</small></a>
+            <a href="../pages/input/">Input Functions<small>Keyboard, mouse, and gamepads</small></a>
+            <a href="../pages/tween/">Tween Functions<small>Motion and value animations</small></a>
+            <a href="../pages/timer/">Timer Functions<small>Timing utilities</small></a>
+            <a href="../pages/character/">Character Functions<small>Character state helpers</small></a>
+            <a href="../pages/file/">File I/O Functions<small>File read and write tools</small></a>
+            <a href="../pages/translations/">Language/Translation Functions<small>Localized text support</small></a>
+            <a href="../pages/achievements/">Achievements Functions<small>Achievement state and unlocks</small></a>
+            <a href="../pages/substate/">Substate Functions<small>Substate lifecycle helpers</small></a>
+            <a href="../pages/precache/">Precache Functions<small>Asset warmup and caching</small></a>
+            <a href="../pages/score/">Score Functions<small>Score and rating helpers</small></a>
+            <a href="../pages/savedata/">Save Data Functions<small>Persistent state helpers</small></a>
+            <a href="../pages/script/">Script Functions<small>Script execution utilities</small></a>
+            <a href="../pages/discord/">Discord Functions<small>Discord presence helpers</small></a>
+            <a href="../pages/uncategorized/">Uncategorized Functions<small>Miscellaneous references</small></a>
+          </div>
+        </article>
+
+        <article class="card section-card" id="other-pages" data-searchable="true">
+          <h2>Other Pages</h2>
+          <div class="page-links">
+            <a href="../pages/variables/">List of all 106 Variables<small>Shared values and state flags</small></a>
+            <a href="../pages/snippets/">Code Snippets<small>Reusable Lua patterns</small></a>
+          </div>
+          <div class="inline-note">
+            The page list stays intact, just arranged with calmer spacing and Material cards so it
+            feels cleaner without losing the original structure.
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <script>
+      (() => {
+        const input = document.getElementById("sectionSearch");
+        const cards = Array.from(document.querySelectorAll("[data-searchable='true']"));
+
+        if (!input) {
+          return;
+        }
+
+        input.addEventListener("input", () => {
+          const query = input.value.toLowerCase().trim();
+          cards.forEach((card) => {
+            const matches = !query || card.textContent.toLowerCase().includes(query);
+            card.hidden = !matches;
+          });
+        });
+      })();
+    </script>
+  </body>
+</html>
+
