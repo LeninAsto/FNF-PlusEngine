@@ -45,13 +45,14 @@ class PlusFlxMacro
 		var fields:Array<Field> = Context.getBuildFields();
 		if (!hasField(fields, "drawDebugOnCamera"))
 		{
+			var body:Expr = if (Context.defined("FLX_DEBUG")) macro drawDebug(camera) else macro {};
 			fields.push({
 				name: "drawDebugOnCamera",
 				access: [APublic],
 				kind: FFun({
 					args: [{name: "camera", type: macro :flixel.FlxCamera}],
 					ret: macro :Void,
-					expr: macro drawDebug(camera)
+					expr: body
 				}),
 				pos: Context.currentPos()
 			});

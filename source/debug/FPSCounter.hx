@@ -700,7 +700,6 @@ class FPSCounter extends Sprite
 		if (fullName == null || fullName.length <= 0)
 			return "Unknown";
 
-		var isFunkinState = fullName.indexOf("funkin.") == 0;
 		var stateName = fullName;
 		if (stateName.indexOf('.') > -1)
 		{
@@ -708,7 +707,7 @@ class FPSCounter extends Sprite
 			stateName = parts[parts.length - 1];
 		}
 
-		return isFunkinState ? '(funkin) ' + stateName : stateName;
+		return stateName;
 	}
 
 	// Función para obtener el idioma actual

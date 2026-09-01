@@ -291,21 +291,7 @@ class TraceDisplay extends Sprite
 
 	private function formatSourceLabel(fileName:String):String
 	{
-		var label = extractFileName(fileName);
-		return isFunkinSource(fileName) ? '(funkin) ' + label : label;
-	}
-
-	private function isFunkinSource(fileName:String):Bool
-	{
-		if (fileName == null)
-			return false;
-
-		var normalized = fileName.split("\\").join("/");
-		return normalized.indexOf("/funkin/") != -1
-			|| normalized.indexOf("source/funkin/") == 0
-			|| normalized.indexOf("assets/funkin/") == 0
-			|| normalized.indexOf("/assets/funkin/") != -1
-			|| normalized.indexOf("funkin/") == 0;
+		return extractFileName(fileName);
 	}
 
 	/**

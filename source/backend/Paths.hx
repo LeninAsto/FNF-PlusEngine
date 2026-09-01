@@ -3,6 +3,7 @@ package backend;
 import flixel.graphics.frames.FlxFrame.FlxFrameAngle;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.FlxGraphic;
+import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
 import flixel.system.FlxAssets;
 import openfl.display.BitmapData;
@@ -1163,11 +1164,83 @@ class Paths
 	#end
 	#end
 	#if flxanimate
+	static function loadAnimateAtlasFromKeys(spr:FlxAnimate, keys:Array<String>):Void
+	{
+		var cleanKeys:Array<String> = [];
+		for (key in keys)
+		{
+			if (key == null)
+				continue;
+
+			key = key.trim();
+			if (key.length > 0 && !cleanKeys.contains(key))
+				cleanKeys.push(key);
+		}
+
+		if (cleanKeys.length < 1)
+			return;
+
+		var frames:flxanimate.frames.FlxAnimateFrames = new flxanimate.frames.FlxAnimateFrames();
+		var animationJsons:Array<String> = [];
+
+		for (key in cleanKeys)
+		{
+			var spritePages:Array<String> = getAnimateAtlasSpriteJsons(key);
+			var pageKeys:Array<String> = getAnimateAtlasPageKeys(key);
+			if (spritePages.length < 1 || pageKeys.length != spritePages.length)
+				throw 'Missing Animate atlas spritemap data for "$key"';
+
+			for (i in 0...spritePages.length)
+				frames.addAtlas(parseAnimateSpritemap(spritePages[i], image(pageKeys[i])), true);
+
+			var animationJson:String = getAnimateAtlasAnimationJson(key);
+			if (animationJson != null)
+				animationJsons.push(animationJson);
+		}
+
+		if (animationJsons.length < 1)
+			throw 'Missing Animate atlas Animation.json for "${cleanKeys[0]}"';
+
+		spr.loadSeparateAtlas(animationJsons[0], frames);
+		if (Std.isOfType(spr, flxanimate.PsychFlxAnimate))
+		{
+			var atlas:flxanimate.PsychFlxAnimate = cast spr;
+			for (i in 1...animationJsons.length)
+				atlas.addAtlasLibrary(animationJsons[i]);
+		}
+	}
+
+	static function parseAnimateSpritemap(spriteJson:String, graphic:FlxGraphic):FlxAtlasFrames
+	{
+		var data:Dynamic = Json.parse(stripBOM(spriteJson));
+		var frames:FlxAtlasFrames = new FlxAtlasFrames(graphic);
+		var sprites:Array<Dynamic> = cast data.ATLAS.SPRITES;
+
+		for (sprite in sprites)
+		{
+			var limb:Dynamic = sprite.SPRITE;
+			var rotated:Bool = limb.rotated == true;
+			var rect:FlxRect = FlxRect.get(limb.x, limb.y, limb.w, limb.h);
+			if (rotated)
+				rect.setSize(rect.height, rect.width);
+
+			frames.addAtlasFrame(rect, FlxPoint.get(limb.w, limb.h), FlxPoint.get(), limb.name, rotated ? FlxFrameAngle.ANGLE_NEG_90 : FlxFrameAngle.ANGLE_0);
+		}
+
+		return frames;
+	}
+
 	public static function loadAnimateAtlas(spr:FlxAnimate, folderOrImg:Dynamic, spriteJson:Dynamic = null, animationJson:Dynamic = null)
 	{
 		var changedAnimJson = false;
 		var changedAtlasJson = false;
 		var changedImage = false;
+
+		if (Std.isOfType(folderOrImg, Array))
+		{
+			loadAnimateAtlasFromKeys(spr, cast folderOrImg);
+			return;
+		}
 
 		if (spriteJson != null)
 		{
@@ -1235,13 +1308,15 @@ class Paths
 				changedAnimJson = (animationJson != null);
 			}
 
-			if (spritePages.length == 1)
+			if (spritePages.length > 0)
 			{
-				folderOrImg = spriteImgs[0];
-				spriteJson = spritePages[0];
+				var frames:flxanimate.frames.FlxAnimateFrames = new flxanimate.frames.FlxAnimateFrames();
+				for (i in 0...spritePages.length)
+					frames.addAtlas(parseAnimateSpritemap(spritePages[i], spriteImgs[i]), true);
+
+				spr.loadSeparateAtlas(animationJson, frames);
+				return;
 			}
-			else if (spriteImgs.length > 0)
-				folderOrImg = spriteImgs[0];
 		}
 
 		spr.loadAtlasEx(folderOrImg, spriteJson, animationJson);

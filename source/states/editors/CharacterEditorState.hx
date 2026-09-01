@@ -1,5 +1,6 @@
 package states.editors;
 
+import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.util.FlxDestroyUtil;
 import openfl.net.FileReference;
 import openfl.events.Event;
@@ -883,23 +884,25 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		character.color = FlxColor.WHITE;
 		character.alpha = 1;
 
-		if (Paths.fileExists('images/' + character.imageFile + '/Animation.json', TEXT))
+		var useAnimateAtlas:Bool = Character.usesAnimateAtlas(character.renderType) || (character.renderType == 'sparrow' && Paths.hasAnimateAtlas(character.imageFile));
+		if (useAnimateAtlas)
 		{
 			character.atlas = new FlxAnimate();
 			character.atlas.showPivot = false;
 			try
 			{
-				Paths.loadAnimateAtlas(character.atlas, character.imageFile);
+				Paths.loadAnimateAtlas(character.atlas, getEditorAnimateAtlasKeys(anims));
 			}
 			catch (e:Dynamic)
 			{
 				FlxG.log.warn('Could not load atlas ${character.imageFile}: $e');
 			}
 			character.isAnimateAtlas = true;
+			character.frames = getEditorClassicFrames(anims, false);
 		}
 		else
 		{
-			character.frames = Paths.getMultiAtlas(character.imageFile.split(','));
+			character.frames = getEditorClassicFrames(anims, true);
 		}
 
 		for (anim in anims)
@@ -909,7 +912,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			var animFps:Int = anim.fps;
 			var animLoop:Bool = !!anim.loop; // Bruh
 			var animIndices:Array<Int> = anim.indices;
-			addAnimation(animAnim, animName, animFps, animLoop, animIndices);
+			addAnimation(animAnim, animName, animFps, animLoop, animIndices, anim.animType, anim.renderType);
 		}
 
 		if (anims.length > 0)
@@ -1198,7 +1201,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 				frames = character.animation.curAnim.curFrame;
 				length = character.animation.curAnim.numFrames;
 			}
-			else if (character.isAnimateAtlas && character.atlas.anim != null)
+			else if (character.isAnimateAtlas && character.isCurrentAnimationAnimateAtlas() && character.atlas.anim != null)
 			{
 				frames = character.atlas.anim.curFrame;
 				length = character.atlas.anim.length;
@@ -1216,10 +1219,10 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 					if (holdingFrameTime <= 0.5 || holdingFrameElapsed > 0.1)
 					{
 						frames = FlxMath.wrap(frames + Std.int(isLeft ? -shiftMult : shiftMult), 0, length - 1);
-						if (!character.isAnimateAtlas)
-							character.animation.curAnim.curFrame = frames;
-						else
+						if (character.isAnimateAtlas && character.isCurrentAnimationAnimateAtlas())
 							character.atlas.anim.curFrame = frames;
+						else
+							character.animation.curAnim.curFrame = frames;
 						holdingFrameElapsed -= 0.1;
 					}
 				}
@@ -1436,9 +1439,65 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			|| name == 'gf';
 	}
 
-	function addAnimation(anim:String, name:String, fps:Float, loop:Bool, indices:Array<Int>)
+	function getEditorAnimateAtlasKeys(anims:Array<AnimArray>):Array<String>
 	{
-		if (!character.isAnimateAtlas)
+		var keys:Array<String> = [];
+		addEditorAtlasKeys(keys, character.imageFile);
+
+		for (anim in anims)
+		{
+			if (anim.assetPath == null)
+				continue;
+
+			var renderType:String = anim.renderType != null ? anim.renderType : character.renderType;
+			if (Character.usesAnimateAtlas(renderType))
+				addEditorAtlasKeys(keys, anim.assetPath);
+		}
+
+		return keys;
+	}
+
+	function getEditorClassicFrames(anims:Array<AnimArray>, includeBase:Bool):FlxAtlasFrames
+	{
+		var keys:Array<String> = [];
+		if (includeBase)
+			addEditorAtlasKeys(keys, character.imageFile);
+
+		for (anim in anims)
+		{
+			if (anim.assetPath == null)
+				continue;
+
+			var renderType:String = anim.renderType != null ? anim.renderType : character.renderType;
+			if (Character.usesClassicAtlas(renderType))
+				addEditorAtlasKeys(keys, anim.assetPath);
+		}
+
+		return keys.length > 0 ? Paths.getMultiAtlas(keys) : null;
+	}
+
+	function addEditorAtlasKeys(keys:Array<String>, value:String):Void
+	{
+		if (value == null)
+			return;
+
+		for (key in value.split(','))
+		{
+			key = Character.normalizeAssetPath(key);
+			if (key != null)
+			{
+				key = key.trim();
+				if (key.length > 0 && !keys.contains(key))
+					keys.push(key);
+			}
+		}
+	}
+
+	function addAnimation(anim:String, name:String, fps:Float, loop:Bool, indices:Array<Int>, ?animType:String, ?animRenderType:String)
+	{
+		var useAnimate:Bool = character.isAnimateAtlas && Character.usesAnimateAtlas(animRenderType != null ? animRenderType : character.renderType);
+		character.setAnimationUsesAnimateAtlas(anim, useAnimate);
+		if (!useAnimate)
 		{
 			if (indices != null && indices.length > 0)
 				character.animation.addByIndices(anim, name, indices, "", fps, loop);
@@ -1447,10 +1506,21 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		}
 		else
 		{
-			if (indices != null && indices.length > 0)
-				character.atlas.anim.addBySymbolIndices(anim, name, indices, fps, loop);
+			animType = animType != null ? animType.trim().toLowerCase() : 'framelabel';
+			if (animType == 'symbol')
+			{
+				if (indices != null && indices.length > 0)
+					character.atlas.anim.addBySymbolIndices(anim, name, indices, fps, loop);
+				else
+					character.atlas.anim.addBySymbol(anim, name, fps, loop);
+			}
 			else
-				character.atlas.anim.addBySymbol(anim, name, fps, loop);
+			{
+				if (indices != null && indices.length > 0)
+					character.atlas.addByFrameLabelIndices(anim, name, indices, fps, loop);
+				else
+					character.atlas.addByFrameLabel(anim, name, fps, loop);
+			}
 		}
 
 		if (!character.hasAnimation(anim))

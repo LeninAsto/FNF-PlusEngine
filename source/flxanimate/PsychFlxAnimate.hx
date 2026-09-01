@@ -5,6 +5,7 @@ import flixel.system.FlxAssets.FlxGraphicAsset;
 import flxanimate.frames.FlxAnimateFrames;
 import flxanimate.data.AnimationData;
 import flxanimate.FlxAnimate as OriginalFlxAnimate;
+import flxanimate.animate.FlxSymbolDictionary;
 
 class PsychFlxAnimate extends OriginalFlxAnimate
 {
@@ -69,6 +70,58 @@ class PsychFlxAnimate extends OriginalFlxAnimate
 		else
 			frames = FlxAnimateFrames.fromSparrow(cast myData, img);
 		origin = anim.curInstance.symbol.transformationPoint;
+	}
+
+	public function addAtlasLibrary(animationJson:String)
+	{
+		if (animationJson == null || anim == null || anim.library == null)
+			return;
+
+		var animJson:AnimAtlas = cast haxe.Json.parse(_removeBOM(animationJson));
+		var library:FlxSymbolDictionary = new FlxSymbolDictionary();
+		@:privateAccess
+		library._parent = anim;
+
+		if (animJson.MD != null && animJson.MD.V != null)
+			library.fromJSONEx(animJson);
+		else
+			library.fromJSON(animJson);
+
+		anim.library.addLibrary(library.getList(), true);
+		anim.symbolDictionary = anim.library.getList();
+		anim.library.frames = frames;
+	}
+
+	public function addByFrameLabelIndices(name:String, frameLabel:String, indices:Array<Int>, frameRate:Float = 0, looped:Bool = true)
+	{
+		if (anim == null || anim.stageInstance == null || anim.stageInstance.symbol == null)
+			return;
+
+		var label = anim.getFrameLabel(frameLabel);
+		if (label == null)
+		{
+			anim.addBySymbolIndices(name, frameLabel, indices, frameRate, looped);
+			return;
+		}
+
+		var labelIndices:Array<Int> = label.getFrameIndices();
+		var mappedIndices:Array<Int> = [];
+		for (index in indices)
+			if (index >= 0 && index < labelIndices.length)
+				mappedIndices.push(labelIndices[index]);
+
+		anim.addBySymbolIndices(name, anim.stageInstance.symbol.name, mappedIndices.length > 0 ? mappedIndices : labelIndices, frameRate, looped);
+	}
+
+	public function addByFrameLabel(name:String, frameLabel:String, frameRate:Float = 0, looped:Bool = true)
+	{
+		if (anim == null || anim.stageInstance == null || anim.stageInstance.symbol == null)
+			return;
+
+		if (anim.getFrameLabel(frameLabel) != null)
+			anim.addByFrameLabel(name, frameLabel, frameRate, looped);
+		else
+			anim.addBySymbol(name, frameLabel, frameRate, looped);
 	}
 
 	override function draw()
