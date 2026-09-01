@@ -3367,13 +3367,7 @@ class PlayState extends MusicBeatState
 
 		if (unspawnNotes[0] != null)
 		{
-			var time:Float = spawnTime * playbackRate;
-			if (songSpeed < 1)
-				time /= songSpeed;
-			if (unspawnNotes[0].multSpeed < 1)
-				time /= unspawnNotes[0].multSpeed;
-
-			while (unspawnNotes.length > 0 && unspawnNotes[0].strumTime - Conductor.songPosition < time)
+			while (unspawnNotes.length > 0 && unspawnNotes[0].strumTime - Conductor.songPosition < getNoteSpawnTime(unspawnNotes[0]))
 			{
 				var dunceNote:Note = unspawnNotes[0];
 				notes.insert(0, dunceNote);
@@ -3507,6 +3501,22 @@ class PlayState extends MusicBeatState
 
 		setOnScripts('botPlay', cpuControlled);
 		callOnScripts('onUpdatePost', [elapsed]);
+	}
+
+	function getNoteSpawnTime(note:Note):Float
+	{
+		var time:Float = spawnTime;
+		#if MODCHARTS_NOTITG_ALLOWED
+		if (Manager.instance != null && note != null)
+			time = Manager.instance.getNoteSpawnTime(note.mustPress ? 1 : 0, time);
+		#end
+
+		time *= playbackRate;
+		if (songSpeed < 1)
+			time /= songSpeed;
+		if (note != null && note.multSpeed < 1)
+			time /= note.multSpeed;
+		return time;
 	}
 
 	// Health icon updaters
@@ -6671,15 +6681,8 @@ class PlayState extends MusicBeatState
 		NoteSplash.clearCache();
 		Song.clearChartCache();
 
-		// Limpiar Manager de modchart
 		#if MODCHARTS_NOTITG_ALLOWED
-		if (modchart.Manager.instance != null)
-		{
-			var manager = modchart.Manager.instance;
-			remove(manager, true);
-			manager.destroy();
-			modchart.Manager.instance = null;
-		}
+		destroyModchartManager();
 		#end
 
 		if (Main.fpsVar != null)
@@ -6707,6 +6710,22 @@ class PlayState extends MusicBeatState
 
 		super.destroy();
 	}
+
+	#if MODCHARTS_NOTITG_ALLOWED
+	function destroyModchartManager():Void
+	{
+		var manager = modchart.Manager.instance;
+		if (manager == null)
+			return;
+
+		if (noteGroup != null)
+			noteGroup.remove(manager, true);
+		remove(manager, true);
+		manager.destroy();
+		if (modchart.Manager.instance == manager)
+			modchart.Manager.instance = null;
+	}
+	#end
 
 	var lastStepHit:Int = -1;
 

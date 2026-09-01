@@ -50,6 +50,16 @@ class EventManager {
 
 		insertSorted(eventList, event, true);
 		eventCount++;
+
+		if (lastBeat != Math.NEGATIVE_INFINITY && event.beat <= lastBeat && !event.fired)
+		{
+			if (!event.active)
+			{
+				event.active = true;
+				activeEvents.push(event);
+			}
+			nextEventIndex = getNextEventIndex(lastBeat);
+		}
 	}
 
 	public function update(curBeat:Float) {
@@ -59,7 +69,7 @@ class EventManager {
 
 		while (nextEventIndex < eventCount) {
 			var ev = eventList[nextEventIndex];
-			if (ev == null || ev.beat >= curBeat)
+			if (ev == null || ev.beat > curBeat)
 				break;
 			ev.active = true;
 			activeEvents.push(ev);
@@ -134,6 +144,17 @@ class EventManager {
 			}
 		}
 		return len;
+	}
+
+	private function getNextEventIndex(curBeat:Float):Int {
+		var index = 0;
+		while (index < eventCount) {
+			var ev = eventList[index];
+			if (ev == null || ev.beat > curBeat)
+				break;
+			index++;
+		}
+		return index;
 	}
 
 	private function resetTimelineState():Void {

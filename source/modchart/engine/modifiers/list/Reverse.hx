@@ -112,6 +112,9 @@ class Reverse extends Modifier {
 		shift = FlxMath.lerp(shift, (HEIGHT * 0.5) - ARROW_SIZEDIV2, centerPercent);
 
 		var distance = params.distance;
+		final spawnTime = getSpawnTime(player);
+		if (spawnTime > 0)
+			distance = distance < 0 ? Math.max(distance, -spawnTime) : Math.min(distance, spawnTime);
 
 		distance *= Adapter.instance.getCurrentScrollSpeed();
 

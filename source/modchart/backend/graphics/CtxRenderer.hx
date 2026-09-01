@@ -93,6 +93,16 @@ class CtxRenderer {
 		return dc;
 	}
 
+	private inline function isInsideModchartSpawnTime(item:FlxSprite, playfield:PlayField, songPos:Float):Bool {
+		if (item == null || playfield == null)
+			return false;
+
+		final player = Adapter.instance.getPlayerFromArrow(item);
+		final spawnTime = Math.max(0, playfield.getPercent('spawnTime', player));
+		final renderAhead = spawnTime > 0 ? spawnTime : 2000;
+		return Adapter.instance.getTimeFromArrow(item) - songPos <= renderAhead + 16;
+	}
+
 	var emptyVec:openfl.Vector<Int> = new openfl.Vector<Int>(8, true, [for (i in 0...8) 0]);
 
 	/** Target subdivisions set by the user (restored when FPS recovers). */
@@ -197,6 +207,7 @@ class CtxRenderer {
 				continue;
 
 			ctx = playfield.context;
+			final songPos = Adapter.instance.getSongPosition();
 
 			for (player in 0...items.length) {
 				var curItems:Array<Array<FlxSprite>> = items[player];
@@ -220,6 +231,8 @@ class CtxRenderer {
 				final drawHolds = () -> {
 					if (holdCount > 0) {
 						for (hold in curItems[2]) {
+							if (!isInsideModchartSpawnTime(hold, playfield, songPos))
+								continue;
 							if (!getVisibility(hold))
 								continue;
 							var _ = emitHoldCmd(hold);
@@ -252,6 +265,8 @@ class CtxRenderer {
 				// tap arrow
 				if (arrowCount > 0) {
 					for (arrow in curItems[1]) {
+						if (!isInsideModchartSpawnTime(arrow, playfield, songPos))
+							continue;
 						if (!getVisibility(arrow))
 							continue;
 

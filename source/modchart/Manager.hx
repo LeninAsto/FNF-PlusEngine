@@ -258,6 +258,22 @@ final class Manager extends FlxBasic
 		return 0.;
 	}
 
+	public function getNoteSpawnTime(player:Int, fallback:Float):Float
+	{
+		var result:Float = -1;
+		for (playfield in playfields)
+		{
+			if (playfield == null)
+				continue;
+
+			final value = playfield.getPercent('spawnTime', player);
+			final spawnTime = value > 0 ? value : fallback;
+			if (spawnTime > result)
+				result = spawnTime;
+		}
+		return result > 0 ? result : fallback;
+	}
+
 	/**
 	 * NMV-style alias for setting a raw modifier value immediately from HScript.
 	 */
@@ -598,9 +614,15 @@ final class Manager extends FlxBasic
 		super.destroy();
 
 		if (!__primary)
+		{
+			if (instance == this)
+				instance = null;
 			return;
+		}
+		__primary = false;
 
-		Adapter.instance.onModchartingDispose();
+		if (Adapter.instance != null)
+			Adapter.instance.onModchartingDispose();
 
 		iteratePlayfields(pf ->
 		{
