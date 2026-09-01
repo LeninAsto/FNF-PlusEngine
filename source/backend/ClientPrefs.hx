@@ -126,7 +126,6 @@ import states.TitleState;
 	public var noReset:Bool = false;
 	public var healthBarAlpha:Float = 1;
 	public var smoothHealthBar:Bool = true;
-	public var smoothHPBug:Bool = false;
 	public var usePsychScoreText:Bool = true;
 	public var hitsoundVolume:Float = 0;
 	public var hitSounds:String = "None";

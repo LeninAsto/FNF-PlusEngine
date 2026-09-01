@@ -5,6 +5,7 @@ import objects.Character;
 import objects.Note;
 import backend.StageData;
 
+import flixel.FlxBasic;
 import openfl.display.BlendMode;
 import Type.ValueType;
 
@@ -436,8 +437,8 @@ class LuaUtils
 
 	public static function destroyObject(tag:String) {
 		var variables = MusicBeatState.getVariables();
-		var obj:FlxSprite = variables.get(tag);
-		if(obj == null || obj.destroy == null)
+		var obj:Dynamic = variables.get(tag);
+		if(obj == null || !Std.isOfType(obj, FlxBasic) || obj.destroy == null)
 			return;
 
 		LuaUtils.getTargetInstance().remove(obj, true);
@@ -476,7 +477,9 @@ class LuaUtils
 		}
 		#end
 		var variables = MusicBeatState.getVariables();
-		variables.remove(rawTag);
+		var rawValue:Dynamic = variables.get(rawTag);
+		if(Std.isOfType(rawValue, FlxTween))
+			variables.remove(rawTag);
 		variables.remove(prefixedTag);
 	}
 
@@ -498,11 +501,13 @@ class LuaUtils
 		#end
 
 		var variables = MusicBeatState.getVariables();
-		var rawTween:FlxTween = variables.get(rawTag);
-		if(rawTween != null && found.indexOf(rawTween) < 0) found.push(rawTween);
+		var rawValue:Dynamic = variables.get(rawTag);
+		if(Std.isOfType(rawValue, FlxTween) && found.indexOf(rawValue) < 0)
+			found.push(rawValue);
 
-		var tween:FlxTween = variables.get(prefixedTag);
-		if(tween != null && found.indexOf(tween) < 0) found.push(tween);
+		var tweenValue:Dynamic = variables.get(prefixedTag);
+		if(Std.isOfType(tweenValue, FlxTween) && found.indexOf(tweenValue) < 0)
+			found.push(tweenValue);
 
 		for(twn in found)
 		{

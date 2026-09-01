@@ -148,10 +148,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		var option:Option = new Option('Smooth Health Bar', 'If checked, the health bar will move smoothly instead of instantly.', 'smoothHealthBar', BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Health Bar Overflow', 'If checked, health can exceed the bar limit and icons can move outside the edges.',
-			'smoothHPBug', BOOL);
-		addOption(option);
-
 		var option:Option = new Option('Show Watermark', 'If checked, shows the watermark on screen.', 'showWatermark', BOOL);
 		addOption(option);
 		option.onChange = onChangeWatermark;

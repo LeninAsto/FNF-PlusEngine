@@ -925,7 +925,7 @@ class PlayState extends MusicBeatState
 		healthBar = new Bar(0, getGameplaySafeY() + getGameplaySafeHeight() * (!ClientPrefs.data.downScroll ? 0.89 : 0.11), 'healthBar',
 			function() return health, 0, 2);
 		healthBar.x = getGameplaySafeX() + (getGameplaySafeWidth() - healthBar.width) / 2;
-		healthBar.leftToRight = playOpponent ? true : false;
+		healthBar.leftToRight = false;
 		healthBar.scrollFactor.set();
 		healthBar.visible = !ClientPrefs.data.hideHud && !isNotITG;
 		healthBar.alpha = ClientPrefs.data.healthBarAlpha;
@@ -1617,7 +1617,29 @@ class PlayState extends MusicBeatState
 	}
 
 	public function getLuaObject(tag:String):Dynamic
-		return variables.get(tag);
+	{
+		var obj:Dynamic = variables.get(tag);
+		#if LUA_ALLOWED
+		if (obj == null)
+			obj = MusicBeatState.getVariables().get(tag);
+
+		if (obj == null)
+		{
+			for (script in luaArray)
+			{
+				if (script == null || script.closed || script.context == null || script.context.variables == null)
+					continue;
+
+				if (script.context.variables.exists(tag))
+				{
+					obj = script.context.variables.get(tag);
+					break;
+				}
+			}
+		}
+		#end
+		return obj;
+	}
 
 	function startCharacterPos(char:Character, ?gfCheck:Bool = false)
 	{
@@ -3197,19 +3219,7 @@ class PlayState extends MusicBeatState
 		}
 
 		if (healthBar.bounds.max != null && health > healthBar.bounds.max)
-		{
-			if (!ClientPrefs.data.smoothHPBug)
-			{
-				health = healthBar.bounds.max;
-			}
-			else if (shouldRelaxOverflowHealth())
-			{
-				var springBack:Float = Math.min(1, elapsed * 3.6);
-				health = FlxMath.lerp(health, healthBar.bounds.max, springBack);
-				if (health - healthBar.bounds.max < 0.001)
-					health = healthBar.bounds.max;
-			}
-		}
+			health = healthBar.bounds.max;
 
 		updateIconsScale(elapsed);
 		updateIconsPosition();
@@ -3795,37 +3805,6 @@ class PlayState extends MusicBeatState
 
 	public var isDead:Bool = false; // Don't mess with this on Lua!!!
 	public var gameOverTimer:FlxTimer;
-
-	function shouldRelaxOverflowHealth():Bool
-	{
-		var canRelax:Bool = ClientPrefs.data.smoothHPBug && generatedMusic && (breakTimerHud == null || !breakTimerHud.hasUpcomingNote());
-
-		if (canRelax)
-		{
-			for (note in notes)
-			{
-				if (note != null && note.mustPress && !note.wasGoodHit && note.strumTime >= Conductor.songPosition - 5)
-				{
-					canRelax = false;
-					break;
-				}
-			}
-		}
-
-		if (canRelax)
-		{
-			for (pending in unspawnNotes)
-			{
-				if (pending != null && pending.mustPress && pending.strumTime >= Conductor.songPosition - 5)
-				{
-					canRelax = false;
-					break;
-				}
-			}
-		}
-
-		return canRelax;
-	}
 
 	function doDeathCheck(?skipHealthCheck:Bool = false)
 	{
@@ -6252,11 +6231,11 @@ class PlayState extends MusicBeatState
 
 				if (note.isSustainNote)
 				{
-					var holdAnim = animToPlay + '-hold';
+					var holdAnim:String = animToPlay + '-hold';
 					if (char.animation.exists(holdAnim))
 						animToPlay = holdAnim;
 
-					if (char.getAnimationName() == animToPlay)
+					if (char.getAnimationName() == holdAnim || char.getAnimationName() == holdAnim + '-loop')
 						canPlay = false;
 				}
 
@@ -6361,11 +6340,11 @@ class PlayState extends MusicBeatState
 
 					if (note.isSustainNote)
 					{
-						var holdAnim = animToPlay + '-hold';
+						var holdAnim:String = animToPlay + '-hold';
 						if (char.animation.exists(holdAnim))
 							animToPlay = holdAnim;
 
-						if (char.getAnimationName() == animToPlay)
+						if (char.getAnimationName() == holdAnim || char.getAnimationName() == holdAnim + '-loop')
 							canPlay = false;
 					}
 
@@ -6985,11 +6964,42 @@ class PlayState extends MusicBeatState
 		var opponentChar:Character = playOpponent ? boyfriend : dad;
 		if (opponentChar == null)
 			return;
+		if (isCharacterHoldingSustain(opponentChar, false))
+			return;
 
 		var anim:String = opponentChar.getAnimationName();
 		if (opponentChar.holdTimer > Conductor.stepCrochet * (0.0011 #if FLX_PITCH / (FlxG.sound.music != null ? FlxG.sound.music.pitch : 1) #end) * opponentChar.singDuration
 			&& anim.startsWith('sing') && !anim.endsWith('miss'))
 			opponentChar.dance();
+	}
+
+	function isCharacterHoldingSustain(char:Character, mustPress:Bool):Bool
+	{
+		if (char == null)
+			return false;
+
+		for (note in notes)
+		{
+			if (note == null || !note.isSustainNote || note.mustPress != mustPress)
+				continue;
+
+			var noteChar:Character = note.gfNote ? gf : (mustPress ? (playOpponent ? dad : boyfriend) : (playOpponent ? boyfriend : dad));
+			if (noteChar != char)
+				continue;
+
+			var parent:Note = note.parent != null ? note.parent : note;
+			if (!(parent.wasGoodHit || parent.hitByOpponent || note.wasGoodHit || note.hitByOpponent))
+				continue;
+
+			var endTime:Float = note.strumTime;
+			if (parent.tail != null && parent.tail.length > 0)
+				endTime = parent.tail[parent.tail.length - 1].strumTime;
+
+			if (Conductor.songPosition >= parent.strumTime - 5 && Conductor.songPosition <= endTime + Conductor.stepCrochet)
+				return true;
+		}
+
+		return false;
 	}
 
 	override function sectionHit()

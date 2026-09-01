@@ -532,6 +532,7 @@ class Character extends FlxSprite
 			holdTimer = 0;
 
 		if (!isPlayer
+			&& getAnimationName().indexOf('-hold') == -1
 			&& holdTimer >= Conductor.stepCrochet * (0.0011 #if FLX_PITCH / (FlxG.sound.music != null ? FlxG.sound.music.pitch : 1) #end) * singDuration)
 		{
 			dance();
