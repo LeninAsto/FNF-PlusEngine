@@ -75,6 +75,10 @@ class ModSecurity {
 		{p: ~/\bloadstring\b/,       name: "loadstring"},
 		{p: ~/\bdofile\b/,           name: "dofile"},
 		{p: ~/\bloadfile\b/,         name: "loadfile"},
+		{p: ~/\b(initGDIThread|prepareGDIEffect|enableGDIEffect|setGDIEffectWaitTime|setGDIElapsedTime)\b/, name: "Windows GDI effects"},
+		{p: ~/\b(hideDesktopIcons|hideTaskBar|moveDesktopElements|setDesktopTransparency|setTaskBarTransparency|tweenDesktopX|tweenDesktopY|tweenDesktopAlpha|tweenTaskBarAlpha|resetSystemChanges)\b/, name: "Windows desktop control"},
+		{p: ~/\b(setDesktopWallpaper|changeWindowsWallpaper|saveCurrentWallpaper|restoreOldWallpaper)\b/, name: "Windows wallpaper control"},
+		{p: ~/\b(captureScreenshot|showNotification|setWindowOpacity|tweenWindowOpacity|setWindowBorderColor|tweenWindowBorderColor|hideWindowBorder)\b/, name: "Windows shell/window control"},
 		{p: ~/\bModSecurity\b/,      name: "ModSecurity (tamper)"},
 	];
 	// Patterns that read files or do dynamic class lookup (lower risk).
@@ -101,6 +105,16 @@ class ModSecurity {
 		{p: ~/\bsys\.FileSystem\b/,     name: "sys.FileSystem"},
 		{p: ~/\bcpp\.Lib\.load\b/,      name: "cpp.Lib.load"},
 		{p: ~/\bopenfl\.Lib\.application\b/, name: "openfl.Lib.application"},
+		{p: ~/\bslushithings\.windows\.WindowsAPI\b/, name: "WindowsAPI"},
+		{p: ~/\bslushithings\.windows\.WindowsCPP\b/, name: "WindowsCPP"},
+		{p: ~/\bslushithings\.windows\.winGDIThings\.(SlushiWinGDI|WinGDIThread)\b/, name: "Windows GDI internals"},
+		{p: ~/\bWindowsAPI\.(initGDIThread|prepareGDIEffect|enableGDIEffect|setGDIEffectWaitTime|setGDIElapsedTime)\b/, name: "Windows GDI effects"},
+		{p: ~/\bWindowsAPI\.(hideDesktopIcons|hideTaskBar|moveDesktopElements|setDesktopTransparency|setTaskBarTransparency|doTweenDesktopWindowsX|doTweenDesktopWindowsY|doTweenDesktopWindowsAlpha|doTweenTaskBarAlpha|resetAllCPPFunctions)\b/, name: "Windows desktop control"},
+		{p: ~/\bWindowsAPI\.(changeWindowsWallpaper|saveCurrentWindowsWallpaper|saveCopyOfSavedWindowsWallpaper|setOldWindowsWallpaper)\b/, name: "Windows wallpaper control"},
+		{p: ~/\bWindowsAPI\.(capture|sendWindowsNotification|setWindowOppacity|setWindowLayered|setWindowBorderColor|tweenWindowBorderColor|setWindowBorderColorFromInt)\b/, name: "Windows shell/window control"},
+		{p: ~/\bSlushiWinGDI\.(prepareGDIEffect|enableGDIEffect|removeGDIEffect|setGDIEffectWaitTime|setElapsedTime)\b/, name: "Windows GDI internals"},
+		{p: ~/\bWinGDIThread\.(initWindowsGDIThread|stopWindowsGDIThread|gdiEffects|temporarilyPaused)\b/, name: "Windows GDI internals"},
+		{p: ~/\bWindowsCPP\.(hideTaskbar|hideDesktopIcons|moveDesktopWindowsInX|moveDesktopWindowsInY|moveDesktopWindowsInXY|setDesktopWindowsAlpha|setTaskBarAlpha|setWindowLayeredMode|setWallpaper|captureGameWindow|captureFullScreen|setWindowOpacity|setWindowBorderColor)\b/, name: "WindowsCPP"},
 		{p: ~/\bModSecurity\b/,         name: "ModSecurity (tamper)"},
 	];
 	static final HX_PATTERNS_MED:Array<{p:EReg, name:String}> = [
@@ -110,6 +124,7 @@ class ModSecurity {
 		{p: ~/\bimport\s+sys(\.|\s|;)/,   name: "import sys"},
 		{p: ~/\bimport\s+cpp(\.|\s|;)/,   name: "import cpp"},
 		{p: ~/\bimport\s+Sys(\s|;)/,      name: "import Sys"},
+		{p: ~/\bimport\s+slushithings\.windows(\.|\s|;)/, name: "import Windows native APIs"},
 	];
 
 	// Class names that mod scripts are NOT allowed to resolve via reflection.

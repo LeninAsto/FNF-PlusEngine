@@ -28,6 +28,10 @@ class ModSecurityChecksSubState extends BaseOptionsMenu {
 		"loadstring" => "Lua\nAllows execution of arbitrary\nLua code compiled from a\nstring at runtime.",
 		"dofile" => "Lua\nCan be used to load and execute\narbitrary Lua files at runtime.",
 		"loadfile" => "Lua\nMay be used to load arbitrary\nLua files as executable chunks.",
+		"Windows GDI effects" => "Windows/GDI\nCan start desktop-level GDI\nscreen distortion effects via\ninitGDIThread/prepareGDIEffect.",
+		"Windows desktop control" => "Windows/GDI\nCan hide or move desktop icons,\nhide taskbar, or change desktop/taskbar transparency.",
+		"Windows wallpaper control" => "Windows/GDI\nCan change, save, or restore\nthe user's Windows wallpaper.",
+		"Windows shell/window control" => "Windows/GDI\nCan capture screenshots, show\nWindows notifications, or alter\nwindow opacity/borders.",
 		"getTextFromFile" => "Lua\nCan be used to read the contents\nof arbitrary files via the\nengine callback.",
 		"io.open" => "Lua\nExploitable to open any file\non disk for reading or writing.",
 		"os.getenv" => "Lua\nMay be used to extract sensitive\nenvironment variables from\nthe host system.",
@@ -40,12 +44,16 @@ class ModSecurityChecksSubState extends BaseOptionsMenu {
 		"sys.FileSystem" => "Haxe\nCan be used to list,\ninspect, create, or delete files and directories.",
 		"cpp.Lib.load" => "Haxe\nExploitable to load arbitrary\nnative C++ libraries at runtime.",
 		"openfl.Lib.application" => "Haxe\nMay be used to access and\nmanipulate the underlying\nOpenFL application object.",
+		"WindowsAPI" => "Haxe\nDirect access to Plus Engine's\nWindows native wrapper.",
+		"WindowsCPP" => "Haxe\nDirect access to low-level\nWindows native calls.",
+		"Windows GDI internals" => "Haxe\nDirect access to the GDI effect\nthread or effect registry.",
 		"Type.resolveClass" => "Haxe\nCan be used to look up and\nobtain references to arbitrary\nclasses at runtime.",
 		"Type.createInstance" => "Haxe\nMay be used to instantiate\narbitrary classes from\nruntime references.",
 		"Reflect.callMethod" => "Haxe\nExploitable to invoke arbitrary\nmethods via reflection,\nbypassing normal call paths.",
 		"import sys" => "Haxe\nGrants access to the sys package,\nenabling file and process APIs.",
 		"import cpp" => "Haxe\nGrants access to the cpp package,\nenabling native library interop.",
 		"import Sys" => "Haxe\nGrants access to the top-level\nSys class and its\nsystem-level APIs.",
+		"import Windows native APIs" => "Haxe\nGrants access to Windows/GDI\nhelpers that can affect the\nuser's desktop session.",
 	];
 
 	/** Set by any toggle's setter; `commit` persists + rescans when it's true. **/

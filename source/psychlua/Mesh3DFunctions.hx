@@ -284,6 +284,18 @@ class Mesh3DFunctions
 			return Mesh3DRenderer.setViewBackground(color, alpha);
 		});
 
+		Lua_helper.add_callback(lua, "set3DCam", function(x:Float = 0, y:Float = 0, z:Float = -1000, lookX:Float = 0, lookY:Float = 0,
+				lookZ:Float = 0)
+		{
+			return Mesh3DRenderer.setCamera(x, y, z, lookX, lookY, lookZ);
+		});
+
+		Lua_helper.add_callback(lua, "make3DFloor", function(tag:String, width:Float = 1800, depth:Float = 2200, y:Float = 280,
+				z:Float = 300, color:Int = 0x202A3A, alpha:Float = 1)
+		{
+			return Mesh3DRenderer.makeFloor(tag, width, depth, y, z, color, alpha, owner);
+		});
+
 		Lua_helper.add_callback(lua, "make3DPlane", function(tag:String, width:Float = 100, height:Float = 100, color:Int = 0xFFFFFF,
 				alpha:Float = 1, ?yUp:Bool = false)
 		{
@@ -294,6 +306,36 @@ class Mesh3DFunctions
 				color:Int = 0xFFFFFF, alpha:Float = 1)
 		{
 			return Mesh3DRenderer.makeCube(tag, width, height, depth, color, alpha, owner);
+		});
+
+		Lua_helper.add_callback(lua, "make3DSphere", function(tag:String, radius:Float = 50, color:Int = 0xFFFFFF, alpha:Float = 1,
+				segmentsW:Int = 16, segmentsH:Int = 12)
+		{
+			return Mesh3DRenderer.makeSphere(tag, radius, color, alpha, segmentsW, segmentsH, owner);
+		});
+
+		Lua_helper.add_callback(lua, "make3DCylinder", function(tag:String, radius:Float = 50, height:Float = 100, color:Int = 0xFFFFFF,
+				alpha:Float = 1, segments:Int = 16)
+		{
+			return Mesh3DRenderer.makeCylinder(tag, radius, height, color, alpha, segments, owner);
+		});
+
+		Lua_helper.add_callback(lua, "make3DCone", function(tag:String, radius:Float = 50, height:Float = 100, color:Int = 0xFFFFFF,
+				alpha:Float = 1, segments:Int = 16)
+		{
+			return Mesh3DRenderer.makeCone(tag, radius, height, color, alpha, segments, owner);
+		});
+
+		Lua_helper.add_callback(lua, "make3DTorus", function(tag:String, radius:Float = 80, tubeRadius:Float = 18, color:Int = 0xFFFFFF,
+				alpha:Float = 1, segmentsR:Int = 24, segmentsT:Int = 10)
+		{
+			return Mesh3DRenderer.makeTorus(tag, radius, tubeRadius, color, alpha, segmentsR, segmentsT, owner);
+		});
+
+		Lua_helper.add_callback(lua, "make3DSprite", function(tag:String, image:String, width:Float = 0, height:Float = 0, x:Float = 0,
+				y:Float = 0, z:Float = 0, ?smooth:Bool = true, ?floorAligned:Bool = false)
+		{
+			return Mesh3DRenderer.makeSpritePlane(tag, image, width, height, x, y, z, owner, smooth, floorAligned);
 		});
 
 		Lua_helper.add_callback(lua, "remove3DMesh", function(tag:String)
@@ -311,9 +353,19 @@ class Mesh3DFunctions
 			return Mesh3DRenderer.setTexture(tag, image, smooth);
 		});
 
+		Lua_helper.add_callback(lua, "set3DTextureFromSprite", function(tag:String, spriteTag:String, ?smooth:Bool = true)
+		{
+			return Mesh3DRenderer.setTextureFromSprite(tag, spriteTag, smooth);
+		});
+
 		Lua_helper.add_callback(lua, "set3DMeshPosition", function(tag:String, x:Float = 0, y:Float = 0, z:Float = 0)
 		{
 			return Mesh3DRenderer.setPosition(tag, x, y, z);
+		});
+
+		Lua_helper.add_callback(lua, "set3DFloorPos", function(tag:String, x:Float = 0, z:Float = 0, y:Float = 280)
+		{
+			return Mesh3DRenderer.setFloorPosition(tag, x, z, y);
 		});
 
 		Lua_helper.add_callback(lua, "set3DMeshRotation", function(tag:String, x:Float = 0, y:Float = 0, z:Float = 0)
@@ -376,6 +428,27 @@ class Mesh3DFunctions
 
 			var values:Dynamic = {};
 			Reflect.setField(values, tweenProperty, value);
+			var originalTag:String = LuaUtils.formatVariable(tag);
+			var tween:FlxTween = FlxTween.tween(target, values, duration, {
+				ease: LuaUtils.getTweenEaseByString(ease),
+				onComplete: function(twn:FlxTween)
+				{
+					LuaUtils.removeTween(originalTag);
+					if (PlayState.instance != null)
+						PlayState.instance.callOnLuas('onTweenCompleted', [originalTag, meshTag]);
+				}
+			});
+			return LuaUtils.storeTween(originalTag, tween);
+		});
+
+		Lua_helper.add_callback(lua, "tween3DFloorPos", function(tag:String, meshTag:String, x:Float = 0, z:Float = 0, duration:Float = 1,
+				?ease:String = 'linear', y:Float = 280)
+		{
+			var target:Dynamic = Mesh3DRenderer.getTweenTarget(meshTag, 'x');
+			if (target == null)
+				return null;
+
+			var values:Dynamic = {x: x, y: y, z: z};
 			var originalTag:String = LuaUtils.formatVariable(tag);
 			var tween:FlxTween = FlxTween.tween(target, values, duration, {
 				ease: LuaUtils.getTweenEaseByString(ease),

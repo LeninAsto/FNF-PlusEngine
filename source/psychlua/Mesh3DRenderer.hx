@@ -9,9 +9,14 @@ import away3d.materials.ColorMaterial;
 import away3d.materials.lightpickers.StaticLightPicker;
 import away3d.materials.MaterialBase;
 import away3d.materials.TextureMaterial;
+import away3d.primitives.ConeGeometry;
 import away3d.primitives.CubeGeometry;
+import away3d.primitives.CylinderGeometry;
 import away3d.primitives.PlaneGeometry;
+import away3d.primitives.SphereGeometry;
+import away3d.primitives.TorusGeometry;
 import away3d.textures.BitmapTexture;
+import flixel.FlxSprite;
 import openfl.display.BitmapData;
 import openfl.geom.Matrix;
 import openfl.geom.Vector3D;
@@ -144,6 +149,17 @@ class Mesh3DRenderer
 		return putMesh(tag, new PlaneGeometry(width, height, 1, 1, yUp, true), makeColorMaterial(color, alpha), owner);
 	}
 
+	public static function makeFloor(tag:String, width:Float = 1800, depth:Float = 2200, y:Float = 280, z:Float = 300,
+			color:Int = 0x202A3A, alpha:Float = 1, ?owner:String):Bool
+	{
+		if (!makePlane(tag, width, depth, color, alpha, owner, true))
+			return false;
+
+		setPosition(tag, 0, y, z);
+		setRotation(tag, 0, 0, 0);
+		return true;
+	}
+
 	public static function makeCube(tag:String, width:Float = 100, height:Float = 100, depth:Float = 100, color:Int = 0xFFFFFF, alpha:Float = 1,
 			?owner:String):Bool
 	{
@@ -151,6 +167,60 @@ class Mesh3DRenderer
 			return false;
 
 		return putMesh(tag, new CubeGeometry(width, height, depth), makeColorMaterial(color, alpha), owner);
+	}
+
+	public static function makeSphere(tag:String, radius:Float = 50, color:Int = 0xFFFFFF, alpha:Float = 1, segmentsW:Int = 16, segmentsH:Int = 12,
+			?owner:String):Bool
+	{
+		if (!ensureView())
+			return false;
+
+		return putMesh(tag, new SphereGeometry(radius, Std.int(Math.max(3, segmentsW)), Std.int(Math.max(2, segmentsH)), true), makeColorMaterial(color, alpha), owner);
+	}
+
+	public static function makeCylinder(tag:String, radius:Float = 50, height:Float = 100, color:Int = 0xFFFFFF, alpha:Float = 1, segments:Int = 16,
+			?owner:String):Bool
+	{
+		if (!ensureView())
+			return false;
+
+		return putMesh(tag, new CylinderGeometry(radius, radius, height, Std.int(Math.max(3, segments)), 1, true, true, true, true),
+			makeColorMaterial(color, alpha), owner);
+	}
+
+	public static function makeCone(tag:String, radius:Float = 50, height:Float = 100, color:Int = 0xFFFFFF, alpha:Float = 1, segments:Int = 16,
+			?owner:String):Bool
+	{
+		if (!ensureView())
+			return false;
+
+		return putMesh(tag, new ConeGeometry(radius, height, Std.int(Math.max(3, segments)), 1, true, true), makeColorMaterial(color, alpha), owner);
+	}
+
+	public static function makeTorus(tag:String, radius:Float = 80, tubeRadius:Float = 18, color:Int = 0xFFFFFF, alpha:Float = 1, segmentsR:Int = 24,
+			segmentsT:Int = 10, ?owner:String):Bool
+	{
+		if (!ensureView())
+			return false;
+
+		return putMesh(tag, new TorusGeometry(radius, tubeRadius, Std.int(Math.max(3, segmentsR)), Std.int(Math.max(3, segmentsT)), true),
+			makeColorMaterial(color, alpha), owner);
+	}
+
+	public static function makeSpritePlane(tag:String, image:String, width:Float = 0, height:Float = 0, x:Float = 0, y:Float = 0, z:Float = 0,
+			?owner:String, ?smooth:Bool = true, ?floorAligned:Bool = false):Bool
+	{
+		var graphic = Paths.image(image, null, false);
+		if (graphic == null || graphic.bitmap == null)
+			return false;
+
+		var planeWidth:Float = width > 0 ? width : graphic.bitmap.width;
+		var planeHeight:Float = height > 0 ? height : graphic.bitmap.height;
+		if (!makePlane(tag, planeWidth, planeHeight, 0xFFFFFF, 1, owner, floorAligned))
+			return false;
+
+		setPosition(tag, x, y, z);
+		return setTextureFromBitmap(tag, graphic.bitmap, smooth);
 	}
 
 	static function putMesh(tag:String, geometry:Geometry, material:MaterialBase, ?owner:String):Bool
@@ -179,22 +249,49 @@ class Mesh3DRenderer
 		return material;
 	}
 
+	static function makeTextureMaterial(source:BitmapData, smooth:Bool, alpha:Float = 1):{material:TextureMaterial, texture:BitmapTexture}
+	{
+		var texture = new BitmapTexture(makePowerOfTwoBitmap(source), false);
+		var material = new TextureMaterial(texture, smooth, false, false);
+		material.bothSides = true;
+		material.lightPicker = lightPicker;
+		material.alpha = clamp01(alpha);
+		return {material: material, texture: texture};
+	}
+
 	public static function setTexture(tag:String, image:String, ?smooth:Bool = true):Bool
 	{
-		var record = getRecord(tag);
-		if (record == null || image == null || image.length < 1)
+		if (image == null || image.length < 1)
 			return false;
 
 		var graphic = Paths.image(image, null, false);
 		if (graphic == null || graphic.bitmap == null)
 			return false;
 
-		var texture = new BitmapTexture(makePowerOfTwoBitmap(graphic.bitmap), false);
-		var material = new TextureMaterial(texture, smooth, false, false);
-		material.bothSides = true;
-		material.lightPicker = lightPicker;
-		record.setMaterial(material, texture);
+		return setTextureFromBitmap(tag, graphic.bitmap, smooth);
+	}
+
+	public static function setTextureFromBitmap(tag:String, bitmap:BitmapData, ?smooth:Bool = true):Bool
+	{
+		var record = getRecord(tag);
+		if (record == null || bitmap == null)
+			return false;
+
+		var textured = makeTextureMaterial(bitmap, smooth, record.alpha);
+		record.setMaterial(textured.material, textured.texture);
 		return true;
+	}
+
+	public static function setTextureFromSprite(tag:String, spriteTag:String, ?smooth:Bool = true):Bool
+	{
+		if (spriteTag == null || spriteTag.length < 1)
+			return false;
+
+		var source:FlxSprite = getLuaSprite(spriteTag);
+		if (source == null || source.pixels == null)
+			return false;
+
+		return setTextureFromBitmap(tag, source.pixels, smooth);
 	}
 
 	static function makePowerOfTwoBitmap(source:BitmapData):BitmapData
@@ -290,6 +387,9 @@ class Mesh3DRenderer
 		return true;
 	}
 
+	public static function setFloorPosition(tag:String, x:Float, z:Float, y:Float = 280):Bool
+		return setPosition(tag, x, y, z);
+
 	public static function setRotation(tag:String, x:Float, y:Float, z:Float):Bool
 	{
 		var mesh = getMesh(tag);
@@ -359,6 +459,14 @@ class Mesh3DRenderer
 		return true;
 	}
 
+	public static function setCamera(x:Float = 0, y:Float = 0, z:Float = -1000, lookX:Float = 0, lookY:Float = 0, lookZ:Float = 0):Bool
+	{
+		if (!setCameraPosition(x, y, z))
+			return false;
+
+		return lookAt(lookX, lookY, lookZ);
+	}
+
 	public static function lookAt(x:Float, y:Float, z:Float):Bool
 	{
 		if (!ensureView())
@@ -392,17 +500,17 @@ class Mesh3DRenderer
 				record.mesh.y = cast value;
 			case 'z':
 				record.mesh.z = cast value;
-			case 'rotationx' | 'angle_x' | 'anglex':
+			case 'rotationx' | 'rotation_x' | 'rotx' | 'rot_x' | 'angle_x' | 'anglex' | 'pitch':
 				record.mesh.rotationX = cast value;
-			case 'rotationy' | 'angle_y' | 'angley':
+			case 'rotationy' | 'rotation_y' | 'roty' | 'rot_y' | 'angle_y' | 'angley' | 'yaw':
 				record.mesh.rotationY = cast value;
-			case 'rotationz' | 'angle' | 'angle_z' | 'anglez':
+			case 'rotationz' | 'rotation_z' | 'rotz' | 'rot_z' | 'angle' | 'angle_z' | 'anglez' | 'roll':
 				record.mesh.rotationZ = cast value;
-			case 'scalex':
+			case 'scalex' | 'scale_x':
 				record.mesh.scaleX = cast value;
-			case 'scaley':
+			case 'scaley' | 'scale_y':
 				record.mesh.scaleY = cast value;
-			case 'scalez':
+			case 'scalez' | 'scale_z':
 				record.mesh.scaleZ = cast value;
 			case 'visible':
 				record.mesh.visible = value == true;
@@ -427,12 +535,12 @@ class Mesh3DRenderer
 			case 'x': record.mesh.x;
 			case 'y': record.mesh.y;
 			case 'z': record.mesh.z;
-			case 'rotationx' | 'angle_x' | 'anglex': record.mesh.rotationX;
-			case 'rotationy' | 'angle_y' | 'angley': record.mesh.rotationY;
-			case 'rotationz' | 'angle' | 'angle_z' | 'anglez': record.mesh.rotationZ;
-			case 'scalex': record.mesh.scaleX;
-			case 'scaley': record.mesh.scaleY;
-			case 'scalez': record.mesh.scaleZ;
+			case 'rotationx' | 'rotation_x' | 'rotx' | 'rot_x' | 'angle_x' | 'anglex' | 'pitch': record.mesh.rotationX;
+			case 'rotationy' | 'rotation_y' | 'roty' | 'rot_y' | 'angle_y' | 'angley' | 'yaw': record.mesh.rotationY;
+			case 'rotationz' | 'rotation_z' | 'rotz' | 'rot_z' | 'angle' | 'angle_z' | 'anglez' | 'roll': record.mesh.rotationZ;
+			case 'scalex' | 'scale_x': record.mesh.scaleX;
+			case 'scaley' | 'scale_y': record.mesh.scaleY;
+			case 'scalez' | 'scale_z': record.mesh.scaleZ;
 			case 'visible': record.mesh.visible;
 			case 'alpha': record.alpha;
 			default: null;
@@ -455,12 +563,12 @@ class Mesh3DRenderer
 
 		return switch (property.toLowerCase().trim())
 		{
-			case 'rotationx' | 'angle_x' | 'anglex': 'rotationX';
-			case 'rotationy' | 'angle_y' | 'angley': 'rotationY';
-			case 'rotationz' | 'angle' | 'angle_z' | 'anglez': 'rotationZ';
-			case 'scalex': 'scaleX';
-			case 'scaley': 'scaleY';
-			case 'scalez': 'scaleZ';
+			case 'rotationx' | 'rotation_x' | 'rotx' | 'rot_x' | 'angle_x' | 'anglex' | 'pitch': 'rotationX';
+			case 'rotationy' | 'rotation_y' | 'roty' | 'rot_y' | 'angle_y' | 'angley' | 'yaw': 'rotationY';
+			case 'rotationz' | 'rotation_z' | 'rotz' | 'rot_z' | 'angle' | 'angle_z' | 'anglez' | 'roll': 'rotationZ';
+			case 'scalex' | 'scale_x': 'scaleX';
+			case 'scaley' | 'scale_y': 'scaleY';
+			case 'scalez' | 'scale_z': 'scaleZ';
 			case 'x' | 'y' | 'z' | 'alpha': property.toLowerCase().trim();
 			default: null;
 		}
@@ -511,6 +619,20 @@ class Mesh3DRenderer
 	{
 		tag = normalizeTag(tag);
 		return tag != null ? meshes.get(tag) : null;
+	}
+
+	static function getLuaSprite(tag:String):FlxSprite
+	{
+		if (tag == null)
+			return null;
+
+		var obj:Dynamic = MusicBeatState.getVariables().get(tag);
+		if (obj == null && PlayState.instance != null)
+			obj = PlayState.instance.getLuaObject(tag);
+		if (obj == null)
+			obj = Reflect.field(MusicBeatState.getState(), tag);
+
+		return Std.downcast(obj, FlxSprite);
 	}
 
 	static function normalizeTag(tag:String):String

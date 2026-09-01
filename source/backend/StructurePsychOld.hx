@@ -20,6 +20,9 @@ class StructurePsychOld
 	];
 	private static var warnedLegacyUsages:Map<String, Bool> = new Map();
 
+	static inline function shouldShowDeprecatedWarnings():Bool
+		return ClientPrefs.data.scriptDeprecationWarnings;
+
 	/**
 	 * Compatibility map for Psych Engine 0.6.3 and older script paths.
 	 */
@@ -192,7 +195,8 @@ class StructurePsychOld
 			{
 				warnLegacyLuaUsage(className, newClassName);
 				#if debug
-				trace('[Compatibility] Redirected "$className" to "$newClassName"');
+				if (shouldShowDeprecatedWarnings())
+					trace('[Compatibility] Redirected "$className" to "$newClassName"');
 				#end
 			}
 			else
@@ -205,7 +209,7 @@ class StructurePsychOld
 		else if (myClass == null)
 		{
 			#if debug
-			if (!_warnedClasses.exists(className))
+			if (shouldShowDeprecatedWarnings() && !_warnedClasses.exists(className))
 			{
 				trace('[Compatibility] WARNING: Class "$className" not found and no alias exists. This may break old mods.');
 				trace('[Compatibility] If this is a common class, consider adding it to StructurePsychOld.classAliasMap');
@@ -229,6 +233,8 @@ class StructurePsychOld
 	public static function warnLegacyLuaUsage(oldApi:String, newApi:String):Void
 	{
 		if (oldApi == null || newApi == null || oldApi == newApi)
+			return;
+		if (!shouldShowDeprecatedWarnings())
 			return;
 
 		var owner:String = '';

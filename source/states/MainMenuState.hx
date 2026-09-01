@@ -444,7 +444,7 @@ class MainMenuState extends MusicBeatState
 
 						#if MODS_ALLOWED
 						case 'mods':
-							MusicBeatState.switchState(new ModsManagerSelectorState());
+							MusicBeatState.switchState(backend.ScriptableState.tryCreate('ModsMenuState', new ModsMenuState()));
 						#end
 
 						#if ACHIEVEMENTS_ALLOWED

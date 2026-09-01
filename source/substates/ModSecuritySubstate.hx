@@ -47,6 +47,15 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 		"Reflect.callMethod" => "reflect",
 		"import sys" => "reflect", "import cpp" => "reflect", "import Sys" => "reflect",
 		"openfl.Lib.application" => "reflect",
+		"import Windows native APIs" => "reflect",
+		// Windows native / GDI effects
+		"Windows GDI effects" => "gdi_effects",
+		"Windows GDI internals" => "gdi_effects",
+		"Windows desktop control" => "desktop_control",
+		"Windows wallpaper control" => "desktop_control",
+		"Windows shell/window control" => "window_control",
+		"WindowsAPI" => "window_control",
+		"WindowsCPP" => "window_control",
 		// Process exit
 		"Sys.exit" => "exit", "os.exit" => "exit",
 		// Environment / system info recon
@@ -56,17 +65,31 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 	];
 
 	// Order matters: categories shown in this order in the warning panel.
-	static final CATEGORY_ORDER:Array<String> = ["tamper", "exec", "fs_write", "haxe_eval", "fs_read", "reflect", "exit", "recon"];
+	static final CATEGORY_ORDER:Array<String> = ["tamper", "exec", "gdi_effects", "desktop_control", "window_control", "fs_write", "haxe_eval", "fs_read", "reflect", "exit", "recon"];
 
 	static final CATEGORY_LABELS:Map<String, String> = [
 		"tamper"    => "[!!] Attempts to tamper with the mod security system itself",
 		"exec"      => "[!] Runs external programs / commands on your PC",
+		"gdi_effects" => "[!] Can start Windows GDI screen effects outside the game",
+		"desktop_control" => "[!] Can alter desktop icons, taskbar, transparency or wallpaper",
+		"window_control" => "[*] Can capture screenshots, notify Windows or alter the game window",
 		"fs_write"  => "[!] Writes, modifies or deletes files on your PC",
 		"haxe_eval" => "[!] Executes arbitrary Haxe/Lua code at runtime",
 		"fs_read"   => "[*] Reads files from your PC",
 		"reflect"   => "[*] Uses reflection / dynamic class lookup",
 		"exit"      => "[*] Can force-quit the game process",
 		"recon"     => "[*] Reads environment variables / system info",
+	];
+
+	static final PATTERN_DETAILS:Map<String, String> = [
+		"Windows GDI effects" => "responsible: initGDIThread/prepareGDIEffect/enableGDIEffect; can run desktop-level GDI visual effects",
+		"Windows GDI internals" => "responsible: SlushiWinGDI/WinGDIThread; can access the GDI effect thread or registry directly",
+		"Windows desktop control" => "responsible: hideDesktopIcons/hideTaskBar/moveDesktopElements; can hide/move desktop UI or change transparency",
+		"Windows wallpaper control" => "responsible: changeWindowsWallpaper/setDesktopWallpaper; can change or restore the Windows wallpaper",
+		"Windows shell/window control" => "responsible: captureScreenshot/showNotification/setWindowOpacity; can capture screen, notify Windows, or alter window visuals",
+		"WindowsAPI" => "responsible: slushithings.windows.WindowsAPI; can reach Plus Engine Windows native helpers",
+		"WindowsCPP" => "responsible: slushithings.windows.WindowsCPP; can call low-level Windows native functions",
+		"import Windows native APIs" => "responsible: import slushithings.windows.*; can unlock Windows/GDI helper access from HScript",
 	];
 
 	// Panel layout (centered)
@@ -356,6 +379,11 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 			buf.add(Std.string(f.line));
 			buf.add('  ');
 			buf.add(f.pattern);
+			final detail = PATTERN_DETAILS.get(f.pattern);
+			if (detail != null) {
+				buf.add(' - ');
+				buf.add(detail);
+			}
 		}
 		listTxt.text = buf.toString();
 		if (total > LIST_LINES) {
