@@ -939,9 +939,7 @@ class LoadingState extends MusicBeatState
 		{
 			if (#if sys FileSystem.exists(file) || #end OpenFlAssets.exists(file, SOUND))
 			{
-				var sound:Sound = #if mobile mobile.backend.AssetUtil.getSound(file)
-				#elseif sys Sound.fromFile(file)
-				#else OpenFlAssets.getSound(file, false) #end;
+				var sound:Sound = backend.AssetLoader.loadSound(file);
 				if (sound != null)
 				{
 					mutex.acquire();
@@ -978,13 +976,7 @@ class LoadingState extends MusicBeatState
 			{
 				if (#if sys FileSystem.exists(file) || #end OpenFlAssets.exists(file, IMAGE))
 				{
-					#if mobile
-					var bitmap:BitmapData = mobile.backend.AssetUtil.getBitmap(file);
-					#elseif sys
-					var bitmap:BitmapData = BitmapData.fromFile(file);
-					#else
-					var bitmap:BitmapData = OpenFlAssets.getBitmapData(file, false);
-					#end
+					var bitmap:BitmapData = backend.AssetLoader.loadBitmap(file);
 
 					if (bitmap != null)
 					{

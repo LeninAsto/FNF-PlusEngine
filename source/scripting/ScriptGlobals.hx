@@ -135,10 +135,7 @@ class ScriptGlobals {
 	}
 
 	public static function shared(set:(String, Dynamic) -> Void, ?mod:String):Void {
-		#if android
-		set('File', mobile.backend.ScriptFile);
-		set('FileSystem', mobile.backend.ScriptFileSystem);
-		#elseif sys
+		#if sys
 		set('File', sys.io.File);
 		set('FileSystem', sys.FileSystem);
 		#end
