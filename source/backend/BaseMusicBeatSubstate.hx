@@ -8,11 +8,11 @@ import flixel.FlxSubState;
 //   FlxSubState
 //   └── BaseMusicBeatSubstate   (this file — pure beat/mobile)
 //       └── MusicBeatSubstate   (+ script hooks)
-
 class BaseMusicBeatSubstate extends FlxSubState
 {
 	// ─── Beat/step counters ───────────────────────────────────────────────────
 	public var curSection:Int = 0;
+
 	private var stepsToDo:Int = 0;
 
 	private var lastBeat:Float = 0;
@@ -26,7 +26,9 @@ class BaseMusicBeatSubstate extends FlxSubState
 
 	// ─── Controls ─────────────────────────────────────────────────────────────
 	private var controls(get, never):Controls;
-	inline function get_controls():Controls return Controls.instance;
+
+	inline function get_controls():Controls
+		return Controls.instance;
 
 	// ─── Mobile controls ──────────────────────────────────────────────────────
 	public var touchPad:TouchPad;
@@ -57,15 +59,21 @@ class BaseMusicBeatSubstate extends FlxSubState
 	public function addMobileControls(defaultDrawTarget:Bool = false):Void
 	{
 		var extraMode = MobileData.extraActions.get(ClientPrefs.data.extraButtons);
-		if (extraMode == null) extraMode = NONE;
+		if (extraMode == null)
+			extraMode = NONE;
 
 		switch (MobileData.mode)
 		{
-			case 0: mobileControls = new TouchPad('RIGHT_FULL', 'NONE', extraMode);
-			case 1: mobileControls = new TouchPad('LEFT_FULL', 'NONE', extraMode);
-			case 2: mobileControls = MobileData.getTouchPadCustom(new TouchPad('RIGHT_FULL', 'NONE', extraMode));
-			case 3: mobileControls = new Hitbox(extraMode);
-			case 4: mobileControls = new Hitbox(NONE, true);
+			case 0:
+				mobileControls = new TouchPad('RIGHT_FULL', 'NONE', extraMode);
+			case 1:
+				mobileControls = new TouchPad('LEFT_FULL', 'NONE', extraMode);
+			case 2:
+				mobileControls = MobileData.getTouchPadCustom(new TouchPad('RIGHT_FULL', 'NONE', extraMode));
+			case 3:
+				mobileControls = new Hitbox(extraMode);
+			case 4:
+				mobileControls = new Hitbox(NONE, true);
 		}
 
 		if (mobileControls != null && mobileControls.instance != null)
@@ -131,11 +139,14 @@ class BaseMusicBeatSubstate extends FlxSubState
 
 		if (oldStep != curStep)
 		{
-			if (curStep > 0) stepHit();
+			if (curStep > 0)
+				stepHit();
 			if (PlayState.SONG != null)
 			{
-				if (oldStep < curStep) updateSection();
-				else rollbackSection();
+				if (oldStep < curStep)
+					updateSection();
+				else
+					rollbackSection();
 			}
 		}
 
@@ -145,7 +156,8 @@ class BaseMusicBeatSubstate extends FlxSubState
 	// ─── Beat/step helpers ────────────────────────────────────────────────────
 	private function updateSection():Void
 	{
-		if (stepsToDo < 1) stepsToDo = Math.round(getBeatsOnSection() * 4);
+		if (stepsToDo < 1)
+			stepsToDo = Math.round(getBeatsOnSection() * 4);
 		while (curStep >= stepsToDo)
 		{
 			curSection++;
@@ -157,7 +169,8 @@ class BaseMusicBeatSubstate extends FlxSubState
 
 	private function rollbackSection():Void
 	{
-		if (curStep < 0) return;
+		if (curStep < 0)
+			return;
 		var lastSection:Int = curSection;
 		curSection = 0;
 		stepsToDo = 0;
@@ -166,11 +179,13 @@ class BaseMusicBeatSubstate extends FlxSubState
 			if (PlayState.SONG.notes[i] != null)
 			{
 				stepsToDo += Math.round(getBeatsOnSection() * 4);
-				if (stepsToDo > curStep) break;
+				if (stepsToDo > curStep)
+					break;
 				curSection++;
 			}
 		}
-		if (curSection > lastSection) sectionHit();
+		if (curSection > lastSection)
+			sectionHit();
 	}
 
 	private function updateBeat():Void
@@ -198,10 +213,16 @@ class BaseMusicBeatSubstate extends FlxSubState
 	// ─── Beat callbacks (no script calls) ─────────────────────────────────────
 	public function stepHit():Void
 	{
-		if (curStep % 4 == 0) beatHit();
+		if (curStep % 4 == 0)
+			beatHit();
 	}
 
-	public function beatHit():Void {}
+	public function beatHit():Void
+	{
+	}
 
-	public function sectionHit():Void {}
+	public function sectionHit():Void
+	{
+	}
 }
+

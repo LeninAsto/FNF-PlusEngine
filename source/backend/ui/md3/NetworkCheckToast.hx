@@ -30,7 +30,9 @@ class NetworkCheckToast extends FlxSpriteGroup
 	var hideTween:FlxTween;
 	var showTween:FlxTween;
 	var hideDelay:Float = -1;
+
 	public var cardX:Float = -CARD_WIDTH - 32;
+
 	var cardY:Float = 0;
 
 	public static function requestShow(message:String):Void
@@ -219,3 +221,4 @@ class NetworkCheckToast extends FlxSpriteGroup
 		super.destroy();
 	}
 }
+

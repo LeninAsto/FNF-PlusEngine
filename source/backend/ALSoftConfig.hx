@@ -7,7 +7,6 @@ import haxe.io.Path;
 #if android
 import lime.system.JNI;
 #end
-
 #if sys
 import sys.io.File;
 import sys.FileSystem;
@@ -57,7 +56,8 @@ class ALSoftConfig
 		var fields = Context.getBuildFields();
 		var pos = Context.currentPos();
 
-		if (!FileSystem.exists('alsoft.txt')) return fields;
+		if (!FileSystem.exists('alsoft.txt'))
+			return fields;
 
 		var newFields = fields.copy();
 		for (i => field in fields)
@@ -77,3 +77,4 @@ class ALSoftConfig
 	}
 	#end
 }
+

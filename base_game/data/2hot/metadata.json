@@ -1,0 +1,64 @@
+{
+	"songName": "2Hot",
+	"tags": [
+		"Base game",
+		"weekend1"
+	],
+	"displayBpm": 182,
+	"displayTimeSignature": [
+		4,
+		4
+	],
+	"info": [
+		{
+			"value": "Re-timed",
+			"label": "Other:"
+		}
+	],
+	"source": "V-Slice",
+	"charter": "Jenny Crowe, Spazkid, ninjamuffin99",
+	"artist": "Kawai Sprite",
+	"version": "2.2.4",
+	"offsets": {},
+	"playData": {
+		"difficulties": [
+			"easy",
+			"normal",
+			"hard"
+		],
+		"characters": {
+			"player": "pico-playable",
+			"girlfriend": "nene",
+			"opponent": "darnell",
+			"opponentVocals": [
+				"darnell"
+			],
+			"playerVocals": [
+				"pico-playable"
+			]
+		},
+		"stage": "phillyStreets",
+		"noteStyle": "funkin",
+		"stickerPack": "bonus-weekend1",
+		"ratings": {
+			"easy": 3,
+			"normal": 4,
+			"hard": 5
+		},
+		"album": "volume3"
+	},
+	"generatedBy": "Friday Night Funkin' - v0.8.1",
+	"timeChanges": [
+		{
+			"t": 0,
+			"b": 0,
+			"bpm": 182,
+			"bt": [
+				4,
+				4,
+				4,
+				4
+			]
+		}
+	]
+}

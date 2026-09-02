@@ -7,7 +7,8 @@ package modchart;
  * performance optimizations, and visual settings for modcharts.
  * These values are now synchronized with ClientPrefs for user customization.
  */
-class Config {
+class Config
+{
 	/**
 	 * Enables or disables 3D cameras.
 	 *
@@ -17,7 +18,9 @@ class Config {
 	 * Synced with: `ClientPrefs.data.camera3dEnabled`
 	 */
 	public static var CAMERA3D_ENABLED(get, never):Bool;
-	private static inline function get_CAMERA3D_ENABLED():Bool return ClientPrefs.data.camera3dEnabled;
+
+	private static inline function get_CAMERA3D_ENABLED():Bool
+		return ClientPrefs.data.camera3dEnabled;
 
 	/**
 	 * Defines the order of rotation axes.
@@ -39,7 +42,9 @@ class Config {
 	 * Synced with: `ClientPrefs.data.optimizeHolds`
 	 */
 	public static var OPTIMIZE_HOLDS(get, never):Bool;
-	private static inline function get_OPTIMIZE_HOLDS():Bool return ClientPrefs.data.optimizeHolds;
+
+	private static inline function get_OPTIMIZE_HOLDS():Bool
+		return ClientPrefs.data.optimizeHolds;
 
 	/**
 	 * Scales the Z-axis values.
@@ -50,7 +55,9 @@ class Config {
 	 * Synced with: `ClientPrefs.data.zScale`
 	 */
 	public static var Z_SCALE(get, never):Float;
-	private static inline function get_Z_SCALE():Float return ClientPrefs.data.zScale;
+
+	private static inline function get_Z_SCALE():Float
+		return ClientPrefs.data.zScale;
 
 	/**
 	 * Ignores or renders the arrow path lines.
@@ -61,14 +68,18 @@ class Config {
 	 * Synced with: `ClientPrefs.data.renderArrowPaths`
 	 */
 	public static var RENDER_ARROW_PATHS(get, never):Bool;
-	private static inline function get_RENDER_ARROW_PATHS():Bool return ClientPrefs.data.renderArrowPaths;
+
+	private static inline function get_RENDER_ARROW_PATHS():Bool
+		return ClientPrefs.data.renderArrowPaths;
 
 	/**
 	 * Extra configurations for the Arrow Paths.
 	 * Synced with various ClientPrefs settings.
 	 */
 	public static var ARROW_PATHS_CONFIG(get, never):ArrowPathConfig;
-	private static function get_ARROW_PATHS_CONFIG():ArrowPathConfig {
+
+	private static function get_ARROW_PATHS_CONFIG():ArrowPathConfig
+	{
 		return {
 			APPLY_COLOR: ClientPrefs.data.styledArrowPaths,
 			APPLY_ALPHA: ClientPrefs.data.styledArrowPaths,
@@ -86,7 +97,9 @@ class Config {
 	 * Synced with: `ClientPrefs.data.holdEndScale`
 	 */
 	public static var HOLD_END_SCALE(get, never):Float;
-	private static inline function get_HOLD_END_SCALE():Float return ClientPrefs.data.holdEndScale;
+
+	private static inline function get_HOLD_END_SCALE():Float
+		return ClientPrefs.data.holdEndScale;
 
 	/**
 	 * Enables or disables column-specific modifiers.
@@ -102,7 +115,9 @@ class Config {
 	 * Synced with: `ClientPrefs.data.columnSpecificModifiers`
 	 */
 	public static var COLUMN_SPECIFIC_MODIFIERS(get, never):Bool;
-	private static inline function get_COLUMN_SPECIFIC_MODIFIERS():Bool return ClientPrefs.data.columnSpecificModifiers;
+
+	private static inline function get_COLUMN_SPECIFIC_MODIFIERS():Bool
+		return ClientPrefs.data.columnSpecificModifiers;
 
 	/**
 	 * Shows the sustains behind the strums
@@ -110,10 +125,13 @@ class Config {
 	 * Synced with: `ClientPrefs.data.holdsBehindStrum`
 	 */
 	public static var HOLDS_BEHIND_STRUM(get, never):Bool;
-	private static inline function get_HOLDS_BEHIND_STRUM():Bool return ClientPrefs.data.holdsBehindStrum;
+
+	private static inline function get_HOLDS_BEHIND_STRUM():Bool
+		return ClientPrefs.data.holdsBehindStrum;
 }
 
-typedef ArrowPathConfig = {
+typedef ArrowPathConfig =
+{
 	/**
 	 * Line alpha gets affected
 	 * by color/glow modifiers.
@@ -155,3 +173,4 @@ typedef ArrowPathConfig = {
 	 */
 	LENGTH:Int
 }
+

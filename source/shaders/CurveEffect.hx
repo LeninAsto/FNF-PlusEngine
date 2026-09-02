@@ -60,3 +60,4 @@ class CurveShader extends FlxShader
 		super();
 	}
 }
+

@@ -1,0 +1,99 @@
+{
+  "[haxe]": {
+    "editor.formatOnSave": true,
+    "editor.formatOnPaste": true,
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.tabSize": 2
+  },
+  "[json]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "[jsonc]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+  "files.insertFinalNewline": true,
+  "files.autoSave": "afterDelay",
+  "files.autoSaveDelay": 1500,
+  "files.trimTrailingWhitespace": true,
+  "editor.insertSpaces": true,
+  "editor.tabSize": 2,
+  "prettier.tabWidth": 2,
+  "prettier.documentSelectors": ["**/*.hx"],
+  "files.eol": "\n",
+  "haxe.displayPort": "auto",
+  "haxe.enableCompilationServer": true,
+  "lime.targets": [
+    {
+      "name": "windows",
+      "enabled": true,
+      "label": "Windows"
+    },
+    {
+      "name": "android",
+      "enabled": true,
+      "label": "Android"
+    },
+    {
+      "name": "html5",
+      "enabled": true,
+      "label": "HTML5"
+    },
+    {
+      "name": "linux",
+      "enabled": true,
+      "label": "Linux"
+    },
+    {
+      "name": "mac",
+      "enabled": true,
+      "label": "macOS"
+    }
+  ],
+  "lime.defaultTargetConfiguration": "Windows / Release / VSlice",
+  "lime.targetConfigurations": [
+    {
+      "label": "Windows / Release / Engine Only",
+      "target": "windows",
+      "args": ["-release"]
+    },
+    {
+      "label": "Windows / Release / Base Game",
+      "target": "windows",
+      "args": ["-DofficialBuild", "-release"]
+    },
+    {
+      "label": "Windows / Release / VSlice",
+      "target": "windows",
+      "args": ["-DofficialBuild", "-release", "-Dvslice"]
+    },
+    {
+      "label": "Android / Release / Engine Only",
+      "target": "android",
+      "args": ["-release"]
+    },
+    {
+      "label": "Android / Release / Base Game",
+      "target": "android",
+      "args": ["-DofficialBuild", "-release"]
+    },
+    {
+      "label": "Android / Release / VSlice",
+      "target": "android",
+      "args": ["-DofficialBuild", "-release", "-Dvslice"]
+    }
+  ],
+  "lime.buildTypes": [
+    {
+      "label": "Release / Engine Only",
+      "args": ["-release"]
+    },
+    {
+      "label": "Release / Base Game",
+      "args": ["-DofficialBuild", "-release"]
+    },
+    {
+      "label": "Release / VSlice",
+      "args": ["-DofficialBuild", "-release", "-Dvslice"]
+    }
+  ]
+}

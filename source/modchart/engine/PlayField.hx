@@ -28,12 +28,12 @@ import openfl.geom.Matrix;
  * - `shader` (i dont think this is possible..?... just in case leaving this in TODOs yet)
  * - `blend` (same as shader...)
  */
-
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
 #end
-final class PlayField extends FlxSprite {
+final class PlayField extends FlxSprite
+{
 	public var context:Context;
 	public var displayName:Null<String> = null;
 	public var state(default, null):PlayfieldState;
@@ -50,7 +50,8 @@ final class PlayField extends FlxSprite {
 	function get_view()
 		return context.view;
 
-	public function new() {
+	public function new()
+	{
 		super();
 
 		moves = false;
@@ -79,7 +80,8 @@ final class PlayField extends FlxSprite {
 		updateHitbox();
 	}
 
-	public inline function beginFrame(frameId:Int, songPosition:Float, beat:Float):Void {
+	public inline function beginFrame(frameId:Int, songPosition:Float, beat:Float):Void
+	{
 		state.beginFrame(frameId, songPosition, beat);
 	}
 
@@ -101,7 +103,9 @@ final class PlayField extends FlxSprite {
 	public inline function addScriptedModifier(name:String, instance:Modifier)
 		return modifiers.addScriptedModifier(name, instance);
 
-	public inline function getCachedPath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true, ?transformMode:Int = 15):ModifierOutput {
+	public inline function getCachedPath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true,
+			?transformMode:Int = 15):ModifierOutput
+	{
 		final key = __makePathCacheKey(pos, data, posDiff, allowVis, allowPos, transformMode);
 		final cached = state.getCachedPath(key);
 		if (cached != null)
@@ -125,12 +129,15 @@ final class PlayField extends FlxSprite {
 	public inline function getSplashPath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput
 		return getCachedPath(pos, data, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.SPLASH);
 
-	public inline function addEvent(event:Event) {
+	public inline function addEvent(event:Event)
+	{
 		events.add(event);
 	}
 
-	public inline function set(name:String, beat:Float, value:Float, player:Int = -1):Void {
-		if (player == -1) {
+	public inline function set(name:String, beat:Float, value:Float, player:Int = -1):Void
+	{
+		if (player == -1)
+		{
 			for (curField in 0...Adapter.instance.getPlayerCount())
 				set(name, beat, value, curField);
 			return;
@@ -139,8 +146,10 @@ final class PlayField extends FlxSprite {
 		addEvent(new SetEvent(name.toLowerCase(), beat, value, player, events));
 	}
 
-	public inline function ease(name:String, beat:Float, length:Float, value:Float = 1, easeFunc:EaseFunction, player:Int = -1):Void {
-		if (player == -1) {
+	public inline function ease(name:String, beat:Float, length:Float, value:Float = 1, easeFunc:EaseFunction, player:Int = -1):Void
+	{
+		if (player == -1)
+		{
 			for (curField in 0...Adapter.instance.getPlayerCount())
 				ease(name, beat, length, value, easeFunc, curField);
 			return;
@@ -149,8 +158,10 @@ final class PlayField extends FlxSprite {
 		addEvent(new EaseEvent(name.toLowerCase(), beat, length, value, easeFunc, player, events));
 	}
 
-	public inline function add(name:String, beat:Float, length:Float, addition:Float = 1, easeFunc:EaseFunction, player:Int = -1):Void {
-		if (player == -1) {
+	public inline function add(name:String, beat:Float, length:Float, addition:Float = 1, easeFunc:EaseFunction, player:Int = -1):Void
+	{
+		if (player == -1)
+		{
 			for (curField in 0...Adapter.instance.getPlayerCount())
 				add(name, beat, length, addition, easeFunc, curField);
 			return;
@@ -159,10 +170,12 @@ final class PlayField extends FlxSprite {
 		addEvent(new AddEvent(name.toLowerCase(), beat, length, addition, easeFunc, player, events));
 	}
 
-	public inline function setAdd(name:String, beat:Float, valueToAdd:Float, player:Int = -1):Void {
+	public inline function setAdd(name:String, beat:Float, valueToAdd:Float, player:Int = -1):Void
+	{
 		var addition = getPercent(name, player == -1 ? 0 : player);
 		var value = addition + valueToAdd;
-		if (player == -1) {
+		if (player == -1)
+		{
 			for (curField in 0...Adapter.instance.getPlayerCount())
 				set(name, beat, value, curField);
 			return;
@@ -180,7 +193,8 @@ final class PlayField extends FlxSprite {
 	public inline function scheduleCallback(beat:Float, cb:Event->Void):Void
 		callback(beat, cb);
 
-	public inline function alias(name:String, alias:String) {
+	public inline function alias(name:String, alias:String)
+	{
 		aliases.push({
 			parent: name,
 			alias: alias
@@ -196,7 +210,8 @@ final class PlayField extends FlxSprite {
 	 * @param output Output Mods
 	 * @param func Processor function, Array<InputModPercs> -> Array<OutputModPercs>
 	 */
-	public inline function node(input:Array<String>, output:Array<String>, func:NodeFunction) {
+	public inline function node(input:Array<String>, output:Array<String>, func:NodeFunction)
+	{
 		nodes.push({
 			input: input,
 			output: output,
@@ -209,12 +224,15 @@ final class PlayField extends FlxSprite {
 	// Warning: If a node has 'drunk' by example in his output
 	// and u made a ease on drunk and u made a ease on the node
 	// input, the eases may overlap, causing visuals issues.
-	public function updateNodes() {
-		for (player in 0...Adapter.instance.getPlayerCount()) {
+	public function updateNodes()
+	{
+		for (player in 0...Adapter.instance.getPlayerCount())
+		{
 			final it = nodes.iterator();
 			final n = it.next;
 			final h = it.hasNext;
-			do {
+			do
+			{
 				final node = n();
 				if (node == null)
 					continue;
@@ -232,17 +250,20 @@ final class PlayField extends FlxSprite {
 				if (outPercs == null || outPercs.length < 0)
 					outPercs = [];
 
-				for (i in 0...nbl) {
+				for (i in 0...nbl)
+				{
 					final prc = outPercs[i];
 
 					if (!Math.isNaN(prc) && prc != 0)
 						setPercent(node.output[i], prc, player);
 				}
-			} while (h());
+			}
+			while (h());
 		}
 	}
 
-	override function update(elapsed:Float):Void {
+	override function update(elapsed:Float):Void
+	{
 		// Update Event Timeline
 		events.update(Adapter.instance.getCurrentBeat());
 
@@ -251,30 +272,37 @@ final class PlayField extends FlxSprite {
 		super.update(elapsed);
 	}
 
-	override public function draw() {}
+	override public function draw()
+	{
+	}
 
-	override public function destroy() {
+	override public function destroy()
+	{
 		super.destroy();
 	}
 
-	private function getVisibility(obj:flixel.FlxObject) {
+	private function getVisibility(obj:flixel.FlxObject)
+	{
 		@:bypassAccessor obj.visible = false;
 		return obj._fmVisible;
 	}
 
-	private function transformCmd(cmd:DrawCommand) {
+	private function transformCmd(cmd:DrawCommand)
+	{
 		var vertex = cmd.vertices;
 		var vc = Std.int(vertex.length / 2);
 
 		final matrix = this._matrix;
 		matrix.identity();
 
-		if (flipX) {
+		if (flipX)
+		{
 			matrix.scale(-1, 1);
 			matrix.translate(width, 0);
 		}
 
-		if (flipY) {
+		if (flipY)
+		{
 			matrix.scale(1, -1);
 			matrix.translate(0, height);
 		}
@@ -282,7 +310,8 @@ final class PlayField extends FlxSprite {
 		matrix.translate(-origin.x, -origin.y);
 		matrix.scale(scale.x, scale.y);
 
-		if (bakedRotationAngle <= 0) {
+		if (bakedRotationAngle <= 0)
+		{
 			updateTrig();
 			if (angle != 0)
 				matrix.rotateWithTrig(_cosAngle, _sinAngle);
@@ -300,7 +329,8 @@ final class PlayField extends FlxSprite {
 		// 	matrix.ty = Math.floor(matrix.ty);
 		// }
 
-		for (c in 0...vc) {
+		for (c in 0...vc)
+		{
 			var i = c * 2;
 			var x = vertex[i];
 			var y = vertex[i + 1];
@@ -312,16 +342,42 @@ final class PlayField extends FlxSprite {
 		return cmd;
 	}
 
-	function updateSkewMatrix():Void {
+	function updateSkewMatrix():Void
+	{
 		_skewMatrix.identity();
 
-		if (skew.x != 0 || skew.y != 0) {
+		if (skew.x != 0 || skew.y != 0)
+		{
 			_skewMatrix.b = Math.tan(skew.y * FlxAngle.TO_RAD);
 			_skewMatrix.c = Math.tan(skew.x * FlxAngle.TO_RAD);
 		}
 	}
 
-	private inline function __makePathCacheKey(pos:Vector3, data:ArrowData, posDiff:Float, allowVis:Bool, allowPos:Bool, transformMode:Int):String {
-		return '${state.frameId}|${pos.x}|${pos.y}|${pos.z}|${data.hitTime}|${data.distance}|${data.sourceTime}|${data.lane}|${data.player}|${data.isTapArrow ? 1 : 0}|${data.straightHolds ? 1 : 0}|${posDiff}|${allowVis ? 1 : 0}|${allowPos ? 1 : 0}|${Std.int(transformMode)}';
+	private inline function __makePathCacheKey(pos:Vector3, data:ArrowData, posDiff:Float, allowVis:Bool, allowPos:Bool, transformMode:Int):Int
+	{
+		var hash = 17;
+		hash = __mixPathHash(hash, state.frameId);
+		hash = __mixPathHash(hash, __quantizePathFloat(pos.x));
+		hash = __mixPathHash(hash, __quantizePathFloat(pos.y));
+		hash = __mixPathHash(hash, __quantizePathFloat(pos.z));
+		hash = __mixPathHash(hash, __quantizePathFloat(data.hitTime));
+		hash = __mixPathHash(hash, __quantizePathFloat(data.distance));
+		hash = __mixPathHash(hash, __quantizePathFloat(data.sourceTime));
+		hash = __mixPathHash(hash, data.lane);
+		hash = __mixPathHash(hash, data.player);
+		hash = __mixPathHash(hash, data.isTapArrow ? 1 : 0);
+		hash = __mixPathHash(hash, data.straightHolds ? 1 : 0);
+		hash = __mixPathHash(hash, __quantizePathFloat(posDiff));
+		hash = __mixPathHash(hash, allowVis ? 1 : 0);
+		hash = __mixPathHash(hash, allowPos ? 1 : 0);
+		hash = __mixPathHash(hash, Std.int(transformMode));
+		return hash;
 	}
+
+	private inline function __mixPathHash(hash:Int, value:Int):Int
+		return (hash * 31) ^ value;
+
+	private inline function __quantizePathFloat(value:Float):Int
+		return Std.int(value * 1000);
 }
+

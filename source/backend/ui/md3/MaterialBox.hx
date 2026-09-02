@@ -59,7 +59,6 @@ class MaterialBox extends FlxSpriteGroup
 	// -----------------------------------------------------------------------
 	// Internal visual components
 	// -----------------------------------------------------------------------
-
 	var shadow:FlxSprite;
 	var panel:FlxSprite;
 	var titleBar:FlxSprite;
@@ -70,24 +69,22 @@ class MaterialBox extends FlxSpriteGroup
 	// -----------------------------------------------------------------------
 	// Layout constants (M3 specs)
 	// -----------------------------------------------------------------------
-
 	static inline var TITLE_BAR_HEIGHT:Int = 44;
-	static inline var CORNER_RADIUS:Int    = 12;
-	static inline var TITLE_FONT_SIZE:Int  = 14;
-	static inline var TITLE_PADDING:Int    = 16;
-	static inline var CLOSE_ICON_SIZE:Int  = 18;
-	static inline var CLOSE_AREA:Int       = 40; // clickable area around close icon
-	static inline var SHADOW_BLUR:Int      = 4;
-	static inline var DIVIDER_HEIGHT:Int   = 1;
+	static inline var CORNER_RADIUS:Int = 12;
+	static inline var TITLE_FONT_SIZE:Int = 14;
+	static inline var TITLE_PADDING:Int = 16;
+	static inline var CLOSE_ICON_SIZE:Int = 18;
+	static inline var CLOSE_AREA:Int = 40; // clickable area around close icon
+	static inline var SHADOW_BLUR:Int = 4;
+	static inline var DIVIDER_HEIGHT:Int = 1;
 
 	// -----------------------------------------------------------------------
 	// Drag state
 	// -----------------------------------------------------------------------
-
 	var _dragStart:FlxPoint;
 	var _originPos:FlxPoint;
 	var _dragging:Bool = false;
-	var _pressed:Bool  = false;
+	var _pressed:Bool = false;
 	var _lastClickTime:Float = 999;
 
 	var _minimizeTween:FlxTween;
@@ -163,14 +160,11 @@ class MaterialBox extends FlxSpriteGroup
 		var mouse = FlxG.mouse.getScreenPosition();
 
 		// Check if mouse is over the title bar
-		var overTitle = (mouse.x >= x && mouse.x <= x + panelWidth
-			&& mouse.y >= y && mouse.y <= y + TITLE_BAR_HEIGHT);
+		var overTitle = (mouse.x >= x && mouse.x <= x + panelWidth && mouse.y >= y && mouse.y <= y + TITLE_BAR_HEIGHT);
 
 		// Check if mouse is over the close icon area
 		var closeX = x + panelWidth - CLOSE_AREA;
-		var overClose = onClose != null
-			&& mouse.x >= closeX && mouse.x <= x + panelWidth
-			&& mouse.y >= y && mouse.y <= y + TITLE_BAR_HEIGHT;
+		var overClose = onClose != null && mouse.x >= closeX && mouse.x <= x + panelWidth && mouse.y >= y && mouse.y <= y + TITLE_BAR_HEIGHT;
 
 		if (FlxG.mouse.justPressed && overTitle)
 		{
@@ -186,10 +180,7 @@ class MaterialBox extends FlxSpriteGroup
 			if (!FlxG.mouse.released)
 			{
 				var newMouse = FlxG.mouse.getScreenPosition();
-				setPosition(
-					_originPos.x + (newMouse.x - _dragStart.x),
-					_originPos.y + (newMouse.y - _dragStart.y)
-				);
+				setPosition(_originPos.x + (newMouse.x - _dragStart.x), _originPos.y + (newMouse.y - _dragStart.y));
 			}
 			else
 			{
@@ -197,13 +188,15 @@ class MaterialBox extends FlxSpriteGroup
 				_pressed = false;
 			}
 		}
-		else if (_pressed && canDrag && FlxG.mouse.pressed
+		else if (_pressed
+			&& canDrag
+			&& FlxG.mouse.pressed
 			&& (Math.abs(FlxG.mouse.deltaScreenX) > 1 || Math.abs(FlxG.mouse.deltaScreenY) > 1)
 			&& !overClose)
 		{
 			_dragging = true;
-			_dragStart  = FlxG.mouse.getScreenPosition();
-			_originPos  = FlxPoint.get(x, y);
+			_dragStart = FlxG.mouse.getScreenPosition();
+			_originPos = FlxPoint.get(x, y);
 		}
 
 		if (FlxG.mouse.justReleased && _pressed)
@@ -222,7 +215,7 @@ class MaterialBox extends FlxSpriteGroup
 			{
 				_lastClickTime = 0;
 			}
-			_pressed  = false;
+			_pressed = false;
 			_dragging = false;
 		}
 
@@ -241,7 +234,7 @@ class MaterialBox extends FlxSpriteGroup
 	 */
 	public function resize(width:Int, height:Int):Void
 	{
-		panelWidth  = width;
+		panelWidth = width;
 		panelHeight = height;
 		_contentHeight = height - TITLE_BAR_HEIGHT - DIVIDER_HEIGHT;
 
@@ -270,13 +263,16 @@ class MaterialBox extends FlxSpriteGroup
 
 	function _onThemeChange():Void
 	{
-		if (panel == null) return;
+		if (panel == null)
+			return;
 
 		drawRoundedRect(panel, panelWidth, panelHeight, CORNER_RADIUS, MD3Theme.surfaceContainerLow);
 		drawTitleBar(titleBar, panelWidth, TITLE_BAR_HEIGHT, CORNER_RADIUS);
 
-		if (divider != null) divider.color = MD3Theme.outlineVariant;
-		if (titleText != null) titleText.color = MD3Theme.onSurface;
+		if (divider != null)
+			divider.color = MD3Theme.outlineVariant;
+		if (titleText != null)
+			titleText.color = MD3Theme.onSurface;
 		if (closeIcon != null)
 			drawCloseIcon(closeIcon, CLOSE_ICON_SIZE, MD3Theme.onSurfaceVariant);
 		if (shadow != null)
@@ -289,10 +285,12 @@ class MaterialBox extends FlxSpriteGroup
 
 	function set_isMinimized(v:Bool):Bool
 	{
-		if (v == isMinimized) return v;
+		if (v == isMinimized)
+			return v;
 		isMinimized = v;
 
-		if (_minimizeTween != null) _minimizeTween.cancel();
+		if (_minimizeTween != null)
+			_minimizeTween.cancel();
 
 		var targetH:Float = v ? 0 : _contentHeight;
 		var dur = v ? 0.15 : 0.22;
@@ -302,10 +300,10 @@ class MaterialBox extends FlxSpriteGroup
 		_minimizeTween = FlxTween.num(content.scale.y, v ? 0 : 1, dur, {ease: ease}, function(sv)
 		{
 			content.scale.y = sv;
-			content.alpha   = sv;
+			content.alpha = sv;
 			// Shrink panel height by scaling
-			panel.scale.y   = v ? (TITLE_BAR_HEIGHT + DIVIDER_HEIGHT + targetH * (1 - sv)) / panelHeight
-			                     : (TITLE_BAR_HEIGHT + DIVIDER_HEIGHT + _contentHeight * sv) / panelHeight;
+			panel.scale.y = v ? (TITLE_BAR_HEIGHT + DIVIDER_HEIGHT + targetH * (1 - sv)) / panelHeight : (TITLE_BAR_HEIGHT + DIVIDER_HEIGHT
+				+ _contentHeight * sv) / panelHeight;
 		});
 
 		return v;
@@ -317,7 +315,8 @@ class MaterialBox extends FlxSpriteGroup
 
 	function drawRoundedRect(sprite:FlxSprite, width:Int, height:Int, radius:Int, color:FlxColor):Void
 	{
-		if (sprite == null || sprite.pixels == null) return;
+		if (sprite == null || sprite.pixels == null)
+			return;
 		var g = sprite.pixels;
 		g.fillRect(g.rect, FlxColor.TRANSPARENT);
 
@@ -328,25 +327,30 @@ class MaterialBox extends FlxSpriteGroup
 				var inside = true;
 				if (px < radius && py < radius)
 				{
-					var dx = radius - px; var dy = radius - py;
+					var dx = radius - px;
+					var dy = radius - py;
 					inside = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px >= width - radius && py < radius)
 				{
-					var dx = px - (width - radius); var dy = radius - py;
+					var dx = px - (width - radius);
+					var dy = radius - py;
 					inside = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px < radius && py >= height - radius)
 				{
-					var dx = radius - px; var dy = py - (height - radius);
+					var dx = radius - px;
+					var dy = py - (height - radius);
 					inside = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px >= width - radius && py >= height - radius)
 				{
-					var dx = px - (width - radius); var dy = py - (height - radius);
+					var dx = px - (width - radius);
+					var dy = py - (height - radius);
 					inside = (dx * dx + dy * dy) <= radius * radius;
 				}
-				if (inside) g.setPixel32(px, py, color);
+				if (inside)
+					g.setPixel32(px, py, color);
 			}
 		}
 	}
@@ -354,7 +358,8 @@ class MaterialBox extends FlxSpriteGroup
 	/** Title bar: only top corners are rounded (bottom corners are square). */
 	function drawTitleBar(sprite:FlxSprite, width:Int, height:Int, radius:Int):Void
 	{
-		if (sprite == null || sprite.pixels == null) return;
+		if (sprite == null || sprite.pixels == null)
+			return;
 		var g = sprite.pixels;
 		g.fillRect(g.rect, FlxColor.TRANSPARENT);
 		var color:Int = MD3Theme.surfaceContainerHigh;
@@ -366,15 +371,18 @@ class MaterialBox extends FlxSpriteGroup
 				var inside = true;
 				if (px < radius && py < radius)
 				{
-					var dx = radius - px; var dy = radius - py;
+					var dx = radius - px;
+					var dy = radius - py;
 					inside = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px >= width - radius && py < radius)
 				{
-					var dx = px - (width - radius); var dy = radius - py;
+					var dx = px - (width - radius);
+					var dy = radius - py;
 					inside = (dx * dx + dy * dy) <= radius * radius;
 				}
-				if (inside) g.setPixel32(px, py, color);
+				if (inside)
+					g.setPixel32(px, py, color);
 			}
 		}
 	}
@@ -382,7 +390,8 @@ class MaterialBox extends FlxSpriteGroup
 	/** Circular gradient shadow — approximated with concentric alpha rings. */
 	function drawShadow(sprite:FlxSprite, width:Int, height:Int, radius:Int):Void
 	{
-		if (sprite == null || sprite.pixels == null) return;
+		if (sprite == null || sprite.pixels == null)
+			return;
 		var g = sprite.pixels;
 		g.fillRect(g.rect, FlxColor.TRANSPARENT);
 		var shadowColor = MD3Theme.shadowColor();
@@ -395,11 +404,31 @@ class MaterialBox extends FlxSpriteGroup
 			{
 				var inside = true;
 				var edge = SHADOW_BLUR;
-				if (px < radius && py < radius) { var dx = radius - px; var dy = radius - py; inside = (dx*dx+dy*dy) <= radius * radius; }
-				else if (px >= width - radius && py < radius) { var dx = px-(width-radius); var dy = radius-py; inside = (dx*dx+dy*dy) <= radius*radius; }
-				else if (px < radius && py >= height - radius) { var dx = radius-px; var dy = py-(height-radius); inside = (dx*dx+dy*dy) <= radius*radius; }
-				else if (px >= width - radius && py >= height - radius) { var dx = px-(width-radius); var dy = py-(height-radius); inside = (dx*dx+dy*dy) <= radius*radius; }
-				
+				if (px < radius && py < radius)
+				{
+					var dx = radius - px;
+					var dy = radius - py;
+					inside = (dx * dx + dy * dy) <= radius * radius;
+				}
+				else if (px >= width - radius && py < radius)
+				{
+					var dx = px - (width - radius);
+					var dy = radius - py;
+					inside = (dx * dx + dy * dy) <= radius * radius;
+				}
+				else if (px < radius && py >= height - radius)
+				{
+					var dx = radius - px;
+					var dy = py - (height - radius);
+					inside = (dx * dx + dy * dy) <= radius * radius;
+				}
+				else if (px >= width - radius && py >= height - radius)
+				{
+					var dx = px - (width - radius);
+					var dy = py - (height - radius);
+					inside = (dx * dx + dy * dy) <= radius * radius;
+				}
+
 				if (inside)
 				{
 					// Compute distance to the nearest edge (for alpha falloff)
@@ -416,27 +445,36 @@ class MaterialBox extends FlxSpriteGroup
 	/** Draw a simple × icon. */
 	function drawCloseIcon(sprite:FlxSprite, size:Int, color:FlxColor):Void
 	{
-		if (sprite == null || sprite.pixels == null) return;
+		if (sprite == null || sprite.pixels == null)
+			return;
 		var g = sprite.pixels;
 		g.fillRect(g.rect, FlxColor.TRANSPARENT);
 		var col:Int = color;
 		for (i in 0...size)
 		{
 			g.setPixel32(i, i, col);
-			if (i > 0) g.setPixel32(i - 1, i, col);
-			if (i < size - 1) g.setPixel32(i + 1, i, col);
+			if (i > 0)
+				g.setPixel32(i - 1, i, col);
+			if (i < size - 1)
+				g.setPixel32(i + 1, i, col);
 			g.setPixel32(size - 1 - i, i, col);
-			if (i > 0) g.setPixel32(size - i, i, col);
-			if (size - 2 - i >= 0) g.setPixel32(size - 2 - i, i, col);
+			if (i > 0)
+				g.setPixel32(size - i, i, col);
+			if (size - 2 - i >= 0)
+				g.setPixel32(size - 2 - i, i, col);
 		}
 	}
 
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(_onThemeChange);
-		if (_minimizeTween != null) _minimizeTween.cancel();
-		if (_dragStart != null) _dragStart.put();
-		if (_originPos != null) _originPos.put();
+		if (_minimizeTween != null)
+			_minimizeTween.cancel();
+		if (_dragStart != null)
+			_dragStart.put();
+		if (_originPos != null)
+			_originPos.put();
 		super.destroy();
 	}
 }
+

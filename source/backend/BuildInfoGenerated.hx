@@ -6,3 +6,4 @@ class BuildInfoGenerated
 	public static inline final commit:String = "";
 	public static inline final runId:String = "";
 }
+

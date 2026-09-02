@@ -82,7 +82,6 @@ class RainShader extends FlxShader
 			  return sampleBitmapScreen(worldToScreen(worldCoord));
 		  }
 	  ', true)
-
 	@:glFragmentSource("
 	  		#pragma header
 
@@ -353,15 +352,14 @@ class RainShader extends FlxShader
 				gl_FragColor = vec4(color, 1);
 			}
 		")
-
 	static final MAX_LIGHTS:Int = 8;
 
 	public var lights:Array<
-	{
-		position:ShaderParameter<Float>,
-		color:ShaderParameter<Float>,
-		radius:ShaderParameter<Float>,
-	}>;
+		{
+			position:ShaderParameter<Float>,
+			color:ShaderParameter<Float>,
+			radius:ShaderParameter<Float>,
+		}>;
 
 	public var time(default, set):Float = 1;
 
@@ -459,41 +457,39 @@ class RainShader extends FlxShader
 	}
 
 	/*override function __processGLData(source:String, storageType:String):Void
-	{
-		super.__processGLData(source, storageType);
-		if (storageType == 'uniform')
 		{
-			lights = [
-				for (i in 0...MAX_LIGHTS)
-				{
-					position: addFloatUniform('lights[$i].position', 2),
-					color: addFloatUniform('lights[$i].color', 3),
-					radius: addFloatUniform('lights[$i].radius', 1),
-				}
-			];
-		}
+			super.__processGLData(source, storageType);
+			if (storageType == 'uniform')
+			{
+				lights = [
+					for (i in 0...MAX_LIGHTS)
+					{
+						position: addFloatUniform('lights[$i].position', 2),
+						color: addFloatUniform('lights[$i].color', 3),
+						radius: addFloatUniform('lights[$i].radius', 1),
+					}
+				];
+			}
 	}*/
-
 	public function updateViewInfo(screenWidth:Float, screenHeight:Float, camera:FlxCamera):Void
 	{
 		uScreenResolution.value = [screenWidth, screenHeight];
 		uCameraBounds.value = [camera.viewLeft, camera.viewTop, camera.viewRight, camera.viewBottom];
 	}
-  
-	/*override function __createGLProgram(vertexSource:String, fragmentSource:String):GLProgram
-	{
-	  try
-	  {
-		final res = super.__createGLProgram(vertexSource, fragmentSource);
-		return res;
-	  }
-	  catch (error)
-	  {
-		Log.warn(error); // prevent the app from dying immediately
-		return null;
-	  }
-	}*/
 
+	/*override function __createGLProgram(vertexSource:String, fragmentSource:String):GLProgram
+		{
+		  try
+		  {
+			final res = super.__createGLProgram(vertexSource, fragmentSource);
+			return res;
+		  }
+		  catch (error)
+		  {
+			Log.warn(error); // prevent the app from dying immediately
+			return null;
+		  }
+	}*/
 	@:access(openfl.display.ShaderParameter)
 	function addFloatUniform(name:String, length:Int):ShaderParameter<Float>
 	{
@@ -508,3 +504,4 @@ class RainShader extends FlxShader
 		return res;
 	}
 }
+

@@ -1,0 +1,101 @@
+# Builds Psych Engine (community fork) for macOS (Universal).
+# Windows builds live in build-windows.yml (separate manual dispatch).
+
+name: Build (macOS)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  buildMac-Intel:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: krdlab/setup-haxe@v2.1.0
+        with:
+          haxe-version: 4.3.7
+
+      - name: Install Haxe dependencies
+        run: |
+          haxelib setup ~/haxelib
+          chmod +x ./setup/unix.sh
+          ./setup/unix.sh
+
+      - name: Create version tag
+        run: echo "${{ github.run_id }}" > VERSION
+
+      - name: Compile
+        run: haxelib run lime build mac -64 --app-version="1.1.0-${{ github.run_id }}"
+
+      - name: Publish artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: macBuild-Intel
+          path: export/release/macos/bin
+
+  buildMac-ARM:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: krdlab/setup-haxe@v2.1.0
+        with:
+          haxe-version: 4.3.7
+
+      - name: Install Haxe dependencies
+        run: |
+          haxelib setup ~/haxelib
+          chmod +x ./setup/unix.sh
+          ./setup/unix.sh
+
+      - name: Create version tag
+        run: echo "${{ github.run_id }}" > VERSION
+
+      - name: Compile
+        run: haxelib run lime build mac --app-version="1.1.0-${{ github.run_id }}"
+
+      - name: Publish artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: macBuild-ARM
+          path: export/release/macos/bin
+
+  buildMac-Universal:
+    runs-on: macos-26
+    needs: 
+      - buildMac-Intel
+      - buildMac-ARM
+    steps:
+      - name: Download Intel build
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: macBuild-Intel
+          path: intel
+
+      - name: Download ARM build
+        uses: actions/download-artifact@v8.0.1
+        with:
+          name: macBuild-ARM
+          path: arm
+
+      - name: Remove ARM and Intel artifacts
+        uses: geekyeggo/delete-artifact@v6
+        with:
+          name: macBuild-*
+
+      - name: Create Universal App Bundle
+        shell: bash
+        run: |
+          BIN="PsychEngine.app/Contents/MacOS"
+          INTEL="intel/PsychEngine.app/Contents/MacOS"
+          ARM="arm/PsychEngine.app/Contents/MacOS"
+          cp -R intel/PsychEngine.app PsychEngine.app
+          lipo -create "$INTEL/PsychEngine" "$ARM/PsychEngine" -output "$BIN/PsychEngine"
+          lipo -create "$INTEL/lime.ndll" "$ARM/lime.ndll" -output "$BIN/lime.ndll"
+
+      - name: Upload Universal Mac bundle
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: macBuild-Universal
+          path: PsychEngine.app

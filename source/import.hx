@@ -1,19 +1,16 @@
 #if !macro
-//Discord API
+// Discord API
 #if DISCORD_ALLOWED
 import backend.Discord;
 #end
-
-//Psych
+// Psych
 #if LUA_ALLOWED
 import llua.*;
 import llua.Lua;
 #end
-
 #if ACHIEVEMENTS_ALLOWED
 import backend.Achievements;
 #end
-
 // Mobile Controls
 import mobile.objects.MobileControls;
 import mobile.objects.IMobileControls;
@@ -24,7 +21,6 @@ import mobile.input.MobileInputID;
 import mobile.backend.MobileData;
 import mobile.input.MobileInputManager;
 import mobile.backend.TouchUtil;
-
 // Android
 #if android
 import android.content.Context as AndroidContext;
@@ -36,14 +32,12 @@ import android.Tools as AndroidTools;
 import android.os.Build.VERSION as AndroidVersion;
 import android.os.Build.VERSION_CODES as AndroidVersionCode;
 #end
-
 #if sys
 import sys.*;
 import sys.io.*;
 #elseif js
 import js.html.*;
 #end
-
 import backend.Paths;
 import backend.Controls;
 import backend.CoolUtil;
@@ -59,27 +53,21 @@ import backend.Language;
 import backend.BuildInfo;
 import backend.StructurePsychOld;
 import mobile.backend.StorageUtil;
-
-import backend.ui.*; //Psych-UI
-
+import backend.ui.*; // Psych-UI
 import objects.Alphabet;
 import objects.BGSprite;
 import objects.Cursor;
-
 import states.PlayState;
 import states.LoadingState;
-
 import psychlua.LuaUtils.Function_Stop;
 import psychlua.LuaUtils.Function_Continue;
 import backend.ScriptableState;
 import backend.ScriptableSubstate;
-
 #if flxanimate
 import flxanimate.*;
 import flxanimate.PsychFlxAnimate as FlxAnimate;
 #end
-
-//Flixel
+// Flixel
 import flixel.sound.FlxSound;
 import flixel.FlxG;
 import flixel.FlxSprite;
@@ -99,3 +87,4 @@ import flixel.system.FlxAssets.FlxShader;
 
 using StringTools;
 #end
+

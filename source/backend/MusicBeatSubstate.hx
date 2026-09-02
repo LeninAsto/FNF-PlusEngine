@@ -2,46 +2,37 @@ package backend;
 
 import flixel.FlxSubState;
 import debug.TraceDisplay;
-
-#if LUA_ALLOWED
-import psychlua.FunkinLua;
-#end
-
 #if HSCRIPT_ALLOWED
 import psychlua.HScript;
 import crowplexus.hscript.Expr.Error as IrisError;
 import crowplexus.hscript.Printer;
 #end
-
 import psychlua.LuaUtils;
-
 #if sys
 import sys.FileSystem;
 #end
 
 // Script layer on top of BaseMusicBeatSubstate.
-// Adds GlobalScript forwarding and per-substate HScript/Lua callbacks.
+// Adds beat callbacks and keeps substate script hooks disabled while the layer is rebuilt.
 //
 // Hierarchy:
 //   BaseMusicBeatSubstate (beat, mobile controls)
 //   └── MusicBeatSubstate (this file — + script hooks)
-
 class MusicBeatSubstate extends BaseMusicBeatSubstate
 {
 	public static inline var Function_Continue:Int = 0;
 	public static inline var Function_Stop:Int = 1;
 
 	public static var instance:MusicBeatSubstate;
-	
+
 	// Variables map for substate-specific data
 	public var variables:Map<String, Dynamic> = new Map<String, Dynamic>();
+	public var scriptName:String = null;
+	public var scriptOwnerMod:String = null;
+	public var isScriptedSubstate:Bool = false;
+
 	var _companionClosing:Bool = false;
-	
-	// MusicBeatSubstate specific scripts (run on all MusicBeatSubstate instances)
-	#if LUA_ALLOWED
-	public static var musicBeatSubstateLuaScript:FunkinLua = null;
-	#end
-	
+
 	#if HSCRIPT_ALLOWED
 	public static var musicBeatSubstateScript:HScript = null;
 	#end
@@ -59,10 +50,6 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 	#if HSCRIPT_ALLOWED
 	public var companionScript:HScript = null;
 	#end
-	#if LUA_ALLOWED
-	public var companionLuaScript:FunkinLua = null;
-	#end
-
 	public function new()
 	{
 		super();
@@ -82,6 +69,7 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 		callOnCompanionScript('onCreate', []);
 		callOnCompanionScript('onCreatePost', []);
 	}
+
 	public static function getSubstate():MusicBeatSubstate
 	{
 		return instance;
@@ -176,17 +164,9 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 			companionScript = null;
 		}
 		#end
-		#if LUA_ALLOWED
-		if (companionLuaScript != null)
-		{
-			companionLuaScript.stop();
-			companionLuaScript = null;
-		}
-		#end
 	}
-	
-	// ── Companion script helpers ─────────────────────────────────────────────────
 
+	// ── Companion script helpers ─────────────────────────────────────────────────
 	#if (HSCRIPT_ALLOWED && sys)
 	function _loadCompanionScript():Void
 	{
@@ -199,39 +179,19 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 
 		#if MODS_ALLOWED
 		var modded:String = Paths.modFolders(rel);
-		if (FileSystem.exists(modded)) path = modded;
+		if (FileSystem.exists(modded))
+			path = modded;
 		#end
 
 		if (path == null)
 		{
 			var shared:String = Paths.getSharedPath(rel);
-			if (FileSystem.exists(shared)) path = shared;
+			if (FileSystem.exists(shared))
+				path = shared;
 		}
 
-		#if LUA_ALLOWED
-		var luaRel:String = 'scripts/substates/$clsName.lua';
-		var luaPath:String = null;
-		#if MODS_ALLOWED
-		var moddedLua:String = Paths.modFolders(luaRel);
-		if (FileSystem.exists(moddedLua)) luaPath = moddedLua;
-		#end
-		if (luaPath == null)
-		{
-			var sharedLua:String = Paths.getSharedPath(luaRel);
-			if (FileSystem.exists(sharedLua)) luaPath = sharedLua;
-		}
-		if (luaPath != null)
-		{
-			try
-			{
-				var ctx = new psychlua.LuaHostContext(psychlua.LuaHostKind.SUBSTATE, clsName, this, getParentState(), variables, null);
-				companionLuaScript = new FunkinLua(luaPath, ctx);
-			}
-			catch(e:Dynamic) { trace('[CompanionSubstate] Lua error in $luaPath: $e'); }
-		}
-		#end
-
-		if (path == null) return;
+		if (path == null)
+			return;
 
 		try
 		{
@@ -239,40 +199,46 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 			injectReturnConstants(companionScript);
 
 			// Expose the substate itself and its parent state
-			companionScript.set('game',           this);
-			companionScript.set('parentState',    getParentState());
-			companionScript.set('add',            this.add);
-			companionScript.set('remove',         this.remove);
-			companionScript.set('close',          this.close);
-			companionScript.set('requestClose',   this.close);
-			companionScript.set('closeSubstate',  this.close);
+			companionScript.set('game', this);
+			companionScript.set('parentState', getParentState());
+			companionScript.set('add', this.add);
+			companionScript.set('remove', this.remove);
+			companionScript.set('close', this.close);
+			companionScript.set('requestClose', this.close);
+			companionScript.set('closeSubstate', this.close);
 
-			companionScript.set('setSharedVar', function(n:String, v:Dynamic) {
+			companionScript.set('setSharedVar', function(n:String, v:Dynamic)
+			{
 				MusicBeatState.globalVariables.set(n, v);
 				variables.set(n, v);
 				return v;
 			});
-			companionScript.set('getSharedVar', function(n:String, ?def:Dynamic = null):Dynamic {
-				if (MusicBeatState.globalVariables.exists(n)) return MusicBeatState.globalVariables.get(n);
-				if (variables.exists(n)) return variables.get(n);
+			companionScript.set('getSharedVar', function(n:String, ?def:Dynamic = null):Dynamic
+			{
+				if (MusicBeatState.globalVariables.exists(n))
+					return MusicBeatState.globalVariables.get(n);
+				if (variables.exists(n))
+					return variables.get(n);
 				return def;
 			});
-			companionScript.set('setStaticVar', function(n:String, v:Dynamic) {
-				MusicBeatState.staticVariables.set(n, v); return v;
+			companionScript.set('setStaticVar', function(n:String, v:Dynamic)
+			{
+				MusicBeatState.staticVariables.set(n, v);
+				return v;
 			});
-			companionScript.set('getStaticVar', function(n:String, ?def:Dynamic = null):Dynamic
-				return MusicBeatState.staticVariables.exists(n) ? MusicBeatState.staticVariables.get(n) : def);
+			companionScript.set('getStaticVar',
+				function(n:String, ?def:Dynamic = null):Dynamic return MusicBeatState.staticVariables.exists(n) ? MusicBeatState.staticVariables.get(n) : def);
 
 			trace('[CompanionSubstate] Loaded for "$clsName": $path');
 		}
-		catch(e:crowplexus.hscript.Expr.Error)
+		catch (e:crowplexus.hscript.Expr.Error)
 		{
 			var msg = crowplexus.hscript.Printer.errorToString(e, false);
 			trace('[CompanionSubstate] HScript error in $path:\n$msg');
 			if (debug.TraceDisplay.instance != null)
 				debug.TraceDisplay.addHScriptError(msg, path);
 		}
-		catch(e:Dynamic)
+		catch (e:Dynamic)
 		{
 			trace('[CompanionSubstate] Failed to load $path: $e');
 		}
@@ -281,17 +247,11 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 
 	public function callOnCompanionScript(funcName:String, args:Array<Dynamic> = null):Dynamic
 	{
-		if (args == null) args = [];
+		if (args == null)
+			args = [];
 		var ret:Dynamic = LuaUtils.Function_Continue;
-		if (!MusicBeatState.stateScriptOverridesEnabled()) return ret;
-
-		#if LUA_ALLOWED
-		if (companionLuaScript != null)
-		{
-			var v = companionLuaScript.call(funcName, args);
-			if (v != null && v != LuaUtils.Function_Continue) ret = v;
-		}
-		#end
+		if (!MusicBeatState.stateScriptOverridesEnabled())
+			return ret;
 
 		#if HSCRIPT_ALLOWED
 		if (companionScript != null)
@@ -302,7 +262,8 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 				if (fn == null && funcName.startsWith('on'))
 				{
 					var bare = funcName.charAt(2).toLowerCase() + funcName.substr(3);
-					if (bare != 'close' && companionScript.exists(bare)) fn = bare;
+					if (bare != 'close' && companionScript.exists(bare))
+						fn = bare;
 				}
 				if (fn != null)
 				{
@@ -311,7 +272,7 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 						ret = callValue.returnValue;
 				}
 			}
-			catch(e:Dynamic)
+			catch (e:Dynamic)
 			{
 				trace('[CompanionSubstate] Runtime error calling $funcName: $e');
 			}
@@ -324,10 +285,12 @@ class MusicBeatSubstate extends BaseMusicBeatSubstate
 	#if HSCRIPT_ALLOWED
 	private function injectReturnConstants(script:HScript):Void
 	{
-		if (script == null) return;
+		if (script == null)
+			return;
 
 		script.set('Function_Continue', LuaUtils.Function_Continue);
 		script.set('Function_Stop', LuaUtils.Function_Stop);
 	}
 	#end
 }
+

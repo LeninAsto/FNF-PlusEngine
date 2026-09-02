@@ -103,7 +103,12 @@ class DebugLuaText extends FlxSpriteGroup
 		}
 		else
 		{
-			entries.push({text: text, color: color, count: 1, time: MESSAGE_TIME});
+			entries.push({
+				text: text,
+				color: color,
+				count: 1,
+				time: MESSAGE_TIME
+			});
 			if (entries.length > MAX_STORED_ENTRIES)
 				entries.shift();
 		}
@@ -355,3 +360,4 @@ class DebugLuaText extends FlxSpriteGroup
 		super.destroy();
 	}
 }
+

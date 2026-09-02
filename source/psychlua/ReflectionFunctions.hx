@@ -187,8 +187,15 @@ class ReflectionFunctions
 			}
 			else groupOrArray.insert(index, obj);
 		});
-		Lua_helper.add_callback(lua, "removeFromGroup", function(group:String, ?index:Int = -1, ?tag:String = null, ?destroy:Bool = true) {
+		Lua_helper.add_callback(lua, "removeFromGroup", function(group:String, ?index:Int = -1, ?dontDestroyOrTag:Dynamic = false, ?destroy:Bool = true) {
 			var obj:FlxSprite = null;
+			var shouldDestroy:Bool = destroy;
+			var tag:String = null;
+			if (Std.isOfType(dontDestroyOrTag, Bool))
+				shouldDestroy = !cast(dontDestroyOrTag, Bool);
+			else if (dontDestroyOrTag != null)
+				tag = Std.string(dontDestroyOrTag);
+
 			if(tag != null)
 			{
 				obj = LuaUtils.getObjectDirectly(tag);
@@ -212,14 +219,19 @@ class ReflectionFunctions
 					if(obj != null)
 					{
 						groupOrArray.remove(obj);
-						if(destroy) obj.destroy();
+						if(shouldDestroy) obj.destroy();
 					}
-					else groupOrArray.remove(groupOrArray[index]);
+					else
+					{
+						obj = groupOrArray[index];
+						groupOrArray.remove(obj);
+						if(shouldDestroy && obj != null && obj.destroy != null) obj.destroy();
+					}
 
 				default: //Is Group
 					if(obj == null) obj = groupOrArray.members[index];
 					groupOrArray.remove(obj, true);
-					if(destroy) obj.destroy();
+					if(shouldDestroy && obj != null) obj.destroy();
 			}
 		});
 		

@@ -3,6 +3,7 @@ package backend;
 import flixel.graphics.frames.FlxFrame.FlxFrameAngle;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.graphics.FlxGraphic;
+import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
 import flixel.system.FlxAssets;
 import openfl.display.BitmapData;
@@ -27,6 +28,97 @@ class Paths
 {
 	inline public static var SOUND_EXT = "ogg";
 	inline public static var VIDEO_EXT = "mp4";
+
+	/**
+	 * Base UI path prefix for custom UI assets.
+	 */
+	public static var uiBasePath:String = "";
+
+	/**
+	 * UI suffix for pixel/alternate versions
+	 */
+	public static var uiSuffix:String = "";
+
+	/**
+	 * Get a UI asset path with support for nested folders
+	 * @param assetName Base asset name (e.g., "ready", "combo")
+	 * @param useSuffix Whether to append uiSuffix
+	 * @return Full image path string
+	 */
+	public static function getUIPath(assetName:String, useSuffix:Bool = true):String
+	{
+		var base:String = "images/";
+
+		// Add custom base path if set
+		if (uiBasePath != null && uiBasePath.length > 0)
+		{
+			// Normalize path: ensure no leading/trailing slashes
+			var normalizedPath = uiBasePath.replace('\\', '/');
+			if (normalizedPath.startsWith("/"))
+				normalizedPath = normalizedPath.substr(1);
+			if (normalizedPath.endsWith("/"))
+				normalizedPath = normalizedPath.substr(0, -1);
+
+			// Add UI folder suffix
+			base += normalizedPath + "/";
+		}
+
+		// Add asset name
+		base += assetName;
+
+		// Add suffix if requested
+		if (useSuffix && uiSuffix != null && uiSuffix.length > 0)
+			base += uiSuffix;
+
+		return base;
+	}
+
+	/**
+	 * Set UI path for standard UI
+	 * @param uiName UI name
+	 * @param isPixel Whether to use pixel suffix
+	 */
+	public static function setUIPath(uiName:String, isPixel:Bool = false):Void
+	{
+		if (uiName == null || uiName == "normal")
+		{
+			uiBasePath = "";
+			uiSuffix = "";
+			return;
+		}
+
+		// Handle "-pixel" suffix in name
+		if (uiName == "pixel")
+			isPixel = true;
+		if (uiName.endsWith("-pixel"))
+		{
+			uiName = uiName.substr(0, uiName.length - 6);
+			isPixel = true;
+		}
+
+		uiBasePath = uiName.endsWith("UI") ? uiName : uiName + "UI";
+		uiSuffix = isPixel ? "-pixel" : "";
+	}
+
+	/**
+	 * Reset UI path to default (normal)
+	 */
+	public static function resetUIPath():Void
+	{
+		uiBasePath = "";
+		uiSuffix = "";
+	}
+
+	/**
+	 * Get the UI folder prefix (compatible with old system)
+	 * @deprecated Use getUIPath() instead
+	 */
+	public static function getUIPrefix():String
+	{
+		if (uiBasePath == null || uiBasePath.length == 0)
+			return "";
+		return uiBasePath + "/";
+	}
 
 	/**
 	 * Temporary frames cache that gets cleared between states.
@@ -192,6 +284,8 @@ class Paths
 	// haya I love you for the base cache dump I took to the max
 	public static function clearUnusedMemory()
 	{
+		var keysToRemove:Array<String> = [];
+
 		// clear non local assets in the tracked assets list
 		for (key in currentTrackedAssets.keys())
 		{
@@ -199,9 +293,15 @@ class Paths
 			if (!localTrackedAssets.contains(key) && !isAssetExcluded(key))
 			{
 				if (destroyGraphic(currentTrackedAssets.get(key)))
-					currentTrackedAssets.remove(key); // and remove the key from local cache map
+					keysToRemove.push(key); // and remove the key from local cache map
 			}
 		}
+
+		for (key in keysToRemove)
+			currentTrackedAssets.remove(key);
+
+		// Match Psych's cache cleanup behavior: free collected assets promptly.
+		System.gc();
 	}
 
 	// define the locally tracked assets
@@ -210,12 +310,23 @@ class Paths
 	@:access(flixel.system.frontEnds.BitmapFrontEnd._cache)
 	public static function clearStoredMemory()
 	{
+		var graphicsToDestroy:Array<FlxGraphic> = [];
+
 		// clear anything not in the tracked assets list
 		for (key in FlxG.bitmap._cache.keys())
 		{
 			if (!currentTrackedAssets.exists(key))
-				destroyGraphic(FlxG.bitmap.get(key));
+			{
+				var graphic:FlxGraphic = FlxG.bitmap.get(key);
+				if (graphic != null)
+					graphicsToDestroy.push(graphic);
+			}
 		}
+
+		for (graphic in graphicsToDestroy)
+			destroyGraphic(graphic);
+
+		var soundsToRemove:Array<String> = [];
 
 		// clear all sounds that are cached
 		for (key => asset in currentTrackedSounds)
@@ -223,9 +334,13 @@ class Paths
 			if (!localTrackedAssets.contains(key) && !isAssetExcluded(key) && asset != null)
 			{
 				Assets.cache.clear(key);
-				currentTrackedSounds.remove(key);
+				soundsToRemove.push(key);
 			}
 		}
+
+		for (key in soundsToRemove)
+			currentTrackedSounds.remove(key);
+
 		// flags everything to be cleared out next unused memory clear
 		AssetCache.resetLocalTracking();
 		localTrackedAssets = AssetCache.localTrackedAssets;
@@ -236,6 +351,8 @@ class Paths
 	public static function freeGraphicsFromMemory()
 	{
 		var protectedGfx:Array<FlxGraphic> = [];
+		var keysToRemove:Array<String> = [];
+
 		function checkForGraphics(spr:Dynamic)
 		{
 			try
@@ -281,11 +398,14 @@ class Paths
 				if (!protectedGfx.contains(graphic))
 				{
 					if (destroyGraphic(graphic))
-						currentTrackedAssets.remove(key); // and remove the key from local cache map
+						keysToRemove.push(key); // and remove the key from local cache map
 					// trace('deleted $key');
 				}
 			}
 		}
+
+		for (key in keysToRemove)
+			currentTrackedAssets.remove(key);
 	}
 
 	static function destroyGraphic(graphic:FlxGraphic):Bool
@@ -326,10 +446,6 @@ class Paths
 	inline static public function hx(key:String, ?folder:String)
 		return getPath('scripts/states/$key/$key.hx', TEXT, folder, true);
 
-	// Flat single-file path for CustomState (scripts/states/{name}.hx)
-	inline static public function customState(key:String, ?folder:String)
-		return getPath('scripts/states/$key.hx', TEXT, folder, true);
-
 	inline static public function globalScript()
 		return getPath('scripts/GlobalScript.hx', TEXT, null, true);
 
@@ -369,7 +485,11 @@ class Paths
 
 	static public function image(key:String, ?parentFolder:String = null, ?allowGPU:Bool = true):FlxGraphic
 	{
-		key = Language.getFileTranslation('images/$key') + '.png';
+		key = key.replace('\\', '/');
+		key = key.startsWith('images/') ? key : 'images/$key';
+		key = Language.getFileTranslation(key);
+		if (!key.endsWith('.png'))
+			key += '.png';
 		var bitmap:BitmapData = null;
 		var resolvedFile:String = getPath(key, IMAGE, parentFolder, true);
 
@@ -382,6 +502,42 @@ class Paths
 			return currentTrackedAssets.get(resolvedFile);
 		}
 		return cacheBitmap(key, parentFolder, bitmap, allowGPU);
+	}
+
+	/**
+	 * Load a UI image with softcoded path support
+	 * @param assetName Asset name (e.g., "ready", "combo")
+	 * @param useSuffix Whether to append uiSuffix
+	 * @param parentFolder Optional parent folder override
+	 * @param allowGPU Whether to allow GPU caching
+	 * @return FlxGraphic or null if not found
+	 */
+	static public function uiImage(assetName:String, useSuffix:Bool = true, ?parentFolder:String = null, ?allowGPU:Bool = true):FlxGraphic
+	{
+		var path:String = getUIPath(assetName, useSuffix);
+		return image(path, parentFolder, allowGPU);
+	}
+
+	/**
+	 * Check if a UI image exists with softcoded path support
+	 * @param assetName Asset name (e.g., "ready", "combo")
+	 * @param useSuffix Whether to use uiSuffix
+	 * @param parentFolder Optional parent folder override
+	 * @return True if the image exists
+	 */
+	static public function uiImageExists(assetName:String, useSuffix:Bool = true, ?parentFolder:String = null):Bool
+	{
+		var path:String = getUIPath(assetName, useSuffix);
+		return fileExists(path, IMAGE, false, parentFolder);
+	}
+
+	/**
+	 * Get a UI atlas with softcoded path support
+	 */
+	static public function getUIAtlas(assetName:String, useSuffix:Bool = true, ?parentFolder:String = null, ?allowGPU:Bool = true):FlxAtlasFrames
+	{
+		var path:String = getUIPath(assetName, useSuffix);
+		return getAtlas(path, parentFolder, allowGPU);
 	}
 
 	public static function cacheBitmap(key:String, ?parentFolder:String = null, ?bitmap:BitmapData, ?allowGPU:Bool = true):FlxGraphic
@@ -598,8 +754,26 @@ class Paths
 	}
 
 	#if MODS_ALLOWED
+	static inline var BASE_GAME_MOD_FOLDER:String = 'Friday Night Funkin';
+	static inline var BASE_GAME_LOCAL_FOLDER:String = 'base_game';
+
 	static inline function normalizeModKey(key:String):String
 		return key == null ? '' : key.replace('\\', '/');
+
+	static function baseGameLocalPath(normalizedKey:String):String
+	{
+		if (normalizedKey == null || normalizedKey.length == 0)
+			return null;
+
+		if (normalizedKey == BASE_GAME_MOD_FOLDER)
+			return BASE_GAME_LOCAL_FOLDER;
+
+		var prefix:String = BASE_GAME_MOD_FOLDER + '/';
+		if (normalizedKey.startsWith(prefix))
+			return BASE_GAME_LOCAL_FOLDER + '/' + normalizedKey.substr(prefix.length);
+
+		return null;
+	}
 
 	static function addUniqueModsRoot(list:Array<String>, path:String):Void
 	{
@@ -654,7 +828,9 @@ class Paths
 			if (FileSystem.exists(path))
 				return File.getContent(path);
 		}
-		catch (_:Dynamic) {}
+		catch (_:Dynamic)
+		{
+		}
 		return null;
 	}
 
@@ -668,7 +844,9 @@ class Paths
 			if (FileSystem.exists(path) && FileSystem.isDirectory(path))
 				return FileSystem.readDirectory(path);
 		}
-		catch (_:Dynamic) {}
+		catch (_:Dynamic)
+		{
+		}
 		return [];
 	}
 
@@ -755,6 +933,10 @@ class Paths
 			}
 		}
 
+		var baseGameFallback:String = baseGameLocalPath(normalizedModName);
+		if (baseGameFallback != null && safeModPathExists(baseGameFallback) && safeModIsDirectory(baseGameFallback))
+			return baseGameFallback;
+
 		return resolvedPath;
 	}
 
@@ -775,6 +957,10 @@ class Paths
 				break;
 			}
 		}
+
+		var baseGameFallback:String = baseGameLocalPath(normalizedKey);
+		if (baseGameFallback != null && safeModPathExists(baseGameFallback))
+			return baseGameFallback;
 
 		return resolvedPath;
 	}
@@ -978,11 +1164,83 @@ class Paths
 	#end
 	#end
 	#if flxanimate
+	static function loadAnimateAtlasFromKeys(spr:FlxAnimate, keys:Array<String>):Void
+	{
+		var cleanKeys:Array<String> = [];
+		for (key in keys)
+		{
+			if (key == null)
+				continue;
+
+			key = key.trim();
+			if (key.length > 0 && !cleanKeys.contains(key))
+				cleanKeys.push(key);
+		}
+
+		if (cleanKeys.length < 1)
+			return;
+
+		var frames:flxanimate.frames.FlxAnimateFrames = new flxanimate.frames.FlxAnimateFrames();
+		var animationJsons:Array<String> = [];
+
+		for (key in cleanKeys)
+		{
+			var spritePages:Array<String> = getAnimateAtlasSpriteJsons(key);
+			var pageKeys:Array<String> = getAnimateAtlasPageKeys(key);
+			if (spritePages.length < 1 || pageKeys.length != spritePages.length)
+				throw 'Missing Animate atlas spritemap data for "$key"';
+
+			for (i in 0...spritePages.length)
+				frames.addAtlas(parseAnimateSpritemap(spritePages[i], image(pageKeys[i])), true);
+
+			var animationJson:String = getAnimateAtlasAnimationJson(key);
+			if (animationJson != null)
+				animationJsons.push(animationJson);
+		}
+
+		if (animationJsons.length < 1)
+			throw 'Missing Animate atlas Animation.json for "${cleanKeys[0]}"';
+
+		spr.loadSeparateAtlas(animationJsons[0], frames);
+		if (Std.isOfType(spr, flxanimate.PsychFlxAnimate))
+		{
+			var atlas:flxanimate.PsychFlxAnimate = cast spr;
+			for (i in 1...animationJsons.length)
+				atlas.addAtlasLibrary(animationJsons[i]);
+		}
+	}
+
+	static function parseAnimateSpritemap(spriteJson:String, graphic:FlxGraphic):FlxAtlasFrames
+	{
+		var data:Dynamic = Json.parse(stripBOM(spriteJson));
+		var frames:FlxAtlasFrames = new FlxAtlasFrames(graphic);
+		var sprites:Array<Dynamic> = cast data.ATLAS.SPRITES;
+
+		for (sprite in sprites)
+		{
+			var limb:Dynamic = sprite.SPRITE;
+			var rotated:Bool = limb.rotated == true;
+			var rect:FlxRect = FlxRect.get(limb.x, limb.y, limb.w, limb.h);
+			if (rotated)
+				rect.setSize(rect.height, rect.width);
+
+			frames.addAtlasFrame(rect, FlxPoint.get(limb.w, limb.h), FlxPoint.get(), limb.name, rotated ? FlxFrameAngle.ANGLE_NEG_90 : FlxFrameAngle.ANGLE_0);
+		}
+
+		return frames;
+	}
+
 	public static function loadAnimateAtlas(spr:FlxAnimate, folderOrImg:Dynamic, spriteJson:Dynamic = null, animationJson:Dynamic = null)
 	{
 		var changedAnimJson = false;
 		var changedAtlasJson = false;
 		var changedImage = false;
+
+		if (Std.isOfType(folderOrImg, Array))
+		{
+			loadAnimateAtlasFromKeys(spr, cast folderOrImg);
+			return;
+		}
 
 		if (spriteJson != null)
 		{
@@ -1050,13 +1308,15 @@ class Paths
 				changedAnimJson = (animationJson != null);
 			}
 
-			if (spritePages.length == 1)
+			if (spritePages.length > 0)
 			{
-				folderOrImg = spriteImgs[0];
-				spriteJson = spritePages[0];
+				var frames:flxanimate.frames.FlxAnimateFrames = new flxanimate.frames.FlxAnimateFrames();
+				for (i in 0...spritePages.length)
+					frames.addAtlas(parseAnimateSpritemap(spritePages[i], spriteImgs[i]), true);
+
+				spr.loadSeparateAtlas(animationJson, frames);
+				return;
 			}
-			else if (spriteImgs.length > 0)
-				folderOrImg = spriteImgs[0];
 		}
 
 		spr.loadAtlasEx(folderOrImg, spriteJson, animationJson);

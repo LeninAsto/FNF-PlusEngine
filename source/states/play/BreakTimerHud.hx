@@ -26,6 +26,8 @@ class BreakTimerHud
 	var nextNoteTime:Float = -1;
 	var lastNoteTime:Float = -1;
 	var lastDisplayValue:Int = -1;
+	var textScaleTween:FlxTween = null;
+	var indicatorScaleTween:FlxTween = null;
 
 	final minGapMs:Float;
 
@@ -60,6 +62,17 @@ class BreakTimerHud
 
 	public function destroyFrom(state:FlxState):Void
 	{
+		if (textScaleTween != null)
+		{
+			textScaleTween.cancel();
+			textScaleTween = null;
+		}
+		if (indicatorScaleTween != null)
+		{
+			indicatorScaleTween.cancel();
+			indicatorScaleTween = null;
+		}
+
 		if (text != null)
 		{
 			state.remove(text);
@@ -77,19 +90,38 @@ class BreakTimerHud
 
 	public function cacheNotes(unspawnNotes:Array<Note>):Void
 	{
+		var times:Array<Float> = [];
+
+		if (unspawnNotes == null)
+		{
+			cacheNoteTimes(times);
+			return;
+		}
+
+		for (note in unspawnNotes)
+		{
+			if (note != null && note.mustPress && !note.isSustainNote)
+				times.push(note.strumTime);
+		}
+
+		cacheNoteTimes(times);
+	}
+
+	public function cacheNoteTimes(times:Array<Float>):Void
+	{
 		noteTimes = [];
 		noteIndex = 0;
 		nextNoteTime = -1;
 		lastNoteTime = -1;
 		lastDisplayValue = -1;
 
-		if (unspawnNotes == null)
+		if (times == null)
 			return;
 
-		for (note in unspawnNotes)
+		for (time in times)
 		{
-			if (note != null && note.mustPress && !note.isSustainNote)
-				noteTimes.push(note.strumTime);
+			if (time >= 0)
+				noteTimes.push(time);
 		}
 
 		noteTimes.sort(function(a:Float, b:Float):Int
@@ -130,10 +162,37 @@ class BreakTimerHud
 		}
 	}
 
-	public function updateDisplay(songPosition:Float, startingSong:Bool, playerStrums:FlxTypedGroup<StrumNote>, downScroll:Bool,
-		getCenterX:StrumNote->Float, getTopY:StrumNote->Float):Void
+	public function updateDisplay(songPosition:Float, startingSong:Bool, playerStrums:FlxTypedGroup<StrumNote>, downScroll:Bool, getCenterX:StrumNote->Float,
+			getTopY:StrumNote->Float):Void
 	{
 		if (text == null || indicator == null || playerStrums == null || playerStrums.length <= 0)
+			return;
+
+		var centerX:Float = 0;
+		var centerY:Float = 0;
+		var strumCount:Int = 0;
+		for (strum in playerStrums)
+		{
+			if (strum == null)
+				continue;
+
+			centerX += getCenterX(strum);
+			centerY += getTopY(strum);
+			strumCount++;
+		}
+
+		if (strumCount <= 0)
+		{
+			clearDisplay();
+			return;
+		}
+
+		updateDisplayAt(songPosition, startingSong, centerX / strumCount, centerY / strumCount, downScroll);
+	}
+
+	public function updateDisplayAt(songPosition:Float, startingSong:Bool, centerX:Float, centerY:Float, downScroll:Bool):Void
+	{
+		if (text == null || indicator == null)
 			return;
 
 		syncNotes(songPosition);
@@ -154,28 +213,6 @@ class BreakTimerHud
 				var countdownDuration = Math.max(0.001, totalGap / 1000);
 				indicator.value = FlxMath.bound(timeUntilNext / countdownDuration, 0, 1);
 
-				var centerX:Float = 0;
-				var centerY:Float = 0;
-				var strumCount:Int = 0;
-				for (strum in playerStrums)
-				{
-					if (strum == null)
-						continue;
-
-					centerX += getCenterX(strum);
-					centerY += getTopY(strum);
-					strumCount++;
-				}
-
-				if (strumCount <= 0)
-				{
-					clearDisplay();
-					return;
-				}
-
-				centerX /= strumCount;
-				centerY /= strumCount;
-
 				var indicatorY = centerY + (downScroll ? -164 : 100);
 				var indicatorSize = indicator.getIndicatorHeight();
 				indicator.x = centerX - indicatorSize / 2;
@@ -185,10 +222,26 @@ class BreakTimerHud
 
 				if (lastDisplayValue != displayValue)
 				{
+					if (textScaleTween != null)
+					{
+						textScaleTween.cancel();
+						textScaleTween = null;
+					}
+					if (indicatorScaleTween != null)
+					{
+						indicatorScaleTween.cancel();
+						indicatorScaleTween = null;
+					}
 					text.scale.set(1.5, 1.5);
 					indicator.scale.set(1.1, 1.1);
-					FlxTween.tween(text.scale, {x: 1, y: 1}, 0.2, {ease: FlxEase.circOut});
-					FlxTween.tween(indicator.scale, {x: 1, y: 1}, 0.2, {ease: FlxEase.circOut});
+					textScaleTween = FlxTween.tween(text.scale, {x: 1, y: 1}, 0.2, {
+						ease: FlxEase.circOut,
+						onComplete: _ -> textScaleTween = null
+					});
+					indicatorScaleTween = FlxTween.tween(indicator.scale, {x: 1, y: 1}, 0.2, {
+						ease: FlxEase.circOut,
+						onComplete: _ -> indicatorScaleTween = null
+					});
 					lastDisplayValue = displayValue;
 				}
 				return;
@@ -225,15 +278,28 @@ class BreakTimerHud
 
 	function clearDisplay():Void
 	{
+		if (textScaleTween != null)
+		{
+			textScaleTween.cancel();
+			textScaleTween = null;
+		}
+		if (indicatorScaleTween != null)
+		{
+			indicatorScaleTween.cancel();
+			indicatorScaleTween = null;
+		}
+
 		if (text != null)
 		{
 			text.visible = false;
+			text.alpha = 1;
 			text.scale.set(1, 1);
 		}
 
 		if (indicator != null)
 		{
 			indicator.visible = false;
+			indicator.alpha = 1;
 			indicator.value = 0;
 			indicator.scale.set(1, 1);
 		}
@@ -241,3 +307,4 @@ class BreakTimerHud
 		lastDisplayValue = -1;
 	}
 }
+

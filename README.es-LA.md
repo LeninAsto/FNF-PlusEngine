@@ -22,7 +22,7 @@
 [![Mac](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Mac&primaryBGColor=%231c1c1c&primaryTextColor=%23FFFFFF&secondaryBGColor=%23000000&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=macos&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.apple.com/macos/)
 [![Linux](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Linux&primaryBGColor=%23dba80f&primaryTextColor=%23FFFFFF&secondaryBGColor=%23ffc107&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=linux&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.linux.org/)
 
-Motor basado en Psych 1.0.4 con modcharts como NotITG y compatible con videos hxcodec de mods de Psych 0.6.3 y 0.7.3.
+Motor basado en Psych 1.0.4 con las correcciones y mejoras de [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) y con modcharts como NotITG y compatible con videos hxcodec de mods de Psych 0.6.3 y 0.7.3.
 
 [![Discord](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Unete+al+&secondaryLabel=Discord&primaryBGColor=%23689bb1&primaryTextColor=%23ffffff&secondaryBGColor=%235665ed&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=discord&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://discord.gg/EBvUWcMdqV)
 
@@ -43,45 +43,46 @@ Creado con (contrib.rocks)[https://contrib.rocks/].
 
 # Acerca del Uso del Código
 
-Este proyecto está **abierto para aprender, construir y mejorar**.  
+Este proyecto está **abierto para aprender, construir y mejorar**.
 Eres libre de usarlo como referencia, base o recurso de aprendizaje.
 
-Porque el código no es un tesoro enterrado —  
+Porque el código no es un tesoro enterrado —
 **el código vive cuando se comparte**.
 
-📚 **Aprender > acumular**  
-💡 **Compartir > presumir**  
+📚 **Aprender > acumular**
+💡 **Compartir > presumir**
 🚀 **Construir > restringir**
 
 Realmente no creo en la mentalidad de:
 > "No toques mi código, no crees otro motor, no uses las cosas de mi motor, bro..."
 
-Hermano…  
-**¡no vas a ir al cielo con tu repositorio privado bajo el brazo!** 
+Hermano…
+**¡no vas a ir al cielo con tu repositorio privado bajo el brazo!**
 
 El código fuente es:
-- conocimiento  
-- práctica  
-- errores  
-- evolución  
+- conocimiento
+- práctica
+- errores
+- evolución
 
-Si alguien mejora algo que hice, **respeto** 🫡  
-Así es como siempre ha funcionado esto:  
+Si alguien mejora algo que hice, **respeto** 🫡
+Así es como siempre ha funcionado esto:
 aprender del pasado para construir el futuro.
 
 ### ⚠️ Nota importante
-No reclames el trabajo de otros como tuyo ni lo vendas como original.  
+No reclames el trabajo de otros como tuyo ni lo vendas como original.
 Respeta el esfuerzo, aprende de ello y crea algo mejor.
 
-Para aquellos que comparten: gracias 💙  
-Para aquellos que ocultan código por miedo o envidia:  
+Para aquellos que comparten: gracias 💙
+Para aquellos que ocultan código por miedo o envidia:
 relájate — el progreso no espera.
 
 **Feliz codificación.**
 
 ## Créditos del Desarrollador:
-* Lenin Asto - Programador Principal del Fork de Plus Engine
-* Legacy Odyssey - Co-Programador del Fork de Plus Engine
+* Lenin Asto - Programador Principal de Plus Engine
+* sirthegamercoder - Programador auxiliar de Plus Engine
+* Autistic Lulu - Creador de [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) y autor de varias UIs y nuevas funciones para su fork (gracias por dejarme usar tu fork =D)
 
 ## Créditos Originales:
 * Shadow Mario - Programador Principal y Líder de Psych Engine.

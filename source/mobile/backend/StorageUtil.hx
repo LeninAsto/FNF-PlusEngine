@@ -22,10 +22,10 @@ class StorageUtil
 	{
 		return #if android
 			resolveStorageDirectory(force)
-		#elseif ios 
-			lime.system.System.documentsDirectory 
-		#else 
-			Sys.getCwd() 
+		#elseif ios
+			lime.system.System.documentsDirectory
+		#else
+			Sys.getCwd()
 		#end;
 	}
 
@@ -46,11 +46,7 @@ class StorageUtil
 
 	public static function getSMDirectory():String
 	{
-		final baseDir = #if android 
-			getStorageDirectory()
-		#else 
-			'./' 
-		#end;
+		final baseDir = #if android getStorageDirectory() #else './' #end;
 		return Path.join([baseDir, 'sm']);
 	}
 
@@ -58,7 +54,7 @@ class StorageUtil
 	{
 		final folder = getSavesDirectory();
 		final filePath = Path.join([folder, fileName]);
-		
+
 		try
 		{
 			if (!FileSystem.exists(folder))
@@ -66,13 +62,15 @@ class StorageUtil
 
 			File.saveContent(filePath, fileData);
 			if (alert)
-				CoolUtil.showPopUp(Language.getPhrase('file_save_success', '{1} has been saved.', [fileName]), Language.getPhrase('mobile_success', "Success!"));
+				CoolUtil.showPopUp(Language.getPhrase('file_save_success', '{1} has been saved.', [fileName]),
+					Language.getPhrase('mobile_success', "Success!"));
 		}
 		catch (e:Dynamic)
 		{
 			final errorMsg = Std.string(e);
 			if (alert)
-				CoolUtil.showPopUp(Language.getPhrase('file_save_fail', '{1} couldn\'t be saved.\n({2})', [fileName, errorMsg]), Language.getPhrase('mobile_error', "Error!"));
+				CoolUtil.showPopUp(Language.getPhrase('file_save_fail', '{1} couldn\'t be saved.\n({2})', [fileName, errorMsg]),
+					Language.getPhrase('mobile_error', "Error!"));
 			else
 				trace('$fileName couldn\'t be saved. ($errorMsg)');
 		}
@@ -160,7 +158,8 @@ class StorageUtil
 	public static function getInternalStorageDirectory():String
 	{
 		final path = AndroidContext.getExternalFilesDir();
-		if (path != null && path.length > 0) {
+		if (path != null && path.length > 0)
+		{
 			ensureDirectory(path);
 			return path;
 		}
@@ -204,16 +203,12 @@ class StorageUtil
 
 	public static function getPublicModsDirectory():String
 	{
-		final dir = Path.join([getPublicStorageDirectory(), 'mods']);
-		ensureDirectory(dir);
-		return Path.addTrailingSlash(dir);
+		return Path.addTrailingSlash(Path.join([getPublicStorageDirectory(), 'mods']));
 	}
 
 	public static function getScopedModsDirectory():String
 	{
-		final dir = Path.join([getInternalStorageDirectory(), 'mods']);
-		ensureDirectory(dir);
-		return Path.addTrailingSlash(dir);
+		return Path.addTrailingSlash(Path.join([getInternalStorageDirectory(), 'mods']));
 	}
 
 	public static function getPublicModsDirectoryCandidates():Array<String>
@@ -253,7 +248,8 @@ class StorageUtil
 
 		try
 		{
-			if (!FileSystem.exists(path)) {
+			if (!FileSystem.exists(path))
+			{
 				FileSystem.createDirectory(path);
 				trace('Created directory: $path');
 			}
@@ -272,12 +268,15 @@ class StorageUtil
 			return true;
 
 		final granted = AndroidPermissions.getGrantedPermissions();
-		
-		if (AndroidVersion.SDK_INT >= AndroidVersionCode.TIRAMISU) {
+
+		if (AndroidVersion.SDK_INT >= AndroidVersionCode.TIRAMISU)
+		{
 			return AndroidEnvironment.isExternalStorageManager();
-		} else {
-			return granted.contains('android.permission.READ_EXTERNAL_STORAGE') ||
-				   granted.contains('android.permission.WRITE_EXTERNAL_STORAGE');
+		}
+		else
+		{
+			return granted.contains('android.permission.READ_EXTERNAL_STORAGE')
+				|| granted.contains('android.permission.WRITE_EXTERNAL_STORAGE');
 		}
 	}
 
@@ -287,20 +286,17 @@ class StorageUtil
 		{
 			if (AndroidVersion.SDK_INT < AndroidVersionCode.TIRAMISU)
 			{
-				AndroidPermissions.requestPermissions([
-					'READ_EXTERNAL_STORAGE',
-					'WRITE_EXTERNAL_STORAGE'
-				]);
+				AndroidPermissions.requestPermissions(['READ_EXTERNAL_STORAGE', 'WRITE_EXTERNAL_STORAGE']);
 			}
 
-			if (AndroidVersion.SDK_INT >= AndroidVersionCode.R &&
-				!AndroidEnvironment.isExternalStorageManager())
+			if (AndroidVersion.SDK_INT >= AndroidVersionCode.R && !AndroidEnvironment.isExternalStorageManager())
 			{
 				AndroidSettings.requestSetting('MANAGE_APP_ALL_FILES_ACCESS_PERMISSION');
 			}
 		}
 
-		Timer.delay(function() {
+		Timer.delay(function()
+		{
 			var attempts = 0;
 			var maxAttempts = 15;
 
@@ -318,11 +314,9 @@ class StorageUtil
 				}
 				else
 				{
-					CoolUtil.showPopUp(
-						Language.getPhrase('permission_timeout',
-							'Permissions were not granted. Please grant them manually and restart the app.'),
-						Language.getPhrase('mobile_error', 'Error!')
-					);
+					CoolUtil.showPopUp(Language.getPhrase('permission_timeout',
+						'Permissions were not granted. Please grant them manually and restart the app.'),
+						Language.getPhrase('mobile_error', 'Error!'));
 				}
 			}
 			checkAndCreate();
@@ -335,17 +329,14 @@ class StorageUtil
 			return 'INTERNAL storage: no extra permission required.';
 
 		if (AndroidVersion.SDK_INT >= AndroidVersionCode.TIRAMISU)
-			return AndroidEnvironment.isExternalStorageManager()
-				? 'EXTERNAL storage: all-files access granted.'
-				: 'EXTERNAL storage: all-files access required.';
+			return
+				AndroidEnvironment.isExternalStorageManager() ? 'EXTERNAL storage: all-files access granted.' : 'EXTERNAL storage: all-files access required.';
 
 		final granted = AndroidPermissions.getGrantedPermissions();
 		final hasLegacyPermission = granted.contains('android.permission.READ_EXTERNAL_STORAGE')
 			|| granted.contains('android.permission.WRITE_EXTERNAL_STORAGE');
 
-		return hasLegacyPermission
-			? 'EXTERNAL storage: legacy storage permission granted.'
-			: 'EXTERNAL storage: legacy storage permission required.';
+		return hasLegacyPermission ? 'EXTERNAL storage: legacy storage permission granted.' : 'EXTERNAL storage: legacy storage permission required.';
 	}
 
 	private static function initializeStorageDirectories():Void
@@ -353,41 +344,41 @@ class StorageUtil
 		final directories = [
 			rootDir,
 			getStorageDirectory(),
-			getScopedModsDirectory(),
 			getSavesDirectory(),
-			getLogsDirectory(),
-			getSMDirectory()
+			getLogsDirectory()
 		];
 
 		if (useExternalModsStorage())
 		{
 			directories.push(getPublicStorageDirectory());
-			directories.push(getPublicModsDirectory());
 		}
 
 		var allDirectoriesCreated = true;
 		var failedDirectories:Array<String> = [];
-		
-		for (dir in directories) {
-			if (!ensureDirectory(dir)) {
+
+		for (dir in directories)
+		{
+			if (!ensureDirectory(dir))
+			{
 				allDirectoriesCreated = false;
 				failedDirectories.push(dir);
 			}
 		}
 
-		if (!allDirectoriesCreated) {
-			final errorMsg = Language.getPhrase('create_directory_error', 
-				'Failed to create the following directories:\n{1}\n' +
-				'Please check storage permissions or available space.\n' +
+		if (!allDirectoriesCreated)
+		{
+			final errorMsg = Language.getPhrase('create_directory_error',
+				'Failed to create the following directories:\n{1}\n' + 'Please check storage permissions or available space.\n' +
 				'The app may not function correctly without these directories.',
 				[failedDirectories.join('\n')]);
-			
+
 			CoolUtil.showPopUp(errorMsg, Language.getPhrase('mobile_warning', "Warning!"));
 		}
 		else
 		{
 			#if android
-			Timer.delay(function() {
+			Timer.delay(function()
+			{
 				if (hasModsOrSMAssets())
 				{
 					trace('Starting automatic asset copy for mods and sm...');
@@ -407,6 +398,26 @@ class StorageUtil
 				}
 			}, 500);
 			#end
+		}
+	}
+
+	private static function ensureModsDirectory(path:String):Bool
+	{
+		if (path == null || path.length == 0)
+			return false;
+
+		try
+		{
+			if (!FileSystem.exists(path)) {
+				FileSystem.createDirectory(path);
+				trace('Created mods/sm directory: $path');
+			}
+			return true;
+		}
+		catch (e:Dynamic)
+		{
+			trace('Failed to create mods/sm directory $path: ${Std.string(e)}');
+			return false;
 		}
 	}
 
@@ -440,7 +451,10 @@ class StorageUtil
 			var internalSMDir:String = getSMDirectory();
 			var externalSMDir:String = Path.join([getPublicStorageDirectory(), 'sm']);
 
-			ensureDirectory(externalSMDir);
+			var createdInternalMods = false;
+			var createdExternalMods = false;
+			var createdInternalSM = false;
+			var createdExternalSM = false;
 
 			for (assetPath in modsAssets)
 			{
@@ -448,25 +462,28 @@ class StorageUtil
 				{
 					var isModsAsset:Bool = assetPath.startsWith('mods/');
 					var isSMAsset:Bool = assetPath.startsWith('sm/');
-					
+
 					if (!isModsAsset && !isSMAsset)
 						continue;
 
 					var relativePath:String = '';
 					var targetDir:String = '';
 					var externalTargetDir:String = '';
+					var isMods:Bool = false;
 
 					if (isModsAsset)
 					{
 						relativePath = assetPath.substring('mods/'.length);
 						targetDir = internalModsDir;
 						externalTargetDir = externalModsDir;
+						isMods = true;
 					}
 					else if (isSMAsset)
 					{
 						relativePath = assetPath.substring('sm/'.length);
 						targetDir = internalSMDir;
 						externalTargetDir = externalSMDir;
+						isMods = false;
 					}
 
 					if (relativePath == '' || relativePath == '/')
@@ -478,6 +495,17 @@ class StorageUtil
 						continue;
 					}
 
+					if (!createdInternalMods && isMods) {
+						if (ensureModsDirectory(targetDir)) {
+							createdInternalMods = true;
+						}
+					}
+					if (!createdInternalSM && !isMods) {
+						if (ensureModsDirectory(targetDir)) {
+							createdInternalSM = true;
+						}
+					}
+
 					var internalSuccess:Bool = copyAssetToDirectory(assetPath, targetDir, relativePath);
 					if (!internalSuccess)
 					{
@@ -486,6 +514,17 @@ class StorageUtil
 
 					if (useExternalModsStorage())
 					{
+						if (!createdExternalMods && isMods) {
+							if (ensureModsDirectory(externalTargetDir)) {
+								createdExternalMods = true;
+							}
+						}
+						if (!createdExternalSM && !isMods) {
+							if (ensureModsDirectory(externalTargetDir)) {
+								createdExternalSM = true;
+							}
+						}
+
 						var externalSuccess:Bool = copyAssetToDirectory(assetPath, externalTargetDir, relativePath);
 						if (!externalSuccess && !failedFiles.contains('$assetPath (Failed to copy to internal storage)'))
 						{
@@ -524,12 +563,6 @@ class StorageUtil
 	{
 		try
 		{
-			if (!ensureDirectory(targetDir))
-			{
-				trace('Failed to create target directory: $targetDir');
-				return false;
-			}
-
 			var fullPath:String = Path.join([targetDir, relativePath]);
 			var fileDir:String = Path.directory(fullPath);
 
@@ -616,7 +649,7 @@ class StorageUtil
 	public static function copyModsAndSMAssetsWithProgress(onProgress:(Int, Int) -> Void):Array<String>
 	{
 		var failedFiles:Array<String> = [];
-		
+
 		try
 		{
 			var allAssets:Array<String> = OpenFLAssets.list();
@@ -642,7 +675,10 @@ class StorageUtil
 			var internalSMDir:String = getSMDirectory();
 			var externalSMDir:String = Path.join([getPublicStorageDirectory(), 'sm']);
 
-			ensureDirectory(externalSMDir);
+			var createdInternalMods = false;
+			var createdExternalMods = false;
+			var createdInternalSM = false;
+			var createdExternalSM = false;
 
 			for (assetPath in modsAssets)
 			{
@@ -651,7 +687,7 @@ class StorageUtil
 				{
 					var isModsAsset:Bool = assetPath.startsWith('mods/');
 					var isSMAsset:Bool = assetPath.startsWith('sm/');
-					
+
 					if (!isModsAsset && !isSMAsset)
 					{
 						onProgress(current, total);
@@ -661,18 +697,21 @@ class StorageUtil
 					var relativePath:String = '';
 					var targetDir:String = '';
 					var externalTargetDir:String = '';
+					var isMods:Bool = false;
 
 					if (isModsAsset)
 					{
 						relativePath = assetPath.substring('mods/'.length);
 						targetDir = internalModsDir;
 						externalTargetDir = externalModsDir;
+						isMods = true;
 					}
 					else if (isSMAsset)
 					{
 						relativePath = assetPath.substring('sm/'.length);
 						targetDir = internalSMDir;
 						externalTargetDir = externalSMDir;
+						isMods = false;
 					}
 
 					if (relativePath == '' || relativePath == '/')
@@ -688,6 +727,17 @@ class StorageUtil
 						continue;
 					}
 
+					if (!createdInternalMods && isMods) {
+						if (ensureModsDirectory(targetDir)) {
+							createdInternalMods = true;
+						}
+					}
+					if (!createdInternalSM && !isMods) {
+						if (ensureModsDirectory(targetDir)) {
+							createdInternalSM = true;
+						}
+					}
+
 					var internalSuccess:Bool = copyAssetToDirectory(assetPath, targetDir, relativePath);
 					if (!internalSuccess)
 					{
@@ -696,6 +746,17 @@ class StorageUtil
 
 					if (useExternalModsStorage())
 					{
+						if (!createdExternalMods && isMods) {
+							if (ensureModsDirectory(externalTargetDir)) {
+								createdExternalMods = true;
+							}
+						}
+						if (!createdExternalSM && !isMods) {
+							if (ensureModsDirectory(externalTargetDir)) {
+								createdExternalSM = true;
+							}
+						}
+
 						var externalSuccess:Bool = copyAssetToDirectory(assetPath, externalTargetDir, relativePath);
 						if (!externalSuccess && !failedFiles.contains('$assetPath (Internal copy failed)'))
 						{
@@ -732,7 +793,7 @@ class StorageUtil
 	public static function verifyModsAndSMAssets():Array<String>
 	{
 		var missingFiles:Array<String> = [];
-		
+
 		try
 		{
 			var allAssets:Array<String> = OpenFLAssets.list();
@@ -758,7 +819,7 @@ class StorageUtil
 			{
 				var isModsAsset:Bool = assetPath.startsWith('mods/');
 				var isSMAsset:Bool = assetPath.startsWith('sm/');
-				
+
 				if (!isModsAsset && !isSMAsset)
 					continue;
 
@@ -811,7 +872,7 @@ class StorageUtil
 
 		return missingFiles;
 	}
-
 	#end
 	#end
 }
+

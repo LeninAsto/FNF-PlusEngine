@@ -25,3 +25,4 @@ class BuildInfo
 		return parts.length > 0 ? 'GitHub Build ' + parts.join(' | ') : 'GitHub Build';
 	}
 }
+

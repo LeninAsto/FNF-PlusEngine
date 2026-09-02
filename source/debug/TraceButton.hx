@@ -21,11 +21,11 @@ class TraceButton extends Sprite
 	private var isPressed:Bool = false;
 	private var buttonSize:Float = 40;
 	private var padding:Float = 10;
-	
+
 	public function new()
 	{
 		super();
-		
+
 		// Create the button background
 		buttonShape = new Shape();
 		buttonShape.graphics.beginFill(0x4488FF, 0.7);
@@ -34,7 +34,7 @@ class TraceButton extends Sprite
 		buttonShape.graphics.drawRect(0, 0, buttonSize, buttonSize);
 		buttonShape.graphics.endFill();
 		addChild(buttonShape);
-		
+
 		// Create the button text
 		buttonText = new TextField();
 		buttonText.text = "T";
@@ -45,25 +45,25 @@ class TraceButton extends Sprite
 		buttonText.height = buttonSize;
 		buttonText.x = 0;
 		buttonText.y = (buttonSize - 20) / 2;
-		
+
 		// Align text horizontally
 		var fmt = new TextFormat();
 		fmt.align = openfl.text.TextFormatAlign.CENTER;
 		buttonText.setTextFormat(fmt);
-		
+
 		addChild(buttonText);
-		
+
 		// Position in the upper-right corner
 		positionButton();
-		
+
 		// Make visible only on mobile
 		#if mobile
 		visible = ClientPrefs.data.showMobileDebugButtons;
-		
+
 		// Add touch listeners
 		this.addEventListener(TouchEvent.TOUCH_BEGIN, onTouchBegin);
 		this.addEventListener(TouchEvent.TOUCH_END, onTouchEnd);
-		
+
 		// It should also support a mouse for desktop testing
 		#if debug
 		this.addEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
@@ -73,8 +73,9 @@ class TraceButton extends Sprite
 		visible = false;
 		#end
 	}
-	
-	private function onTouchBegin(event:TouchEvent):Void {
+
+	private function onTouchBegin(event:TouchEvent):Void
+	{
 		isPressed = true;
 		buttonShape.graphics.clear();
 		buttonShape.graphics.beginFill(0x2244FF, 0.9); // Darker when pressed
@@ -83,26 +84,31 @@ class TraceButton extends Sprite
 		buttonShape.graphics.drawRect(0, 0, buttonSize, buttonSize);
 		buttonShape.graphics.endFill();
 	}
-	
-	private function onTouchEnd(event:TouchEvent):Void {
-		if (isPressed) {
+
+	private function onTouchEnd(event:TouchEvent):Void
+	{
+		if (isPressed)
+		{
 			toggleTraceDisplay();
 			isPressed = false;
 			redrawButton();
 		}
 	}
-	
+
 	#if debug
-	private function onMouseDown(event:MouseEvent):Void {
+	private function onMouseDown(event:MouseEvent):Void
+	{
 		onTouchBegin(cast event);
 	}
-	
-	private function onMouseUp(event:MouseEvent):Void {
+
+	private function onMouseUp(event:MouseEvent):Void
+	{
 		onTouchEnd(cast event);
 	}
 	#end
-	
-	private function redrawButton():Void {
+
+	private function redrawButton():Void
+	{
 		buttonShape.graphics.clear();
 		buttonShape.graphics.beginFill(0x4488FF, 0.7);
 		buttonShape.graphics.drawRect(0, 0, buttonSize, buttonSize);
@@ -110,44 +116,54 @@ class TraceButton extends Sprite
 		buttonShape.graphics.drawRect(0, 0, buttonSize, buttonSize);
 		buttonShape.graphics.endFill();
 	}
-	
-	private function toggleTraceDisplay():Void {
-		if (TraceDisplay.instance != null) {
+
+	private function toggleTraceDisplay():Void
+	{
+		if (TraceDisplay.instance != null)
+		{
 			TraceDisplay.instance.toggleDisplay();
 		}
 	}
-	
-	private function positionButton():Void {
-		if (FlxG.stage != null) {
+
+	private function positionButton():Void
+	{
+		if (FlxG.stage != null)
+		{
 			this.x = FlxG.stage.stageWidth - buttonSize - padding;
 			this.y = padding;
 		}
 	}
-	
-	public function updatePosition():Void {
+
+	public function updatePosition():Void
+	{
 		positionButton();
 		#if mobile
 		visible = ClientPrefs.data.showMobileDebugButtons;
 		#end
 	}
-	
-	public function destroy():Void {
+
+	public function destroy():Void
+	{
 		this.removeEventListener(TouchEvent.TOUCH_BEGIN, onTouchBegin);
 		this.removeEventListener(TouchEvent.TOUCH_END, onTouchEnd);
-		
+
 		#if debug
 		this.removeEventListener(MouseEvent.MOUSE_DOWN, onMouseDown);
 		this.removeEventListener(MouseEvent.MOUSE_UP, onMouseUp);
 		#end
-		
-		if (buttonText.parent != null) {
+
+		if (buttonText.parent != null)
+		{
 			buttonText.parent.removeChild(buttonText);
 		}
-		if (buttonShape.parent != null) {
+		if (buttonShape.parent != null)
+		{
 			buttonShape.parent.removeChild(buttonShape);
 		}
-		if (this.parent != null) {
+		if (this.parent != null)
+		{
 			this.parent.removeChild(this);
 		}
 	}
 }
+

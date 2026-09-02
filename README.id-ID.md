@@ -22,7 +22,7 @@
 [![Mac](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Mac&primaryBGColor=%231c1c1c&primaryTextColor=%23FFFFFF&secondaryBGColor=%23000000&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=macos&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.apple.com/macos/)
 [![Linux](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=+&secondaryLabel=Linux&primaryBGColor=%23dba80f&primaryTextColor=%23FFFFFF&secondaryBGColor=%23ffc107&secondaryTextColor=%23FFFFFF&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2.5&primaryFontFamily=Arial&primaryTextTransform=none&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=linux&secondaryIconColor=%23FFFFFF&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://www.linux.org/)
 
-Mesin berbasis Psych 1.0.4 dengan modcharts seperti NotITG dan kompatibel dengan video hxcodec dari mod Psych 0.6.3 dan 0.7.3.
+Mesin berbasis Psych 1.0.4 dengan perbaikan dan UI dari [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) dan modcharts seperti NotITG dan kompatibel dengan video hxcodec dari mod Psych 0.6.3 dan 0.7.3.
 
 [![Discord](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Bergabunglah+di&secondaryLabel=Discord&primaryBGColor=%23689bb1&primaryTextColor=%23ffffff&secondaryBGColor=%235665ed&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=discord&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://discord.gg/EBvUWcMdqV)
 
@@ -43,45 +43,46 @@ Kontribusi sangat diharapkan! Jika Anda memiliki ide, perbaikan, atau pembaruan,
 
 # Tentang Penggunaan Kode
 
-Proyek ini **terbuka untuk dipelajari, dikembangkan, dan diperbaiki**.  
+Proyek ini **terbuka untuk dipelajari, dikembangkan, dan diperbaiki**.
 Anda bebas menggunakan kode ini sebagai referensi, dasar, atau sumber belajar.
 
-Karena kode bukanlah harta karun yang terkubur —  
+Karena kode bukanlah harta karun yang terkubur —
 **kode hidup ketika dibagikan**.
 
-📚 **Belajar > menimbun**  
-💡 **Berbagi > pamer**  
+📚 **Belajar > menimbun**
+💡 **Berbagi > pamer**
 🚀 **Membangun > menghalangi**
 
 Saya tidak percaya pada pola pikir:
 > “Jangan sentuh kode saya, jangan buat mesin lain, jangan gunakan barang-barang mesin saya, bro...”
 
-Bro...  
-**kamu tidak akan masuk surga dengan repositori pribadi di bawah lenganmu!**  
+Bro...
+**kamu tidak akan masuk surga dengan repositori pribadi di bawah lenganmu!**
 
-Kode sumber adalah:  
-- pengetahuan  
-- praktik  
-- kesalahan  
-- evolusi  
+Kode sumber adalah:
+- pengetahuan
+- praktik
+- kesalahan
+- evolusi
 
-Jika seseorang memperbaiki sesuatu yang saya buat, **hormati** 🫡  
-Begitulah cara kerjanya:  
+Jika seseorang memperbaiki sesuatu yang saya buat, **hormati** 🫡
+Begitulah cara kerjanya:
 belajar dari masa lalu untuk membangun masa depan.
 
 ### ⚠️ Catatan penting
-Jangan mengklaim karya orang lain sebagai milikmu atau menjualnya sebagai asli.  
+Jangan mengklaim karya orang lain sebagai milikmu atau menjualnya sebagai asli.
 Hormati usaha mereka, pelajari darinya, dan ciptakan sesuatu yang lebih baik.
 
-Bagi yang berbagi: terima kasih 💙  
-Bagi yang menyembunyikan kode karena takut atau iri:  
+Bagi yang berbagi: terima kasih 💙
+Bagi yang menyembunyikan kode karena takut atau iri:
 tenang — kemajuan tidak menunggu.
 
 **Selamat berkoding.**
 
 ## Kredit Pengembang:
-* Lenin Asto - Pengembang Utama untuk Fork Plus Engine
-* Legacy Odyssey - Co-Pengembang Kedua untuk Fork Plus Engine
+* Lenin Asto - Pengembang Utama untuk Plus Engine
+* sirthegamercoder - Pengembang Kedua untuk Plus Engine
+* Autistic Lulu - Pencipta [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) dan penulis beberapa UI dan fitur baru untuk fork-nya (terima kasih telah membiarkan saya menggunakan fork Anda =D)
 
 ## Kredit Asli:
 * Shadow Mario - Pengembang Utama dan Kepala Psych Engine.

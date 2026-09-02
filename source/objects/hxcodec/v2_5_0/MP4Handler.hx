@@ -22,10 +22,12 @@ class MP4Handler extends HxvlcVideo
 	private var _location:String = null;
 
 	public var repeat(get, set):Int;
+
 	private function get_repeat():Int
 	{
 		return _repeat;
 	}
+
 	private function set_repeat(value:Int):Int
 	{
 		_repeat = value;
@@ -33,6 +35,7 @@ class MP4Handler extends HxvlcVideo
 	}
 
 	public var location(get, never):String;
+
 	private function get_location():String
 	{
 		return _location;
@@ -66,7 +69,7 @@ class MP4Handler extends HxvlcVideo
 		}
 	}
 
-	private function update(?E:Event):Void
+	public function update(?E:Event):Void
 	{
 		#if FLX_KEYBOARD
 		if ((FlxG.keys.justPressed.ENTER || FlxG.keys.justPressed.SPACE) && isPlaying)
@@ -216,9 +219,21 @@ class MP4Handler
 		trace("MP4Handler.playVideo: hxvlc not available");
 	}
 
-	public function finishVideo():Void {}
-	public function pause():Void {}
-	public function resume():Void {}
-	public function dispose():Void {}
+	public function finishVideo():Void
+	{
+	}
+
+	public function pause():Void
+	{
+	}
+
+	public function resume():Void
+	{
+	}
+
+	public function dispose():Void
+	{
+	}
 }
 #end
+

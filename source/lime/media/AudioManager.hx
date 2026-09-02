@@ -1,5 +1,4 @@
 // shadowing this class because we're unable to apply the config files to mobile during __init__
-
 package lime.media;
 
 import haxe.Timer;
@@ -120,3 +119,4 @@ class AudioManager
 		#end
 	}
 }
+

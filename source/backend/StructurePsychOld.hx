@@ -9,9 +9,19 @@ class StructurePsychOld
 {
 	// Keep reflection-only compatibility classes from being removed by DCE.
 	private static final _compatClassRefs:Array<Class<Dynamic>> = [
-		backend.VideoSpriteManager
+		backend.VideoSpriteManager,
+		objects.hxcodec.v2_5_0.MP4Handler,
+		objects.hxcodec.v2_5_0.MP4Sprite,
+		objects.hxcodec.v2_6_0.VideoHandler,
+		objects.hxcodec.v2_6_0.VideoSprite,
+		objects.hxcodec.v3_0_0.FlxVideo,
+		objects.hxcodec.v3_0_0.FlxVideoSprite,
+		objects.hxcodec.v3_0_0.Video
 	];
 	private static var warnedLegacyUsages:Map<String, Bool> = new Map();
+
+	static inline function shouldShowDeprecatedWarnings():Bool
+		return ClientPrefs.data.scriptDeprecationWarnings;
 
 	/**
 	 * Compatibility map for Psych Engine 0.6.3 and older script paths.
@@ -82,7 +92,19 @@ class StructurePsychOld
 		'NoteOffsetState' => 'options.NoteOffsetState',
 		'VisualsSettingsSubState' => 'options.VisualsSettingsSubState',
 		'GraphicsSettingsSubState' => 'options.GraphicsSettingsSubState',
-		'GameplaySettingsSubState' => 'options.GameplaySettingsSubState'
+		'GameplaySettingsSubState' => 'options.GameplaySettingsSubState',
+		// ===== hxCodec / hxvlc compatibility for Psych 0.6.x video scripts =====
+		'vlc.MP4Handler' => 'objects.hxcodec.v2_5_0.MP4Handler',
+		'vlc.MP4Sprite' => 'objects.hxcodec.v2_5_0.MP4Sprite',
+		'vlc.VideoHandler' => 'objects.hxcodec.v2_6_0.VideoHandler',
+		'vlc.VideoSprite' => 'objects.hxcodec.v2_6_0.VideoSprite',
+		'hxcodec.MP4Handler' => 'objects.hxcodec.v2_5_0.MP4Handler',
+		'hxcodec.MP4Sprite' => 'objects.hxcodec.v2_5_0.MP4Sprite',
+		'hxcodec.VideoHandler' => 'objects.hxcodec.v2_6_0.VideoHandler',
+		'hxcodec.VideoSprite' => 'objects.hxcodec.v2_6_0.VideoSprite',
+		'hxcodec.flixel.FlxVideo' => 'objects.hxcodec.v3_0_0.FlxVideo',
+		'hxcodec.flixel.FlxVideoSprite' => 'objects.hxcodec.v3_0_0.FlxVideoSprite',
+		'hxcodec.flixel.Video' => 'objects.hxcodec.v3_0_0.Video'
 	];
 
 	public static final clientPrefsDataAliasMap:Map<String, String> = [
@@ -133,19 +155,20 @@ class StructurePsychOld
 
 	public static function resolveClientPrefsDataProperty(className:String, variable:String):String
 	{
-		if(variable == null || variable.length < 1) return variable;
+		if (variable == null || variable.length < 1)
+			return variable;
 
 		var resolvedClass:String = className;
-		if(classAliasMap.exists(resolvedClass))
+		if (classAliasMap.exists(resolvedClass))
 			resolvedClass = classAliasMap.get(resolvedClass);
 
-		if(resolvedClass != 'backend.ClientPrefs' && resolvedClass != 'ClientPrefs')
+		if (resolvedClass != 'backend.ClientPrefs' && resolvedClass != 'ClientPrefs')
 			return variable;
-		if(variable == 'data' || variable.startsWith('data.') || variable.startsWith('defaultData.'))
+		if (variable == 'data' || variable.startsWith('data.') || variable.startsWith('defaultData.'))
 			return variable;
 
 		var split:Array<String> = variable.split('.');
-		if(split.length < 1 || !clientPrefsDataAliasMap.exists(split[0]))
+		if (split.length < 1 || !clientPrefsDataAliasMap.exists(split[0]))
 			return variable;
 
 		split[0] = clientPrefsDataAliasMap.get(split[0]);
@@ -161,18 +184,19 @@ class StructurePsychOld
 	 */
 	public static function resolveClass(className:String):Class<Dynamic>
 	{
-		var myClass:Dynamic = Type.resolveClass(className);
+		var myClass:Dynamic = safeResolveClass(className);
 
 		// If class not found, try aliases for backwards compatibility
 		if (myClass == null && classAliasMap.exists(className))
 		{
 			var newClassName = classAliasMap.get(className);
-			myClass = Type.resolveClass(newClassName);
+			myClass = safeResolveClass(newClassName);
 			if (myClass != null)
 			{
 				warnLegacyLuaUsage(className, newClassName);
 				#if debug
-				trace('[Compatibility] Redirected "$className" to "$newClassName"');
+				if (shouldShowDeprecatedWarnings())
+					trace('[Compatibility] Redirected "$className" to "$newClassName"');
 				#end
 			}
 			else
@@ -185,7 +209,7 @@ class StructurePsychOld
 		else if (myClass == null)
 		{
 			#if debug
-			if (!_warnedClasses.exists(className))
+			if (shouldShowDeprecatedWarnings() && !_warnedClasses.exists(className))
 			{
 				trace('[Compatibility] WARNING: Class "$className" not found and no alias exists. This may break old mods.');
 				trace('[Compatibility] If this is a common class, consider adding it to StructurePsychOld.classAliasMap');
@@ -197,21 +221,37 @@ class StructurePsychOld
 		return myClass;
 	}
 
+	static inline function safeResolveClass(className:String):Class<Dynamic>
+	{
+		#if MODS_ALLOWED
+		return ModSecurity.safeResolveClass(className);
+		#else
+		return Type.resolveClass(className);
+		#end
+	}
+
 	public static function warnLegacyLuaUsage(oldApi:String, newApi:String):Void
 	{
-		if(oldApi == null || newApi == null || oldApi == newApi) return;
+		if (oldApi == null || newApi == null || oldApi == newApi)
+			return;
+		if (!shouldShowDeprecatedWarnings())
+			return;
 
 		var owner:String = '';
 		#if LUA_ALLOWED
-		if(psychlua.FunkinLua.lastCalledScript != null)
+		if (psychlua.FunkinLua.lastCalledScript != null)
 			owner = psychlua.FunkinLua.lastCalledScript.scriptName;
 		#end
 		var key:String = owner + '|' + oldApi + '->' + newApi;
-		if(warnedLegacyUsages.exists(key)) return;
+		if (warnedLegacyUsages.exists(key))
+			return;
 		warnedLegacyUsages.set(key, true);
 
 		#if LUA_ALLOWED
-		psychlua.FunkinLua.luaTrace('Legacy compatibility: "$oldApi" redirects to "$newApi". Use the exact Psych 1.0+ API/path or this mod may fail on vanilla Psych.', false, true, flixel.util.FlxColor.YELLOW);
+		if (psychlua.FunkinLua.getBool('luaDebugMode') && psychlua.FunkinLua.getBool('luaDeprecatedWarnings'))
+			psychlua.FunkinLua.luaTrace('Legacy compatibility: "$oldApi" redirects to "$newApi". Use the exact Psych 1.0+ API/path or this mod may fail on vanilla Psych.',
+				false,
+				true, flixel.util.FlxColor.YELLOW);
 		#elseif debug
 		trace('[Compatibility] "$oldApi" redirects to "$newApi"');
 		#end

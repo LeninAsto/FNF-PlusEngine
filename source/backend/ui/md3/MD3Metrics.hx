@@ -54,3 +54,4 @@ class MD3Metrics
 		return size(value);
 	}
 }
+

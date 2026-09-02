@@ -36,7 +36,7 @@ class MemoryUtil
 	{
 		#if (windows && cpp)
 		return slushithings.windows.WindowsCPP.getProcessMemoryUsage();
-		
+
 		try
 		{
 			#if cpp

@@ -14,8 +14,6 @@ import backend.ui.md3.MD3Theme;
  */
 class MaterialSwitch extends FlxSpriteGroup
 {
-	static inline var TRACE_LAYOUT:Bool = false;
-
 	public var checked(default, set):Bool = false;
 	public var enabled:Bool = true;
 	public var allowMouseInput:Bool = true;
@@ -32,13 +30,26 @@ class MaterialSwitch extends FlxSpriteGroup
 	var thumbCenterX:Float = 0;
 	var thumbVisualScale:Float = 1;
 
-	inline function trackWidth():Int return MD3Metrics.size(52);
-	inline function trackHeight():Int return MD3Metrics.size(32);
-	inline function thumbSize():Int return MD3Metrics.size(24);
-	inline function pressedThumbSize():Int return MD3Metrics.size(28);
-	inline function iconSize():Int return MD3Metrics.size(14);
-	inline function switchRadius():Int return MD3Metrics.corner(16, trackWidth(), trackHeight());
-	inline function hitHeight():Int return MD3Metrics.touch(trackHeight());
+	inline function trackWidth():Int
+		return MD3Metrics.size(52);
+
+	inline function trackHeight():Int
+		return MD3Metrics.size(32);
+
+	inline function thumbSize():Int
+		return MD3Metrics.size(24);
+
+	inline function pressedThumbSize():Int
+		return MD3Metrics.size(28);
+
+	inline function iconSize():Int
+		return MD3Metrics.size(14);
+
+	inline function switchRadius():Int
+		return MD3Metrics.corner(16, trackWidth(), trackHeight());
+
+	inline function hitHeight():Int
+		return MD3Metrics.touch(trackHeight());
 
 	public function new(x:Float = 0, y:Float = 0, ?checked:Bool = false)
 	{
@@ -67,7 +78,6 @@ class MaterialSwitch extends FlxSpriteGroup
 		// Set initial state without animation
 		updateVisuals(false);
 		MD3Theme.addListener(_onThemeChange);
-		traceLayout('create');
 	}
 
 	inline function getThumbCenter(isChecked:Bool):Float
@@ -86,18 +96,11 @@ class MaterialSwitch extends FlxSpriteGroup
 		updateIconPosition();
 	}
 
-	function traceLayout(reason:String):Void
-	{
-		if (!TRACE_LAYOUT) return;
-	}
-
 	public function getDebugLayout():String
 	{
-		return 'group=(' + x + ', ' + y + ')'
-			+ ' checked=' + checked
-			+ ' trackLocal=(' + (track.x - x) + ', ' + (track.y - y) + ', ' + track.width + 'x' + track.height + ')'
-			+ ' thumbLocal=(' + (thumb.x - x) + ', ' + (thumb.y - y) + ', ' + thumb.width + 'x' + thumb.height + ')'
-			+ ' iconLocal=(' + (thumbIcon.x - x) + ', ' + (thumbIcon.y - y) + ', ' + thumbIcon.width + 'x' + thumbIcon.height + ')';
+		return 'group=(' + x + ', ' + y + ')' + ' checked=' + checked + ' trackLocal=(' + (track.x - x) + ', ' + (track.y - y) + ', ' + track.width + 'x'
+			+ track.height + ')' + ' thumbLocal=(' + (thumb.x - x) + ', ' + (thumb.y - y) + ', ' + thumb.width + 'x' + thumb.height + ')' + ' iconLocal=('
+			+ (thumbIcon.x - x) + ', ' + (thumbIcon.y - y) + ', ' + thumbIcon.width + 'x' + thumbIcon.height + ')';
 	}
 
 	function drawIcon(sprite:FlxSprite, isCheck:Bool):Void
@@ -136,15 +139,15 @@ class MaterialSwitch extends FlxSpriteGroup
 		var sx = x1 < x2 ? 1 : -1;
 		var sy = y1 < y2 ? 1 : -1;
 		var err = dx - dy;
-		
+
 		var x = x1;
 		var y = y1;
 
 		while (true)
 		{
-			for (ty in -Std.int(thickness/2)...Std.int(thickness/2) + 1)
+			for (ty in -Std.int(thickness / 2)...Std.int(thickness / 2) + 1)
 			{
-				for (tx in -Std.int(thickness/2)...Std.int(thickness/2) + 1)
+				for (tx in -Std.int(thickness / 2)...Std.int(thickness / 2) + 1)
 				{
 					var px = x + tx;
 					var py = y + ty;
@@ -153,7 +156,8 @@ class MaterialSwitch extends FlxSpriteGroup
 				}
 			}
 
-			if (x == x2 && y == y2) break;
+			if (x == x2 && y == y2)
+				break;
 
 			var e2 = 2 * err;
 			if (e2 > -dy)
@@ -174,7 +178,8 @@ class MaterialSwitch extends FlxSpriteGroup
 		var duration = animate ? 0.2 : 0;
 
 		// Cancel existing tweens
-		if (thumbTween != null) thumbTween.cancel();
+		if (thumbTween != null)
+			thumbTween.cancel();
 
 		var targetCenter = getThumbCenter(checked);
 		drawIcon(thumbIcon, checked);
@@ -183,7 +188,8 @@ class MaterialSwitch extends FlxSpriteGroup
 		{
 			thumbTween = FlxTween.tween(this, {thumbCenterX: targetCenter}, duration, {
 				ease: FlxEase.cubeOut,
-				onUpdate: function(_) {
+				onUpdate: function(_)
+				{
 					layoutThumb();
 				}
 			});
@@ -218,7 +224,6 @@ class MaterialSwitch extends FlxSpriteGroup
 			thumbIcon.color = targetIconColor;
 		}
 
-		traceLayout(animate ? 'updateVisuals(animated)' : 'updateVisuals(static)');
 	}
 
 	function animateColor(sprite:FlxSprite, fromColor:FlxColor, toColor:FlxColor, duration:Float):Void
@@ -231,7 +236,8 @@ class MaterialSwitch extends FlxSpriteGroup
 		var endG = toColor.green;
 		var endB = toColor.blue;
 
-		FlxTween.num(0, 1, duration, {ease: FlxEase.cubeOut}, function(t:Float) {
+		FlxTween.num(0, 1, duration, {ease: FlxEase.cubeOut}, function(t:Float)
+		{
 			var r = Std.int(FlxMath.lerp(startR, endR, t));
 			var g = Std.int(FlxMath.lerp(startG, endG, t));
 			var b = Std.int(FlxMath.lerp(startB, endB, t));
@@ -256,8 +262,10 @@ class MaterialSwitch extends FlxSpriteGroup
 		{
 			var mousePos = FlxG.mouse.getScreenPosition();
 			var hitPadY = Std.int(Math.max(0, (hitHeight() - trackHeight()) / 2));
-			var isOver = mousePos.x >= x && mousePos.x <= x + trackWidth()
-				&& mousePos.y >= y - hitPadY && mousePos.y <= y + trackHeight() + hitPadY;
+			var isOver = mousePos.x >= x
+				&& mousePos.x <= x + trackWidth()
+				&& mousePos.y >= y - hitPadY
+				&& mousePos.y <= y + trackHeight() + hitPadY;
 			if (isOver)
 			{
 				toggle();
@@ -268,10 +276,10 @@ class MaterialSwitch extends FlxSpriteGroup
 
 	public function toggle():Void
 	{
-		if (!enabled) return;
+		if (!enabled)
+			return;
 
 		checked = !checked;
-		traceLayout('toggle');
 
 		if (onChange != null)
 			onChange(checked);
@@ -295,11 +303,14 @@ class MaterialSwitch extends FlxSpriteGroup
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(_onThemeChange);
-		if (thumbTween != null) thumbTween.cancel();
-		if (thumbScaleTween != null) thumbScaleTween.cancel();
+		if (thumbTween != null)
+			thumbTween.cancel();
+		if (thumbScaleTween != null)
+			thumbScaleTween.cancel();
 
 		onChange = null;
 
 		super.destroy();
 	}
 }
+

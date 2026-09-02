@@ -82,3 +82,4 @@ class AssetCache
 		return true;
 	}
 }
+

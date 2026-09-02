@@ -2,7 +2,8 @@ package shaders;
 
 import objects.Note;
 
-class RGBPalette {
+class RGBPalette
+{
 	public var shader(default, null):RGBPaletteShader = new RGBPaletteShader();
 	public var r(default, set):FlxColor;
 	public var g(default, set):FlxColor;
@@ -21,28 +22,33 @@ class RGBPalette {
 			}
 			shader.mult.value[0] = tempShader.shader.mult.value[0];
 		}
-		else shader.mult.value[0] = 0.0;
+		else
+			shader.mult.value[0] = 0.0;
 	}
 
-	private function set_r(color:FlxColor) {
+	private function set_r(color:FlxColor)
+	{
 		r = color;
 		shader.r.value = [color.redFloat, color.greenFloat, color.blueFloat];
 		return color;
 	}
 
-	private function set_g(color:FlxColor) {
+	private function set_g(color:FlxColor)
+	{
 		g = color;
 		shader.g.value = [color.redFloat, color.greenFloat, color.blueFloat];
 		return color;
 	}
 
-	private function set_b(color:FlxColor) {
+	private function set_b(color:FlxColor)
+	{
 		b = color;
 		shader.b.value = [color.redFloat, color.greenFloat, color.blueFloat];
 		return color;
 	}
-	
-	private function set_mult(value:Float) {
+
+	private function set_mult(value:Float)
+	{
 		mult = FlxMath.bound(value, 0, 1);
 		shader.mult.value = [mult];
 		return mult;
@@ -68,8 +74,10 @@ class RGBShaderReference
 	public var forceDisabled:Bool = false; // Para NotITG - bloquea la activación del shader
 
 	public var parent:RGBPalette;
+
 	private var _owner:FlxSprite;
 	private var _original:RGBPalette;
+
 	public function new(owner:FlxSprite, ref:RGBPalette)
 	{
 		parent = ref;
@@ -85,48 +93,56 @@ class RGBShaderReference
 			mult = parent.mult;
 		}
 	}
-	
+
 	private function set_r(value:FlxColor)
 	{
-		if(allowNew && value != _original.r) cloneOriginal();
+		if (allowNew && value != _original.r)
+			cloneOriginal();
 		return (r = parent.r = value);
 	}
+
 	private function set_g(value:FlxColor)
 	{
-		if(allowNew && value != _original.g) cloneOriginal();
+		if (allowNew && value != _original.g)
+			cloneOriginal();
 		return (g = parent.g = value);
 	}
+
 	private function set_b(value:FlxColor)
 	{
-		if(allowNew && value != _original.b) cloneOriginal();
+		if (allowNew && value != _original.b)
+			cloneOriginal();
 		return (b = parent.b = value);
 	}
+
 	private function set_mult(value:Float)
 	{
-		if(allowNew && value != _original.mult) cloneOriginal();
+		if (allowNew && value != _original.mult)
+			cloneOriginal();
 		return (mult = parent.mult = value);
 	}
+
 	private function set_enabled(value:Bool)
 	{
-		if(_owner == null)
+		if (_owner == null)
 			return (enabled = false);
 
 		var ownsCurrentShader:Bool = ownsShader();
 
 		// Si forceDisabled está activado (NotITG), NUNCA activar el shader
-		if(forceDisabled)
+		if (forceDisabled)
 		{
-			if(ownsCurrentShader)
+			if (ownsCurrentShader)
 				_owner.shader = null;
 			return (enabled = false);
 		}
-		
-		if(value)
+
+		if (value)
 		{
-			if(_owner.shader == null || (ownsCurrentShader && _owner.shader != parent.shader))
+			if (_owner.shader == null || (ownsCurrentShader && _owner.shader != parent.shader))
 				_owner.shader = parent.shader;
 		}
-		else if(ownsCurrentShader)
+		else if (ownsCurrentShader)
 		{
 			_owner.shader = null;
 		}
@@ -134,12 +150,14 @@ class RGBShaderReference
 	}
 
 	public var allowNew = true;
+
 	private function cloneOriginal()
 	{
-		if(allowNew)
+		if (allowNew)
 		{
 			allowNew = false;
-			if(_original != parent) return;
+			if (_original != parent)
+				return;
 
 			var shouldApplyShader:Bool = enabled && (_owner == null || _owner.shader == null || ownsShader());
 			parent = new RGBPalette();
@@ -147,9 +165,9 @@ class RGBShaderReference
 			parent.g = _original.g;
 			parent.b = _original.b;
 			parent.mult = _original.mult;
-			if(_owner != null && shouldApplyShader)
+			if (_owner != null && shouldApplyShader)
 				_owner.shader = parent.shader;
-			//trace('created new shader');
+			// trace('created new shader');
 		}
 	}
 
@@ -157,7 +175,8 @@ class RGBShaderReference
 		return _owner != null && (_owner.shader == parent.shader || (_original != null && _owner.shader == _original.shader));
 }
 
-class RGBPaletteShader extends FlxShader {
+class RGBPaletteShader extends FlxShader
+{
 	@:glFragmentHeader('
 		#pragma header
 		
@@ -183,16 +202,15 @@ class RGBPaletteShader extends FlxShader {
 			}
 			return vec4(0.0, 0.0, 0.0, 0.0);
 		}')
-
 	@:glFragmentSource('
 		#pragma header
 
 		void main() {
 			gl_FragColor = flixel_texture2DCustom(bitmap, openfl_TextureCoordv);
 		}')
-
 	public function new()
 	{
 		super();
 	}
 }
+

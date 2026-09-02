@@ -35,7 +35,12 @@ class AssetResolver
 			return Paths.getSharedPath('mobile/$file');
 
 		if (parentFolder != null)
-			return Paths.getFolderPath(file, parentFolder);
+		{
+			var folderPath:String = Paths.getFolderPath(file, parentFolder);
+			if (OpenFlAssets.exists(folderPath, type))
+				return folderPath;
+			return folderPath;
+		}
 
 		if (Paths.currentLevel != null && Paths.currentLevel != 'shared')
 		{
@@ -44,6 +49,11 @@ class AssetResolver
 				return levelPath;
 		}
 
-		return Paths.getSharedPath(file);
+		var sharedPath:String = Paths.getSharedPath(file);
+		if (OpenFlAssets.exists(sharedPath, type))
+			return sharedPath;
+
+		return sharedPath;
 	}
 }
+

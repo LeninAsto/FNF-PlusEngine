@@ -33,6 +33,7 @@ class MaterialCard extends FlxSpriteGroup
 	// Dimensions (MD3 specs)
 	public var cardWidth:Float = 280;
 	public var cardHeight:Float = 140;
+
 	static inline var CORNER_RADIUS:Int = 12;
 	static inline var OUTLINE_WIDTH:Int = 1;
 
@@ -103,22 +104,26 @@ class MaterialCard extends FlxSpriteGroup
 				var inRect = true;
 				if (px < radius && py < radius)
 				{
-					var dx = radius - px; var dy = radius - py;
+					var dx = radius - px;
+					var dy = radius - py;
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px >= width - radius && py < radius)
 				{
-					var dx = px - (width - radius); var dy = radius - py;
+					var dx = px - (width - radius);
+					var dy = radius - py;
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px < radius && py >= height - radius)
 				{
-					var dx = radius - px; var dy = py - (height - radius);
+					var dx = radius - px;
+					var dy = py - (height - radius);
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px >= width - radius && py >= height - radius)
 				{
-					var dx = px - (width - radius); var dy = py - (height - radius);
+					var dx = px - (width - radius);
+					var dy = py - (height - radius);
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 
@@ -130,7 +135,8 @@ class MaterialCard extends FlxSpriteGroup
 
 	function drawOutline(sprite:FlxSprite, width:Int, height:Int, radius:Int):Void
 	{
-		if (sprite == null || sprite.pixels == null) return;
+		if (sprite == null || sprite.pixels == null)
+			return;
 		var graphics = sprite.pixels;
 		graphics.fillRect(graphics.rect, FlxColor.TRANSPARENT);
 		var col:Int = MD3Theme.outlineVariant;
@@ -202,7 +208,8 @@ class MaterialCard extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 
-		if (!enabled || onClick == null) return;
+		if (!enabled || onClick == null)
+			return;
 
 		#if FLX_MOUSE
 		var mousePos = FlxG.mouse.getScreenPosition();
@@ -211,30 +218,46 @@ class MaterialCard extends FlxSpriteGroup
 		if (isOver && !isHovered)
 		{
 			isHovered = true;
-			if (hoverTween != null) hoverTween.cancel();
+			if (hoverTween != null)
+				hoverTween.cancel();
 			stateLayer.color = MD3Theme.stateLayerColor(MD3Theme.primary);
-			hoverTween = FlxTween.num(stateLayer.alpha, 1, 0.15, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			hoverTween = FlxTween.num(stateLayer.alpha, 1, 0.15, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 		else if (!isOver && isHovered)
 		{
 			isHovered = false;
-			if (hoverTween != null) hoverTween.cancel();
-			hoverTween = FlxTween.num(stateLayer.alpha, 0, 0.15, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			if (hoverTween != null)
+				hoverTween.cancel();
+			hoverTween = FlxTween.num(stateLayer.alpha, 0, 0.15, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 
 		if (FlxG.mouse.pressed && isOver && !isPressed)
 		{
 			isPressed = true;
-			if (pressTween != null) pressTween.cancel();
+			if (pressTween != null)
+				pressTween.cancel();
 			stateLayer.color = MD3Theme.stateLayerColor(MD3Theme.primary, true);
-			pressTween = FlxTween.num(stateLayer.alpha, 1, 0.1, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			pressTween = FlxTween.num(stateLayer.alpha, 1, 0.1, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 		else if (!FlxG.mouse.pressed && isPressed)
 		{
 			isPressed = false;
-			if (pressTween != null) pressTween.cancel();
-				stateLayer.color = isHovered ? MD3Theme.stateLayerColor(MD3Theme.primary) : FlxColor.TRANSPARENT;
-			pressTween = FlxTween.num(stateLayer.alpha, isHovered ? 1.0 : 0.0, 0.1, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			if (pressTween != null)
+				pressTween.cancel();
+			stateLayer.color = isHovered ? MD3Theme.stateLayerColor(MD3Theme.primary) : FlxColor.TRANSPARENT;
+			pressTween = FlxTween.num(stateLayer.alpha, isHovered ? 1.0 : 0.0, 0.1, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 
 		if (FlxG.mouse.justReleased && isOver && onClick != null)
@@ -245,8 +268,10 @@ class MaterialCard extends FlxSpriteGroup
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(updateAppearance);
-		if (hoverTween != null) hoverTween.cancel();
-		if (pressTween != null) pressTween.cancel();
+		if (hoverTween != null)
+			hoverTween.cancel();
+		if (pressTween != null)
+			pressTween.cancel();
 		super.destroy();
 	}
 }
@@ -257,3 +282,4 @@ enum CardType
 	FILLED;
 	OUTLINED;
 }
+

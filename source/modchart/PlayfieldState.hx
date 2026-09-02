@@ -1,6 +1,6 @@
 package modchart;
 
-import haxe.ds.StringMap;
+import haxe.ds.IntMap;
 import modchart.backend.core.ModifierOutput;
 import modchart.backend.core.VisualParameters;
 import modchart.backend.math.Vector3;
@@ -12,34 +12,41 @@ import modchart.backend.math.Vector3;
  * frame so renderers can reuse the same transformed output instead of
  * recomputing the same modifier pipeline repeatedly.
  */
-final class PlayfieldState {
+final class PlayfieldState
+{
 	public var frameId(default, null):Int = -1;
 	public var songPosition(default, null):Float = 0;
 	public var beat(default, null):Float = 0;
 
-	private var __pathCache:StringMap<ModifierOutput> = new StringMap();
+	private var __pathCache:IntMap<ModifierOutput> = new IntMap();
 
-	public function new() {}
+	public function new()
+	{
+	}
 
-	public inline function beginFrame(frameId:Int, songPosition:Float, beat:Float):Void {
+	public inline function beginFrame(frameId:Int, songPosition:Float, beat:Float):Void
+	{
 		if (this.frameId != frameId)
-			__pathCache = new StringMap();
+			__pathCache.clear();
 
 		this.frameId = frameId;
 		this.songPosition = songPosition;
 		this.beat = beat;
 	}
 
-	public inline function getCachedPath(key:String):Null<ModifierOutput> {
+	public inline function getCachedPath(key:Int):Null<ModifierOutput>
+	{
 		return __pathCache.get(key);
 	}
 
-	public inline function setCachedPath(key:String, output:ModifierOutput):ModifierOutput {
+	public inline function setCachedPath(key:Int, output:ModifierOutput):ModifierOutput
+	{
 		__pathCache.set(key, output);
 		return output;
 	}
 
-	public inline function cloneOutput(output:ModifierOutput):ModifierOutput {
+	public inline function cloneOutput(output:ModifierOutput):ModifierOutput
+	{
 		return {
 			pos: new Vector3(output.pos.x, output.pos.y, output.pos.z, output.pos.w),
 			visuals: cloneVisuals(output.visuals),
@@ -49,7 +56,8 @@ final class PlayfieldState {
 		};
 	}
 
-	private inline function cloneVisuals(visuals:VisualParameters):VisualParameters {
+	private inline function cloneVisuals(visuals:VisualParameters):VisualParameters
+	{
 		return {
 			scaleX: visuals.scaleX,
 			scaleY: visuals.scaleY,
@@ -66,3 +74,4 @@ final class PlayfieldState {
 		};
 	}
 }
+

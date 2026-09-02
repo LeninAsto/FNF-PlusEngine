@@ -18,22 +18,22 @@ class Bar extends FlxSpriteGroup
 	public var barHeight(default, set):Int = 1;
 	public var barOffset:FlxPoint = new FlxPoint(3, 3);
 
-	public var smoothPercent:Float = 0; 
+	public var smoothPercent:Float = 0;
 
 	public function new(x:Float, y:Float, image:String = 'healthBar', valueFunction:Void->Float = null, boundX:Float = 0, boundY:Float = 1)
 	{
 		super(x, y);
-		
+
 		this.valueFunction = valueFunction;
 		setBounds(boundX, boundY);
-		
+
 		bg = new FlxSprite().loadGraphic(Paths.image(image));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		barWidth = Std.int(bg.width - 6);
 		barHeight = Std.int(bg.height - 6);
 
 		leftBar = new FlxSprite().makeGraphic(Std.int(bg.width), Std.int(bg.height), FlxColor.WHITE);
-		//leftBar.color = FlxColor.WHITE;
+		// leftBar.color = FlxColor.WHITE;
 		leftBar.antialiasing = antialiasing = ClientPrefs.data.antialiasing;
 
 		rightBar = new FlxSprite().makeGraphic(Std.int(bg.width), Std.int(bg.height), FlxColor.WHITE);
@@ -47,56 +47,63 @@ class Bar extends FlxSpriteGroup
 	}
 
 	public var enabled:Bool = true;
-	override function update(elapsed:Float) {
-		if(!enabled)
+
+	override function update(elapsed:Float)
+	{
+		if (!enabled)
 		{
 			super.update(elapsed);
 			return;
 		}
 
-		if(valueFunction != null)
+		if (valueFunction != null)
 		{
 			var value:Null<Float> = FlxMath.remapToRange(FlxMath.bound(valueFunction(), bounds.min, bounds.max), bounds.min, bounds.max, 0, 100);
 			percent = (value != null ? value : 0);
 		}
-		else percent = 0;
+		else
+			percent = 0;
 
 		// Interpolación suave si está habilitada
-		if(ClientPrefs.data.smoothHealthBar) {
+		if (ClientPrefs.data.smoothHealthBar)
+		{
 			smoothPercent = FlxMath.lerp(smoothPercent, percent, 0.1);
 			updateBarSmooth();
 		}
 
 		super.update(elapsed);
 	}
-	
+
 	public function updateBarSmooth()
-    {
-    if(leftBar == null || rightBar == null) return;
+	{
+		if (leftBar == null || rightBar == null)
+			return;
 
-    leftBar.setPosition(bg.x, bg.y);
-    rightBar.setPosition(bg.x, bg.y);
+		leftBar.setPosition(bg.x, bg.y);
+		rightBar.setPosition(bg.x, bg.y);
 
-    var leftSize:Float = 0;
-    if(leftToRight) leftSize = FlxMath.lerp(0, barWidth, smoothPercent / 100);
-    else leftSize = FlxMath.lerp(0, barWidth, 1 - smoothPercent / 100);
+		var leftSize:Float = 0;
+		if (leftToRight)
+			leftSize = FlxMath.lerp(0, barWidth, smoothPercent / 100);
+		else
+			leftSize = FlxMath.lerp(0, barWidth, 1 - smoothPercent / 100);
 
-    leftBar.clipRect.width = leftSize;
-    leftBar.clipRect.height = barHeight;
-    leftBar.clipRect.x = barOffset.x;
-    leftBar.clipRect.y = barOffset.y;
+		leftBar.clipRect.width = leftSize;
+		leftBar.clipRect.height = barHeight;
+		leftBar.clipRect.x = barOffset.x;
+		leftBar.clipRect.y = barOffset.y;
 
-    rightBar.clipRect.width = barWidth - leftSize;
-    rightBar.clipRect.height = barHeight;
-    rightBar.clipRect.x = barOffset.x + leftSize;
-    rightBar.clipRect.y = barOffset.y;
+		rightBar.clipRect.width = barWidth - leftSize;
+		rightBar.clipRect.height = barHeight;
+		rightBar.clipRect.x = barOffset.x + leftSize;
+		rightBar.clipRect.y = barOffset.y;
 
-    barCenter = leftBar.x + leftSize + barOffset.x;
+		barCenter = leftBar.x + leftSize + barOffset.x;
 
-    leftBar.clipRect = leftBar.clipRect;
-    rightBar.clipRect = rightBar.clipRect;
-    }
-	
+		leftBar.clipRect = leftBar.clipRect;
+		rightBar.clipRect = rightBar.clipRect;
+	}
+
 	public function setBounds(min:Float, max:Float)
 	{
 		bounds.min = min;
@@ -123,14 +130,17 @@ class Bar extends FlxSpriteGroup
 
 	public function updateBar()
 	{
-		if(leftBar == null || rightBar == null) return;
+		if (leftBar == null || rightBar == null)
+			return;
 
 		leftBar.setPosition(bg.x, bg.y);
 		rightBar.setPosition(bg.x, bg.y);
 
 		var leftSize:Float = 0;
-		if(leftToRight) leftSize = FlxMath.lerp(0, barWidth, percent / 100);
-		else leftSize = FlxMath.lerp(0, barWidth, 1 - percent / 100);
+		if (leftToRight)
+			leftSize = FlxMath.lerp(0, barWidth, percent / 100);
+		else
+			leftSize = FlxMath.lerp(0, barWidth, 1 - percent / 100);
 
 		leftBar.clipRect.width = leftSize;
 		leftBar.clipRect.height = barHeight;
@@ -151,13 +161,13 @@ class Bar extends FlxSpriteGroup
 
 	public function regenerateClips()
 	{
-		if(leftBar != null)
+		if (leftBar != null)
 		{
 			leftBar.setGraphicSize(Std.int(bg.width), Std.int(bg.height));
 			leftBar.updateHitbox();
 			leftBar.clipRect = new FlxRect(0, 0, Std.int(bg.width), Std.int(bg.height));
 		}
-		if(rightBar != null)
+		if (rightBar != null)
 		{
 			rightBar.setGraphicSize(Std.int(bg.width), Std.int(bg.height));
 			rightBar.updateHitbox();
@@ -169,18 +179,22 @@ class Bar extends FlxSpriteGroup
 	private function set_percent(value:Float)
 	{
 		var doUpdate:Bool = false;
-		if(value != percent) doUpdate = true;
+		if (value != percent)
+			doUpdate = true;
 		percent = value;
 
-		if(doUpdate && !ClientPrefs.data.smoothHealthBar) updateBar();
+		if (doUpdate && !ClientPrefs.data.smoothHealthBar)
+			updateBar();
 		return value;
 	}
 
 	private function set_leftToRight(value:Bool)
 	{
 		leftToRight = value;
-		if(ClientPrefs.data.smoothHealthBar) updateBarSmooth();
-		else updateBar();
+		if (ClientPrefs.data.smoothHealthBar)
+			updateBarSmooth();
+		else
+			updateBar();
 		return value;
 	}
 
@@ -198,3 +212,4 @@ class Bar extends FlxSpriteGroup
 		return value;
 	}
 }
+

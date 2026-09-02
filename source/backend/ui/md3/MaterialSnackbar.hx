@@ -115,22 +115,26 @@ class MaterialSnackbar extends FlxSpriteGroup
 				var inRect = true;
 				if (px < radius && py < radius)
 				{
-					var dx = radius - px; var dy = radius - py;
+					var dx = radius - px;
+					var dy = radius - py;
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px >= width - radius && py < radius)
 				{
-					var dx = px - (width - radius); var dy = radius - py;
+					var dx = px - (width - radius);
+					var dy = radius - py;
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px < radius && py >= height - radius)
 				{
-					var dx = radius - px; var dy = py - (height - radius);
+					var dx = radius - px;
+					var dy = py - (height - radius);
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px >= width - radius && py >= height - radius)
 				{
-					var dx = px - (width - radius); var dy = py - (height - radius);
+					var dx = px - (width - radius);
+					var dy = py - (height - radius);
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 
@@ -149,7 +153,8 @@ class MaterialSnackbar extends FlxSpriteGroup
 	 */
 	public function show(message:String, ?duration:Float = 4.0, ?actionLabel:String = "", ?onAction:Void->Void = null):Void
 	{
-		if (isShowing) hide(false);
+		if (isShowing)
+			hide(false);
 
 		this.onAction = onAction;
 		this._actionLabel = actionLabel;
@@ -192,25 +197,33 @@ class MaterialSnackbar extends FlxSpriteGroup
 		isShowing = true;
 		visible = true;
 
-		if (showTween != null) showTween.cancel();
-		if (hideTween != null) hideTween.cancel();
+		if (showTween != null)
+			showTween.cancel();
+		if (hideTween != null)
+			hideTween.cancel();
 		showTween = FlxTween.tween(this, {alpha: 1}, 0.2, {ease: FlxEase.cubeOut});
 	}
 
 	public function hide(?animate:Bool = true):Void
 	{
-		if (!isShowing) return;
+		if (!isShowing)
+			return;
 		isShowing = false;
 		_autoHideTimer = 0;
 
-		if (showTween != null) showTween.cancel();
-		if (hideTween != null) hideTween.cancel();
+		if (showTween != null)
+			showTween.cancel();
+		if (hideTween != null)
+			hideTween.cancel();
 
 		if (animate)
 		{
 			hideTween = FlxTween.tween(this, {alpha: 0}, 0.2, {
 				ease: FlxEase.cubeIn,
-				onComplete: function(_) { visible = false; }
+				onComplete: function(_)
+				{
+					visible = false;
+				}
 			});
 		}
 		else
@@ -224,7 +237,8 @@ class MaterialSnackbar extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 
-		if (!isShowing) return;
+		if (!isShowing)
+			return;
 
 		// Auto-dismiss after duration
 		if (_autoHideDuration > 0)
@@ -241,12 +255,15 @@ class MaterialSnackbar extends FlxSpriteGroup
 			// actionHitArea.x/y are already world coords (children positioned absolutely)
 			var ax = actionHitArea.x;
 			var ay = actionHitArea.y;
-			var isOverAction = mousePos.x >= ax && mousePos.x <= ax + actionHitArea.width
-				&& mousePos.y >= ay && mousePos.y <= ay + SNACKBAR_HEIGHT;
+			var isOverAction = mousePos.x >= ax
+				&& mousePos.x <= ax + actionHitArea.width
+				&& mousePos.y >= ay
+				&& mousePos.y <= ay + SNACKBAR_HEIGHT;
 
 			if (isOverAction)
 			{
-				if (onAction != null) onAction();
+				if (onAction != null)
+					onAction();
 				hide();
 			}
 		}
@@ -255,16 +272,22 @@ class MaterialSnackbar extends FlxSpriteGroup
 
 	function _onThemeChange():Void
 	{
-		if (background != null) background.color = MD3Theme.inverseSurface;
-		if (messageText != null) messageText.color = MD3Theme.inverseOnSurface;
-		if (actionButton != null) actionButton.color = MD3Theme.inversePrimary;
+		if (background != null)
+			background.color = MD3Theme.inverseSurface;
+		if (messageText != null)
+			messageText.color = MD3Theme.inverseOnSurface;
+		if (actionButton != null)
+			actionButton.color = MD3Theme.inversePrimary;
 	}
 
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(_onThemeChange);
-		if (showTween != null) showTween.cancel();
-		if (hideTween != null) hideTween.cancel();
+		if (showTween != null)
+			showTween.cancel();
+		if (hideTween != null)
+			hideTween.cancel();
 		super.destroy();
 	}
 }
+

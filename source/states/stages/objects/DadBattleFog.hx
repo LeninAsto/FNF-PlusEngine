@@ -5,12 +5,12 @@ class DadBattleFog extends FlxSpriteGroup
 	public function new()
 	{
 		super();
-		
+
 		alpha = 0;
 		blend = ADD;
 
 		var offsetX = 200;
-		var smoke:BGSprite = new BGSprite('smoke', -1550 + offsetX, 660 + FlxG.random.float(-20, 20), 1.2, 1.05);
+		var smoke:FlxSprite = smokeSprite(-1550 + offsetX, 660 + FlxG.random.float(-20, 20), 1.2, 1.05);
 		smoke.setGraphicSize(Std.int(smoke.width * FlxG.random.float(1.1, 1.22)));
 		smoke.updateHitbox();
 		smoke.velocity.x = FlxG.random.float(15, 22);
@@ -18,7 +18,7 @@ class DadBattleFog extends FlxSpriteGroup
 		smoke.antialiasing = ClientPrefs.data.antialiasing;
 		add(smoke);
 
-		var smoke:BGSprite = new BGSprite('smoke', 1550 + offsetX, 660 + FlxG.random.float(-20, 20), 1.2, 1.05);
+		smoke = smokeSprite(1550 + offsetX, 660 + FlxG.random.float(-20, 20), 1.2, 1.05);
 		smoke.setGraphicSize(Std.int(smoke.width * FlxG.random.float(1.1, 1.22)));
 		smoke.updateHitbox();
 		smoke.velocity.x = FlxG.random.float(-15, -22);
@@ -26,5 +26,14 @@ class DadBattleFog extends FlxSpriteGroup
 		smoke.flipX = true;
 		smoke.antialiasing = ClientPrefs.data.antialiasing;
 		add(smoke);
+	}
+
+	inline function smokeSprite(x:Float, y:Float, scrollX:Float, scrollY:Float):FlxSprite
+	{
+		var spr:FlxSprite = new FlxSprite(x, y).loadGraphic(Paths.image('smoke'));
+		spr.scrollFactor.set(scrollX, scrollY);
+		spr.active = false;
+		spr.antialiasing = ClientPrefs.data.antialiasing;
+		return spr;
 	}
 }

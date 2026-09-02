@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <project xmlns:config="http://schemas.microsoft.com/developer/msbuild/2003"
          xmlns:android="http://schemas.android.com/apk/res/android">
+	
     <!-- Enable Content Provider to share files with other apps -->
 	<define name="SHARE_MOBILE_FILES" />
 	<define name="ANDROID_USE_ANDROIDX" />

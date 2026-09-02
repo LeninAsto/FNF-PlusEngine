@@ -11,19 +11,22 @@ import psychlua.LuaUtils;
 
 using StringTools;
 
-private typedef ScheduledPlayfieldOperation = {
+private typedef ScheduledPlayfieldOperation =
+{
 	var beat:Float;
 	var add:Bool;
 	var name:Null<String>;
 	var field:Int;
 }
 
-private class ManagedPlayfield {
+private class ManagedPlayfield
+{
 	public var name:Null<String>;
 	public var playfield:PlayField;
 	public var active:Bool;
 
-	public function new(name:Null<String>, playfield:PlayField, active:Bool = false) {
+	public function new(name:Null<String>, playfield:PlayField, active:Bool = false)
+	{
 		this.name = name;
 		this.playfield = playfield;
 		this.active = active;
@@ -41,7 +44,8 @@ private class ManagedPlayfield {
 #if !openfl_debug
 @:fileXml('tags="haxe,release"') @:noDebug
 #end
-final class Manager extends FlxBasic {
+final class Manager extends FlxBasic
+{
 	/**
 	 * Instance of the Manager.
 	 */
@@ -58,20 +62,28 @@ final class Manager extends FlxBasic {
 	 * List of playfields managed by the Manager.
 	 */
 	public var playfields:Array<PlayField> = [];
+
 	private var __namedPlayfields:StringMap<ManagedPlayfield> = new StringMap();
 	private var __scheduledPlayfieldOps:Array<ScheduledPlayfieldOperation> = [];
 
 	private var renderer:CtxRenderer;
 	private var __frameToken:Int = 0;
+	private var __primary:Bool = false;
+	private var __renderRequested:Bool = false;
+	private var __wasRendering:Bool = false;
 
 	/** Exposes renderer stats for debug overlays. */
 	public var rendererStats(get, never):CtxRenderer;
-	inline function get_rendererStats() return renderer;
+
+	inline function get_rendererStats()
+		return renderer;
+
 	public var activePlayfieldCount(get, never):Int;
 	public var totalModifierCount(get, never):Int;
 	public var totalEventCount(get, never):Int;
 
-	function get_activePlayfieldCount():Int {
+	function get_activePlayfieldCount():Int
+	{
 		var count = 0;
 		for (playfield in playfields)
 			if (playfield != null)
@@ -79,7 +91,8 @@ final class Manager extends FlxBasic {
 		return count;
 	}
 
-	function get_totalModifierCount():Int {
+	function get_totalModifierCount():Int
+	{
 		var count = 0;
 		for (playfield in playfields)
 			if (playfield != null)
@@ -87,7 +100,8 @@ final class Manager extends FlxBasic {
 		return count;
 	}
 
-	function get_totalEventCount():Int {
+	function get_totalEventCount():Int
+	{
 		var count = 0;
 		for (playfield in playfields)
 			if (playfield != null)
@@ -95,9 +109,19 @@ final class Manager extends FlxBasic {
 		return count;
 	}
 
-	public function new() {
+	public function new()
+	{
 		super();
 
+		if (instance != null)
+		{
+			active = false;
+			visible = false;
+			exists = false;
+			return;
+		}
+
+		__primary = true;
 		instance = this;
 		renderer = new CtxRenderer();
 
@@ -105,7 +129,11 @@ final class Manager extends FlxBasic {
 		Adapter.instance.onModchartingInitialization();
 
 		addPlayfield();
+		__renderRequested = false;
 	}
+
+	public inline function requestRender():Void
+		__renderRequested = true;
 
 	/**
 	 * Internal helper function to apply a function to each playfield.
@@ -113,22 +141,26 @@ final class Manager extends FlxBasic {
 	 * @param func The function to apply to each playfield.
 	 * @param field Optionally, the specific playfield to target (-1 for all).
 	 */
-	public inline function iteratePlayfields(func:PlayField->Void, field:Int = -1) {
+	public inline function iteratePlayfields(func:PlayField->Void, field:Int = -1)
+	{
 		// Apply to a specific playfield when requested.
-		if (field != -1) {
+		if (field != -1)
+		{
 			if (field < playfields.length && playfields[field] != null)
 				return func(playfields[field]);
 			return;
 		}
 
 		// Otherwise, apply the function to all playfields
-		for (i in 0...playfields.length) {
+		for (i in 0...playfields.length)
+		{
 			if (playfields[i] != null)
 				func(playfields[i]);
 		}
 	}
 
-	public function getNamedPlayfield(name:String):Null<PlayField> {
+	public function getNamedPlayfield(name:String):Null<PlayField>
+	{
 		final key = __normalizePlayfieldName(name);
 		if (key == null)
 			return null;
@@ -144,7 +176,10 @@ final class Manager extends FlxBasic {
 	 * @param field Optionally, the specific playfield to target.
 	 */
 	public inline function addModifier(name:String, field:Int = -1)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.addModifier(name), field);
+	}
 
 	/**
 	 * Adds a scripted modifier for all playfields or a specific one.
@@ -154,7 +189,10 @@ final class Manager extends FlxBasic {
 	 * @param field Optionally, the specific playfield to target.
 	 */
 	public inline function addScriptedModifier(name:String, instance:Modifier, field:Int = -1)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.addScriptedModifier(name, instance), field);
+	}
 
 	/**
 	 * Sets the percent for a specific modifier for all playfields or a specific one.
@@ -165,7 +203,10 @@ final class Manager extends FlxBasic {
 	 * @param field Optionally, the specific playfield to target.
 	 */
 	public inline function setPercent(name:String, value:Float, player:Int = -1, field:Int = -1)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.setPercent(name, value, player), field);
+	}
 
 	/**
 	 * Gets the percent for a specific modifier.
@@ -175,7 +216,8 @@ final class Manager extends FlxBasic {
 	 * @param field Optionally, the specific playfield to target.
 	 * @return The percent value for the modifier.
 	 */
-	public inline function getPercent(name:String, player:Int = 0, field:Int = 0):Float {
+	public inline function getPercent(name:String, player:Int = 0, field:Int = 0):Float
+	{
 		final possiblePlayfield = playfields[field];
 
 		if (possiblePlayfield != null)
@@ -193,7 +235,10 @@ final class Manager extends FlxBasic {
 	 * @param field Optionally, the specific playfield to target.
 	 */
 	public inline function setRawValue(name:String, value:Float, player:Int = -1, field:Int = -1)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.setRawValue(name, value, player), field);
+	}
 
 	/**
 	 * Gets the raw value for a specific modifier.
@@ -203,13 +248,30 @@ final class Manager extends FlxBasic {
 	 * @param field Optionally, the specific playfield to target.
 	 * @return The raw value for the modifier.
 	 */
-	public inline function getRawValue(name:String, player:Int = 0, field:Int = 0):Float {
+	public inline function getRawValue(name:String, player:Int = 0, field:Int = 0):Float
+	{
 		final possiblePlayfield = playfields[field];
 
 		if (possiblePlayfield != null)
 			return possiblePlayfield.getRawValue(name, player);
 
 		return 0.;
+	}
+
+	public function getNoteSpawnTime(player:Int, fallback:Float):Float
+	{
+		var result:Float = -1;
+		for (playfield in playfields)
+		{
+			if (playfield == null)
+				continue;
+
+			final value = playfield.getPercent('spawnTime', player);
+			final spawnTime = value > 0 ? value : fallback;
+			if (spawnTime > result)
+				result = spawnTime;
+		}
+		return result > 0 ? result : fallback;
 	}
 
 	/**
@@ -231,7 +293,10 @@ final class Manager extends FlxBasic {
 	 * @param field Optionally, the specific playfield to target.
 	 */
 	public inline function addEvent(event:Event, field:Int = -1)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.addEvent(event), field);
+	}
 
 	/**
 	 * Sets a specific value at a certain beat for all playfields or a specific one.
@@ -243,7 +308,10 @@ final class Manager extends FlxBasic {
 	 * @param field Optionally, the specific playfield to target.
 	 */
 	public inline function set(name:String, beat:Float, value:Float, player:Int = -1, field:Int = -1)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.set(name, beat, value, player), field);
+	}
 
 	/**
 	 * NMV-style scheduled set: queueSet(beat, name, value, player, field).
@@ -269,7 +337,10 @@ final class Manager extends FlxBasic {
 	 * @param field Optionally, the specific playfield to target.
 	 */
 	public inline function ease(name:String, beat:Float, length:Float, value:Float = 1, easeFunc:EaseFunction, player:Int = -1, field:Int = -1)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.ease(name, beat, length, value, easeFunc, player), field);
+	}
 
 	/**
 	 * NMV-style scheduled ease: queueEase(startBeat, endBeat, name, value, ease, player, field).
@@ -295,7 +366,10 @@ final class Manager extends FlxBasic {
 	 * @param field Optionally, the specific playfield to target.
 	 */
 	public inline function add(name:String, beat:Float, length:Float, value:Float = 1, easeFunc:EaseFunction, player:Int = -1, field:Int = -1)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.add(name, beat, length, value, easeFunc, player), field);
+	}
 
 	/**
 	 * Sets and adds a value to a modifier.
@@ -307,7 +381,10 @@ final class Manager extends FlxBasic {
 	 * @param field Optionally, the specific playfield to target.
 	 */
 	public inline function setAdd(name:String, beat:Float, value:Float, player:Int = -1, field:Int = -1)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.setAdd(name, beat, value, player), field);
+	}
 
 	/**
 	 * Adds a repeater event for all playfields or a specific one.
@@ -318,7 +395,10 @@ final class Manager extends FlxBasic {
 	 * @param field Optionally, the specific playfield to target.
 	 */
 	public inline function repeater(beat:Float, length:Float, callback:Event->Void, field:Int = -1)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.repeater(beat, length, callback), field);
+	}
 
 	/**
 	 * Adds a callback event for all playfields or a specific one.
@@ -328,19 +408,28 @@ final class Manager extends FlxBasic {
 	 * @param field Optionally, the specific playfield to target.
 	 */
 	public inline function callback(beat:Float, callback:Event->Void, field:Int = -1)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.callback(beat, callback), field);
+	}
 
 	/**
 	 * NMV-style one-shot callback.
 	 */
 	public inline function queueFuncOnce(beat:Float, callback:CallbackEvent->Void, field:Int = -1)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.scheduleCallback(beat, (event) -> callback(event)), field);
+	}
 
 	/**
 	 * NMV-style ranged callback. The callback receives the event and current beat.
 	 */
 	public inline function queueFunc(beat:Float, endBeat:Float, callback:CallbackEvent->Float->Void, field:Int = -1)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.repeater(beat, endBeat - beat, (event) -> callback(event, Adapter.instance.getCurrentBeat())), field);
+	}
 
 	/**
 	 * Schedules a callback to run once at a specific beat (alias for callback).
@@ -350,7 +439,10 @@ final class Manager extends FlxBasic {
 	 * @param field Optionally, the specific playfield to target.
 	 */
 	public inline function scheduleCallback(beat:Float, callback:Event->Void, field:Int = -1)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.scheduleCallback(beat, callback), field);
+	}
 
 	/**
 	 * Creates a node linking inputs and outputs to a function.
@@ -361,7 +453,10 @@ final class Manager extends FlxBasic {
 	 * @param field Optionally, the specific playfield to target.
 	 */
 	public inline function node(input:Array<String>, output:Array<String>, func:NodeFunction, field:Int = -1)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.node(input, output, func), field);
+	}
 
 	/**
 	 * Creates an alias for a given modifier.
@@ -371,13 +466,20 @@ final class Manager extends FlxBasic {
 	 * @param field The specific playfield to apply the alias to.
 	 */
 	public inline function alias(name:String, alias:String, field:Int)
+	{
+		requestRender();
 		iteratePlayfields((pf) -> pf.alias(name, alias), field);
+	}
 
 	/**
 	 * Creates and adds a new playfield to the Manager.
 	 */
-	public function addPlayfield(?name:String, ?beat:Float):Int {
-		if (beat != null && !Math.isNaN(beat)) {
+	public function addPlayfield(?name:String, ?beat:Float):Int
+	{
+		requestRender();
+
+		if (beat != null && !Math.isNaN(beat))
+		{
 			__scheduledPlayfieldOps.push({
 				beat: beat,
 				add: true,
@@ -389,7 +491,8 @@ final class Manager extends FlxBasic {
 			return -1;
 		}
 
-		if (name == null || name.trim().length <= 0) {
+		if (name == null || name.trim().length <= 0)
+		{
 			playfields.push(new PlayField());
 			return playfields.length - 1;
 		}
@@ -399,8 +502,15 @@ final class Manager extends FlxBasic {
 		return __findPlayfieldIndex(entry.playfield);
 	}
 
-	public function removePlayfield(field:Int, ?beat:Float):Bool {
-		if (beat != null && !Math.isNaN(beat)) {
+	public function removePlayfield(field:Int, ?beat:Float):Bool
+	{
+		if (field <= 0)
+			return false;
+
+		requestRender();
+
+		if (beat != null && !Math.isNaN(beat))
+		{
 			__scheduledPlayfieldOps.push({
 				beat: beat,
 				add: false,
@@ -413,12 +523,14 @@ final class Manager extends FlxBasic {
 		return __removePlayfieldAt(field);
 	}
 
-	public function removeNamedPlayfield(name:String, ?beat:Float):Bool {
+	public function removeNamedPlayfield(name:String, ?beat:Float):Bool
+	{
 		final key = __normalizePlayfieldName(name);
 		if (key == null)
 			return false;
 
-		if (beat != null && !Math.isNaN(beat)) {
+		if (beat != null && !Math.isNaN(beat))
+		{
 			__scheduledPlayfieldOps.push({
 				beat: beat,
 				add: false,
@@ -434,7 +546,9 @@ final class Manager extends FlxBasic {
 	/**
 	 * Adds a playfield to the Manager.
 	 */
-	public inline function appendPlayfield(playfield:PlayField) {
+	public inline function appendPlayfield(playfield:PlayField)
+	{
+		requestRender();
 		playfields.push(playfield);
 	}
 
@@ -443,7 +557,11 @@ final class Manager extends FlxBasic {
 	 *
 	 * @param elapsed The time elapsed since the last update.
 	 */
-	override function update(elapsed:Float):Void {
+	override function update(elapsed:Float):Void
+	{
+		if (!__primary)
+			return;
+
 		super.update(elapsed);
 
 		__frameToken++;
@@ -459,7 +577,19 @@ final class Manager extends FlxBasic {
 	/**
 	 * Draws all playfields, sorting them by z-order before drawing.
 	 */
-	override function draw():Void {
+	override function draw():Void
+	{
+		final shouldRender = __primary && shouldRenderModchart();
+
+		if (!shouldRender)
+		{
+			if (__wasRendering && renderer != null)
+				renderer.restoreSuppressedVisibility();
+			__wasRendering = false;
+			return;
+		}
+
+		__wasRendering = true;
 		var playerItems = Adapter.instance.getArrowItems();
 
 		if (playerItems == null)
@@ -467,19 +597,40 @@ final class Manager extends FlxBasic {
 		renderer.emit(playerItems, playfields);
 	}
 
+	private function shouldRenderModchart():Bool
+	{
+		final state = PlayState.instance;
+		if (state != null && (!state.modchartManagerEnabled || !state.modchartControlsStrumRender))
+			return false;
+
+		return __renderRequested || Config.RENDER_ARROW_PATHS || activePlayfieldCount > 1 || totalEventCount > 0;
+	}
+
 	/**
 	 * Destroys all playfields and cleans up.
 	 */
-	override function destroy():Void {
+	override function destroy():Void
+	{
 		super.destroy();
 
-		Adapter.instance.onModchartingDispose();
+		if (!__primary)
+		{
+			if (instance == this)
+				instance = null;
+			return;
+		}
+		__primary = false;
 
-		iteratePlayfields(pf -> {
+		if (Adapter.instance != null)
+			Adapter.instance.onModchartingDispose();
+
+		iteratePlayfields(pf ->
+		{
 			pf.destroy();
 		});
 
-		for (entry in __namedPlayfields) {
+		for (entry in __namedPlayfields)
+		{
 			if (!entry.active)
 				entry.playfield.destroy();
 		}
@@ -492,7 +643,8 @@ final class Manager extends FlxBasic {
 			instance = null;
 	}
 
-	private inline function __normalizePlayfieldName(name:Null<String>):Null<String> {
+	private inline function __normalizePlayfieldName(name:Null<String>):Null<String>
+	{
 		if (name == null)
 			return null;
 
@@ -500,7 +652,8 @@ final class Manager extends FlxBasic {
 		return trimmed.length > 0 ? trimmed.toLowerCase() : null;
 	}
 
-	private function __getOrCreateNamedPlayfield(name:String):ManagedPlayfield {
+	private function __getOrCreateNamedPlayfield(name:String):ManagedPlayfield
+	{
 		final key = __normalizePlayfieldName(name);
 		var entry = __namedPlayfields.get(key);
 		if (entry != null)
@@ -513,7 +666,8 @@ final class Manager extends FlxBasic {
 		return entry;
 	}
 
-	private function __activateNamedPlayfield(entry:ManagedPlayfield):Void {
+	private function __activateNamedPlayfield(entry:ManagedPlayfield):Void
+	{
 		if (entry == null || entry.active)
 			return;
 
@@ -521,15 +675,18 @@ final class Manager extends FlxBasic {
 		entry.active = true;
 	}
 
-	private function __findPlayfieldIndex(playfield:PlayField):Int {
-		for (index => entry in playfields) {
+	private function __findPlayfieldIndex(playfield:PlayField):Int
+	{
+		for (index => entry in playfields)
+		{
 			if (entry == playfield)
 				return index;
 		}
 		return -1;
 	}
 
-	private function __removePlayfieldAt(field:Int):Bool {
+	private function __removePlayfieldAt(field:Int):Bool
+	{
 		if (field < 0 || field >= playfields.length)
 			return false;
 
@@ -544,12 +701,14 @@ final class Manager extends FlxBasic {
 		return true;
 	}
 
-	private function __removeNamedPlayfieldNow(name:String):Bool {
+	private function __removeNamedPlayfieldNow(name:String):Bool
+	{
 		final entry = __namedPlayfields.get(name);
 		if (entry == null)
 			return false;
 
-		if (entry.active) {
+		if (entry.active)
+		{
 			final field = __findPlayfieldIndex(entry.playfield);
 			if (field != -1)
 				playfields[field] = null;
@@ -561,26 +720,37 @@ final class Manager extends FlxBasic {
 		return true;
 	}
 
-	private function __updateScheduledPlayfieldOps(curBeat:Float):Void {
+	private function __updateScheduledPlayfieldOps(curBeat:Float):Void
+	{
 		var index = 0;
-		while (index < __scheduledPlayfieldOps.length) {
+		while (index < __scheduledPlayfieldOps.length)
+		{
 			final operation = __scheduledPlayfieldOps[index];
-			if (curBeat < operation.beat) {
+			if (curBeat < operation.beat)
+			{
 				index++;
 				continue;
 			}
 
-			if (operation.add) {
-				if (operation.name == null) {
+			if (operation.add)
+			{
+				if (operation.name == null)
+				{
 					playfields.push(new PlayField());
-				} else {
+				}
+				else
+				{
 					final entry = __namedPlayfields.get(operation.name);
 					if (entry != null)
 						__activateNamedPlayfield(entry);
 				}
-			} else if (operation.name != null) {
+			}
+			else if (operation.name != null)
+			{
 				__removeNamedPlayfieldNow(operation.name);
-			} else {
+			}
+			else
+			{
 				__removePlayfieldAt(operation.field);
 			}
 
@@ -594,3 +764,4 @@ final class Manager extends FlxBasic {
 	public static var ARROW_SIZE:Float = 160 * 0.7;
 	public static var ARROW_SIZEDIV2:Float = (160 * 0.7) * 0.5;
 }
+

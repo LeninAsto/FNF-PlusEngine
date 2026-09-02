@@ -41,7 +41,7 @@ class MaterialTooltip extends FlxSpriteGroup
 	static inline var PADDING_V:Int = 4;
 	static inline var LABEL_SIZE:Int = 12;
 	static inline var HOVER_DELAY:Float = 0.5; // seconds before tooltip appears
-	static inline var HIDE_DELAY:Float = 1.5;  // seconds before auto-hiding
+	static inline var HIDE_DELAY:Float = 1.5; // seconds before auto-hiding
 
 	// State
 	var _wasHovering:Bool = false;
@@ -90,8 +90,10 @@ class MaterialTooltip extends FlxSpriteGroup
 
 	function _onThemeChange():Void
 	{
-		if (background != null) background.color = MD3Theme.inverseSurface;
-		if (messageText != null) messageText.color = MD3Theme.inverseOnSurface;
+		if (background != null)
+			background.color = MD3Theme.inverseSurface;
+		if (messageText != null)
+			messageText.color = MD3Theme.inverseOnSurface;
 	}
 
 	function drawRoundedRect(sprite:FlxSprite, width:Int, height:Int, radius:Int):Void
@@ -106,22 +108,26 @@ class MaterialTooltip extends FlxSpriteGroup
 				var inRect = true;
 				if (px < radius && py < radius)
 				{
-					var dx = radius - px; var dy = radius - py;
+					var dx = radius - px;
+					var dy = radius - py;
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px >= width - radius && py < radius)
 				{
-					var dx = px - (width - radius); var dy = radius - py;
+					var dx = px - (width - radius);
+					var dy = radius - py;
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px < radius && py >= height - radius)
 				{
-					var dx = radius - px; var dy = py - (height - radius);
+					var dx = radius - px;
+					var dy = py - (height - radius);
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px >= width - radius && py >= height - radius)
 				{
-					var dx = px - (width - radius); var dy = py - (height - radius);
+					var dx = px - (width - radius);
+					var dy = py - (height - radius);
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 
@@ -148,7 +154,8 @@ class MaterialTooltip extends FlxSpriteGroup
 
 	function showTooltip():Void
 	{
-		if (isVisible) return;
+		if (isVisible)
+			return;
 		isVisible = true;
 		visible = true;
 		_hideTimer = 0;
@@ -158,27 +165,38 @@ class MaterialTooltip extends FlxSpriteGroup
 		y = anchorY - _tooltipH - 4;
 
 		// Clamp inside screen
-		if (x < 4) x = 4;
-		if (x + _tooltipW > FlxG.width - 4) x = FlxG.width - _tooltipW - 4;
-		if (y < 4) y = anchorY + anchorH + 4; // flip below if too close to top
+		if (x < 4)
+			x = 4;
+		if (x + _tooltipW > FlxG.width - 4)
+			x = FlxG.width - _tooltipW - 4;
+		if (y < 4)
+			y = anchorY + anchorH + 4; // flip below if too close to top
 
-		if (showTween != null) showTween.cancel();
-		if (hideTween != null) hideTween.cancel();
+		if (showTween != null)
+			showTween.cancel();
+		if (hideTween != null)
+			hideTween.cancel();
 		showTween = FlxTween.tween(this, {alpha: 1}, 0.15, {ease: FlxEase.cubeOut});
 	}
 
 	function hideTooltip():Void
 	{
-		if (!isVisible) return;
+		if (!isVisible)
+			return;
 		isVisible = false;
 		hoverTimer = 0;
 		_hideTimer = 0;
 
-		if (showTween != null) showTween.cancel();
-		if (hideTween != null) hideTween.cancel();
+		if (showTween != null)
+			showTween.cancel();
+		if (hideTween != null)
+			hideTween.cancel();
 		hideTween = FlxTween.tween(this, {alpha: 0}, 0.12, {
 			ease: FlxEase.cubeIn,
-			onComplete: function(_) { visible = false; }
+			onComplete: function(_)
+			{
+				visible = false;
+			}
 		});
 	}
 
@@ -188,8 +206,7 @@ class MaterialTooltip extends FlxSpriteGroup
 
 		#if FLX_MOUSE
 		var mousePos = FlxG.mouse.getScreenPosition();
-		var isOverAnchor = mousePos.x >= anchorX && mousePos.x <= anchorX + anchorW
-			&& mousePos.y >= anchorY && mousePos.y <= anchorY + anchorH;
+		var isOverAnchor = mousePos.x >= anchorX && mousePos.x <= anchorX + anchorW && mousePos.y >= anchorY && mousePos.y <= anchorY + anchorH;
 
 		if (isOverAnchor)
 		{
@@ -216,7 +233,8 @@ class MaterialTooltip extends FlxSpriteGroup
 		{
 			_wasHovering = false;
 			hoverTimer = 0;
-			if (isVisible) hideTooltip();
+			if (isVisible)
+				hideTooltip();
 		}
 		#end
 	}
@@ -224,8 +242,11 @@ class MaterialTooltip extends FlxSpriteGroup
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(_onThemeChange);
-		if (showTween != null) showTween.cancel();
-		if (hideTween != null) hideTween.cancel();
+		if (showTween != null)
+			showTween.cancel();
+		if (hideTween != null)
+			hideTween.cancel();
 		super.destroy();
 	}
 }
+

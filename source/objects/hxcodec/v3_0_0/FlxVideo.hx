@@ -14,10 +14,12 @@ class FlxVideo extends HxvlcVideo
 {
 	// Variables
 	public var autoResize:Bool = true;
+
 	private var _shouldLoop:Bool = false;
 	private var _location:String = null;
 
 	public var onTextureSetup(get, never):Dynamic;
+
 	private function get_onTextureSetup():Dynamic
 	{
 		#if hxvlc
@@ -152,9 +154,21 @@ class FlxVideo
 		return false;
 	}
 
-	public function dispose():Void {}
-	public function pause():Void {}
-	public function resume():Void {}
-	public function stop():Void {}
+	public function dispose():Void
+	{
+	}
+
+	public function pause():Void
+	{
+	}
+
+	public function resume():Void
+	{
+	}
+
+	public function stop():Void
+	{
+	}
 }
 #end
+

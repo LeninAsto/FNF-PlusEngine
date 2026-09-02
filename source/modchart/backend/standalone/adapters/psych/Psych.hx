@@ -13,8 +13,12 @@ import flixel.FlxSprite;
 import modchart.backend.standalone.IAdapter;
 
 class Psych implements IAdapter {
-	private var __fCrochet:Float = 0;
+	private var holdStepLength:Float = 0;
 	private var __holdSubdivisions:Int = 0;
+	private var arrowItemsByPlayer:Array<Array<Array<FlxSprite>>> = [
+		[[], [], [], []],
+		[[], [], [], []]
+	];
 
 	inline function getEditorState():Dynamic {
 		return null; // ModchartEditorState.instance;
@@ -25,7 +29,7 @@ class Psych implements IAdapter {
 	public function onModchartingDispose() {}
 
 	public function onModchartingInitialization() {
-		__fCrochet = (Conductor.crochet + 8) / 4;
+		holdStepLength = (Conductor.crochet + 8) / 4;
 		__holdSubdivisions = 4;
 	}
 
@@ -166,7 +170,7 @@ class Psych implements IAdapter {
 	}
 
 	public function getHoldLength(item:FlxSprite):Float
-		return __fCrochet;
+		return holdStepLength;
 
 	public function getHoldParentTime(arrow:FlxSprite) {
 		final note:Note = cast arrow;
@@ -297,7 +301,15 @@ class Psych implements IAdapter {
 		}
 	     */
 
-		var pspr:Array<Array<Array<FlxSprite>>> = [[[], [], [], []], [[], [], [], []]];
+		var pspr = arrowItemsByPlayer;
+		for (playerItems in pspr)
+		{
+			if (playerItems == null)
+				continue;
+			for (bucket in playerItems)
+				if (bucket != null)
+					bucket.resize(0);
+		}
 
 		@:privateAccess
 		PlayState.instance.strumLineNotes.forEachAlive(strumNote -> {

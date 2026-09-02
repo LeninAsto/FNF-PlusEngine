@@ -26,6 +26,7 @@ class DialogueBox extends FlxSpriteGroup
 	var skipText:FlxText;
 
 	var songName:String = Paths.formatToSongPath(Song.loadedSongName);
+
 	public function new(talkingRight:Bool = true, ?dialogueList:Array<String>)
 	{
 		super();
@@ -43,7 +44,7 @@ class DialogueBox extends FlxSpriteGroup
 		}, 5);
 
 		box = new FlxSprite(-20, 45);
-		
+
 		var hasDialog = true;
 		switch (songName)
 		{
@@ -68,10 +69,10 @@ class DialogueBox extends FlxSpriteGroup
 		}
 
 		this.dialogueList = dialogueList;
-		
+
 		if (!hasDialog)
 			return;
-		
+
 		portraitLeft = new FlxSprite(-20, 40);
 		portraitLeft.frames = Paths.getSparrowAtlas('weeb/senpaiPortrait');
 		portraitLeft.animation.addByPrefix('enter', 'Senpai Portrait Enter', 24, false);
@@ -89,7 +90,7 @@ class DialogueBox extends FlxSpriteGroup
 		portraitRight.scrollFactor.set();
 		add(portraitRight);
 		portraitRight.visible = false;
-		
+
 		box.animation.play('normalOpen');
 		box.setGraphicSize(Std.int(box.width * PlayState.daPixelZoom * 0.9));
 		box.updateHitbox();
@@ -128,7 +129,7 @@ class DialogueBox extends FlxSpriteGroup
 		// HARD CODING CUZ IM STUPDI
 		super.update(elapsed);
 
-		switch(songName)
+		switch (songName)
 		{
 			case 'roses':
 				portraitLeft.visible = false;
@@ -150,7 +151,7 @@ class DialogueBox extends FlxSpriteGroup
 			dialogueStarted = true;
 		}
 
-		if(#if android FlxG.android.justReleased.BACK || #end Controls.instance.BACK)
+		if (#if android FlxG.android.justReleased.BACK || #end Controls.instance.BACK)
 		{
 			if (dialogueStarted && !isEnding)
 			{
@@ -158,7 +159,7 @@ class DialogueBox extends FlxSpriteGroup
 				FlxG.sound.play(Paths.sound('clickText'), 0.8);
 			}
 		}
-		else if(TouchUtil.justPressed || Controls.instance.ACCEPT)
+		else if (TouchUtil.justPressed || Controls.instance.ACCEPT)
 		{
 			if (dialogueEnded)
 			{
@@ -178,8 +179,9 @@ class DialogueBox extends FlxSpriteGroup
 			{
 				FlxG.sound.play(Paths.sound('clickText'), 0.8);
 				swagDialogue.skip();
-				
-				if(skipDialogueThing != null) {
+
+				if (skipDialogueThing != null)
+				{
 					skipDialogueThing();
 				}
 			}
@@ -187,10 +189,11 @@ class DialogueBox extends FlxSpriteGroup
 	}
 
 	var isEnding:Bool = false;
+
 	function dialogueCompleted()
 	{
 		isEnding = true;
-		FlxG.sound.play(Paths.sound('clickText'), 0.8);	
+		FlxG.sound.play(Paths.sound('clickText'), 0.8);
 
 		if (songName == 'senpai' || songName == 'thorns')
 			FlxG.sound.music.fadeOut(1.5, 0, (_) -> FlxG.sound.music.stop());
@@ -224,7 +227,8 @@ class DialogueBox extends FlxSpriteGroup
 		// swagDialogue.text = ;
 		swagDialogue.resetText(dialogueList[0]);
 		swagDialogue.start(0.04, true);
-		swagDialogue.completeCallback = function() {
+		swagDialogue.completeCallback = function()
+		{
 			handSelect.visible = true;
 			dialogueEnded = true;
 		};
@@ -237,7 +241,8 @@ class DialogueBox extends FlxSpriteGroup
 				portraitRight.visible = false;
 				if (!portraitLeft.visible)
 				{
-					if (songName == 'senpai') portraitLeft.visible = true;
+					if (songName == 'senpai')
+						portraitLeft.visible = true;
 					portraitLeft.animation.play('enter');
 				}
 			case 'bf':
@@ -248,7 +253,7 @@ class DialogueBox extends FlxSpriteGroup
 					portraitRight.animation.play('enter');
 				}
 		}
-		if(nextDialogueThing != null)
+		if (nextDialogueThing != null)
 			nextDialogueThing();
 	}
 
@@ -259,3 +264,4 @@ class DialogueBox extends FlxSpriteGroup
 		dialogueList[0] = dialogueList[0].substr(splitName[1].length + 2).trim();
 	}
 }
+

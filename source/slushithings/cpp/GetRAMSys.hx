@@ -47,6 +47,7 @@ import cpp.UInt64;
 ')
 #end
 #end
+
 /**
  * Cross-platform RAM detection system
  * Detects the TOTAL PHYSICAL RAM installed in the system
@@ -100,6 +101,7 @@ class GetRAMSys
 	return value / 1024 / 1024;
 	')
 	#end
+
 	/**
 	 * Obtains the total physical RAM installed in the system
 	 * @return Total RAM in Megabytes (MB), or -1 if error
@@ -110,3 +112,4 @@ class GetRAMSys
 	}
 	#end
 }
+

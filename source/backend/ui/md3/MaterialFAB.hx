@@ -25,10 +25,12 @@ class MaterialFAB extends FlxSpriteGroup
 	public var fabSize:FABSize = REGULAR;
 
 	// Visual components
-	var container:FlxSprite;
+	var containerSprite:FlxSprite;
 	var shadow:FlxSprite;
 	var stateLayer:FlxSprite;
+
 	public var iconSprite:FlxSprite;
+
 	var labelText:FlxText; // Extended FAB only
 
 	// Dimensions (MD3)
@@ -70,7 +72,7 @@ class MaterialFAB extends FlxSpriteGroup
 
 		if (isExtended)
 		{
-			// Extended FAB: measure label and build a pill-shaped container
+			// Extended FAB: measure label and build a pill-shaped containerSprite
 			var tempLabel = new FlxText(0, 0, 0, label, LABEL_SIZE);
 			var labelW = Std.int(tempLabel.width);
 			tempLabel.destroy();
@@ -93,12 +95,12 @@ class MaterialFAB extends FlxSpriteGroup
 		shadow.color = MD3Theme.shadowColor();
 		add(shadow);
 
-		// Container
-		container = new FlxSprite(0, 0);
-		container.makeGraphic(containerW, containerH, MD3Theme.tertiaryContainer);
-		drawRoundedRect(container, containerW, containerH, cornerRadius);
-		container.color = MD3Theme.tertiaryContainer;
-		add(container);
+		// containerSprite
+		containerSprite = new FlxSprite(0, 0);
+		containerSprite.makeGraphic(containerW, containerH, MD3Theme.tertiaryContainer);
+		drawRoundedRect(containerSprite, containerW, containerH, cornerRadius);
+		containerSprite.color = MD3Theme.tertiaryContainer;
+		add(containerSprite);
 
 		// State layer
 		stateLayer = new FlxSprite(0, 0);
@@ -139,22 +141,26 @@ class MaterialFAB extends FlxSpriteGroup
 				var inRect = true;
 				if (px < radius && py < radius)
 				{
-					var dx = radius - px; var dy = radius - py;
+					var dx = radius - px;
+					var dy = radius - py;
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px >= width - radius && py < radius)
 				{
-					var dx = px - (width - radius); var dy = radius - py;
+					var dx = px - (width - radius);
+					var dy = radius - py;
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px < radius && py >= height - radius)
 				{
-					var dx = radius - px; var dy = py - (height - radius);
+					var dx = radius - px;
+					var dy = py - (height - radius);
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 				else if (px >= width - radius && py >= height - radius)
 				{
-					var dx = px - (width - radius); var dy = py - (height - radius);
+					var dx = px - (width - radius);
+					var dy = py - (height - radius);
 					inRect = (dx * dx + dy * dy) <= radius * radius;
 				}
 
@@ -168,7 +174,8 @@ class MaterialFAB extends FlxSpriteGroup
 	{
 		super.update(elapsed);
 
-		if (!enabled) return;
+		if (!enabled)
+			return;
 
 		#if FLX_MOUSE
 		var sizeKey = Std.string(fabSize);
@@ -179,30 +186,46 @@ class MaterialFAB extends FlxSpriteGroup
 		if (isOver && !isHovered)
 		{
 			isHovered = true;
-			if (hoverTween != null) hoverTween.cancel();
+			if (hoverTween != null)
+				hoverTween.cancel();
 			stateLayer.color = MD3Theme.stateLayerColor(MD3Theme.onTertiaryContainer);
-			hoverTween = FlxTween.num(stateLayer.alpha, 1, 0.15, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			hoverTween = FlxTween.num(stateLayer.alpha, 1, 0.15, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 		else if (!isOver && isHovered)
 		{
 			isHovered = false;
-			if (hoverTween != null) hoverTween.cancel();
-			hoverTween = FlxTween.num(stateLayer.alpha, 0, 0.15, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			if (hoverTween != null)
+				hoverTween.cancel();
+			hoverTween = FlxTween.num(stateLayer.alpha, 0, 0.15, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 
 		if (FlxG.mouse.pressed && isOver && !isPressed)
 		{
 			isPressed = true;
-			if (pressTween != null) pressTween.cancel();
+			if (pressTween != null)
+				pressTween.cancel();
 			stateLayer.color = MD3Theme.stateLayerColor(MD3Theme.onTertiaryContainer, true);
-			pressTween = FlxTween.num(stateLayer.alpha, 1, 0.1, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			pressTween = FlxTween.num(stateLayer.alpha, 1, 0.1, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 		else if (!FlxG.mouse.pressed && isPressed)
 		{
 			isPressed = false;
-			if (pressTween != null) pressTween.cancel();
-				stateLayer.color = isHovered ? MD3Theme.stateLayerColor(MD3Theme.onTertiaryContainer) : FlxColor.TRANSPARENT;
-			pressTween = FlxTween.num(stateLayer.alpha, isHovered ? 1.0 : 0.0, 0.1, {ease: FlxEase.cubeOut}, function(v) { stateLayer.alpha = v; });
+			if (pressTween != null)
+				pressTween.cancel();
+			stateLayer.color = isHovered ? MD3Theme.stateLayerColor(MD3Theme.onTertiaryContainer) : FlxColor.TRANSPARENT;
+			pressTween = FlxTween.num(stateLayer.alpha, isHovered ? 1.0 : 0.0, 0.1, {ease: FlxEase.cubeOut}, function(v)
+			{
+				stateLayer.alpha = v;
+			});
 		}
 
 		if (FlxG.mouse.justReleased && isOver && onClick != null)
@@ -212,17 +235,23 @@ class MaterialFAB extends FlxSpriteGroup
 
 	function _onThemeChange():Void
 	{
-		if (shadow != null) shadow.color = MD3Theme.shadowColor();
-		if (container != null) container.color = MD3Theme.tertiaryContainer;
-		if (iconSprite != null) iconSprite.color = MD3Theme.onTertiaryContainer;
-		if (labelText != null) labelText.color = MD3Theme.onTertiaryContainer;
+		if (shadow != null)
+			shadow.color = MD3Theme.shadowColor();
+		if (containerSprite != null)
+			containerSprite.color = MD3Theme.tertiaryContainer;
+		if (iconSprite != null)
+			iconSprite.color = MD3Theme.onTertiaryContainer;
+		if (labelText != null)
+			labelText.color = MD3Theme.onTertiaryContainer;
 	}
 
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(_onThemeChange);
-		if (hoverTween != null) hoverTween.cancel();
-		if (pressTween != null) pressTween.cancel();
+		if (hoverTween != null)
+			hoverTween.cancel();
+		if (pressTween != null)
+			pressTween.cancel();
 		super.destroy();
 	}
 }
@@ -233,3 +262,4 @@ enum FABSize
 	REGULAR;
 	LARGE;
 }
+

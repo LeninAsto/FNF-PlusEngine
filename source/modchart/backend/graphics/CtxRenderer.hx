@@ -1,7 +1,7 @@
 package modchart.backend.graphics;
 
 import flixel.FlxBasic;
-import flixel.FlxCamera;
+import flixel.FlxObject;
 import flixel.graphics.FlxGraphic;
 import flixel.graphics.tile.FlxDrawTrianglesItem;
 import flixel.math.FlxPoint;
@@ -10,10 +10,12 @@ import flixel.system.FlxAssets.FlxShader;
 import flixel.util.FlxSignal;
 import flixel.util.FlxSort;
 import haxe.ds.IntMap;
+import haxe.ds.ObjectMap;
 import haxe.ds.Vector;
 import modchart.backend.graphics.renderers.*;
 import modchart.engine.PlayField;
 import openfl.display.BlendMode;
+import openfl.geom.ColorTransform;
 
 using modchart.backend.util.SortUtil;
 
@@ -31,6 +33,11 @@ class CtxRenderer {
 
 	var queue:Vector<DrawCommand>;
 	var count:Int = 0;
+	var capacity:Int = 0;
+	var suppressedVisibility:ObjectMap<FlxObject, Bool> = new ObjectMap();
+	var suppressedObjects:Array<FlxObject> = [];
+	var cameraColorTransform:ColorTransform = new ColorTransform();
+	var cameraGradientTransforms:NativeVector<ColorTransform> = new NativeVector<ColorTransform>(0);
 
 	/** Debug stats — populated each frame by emit(). */
 	public var dbgDrawCmds:Int = 0;
@@ -48,7 +55,17 @@ class CtxRenderer {
 	public var dbgPathQuality:Float = 1.0;
 
 	public function alloc(n:Int) {
-		queue = new Vector<DrawCommand>(n);
+		if (queue != null)
+		{
+			for (i in 0...count)
+				queue[i] = null;
+		}
+
+		if (queue == null || n > capacity)
+		{
+			queue = new Vector<DrawCommand>(n);
+			capacity = n;
+		}
 		count = 0;
 	}
 
@@ -74,6 +91,16 @@ class CtxRenderer {
 		if (dc != null)
 			dc.zIndex = Std.int(item._z * 1000) + 1;
 		return dc;
+	}
+
+	private inline function isInsideModchartSpawnTime(item:FlxSprite, playfield:PlayField, songPos:Float):Bool {
+		if (item == null || playfield == null)
+			return false;
+
+		final player = Adapter.instance.getPlayerFromArrow(item);
+		final spawnTime = Math.max(0, playfield.getPercent('spawnTime', player));
+		final renderAhead = spawnTime > 0 ? spawnTime : 2000;
+		return Adapter.instance.getTimeFromArrow(item) - songPos <= renderAhead + 16;
 	}
 
 	var emptyVec:openfl.Vector<Int> = new openfl.Vector<Int>(8, true, [for (i in 0...8) 0]);
@@ -153,7 +180,7 @@ class CtxRenderer {
 				attachmentCount = attachmentCount + curItems[3].length;
 		}
 
-		pathCount = receptorCount;
+		pathCount = Config.RENDER_ARROW_PATHS ? receptorCount : 0;
 
 		if (collectDebugStats)
 		{
@@ -180,6 +207,7 @@ class CtxRenderer {
 				continue;
 
 			ctx = playfield.context;
+			final songPos = Adapter.instance.getSongPosition();
 
 			for (player in 0...items.length) {
 				var curItems:Array<Array<FlxSprite>> = items[player];
@@ -191,8 +219,6 @@ class CtxRenderer {
 				if (pathCount > 0) {
 					// iterate through receptors, yes
 					for (receptor in curItems[0]) {
-						if (!getVisibility(receptor))
-							continue;
 						var _ = emitPathCmd(receptor);
 						if (_ != null) {
 							if (collectDebugStats)
@@ -205,6 +231,8 @@ class CtxRenderer {
 				final drawHolds = () -> {
 					if (holdCount > 0) {
 						for (hold in curItems[2]) {
+							if (!isInsideModchartSpawnTime(hold, playfield, songPos))
+								continue;
 							if (!getVisibility(hold))
 								continue;
 							var _ = emitHoldCmd(hold);
@@ -237,6 +265,8 @@ class CtxRenderer {
 				// tap arrow
 				if (arrowCount > 0) {
 					for (arrow in curItems[1]) {
+						if (!isInsideModchartSpawnTime(arrow, playfield, songPos))
+							continue;
 						if (!getVisibility(arrow))
 							continue;
 
@@ -261,7 +291,7 @@ class CtxRenderer {
 			}
 		}
 
-		queue.nullSort((a, b) -> return b.zIndex - a.zIndex);
+		sortActiveQueue();
 
 		var i = 0;
 		while (i < count) {
@@ -271,7 +301,7 @@ class CtxRenderer {
 				continue;
 			}
 			for (camera in item.cameras) {
-				if (camera == null)
+				if (camera == null || !camera.exists || !camera.visible || camera.alpha <= 0.0001)
 					continue;
 				var dc = camera.startTrianglesBatch(item.graphic, item.antialiasing, item.isColored, item.blend, item.hasColorOffsets, item.shader);
 				if (dc == null)
@@ -283,17 +313,19 @@ class CtxRenderer {
 				}
 				cameraBounds.set(camera.viewMarginLeft, camera.viewMarginTop, camera.viewWidth, camera.viewHeight);
 
-				final scrollFactorX = item.parent != null ? item.parent.scrollFactor.x : 0;
-				final scrollFactorY = item.parent != null ? item.parent.scrollFactor.y : 0;
+				final scrollFactor = item.parent != null ? item.parent.scrollFactor : null;
+				final scrollFactorX = scrollFactor != null ? scrollFactor.x : 0;
+				final scrollFactorY = scrollFactor != null ? scrollFactor.y : 0;
 				final cameraScrollX = camera.scroll != null ? camera.scroll.x : 0;
 				final cameraScrollY = camera.scroll != null ? camera.scroll.y : 0;
 				final point = FlxPoint.weak(cameraScrollX * -scrollFactorX, cameraScrollY * -scrollFactorY);
 
 				if (item.color != null)
 					dc.addTriangles(item.vertices, item.indices, item.uvs, emptyVec, point, cameraBounds,
-						item.color);
+						getCameraColorTransform(item.color, camera.alpha));
 				else if (item.colors != null)
-					dc.addGradientTriangles(item.vertices, item.indices, item.uvs, point, cameraBounds, item.colors);
+					dc.addGradientTriangles(item.vertices, item.indices, item.uvs, point, cameraBounds,
+						getCameraGradientTransforms(item.colors, camera.alpha));
 			}
 			i++;
 		}
@@ -302,8 +334,22 @@ class CtxRenderer {
 	}
 
 	public function append(dc:DrawCommand) {
+		if (dc == null || ctx == null || ctx.parent == null || dc.vertices == null || dc.indices == null || dc.uvs == null)
+			return;
+
 		@:privateAccess
-		queue[count++] = ctx.parent.transformCmd(dc);
+		var transformed = ctx.parent.transformCmd(dc);
+		if (transformed == null)
+			return;
+		if (count >= capacity)
+		{
+			final nextCapacity = capacity + 64;
+			var grown = new Vector<DrawCommand>(nextCapacity);
+			Vector.blit(queue, 0, grown, 0, capacity);
+			queue = grown;
+			capacity = nextCapacity;
+		}
+		queue[count++] = transformed;
 		if (collectDebugStats)
 		{
 			dbgDrawCmds++;
@@ -311,10 +357,107 @@ class CtxRenderer {
 		}
 	}
 
+	private function getCameraColorTransform(source:ColorTransform, cameraAlpha:Float):ColorTransform {
+		if (cameraAlpha >= 0.999)
+			return source;
+
+		cameraColorTransform.redMultiplier = source.redMultiplier;
+		cameraColorTransform.greenMultiplier = source.greenMultiplier;
+		cameraColorTransform.blueMultiplier = source.blueMultiplier;
+		cameraColorTransform.alphaMultiplier = source.alphaMultiplier * cameraAlpha;
+		cameraColorTransform.redOffset = source.redOffset;
+		cameraColorTransform.greenOffset = source.greenOffset;
+		cameraColorTransform.blueOffset = source.blueOffset;
+		cameraColorTransform.alphaOffset = source.alphaOffset;
+		return cameraColorTransform;
+	}
+
+	private function getCameraGradientTransforms(source:NativeVector<ColorTransform>, cameraAlpha:Float):NativeVector<ColorTransform> {
+		if (cameraAlpha >= 0.999)
+			return source;
+
+		if (cameraGradientTransforms == null || cameraGradientTransforms.length != source.length)
+		{
+			cameraGradientTransforms = new NativeVector<ColorTransform>(source.length);
+			for (i in 0...source.length)
+				cameraGradientTransforms[i] = new ColorTransform();
+		}
+
+		for (i in 0...source.length)
+		{
+			final from = source[i];
+			var to = cameraGradientTransforms[i];
+			if (to == null)
+			{
+				to = new ColorTransform();
+				cameraGradientTransforms[i] = to;
+			}
+
+			if (from == null)
+			{
+				to.redMultiplier = 1;
+				to.greenMultiplier = 1;
+				to.blueMultiplier = 1;
+				to.alphaMultiplier = cameraAlpha;
+				to.redOffset = 0;
+				to.greenOffset = 0;
+				to.blueOffset = 0;
+				to.alphaOffset = 0;
+				continue;
+			}
+
+			to.redMultiplier = from.redMultiplier;
+			to.greenMultiplier = from.greenMultiplier;
+			to.blueMultiplier = from.blueMultiplier;
+			to.alphaMultiplier = from.alphaMultiplier * cameraAlpha;
+			to.redOffset = from.redOffset;
+			to.greenOffset = from.greenOffset;
+			to.blueOffset = from.blueOffset;
+			to.alphaOffset = from.alphaOffset;
+		}
+
+		return cameraGradientTransforms;
+	}
+
+	private function sortActiveQueue():Void {
+		var i = 1;
+		while (i < count) {
+			var current = queue[i];
+			var j = i - 1;
+			while (j >= 0 && queue[j] != null && current != null && queue[j].zIndex < current.zIndex) {
+				queue[j + 1] = queue[j];
+				j--;
+			}
+			queue[j + 1] = current;
+			i++;
+		}
+	}
+
 	private function getVisibility(obj:flixel.FlxObject) {
+		if (obj == null)
+			return false;
+
+		if (!suppressedVisibility.exists(obj))
+		{
+			suppressedVisibility.set(obj, obj.visible);
+			suppressedObjects.push(obj);
+		}
+
 		@:bypassAccessor obj.visible = false;
 		return obj._fmVisible;
 	}
 
-	public function dispose() {}
+	public function restoreSuppressedVisibility():Void {
+		for (obj in suppressedObjects)
+		{
+			if (obj != null && suppressedVisibility.exists(obj))
+				@:bypassAccessor obj.visible = suppressedVisibility.get(obj);
+		}
+		suppressedObjects.resize(0);
+		suppressedVisibility = new ObjectMap();
+	}
+
+	public function dispose() {
+		restoreSuppressedVisibility();
+	}
 }

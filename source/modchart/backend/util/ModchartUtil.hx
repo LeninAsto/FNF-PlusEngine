@@ -35,30 +35,50 @@ using StringTools;
 	@:pure
 	inline public static function resolveCameras(playfield:modchart.engine.PlayField, item:FlxSprite):Array<FlxCamera> {
 		@:privateAccess
-		var playfieldCameras = #if (flixel >= "5.7.0") playfield.getCameras() #else playfield._cameras #end;
+		var playfieldCameras = playfield._cameras;
 
 		@:privateAccess
-		var cameras = #if (flixel >= "5.7.0") item.getCameras() #else item._cameras #end;
-
-		// fallback to def arrow cameras
-		if (cameras == null || cameras.length == 0) {
-			if (playfieldCameras == null || playfieldCameras.length == 0)
-				cameras = Adapter.instance.getArrowCamera();
-			else
-				cameras = playfieldCameras;
-		}
-
-		if (cameras == null || cameras.length == 0)
-			cameras = FlxG.cameras.list;
-
-		if (cameras == null || cameras.length == 0)
-			return [];
+		var cameras = item._cameras;
 
 		var filtered:Array<FlxCamera> = [];
-		for (camera in cameras)
+		if (cameras != null)
 		{
-			if (camera != null)
-				filtered.push(camera);
+			for (camera in cameras)
+			{
+				if (camera != null)
+					filtered.push(camera);
+			}
+		}
+
+		if (filtered.length == 0 && playfieldCameras != null)
+		{
+			for (camera in playfieldCameras)
+			{
+				if (camera != null)
+					filtered.push(camera);
+			}
+		}
+
+		if (filtered.length == 0)
+		{
+			final arrowCameras = Adapter.instance.getArrowCamera();
+			if (arrowCameras != null)
+			{
+				for (camera in arrowCameras)
+				{
+					if (camera != null)
+						filtered.push(camera);
+				}
+			}
+		}
+
+		if (filtered.length == 0 && FlxG.cameras.list != null)
+		{
+			for (camera in FlxG.cameras.list)
+			{
+				if (camera != null)
+					filtered.push(camera);
+			}
 		}
 
 		return filtered;

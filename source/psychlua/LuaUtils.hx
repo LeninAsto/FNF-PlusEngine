@@ -5,6 +5,7 @@ import objects.Character;
 import objects.Note;
 import backend.StageData;
 
+import flixel.FlxBasic;
 import openfl.display.BlendMode;
 import Type.ValueType;
 
@@ -436,8 +437,8 @@ class LuaUtils
 
 	public static function destroyObject(tag:String) {
 		var variables = MusicBeatState.getVariables();
-		var obj:FlxSprite = variables.get(tag);
-		if(obj == null || obj.destroy == null)
+		var obj:Dynamic = variables.get(tag);
+		if(obj == null || !Std.isOfType(obj, FlxBasic) || obj.destroy == null)
 			return;
 
 		LuaUtils.getTargetInstance().remove(obj, true);
@@ -445,16 +446,75 @@ class LuaUtils
 		variables.remove(tag);
 	}
 
-	public static function cancelTween(tag:String) {
-		if(!tag.startsWith('tween_')) tag = 'tween_' + LuaUtils.formatVariable(tag);
+	static inline function normalizeTweenTag(tag:String):String {
+		var formatted:String = formatVariable(tag);
+		return formatted.startsWith('tween_') ? formatted.substr('tween_'.length) : formatted;
+	}
+
+	public static function storeTween(tag:String, tween:FlxTween):String {
+		if(tag == null || tween == null) return null;
+
+		var rawTag:String = normalizeTweenTag(tag);
+		var prefixedTag:String = 'tween_' + rawTag;
+		#if LUA_ALLOWED
+		if(PlayState.instance != null)
+			PlayState.instance.modchartTweens.set(rawTag, tween);
+		#end
+		MusicBeatState.getVariables().set(prefixedTag, tween);
+		return rawTag;
+	}
+
+	public static function removeTween(tag:String):Void {
+		if(tag == null) return;
+
+		var rawTag:String = normalizeTweenTag(tag);
+		var prefixedTag:String = 'tween_' + rawTag;
+		#if LUA_ALLOWED
+		if(PlayState.instance != null)
+		{
+			PlayState.instance.modchartTweens.remove(rawTag);
+			PlayState.instance.modchartTweens.remove(prefixedTag);
+		}
+		#end
 		var variables = MusicBeatState.getVariables();
-		var twn:FlxTween = variables.get(tag);
-		if(twn != null)
+		var rawValue:Dynamic = variables.get(rawTag);
+		if(Std.isOfType(rawValue, FlxTween))
+			variables.remove(rawTag);
+		variables.remove(prefixedTag);
+	}
+
+	public static function cancelTween(tag:String) {
+		if(tag == null) return;
+
+		var rawTag:String = normalizeTweenTag(tag);
+		var prefixedTag:String = 'tween_' + rawTag;
+		var found:Array<FlxTween> = [];
+		#if LUA_ALLOWED
+		if(PlayState.instance != null)
+		{
+			var legacyTween:FlxTween = PlayState.instance.modchartTweens.get(rawTag);
+			if(legacyTween != null) found.push(legacyTween);
+
+			var prefixedTween:FlxTween = PlayState.instance.modchartTweens.get(prefixedTag);
+			if(prefixedTween != null && found.indexOf(prefixedTween) < 0) found.push(prefixedTween);
+		}
+		#end
+
+		var variables = MusicBeatState.getVariables();
+		var rawValue:Dynamic = variables.get(rawTag);
+		if(Std.isOfType(rawValue, FlxTween) && found.indexOf(rawValue) < 0)
+			found.push(rawValue);
+
+		var tweenValue:Dynamic = variables.get(prefixedTag);
+		if(Std.isOfType(tweenValue, FlxTween) && found.indexOf(tweenValue) < 0)
+			found.push(tweenValue);
+
+		for(twn in found)
 		{
 			twn.cancel();
 			twn.destroy();
-			variables.remove(tag);
 		}
+		removeTween(rawTag);
 	}
 
 	public static function cancelTimer(tag:String) {
@@ -533,60 +593,60 @@ class LuaUtils
 
 	public static function getTweenEaseByString(?ease:String = '') {
 		switch(ease.toLowerCase().trim()) {
-			case 'accelerate': return FlxEase.accelerate;
+			case 'accelerate': return FlxEase.quadIn;
 			case 'backin': return FlxEase.backIn;
 			case 'backinout': return FlxEase.backInOut;
 			case 'backout': return FlxEase.backOut;
-			case 'backoutin': return FlxEase.backOutIn;
-			case 'bell': return FlxEase.bell;
-			case 'bounce': return FlxEase.bounce;
+			case 'backoutin': return FlxEase.backInOut;
+			case 'bell': return FlxEase.sineInOut;
+			case 'bounce': return FlxEase.bounceOut;
 			case 'bouncein': return FlxEase.bounceIn;
 			case 'bounceinout': return FlxEase.bounceInOut;
 			case 'bounceout': return FlxEase.bounceOut;
-			case 'bounceoutin': return FlxEase.bounceOutIn;
+			case 'bounceoutin': return FlxEase.bounceInOut;
 			case 'circin': return FlxEase.circIn;
 			case 'circinout': return FlxEase.circInOut;
 			case 'circout': return FlxEase.circOut;
-			case 'circoutin': return FlxEase.circOutIn;
+			case 'circoutin': return FlxEase.circInOut;
 			case 'cubein': return FlxEase.cubeIn;
 			case 'cubeinout': return FlxEase.cubeInOut;
 			case 'cubeout': return FlxEase.cubeOut;
-			case 'cubicoutin': return FlxEase.cubicOutIn;
-			case 'decelerate': return FlxEase.decelerate;
+			case 'cubicoutin': return FlxEase.cubeInOut;
+			case 'decelerate': return FlxEase.quadOut;
 			case 'elasticin': return FlxEase.elasticIn;
 			case 'elasticinout': return FlxEase.elasticInOut;
 			case 'elasticout': return FlxEase.elasticOut;
-			case 'elasticoutin': return FlxEase.elasticOutIn;
-			case 'emphasizedaccelerate': return FlxEase.emphasizedAccelerate;
-			case 'emphasizeddecelerate': return FlxEase.emphasizedDecelerate;
+			case 'elasticoutin': return FlxEase.elasticInOut;
+			case 'emphasizedaccelerate': return FlxEase.quartIn;
+			case 'emphasizeddecelerate': return FlxEase.quartOut;
 			case 'expoin': return FlxEase.expoIn;
 			case 'expoinout': return FlxEase.expoInOut;
 			case 'expoout': return FlxEase.expoOut;
-			case 'expooutin': return FlxEase.expoOutIn;
-			case 'instant': return FlxEase.instant;
-			case 'inverse': return FlxEase.inverse;
-			case 'pop': return FlxEase.pop;
-			case 'tap': return FlxEase.tap;
-			case 'pulse': return FlxEase.pulse;
-			case 'spike': return FlxEase.spike;
-			case 'standard': return FlxEase.standard;
-			case 'tri': return FlxEase.tri;
+			case 'expooutin': return FlxEase.expoInOut;
+			case 'instant': return FlxEase.linear;
+			case 'inverse': return FlxEase.quadOut;
+			case 'pop': return FlxEase.backOut;
+			case 'tap': return FlxEase.quadInOut;
+			case 'pulse': return FlxEase.sineInOut;
+			case 'spike': return FlxEase.quadInOut;
+			case 'standard': return FlxEase.quadInOut;
+			case 'tri': return FlxEase.sineInOut;
 			case 'quadin': return FlxEase.quadIn;
 			case 'quadinout': return FlxEase.quadInOut;
 			case 'quadout': return FlxEase.quadOut;
-			case 'quadoutin': return FlxEase.quadOutIn;
+			case 'quadoutin': return FlxEase.quadInOut;
 			case 'quartin': return FlxEase.quartIn;
 			case 'quartinout': return FlxEase.quartInOut;
 			case 'quartout': return FlxEase.quartOut;
-			case 'quartoutin': return FlxEase.quartOutIn;
+			case 'quartoutin': return FlxEase.quartInOut;
 			case 'quintin': return FlxEase.quintIn;
 			case 'quintinout': return FlxEase.quintInOut;
 			case 'quintout': return FlxEase.quintOut;
-			case 'quintoutin': return FlxEase.quintOutIn;
+			case 'quintoutin': return FlxEase.quintInOut;
 			case 'sinein': return FlxEase.sineIn;
 			case 'sineinout': return FlxEase.sineInOut;
 			case 'sineout': return FlxEase.sineOut;
-			case 'sineoutin': return FlxEase.sineOutIn;
+			case 'sineoutin': return FlxEase.sineInOut;
 			case 'smoothstepin': return FlxEase.smoothStepIn;
 			case 'smoothstepinout': return FlxEase.smoothStepInOut;
 			case 'smoothstepout': return FlxEase.smoothStepOut;

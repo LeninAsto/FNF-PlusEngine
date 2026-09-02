@@ -41,16 +41,17 @@ class MaterialLoadingIndicator extends FlxSpriteGroup
 	var _lastSecondary:Float = -1;
 	var _lastSoftness:Float = -1;
 	var _lastPhase:Float = -1;
+	var _drawShape:Shape = new Shape();
 
 	// Circular shape family. Each turn advances to the next preset.
 	// The sequence now mixes rounded blobs, ovals, and triangular silhouettes.
-	static var LOBES:Array<Int> =       [0, 4, 6, 7, 3, 5, 8, 3];
+	static var LOBES:Array<Int> = [0, 4, 6, 7, 3, 5, 8, 3];
 	static var AMPLITUDES:Array<Float> = [0.00, 0.16, 0.12, 0.10, 0.08, 0.12, 0.14, 0.09];
-	static var SECONDARY:Array<Float> =  [0.00, 0.02, 0.03, 0.02, 0.01, 0.03, 0.04, 0.01];
-	static var SOFTNESS:Array<Float> =   [1.00, 0.94, 0.96, 0.97, 0.98, 0.92, 0.90, 0.99];
-	static var PHASE_OFF:Array<Float> =  [0.00, 0.78, 0.35, 0.18, 0.00, 0.64, 0.30, 0.00];
-	static var SCALE_X:Array<Float> =    [1.00, 1.00, 1.18, 0.96, 1.00, 1.22, 0.92, 1.00];
-	static var SCALE_Y:Array<Float> =    [1.00, 1.00, 0.78, 1.08, 1.00, 0.74, 1.14, 1.00];
+	static var SECONDARY:Array<Float> = [0.00, 0.02, 0.03, 0.02, 0.01, 0.03, 0.04, 0.01];
+	static var SOFTNESS:Array<Float> = [1.00, 0.94, 0.96, 0.97, 0.98, 0.92, 0.90, 0.99];
+	static var PHASE_OFF:Array<Float> = [0.00, 0.78, 0.35, 0.18, 0.00, 0.64, 0.30, 0.00];
+	static var SCALE_X:Array<Float> = [1.00, 1.00, 1.18, 0.96, 1.00, 1.22, 0.92, 1.00];
+	static var SCALE_Y:Array<Float> = [1.00, 1.00, 0.78, 1.08, 1.00, 0.74, 1.14, 1.00];
 	static var TRIANGLE_MIX:Array<Float> = [0.00, 0.10, 0.00, 0.14, 0.78, 0.00, 0.22, 0.60];
 
 	static inline var SPIN_SPEED:Float = 248.0;
@@ -61,13 +62,13 @@ class MaterialLoadingIndicator extends FlxSpriteGroup
 	{
 		super(x, y);
 
-		this.indicatorSize  = size;
-		this.showContainer  = showContainer;
+		this.indicatorSize = size;
+		this.showContainer = showContainer;
 
 		if (showContainer)
 		{
 			// Container: circle ~1.67× the indicator, centred behind it
-			var cs:Int     = Std.int(size * 1.667);
+			var cs:Int = Std.int(size * 1.667);
 			var offset:Int = Std.int((cs - size) / 2);
 			_container = new FlxSprite(-offset, -offset);
 			_container.makeGraphic(cs, cs, FlxColor.TRANSPARENT, true);
@@ -137,9 +138,15 @@ class MaterialLoadingIndicator extends FlxSpriteGroup
 		var baseRadius = frame * 0.29;
 		var col:FlxColor = showContainer ? MD3Theme.onPrimaryContainer : MD3Theme.primary;
 
-		_indicator.makeGraphic(frame, frame, FlxColor.TRANSPARENT, true);
-		var shape = new Shape();
-		shape.graphics.beginFill(col & 0xFFFFFF, ((col >> 24) & 0xFF) / 255);
+		if (_indicator.pixels == null || _indicator.frameWidth != frame || _indicator.frameHeight != frame)
+			_indicator.makeGraphic(frame, frame, FlxColor.TRANSPARENT, true);
+		else
+			_indicator.pixels.fillRect(_indicator.pixels.rect, FlxColor.TRANSPARENT);
+
+		var shape = _drawShape;
+		var graphics = shape.graphics;
+		graphics.clear();
+		graphics.beginFill(col & 0xFFFFFF, ((col >> 24) & 0xFF) / 255);
 
 		var steps = 96;
 		for (i in 0...steps + 1)
@@ -156,13 +163,12 @@ class MaterialLoadingIndicator extends FlxSpriteGroup
 			var py = FlxMath.bound(center + Math.sin(angle) * radius * scaleY, 1, frame - 1);
 
 			if (i == 0)
-				shape.graphics.moveTo(px, py);
+				graphics.moveTo(px, py);
 			else
-				shape.graphics.lineTo(px, py);
+				graphics.lineTo(px, py);
 		}
 
-		shape.graphics.endFill();
-		_indicator.pixels.fillRect(_indicator.pixels.rect, FlxColor.TRANSPARENT);
+		graphics.endFill();
 		_indicator.pixels.draw(shape, null, null, null, null, true);
 		_indicator.dirty = true;
 	}
@@ -171,7 +177,8 @@ class MaterialLoadingIndicator extends FlxSpriteGroup
 	{
 		var sector:Float = TAU / 3;
 		var local:Float = angle % sector;
-		if (local < 0) local += sector;
+		if (local < 0)
+			local += sector;
 		local -= sector * 0.5;
 
 		var denom:Float = Math.cos(local);
@@ -184,10 +191,8 @@ class MaterialLoadingIndicator extends FlxSpriteGroup
 
 	public function getDebugLayout():String
 	{
-		return 'group=(' + x + ', ' + y + ')'
-			+ ' indicator=(' + _indicator.x + ', ' + _indicator.y + ', ' + _indicator.width + 'x' + _indicator.height + ')'
-			+ ' angle=' + _indicator.angle
-			+ ' shape=(' + _lastLobes + ', ' + _lastAmplitude + ', ' + _lastSoftness + ')';
+		return 'group=(' + x + ', ' + y + ')' + ' indicator=(' + _indicator.x + ', ' + _indicator.y + ', ' + _indicator.width + 'x' + _indicator.height
+			+ ')' + ' angle=' + _indicator.angle + ' shape=(' + _lastLobes + ', ' + _lastAmplitude + ', ' + _lastSoftness + ')';
 	}
 
 	function _drawFilledCircle(sprite:FlxSprite, size:Int, color:FlxColor):Void
@@ -195,7 +200,7 @@ class MaterialLoadingIndicator extends FlxSpriteGroup
 		var bmp = sprite.pixels;
 		var cx:Float = size * 0.5;
 		var cy:Float = size * 0.5;
-		var r:Float  = cx;
+		var r:Float = cx;
 		for (py in 0...size)
 			for (px in 0...size)
 			{
@@ -220,17 +225,16 @@ class MaterialLoadingIndicator extends FlxSpriteGroup
 	{
 		if (_container != null)
 			_drawFilledCircle(_container, _container.frameWidth, MD3Theme.primaryContainer);
-		_redrawShape(_lastLobes >= 0 ? _lastLobes : LOBES[0],
-			_lastAmplitude >= 0 ? _lastAmplitude : AMPLITUDES[0],
-			_lastSecondary >= 0 ? _lastSecondary : SECONDARY[0],
-			_lastSoftness >= 0 ? _lastSoftness : SOFTNESS[0],
-			_lastPhase >= 0 ? _lastPhase : PHASE_OFF[0],
-			SCALE_X[_shapeIndex], SCALE_Y[_shapeIndex], TRIANGLE_MIX[_shapeIndex]);
+		_redrawShape(_lastLobes >= 0 ? _lastLobes : LOBES[0], _lastAmplitude >= 0 ? _lastAmplitude : AMPLITUDES[0],
+			_lastSecondary >= 0 ? _lastSecondary : SECONDARY[0], _lastSoftness >= 0 ? _lastSoftness : SOFTNESS[0],
+			_lastPhase >= 0 ? _lastPhase : PHASE_OFF[0], SCALE_X[_shapeIndex], SCALE_Y[_shapeIndex], TRIANGLE_MIX[_shapeIndex]);
 	}
 
 	override function destroy():Void
 	{
 		MD3Theme.removeListener(_onThemeChange);
+		_drawShape = null;
 		super.destroy();
 	}
 }
+

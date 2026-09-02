@@ -10,7 +10,7 @@ import flixel.util.FlxColor;
 import flixel.math.FlxMath;
 import backend.ui.md3.MD3Theme;
 #if mobile
-import funkin.mobile.backend.TouchUtil;
+import mobile.backend.TouchUtil;
 #end
 
 /**
@@ -22,8 +22,6 @@ import funkin.mobile.backend.TouchUtil;
  */
 class MaterialNumericStepper extends FlxSpriteGroup
 {
-	static inline var TRACE_LAYOUT:Bool = false;
-
 	// -----------------------------------------------------------------------
 	// Public API
 	// -----------------------------------------------------------------------
@@ -31,11 +29,11 @@ class MaterialNumericStepper extends FlxSpriteGroup
 	/** Current numeric value. Setting this programmatically does NOT fire onChange. */
 	public var value(default, set):Float = 0;
 
-	public var min:Float       = 0;
-	public var max:Float       = 100;
-	public var step:Float      = 1;
-	public var decimals:Int    = 0;
-	public var enabled:Bool    = true;
+	public var min:Float = 0;
+	public var max:Float = 100;
+	public var step:Float = 1;
+	public var decimals:Int = 0;
+	public var enabled:Bool = true;
 	public var allowMouseInput:Bool = true;
 
 	/** Called with the new value only when the user presses − or +. */
@@ -44,21 +42,32 @@ class MaterialNumericStepper extends FlxSpriteGroup
 	// -----------------------------------------------------------------------
 	// Dimensions
 	// -----------------------------------------------------------------------
-
 	public var stepperWidth:Float = 120;
 
-	inline function controlHeight():Int return MD3Metrics.size(44);
-	inline function buttonArea():Int return MD3Metrics.size(42);
-	inline function cornerRadius():Int return MD3Metrics.corner(22, stepperWidth, controlHeight());
-	inline function valueSize():Int return MD3Metrics.text(15);
-	inline function iconSize():Int return MD3Metrics.text(20);
-	inline function dividerInset():Int return MD3Metrics.size(9);
-	inline function hitHeight():Int return MD3Metrics.touch(controlHeight());
+	inline function controlHeight():Int
+		return MD3Metrics.size(44);
+
+	inline function buttonArea():Int
+		return MD3Metrics.size(42);
+
+	inline function cornerRadius():Int
+		return MD3Metrics.corner(22, stepperWidth, controlHeight());
+
+	inline function valueSize():Int
+		return MD3Metrics.text(15);
+
+	inline function iconSize():Int
+		return MD3Metrics.text(20);
+
+	inline function dividerInset():Int
+		return MD3Metrics.size(9);
+
+	inline function hitHeight():Int
+		return MD3Metrics.touch(controlHeight());
 
 	// -----------------------------------------------------------------------
 	// Visual components
 	// -----------------------------------------------------------------------
-
 	var background:FlxSprite;
 	var decrState:FlxSprite;
 	var incrState:FlxSprite;
@@ -71,15 +80,14 @@ class MaterialNumericStepper extends FlxSpriteGroup
 	// -----------------------------------------------------------------------
 	// Interaction state
 	// -----------------------------------------------------------------------
-
-	var hoverDecr:Bool  = false;
-	var hoverIncr:Bool  = false;
-	var holdDecr:Bool   = false;
-	var holdIncr:Bool   = false;
+	var hoverDecr:Bool = false;
+	var hoverIncr:Bool = false;
+	var holdDecr:Bool = false;
+	var holdIncr:Bool = false;
 	var holdTimer:Float = 0;
 	var holdElapsd:Float = 0;
 
-	static inline var HOLD_DELAY:Float  = 0.45;
+	static inline var HOLD_DELAY:Float = 0.45;
 	static inline var HOLD_REPEAT:Float = 1 / 12;
 
 	// -----------------------------------------------------------------------
@@ -97,18 +105,16 @@ class MaterialNumericStepper extends FlxSpriteGroup
 	 * @param width    Total pixel width of the stepper.
 	 * @param onChange Callback fired after every user-triggered step.
 	 */
-	public function new(x:Float = 0, y:Float = 0,
-	                    step:Float = 1, value:Float = 0,
-	                    min:Float = 0, max:Float = 100, decimals:Int = 0,
-	                    width:Float = 120, ?onChange:Float->Void)
+	public function new(x:Float = 0, y:Float = 0, step:Float = 1, value:Float = 0, min:Float = 0, max:Float = 100, decimals:Int = 0, width:Float = 120,
+			?onChange:Float->Void)
 	{
 		super(x, y);
 
-		this.step      = step;
-		this.min       = min;
-		this.max       = max;
-		this.decimals  = decimals;
-		this.onChange  = onChange;
+		this.step = step;
+		this.min = min;
+		this.max = max;
+		this.decimals = decimals;
+		this.onChange = onChange;
 		this.stepperWidth = width;
 
 		var w = Std.int(width);
@@ -172,22 +178,14 @@ class MaterialNumericStepper extends FlxSpriteGroup
 
 		MD3Theme.addListener(_onThemeChange);
 		_onThemeChange();
-		traceLayout('create');
-	}
-
-	function traceLayout(reason:String):Void
-	{
-		if (!TRACE_LAYOUT) return;
 	}
 
 	public function getDebugLayout():String
 	{
-		return 'group=(' + x + ', ' + y + ')'
-			+ ' width=' + stepperWidth
-			+ ' decrLocal=(' + (decrState.x - x) + ', ' + (decrState.y - y) + ', ' + decrState.width + 'x' + decrState.height + ')'
-			+ ' incrLocal=(' + (incrState.x - x) + ', ' + (incrState.y - y) + ', ' + incrState.width + 'x' + incrState.height + ')'
-			+ ' valueTextLocal=(' + (valueText.x - x) + ', ' + (valueText.y - y) + ', ' + valueText.width + 'x' + valueText.height + ')'
-			+ ' value=' + value;
+		return 'group=(' + x + ', ' + y + ')' + ' width=' + stepperWidth + ' decrLocal=(' + decrState.x + ', ' + decrState.y + ', '
+			+ decrState.width + 'x' + decrState.height + ')' + ' incrLocal=(' + incrState.x + ', ' + incrState.y + ', ' + incrState.width + 'x'
+			+ incrState.height + ')' + ' valueTextLocal=(' + valueText.x + ', ' + valueText.y + ', ' + valueText.width + 'x' + valueText.height
+			+ ')' + ' value=' + value;
 	}
 
 	// -----------------------------------------------------------------------
@@ -202,12 +200,9 @@ class MaterialNumericStepper extends FlxSpriteGroup
 		value = v;
 		if (valueText != null)
 		{
-			valueText.text = decimals > 0
-				? Std.string(FlxMath.roundDecimal(v, decimals))
-				: Std.string(Std.int(v));
-			valueText.y = y + (controlHeight() - valueText.height) * 0.5;
+			valueText.text = decimals > 0 ? Std.string(FlxMath.roundDecimal(v, decimals)) : Std.string(Std.int(v));
+			valueText.y = (controlHeight() - valueText.height) * 0.5;
 		}
-		traceLayout('set_value');
 		return value;
 	}
 
@@ -219,8 +214,8 @@ class MaterialNumericStepper extends FlxSpriteGroup
 	{
 		var prev = value;
 		value += dir * step;
-		traceLayout('step(' + dir + ')');
-		if (value != prev && onChange != null) onChange(value);
+		if (value != prev && onChange != null)
+			onChange(value);
 	}
 
 	inline function isPointerOver(button:FlxSprite):Bool
@@ -262,7 +257,8 @@ class MaterialNumericStepper extends FlxSpriteGroup
 	override function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
-		if (!enabled) return;
+		if (!enabled)
+			return;
 		if (!allowMouseInput)
 		{
 			hoverDecr = false;
@@ -309,16 +305,8 @@ class MaterialNumericStepper extends FlxSpriteGroup
 			holdElapsd = 0;
 		}
 
-		var pointerReleased = FlxG.mouse.justReleased
-			#if mobile
-			|| TouchUtil.justReleased
-			#end
-		;
-		var pointerPressed = FlxG.mouse.pressed
-			#if mobile
-			|| TouchUtil.pressed
-			#end
-		;
+		var pointerReleased = FlxG.mouse.justReleased #if mobile || TouchUtil.justReleased #end;
+		var pointerPressed = FlxG.mouse.pressed #if mobile || TouchUtil.pressed #end;
 		if (pointerReleased || ((holdDecr || holdIncr) && !pointerPressed))
 			holdDecr = holdIncr = false;
 
@@ -348,13 +336,20 @@ class MaterialNumericStepper extends FlxSpriteGroup
 		{
 			MD3ShapeTools.fillAndStrokeRoundRect(background, Std.int(stepperWidth), controlHeight(), cornerRadius(), 1, MD3Theme.surface, MD3Theme.outline);
 		}
-		if (decrText  != null) decrText.color  = MD3Theme.primary;
-		if (incrText  != null) incrText.color  = MD3Theme.primary;
-		if (valueText != null) valueText.color = MD3Theme.onSurface;
-		if (decrState != null) decrState.color = MD3Theme.stateLayerColor(MD3Theme.primary);
-		if (incrState != null) incrState.color = MD3Theme.stateLayerColor(MD3Theme.primary);
-		if (divL != null) divL.color = MD3Theme.outlineVariant;
-		if (divR != null) divR.color = MD3Theme.outlineVariant;
+		if (decrText != null)
+			decrText.color = MD3Theme.primary;
+		if (incrText != null)
+			incrText.color = MD3Theme.primary;
+		if (valueText != null)
+			valueText.color = MD3Theme.onSurface;
+		if (decrState != null)
+			decrState.color = MD3Theme.stateLayerColor(MD3Theme.primary);
+		if (incrState != null)
+			incrState.color = MD3Theme.stateLayerColor(MD3Theme.primary);
+		if (divL != null)
+			divL.color = MD3Theme.outlineVariant;
+		if (divR != null)
+			divR.color = MD3Theme.outlineVariant;
 	}
 
 	override function destroy():Void
@@ -362,5 +357,5 @@ class MaterialNumericStepper extends FlxSpriteGroup
 		MD3Theme.removeListener(_onThemeChange);
 		super.destroy();
 	}
-
 }
+

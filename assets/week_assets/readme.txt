@@ -10,4 +10,4 @@ assets/week1/
 assets/weekpsychic/
 assets/skarlet/
 
-Check assets/base_game/week7/ for a good example of the file structure
+Use this folder for week-specific assets that should not live in assets/shared/.

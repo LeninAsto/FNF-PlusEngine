@@ -2,8 +2,8 @@
 <project xmlns:config="http://lime.openfl.org/config">
 	<!-- _________________________ Application Settings _________________________ -->
 
-	<app title="Friday Night Funkin': Plus Engine" file="PlusEngine" packageName="com.leninasto.plusengine" package="com.leninasto.plusengine" main="Main" version="1.3-prerelease" company="LeninAsto" />
-	<app title="FNF: Plus Engine" if="android" />
+	<app title="Friday Night Funkin': Plus Engine" file="PlusEngine" packageName="com.leninasto.plusengine" package="com.leninasto.plusengine" main="Main" version="1.3.0" company="LeninAsto" />
+	<app title="FNF: Plus Engine" if="mobile" />
 
 	<!--Switch Export with Unique ApplicationID and Icon-->
 	<set name="APP_ID" value="0x0100f6c013bbc000" />
@@ -18,7 +18,7 @@
 
 	<!--Minimum without FLX_NO_GAMEPAD: 11.8, without FLX_NO_NATIVE_CURSOR: 11.2-->
 	<set name="SWF_VERSION" value="11.8" />
-	
+
 	<!-- ______________________ PSYCH ENGINE CUSTOMIZATION ______________________ -->
 
 	<define name="MODS_ALLOWED" if="desktop || mobile" />
@@ -31,21 +31,23 @@
 	<define name="IRIS_DEBUG"/>
 	<define name="WINDOWS_FUNCTIONS_ALLOWED" if="desktop" />
 	<define name="GDI_ENABLED" if="windows" />
-	
+	<define name="AWAY3D_ALLOWED" if="desktop || mobile" />
+
 	<define name="MULTITHREADED_LOADING" if="cpp" /> <!-- UNCOMMENTING THIS LINE WILL ENABLE MULTITHREADED LOADING, WHICH IMPROVES LOADING TIMES, BUT WITH A LOW CHANCE FOR THE GAME FREEZE ON SONG LOAD -->
 	<define name="SHOW_LOADING_SCREEN" />
 	<define name="PSYCH_WATERMARKS"/> <!-- DELETE THIS TO REMOVE THE PSYCH LOGO FROM LOADING SCREEN -->
 	<define name="VIDEOS_ALLOWED" if="desktop || mobile" unless="32bits"/> <!-- Videos are now always enabled for desktop/mobile builds -->
+	<define name="FEATURE_TOUCH_CONTROLS" if="mobile" />
+	<define name="NO_FEATURE_TOUCH_CONTROLS" unless="FEATURE_TOUCH_CONTROLS" />
+	<define name="NO_FEATURE_DEBUG_DISPLAY" unless="FEATURE_DEBUG_DISPLAY" />
 
 	<section if="officialBuild">
 		<define name="TITLE_SCREEN_EASTER_EGG"/>
-		<define name="BASE_GAME_FILES" />
 	</section>
-
 	<!-- ____________________________ Window Settings ___________________________ -->
 
 	<!--These window settings apply to all targets-->
-	<window width="1280" height="720" fps="60" background="#000000" hardware="true" vsync="false" allow-high-dpi="true" />
+	<window width="1280" height="720" fps="60" background="#000000" hardware="true" vsync="false" allow-high-dpi="true" depth-buffer="true" stencil-buffer="true" />
 
 	<!--Desktop-specific-->
 	<window if="desktop" orientation="landscape" fullscreen="false" resizable="true" vsync="false"/>
@@ -67,8 +69,10 @@
 	<assets path="assets/fonts" />
 	<assets path="assets/shared" />
 	<assets path="assets/embed" embed="true"/>
+	<assets path="assets/cursor" rename="assets/images/cursor"/>
 	<assets path="assets/videos" if="VIDEOS_ALLOWED"/>
 	<assets path="assets/songs" />
+	<assets path="assets/week1" />
 	<assets path="assets/week_assets" />
 	<section if="TITLE_SCREEN_EASTER_EGG">
 		<assets path="assets/secrets" rename="assets/shared"/>
@@ -78,20 +82,17 @@
 		<assets path="assets/translations" rename="assets"/>
 	</section>
 
-	<section if="BASE_GAME_FILES">
-		<assets path="assets/base_game" rename="assets"/>
-		<haxelib name="grig.audio" if="BASE_GAME_FILES"/>
-		<haxelib name="funkin.vis" if="BASE_GAME_FILES"/>
-	</section>
-
 	<define name="CHECK_FOR_UPDATES" if="officialBuild"/>
 
 	<section if="MODS_ALLOWED">
+		<!-- Base content is shipped as a normal modpack, not as engine assets. -->
+		<assets path='base_game' rename='mods/Friday Night Funkin' embed='false' type='template'/>
+		<assets path='base_game' rename='mods/Friday Night Funkin' embed='false'/>
 		<assets path='example_mods' rename='mods' embed='false' />
 		<assets path='example_sm' rename='sm' embed='false' />
 		<assets path='list.txt' rename='modsList.txt' />
 	</section>
-	
+
 	<assets path='art/readme.txt' rename='do NOT readme.txt' unless="mobile" />
 
 	<!-- OpenAL config -->
@@ -102,14 +103,19 @@
 
 	<!-- _______________________________ Libraries ______________________________ -->
 
-	<haxelib name="flixel"/>
+	<haxelib name="lime" version="git"/>
+	<haxelib name="flixel" version="git"/>
 	<haxelib name="flixel-addons" />
 	<haxelib name="tjson" version="1.4.0"/>
 	<haxelib name="moonchart" unless="mac | ios"/>
+	<haxelib name="grig.audio"/>
+	<haxelib name="funkin.vis"/>
+	<haxelib name="away3d" if="AWAY3D_ALLOWED"/>
 
 	<!--Psych stuff needed-->
 	<haxelib name="linc_luajit" if="LUA_ALLOWED"/>
 	<haxelib name="hscript-iris" version="git" if="HSCRIPT_ALLOWED"/>
+	<haxelib name="hxscript" version="git" if="HSCRIPT_ALLOWED"/>
 	<haxelib name="hxvlc" if="VIDEOS_ALLOWED"/>
 	<haxelib name="hxdiscord_rpc" if="DISCORD_ALLOWED"/>
 	<haxelib name="flxanimate"/>
@@ -124,6 +130,7 @@
 	<!-- Force C99 standard for macOS/iOS to fix zlib compilation with Xcode 16.4 -->
 	<haxedef name="HXCPP_CFLAGS" value="-std=c99 -Wno-error=deprecated-non-prototype -Wno-deprecated-declarations -Wno-unused-command-line-argument -Wno-macro-redefined" if="macos || ios" />
 	<haxeflag name="-D" value="no-deprecation-warnings"/>
+	<haxeflag name="--macro" value="include('backend3D')"/>
 	<haxedef name="HXCPP_CFLAGS" value="-Wnull-arithmetic -Wtautological-pointer-compare -Wtrigraphs"/>
 
 
@@ -133,7 +140,7 @@
 	<haxedef name="HXVLC_NO_SHARE_DIRECTORY" if="VIDEOS_ALLOWED" />
 	<haxedef name="HXVLC_EXPERIMENTAL_WINDOWSARM" if="windows HXCPP_ARM64" />
 	<define name="x86_BUILD" if="32bits" />
-	
+
 	<!-- ______________________________ Haxedefines _____________________________ -->
 
 	<!--Enable the Flixel core recording system-->
@@ -159,16 +166,16 @@
 
 	<!--Disable the Flixel core focus lost screen-->
 	<haxedef name="FLX_NO_FOCUS_LOST_SCREEN" />
-	
+
 	<!-- Show debug traces for hxCodec -->
 	<haxedef name="HXC_DEBUG_TRACE" if="debug" />
-	
+
 	<!--Disable the Flixel core debugger. Automatically gets set whenever you compile in release mode!-->
 	<haxedef name="FLX_NO_DEBUG" unless="debug" />
 
 	<!--Enable this for Nape release builds for a serious peformance improvement-->
 	<haxedef name="NAPE_RELEASE_BUILD" unless="debug" />
-	
+
 	<!--Used for crash handler-->
 	<section if="cpp">
 		<haxedef name="HXCPP_CHECK_POINTER" />
@@ -176,7 +183,7 @@
 		<haxedef name="HXCPP_STACK_TRACE" />
 		<haxedef name="HXCPP_CATCH_SEGV" />
 	</section>
-	
+
 	<!--Disable deprecated warnings-->
 	<haxedef name='no-deprecation-warnings' />
 
@@ -202,9 +209,14 @@
 	<haxeflag name="--macro" value="include('my.pack')" />
 
 	<haxedef name="hscriptPos" if="HSCRIPT_ALLOWED" />
+	<haxedef name="custom_classes" if="HSCRIPT_ALLOWED" />
+	<haxeflag name="--macro" value="macros.ScriptedBridgeMacro.generate()" if="HSCRIPT_ALLOWED" />
 
 	<!-- Enable all classes compilation for hscript -->
-	<haxeflag name="--macro" value="include('flixel', true, [ 'flixel.addons.editors.spine.*', 'flixel.addons.nape.*', 'flixel.system.macros.*' ])" />
+	<haxeflag name="--macro" value="addMetadata('@:build(macros.PlusFlxMacro.buildFlxBasic())', 'flixel.FlxBasic')" />
+	<haxeflag name="--macro" value="addMetadata('@:build(macros.PlusFlxMacro.buildFlxSprite())', 'flixel.FlxSprite')" />
+	<haxeflag name="--macro" value="addMetadata('@:build(macros.PlusFlxMacro.buildFlxPath())', 'flixel.path.FlxPath')" />
+	<haxeflag name="--macro" value="include('flixel', true, [ 'flixel.addons.editors.spine.*', 'flixel.addons.nape.*', 'flixel.addons.tile.FlxRayCastTilemap', 'flixel.system.macros.*' ])" />
 
 	<!-- ____________________________ Modcharts? _______________________________ -->
 

@@ -1,0 +1,40 @@
+# Builds Psych Engine (community fork) for (Linux).
+# Windows builds live in build-windows.yml (separate manual dispatch).
+
+name: Build (Linux)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  buildLinux:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+
+      - uses: krdlab/setup-haxe@v2.1.0
+        with:
+          haxe-version: 4.3.7
+
+      - name: Install system packages (VLC)
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libvlc-dev libvlccore-dev
+
+      - name: Install Haxe dependencies
+        run: |
+          haxelib setup ~/haxelib
+          chmod +x ./setup/unix.sh
+          ./setup/unix.sh
+
+      - name: Create version tag
+        run: echo "${{ github.run_id }}" > VERSION
+
+      - name: Compile
+        run: haxelib run lime build Project.xml linux --app-version="1.1.0-${{ github.run_id }}"
+
+      - name: Publish artifact
+        uses: actions/upload-artifact@v7.0.1
+        with:
+          name: linuxBuild
+          path: export/release/linux/bin

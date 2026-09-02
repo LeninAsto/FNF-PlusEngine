@@ -155,8 +155,19 @@ class FPSCounter extends Sprite
 	private var frameTimesArray:Array<Float> = [];
 	private var avgFrameTimeMs:Float = 0.0;
 
+	@:noCompletion private static inline var TIMES_CAPACITY:Int = 1024;
+	@:noCompletion private static inline var FRAME_TIMES_CAPACITY:Int = 10;
+
 	@:noCompletion private var times:Array<Float>;
+	@:noCompletion private var timesHead:Int = 0;
+	@:noCompletion private var timesCount:Int = 0;
+	@:noCompletion private var frameTimesHead:Int = 0;
+	@:noCompletion private var frameTimesCount:Int = 0;
+	@:noCompletion private var frameTimesTotal:Float = 0;
+	@:noCompletion private var deltaTimeout:Float = 0.0;
+
 	public var os:String = '';
+
 	private var lastTextColorValue:Int = 0xFFFFFF;
 	private var pendingLayoutRefresh:Bool = true;
 
@@ -188,11 +199,11 @@ class FPSCounter extends Sprite
 			addChild(box);
 		}
 
-		times = [];
+		times = [for (i in 0...TIMES_CAPACITY) 0];
 
 		// Initialize frame time measurement
 		lastFrameTime = Timer.stamp();
-		frameTimesArray = [];
+		frameTimesArray = [for (i in 0...FRAME_TIMES_CAPACITY) 0];
 
 		// Add listener for F2
 		if (FlxG.stage != null)
@@ -257,8 +268,8 @@ class FPSCounter extends Sprite
 				box.setTextColor(textColorValue);
 		}
 
-		// Update counters for extended debug mode without extra throttling.
-		if (debugLevel >= 4)
+		// Update counters for debug modes without extra throttling.
+		if (debugLevel >= 3)
 		{
 			updateCountersOptimized();
 		}
@@ -266,11 +277,20 @@ class FPSCounter extends Sprite
 		var index:Int = 0;
 		var showBackground:Bool = debugLevel >= 2;
 		var showCounter:Bool = debugLevel > 0;
-		pendingLayoutRefresh = true;
 
 		if (showCounter)
 		{
-			setBox(index++, Std.string(currentFPS) + ' FPS\nDelay: ' + formatFloat(frameTimeMs, 1) + ' / ' + formatFloat(avgFrameTimeMs, 1) + ' ms\nRAM: ' + currentMemoryStr + ' / ' + peakMemoryStr, showBackground);
+			setBox(index++,
+				Std.string(currentFPS)
+				+ ' FPS\nDelay: '
+				+ formatFloat(frameTimeMs, 1)
+				+ ' / '
+				+ formatFloat(avgFrameTimeMs, 1)
+				+ ' ms\nGC: '
+				+ currentMemoryStr
+				+ ' / '
+				+ peakMemoryStr,
+				showBackground);
 
 			if (modAuthor != null && modAuthor.length > 0)
 				setBox(index++, modAuthor, showBackground);
@@ -287,6 +307,7 @@ class FPSCounter extends Sprite
 			var buildDebug:String = os.substring(1) + '\nCommit: ' + commitText;
 			if (BuildInfo.githubDevBuild && BuildInfo.runId.length > 0)
 				buildDebug += '\nBuild: #' + BuildInfo.runId;
+			buildDebug += '\nState: ' + cachedCurrentState;
 			if (debugLevel >= 4)
 			{
 				if (commitDate != null && commitDate.length > 0)
@@ -294,7 +315,6 @@ class FPSCounter extends Sprite
 				if (commitTime != null && commitTime.length > 0)
 					buildDebug += '\nTime: ' + commitTime + ' UTC';
 				buildDebug += '\nUptime: ' + getUptime();
-				buildDebug += '\nState: ' + cachedCurrentState;
 			}
 			setBox(index++, buildDebug, true);
 		}
@@ -327,36 +347,45 @@ class FPSCounter extends Sprite
 		frameTimeMs = (currentFrameTime - lastFrameTime) * 1000.0; // Convert to milliseconds
 		lastFrameTime = currentFrameTime;
 
-		// Keep a moving average for the last 10 frames.
-		frameTimesArray.push(frameTimeMs);
-		if (frameTimesArray.length > 10)
-		{
-			frameTimesArray.shift();
-		}
-
-		// Compute average.
-		var sum:Float = 0.0;
-		for (time in frameTimesArray)
-		{
-			sum += time;
-		}
-		avgFrameTimeMs = sum / frameTimesArray.length;
-
-		var targetWindowFramerate:Int = ClientPrefs.getTargetWindowFramerate();
-		if (FlxG.stage.window.frameRate != targetWindowFramerate
-			&& FlxG.stage.window.frameRate != FlxG.game.focusLostFramerate)
-		{
-			FlxG.stage.window.frameRate = targetWindowFramerate;
-		}
+		frameTimesTotal -= frameTimesArray[frameTimesHead];
+		frameTimesArray[frameTimesHead] = frameTimeMs;
+		frameTimesTotal += frameTimeMs;
+		frameTimesHead = (frameTimesHead + 1) % FRAME_TIMES_CAPACITY;
+		if (frameTimesCount < FRAME_TIMES_CAPACITY)
+			frameTimesCount++;
+		avgFrameTimeMs = frameTimesCount > 0 ? frameTimesTotal / frameTimesCount : frameTimeMs;
 
 		final now:Float = Timer.stamp() * 1000;
-		times.push(now);
-		while (times.length > 0 && times[0] < now - 1000)
-			times.shift();
+		final cap:Int = TIMES_CAPACITY;
 
-		currentFPS = times.length;
+		if (timesCount < cap)
+		{
+			times[(timesHead + timesCount) % cap] = now;
+			timesCount++;
+		}
+		else
+		{
+			times[timesHead] = now;
+			timesHead = (timesHead + 1) % cap;
+		}
 
-		updateText();
+		final cutoff:Float = now - 1000;
+		while (timesCount > 0 && times[timesHead] < cutoff)
+		{
+			timesHead = (timesHead + 1) % cap;
+			timesCount--;
+		}
+
+		currentFPS = timesCount < FlxG.drawFramerate ? timesCount : FlxG.drawFramerate;
+
+		if (deltaTimeout >= 50)
+		{
+			updateText();
+			deltaTimeout = 0;
+		}
+		else
+			deltaTimeout += deltaTime;
+
 		animateBoxes(Math.min(deltaTime / 1000, 0.1));
 	}
 
@@ -395,14 +424,21 @@ class FPSCounter extends Sprite
 		if (index < 0 || index >= metricBoxes.length)
 			return;
 
-		metricBoxes[index].setContent(text, showBackground);
+		var wasHidden:Bool = !metricBoxes[index].targetShown;
+		var contentChanged:Bool = metricBoxes[index].setContent(text, showBackground);
+		if (wasHidden || contentChanged)
+			pendingLayoutRefresh = true;
 		metricBoxes[index].targetShown = true;
 	}
 
 	private function hideUnusedBoxes(fromIndex:Int):Void
 	{
 		for (i in fromIndex...metricBoxes.length)
+		{
+			if (metricBoxes[i].targetShown)
+				pendingLayoutRefresh = true;
 			metricBoxes[i].targetShown = false;
+		}
 	}
 
 	private function layoutBoxes():Void
@@ -637,14 +673,7 @@ class FPSCounter extends Sprite
 		if (FlxG.state == null)
 			return "null";
 
-		var stateName = Type.getClassName(Type.getClass(FlxG.state));
-
-		// Strip package prefix
-		if (stateName.indexOf('.') > -1)
-		{
-			var parts = stateName.split('.');
-			stateName = parts[parts.length - 1];
-		}
+		var stateName = formatStateClassName(Type.getClassName(Type.getClass(FlxG.state)));
 
 		// Show the script name when running inside a ScriptableState
 		#if (HSCRIPT_ALLOWED && sys)
@@ -659,13 +688,23 @@ class FPSCounter extends Sprite
 		// Check for active substate
 		if (FlxG.state.subState != null)
 		{
-			var subStateName = Type.getClassName(Type.getClass(FlxG.state.subState));
-			if (subStateName.indexOf('.') > -1)
-			{
-				var parts = subStateName.split('.');
-				subStateName = parts[parts.length - 1];
-			}
+			var subStateName = formatStateClassName(Type.getClassName(Type.getClass(FlxG.state.subState)));
 			return '${stateName} -> ${subStateName}';
+		}
+
+		return stateName;
+	}
+
+	private function formatStateClassName(fullName:String):String
+	{
+		if (fullName == null || fullName.length <= 0)
+			return "Unknown";
+
+		var stateName = fullName;
+		if (stateName.indexOf('.') > -1)
+		{
+			var parts = stateName.split('.');
+			stateName = parts[parts.length - 1];
 		}
 
 		return stateName;
@@ -812,6 +851,8 @@ private class FPSCounterBox extends Sprite
 	private var shownAmount:Float = 0;
 	private var hasBackground:Bool = false;
 	private var boxWidth:Float = 48;
+	private var lastColor:Int = -1;
+
 	private static inline var PADDING_X:Float = 8;
 	private static inline var PADDING_Y:Float = 5;
 	private static inline var INNER_DIFF:Int = 3;
@@ -839,19 +880,25 @@ private class FPSCounterBox extends Sprite
 
 	public function setTextColor(color:Int):Void
 	{
+		if (lastColor == color)
+			return;
+
+		lastColor = color;
 		textDisplay.defaultTextFormat = new TextFormat('Monsterrat', 14, color);
 		textDisplay.setTextFormat(textDisplay.defaultTextFormat);
 	}
 
-	public function setContent(text:String, showBackground:Bool):Void
+	public function setContent(text:String, showBackground:Bool):Bool
 	{
-		if (textDisplay.text != text)
-			textDisplay.text = text;
+		if (textDisplay.text == text && hasBackground == showBackground)
+			return false;
 
+		textDisplay.text = text;
 		hasBackground = showBackground;
 		boxWidth = Math.max(48, textDisplay.textWidth + (PADDING_X * 2) + (INNER_DIFF * 2) + 6);
 		boxHeight = Math.max(24, textDisplay.textHeight + (PADDING_Y * 2) + (INNER_DIFF * 2));
 		drawBackground();
+		return true;
 	}
 
 	public function animate(elapsed:Float):Void

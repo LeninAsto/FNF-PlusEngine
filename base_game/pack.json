@@ -1,0 +1,12 @@
+{
+	"name": "Friday Night Funkin'",
+	"description": "The base game, shipped as an ordinary modpack.\nWeeks 1 to 7 and Weekend 1: their songs, charts, characters, stages and cutscenes.\nStages are scripted classes under scripts/classes/stages/, so nothing here needs the engine to know about it.\nDisable it and the engine boots with no content at all, which is the point.",
+	"color": [
+		200,
+		0,
+		120
+	],
+	"restart": false,
+	"runsGlobally": false,
+	"type": "modpack"
+}
