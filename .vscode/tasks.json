@@ -2,15 +2,6 @@
   "version": "2.0.0",
   "tasks": [
     {
-      "type": "lime",
-      "command": "test",
-      "group": {
-        "kind": "build",
-        "isDefault": true
-      },
-      "problemMatcher": []
-    },
-    {
       "label": "Plus Engine: Format Haxe",
       "type": "shell",
       "command": "npm.cmd run format:haxe",
