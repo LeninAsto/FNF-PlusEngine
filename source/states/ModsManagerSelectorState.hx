@@ -29,7 +29,6 @@ class ModsManagerSelectorState extends MusicBeatState
 			{
 				label: Language.getPhrase('mods_manager_plus', 'Plus / Psych Mods'),
 				description: Language.getPhrase('mods_manager_plus_desc', 'Classic mods from the mods folder.'),
-				vsliceMode: false
 			}
 		];
 
@@ -145,6 +144,5 @@ typedef ModManagerOption =
 {
 	var label:String;
 	var description:String;
-	var vsliceMode:Bool;
 }
 

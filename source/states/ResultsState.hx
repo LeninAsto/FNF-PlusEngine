@@ -524,7 +524,7 @@ class ResultsState extends MusicBeatState
 
 	function getBFResultsAnimations(rank:ResultRank):Array<ResultAnimationData>
 	{
-		var naughty:Bool = ClientPrefs.data.vsliceNaughtyness;
+		var naughty:Bool = ClientPrefs.data.naughtynessResults;
 		return switch (rank)
 		{
 			case PERFECT_GOLD | PERFECT:

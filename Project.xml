@@ -73,7 +73,6 @@
 	<assets path="assets/videos" if="VIDEOS_ALLOWED"/>
 	<assets path="assets/songs" />
 	<assets path="assets/week1" />
-	<assets path="assets/week_assets" />
 	<section if="TITLE_SCREEN_EASTER_EGG">
 		<assets path="assets/secrets" rename="assets/shared"/>
 	</section>

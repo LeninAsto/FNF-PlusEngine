@@ -65,7 +65,6 @@ class ModsMenuState extends MusicBeatState {
 	var waitingToRestart:Bool = false;
 	var holdTime:Float = 0;
 	var startMod:String = null;
-	var vsliceMode:Bool = false;
 	var returnToSelector:Bool = false;
 	var _lastControllerMode:Bool = false;
 
@@ -76,9 +75,8 @@ class ModsMenuState extends MusicBeatState {
 	var listH:Float;
 	var rowH:Float = 72;
 
-	public function new(startMod:String = null, vsliceMode:Bool = false, returnToSelector:Bool = false) {
+	public function new(startMod:String = null, returnToSelector:Bool = false) {
 		this.startMod = startMod;
-		this.vsliceMode = false;
 		this.returnToSelector = returnToSelector;
 		super();
 	}
@@ -944,7 +942,7 @@ class ModItem extends FlxSpriteGroup {
 	public var changelog:String = '';
 	public var launchable:Bool = false;
 
-	public function new(folder:String, vsliceMode:Bool = false) {
+	public function new(folder:String) {
 		super();
 
 		this.folder = folder;
