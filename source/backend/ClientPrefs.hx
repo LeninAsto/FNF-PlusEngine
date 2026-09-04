@@ -176,7 +176,6 @@ import states.TitleState;
 	public var scriptDeprecationWarnings:Bool = true; // Show warnings for deprecated Lua/HScript compatibility APIs
 	public var modSecurityEnabled:Bool = true; // Scan mod Lua/HScript before allowing sensitive APIs to run
 	public var modSecurityChecks:Map<String, Bool> = new Map();
-	public var dragCharacterToMove:Bool = false; // Allow to drag position character with cursor like in Codename Engine
 }
 
 class ClientPrefs

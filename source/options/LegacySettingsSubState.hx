@@ -39,14 +39,6 @@ class LegacySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		#end
 
-		var option:Option = new Option('Drag Character To Move',
-			'If checked, the character position can be dragged with the cursor, just like in Codename Engine.', 'dragCharacterToMove', BOOL);
-		option.onChange = function()
-		{
-			ClientPrefs.saveSettings();
-		};
-		addOption(option);
-
 		var option:Option = new Option('Results State at End', 'If unchecked, endSong will not transition to ResultsState in Freeplay/Story Mode.',
 			'resultsStateAtEnd', BOOL);
 		addOption(option);
