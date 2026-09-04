@@ -35,8 +35,9 @@ typedef SwagSong =
 
 	@:optional var arrowSkin:String;
 	@:optional var splashSkin:String;
-	@:optional var isAnimated:Bool; // Support for animated icons in the chart
+	@:optional var isAnimated:Bool;
 	@:optional var useModcharts:Bool;
+	@:optional var extendedEventValues:Bool;
 }
 
 typedef SwagSection =
@@ -600,12 +601,22 @@ class Song
 			var key:String = Std.string(ev.t);
 			var val1:String = (ev.v != null && ev.v.val1 != null) ? Std.string(ev.v.val1) : '';
 			var val2:String = (ev.v != null && ev.v.val2 != null) ? Std.string(ev.v.val2) : '';
+			var val3:String = (ev.v != null && ev.v.val3 != null) ? Std.string(ev.v.val3) : '';
+			var val4:String = (ev.v != null && ev.v.val4 != null) ? Std.string(ev.v.val4) : '';
+
 			if (!evGroups.exists(key))
 			{
 				evGroups.set(key, []);
 				evTimes.push(ev.t);
 			}
-			evGroups.get(key).push([ev.name, val1, val2]);
+
+			var eventArr:Array<Dynamic> = [ev.name, val1, val2];
+			if (val3 != null && val3.length > 0 || ev.v.val3 != null)
+				eventArr.push(val3);
+			if (val4 != null && val4.length > 0 || ev.v.val4 != null)
+				eventArr.push(val4);
+
+			evGroups.get(key).push(eventArr);
 		}
 		evTimes.sort(function(a, b) return Std.int(a - b));
 		var builtEvents:Array<Dynamic> = [];
@@ -646,6 +657,29 @@ class Song
 			song.useModcharts = true;
 
 		return song;
+	}
+
+	public static function chartUsesExtendedValues(song:SwagSong):Bool
+	{
+		if (song == null || song.events == null)
+			return false;
+
+		for (eventGroup in song.events)
+		{
+			if (eventGroup == null || eventGroup.length < 2)
+				continue;
+
+			var events:Array<Dynamic> = eventGroup[1];
+			if (events == null)
+				continue;
+
+			for (event in events)
+			{
+				if (event != null && event.length > 3)
+					return true;
+			}
+		}
+		return false;
 	}
 }
 

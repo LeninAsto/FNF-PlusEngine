@@ -13,10 +13,12 @@ using StringTools;
 
 typedef EventNote =
 {
-	strumTime:Float,
-	event:String,
-	value1:String,
-	value2:String
+	strumTime:Float;
+	event:String;
+	value1:String;
+	value2:String;
+	@:optional value3:String;
+	@:optional value4:String;
 }
 
 typedef NoteSplashData =
@@ -34,7 +36,7 @@ typedef NoteSplashData =
 
 /**
  * The note object used as a data structure to spawn and manage notes during gameplay.
- * 
+ *
  * If you want to make a custom note type, you should search for: "function set_noteType"
 **/
 class Note extends FlxSprite

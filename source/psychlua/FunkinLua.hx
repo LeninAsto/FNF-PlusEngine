@@ -994,12 +994,11 @@ class FunkinLua
 		});
 
 		// others
-		Lua_helper.add_callback(lua, "triggerEvent", function(name:String, ?value1:String = '', ?value2:String = '')
+		Lua_helper.add_callback(lua, "triggerEvent", function(name:String, ?value1:String = '', ?value2:String = '', ?value3:String = '', ?value4:String = '')
 		{
 			if (game == null)
 				return warnPlayStateOnly('triggerEvent');
-			game.triggerEvent(name, value1, value2, Conductor.songPosition);
-			// trace('Triggered event: ' + name + ', ' + value1 + ', ' + value2);
+			game.triggerEvent(name, value1, value2, value3, value4, Conductor.songPosition);
 			return true;
 		});
 

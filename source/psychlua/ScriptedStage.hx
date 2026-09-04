@@ -77,8 +77,8 @@ class ScriptedStage extends BaseStage
 	override public function openSubState(SubState:FlxSubState):Void
 		callScript('openSubState', [SubState]);
 
-	override public function eventCalled(eventName:String, value1:String, value2:String, flValue1:Null<Float>, flValue2:Null<Float>, strumTime:Float):Void
-		callScript('eventCalled', [eventName, value1, value2, flValue1, flValue2, strumTime]);
+	override public function eventCalled(eventName:String, value1:String, value2:String, value3:String, value4:String, flValue1:Null<Float> = null, flValue2:Null<Float> = null, flValue3:Null<Float> = null, flValue4:Null<Float> = null, strumTime:Float):Void
+		callScript('eventCalled', [eventName, value1, value2, value3, value4, flValue1, flValue2, flValue3, flValue4, strumTime]);
 
 	override public function eventPushed(event:EventNote):Void
 		callScript('eventPushed', [event]);
