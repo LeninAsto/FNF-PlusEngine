@@ -103,15 +103,24 @@
         </article>
 
         <article class="card home-card half">
-          <h2>Video de presentación</h2>
+          <h2>Vídeo de presentación</h2>
           <p class="sidebar-copy">
-            Vista previa local de la introducción del proyecto usando <code>present.mp4</code>.
+            Vista previa integrada de la presentación del proyecto. Si el navegador bloquea la vista previa integrada, utiliza el
+            enlace externo que aparece a continuación.
           </p>
           <div style="margin-top: 0.8rem;">
-            <video class="video-frame" controls preload="metadata" poster="../assets/pluslogo.png">
-              <source src="../assets/videos/present.mp4" type="video/mp4" />
-              Tu navegador no soporta el elemento de video.
-            </video>
+            <iframe
+              class="video-frame"
+              src="https://www.youtube-nocookie.com/embed/ZQEBBj7YqzU"
+              title="Vídeo de presentación de Plus Engine"
+              loading="lazy"
+              referrerpolicy="strict-origin-when-cross-origin"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+              allowfullscreen
+            ></iframe>
+          </div>
+          <div class="mini-actions" style="margin-top: 0.8rem;">
+            <a class="mini-pill" href="https://youtu.be/ZQEBBj7YqzU" target="_blank" rel="noreferrer">Abrir en YouTube</a>
           </div>
         </article>
 
