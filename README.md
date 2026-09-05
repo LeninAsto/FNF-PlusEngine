@@ -156,7 +156,7 @@ You need to have:
 
 ## Attractive animated dialogue boxes:
 
-![Animated Dialogue Boxes](docs/img/dialogue.gif)
+<img src="docs/img/dialogue.gif" width="622" height="348"/>
 
 ## New Main Menu
 * A brand new menu that makes your experience even better!

@@ -154,7 +154,7 @@ Necesitas tener:
 
 ## Cajas de diálogo animadas atractivas:
 
-![Animated Dialogue Boxes](docs/img/dialogue.gif)
+<img src="docs/img/dialogue.gif" width="622" height="348"/>
 
 ## Nuevo Menú Principal
 * ¡Un menú completamente nuevo que hace tu experiencia aún mejor!

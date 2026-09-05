@@ -154,7 +154,7 @@ Anda memerlukan:
 
 ## Kotak dialog animasi yang menarik:
 
-![Animated Dialogue Boxes](docs/img/dialogue.gif)
+<img src="docs/img/dialogue.gif" width="622" height="348"/>
 
 ## Menu Utama Baru
 * Menu baru yang membuat pengalaman Anda semakin baik!
