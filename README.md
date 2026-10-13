@@ -41,7 +41,7 @@ Made with [contrib.rocks](https://contrib.rocks).
 Contributions are welcome! If you have ideas, improvements, or fixes, feel free to fork the repo and open a pull request.
 
 <div align="center">
-  <img src="https://count.getloli.com/@plus?theme=booru-lisu&padding=7&offset=0&align=top&scale=0.6&pixelated=1&darkmode=auto&prefix=0" >
+  <img src="https://count.getloli.com/@plus?theme=booru-lisu&padding=7&offset=0&align=top&scale=0.6&pixelated=1&darkmode=auto&prefix=0" alt="counter visitors" >
 </div>
 
 > This project is subject to bugs, fixes, improvements and changes.
