@@ -24,7 +24,27 @@ class AssetLoader
 	#if (lime_vorbis && sys)
 	// Weak keys ensure clearing the normal sound cache can still release streamed buffers.
 	static final streamedAudioPaths:WeakMap<AudioBuffer, String> = new WeakMap<AudioBuffer, String>();
+	static final analyzerAllowed:WeakMap<AudioBuffer, Bool> = new WeakMap<AudioBuffer, Bool>();
+	static final analyzerBuffers:WeakMap<AudioBuffer, AnalyzerPreparation> = new WeakMap<AudioBuffer, AnalyzerPreparation>();
+	#if target.threaded
+	static final analyzerLock:sys.thread.Mutex = new sys.thread.Mutex();
 	#end
+	static inline final MAX_ANALYZER_BYTES:Int = 64 * 1024 * 1024;
+	#end
+
+	static inline function lockAnalyzer():Void
+	{
+		#if (lime_vorbis && sys && target.threaded)
+		analyzerLock.acquire();
+		#end
+	}
+
+	static inline function unlockAnalyzer():Void
+	{
+		#if (lime_vorbis && sys && target.threaded)
+		analyzerLock.release();
+		#end
+	}
 
 	public static function exists(path:String, type:AssetType):Bool
 	{
@@ -154,6 +174,19 @@ class AssetLoader
 		return null;
 	}
 
+	/** Upload decoded playback PCM during the loading screen, on the audio-context thread. */
+	public static function warmAudio(sound:Sound):Void
+	{
+		#if (lime_openal && !html5 && !flash)
+		if (sound == null) return;
+		@:privateAccess var buffer = sound.__buffer;
+		if (buffer == null || buffer.data == null) return;
+		@:privateAccess if (buffer.__srcBuffer != null) return;
+		var warmup = new AudioSource(buffer);
+		warmup.dispose();
+		#end
+	}
+
 	/** Keeps long OGG tracks compressed and streamable for native tempo processing. */
 	public static function loadStreamedSound(path:String):Sound
 	{
@@ -176,7 +209,12 @@ class AssetLoader
 						var buffer:AudioBuffer = AudioBuffer.fromVorbisFile(vorbis);
 						if (buffer != null)
 						{
+							var maxFrames = Std.int(MAX_ANALYZER_BYTES / Math.max(1, buffer.channels * (buffer.bitsPerSample / 8)));
+							var allowed = haxe.Int64.compare(vorbis.pcmTotal(), haxe.Int64.ofInt(maxFrames)) <= 0;
+							lockAnalyzer();
 							streamedAudioPaths.set(buffer, path);
+							analyzerAllowed.set(buffer, allowed);
+							unlockAnalyzer();
 							return Sound.fromAudioBuffer(buffer);
 						}
 					}
@@ -193,7 +231,7 @@ class AssetLoader
 	 *
 	 * Lime keeps streamed Vorbis tracks in a decoder, so their `AudioBuffer.data` is null.
 	 * funkin.vis expects decoded PCM there. Keep playback streamed, but decode a separate,
-	 * non-playing buffer for the analyzer when necessary.
+	 * non-playing CPU buffer prepared during loading. Never decode a song here.
 	 */
 	public static function analyzerSource(source:AudioSource):AudioSource
 	{
@@ -207,22 +245,97 @@ class AssetLoader
 			return source;
 
 		#if (lime_vorbis && sys)
-		var path:String = streamedAudioPaths.get(source.buffer);
-		if (path != null)
+		lockAnalyzer();
+		var preparation = analyzerBuffers.get(source.buffer);
+		var decoded = preparation != null ? preparation.decoded : null;
+		unlockAnalyzer();
+		if (decoded != null)
 		{
-			try
-			{
-				var decoded:AudioBuffer = AudioBuffer.fromFile(path);
-				if (decoded != null && decoded.data != null)
-					return new AudioSource(decoded);
-			}
-			catch (_:Dynamic) {}
+			// Passing decoded PCM to the constructor would upload the entire track
+			// to OpenAL, although this source is only used to read samples.
+			var analysis = new AudioSource();
+			analysis.buffer = decoded;
+			return analysis;
 		}
+		#if target.threaded
+		if (preparation == null)
+			beginAnalyzerPreparation(source.buffer, true);
+		#end
 		#end
 
 		return null;
 		#end
 	}
+
+	/** Called from a loading worker, before playback starts. */
+	public static function prepareAnalyzer(sound:Sound):Void
+	{
+		#if (lime_vorbis && sys)
+		if (sound != null)
+		{
+			@:privateAccess var buffer = sound.__buffer;
+			beginAnalyzerPreparation(buffer, false);
+		}
+		#end
+	}
+
+	public static function isAnalyzerPreparationFinished(buffer:AudioBuffer):Bool
+	{
+		if (buffer == null || buffer.data != null) return true;
+		#if (lime_vorbis && sys)
+		lockAnalyzer();
+		var preparation = analyzerBuffers.get(buffer);
+		var finished = preparation != null && preparation.finished;
+		unlockAnalyzer();
+		return finished;
+		#else
+		return true;
+		#end
+	}
+
+	#if (lime_vorbis && sys)
+	static function beginAnalyzerPreparation(buffer:AudioBuffer, asynchronous:Bool):Void
+	{
+		if (buffer == null || buffer.data != null) return;
+		lockAnalyzer();
+		if (analyzerBuffers.exists(buffer))
+		{
+			unlockAnalyzer();
+			return;
+		}
+		var path = streamedAudioPaths.get(buffer);
+		if (analyzerAllowed.get(buffer) != true) path = null;
+		var preparation:AnalyzerPreparation = {decoded: null, finished: path == null};
+		analyzerBuffers.set(buffer, preparation);
+		unlockAnalyzer();
+		if (path == null) return;
+		var decode = () ->
+		{
+			var decoded:AudioBuffer = null;
+			try
+			{
+				// Bound the additional PCM cache instead of doubling an arbitrary long track.
+				decoded = AudioBuffer.fromFile(path);
+			}
+			catch (_:Dynamic) {}
+			if (decoded != null && (decoded.data == null || decoded.data.length > MAX_ANALYZER_BYTES))
+			{
+				decoded.dispose();
+				decoded = null;
+			}
+			lockAnalyzer();
+			preparation.decoded = decoded;
+			preparation.finished = true;
+			unlockAnalyzer();
+		};
+		#if target.threaded
+		if (asynchronous)
+			ThreadUtil.execAsync(decode);
+		else
+		#end
+			decode();
+	}
+	#end
 
 	#if sys
 	static function hasTheoraStream(path:String):Bool
@@ -258,4 +371,8 @@ class AssetLoader
 	}
 	#end
 }
+
+#if (lime_vorbis && sys)
+private typedef AnalyzerPreparation = {decoded:Null<AudioBuffer>, finished:Bool};
+#end
 

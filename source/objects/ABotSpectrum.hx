@@ -26,6 +26,8 @@ class ABotSpectrum
 	var _analyzer:SpectralAnalyzer;
 	var _analysisSource:AudioSource;
 	var _sourceAttempted:Bool = false;
+	var _lastAnalysisStamp:Float = -9999;
+	var _lastAnalysisPosition:Float = -1;
 	var _bars:Array<Bar>;
 	#end
 
@@ -47,6 +49,8 @@ class ABotSpectrum
 		_analyzer = null;
 		_analysisSource = null;
 		_sourceAttempted = false;
+		_lastAnalysisStamp = -9999;
+		_lastAnalysisPosition = -1;
 		refreshAnalyzer();
 		#end
 	}
@@ -73,6 +77,13 @@ class ABotSpectrum
 
 		if (_analyzer == null)
 			return _out;
+		// The display can draw at 240+ FPS; seven audio bars do not need 240 FFTs.
+		var now = haxe.Timer.stamp();
+		var position = _snd != null ? _snd.time : 0;
+		if (position == _lastAnalysisPosition || now - _lastAnalysisStamp < 1 / 60)
+			return _out;
+		_lastAnalysisStamp = now;
+		_lastAnalysisPosition = position;
 
 		try
 		{
@@ -131,15 +142,13 @@ class ABotSpectrum
 		if (source == null)
 			return;
 
-		_sourceAttempted = true;
 		_analysisSource = backend.AssetLoader.analyzerSource(source);
+		_sourceAttempted = _analysisSource != null || backend.AssetLoader.isAnalyzerPreparationFinished(source.buffer);
 		if (_analysisSource == null)
 			return;
 
 		_analyzer = new SpectralAnalyzer(_analysisSource, bands, _smoothing, _peakHold);
-		#if desktop
 		_analyzer.fftN = 256;
-		#end
 	}
 	#end
 }

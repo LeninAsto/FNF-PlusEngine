@@ -9,14 +9,14 @@ import sys.FileSystem;
 #end
 
 /**
- * Advanced memory management system, specially optimized for Android.
+ * Shared resource lifetime and GC policy, with runtime-specific capabilities.
  * Allows assets to be released dynamically to reduce RAM usage.
  */
 class MemoryManager
 {
 	private static inline final AGGRESSIVE_CLEANUP_COOLDOWN:Float = 2.0;
 	private static inline final COLLECTION_COOLDOWN:Float = 3.0;
-	#if android
+	#if mobile
 	private static inline final MIN_ALLOCATION_GROWTH_BYTES:Float = 8 * 1024 * 1024;
 	private static inline final MIN_RELEASED_ASSETS:Int = 4;
 	private static inline final MIN_USEFUL_RECLAIM_BYTES:Float = 2 * 1024 * 1024;
@@ -37,6 +37,55 @@ class MemoryManager
 	public static var collectionBackoff(default, null):Float = 1.0;
 	public static var lastCollectionEfficiency(default, null):Float = 0.0;
 	public static var lastCollectionDecision(default, null):String = 'automatic GC only';
+	public static var loadingBusy(default, null):Bool = false;
+	private static var deferredGraphics:Map<String, FlxGraphic> = [];
+
+	/** Called by the loader on the main thread; force never bypasses this guard. */
+	public static function setLoadingBusy(busy:Bool):Void
+		loadingBusy = busy;
+
+	private static function releaseGraphic(key:String, graphic:FlxGraphic):Bool
+	{
+		if (graphic.useCount > 0)
+			return false;
+		// A different cache purge may already have destroyed a deferred graphic.
+		if (graphic.bitmap != null && !AssetCache.destroyGraphic(graphic))
+			return false;
+		if (Paths.currentTrackedAssets.get(key) == graphic)
+			Paths.currentTrackedAssets.remove(key);
+		Paths.forgetAsset(key);
+		Assets.cache.removeBitmapData(key);
+		return true;
+	}
+
+	private static function flushDeferredGraphics():Void
+	{
+		var released:Int = 0;
+		// Removing the current key is supported by Haxe Map iteration.
+		for (key => graphic in deferredGraphics)
+		{
+			// A cache replacement must not be evicted by an older release request.
+			if ((Paths.currentTrackedAssets.exists(key) && Paths.currentTrackedAssets.get(key) != graphic)
+				|| (FlxG.bitmap.get(key) != null && FlxG.bitmap.get(key) != graphic))
+			{
+				if (graphic.useCount <= 0)
+				{
+					// Destroy the old object directly: FlxG.bitmap.remove would evict
+					// the replacement registered under the same key.
+					if (graphic.bitmap != null) graphic.destroy();
+					deferredGraphics.remove(key);
+				}
+				continue;
+			}
+			if (releaseGraphic(key, graphic))
+			{
+				deferredGraphics.remove(key);
+				released++;
+			}
+		}
+		if (released > 0)
+			requestCollection('deferred graphics', released);
+	}
 
 	#if android
 	private static var isAndroid:Bool = true;
@@ -62,10 +111,6 @@ class MemoryManager
 		// Search OpenFL assets
 		var foundPath:String = Paths.getPath(imagePath, IMAGE);
 
-		// Clear the OpenFL Assets Cache
-		if (Assets.cache.hasBitmapData(foundPath))
-			Assets.cache.removeBitmapData(foundPath);
-
 		// Search the FlxG cache
 		var graphic:FlxGraphic = FlxG.bitmap.get(foundPath);
 		if (graphic == null)
@@ -79,22 +124,18 @@ class MemoryManager
 
 		if (graphic != null)
 		{
-			// Remove from Paths tracking
-			if (Paths.currentTrackedAssets.exists(foundPath))
-				Paths.currentTrackedAssets.remove(foundPath);
-
-			Paths.forgetAsset(foundPath);
-
-			// Mark for destruction
-			graphic.persist = false;
-			graphic.destroyOnNoUse = true;
-
-			if (removeInstantly)
+			// Keep ownership in the caches while sprites still reference this graphic.
+			// Setting destroyOnNoUse here could destroy it while tracking maps retain it.
+			if (removeInstantly && !loadingBusy && releaseGraphic(foundPath, graphic))
 			{
-				FlxG.bitmap.remove(graphic);
-				graphic.destroy();
+				deferredGraphics.remove(foundPath);
+				requestCollection('image release', 1);
 			}
+			else
+				deferredGraphics.set(foundPath, graphic);
 		}
+		else if (!loadingBusy)
+			Assets.cache.removeBitmapData(foundPath);
 	}
 
 	/**
@@ -128,6 +169,7 @@ class MemoryManager
 		if (PlayState.instance.boyfriendMap.exists(characterName))
 		{
 			char = PlayState.instance.boyfriendMap.get(characterName);
+			if (isActiveCharacter(char)) return;
 			PlayState.instance.boyfriendGroup.remove(char, true);
 			PlayState.instance.boyfriendMap.remove(characterName);
 		}
@@ -135,6 +177,7 @@ class MemoryManager
 		else if (PlayState.instance.dadMap.exists(characterName))
 		{
 			char = PlayState.instance.dadMap.get(characterName);
+			if (isActiveCharacter(char)) return;
 			PlayState.instance.dadGroup.remove(char, true);
 			PlayState.instance.dadMap.remove(characterName);
 		}
@@ -142,6 +185,7 @@ class MemoryManager
 		else if (PlayState.instance.gfMap.exists(characterName))
 		{
 			char = PlayState.instance.gfMap.get(characterName);
+			if (isActiveCharacter(char)) return;
 			PlayState.instance.gfGroup.remove(char, true);
 			PlayState.instance.gfMap.remove(characterName);
 		}
@@ -156,6 +200,13 @@ class MemoryManager
 			if (imageFile != null && imageFile != '')
 				removeImageFromMemory(imageFile, removeInstantly);
 		}
+	}
+
+	private static function isActiveCharacter(character:objects.Character):Bool
+	{
+		var state = PlayState.instance;
+		return state != null && character != null
+			&& (character == state.boyfriend || character == state.dad || character == state.gf);
 	}
 
 	/**
@@ -249,13 +300,28 @@ class MemoryManager
 	 */
 	public static function runPendingCollection(force:Bool = false):Bool
 	{
-		#if cpp
-		if (!collectionPending)
+		if (loadingBusy && states.LoadingState.hasPendingTasks())
+		{
+			lastCollectionDecision = 'deferred while loading tasks are active';
 			return false;
+		}
 
 		if (FlxG.state != null && Std.isOfType(FlxG.state, states.PlayState))
 		{
 			lastCollectionDecision = 'deferred during gameplay';
+			return false;
+		}
+
+		flushDeferredGraphics();
+		if (!collectionPending)
+			return false;
+		if (!MemoryUtil.supportsManualCollection())
+		{
+			collectionPending = false;
+			pendingCollectionReason = '';
+			pendingReleasedAssets = 0;
+			pendingRequestGCCount = -1;
+			lastCollectionDecision = GCBackend.name() + ': resources released; automatic GC';
 			return false;
 		}
 
@@ -299,7 +365,8 @@ class MemoryManager
 		pendingReleasedAssets = 0;
 		pendingRequestGCCount = -1;
 		var heapBefore:Float = MemoryUtil.getGCCurrentMemory();
-		MemoryUtil.collect(true);
+		if (!MemoryUtil.collect(true))
+			return false;
 		lastCollectionTime = Timer.stamp();
 		var freedBytes:Float = MemoryUtil.lastCollectionFreedBytes;
 		lastCollectionEfficiency = heapBefore > 0 ? freedBytes / heapBefore * 100.0 : 0.0;
@@ -315,14 +382,6 @@ class MemoryManager
 			+ formatMilliseconds(MemoryUtil.lastCollectionDurationMs) + ' ms, '
 			+ formatPercentage(lastCollectionEfficiency) + '%, backoff x' + collectionBackoff + ')';
 		return true;
-		#else
-		collectionPending = false;
-		pendingCollectionReason = '';
-		pendingReleasedAssets = 0;
-		pendingRequestGCCount = -1;
-		lastCollectionDecision = 'unsupported target';
-		return false;
-		#end
 	}
 
 	private static inline function formatMegabytes(bytes:Float):String
@@ -345,11 +404,7 @@ class MemoryManager
 	 */
 	public static function getMemoryUsage():Float
 	{
-		#if cpp
-		return openfl.system.System.totalMemoryNumber / 1024 / 1024;
-		#else
-		return 0;
-		#end
+		return MemoryUtil.supportsGCMem() ? MemoryUtil.getGCMemory() / 1024 / 1024 : -1;
 	}
 
 	/**

@@ -148,6 +148,12 @@ class FPSCounter extends Sprite
 
 	private var lastTextColorValue:Int = 0xFFFFFF;
 	private var pendingLayoutRefresh:Bool = true;
+	private var realtimeMemoryLabel:String = '';
+	private var lastRealtimeFPS:Int = -1;
+	private var lastRealtimeDelay:Int = -1;
+	private var lastRealtimeAverage:Int = -1;
+	private var lastRealtimeLevel:Int = -1;
+	private var lastRealtimeMemory:String = '';
 
 	public function new(x:Float = 10, y:Float = 10, color:Int = 0x000000)
 	{
@@ -227,6 +233,7 @@ class FPSCounter extends Sprite
 		// Format displayed memory (smoothed values)
 		var currentMemoryStr = flixel.util.FlxStringUtil.formatBytes(displayedMemory);
 		var peakMemoryStr = flixel.util.FlxStringUtil.formatBytes(displayedMemoryPeak);
+		realtimeMemoryLabel = currentMemoryStr + ' / ' + peakMemoryStr;
 
 		// White or red color based on FPS
 		var targetFPS = ClientPrefs.data.framerate;
@@ -260,17 +267,8 @@ class FPSCounter extends Sprite
 
 		if (showCounter)
 		{
-			setBox(index++,
-				Std.string(currentFPS)
-				+ ' FPS - Delay: '
-				+ formatFloat(frameTimeMs, 1)
-				+ ' / '
-				+ formatFloat(avgFrameTimeMs, 1)
-				+ ' ms - GC: '
-				+ currentMemoryStr
-				+ ' / '
-				+ peakMemoryStr,
-				showBackground);
+			updateRealtimeText();
+			index++;
 
 			if (modAuthor != null && modAuthor.length > 0)
 				setBox(index++, modAuthor, showBackground);
@@ -280,7 +278,7 @@ class FPSCounter extends Sprite
 		{
 			var memoryStats:MemoryStats = getCachedMemoryStats();
 			var memoryDebug:String = 'GC Live: ' + currentMemoryStr + '\nGC Current: '
-				+ flixel.util.FlxStringUtil.formatBytes(memoryStats.gcCurrent)
+				+ formatMemoryStat(memoryStats.gcCurrent)
 				+ '\nPeak Live: ' + peakMemoryStr;
 			if (backend.MemoryUtil.supportsTaskMem())
 				memoryDebug += '\nTask Memory: ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.taskMemory);
@@ -300,9 +298,11 @@ class FPSCounter extends Sprite
 						+ '\nLast GC: ' + formatGCType(memoryStats.gcLastFlags)
 						+ ' | freed ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.gcLastReclaimedBytes)
 						+ '\nFreed total: ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.gcTotalReclaimedBytes)
-					: 'GC runtime stats: unavailable (stock hxcpp)';
-				gcDebug += '\nReserved: ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.gcReserved)
-					+ ' | Large: ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.gcLarge)
+					: 'GC runtime stats: unavailable';
+				gcDebug += '\nRuntime: ' + memoryStats.runtime
+					+ ' | Manual GC: ' + (memoryStats.manualCollectionAvailable ? 'available' : 'automatic only');
+				gcDebug += '\nReserved: ' + formatMemoryStat(memoryStats.gcReserved)
+					+ ' | Large: ' + formatMemoryStat(memoryStats.gcLarge)
 					+ '\nHeap growth: ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.allocationGrowth);
 				gcDebug += '\nGC Policy: ' + backend.MemoryManager.lastCollectionDecision
 					+ '\nScheduler backoff: x' + backend.MemoryManager.collectionBackoff;
@@ -340,6 +340,7 @@ class FPSCounter extends Sprite
 
 	private override function __enterFrame(deltaTime:Float):Void
 	{
+		super.__enterFrame(Std.int(deltaTime));
 		// Compute frame time (delay).
 		var currentFrameTime = Timer.stamp();
 		frameTimeMs = (currentFrameTime - lastFrameTime) * 1000.0; // Convert to milliseconds
@@ -353,7 +354,7 @@ class FPSCounter extends Sprite
 			frameTimesCount++;
 		avgFrameTimeMs = frameTimesCount > 0 ? frameTimesTotal / frameTimesCount : frameTimeMs;
 
-		final now:Float = Timer.stamp() * 1000;
+		final now:Float = currentFrameTime * 1000;
 		final cap:Int = TIMES_CAPACITY;
 
 		if (timesCount < cap)
@@ -376,15 +377,41 @@ class FPSCounter extends Sprite
 
 		currentFPS = timesCount < FlxG.drawFramerate ? timesCount : FlxG.drawFramerate;
 
+		deltaTimeout += Math.max(0, deltaTime);
 		if (deltaTimeout >= TEXT_UPDATE_MS)
 		{
 			updateText();
 			deltaTimeout = 0;
 		}
-		else
-			deltaTimeout += deltaTime;
-
+		if (debugLevel > 0)
+		{
+			updateRealtimeText();
+			layoutBoxes();
+		}
 		animateBoxes(Math.min(deltaTime / 1000, 0.1));
+	}
+
+	/** Runs each display frame; only changed, rounded values rebuild the text. */
+	public dynamic function updateRealtimeText():Void
+	{
+		var delay = Math.round(frameTimeMs * 10);
+		var average = Math.round(avgFrameTimeMs * 10);
+		var color = currentFPS >= ClientPrefs.data.framerate * 0.5 ? 0xFFFFFF : 0xFF0000;
+		if (color != lastTextColorValue)
+		{
+			lastTextColorValue = color;
+			for (box in metricBoxes) box.setTextColor(color);
+		}
+		if (currentFPS == lastRealtimeFPS && delay == lastRealtimeDelay && average == lastRealtimeAverage
+			&& debugLevel == lastRealtimeLevel && realtimeMemoryLabel == lastRealtimeMemory)
+			return;
+		lastRealtimeFPS = currentFPS;
+		lastRealtimeDelay = delay;
+		lastRealtimeAverage = average;
+		lastRealtimeLevel = debugLevel;
+		lastRealtimeMemory = realtimeMemoryLabel;
+		setBox(0, currentFPS + ' FPS - Delay: ' + (delay / 10) + ' / ' + (average / 10)
+			+ ' ms - GC: ' + realtimeMemoryLabel, debugLevel >= 2);
 	}
 
 	// Handle the F2 key event.
@@ -795,8 +822,11 @@ class FPSCounter extends Sprite
 	// Función optimizada para contar notas sin reflection costosa
 	// ELIMINADA - Ya no se usa para mejor rendimiento
 
+	private static inline function formatMemoryStat(bytes:Float):String
+		return bytes < 0 ? 'unavailable' : flixel.util.FlxStringUtil.formatBytes(bytes);
+
 	inline function get_memoryMegas():Float
-		return cpp.vm.Gc.memInfo64(cpp.vm.Gc.MEM_INFO_USAGE);
+		return Math.max(0, backend.MemoryUtil.getGCMemory());
 
 	inline function get_taskMemory():Float
 	{
@@ -892,6 +922,7 @@ private class FPSCounterBox extends Sprite
 	private var hasBackground:Bool = false;
 	private var boxWidth:Float = 48;
 	private var lastColor:Int = -1;
+	private var textFormat:TextFormat;
 
 	private static inline var PADDING_X:Float = 8;
 	private static inline var PADDING_Y:Float = 5;
@@ -907,7 +938,8 @@ private class FPSCounterBox extends Sprite
 		textDisplay = new TextField();
 		textDisplay.selectable = false;
 		textDisplay.mouseEnabled = false;
-		textDisplay.defaultTextFormat = new TextFormat('Monsterrat', 14, color);
+		textFormat = new TextFormat('Monsterrat', 14, color);
+		textDisplay.defaultTextFormat = textFormat;
 		textDisplay.antiAliasType = openfl.text.AntiAliasType.NORMAL;
 		textDisplay.sharpness = 100;
 		textDisplay.multiline = true;
@@ -924,8 +956,9 @@ private class FPSCounterBox extends Sprite
 			return;
 
 		lastColor = color;
-		textDisplay.defaultTextFormat = new TextFormat('Monsterrat', 14, color);
-		textDisplay.setTextFormat(textDisplay.defaultTextFormat);
+		textFormat.color = color;
+		textDisplay.defaultTextFormat = textFormat;
+		textDisplay.setTextFormat(textFormat);
 	}
 
 	public function setContent(text:String, showBackground:Bool):Bool
@@ -933,17 +966,24 @@ private class FPSCounterBox extends Sprite
 		if (textDisplay.text == text && hasBackground == showBackground)
 			return false;
 
-		textDisplay.text = text;
+		if (textDisplay.text != text) textDisplay.text = text;
+		// Keep a stable width for changing digits. Background commands are reused
+		// by the renderer instead of being cleared/rebuilt on every new frame time.
+		var nextWidth = Math.max(boxWidth, Math.ceil((textDisplay.textWidth + (PADDING_X * 2) + (INNER_DIFF * 2) + 6) / 16) * 16);
+		var nextHeight = Math.max(24, textDisplay.textHeight + (PADDING_Y * 2) + (INNER_DIFF * 2));
+		var geometryChanged = nextWidth != boxWidth || nextHeight != boxHeight || hasBackground != showBackground;
+		boxWidth = nextWidth;
+		boxHeight = nextHeight;
 		hasBackground = showBackground;
-		boxWidth = Math.max(48, textDisplay.textWidth + (PADDING_X * 2) + (INNER_DIFF * 2) + 6);
-		boxHeight = Math.max(24, textDisplay.textHeight + (PADDING_Y * 2) + (INNER_DIFF * 2));
-		drawBackground();
-		return true;
+		if (geometryChanged) drawBackground();
+		return geometryChanged;
 	}
 
 	public function animate(elapsed:Float):Void
 	{
 		var target:Float = targetShown ? 1 : 0;
+		if (shownAmount == target && x == baseX - ((1 - target) * 14) && y == baseY)
+			return;
 		var speed:Float = Math.min(1, elapsed * 12);
 		shownAmount += (target - shownAmount) * speed;
 		if (Math.abs(target - shownAmount) < 0.01)

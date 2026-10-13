@@ -117,6 +117,15 @@ class ABotSpeaker extends FlxSpriteGroup
 		speaker.anim.play('anim', true);
 	}
 
+	override function destroy():Void
+	{
+		#if funkin.vis
+		if (spectrum != null) spectrum.dispose();
+		spectrum = null;
+		#end
+		super.destroy();
+	}
+
 	#if funkin.vis
 	public function initAnalyzer()
 	{

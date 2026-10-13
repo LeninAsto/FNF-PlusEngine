@@ -1,6 +1,6 @@
 package states;
 
-import sys.thread.FixedThreadPool;
+import backend.LoadTaskGroup;
 import haxe.Json;
 import lime.utils.Assets;
 import openfl.display.BitmapData;
@@ -33,9 +33,10 @@ class LoadingState extends MusicBeatState
 
 	static var originalBitmapKeys:Map<String, String> = [];
 	static var requestedBitmaps:Map<String, BitmapData> = [];
-	static var mutex:Mutex;
+	static var soundsToWarm:Array<Sound> = [];
+	static final mutex:Mutex = new Mutex();
 	static var progressMutex:Mutex = new Mutex();
-	static var threadPool:FixedThreadPool = null;
+	static var threadPool:LoadTaskGroup = null;
 
 	static inline var LOAD_STALL_TIMEOUT:Float = 30.0;
 	static inline var MAX_LOAD_THREADS:Int = 6;
@@ -197,6 +198,11 @@ class LoadingState extends MusicBeatState
 		timeoutWarning.borderSize = 2;
 		timeoutWarning.visible = false;
 		add(timeoutWarning);
+		if (cancelling)
+		{
+			timeoutWarning.text = Language.getPhrase('loading_cancelling', 'Cancelling loading...', []);
+			timeoutWarning.visible = true;
+		}
 
 		// Añadir touchpad para Android
 		addTouchPad('NONE', 'B');
@@ -204,7 +210,7 @@ class LoadingState extends MusicBeatState
 		super.create();
 		GlobalLoadingOverlay.showPersistent();
 
-		if (stateChangeDelay <= 0 && checkLoaded())
+		if (!cancelling && stateChangeDelay <= 0 && checkLoaded())
 		{
 			dontUpdate = true;
 			onLoad();
@@ -220,6 +226,30 @@ class LoadingState extends MusicBeatState
 	var watchLoaded:Int = -1;
 	var watchInit:Bool = false;
 	var stallTime:Float = 0;
+	var cancelling:Bool = false;
+
+	function cancelLoading():Void
+	{
+		if (cancelling)
+			return;
+		cancelling = true;
+		SongLoadMetrics.cancel();
+		if (threadPool != null)
+			threadPool.cancel();
+		timeoutWarning.text = Language.getPhrase('loading_cancelling', 'Cancelling loading...', []);
+		timeoutWarning.visible = true;
+	}
+
+	function finishCancellation():Void
+	{
+		_loaded();
+		transitioning = true;
+		finishedLoading = true;
+		var targetState:FlxState = returnState != null ? returnState : new MainMenuState();
+		if (stopMusic && FlxG.sound.music != null)
+			FlxG.sound.music.stop();
+		FlxG.camera.fade(FlxColor.BLACK, 0.3, false, () -> MusicBeatState.switchState(targetState));
+	}
 
 	override function update(elapsed:Float)
 	{
@@ -227,6 +257,12 @@ class LoadingState extends MusicBeatState
 		if (dontUpdate)
 			return;
 		GlobalLoadingOverlay.showPersistent();
+		if (cancelling)
+		{
+			if (!transitioning && !hasPendingTasks())
+				finishCancellation();
+			return;
+		}
 
 		// Timeout system - incrementar el temporizador
 		if (!transitioning && !finishedLoading)
@@ -245,27 +281,8 @@ class LoadingState extends MusicBeatState
 			// Si se puede escapar y se presiona ESC o botón B del touchpad, volver al estado anterior
 			if (canEscape && (FlxG.keys.justPressed.ESCAPE || (touchPad != null && touchPad.buttonB.justPressed)))
 			{
-				SongLoadMetrics.cancel();
-				transitioning = true;
+				cancelLoading();
 				FlxG.sound.play(Paths.sound('cancelMenu'));
-
-				// Limpiar recursos
-				if (threadPool != null)
-				{
-					threadPool.shutdown();
-					threadPool = null;
-				}
-
-				// Volver al estado de retorno si existe, sino a MainMenuState
-				var targetState:FlxState = (returnState != null) ? returnState : new MainMenuState();
-
-				if (stopMusic && FlxG.sound.music != null)
-					FlxG.sound.music.stop();
-
-				FlxG.camera.fade(FlxColor.BLACK, 0.3, false, function()
-				{
-					MusicBeatState.switchState(targetState);
-				});
 				return;
 			}
 		}
@@ -298,9 +315,7 @@ class LoadingState extends MusicBeatState
 				else if ((stallTime += elapsed) >= LOAD_STALL_TIMEOUT)
 				{
 					logLoadTimeout();
-					checkLoaded();
-					transitioning = true;
-					onLoad();
+					cancelLoading();
 					return;
 				}
 			}
@@ -418,9 +433,16 @@ class LoadingState extends MusicBeatState
 		}
 	}
 
-	#if HSCRIPT_ALLOWED
 	override function destroy()
 	{
+		if (!finishedLoading && threadPool != null)
+		{
+			threadPool.cancel();
+			SongLoadMetrics.cancel();
+			if (!hasPendingTasks())
+				_loaded();
+		}
+		#if HSCRIPT_ALLOWED
 		if (hscript != null)
 		{
 			if (hscript.exists('onDestroy'))
@@ -428,9 +450,9 @@ class LoadingState extends MusicBeatState
 			hscript.destroy();
 		}
 		hscript = null;
+		#end
 		super.destroy();
 	}
-	#end
 
 	var finishedLoading:Bool = false;
 
@@ -439,7 +461,7 @@ class LoadingState extends MusicBeatState
 		SongLoadMetrics.finish();
 		Paths.retainTempFramesForNextState();
 		_loaded();
-		// Workers are stopped now, making this a safe place to honor a deferred GC.
+		// Task bodies have finished publishing results; idle workers are exiting.
 		backend.MemoryManager.runPendingCollection();
 		GlobalLoadingOverlay.showPersistent();
 
@@ -454,6 +476,16 @@ class LoadingState extends MusicBeatState
 
 	static function _loaded()
 	{
+		if (hasPendingTasks())
+			throw 'Cannot finish loading while tasks are still running';
+		// Cancelled/unused decoded images were never handed to the asset cache.
+		for (bitmap in requestedBitmaps)
+			if (bitmap != null)
+				bitmap.dispose();
+		requestedBitmaps.clear();
+		originalBitmapKeys.clear();
+		soundsToWarm.resize(0);
+		atlasesToPrepare.resize(0);
 		loaded = 0;
 		loadMax = 0;
 		initialThreadCompleted = true;
@@ -461,11 +493,14 @@ class LoadingState extends MusicBeatState
 
 		FlxTransitionableState.skipNextTransIn = true;
 		if (threadPool != null)
-			threadPool.shutdown(); // kill all workers safely
+			threadPool.shutdown(); // Task bodies are already finished; wake idle workers to exit.
 		threadPool = null;
-		mutex = null;
+		backend.MemoryManager.setLoadingBusy(false);
 		setLoadItem('');
 	}
+
+	public static function hasPendingTasks():Bool
+		return threadPool != null && !threadPool.isIdle();
 
 	static function setLoadItem(item:String):Void
 	{
@@ -497,10 +532,13 @@ class LoadingState extends MusicBeatState
 	}
 
 	static function logLoadTimeout()
-		trace('LoadingState watchdog: no progress for ${LOAD_STALL_TIMEOUT}s at $loaded/$loadMax (prepDone=$initialThreadCompleted); forcing completion.');
+		trace('LoadingState watchdog: no progress for ${LOAD_STALL_TIMEOUT}s at $loaded/$loadMax; cancelling incomplete load.');
 
 	public static function checkLoaded():Bool
 	{
+		// Capture idle before draining results. A worker finishing during this call
+		// may publish a bitmap after the drain, so that completion belongs to the next call.
+		var tasksIdle:Bool = !hasPendingTasks();
 		var pending:Map<String, BitmapData> = null;
 		var pendingKeys:Map<String, String> = null;
 		if (mutex != null)
@@ -529,7 +567,7 @@ class LoadingState extends MusicBeatState
 
 		// Atlas creation touches Flixel/OpenFL objects, so it belongs on the main thread.
 		// Preparing one per frame keeps the loading screen responsive on slower phones.
-		if (initialThreadCompleted && getLoadedCount() >= workerLoadMax && atlasesToPrepare.length > 0)
+		if (tasksIdle && initialThreadCompleted && getLoadedCount() >= workerLoadMax && atlasesToPrepare.length > 0)
 		{
 			var atlas:String = atlasesToPrepare.shift();
 			setLoadItem('atlas $atlas');
@@ -545,8 +583,14 @@ class LoadingState extends MusicBeatState
 			loaded++;
 			progressMutex.release();
 		}
+		if (tasksIdle && soundsToWarm.length > 0)
+		{
+			setLoadItem('Preparing audio playback');
+			try backend.AssetLoader.warmAudio(soundsToWarm.shift())
+			catch (error:Dynamic) trace('Audio warmup failed: $error');
+		}
 		// trace('we checked if loaded');
-		return (getLoadedCount() >= loadMax && initialThreadCompleted);
+		return (tasksIdle && soundsToWarm.length == 0 && getLoadedCount() >= loadMax && initialThreadCompleted);
 	}
 
 	public static function loadNextDirectory()
@@ -599,8 +643,13 @@ class LoadingState extends MusicBeatState
 			else if (Sys.time() - stallStart >= LOAD_STALL_TIMEOUT)
 			{
 				logLoadTimeout();
-				_loaded();
-				break;
+				SongLoadMetrics.cancel();
+				threadPool.cancel();
+				// Recover through an updating screen rather than freezing the caller
+				// while native work drains, or returning a partially loaded song.
+				var recovery = new LoadingState(target, stopMusic);
+				recovery.cancelling = true;
+				return recovery;
 			}
 			Sys.sleep(0.001);
 		}
@@ -630,9 +679,13 @@ class LoadingState extends MusicBeatState
 	static function _startPool()
 	{
 		if (threadPool != null)
-			return;
-		if (mutex == null)
-			mutex = new Mutex();
+		{
+			if (!threadPool.isCancelled())
+				return;
+			if (hasPendingTasks())
+				throw 'Previous song load is still cancelling';
+			_loaded();
+		}
 
 		#if MULTITHREADED_LOADING
 		// Due to the Main thread and Discord thread, we decrease it by 2.
@@ -647,7 +700,8 @@ class LoadingState extends MusicBeatState
 		#else
 		var threadCount:Int = 1;
 		#end
-		threadPool = new FixedThreadPool(threadCount);
+		threadPool = new LoadTaskGroup(threadCount);
+		backend.MemoryManager.setLoadingBusy(true);
 	}
 
 	static function collectPreloadAssets(json:Dynamic, imgs:Array<String>, snds:Array<String>, mscs:Array<String>)
@@ -687,6 +741,10 @@ class LoadingState extends MusicBeatState
 
 	public static function prepareToSong()
 	{
+		if (hasPendingTasks())
+			throw 'A song load is already running';
+		if (threadPool != null)
+			_loaded();
 		setLoadItem('Preparing song data');
 		if (PlayState.SONG == null)
 		{
@@ -749,8 +807,9 @@ class LoadingState extends MusicBeatState
 					imagesToPrepare.push(stageUIAsset(stageUI, rating.image));
 				for (i in 0...10)
 					imagesToPrepare.push(stageUIAsset(stageUI, 'num$i'));
-				for (asset in ['combo', 'miss', 'early', 'late'])
+				for (asset in ['combo', 'miss', 'early', 'late', 'minus'])
 					imagesToPrepare.push(stageUIAsset(stageUI, asset));
+				imagesToPrepare.push(pixelStage ? 'pixelUI/minus-pixel' : 'minus');
 
 				// LOAD NOTE IMAGE
 				var noteSkin:String = Note.getDefaultNoteSkinPath(pixelStage);
@@ -872,8 +931,11 @@ class LoadingState extends MusicBeatState
 			{
 				trace('ERROR! while preparing song: $err');
 			}
-			clearInvalids();
-			startThreads();
+			if (!threadPool.isCancelled())
+			{
+				clearInvalids();
+				startThreads();
+			}
 			initialThreadCompleted = true;
 		});
 	}
@@ -964,8 +1026,8 @@ class LoadingState extends MusicBeatState
 
 	public static function startThreads()
 	{
-		if (mutex == null)
-			mutex = new Mutex();
+		if (threadPool != null && threadPool.isCancelled())
+			return;
 		workerLoadMax = imagesToPrepare.length + soundsToPrepare.length + musicToPrepare.length + songsToPrepare.length;
 		loadMax = workerLoadMax + atlasesToPrepare.length;
 		SongLoadMetrics.beginAssets(loadMax);
@@ -1109,8 +1171,14 @@ class LoadingState extends MusicBeatState
 				var sound:Sound = stream ? backend.AssetLoader.loadStreamedSound(file) : backend.AssetLoader.loadSound(file);
 				if (sound != null)
 				{
+					#if funkin.vis
+					var stage = PlayState.SONG != null ? PlayState.SONG.stage : null;
+					if (stream && key.endsWith('/Inst') && (stage == 'phillyStreets' || stage == 'phillyBlazin'))
+						backend.AssetLoader.prepareAnalyzer(sound);
+					#end
 					mutex.acquire();
 					Paths.currentTrackedSounds.set(cacheKey, sound);
+					soundsToWarm.push(sound);
 					mutex.release();
 				}
 			}

@@ -31,6 +31,15 @@ class MemoryUtil
 	public static var lastCollectionDurationMs(default, null):Float = 0;
 	public static var lastCollectionFreedBytes(default, null):Float = 0;
 
+	public static inline function supportsManualCollection():Bool
+		return GCBackend.canCollect();
+
+	public static inline function supportsGCMem():Bool
+		return GCBackend.hasHeapStats();
+
+	public static inline function supportsCompaction():Bool
+		return GCBackend.canCompact();
+
 	/**
 	 * Check if the current platform supports Task Memory retrieval.
 	 * @return True if Task Memory is available on this platform
@@ -101,16 +110,14 @@ class MemoryUtil
 	 */
 	public static function getGCMemory():Float
 	{
+		if (!supportsGCMem())
+			return -1;
 		return openfl.system.System.totalMemoryNumber;
 	}
 
 	public static function getGCCurrentMemory():Float
 	{
-		#if cpp
-		return cpp.vm.Gc.memInfo64(cpp.vm.Gc.MEM_INFO_CURRENT);
-		#else
-		return getGCMemory();
-		#end
+		return GCBackend.currentMemory();
 	}
 
 	public static function getGCReservedMemory():Float
@@ -118,7 +125,7 @@ class MemoryUtil
 		#if cpp
 		return cpp.vm.Gc.memInfo64(cpp.vm.Gc.MEM_INFO_RESERVED);
 		#else
-		return getGCMemory();
+		return -1;
 		#end
 	}
 
@@ -127,7 +134,7 @@ class MemoryUtil
 		#if cpp
 		return cpp.vm.Gc.memInfo64(cpp.vm.Gc.MEM_INFO_LARGE);
 		#else
-		return 0;
+		return -1;
 		#end
 	}
 
@@ -183,25 +190,17 @@ class MemoryUtil
 	/**
 	 * Enable garbage collection if it was previously disabled.
 	 */
-	public static function enable():Void
+	public static function enable():Bool
 	{
-		#if cpp
-		cpp.vm.Gc.enable(true);
-		#else
-		throw 'Not implemented!';
-		#end
+		return GCBackend.enable(true);
 	}
 
 	/**
 	 * Disable garbage collection entirely.
 	 */
-	public static function disable():Void
+	public static function disable():Bool
 	{
-		#if cpp
-		cpp.vm.Gc.enable(false);
-		#else
-		throw 'Not implemented!';
-		#end
+		return GCBackend.enable(false);
 	}
 
 	/**
@@ -209,32 +208,26 @@ class MemoryUtil
 	 * Should only be called from the main thread.
 	 * @param major `true` to perform major collection
 	 */
-	public static function collect(major:Bool = false):Void
+	public static function collect(major:Bool = false):Bool
 	{
+		if (!supportsManualCollection())
+			return false;
 		var before:Float = getGCCurrentMemory();
 		var start:Float = haxe.Timer.stamp();
-		#if cpp
-		cpp.vm.Gc.run(major);
-		#elseif hl
-		hl.Gc.major();
-		#else
-		throw 'Not implemented!';
-		#end
+		if (!GCBackend.collect(major))
+			return false;
 		lastCollectionDurationMs = (haxe.Timer.stamp() - start) * 1000;
 		lastCollectionFreedBytes = Math.max(0, before - getGCCurrentMemory());
 		explicitCollections++;
+		return true;
 	}
 
 	/**
 	 * Perform garbage collection compaction (reduces fragmentation).
 	 */
-	public static function compact():Void
+	public static function compact():Bool
 	{
-		#if cpp
-		cpp.vm.Gc.compact();
-		#else
-		throw 'Not implemented!';
-		#end
+		return GCBackend.compact();
 	}
 
 	// ========================================
@@ -306,6 +299,10 @@ class MemoryUtil
 		var gcCurrent:Float = getGCCurrentMemory();
 		var rootGCStatsAvailable:Bool = supportsRootGCStats();
 		var stats:MemoryStats = {
+			runtime: GCBackend.name(),
+			heapStatsAvailable: supportsGCMem(),
+			manualCollectionAvailable: supportsManualCollection(),
+			compactionAvailable: supportsCompaction(),
 			gcMemory: gcMemory,
 			gcCurrent: gcCurrent,
 			gcReserved: getGCReservedMemory(),
@@ -337,6 +334,10 @@ class MemoryUtil
  */
 typedef MemoryStats =
 {
+	var runtime:String;
+	var heapStatsAvailable:Bool;
+	var manualCollectionAvailable:Bool;
+	var compactionAvailable:Bool;
 	/**
 	 * Garbage collector memory usage (bytes)
 	 */
