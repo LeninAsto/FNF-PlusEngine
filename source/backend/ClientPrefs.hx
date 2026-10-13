@@ -186,7 +186,8 @@ import mobile.backend.PsychJNI;
 	public var heyIntro:Bool = false; // Boyfriend and Girlfriend do Hey! animation on countdown Go!
 	public var breakTimer:Bool = false; // Show timer when next notes are approaching
 	public var usePsychFreeplay:Bool = true; // Use Psych-style legacy Freeplay instead of PlusEngine Freeplay
-	public var dragCharacterToMove:Bool = false;
+	public var cneStyleDragCharacter:Bool = false;
+	public var canDragCameraStage:Bool = true;
 
 	// Mod compatibility / security
 	public var scriptWarns:Bool = true; // Show warnings for deprecated Lua/HScript compatibility APIs

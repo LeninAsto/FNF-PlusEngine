@@ -45,8 +45,16 @@ class LegacySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		#end
 
-		var option:Option = new Option('Drag Character To Move',
-			'If checked, the character position can be dragged with the cursor, just like in Codename Engine.', 'dragCharacterToMove', BOOL);
+		var option:Option = new Option('Drag Character',
+			'If checked, holding a character with mouse/touch screen will move the position, just like in Codename Engine.', 'cneStyleDragCharacter', BOOL);
+		option.onChange = function()
+		{
+			ClientPrefs.saveSettings();
+		};
+		addOption(option);
+
+		var option:Option = new Option('Drag Stage Camera',
+		    'If unchecked, stage camera cannot be dragged with mouse/touch screen.\nUncheck this if you prefer old Psych style.', 'canDragCameraStage', BOOL);
 		option.onChange = function()
 		{
 			ClientPrefs.saveSettings();

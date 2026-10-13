@@ -15,7 +15,7 @@ class HealthIcon extends FlxSprite
 	private var char:String = '';
 
 	public var isAnimated:Bool = false;
-	public var animFPS:Int = 24;
+	public var animFPS = iconFps;
 
 	public function new(char:String = 'face', isPlayer:Bool = false, ?allowGPU:Bool = true)
 	{

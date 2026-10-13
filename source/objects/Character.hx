@@ -25,6 +25,7 @@ typedef CharacterFile =
 	var vocals_file:String;
 	@:optional var _editor_isPlayer:Null<Bool>;
 	@:optional var animatedIcon:Bool;
+	@:optional var fpsicon:Int;
 	@:optional var renderType:String;
 	@:optional var assetPath:String;
 }
@@ -56,6 +57,7 @@ class Character extends FlxSprite
 	public var isPlayer:Bool = false;
 	public var curCharacter:String = DEFAULT_CHARACTER;
 	public var animatedIcon:Bool = false;
+	public var iconFps:Int = 24;
 
 	public var holdTimer:Float = 0;
 	public var heyTimer:Float = 0;
@@ -277,6 +279,7 @@ class Character extends FlxSprite
 		healthColorArray = (json.healthbar_colors != null && json.healthbar_colors.length > 2) ? json.healthbar_colors : [161, 161, 161];
 		vocalsFile = json.vocals_file != null ? json.vocals_file : '';
 		animatedIcon = (json.animatedIcon == true);
+		iconFps = (json.fpsicon != null) ? json.fpsicon : 24;
 		originalFlipX = (json.flip_x == true);
 		editorIsPlayer = json._editor_isPlayer; // antialiasing
 		noAntialiasing = (json.no_antialiasing == true);
