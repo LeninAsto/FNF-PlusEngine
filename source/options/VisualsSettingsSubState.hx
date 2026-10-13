@@ -203,6 +203,15 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		option.onChange = syncPopupVisibility;
 
+		#if android
+		var option:Option = new Option('Lighter Hit Path', 'If unchecked, the full visual path will run instead of light visual path.\nUnchecked this may cause LAG performance.', 'runOnLightVisual', BOOL);
+		option.onChange = function()
+		{
+			ClientPrefs.saveSettings();
+		};
+		addOption(option);
+		#end
+
 		var option:Option = new Option('Combo and Rating in camGame',
 			'If enabled, Combo and Ratings will be rendered in the camGame layer instead of camHUD.', 'comboInGame', BOOL);
 		addOption(option);

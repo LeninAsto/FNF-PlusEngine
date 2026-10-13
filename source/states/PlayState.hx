@@ -3893,7 +3893,7 @@ class PlayState extends MusicBeatState
 		var noteDiff:Float = Math.abs(hitDiff);
 		vocals.volume = 1;
 		#if android
-		var lightHitVisuals:Bool = true;
+		var lightHitVisuals = ClientPrefs.data.runOnLightVisual;
 		#else
 		var lightHitVisuals:Bool = false;
 		#end
@@ -4463,7 +4463,7 @@ class PlayState extends MusicBeatState
 		if(note.wasGoodHit) return;
 		if(cpuControlled && note.ignoreNote) return;
 		#if android
-		var lightHitVisuals:Bool = true;
+		var lightHitVisuals = ClientPrefs.data.runOnLightVisual;
 		#else
 		var lightHitVisuals:Bool = false;
 		#end

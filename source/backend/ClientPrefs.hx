@@ -117,6 +117,9 @@ import mobile.backend.PsychJNI;
 	public var showComboNum:Bool = true;
 	public var showTimingTags:Bool = false;
 	public var showHitMs:Bool = false;
+	#if android
+	public var runOnLightVisual:Bool = true;
+	#end
 	public var comboInGame:Bool = false;
 	public var nfRatingStyle:Bool = false;
 	public var endCountdown:Bool = false; // Enables/disables the end countdown
