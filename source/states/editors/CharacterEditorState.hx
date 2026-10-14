@@ -118,7 +118,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		healthBar.scrollFactor.set();
 		healthBar.cameras = [camHUD];
 
-		healthIcon = new HealthIcon(character.healthIcon, false, false);
+		healthIcon = new HealthIcon(character.healthIcon, false, false, character.iconFps);
 		healthIcon.y = FlxG.height - 150;
 		healthIcon.cameras = [camHUD];
 
@@ -693,12 +693,12 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		animatedIconCheckBox.onClick = function()
 		{
 			character.animatedIcon = animatedIconCheckBox.checked;
-			healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon);
+			healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon, character.iconFps);
 		};
 
 		iconFpsStepper = new PsychUINumericStepper(animatedIconCheckBox.x, animatedIconCheckBox.y + 30, 1, character.iconFps, 1, 120, 0);
-		iconFpsStepper.onChange = function(v) {
-			character.iconFps = Math.round(v);
+		iconFpsStepper.onValueChange = function() {
+			character.iconFps = Math.round(iconFpsStepper.value);
 			healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon == true, character.iconFps);
 			unsavedProgress = true;
 		};
@@ -785,7 +785,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			if (sender == healthIconInputText)
 			{
 				var lastIcon = healthIcon.getCharacter();
-				healthIcon.changeIcon(healthIconInputText.text, false, character.animatedIcon == true);
+				healthIcon.changeIcon(healthIconInputText.text, false, character.animatedIcon == true, character.iconFps);
 				character.healthIcon = healthIconInputText.text;
 				if (lastIcon != healthIcon.getCharacter())
 					updatePresence();
@@ -1291,7 +1291,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		healthColorStepperB.value = character.healthColorArray[2];
 		healthBar.leftBar.color = healthBar.rightBar.color = FlxColor.fromRGB(character.healthColorArray[0], character.healthColorArray[1],
 			character.healthColorArray[2]);
-		healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon == true);
+		healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon == true, character.iconFps);
 		updatePresence();
 	}
 

@@ -666,15 +666,15 @@ class PlayState extends MusicBeatState
 		uiGroup.add(healthBar);
 
 		var animatedIcon:Bool = (SONG.isAnimated == true);
-		iconP1 = new HealthIcon(playerChar().healthIcon, true);
-		if (animatedIcon || playerChar().animatedIcon) iconP1.changeIcon(iconP1.getCharacter(), true, true);
+		iconP1 = new HealthIcon(playerChar().healthIcon, true, true, playerChar().iconFps);
+		if (animatedIcon || playerChar().animatedIcon) iconP1.changeIcon(iconP1.getCharacter(), true, true, playerChar().iconFps);
 		iconP1.y = ClientPrefs.data.iconBounceType == 'Old' ? healthBar.y - (iconP1.height / 2) : healthBar.y - 75;
 		iconP1.visible = !ClientPrefs.data.hideHud;
 		iconP1.alpha = ClientPrefs.data.healthBarAlpha;
 		uiGroup.add(iconP1);
 
-		iconP2 = new HealthIcon(opponentChar().healthIcon, false);
-		if (animatedIcon || opponentChar().animatedIcon) iconP2.changeIcon(iconP2.getCharacter(), true, true);
+		iconP2 = new HealthIcon(opponentChar().healthIcon, false, true, opponentChar().iconFps);
+		if (animatedIcon || opponentChar().animatedIcon) iconP2.changeIcon(iconP2.getCharacter(), true, true, opponentChar().iconFps);
 		iconP2.y = ClientPrefs.data.iconBounceType == 'Old' ? healthBar.y - (iconP2.height / 2) : healthBar.y - 75;
 		iconP2.visible = !ClientPrefs.data.hideHud;
 		iconP2.alpha = ClientPrefs.data.healthBarAlpha;
@@ -682,8 +682,8 @@ class PlayState extends MusicBeatState
 
 		if(eventsPushed.contains('Add Secondary Icon'))
 		{
-			iconGF = new HealthIcon(gf != null ? gf.healthIcon : 'gf', true, false);
-			if (animatedIcon || (gf != null && gf.animatedIcon)) iconGF.changeIcon(iconGF.getCharacter(), false, true);
+			iconGF = new HealthIcon(gf != null ? gf.healthIcon : 'gf', true, false, gf != null ? gf.iconFps : 24);
+			if (animatedIcon || (gf != null && gf.animatedIcon)) iconGF.changeIcon(iconGF.getCharacter(), false, true, gf != null ? gf.iconFps : 24);
 			iconGF.y = ClientPrefs.data.iconBounceType == 'Old' ? healthBar.y - (iconGF.height / 2) : healthBar.y - 75;
 			iconGF.visible = false;
 			iconGF.alpha = ClientPrefs.data.healthBarAlpha;
@@ -950,6 +950,8 @@ class PlayState extends MusicBeatState
 		final drawsPerSecond = Std.int(Math.round(drawsPerFrame * averageFPS));
 		final memoryText = Main.fpsVar != null ? FlxStringUtil.formatBytes(Main.fpsVar.memoryMegas) : "0 MB";
 		final itemText = '${stats.dbgArrows}N/${stats.dbgHolds}H/${stats.dbgReceptors}R/${stats.dbgAttachments}A';
+		final parityText = stats.dbgParityError < 0 ? 'n/a' : '${fmt(stats.dbgParityError, 2)} px';
+		final gpuObjectTotal = stats.dbgArrows + stats.dbgReceptors + stats.dbgAttachments;
 
 		mcDbgTxt.text = '${currentFPS} FPS / ${Std.int(Math.round(averageFPS))} AVG'
 			+ '\n${fmt(currentFPS > 0 ? 1000 / currentFPS : 0, 1)} ms frame'
@@ -957,6 +959,13 @@ class PlayState extends MusicBeatState
 			+ '\nItems ${itemText}'
 			+ '\nVerts ${stats.dbgVertices} | Draws ${drawsPerFrame} (${drawsPerSecond}/s)'
 			+ '\nHolds ${stats.dbgHoldCmds}/${stats.dbgActiveHolds} | Paths ${stats.dbgPathCmds}'
+			+ '\nBackend ${stats.dbgBackend} | ${stats.dbgFallbackReason}'
+			+ '\nPrep obj ${fmt(stats.dbgObjectPrepareMs, 2)} / path ${fmt(stats.dbgPathPrepareMs, 2)} ms'
+			+ '\nGPU eval obj ${stats.dbgGpuObjects}/$gpuObjectTotal | holds ${stats.dbgGpuHolds}/${stats.dbgHolds} | paths ${stats.dbgGpuInstances}'
+			+ '\nObj fb ${stats.dbgObjectFallback} | Hold fb ${stats.dbgHoldFallback}'
+			+ '\nCap ${stats.dbgHoldCap}'
+			+ '\nParity $parityText | Path fb ${stats.dbgFallbackReason}'
+			+ '\nUpload ${FlxStringUtil.formatBytes(stats.dbgUploadedBytes)} | Shader builds ${stats.dbgShaderChanges}'
 			+ '\nEmit ${fmt(stats.dbgEmitMs, 2)} ms | Subdiv ${stats.dbgHoldSubdivisions} | Q ${fmt(stats.dbgPathQuality, 2)}'
 			+ '\nLoad ${SongLoadMetrics.summary()}'
 			+ '\nGC ${memoryText} | ${mcDbgRenderer}';
@@ -2890,7 +2899,7 @@ class PlayState extends MusicBeatState
 							boyfriend.alpha = 0.00001;
 							boyfriend = boyfriendMap.get(value2);
 							boyfriend.alpha = lastAlpha;
-							iconP1.changeIcon(boyfriend.healthIcon);
+							iconP1.changeIcon(boyfriend.healthIcon, true, SONG.isAnimated == true || boyfriend.animatedIcon, boyfriend.iconFps);
 							updateIconAnimations();
 						}
 						setOnScripts('boyfriendName', boyfriend.curCharacter);
@@ -2913,7 +2922,7 @@ class PlayState extends MusicBeatState
 								gf.visible = false;
 							}
 							dad.alpha = lastAlpha;
-							iconP2.changeIcon(dad.healthIcon);
+							iconP2.changeIcon(dad.healthIcon, true, SONG.isAnimated == true || dad.animatedIcon, dad.iconFps);
 							updateIconAnimations();
 						}
 						setOnScripts('dadName', dad.curCharacter);
@@ -2932,7 +2941,7 @@ class PlayState extends MusicBeatState
 								gf = gfMap.get(value2);
 								gf.alpha = lastAlpha;
 								if(iconGF != null)
-									iconGF.changeIcon(gf.healthIcon);
+									iconGF.changeIcon(gf.healthIcon, false, SONG.isAnimated == true || gf.animatedIcon, gf.iconFps);
 								updateIconAnimations();
 							}
 							setOnScripts('gfName', gf.curCharacter);
