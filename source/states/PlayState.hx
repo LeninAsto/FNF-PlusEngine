@@ -950,8 +950,6 @@ class PlayState extends MusicBeatState
 		final drawsPerSecond = Std.int(Math.round(drawsPerFrame * averageFPS));
 		final memoryText = Main.fpsVar != null ? FlxStringUtil.formatBytes(Main.fpsVar.memoryMegas) : "0 MB";
 		final itemText = '${stats.dbgArrows}N/${stats.dbgHolds}H/${stats.dbgReceptors}R/${stats.dbgAttachments}A';
-		final parityText = stats.dbgParityError < 0 ? 'n/a' : '${fmt(stats.dbgParityError, 2)} px';
-		final gpuObjectTotal = stats.dbgArrows + stats.dbgReceptors + stats.dbgAttachments;
 
 		mcDbgTxt.text = '${currentFPS} FPS / ${Std.int(Math.round(averageFPS))} AVG'
 			+ '\n${fmt(currentFPS > 0 ? 1000 / currentFPS : 0, 1)} ms frame'
@@ -959,13 +957,6 @@ class PlayState extends MusicBeatState
 			+ '\nItems ${itemText}'
 			+ '\nVerts ${stats.dbgVertices} | Draws ${drawsPerFrame} (${drawsPerSecond}/s)'
 			+ '\nHolds ${stats.dbgHoldCmds}/${stats.dbgActiveHolds} | Paths ${stats.dbgPathCmds}'
-			+ '\nBackend ${stats.dbgBackend} | ${stats.dbgFallbackReason}'
-			+ '\nPrep obj ${fmt(stats.dbgObjectPrepareMs, 2)} / path ${fmt(stats.dbgPathPrepareMs, 2)} ms'
-			+ '\nGPU eval obj ${stats.dbgGpuObjects}/$gpuObjectTotal | holds ${stats.dbgGpuHolds}/${stats.dbgHolds} | paths ${stats.dbgGpuInstances}'
-			+ '\nObj fb ${stats.dbgObjectFallback} | Hold fb ${stats.dbgHoldFallback}'
-			+ '\nCap ${stats.dbgHoldCap}'
-			+ '\nParity $parityText | Path fb ${stats.dbgFallbackReason}'
-			+ '\nUpload ${FlxStringUtil.formatBytes(stats.dbgUploadedBytes)} | Shader builds ${stats.dbgShaderChanges}'
 			+ '\nEmit ${fmt(stats.dbgEmitMs, 2)} ms | Subdiv ${stats.dbgHoldSubdivisions} | Q ${fmt(stats.dbgPathQuality, 2)}'
 			+ '\nLoad ${SongLoadMetrics.summary()}'
 			+ '\nGC ${memoryText} | ${mcDbgRenderer}';
