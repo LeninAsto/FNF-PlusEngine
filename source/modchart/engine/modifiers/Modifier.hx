@@ -1,6 +1,7 @@
 package modchart.engine.modifiers;
 
 import flixel.FlxG;
+import haxe.ds.StringMap;
 import modchart.Manager;
 import modchart.backend.core.ModifierParameters;
 import modchart.backend.core.VisualParameters;
@@ -15,6 +16,7 @@ using StringTools;
 #end
 class Modifier {
 	private var pf:PlayField;
+	private var __valueIDs:StringMap<Int> = new StringMap();
 
 	public function new(pf:PlayField) {
 		this.pf = pf;
@@ -34,6 +36,10 @@ class Modifier {
 	public function shouldRun(params:ModifierParameters):Bool
 		return false;
 
+	/** Coarse per-frame gate. Scripted/dynamic modifiers stay active by default. */
+	public function isActive(player:Int):Bool
+		return true;
+
 	public inline function supportsMode(mode:TransformMode):Bool {
 		final myMode = transformMode();
 		return myMode == TransformMode.ALL || mode == TransformMode.ALL || myMode.has(mode);
@@ -43,7 +49,7 @@ class Modifier {
 		return true;
 
 	public inline function findID(name:String):Int {
-		@:privateAccess return pf.modifiers.percents.__hashKey(name.toLowerCase());
+		return pf.modifiers.percents.getID(name);
 	}
 
 	public inline function getUnsafe(id:Int, player:Int)
@@ -72,11 +78,16 @@ class Modifier {
 	}
 
 	public inline function getPercent(name:String, player:Int):Float {
-		return pf.getPercent(name, player);
+		var id = __valueIDs.get(name);
+		if (id == null) {
+			id = findID(name);
+			__valueIDs.set(name, id);
+		}
+		return getUnsafe(id, player);
 	}
 
 	private inline function getKeyCount(player:Int = 0):Int {
-		return Adapter.instance.getKeyCount();
+		return Adapter.instance.getKeyCount(player);
 	}
 
 	private inline function getPlayerCount():Int {
@@ -101,10 +112,16 @@ class Modifier {
 	public inline function getReceptorX(lane:Int, player:Int)
 		return Adapter.instance.getDefaultReceptorX(lane, player);
 
-	private var WIDTH:Float = FlxG.width;
-	private var HEIGHT:Float = FlxG.height;
+	private var WIDTH(get, never):Float;
+	private var HEIGHT(get, never):Float;
 	private var ARROW_SIZE(get, never):Float;
 	private var ARROW_SIZEDIV2(get, never):Float;
+
+	private inline function get_WIDTH():Float
+		return FlxG.width;
+
+	private inline function get_HEIGHT():Float
+		return FlxG.height;
 
 	private inline function get_ARROW_SIZE():Float
 		return Manager.ARROW_SIZE;

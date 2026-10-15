@@ -65,4 +65,13 @@ class Boost extends Modifier {
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function isActive(player:Int):Bool {
+		if (getUnsafe(_boostID, player) != 0 || getUnsafe(_brakeID, player) != 0 || getUnsafe(_waveID, player) != 0)
+			return true;
+		for (lane in 0..._boostIDs.length)
+			if (getUnsafe(_boostIDs[lane], player) != 0 || getUnsafe(_brakeIDs[lane], player) != 0 || getUnsafe(_waveIDs[lane], player) != 0)
+				return true;
+		return false;
+	}
 }

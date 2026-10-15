@@ -34,6 +34,7 @@ class Reverse extends Modifier {
 	var _curvedScrollXIDs:Array<Int>;
 	var _curvedScrollYIDs:Array<Int>;
 	var _curvedScrollZIDs:Array<Int>;
+	final _scrollRotation:Vector3 = new Vector3();
 
 	public function new(pf) {
 		super(pf);
@@ -170,8 +171,7 @@ class Reverse extends Modifier {
 		if (angleX == 0 && angleZ == 0)
 			return;
 
-		// rotate3DVector allocates internally; only call when actually needed
-		var rotated = ModchartUtil.rotate3DVector(scroll, angleX, angleY, angleZ);
+		var rotated = ModchartUtil.rotate3DVectorInto(scroll, angleX, angleY, angleZ, _scrollRotation);
 		scroll.x = rotated.x;
 		scroll.y = rotated.y;
 		scroll.z = rotated.z;

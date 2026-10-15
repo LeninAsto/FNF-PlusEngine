@@ -15,18 +15,14 @@ import modchart.backend.graphics.renderers.*;
 import modchart.engine.events.types.*;
 import openfl.geom.Matrix;
 
+using flixel.util.FlxColorTransformUtil;
+
 /**
- * PARENTED TRANSFORMATION TODOS:
- * - [!] `x` / `y` (this autoticly allows motion variables, which are unusable by default (`moves = false`))
- * - [!] `origin`
- * - [!] `offset`
- * - [!] `scale`
- * - [!] `angle`
- * - [!] `scrollFactor`
- * - `clipRect`
- * - `color` / `colorTransform`
- * - `shader` (i dont think this is possible..?... just in case leaving this in TODOs yet)
- * - `blend` (same as shader...)
+	* Container for a modifier timeline and its rendered note field.
+	*
+	* Standard sprite transforms, color, alpha, blend and shader are inherited by
+	* generated draw commands. Triangle clipping remains item/camera-owned because
+	* a sprite clipRect cannot correctly clip perspective-projected geometry.
  */
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
@@ -136,6 +132,15 @@ final class PlayField extends FlxSprite
 	public inline function getSplashPath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput
 		return getCachedPath(pos, data, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.SPLASH);
 
+	/** Internal allocation-free equivalents used by renderers. */
+	public inline function getNotePathInto(pos:Vector3, data:ArrowData, out:ModifierOutput, outPos:Vector3, visuals:modchart.backend.core.VisualParameters,
+			?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput
+		return modifiers.getPathInto(pos, data, out, outPos, visuals, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.NOTE);
+
+	public inline function getReceptorPathInto(pos:Vector3, data:ArrowData, out:ModifierOutput, outPos:Vector3, visuals:modchart.backend.core.VisualParameters,
+			?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput
+		return modifiers.getPathInto(pos, data, out, outPos, visuals, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.RECEPTOR);
+
 	public inline function addEvent(event:Event)
 	{
 		events.add(event);
@@ -205,13 +210,9 @@ final class PlayField extends FlxSprite
 
 	public inline function alias(name:String, alias:String)
 	{
-		aliases.push({
-			parent: name,
-			alias: alias
-		});
+		return modifiers.addAlias(name, alias);
 	}
 
-	private var aliases:Array<ModAlias> = [];
 	private var nodes:Array<Node> = [];
 
 	/**
@@ -225,15 +226,13 @@ final class PlayField extends FlxSprite
 		nodes.push({
 			input: input,
 			output: output,
+			inputIDs: [for (name in input) modifiers.resolvePercentID(name)],
+			inputValues: [for (_ in input) 0.0],
 			func: func
 		});
 	}
 
-	// EXPERIMENTAL
-	// FIXME
-	// Warning: If a node has 'drunk' by example in his output
-	// and u made a ease on drunk and u made a ease on the node
-	// input, the eases may overlap, causing visuals issues.
+	/** Updates derived modifier values after timeline events for the current frame. */
 	public function updateNodes()
 	{
 		if (nodes.length <= 0)
@@ -246,14 +245,11 @@ final class PlayField extends FlxSprite
 				if (node == null)
 					continue;
 
-				var entryPercs = [];
-				var outPercs = [];
-				entryPercs.resize(node.input.length);
-
+				final entryPercs = node.inputValues;
 				for (i in 0...entryPercs.length)
-					entryPercs[i] = getPercent(node.input[i], player);
+					entryPercs[i] = modifiers.getPercentByID(node.inputIDs[i], player);
 
-				outPercs = node.func(entryPercs, player);
+				var outPercs = node.func(entryPercs, player);
 
 				final nbl = node.output.length;
 				if (outPercs == null)
@@ -263,7 +259,8 @@ final class PlayField extends FlxSprite
 				{
 					final prc = i < outPercs.length ? outPercs[i] : 0;
 
-					if (!Math.isNaN(prc) && prc != 0)
+					// Zero is a valid output and must clear the previous frame's value.
+					if (!Math.isNaN(prc))
 						setPercent(node.output[i], prc, player);
 				}
 			}
@@ -286,20 +283,25 @@ final class PlayField extends FlxSprite
 
 	override public function destroy()
 	{
+		if (context != null)
+			context.dispose();
+		context = null;
+		nodes.resize(0);
+		if (skew != null)
+			skew.put();
+		skew = null;
 		super.destroy();
-	}
-
-	private function getVisibility(obj:flixel.FlxObject)
-	{
-		@:bypassAccessor obj.visible = false;
-		return obj._fmVisible;
 	}
 
 	private function transformCmd(cmd:DrawCommand)
 	{
 		var vertex = cmd.vertices;
 		var vc = Std.int(vertex.length / 2);
+		final identityGeometry = !flipX && !flipY && scale.x == 1 && scale.y == 1
+			&& (bakedRotationAngle > 0 || angle == 0) && skew.x == 0 && skew.y == 0
+			&& offset.x == 0 && offset.y == 0;
 
+		if (!identityGeometry) {
 		final matrix = this._matrix;
 		matrix.identity();
 
@@ -346,6 +348,36 @@ final class PlayField extends FlxSprite
 			vertex[i] = matrix.transformX(x, y);
 			vertex[i + 1] = matrix.transformY(x, y);
 		}
+		}
+
+		final identityColor = colorTransform.redMultiplier == 1 && colorTransform.greenMultiplier == 1
+			&& colorTransform.blueMultiplier == 1 && colorTransform.alphaMultiplier == 1
+			&& colorTransform.redOffset == 0 && colorTransform.greenOffset == 0
+			&& colorTransform.blueOffset == 0 && colorTransform.alphaOffset == 0;
+		if (!identityColor && cmd.color != null)
+		{
+			cmd.color.concat(colorTransform);
+			cmd.isColored = cmd.color.hasRGBMultipliers() || cmd.color.alphaMultiplier != 1;
+			cmd.hasColorOffsets = cmd.color.hasRGBAOffsets();
+		}
+		else if (!identityColor && cmd.colors != null)
+		{
+			for (transform in cmd.colors)
+			{
+				if (transform == null)
+					continue;
+				transform.concat(colorTransform);
+				if (transform.hasRGBMultipliers() || transform.alphaMultiplier != 1)
+					cmd.isColored = true;
+				if (transform.hasRGBAOffsets())
+					cmd.hasColorOffsets = true;
+			}
+		}
+
+		if (blend != null)
+			cmd.blend = blend;
+		if (shader != null)
+			cmd.shader = shader;
 
 		return cmd;
 	}

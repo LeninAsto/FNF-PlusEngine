@@ -211,9 +211,6 @@ class Macro {
 						tempX = position.x + vertices[i];
 						tempY = position.y + vertices[i + 1];
 
-						this.vertices[currentVertexPosition++] = tempX;
-						this.vertices[currentVertexPosition++] = tempY;
-
 						if (i == 0) {
 							bounds.set(tempX, tempY, 0, 0);
 						} else {
@@ -224,9 +221,13 @@ class Macro {
 					}
 
 					var indicesLength:Int = indices.length;
-					if (!cameraBounds.overlaps(bounds)) {
-						this.vertices.splice(this.vertices.length - verticesLength, verticesLength);
-					} else {
+					if (cameraBounds.overlaps(bounds)) {
+						i = 0;
+						while (i < verticesLength) {
+							this.vertices[currentVertexPosition++] = position.x + vertices[i];
+							this.vertices[currentVertexPosition++] = position.y + vertices[i + 1];
+							i += 2;
+						}
 						var uvtDataLength:Int = uvtData.length;
 						for (i in 0...uvtDataLength) {
 							this.uvtData[prevUVTDataLength + i] = uvtData[i];
@@ -246,21 +247,15 @@ class Macro {
 
 						verticesPosition = verticesPosition + verticesLength;
 						indicesPosition = indicesPosition + indicesLength;
-					}
-
-					position.putWeak();
-					cameraBounds.putWeak();
-
 					#if (flixel >= "5.2.0")
-					for (_ in 0...indicesLength) {
-						final possibleTransform = transforms[Math.floor(_ / indicesLength * transforms.length)];
-
-						var alphaMultiplier = 1.;
-
-						if (possibleTransform != null)
-							alphaMultiplier = possibleTransform.alphaMultiplier;
-
-						alphas.push(alphaMultiplier);
+					final transformCount = transforms != null && transforms.length > 0 ? transforms.length : 1;
+					for (segment in 0...transformCount) {
+						final possibleTransform = transforms != null ? transforms[segment] : null;
+						final alphaMultiplier = possibleTransform != null ? possibleTransform.alphaMultiplier : 1.;
+						final segmentStart = Std.int((segment * indicesLength + transformCount - 1) / transformCount);
+						final segmentEnd = Std.int(((segment + 1) * indicesLength + transformCount - 1) / transformCount);
+						for (_ in segmentStart...segmentEnd)
+							alphas.push(alphaMultiplier);
 					}
 
 					if (colored || hasColorOffsets) {
@@ -270,8 +265,11 @@ class Macro {
 						if (colorOffsets == null)
 							colorOffsets = [];
 
-						for (_ in 0...indicesLength) {
-							final transform = transforms[Math.floor(_ / indicesLength * transforms.length)];
+						for (segment in 0...transformCount) {
+							final transform = transforms != null ? transforms[segment] : null;
+							final segmentStart = Std.int((segment * indicesLength + transformCount - 1) / transformCount);
+							final segmentEnd = Std.int(((segment + 1) * indicesLength + transformCount - 1) / transformCount);
+							for (_ in segmentStart...segmentEnd) {
 							if (transform != null) {
 								colorMultipliers.push(transform.redMultiplier);
 								colorMultipliers.push(transform.greenMultiplier);
@@ -293,9 +291,14 @@ class Macro {
 							}
 
 							colorMultipliers.push(1);
+							}
 						}
 					}
 					#end
+					}
+
+					position.putWeak();
+					cameraBounds.putWeak();
 				}
 			}),
 		};

@@ -10,6 +10,7 @@ import backend.SongLoadMetrics;
 import backend.Rating;
 import backend.AccuracyTools;
 import backend.AudioTempo;
+import backend.BotplayCPU;
 
 import flixel.FlxBasic;
 import flixel.FlxObject;
@@ -259,6 +260,7 @@ class PlayState extends MusicBeatState
 
 	public var botplaySine:Float = 0;
 	public var botplayTxt:FlxText;
+	var botplayCPU:BotplayCPU;
 	var hitTimes:Array<Float> = [];
 	var msTxt:FlxText;
 	var msTween:FlxTween;
@@ -958,6 +960,9 @@ class PlayState extends MusicBeatState
 			+ '\nVerts ${stats.dbgVertices} | Draws ${drawsPerFrame} (${drawsPerSecond}/s)'
 			+ '\nHolds ${stats.dbgHoldCmds}/${stats.dbgActiveHolds} | Paths ${stats.dbgPathCmds}'
 			+ '\nEmit ${fmt(stats.dbgEmitMs, 2)} ms | Subdiv ${stats.dbgHoldSubdivisions} | Q ${fmt(stats.dbgPathQuality, 2)}'
+			+ '\nCollect ${fmt(stats.dbgCollectMs, 2)} | A ${fmt(stats.dbgArrowMs, 2)} H ${fmt(stats.dbgHoldMs, 2)} P ${fmt(stats.dbgPathMs, 2)}'
+			+ '\nSort ${fmt(stats.dbgSortMs, 2)} | Submit ${fmt(stats.dbgSubmitMs, 2)} | Mods ${stats.dbgModifierCalls}/${stats.dbgPathSamples}'
+			+ '\nCulled ${stats.dbgSpawnCulled} | Hold slots ${stats.dbgSlotsReused}'
 			+ '\nLoad ${SongLoadMetrics.summary()}'
 			+ '\nGC ${memoryText} | ${mcDbgRenderer}';
 		mcDbgTxt.x = FlxG.width - mcDbgTxt.width - 10;
@@ -1631,13 +1636,16 @@ class PlayState extends MusicBeatState
 	}
 
 	function botplayLabel():String
-		return modes.label(cpuControlled, practiceMode, isBotplayCPU() ? 'BOTPLAY CPU' : 'BOTPLAY');
+		return modes.label(cpuControlled, practiceMode, isBotplayCPU() ? 'BOTPLAY CPU: ${botplayCPUProfile().toUpperCase()}' : 'BOTPLAY');
 
 	function botplayKind():String
 		return CoolUtil.botplayType(ClientPrefs.getGameplaySetting('botplayType', 'Normal'));
 
 	inline function isBotplayCPU():Bool
 		return cpuControlled && botplayKind() == 'CPU';
+
+	function botplayCPUProfile():String
+		return BotplayCPU.normalizeProfile(ClientPrefs.getGameplaySetting('botplayCPUProfile', 'Skilled'));
 
 	inline function get_perfectMode():Bool
 		return modes.perfect;
@@ -1668,19 +1676,11 @@ class PlayState extends MusicBeatState
 		return hitTimes.length;
 	}
 
-	function botplayCanHit(note:Note):Bool
+	function botplayCPUHitOffset(note:Note):Float
 	{
-		if (!isBotplayCPU())
-			return true;
-		if (note.isSustainNote)
-			return true;
-
-		var diff:Float = Math.abs((note.strumTime - Conductor.songPosition + ClientPrefs.data.ratingOffset) / playbackRate);
-		if (CoolUtil.botplayCPUHits(diff, Conductor.safeZoneOffset))
-			return true;
-
-		note.blockHit = true;
-		return false;
+		if (botplayCPU == null || botplayCPU.profileName != botplayCPUProfile())
+			botplayCPU = new BotplayCPU(botplayCPUProfile());
+		return botplayCPU.hitOffset(note, Conductor.safeZoneOffset);
 	}
 
 	public dynamic function fullComboFunction()
@@ -2459,16 +2459,23 @@ class PlayState extends MusicBeatState
 								if(cpuControlled && !daNote.blockHit && daNote.canBeHit && (daNote.isSustainNote || daNote.strumTime <= Conductor.songPosition))
 								{
 									var realSongPosition:Float = Conductor.songPosition;
+									var canHit:Bool = true;
 									if (isBotplayCPU() && !daNote.isSustainNote)
 									{
-										var hitMs:Float = CoolUtil.botplayCPUHitMs(Conductor.safeZoneOffset);
-										Conductor.songPosition = daNote.strumTime + ClientPrefs.data.ratingOffset - (hitMs * playbackRate);
+										var hitMs:Float = botplayCPUHitOffset(daNote);
+										canHit = !Math.isNaN(hitMs);
+										if (canHit)
+											Conductor.songPosition = daNote.strumTime + ClientPrefs.data.ratingOffset - (hitMs * playbackRate);
 									}
+									else if (isBotplayCPU())
+										canHit = !Math.isNaN(botplayCPUHitOffset(daNote));
 									else
 										Conductor.songPosition = daNote.strumTime + ClientPrefs.data.ratingOffset;
 
-									if (botplayCanHit(daNote))
+									if (canHit)
 										goodNoteHit(daNote);
+									else
+										daNote.blockHit = true;
 									Conductor.songPosition = realSongPosition;
 								}
 							}
@@ -2521,6 +2528,7 @@ class PlayState extends MusicBeatState
 		#end
 
 		setOnScripts('botPlay', cpuControlled);
+		setOnScripts('botPlayCPUProfile', isBotplayCPU() ? botplayCPUProfile() : '');
 		callOnScripts('onUpdatePost', [elapsed]);
 	}
 

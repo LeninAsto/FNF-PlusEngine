@@ -28,11 +28,15 @@ class LuaModifier extends Modifier {
 	public var alwaysRun:Bool = false;
 	public var nullSafety:Bool = true;
 	public var allowStraightHoldsValue:Bool = true;
+	public var valueNames:Array<String> = [];
 
 	var __skipRender:Bool = false;
 	var __skipVisuals:Bool = false;
 	var __skipShouldRun:Bool = false;
 	var __skipStraightHolds:Bool = false;
+	var __luaPos:Dynamic = {x: 0.0, y: 0.0, z: 0.0, w: 0.0};
+	var __luaParams:Dynamic = {};
+	var __luaVisuals:Dynamic = {};
 
 	public function new(pf:PlayField, modifierName:String, funk:FunkinLua, ?options:Dynamic) {
 		super(pf);
@@ -51,6 +55,14 @@ class LuaModifier extends Modifier {
 			nullSafety = readBool(options, ['nullSafety', 'safe'], true);
 			allowStraightHoldsValue = readBool(options, ['allowOnStraightHolds', 'allowStraightHolds'], true);
 			transformModeValue = readTransformMode(readDynamic(options, ['transformMode', 'mode', 'target']), TransformMode.ALL);
+			final rawValues:Dynamic = readDynamic(options, ['values', 'valueNames', 'params']);
+			if (Std.isOfType(rawValues, Array)) {
+				for (value in (cast rawValues:Array<Dynamic>)) {
+					final valueName = Std.string(value).trim();
+					if (valueName.length > 0 && !valueNames.contains(valueName))
+						valueNames.push(valueName);
+				}
+			}
 		}
 	}
 
@@ -95,14 +107,21 @@ class LuaModifier extends Modifier {
 		if (__skipRender || renderCallback == null)
 			return position;
 
-		final safePos:Vector3 = nullSafety ? position.clone() : position;
-		final safeParams:Dynamic = nullSafety ? Reflect.copy(params) : params;
-		final ret = funk.call(renderCallback, [safePos, safeParams, modifierName]);
+		// llua.Convert cannot serialize Vector3D/class instances. Always bridge
+		// through a plain object; otherwise Lua receives nil and repeated path
+		// samples can flood the Lua stack with native errors.
+		final luaPos:Dynamic = nullSafety ? {} : __luaPos;
+		luaPos.x = position.x;
+		luaPos.y = position.y;
+		luaPos.z = position.z;
+		luaPos.w = position.w;
+		final luaParams = copyParams(params, nullSafety ? {} : __luaParams);
+		final ret = funk.call(renderCallback, [luaPos, luaParams, modifierName]);
 
 		if (ret == LuaUtils.Function_Continue)
 			return position;
 
-		final resolved = vectorFromDynamic(ret, safePos);
+		final resolved = vectorFromDynamic(ret, position);
 		if (resolved == null) {
 			if (nullSafety) {
 				trace('[FunkinModchart::LuaModifier] Failed to parse render return for "' + modifierName + '". Disabling render callback.');
@@ -118,14 +137,15 @@ class LuaModifier extends Modifier {
 		if (__skipVisuals || visualsCallback == null)
 			return data;
 
-		final safeData:VisualParameters = nullSafety ? Reflect.copy(data) : data;
-		final safeParams:Dynamic = nullSafety ? Reflect.copy(params) : params;
-		final ret = funk.call(visualsCallback, [safeData, safeParams, modifierName]);
+		final luaData:Dynamic = nullSafety ? {} : __luaVisuals;
+		copyVisuals(data, luaData);
+		final luaParams = copyParams(params, nullSafety ? {} : __luaParams);
+		final ret = funk.call(visualsCallback, [luaData, luaParams, modifierName]);
 
 		if (ret == LuaUtils.Function_Continue)
 			return data;
 
-		final resolved = visualsFromDynamic(ret, safeData);
+		final resolved = visualsFromDynamic(ret, data);
 		if (resolved == null) {
 			if (nullSafety) {
 				trace('[FunkinModchart::LuaModifier] Failed to parse visuals return for "' + modifierName + '". Disabling visuals callback.');
@@ -135,6 +155,38 @@ class LuaModifier extends Modifier {
 		}
 
 		return resolved;
+	}
+
+	inline function copyParams(params:ModifierParameters, target:Dynamic):Dynamic {
+		target.songTime = params.songTime;
+		target.hitTime = params.hitTime;
+		target.distance = params.distance;
+		target.sourceTime = params.sourceTime;
+		target.curBeat = params.curBeat;
+		target.lane = params.lane;
+		target.player = params.player;
+		target.isTapArrow = params.isTapArrow;
+		target.straightHolds = params.straightHolds;
+		target.isHoldBody = params.isHoldBody;
+		target.percent = getPercent(modifierName, params.player);
+		for (valueName in valueNames)
+			Reflect.setField(target, valueName, getPercent(valueName, params.player));
+		return target;
+	}
+
+	static inline function copyVisuals(data:VisualParameters, target:Dynamic):Void {
+		target.scaleX = data.scaleX;
+		target.scaleY = data.scaleY;
+		target.alpha = data.alpha;
+		target.glow = data.glow;
+		target.glowR = data.glowR;
+		target.glowG = data.glowG;
+		target.glowB = data.glowB;
+		target.angleX = data.angleX;
+		target.angleY = data.angleY;
+		target.angleZ = data.angleZ;
+		target.skewX = data.skewX;
+		target.skewY = data.skewY;
 	}
 
 	static function vectorFromDynamic(value:Dynamic, fallback:Vector3):Null<Vector3> {

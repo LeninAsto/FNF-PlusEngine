@@ -18,4 +18,7 @@ class OpponentSwap extends Modifier {
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function isActive(player:Int):Bool
+		return getPercent('opponentSwap', player) != 0;
 }

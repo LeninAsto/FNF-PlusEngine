@@ -55,6 +55,13 @@ class Digital extends Modifier {
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
 
+	override public function isActive(player:Int):Bool {
+		for (id in amountIDs)
+			if (getUnsafe(id, player) != 0)
+				return true;
+		return false;
+	}
+
 	override public function allowOnStraightHolds():Bool
 		return false;
 }

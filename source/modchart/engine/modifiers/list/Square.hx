@@ -27,6 +27,9 @@ class Square extends Modifier {
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
 
+	override public function isActive(player:Int):Bool
+		return getPercent('square', player) != 0;
+
 	override public function allowOnStraightHolds():Bool
 		return false;
 }

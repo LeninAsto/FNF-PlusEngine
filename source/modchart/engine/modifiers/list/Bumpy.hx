@@ -133,6 +133,18 @@ class Bumpy extends Modifier {
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
 
+	override public function isActive(player:Int):Bool {
+		for (axis in 0..._bumpyAmtID.length) {
+			if (getUnsafe(_bumpyAmtID[axis], player) != 0 || getUnsafe(_angAmtID[axis], player) != 0)
+				return true;
+			if (Config.COLUMN_SPECIFIC_MODIFIERS)
+				for (lane in 0..._bumpyAmtLaneIDs[axis].length)
+					if (getUnsafe(_bumpyAmtLaneIDs[axis][lane], player) != 0 || getUnsafe(_angAmtLaneIDs[axis][lane], player) != 0)
+						return true;
+		}
+		return false;
+	}
+
 	override public function allowOnStraightHolds():Bool
 		return false;
 }

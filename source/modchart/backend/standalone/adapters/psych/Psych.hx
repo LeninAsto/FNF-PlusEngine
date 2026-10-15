@@ -15,6 +15,10 @@ import modchart.backend.standalone.IAdapter;
 class Psych implements IAdapter {
 	private var holdStepLength:Float = 0;
 	private var __holdSubdivisions:Int = 0;
+	private var __cachedFrame:Int = -1;
+	private var __cachedScrollSpeed:Float = 0;
+	private var __receptorX:Array<Array<Float>> = [[0, 0, 0, 0], [0, 0, 0, 0]];
+	private var __receptorY:Array<Array<Float>> = [[0, 0, 0, 0], [0, 0, 0, 0]];
 	private var arrowItemsByPlayer:Array<Array<Array<FlxSprite>>> = [
 		[[], [], [], []],
 		[[], [], [], []]
@@ -27,6 +31,37 @@ class Psych implements IAdapter {
 	public function new() {}
 
 	public function onModchartingDispose() {}
+
+	public function beginModchartFrame(frameId:Int):Void {
+		if (__cachedFrame == frameId)
+			return;
+		__cachedFrame = frameId;
+		if (PlayState.instance == null)
+			return;
+
+		__cachedScrollSpeed = PlayState.instance.songSpeed * .45;
+		cacheReceptors(PlayState.instance.opponentStrums, 0);
+		cacheReceptors(PlayState.instance.playerStrums, 1);
+	}
+
+	private function cacheReceptors(group:Dynamic, player:Int):Void {
+		if (group == null || group.members == null)
+			return;
+		final xs = __receptorX[player];
+		final ys = __receptorY[player];
+		final members:Array<Dynamic> = group.members;
+		for (i in 0...members.length) {
+			final strum:Strum = cast members[i];
+			if (strum == null || !strum.exists)
+				continue;
+			@:privateAccess final lane = strum.noteData;
+			if (lane < 0)
+				continue;
+			while (xs.length <= lane) { xs.push(0); ys.push(0); }
+			xs[lane] = strum.x;
+			ys[lane] = getDownscroll() ? FlxG.height - strum.y - Note.swagWidth : strum.y;
+		}
+	}
 
 	public function onModchartingInitialization() {
 		holdStepLength = (Conductor.crochet + 8) / 4;
@@ -238,11 +273,15 @@ class Psych implements IAdapter {
 	}
 
 	public function getDefaultReceptorX(lane:Int, player:Int):Float {
+		if (__cachedFrame >= 0 && player >= 0 && player < __receptorX.length && lane >= 0 && lane < __receptorX[player].length)
+			return __receptorX[player][lane];
 		var strum = getStrumFromInfo(lane, player);
 		return strum != null ? strum.x : 0;
 	}
 
 	public function getDefaultReceptorY(lane:Int, player:Int):Float {
+		if (__cachedFrame >= 0 && player >= 0 && player < __receptorY.length && lane >= 0 && lane < __receptorY[player].length)
+			return __receptorY[player][lane];
 		var strum = getStrumFromInfo(lane, player);
 		if (strum == null) return 0;
 		var editorState = getEditorState();
@@ -276,7 +315,7 @@ class Psych implements IAdapter {
 			return editorState.getModchartScrollSpeed();
 		//if (ModchartEditorPreviewContext.active != null)
 		//	return ModchartEditorPreviewContext.active.scrollSpeed;
-		return PlayState.instance.songSpeed * .45;
+		return __cachedFrame >= 0 ? __cachedScrollSpeed : PlayState.instance.songSpeed * .45;
 	}
 
 	// 0 receptors
@@ -335,22 +374,30 @@ class Psych implements IAdapter {
 					bucket.resize(0);
 		}
 
-		@:privateAccess
-		PlayState.instance.strumLineNotes.forEachAlive(strumNote -> {
+		@:privateAccess final strums = PlayState.instance.strumLineNotes.members;
+		for (i in 0...strums.length) {
+			final strumNote = strums[i];
+			if (strumNote == null || !strumNote.exists || !strumNote.alive)
+				continue;
 			final player = resolveStrumPlayer(strumNote);
 			ensurePlayerItems(pspr, player)[0].push(strumNote);
-		});
-		PlayState.instance.notes.forEachAlive(strumNote -> {
-			final player = Adapter.instance.getPlayerFromArrow(strumNote);
-			ensurePlayerItems(pspr, player)[strumNote.isSustainNote ? 2 : 1].push(strumNote);
-		});
-		PlayState.instance.grpNoteSplashes.forEachAlive(splash -> {
-			@:privateAccess
-			if (splash.babyArrow != null && splash.active) {
-				final player = resolveSplashPlayer(splash);
-				ensurePlayerItems(pspr, player)[3].push(splash);
-			}
-		});
+		}
+		final notes = PlayState.instance.notes.members;
+		for (i in 0...notes.length) {
+			final note = notes[i];
+			if (note == null || !note.exists || !note.alive || note.frame == null || note.graphic == null)
+				continue;
+			final player = note.mustPress ? 1 : 0;
+			ensurePlayerItems(pspr, player)[note.isSustainNote ? 2 : 1].push(note);
+		}
+		final splashes = PlayState.instance.grpNoteSplashes.members;
+		for (i in 0...splashes.length) {
+			final splash = splashes[i];
+			@:privateAccess if (splash == null || !splash.exists || !splash.alive || splash.babyArrow == null || !splash.active)
+				continue;
+			final player = resolveSplashPlayer(splash);
+			ensurePlayerItems(pspr, player)[3].push(splash);
+		}
 
 		return pspr;
 	}

@@ -1,16 +1,12 @@
 package modchart.engine.modifiers.list;
 
 import modchart.backend.core.ModifierParameters;
-import modchart.backend.util.ModchartUtil;
-
 class Infinite extends Modifier {
 	override function render(pos:Vector3, params:ModifierParameters) {
 		var perc = getPercent('infinite', params.player);
 
 		if (perc == 0)
 			return pos;
-
-		var infinite = new Vector3();
 
 		// alternate the angles
 		var rat = params.lane % 2 == 0 ? 1 : -1;
@@ -20,9 +16,12 @@ class Infinite extends Modifier {
 		final invTransf = (2 / (3 - cos(fTime * 2)));
 
 		// apply the scroll
-		infinite.setTo(WIDTH * .5 + invTransf * cos(fTime) * 580, HEIGHT * .5 + invTransf * (sin(fTime * 2) * .5) * 750, 0);
-
-		return ModchartUtil.lerpVector3D(pos, infinite, perc);
+		final targetX = WIDTH * .5 + invTransf * cos(fTime) * 580;
+		final targetY = HEIGHT * .5 + invTransf * (sin(fTime * 2) * .5) * 750;
+		pos.x += (targetX - pos.x) * perc;
+		pos.y += (targetY - pos.y) * perc;
+		pos.z += (0 - pos.z) * perc;
+		return pos;
 	}
 
 	override public function shouldRun(params:ModifierParameters):Bool

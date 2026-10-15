@@ -120,6 +120,17 @@ class Stealth extends Modifier {
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
 
+	override public function isActive(player:Int):Bool {
+		if (getUnsafe(_stealthID, player) != 0 || getUnsafe(_darkID, player) != 0 || getUnsafe(_alphaID, player) != 1
+			|| getUnsafe(_suddenID, player) != 0 || getUnsafe(_hiddenID, player) != 0)
+			return true;
+		for (lane in 0..._stealthIDs.length)
+			if (getUnsafe(_stealthIDs[lane], player) != 0 || getUnsafe(_darkIDs[lane], player) != 0
+				|| (hasUnsafeForPlayer(_alphaIDs[lane], player) && getUnsafe(_alphaIDs[lane], player) != 1))
+				return true;
+		return false;
+	}
+
 	override public function transformMode():TransformMode
 		return TransformMode.FIELD;
 }

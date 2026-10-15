@@ -21,7 +21,7 @@ using StringTools;
 @:noDebug
 #end
 @:keep class ModchartUtil {
-	// pain (we need this if we want support for sprite sheet packer)
+	// Preserve atlas frame rotation for sprite-sheet packer compatibility.
 	@:pure
 	inline public static function getFrameAngle(spr:FlxSprite):Float {
 		// return switch (spr.frame.angle) {
@@ -181,22 +181,28 @@ using StringTools;
 		}
 	}
 
+	@:pure @:noDebug
+	inline public static function rotate3DVectorInto(vec:Vector3, angleX:Float, angleY:Float, angleZ:Float, out:Vector3):Vector3 {
+		return Quaternion.rotateEulerInto(vec, angleX, angleY, angleZ, out);
+	}
+
 	inline static public function getHoldUVT(arrow:FlxSprite, subs:Int):OFLVector<Float> {
+		subs = Std.int(Math.max(1, subs));
 		var frameAngle = -ModchartUtil.getFrameAngle(arrow);
 
 		var uv = new OFLVector<Float>(12 * subs, true);
 
 		var frameUV = arrow.frame.uv;
 
-		// i do not like this
-		// but i was suggested to do this instead by theo -swordcube
-		var left = #if (flixel >= "6.1.0") frameUV.left #else frameUV.x #end;
-		var right = #if (flixel >= "6.1.0") frameUV.right #else frameUV.y #end;
-		var top = #if (flixel >= "6.1.0") frameUV.top #else frameUV.width #end;
-		var bottom = #if (flixel >= "6.1.0") frameUV.bottom #else frameUV.height #end;
+		// FlxFrame.uv intentionally stores right/bottom in width/height.
+		// FlxRect.right/bottom would add x/y a second time.
+		var left = frameUV.x;
+		var top = frameUV.y;
+		var right = frameUV.width;
+		var bottom = frameUV.height;
 
-		var frameWidth = top - left;
-		var frameHeight = bottom - right;
+		var frameWidth = right - left;
+		var frameHeight = bottom - top;
 
 		var subDivided = 1.0 / subs;
 
@@ -207,19 +213,19 @@ using StringTools;
 				var subIndex = curSub * 12;
 
 				uv[subIndex] = left; // U
-				uv[subIndex + 1] = right + uvOffset * frameHeight; // V
+				uv[subIndex + 1] = top + uvOffset * frameHeight; // V
 				uv[subIndex + 2] = 1; // T
 
-				uv[subIndex + 3] = top;
-				uv[subIndex + 4] = right + uvOffset * frameHeight;
+				uv[subIndex + 3] = right;
+				uv[subIndex + 4] = top + uvOffset * frameHeight;
 				uv[subIndex + 5] = 1;
 
 				uv[subIndex + 6] = left;
-				uv[subIndex + 7] = right + (uvOffset + subDivided) * frameHeight;
+				uv[subIndex + 7] = top + (uvOffset + subDivided) * frameHeight;
 				uv[subIndex + 8] = 1;
 
-				uv[subIndex + 9] = top;
-				uv[subIndex + 10] = right + (uvOffset + subDivided) * frameHeight;
+				uv[subIndex + 9] = right;
+				uv[subIndex + 10] = top + (uvOffset + subDivided) * frameHeight;
 				uv[subIndex + 11] = 1;
 			}
 			return uv;
@@ -230,39 +236,30 @@ using StringTools;
 		var sinA = ModchartUtil.sin(angleRad);
 
 		var uCenter = left + frameWidth * .5;
-		var vCenter = right + frameHeight * .5;
+		var vCenter = top + frameHeight * .5;
 
-		// my brain is not braining anymore
-		// i give up
 		for (curSub in 0...subs) {
 			var uvOffset = subDivided * curSub;
-			var subIndex = curSub * 8;
+			var subIndex = curSub * 12;
+			var vTop = top + uvOffset * frameHeight;
+			var vBottom = top + (uvOffset + subDivided) * frameHeight;
 
-			// uv coords before rotation
-			var uvCoords = [
-				[left, right + uvOffset * frameHeight], // tl
-				[top, right + uvOffset * frameHeight], // tr
-				[left, right + (uvOffset + subDivided) * frameHeight], // bl
-				[top, right + (uvOffset + subDivided) * frameHeight] // br
-			];
-
-			// apply rotation
-			for (i in 0...4) {
-				var u = uvCoords[i][0] - uCenter; // x
-				var v = uvCoords[i][1] - vCenter; // y
-
-				var uRot = u * cosA - v * sinA;
-				var vRot = u * sinA + v * cosA;
-
-				var base = subIndex + i * 3;
-
-				uv[base] = uRot + uCenter; // U
-				uv[base + 1] = vRot + vCenter; // V
-				uv[base + 2] = 1; // T
-			}
+			writeRotatedUV(uv, subIndex, left, vTop, uCenter, vCenter, cosA, sinA);
+			writeRotatedUV(uv, subIndex + 3, right, vTop, uCenter, vCenter, cosA, sinA);
+			writeRotatedUV(uv, subIndex + 6, left, vBottom, uCenter, vCenter, cosA, sinA);
+			writeRotatedUV(uv, subIndex + 9, right, vBottom, uCenter, vCenter, cosA, sinA);
 		}
 
 		return uv;
+	}
+
+	private static inline function writeRotatedUV(uv:OFLVector<Float>, index:Int, u:Float, v:Float, centerU:Float, centerV:Float,
+			cosA:Float, sinA:Float):Void {
+		final x = u - centerU;
+		final y = v - centerV;
+		uv[index] = x * cosA - y * sinA + centerU;
+		uv[index + 1] = x * sinA + y * cosA + centerV;
+		uv[index + 2] = 1;
 	}
 
 	/**
@@ -273,10 +270,6 @@ using StringTools;
 			bot right x, bot right y
 		]
 	 */
-	inline static public function appendUVRotation(map:Array<Float>, angle:Float) {
-		return map;
-	}
-
 	// gonna keep this shits inline cus are basic functions
 
 	public static inline function getHalfPos():Vector3 {

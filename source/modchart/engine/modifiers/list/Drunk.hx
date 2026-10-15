@@ -52,6 +52,10 @@ class Drunk extends Modifier {
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
 
+	override public function isActive(player:Int):Bool
+		return getUnsafe(dID, player) != 0 || getUnsafe(dXID, player) != 0
+			|| getUnsafe(dYID, player) != 0 || getUnsafe(dZID, player) != 0;
+
 	override public function allowOnStraightHolds():Bool
 		return false;
 }

@@ -32,10 +32,12 @@ class CtxRenderer {
 	public function new() {}
 
 	var queue:Vector<DrawCommand>;
+	var sortBuffer:Vector<DrawCommand>;
 	var count:Int = 0;
 	var capacity:Int = 0;
 	var suppressedVisibility:ObjectMap<FlxObject, Bool> = new ObjectMap();
 	var suppressedObjects:Array<FlxObject> = [];
+	var pathEnabled:Array<Bool> = [];
 	var cameraColorTransform:ColorTransform = new ColorTransform();
 	var cameraGradientTransforms:NativeVector<ColorTransform> = new NativeVector<ColorTransform>(0);
 
@@ -44,6 +46,16 @@ class CtxRenderer {
 	public var dbgHoldCmds:Int = 0;
 	public var dbgVertices:Int = 0;
 	public var dbgEmitMs:Float = 0.0;
+	public var dbgCollectMs:Float = 0.0;
+	public var dbgArrowMs:Float = 0.0;
+	public var dbgHoldMs:Float = 0.0;
+	public var dbgPathMs:Float = 0.0;
+	public var dbgSortMs:Float = 0.0;
+	public var dbgSubmitMs:Float = 0.0;
+	public var dbgModifierCalls:Int = 0;
+	public var dbgPathSamples:Int = 0;
+	public var dbgSpawnCulled:Int = 0;
+	public var dbgSlotsReused:Int = 0;
 	public var dbgActiveHolds:Int = 0;
 	public var dbgPlayfields:Int = 0;
 	public var dbgReceptors:Int = 0;
@@ -63,8 +75,9 @@ class CtxRenderer {
 
 		if (queue == null || n > capacity)
 		{
-			queue = new Vector<DrawCommand>(n);
-			capacity = n;
+			capacity = Std.int(Math.ceil(Math.max(n, 64) / 64.0)) * 64;
+			queue = new Vector<DrawCommand>(capacity);
+			sortBuffer = new Vector<DrawCommand>(capacity);
 		}
 		count = 0;
 	}
@@ -95,50 +108,15 @@ class CtxRenderer {
 
 	var emptyVec:openfl.Vector<Int> = new openfl.Vector<Int>(8, true, [for (i in 0...8) 0]);
 
-	/** Target subdivisions set by the user (restored when FPS recovers). */
-	var __targetSubdivisions:Int = 4;
-	/** Adaptive FPS tracking: running average of the last N frame times. */
-	var __fpsSum:Float = 0;
-	var __fpsFrames:Int = 0;
-	static final FPS_WINDOW:Int = 30;
-
-	/**
-	 * Adaptively lower or restore hold subdivisions based on FPS.
-	 * Below 45 FPS → reduce to 2; above 55 FPS → restore to the last
-	 * user-set value (respects Lua overrides when performance is fine).
-	 */
-	private inline function updateAdaptiveSubdivisions():Void {
-		final elapsed = flixel.FlxG.elapsed;
-		if (elapsed <= 0)
-			return;
-		__fpsSum += elapsed;
-		__fpsFrames++;
-		if (__fpsFrames < FPS_WINDOW)
-			return;
-		final avgFps = __fpsFrames / __fpsSum;
-		__fpsSum = 0;
-		__fpsFrames = 0;
-		final cur = Adapter.instance.getHoldSubdivisions(null);
-		if (avgFps < 45 && cur > 2) {
-			__targetSubdivisions = cur; // save before lowering
-			Adapter.instance.setHoldSubdivisions(2);
-			pathQualityScale = 0.65;
-		} else if (avgFps < 50) {
-			pathQualityScale = 0.8;
-		} else if (avgFps >= 55) {
-			if (cur == 2 && __targetSubdivisions > 2)
-				Adapter.instance.setHoldSubdivisions(__targetSubdivisions);
-			else
-				__targetSubdivisions = cur; // keep in sync with Lua overrides
-			pathQualityScale = 1.0;
-		}
-	}
-
 	public function emit(items:Array<Array<Array<FlxSprite>>>, playfields:Array<PlayField>) {
 		final __emitStart = collectDebugStats ? haxe.Timer.stamp() : 0.0;
+		// Keep references for at most one frame. Objects that left their group are
+		// restored and released here instead of living in a song-long ObjectMap.
+		restoreSuppressedVisibility();
 
-		// Adaptively throttle hold subdivisions when FPS is consistently low.
-		updateAdaptiveSubdivisions();
+		// Geometry now adapts by measured sub-pixel error, never by dropping
+		// quality merely because the current FPS is low.
+		pathQualityScale = 1.0;
 
 		// used for preallocate
 		var playfieldCount = 0;
@@ -151,8 +129,6 @@ class CtxRenderer {
 		var arrowCount = 0;
 		var holdCount = 0;
 		var attachmentCount = 0;
-
-		var pathCount = 0;
 
 		for (i in 0...items.length) {
 			final curItems = items[i];
@@ -170,7 +146,18 @@ class CtxRenderer {
 				attachmentCount = attachmentCount + curItems[3].length;
 		}
 
-		pathCount = Config.RENDER_ARROW_PATHS ? receptorCount : 0;
+		// A scripted `path` value is an explicit render request and must work even
+		// when the optional global path preference is off. PathRenderer performs a
+		// cheap value check here, so inactive paths add no per-sample work.
+		var pathPlayfieldCount = 0;
+		pathEnabled.resize(playfields.length);
+		for (i in 0...playfields.length) {
+			final playfield = playfields[i];
+			final enabled = playfield != null && playfield.context != null && playfield.context.pathRenderer.hasVisiblePath();
+			pathEnabled[i] = enabled;
+			if (enabled)
+				pathPlayfieldCount++;
+		}
 
 		if (collectDebugStats)
 		{
@@ -186,9 +173,19 @@ class CtxRenderer {
 			dbgPathCmds = 0;
 			dbgHoldSubdivisions = Adapter.instance.getHoldSubdivisions(null);
 			dbgPathQuality = pathQualityScale;
+			dbgArrowMs = 0;
+			dbgHoldMs = 0;
+			dbgPathMs = 0;
+			dbgSortMs = 0;
+			dbgSubmitMs = 0;
+			dbgModifierCalls = 0;
+			dbgPathSamples = 0;
+			dbgSpawnCulled = 0;
+			dbgSlotsReused = 0;
 		}
 
-		alloc((arrowCount + receptorCount + attachmentCount + holdCount + pathCount) * playfieldCount);
+		alloc((arrowCount + receptorCount + attachmentCount + holdCount) * playfieldCount
+			+ receptorCount * pathPlayfieldCount);
 
 		// i is player index
 		for (f in 0...playfields.length) {
@@ -197,18 +194,26 @@ class CtxRenderer {
 				continue;
 
 			ctx = playfield.context;
+			playfield.modifiers.trackDebugStats = collectDebugStats;
+			ctx.holdRenderer.collectDebugStats = collectDebugStats;
 			ctx.arrowRenderer.beginFrame();
+			ctx.holdRenderer.beginFrame();
+			final renderPaths = pathEnabled[f];
 			for (player in 0...items.length) {
 				var curItems:Array<Array<FlxSprite>> = items[player];
 
 				if (curItems == null || curItems.length == 0)
 					continue;
+				final requestedSpawn = playfield.getPercent('spawnTime', player);
+				final spawnWindow = requestedSpawn > 0 ? requestedSpawn : 2000.0;
 
 				// path stuff
-				if (pathCount > 0) {
+				if (renderPaths) {
 					// iterate through receptors, yes
 					for (receptor in curItems[0]) {
+						final pathStart = collectDebugStats ? haxe.Timer.stamp() : 0.0;
 						var _ = emitPathCmd(receptor);
+						if (collectDebugStats) dbgPathMs += (haxe.Timer.stamp() - pathStart) * 1000.0;
 						if (_ != null) {
 							if (collectDebugStats)
 								dbgPathCmds++;
@@ -217,29 +222,18 @@ class CtxRenderer {
 					}
 				}
 
-				final drawHolds = () -> {
-					if (holdCount > 0) {
-						for (hold in curItems[2]) {
-							if (!getVisibility(hold))
-								continue;
-							var _ = emitHoldCmd(hold);
-							if (_ != null)
-								this.append(_);
-						}
-					}
-				};
-
 				// holds (behind strums)
 				if (Config.HOLDS_BEHIND_STRUM)
-					drawHolds();
+					emitHolds(curItems[2], playfield, spawnWindow);
 
 				// receptors
 				if (receptorCount > 0) {
 					for (receptor in curItems[0]) {
-						if (!getVisibility(receptor))
+						if (!isRenderable(receptor) || !getVisibility(receptor))
 							continue;
-
+						final arrowStart = collectDebugStats ? haxe.Timer.stamp() : 0.0;
 						var _ = emitArrowCmd(receptor);
+						if (collectDebugStats) dbgArrowMs += (haxe.Timer.stamp() - arrowStart) * 1000.0;
 						if (_ != null)
 							this.append(_);
 					}
@@ -247,15 +241,16 @@ class CtxRenderer {
 
 				// holds (infront of strums)
 				if (!Config.HOLDS_BEHIND_STRUM)
-					drawHolds();
+					emitHolds(curItems[2], playfield, spawnWindow);
 
 				// tap arrow
 				if (arrowCount > 0) {
 					for (arrow in curItems[1]) {
-						if (!getVisibility(arrow))
+						if (!isRenderable(arrow) || isOutsideSpawnWindow(arrow, playfield, spawnWindow) || !getVisibility(arrow))
 							continue;
-
+						final arrowStart = collectDebugStats ? haxe.Timer.stamp() : 0.0;
 						var _ = emitArrowCmd(arrow);
+						if (collectDebugStats) dbgArrowMs += (haxe.Timer.stamp() - arrowStart) * 1000.0;
 						if (_ != null)
 							this.append(_);
 					}
@@ -264,10 +259,11 @@ class CtxRenderer {
 				// attachments (splashes)
 				if (attachmentCount > 0) {
 					for (attachment in curItems[3]) {
-						if (!getVisibility(attachment))
+						if (!isRenderable(attachment) || !getVisibility(attachment))
 							continue;
-
+						final arrowStart = collectDebugStats ? haxe.Timer.stamp() : 0.0;
 						var _ = emitArrowCmd(attachment);
+						if (collectDebugStats) dbgArrowMs += (haxe.Timer.stamp() - arrowStart) * 1000.0;
 
 						if (_ != null)
 							this.append(_);
@@ -276,8 +272,11 @@ class CtxRenderer {
 			}
 		}
 
+		final sortStart = collectDebugStats ? haxe.Timer.stamp() : 0.0;
 		sortActiveQueue();
+		if (collectDebugStats) dbgSortMs = (haxe.Timer.stamp() - sortStart) * 1000.0;
 
+		final submitStart = collectDebugStats ? haxe.Timer.stamp() : 0.0;
 		var i = 0;
 		while (i < count) {
 			var item = queue[i];
@@ -314,8 +313,39 @@ class CtxRenderer {
 			}
 			i++;
 		}
-		if (collectDebugStats)
+		if (collectDebugStats) {
+			dbgSubmitMs = (haxe.Timer.stamp() - submitStart) * 1000.0;
+			for (playfield in playfields) if (playfield != null) {
+				dbgModifierCalls += playfield.modifiers.dbgModifierCalls;
+				dbgPathSamples += playfield.modifiers.dbgPathCalls;
+				dbgSlotsReused += playfield.context.holdRenderer.dbgSlotsReused;
+			}
 			dbgEmitMs = (haxe.Timer.stamp() - __emitStart) * 1000.0;
+		}
+	}
+
+	private function emitHolds(holds:Array<FlxSprite>, playfield:PlayField, spawnWindow:Float):Void {
+		if (holds == null)
+			return;
+		for (hold in holds) {
+			if (!isRenderable(hold) || isOutsideSpawnWindow(hold, playfield, spawnWindow) || !getVisibility(hold))
+				continue;
+			final holdStart = collectDebugStats ? haxe.Timer.stamp() : 0.0;
+			final command = emitHoldCmd(hold);
+			if (collectDebugStats) dbgHoldMs += (haxe.Timer.stamp() - holdStart) * 1000.0;
+			if (command != null)
+				append(command);
+		}
+	}
+
+	private inline function isRenderable(item:FlxSprite):Bool
+		return item != null && item.exists && item.alive && item.graphic != null && item.frame != null && item.alpha > 0;
+
+	private inline function isOutsideSpawnWindow(item:FlxSprite, playfield:PlayField, spawnWindow:Float):Bool {
+		final outside = Adapter.instance.getTimeFromArrow(item) - playfield.state.songPosition > spawnWindow;
+		if (outside && collectDebugStats)
+			dbgSpawnCulled++;
+		return outside;
 	}
 
 	public function append(dc:DrawCommand) {
@@ -330,8 +360,10 @@ class CtxRenderer {
 		{
 			final nextCapacity = capacity + 64;
 			var grown = new Vector<DrawCommand>(nextCapacity);
+			var grownSort = new Vector<DrawCommand>(nextCapacity);
 			Vector.blit(queue, 0, grown, 0, capacity);
 			queue = grown;
+			sortBuffer = grownSort;
 			capacity = nextCapacity;
 		}
 		queue[count++] = transformed;
@@ -405,17 +437,31 @@ class CtxRenderer {
 	}
 
 	private function sortActiveQueue():Void {
-		var i = 1;
-		while (i < count) {
-			var current = queue[i];
-			var j = i - 1;
-			while (j >= 0 && queue[j] != null && current != null && queue[j].zIndex < current.zIndex) {
-				queue[j + 1] = queue[j];
-				j--;
+		if (count < 2)
+			return;
+		var width = 1;
+		var source = queue;
+		var target = sortBuffer;
+		while (width < count) {
+			var left = 0;
+			while (left < count) {
+				final mid = Std.int(Math.min(left + width, count));
+				final end = Std.int(Math.min(left + width + width, count));
+				var a = left, b = mid, out = left;
+				while (a < mid && b < end) {
+					// Left wins ties, preserving insertion order for equal zIndex.
+					if (source[a].zIndex >= source[b].zIndex) target[out++] = source[a++];
+					else target[out++] = source[b++];
+				}
+				while (a < mid) target[out++] = source[a++];
+				while (b < end) target[out++] = source[b++];
+				left = end;
 			}
-			queue[j + 1] = current;
-			i++;
+			final swap = source; source = target; target = swap;
+			width *= 2;
 		}
+		if (source != queue)
+			Vector.blit(source, 0, queue, 0, count);
 	}
 
 	private function getVisibility(obj:flixel.FlxObject) {

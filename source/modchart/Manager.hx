@@ -294,7 +294,10 @@ final class Manager extends FlxBasic
 				continue;
 
 			final value = playfield.getPercent('spawnTime', player);
-			final spawnTime = value > 0 ? Math.max(value, fallback) : fallback;
+			// A positive playfield value is the requested window, not a lower bound.
+			// We still return the largest window so PlayState creates enough notes for
+			// every field; CtxRenderer applies each field's own window before rendering.
+			final spawnTime = value > 0 ? value : fallback;
 			if (spawnTime > result)
 				result = spawnTime;
 		}
@@ -598,6 +601,7 @@ final class Manager extends FlxBasic
 		__frameToken++;
 		final songPos = Adapter.instance.getSongPosition();
 		final beat = Adapter.instance.getCurrentBeat();
+		Adapter.instance.beginModchartFrame(__frameToken);
 
 		iteratePlayfields(pf -> pf.beginFrame(__frameToken, songPos, beat));
 		__updateScheduledPlayfieldOps(beat);
@@ -613,6 +617,7 @@ final class Manager extends FlxBasic
 		__frameToken++;
 		final songPos = Adapter.instance.getSongPosition();
 		final beat = Adapter.instance.getCurrentBeat();
+		Adapter.instance.beginModchartFrame(__frameToken);
 		iteratePlayfields(pf -> pf.beginFrame(__frameToken, songPos, beat));
 	}
 
@@ -632,7 +637,10 @@ final class Manager extends FlxBasic
 		}
 
 		__wasRendering = true;
+		final collectStart = renderer.collectDebugStats ? haxe.Timer.stamp() : 0.0;
 		final playerItems = Adapter.instance.getArrowItems();
+		if (renderer.collectDebugStats)
+			renderer.dbgCollectMs = (haxe.Timer.stamp() - collectStart) * 1000.0;
 
 		if (playerItems == null)
 			return;
@@ -802,6 +810,27 @@ final class Manager extends FlxBasic
 		return true;
 	}
 
+	private function __deactivateNamedPlayfield(name:String):Bool
+	{
+		final entry = __namedPlayfields.get(name);
+		if (entry == null || !entry.active)
+			return false;
+
+		final field = __findPlayfieldIndex(entry.playfield);
+		if (field != -1)
+			playfields[field] = null;
+		entry.active = false;
+		return true;
+	}
+
+	private function __hasLaterNamedAdd(name:String, beat:Float):Bool
+	{
+		for (operation in __scheduledPlayfieldOps)
+			if (operation.add && operation.name == name && operation.beat >= beat)
+				return true;
+		return false;
+	}
+
 	private function __updateScheduledPlayfieldOps(curBeat:Float):Void
 	{
 		var index = 0;
@@ -829,7 +858,10 @@ final class Manager extends FlxBasic
 			}
 			else if (operation.name != null)
 			{
-				__removeNamedPlayfieldNow(operation.name);
+				if (__hasLaterNamedAdd(operation.name, operation.beat))
+					__deactivateNamedPlayfield(operation.name);
+				else
+					__removeNamedPlayfieldNow(operation.name);
 			}
 			else
 			{

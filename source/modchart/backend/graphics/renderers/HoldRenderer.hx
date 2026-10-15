@@ -1,24 +1,20 @@
 package modchart.backend.graphics.renderers;
 
-import haxe.ds.ObjectMap;
-
 using flixel.util.FlxColorTransformUtil;
 
-typedef HoldSegmentOutput = {
-	origin:Vector3,
-	left:Vector3,
-	right:Vector3,
-	visuals:VisualParameters,
-	depth:Float,
-	clipped:Bool
-}
+private final class HoldSegmentOutput {
+	public final origin:Vector3 = new Vector3();
+	public final left:Vector3 = new Vector3();
+	public final right:Vector3 = new Vector3();
+	public final modifierPos:Vector3 = new Vector3();
+	public var visuals:VisualParameters = {};
+	public final modifierOutput:ModifierOutput;
+	public var depth:Float = 0;
+	public var clipped:Bool = false;
 
-@:publicFields
-@:structInit
-private final class HoldSegment {
-	var origin:Vector3;
-	var left:Vector3;
-	var right:Vector3;
+	public function new() {
+		modifierOutput = {pos: modifierPos, visuals: visuals};
+	}
 }
 
 final __matrix:Matrix = new Matrix();
@@ -35,72 +31,83 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 
 	/** Debug: total getPath() calls in the last frame across all holds. */
 	public var dbgGetPathCalls:Int = 0;
+	public var collectDebugStats:Bool = false;
 
 	var _indices:openfl.Vector<Int>;
+	var _indicesBySubs:Array<openfl.Vector<Int>> = [];
+	final _segmentA:HoldSegmentOutput = new HoldSegmentOutput();
+	final _segmentB:HoldSegmentOutput = new HoldSegmentOutput();
+	final _rawSegmentA:HoldSegmentOutput = new HoldSegmentOutput();
+	final _rawSegmentB:HoldSegmentOutput = new HoldSegmentOutput();
+	final _probeStart:HoldSegmentOutput = new HoldSegmentOutput();
+	final _probeMid:HoldSegmentOutput = new HoldSegmentOutput();
+	final _probeEnd:HoldSegmentOutput = new HoldSegmentOutput();
+	final _directionPos:Vector3 = new Vector3();
+	final _directionVisuals:VisualParameters = {};
+	final _directionOutput:ModifierOutput;
+	final _rotationScratch:Vector3 = new Vector3();
+	final _viewScratch:Vector3 = new Vector3();
+	final _tailScratch:Vector3 = new Vector3();
+	final _basePos:Vector3 = new Vector3();
+	final _parentPos:Vector3 = new Vector3();
+	final _parentVisuals:VisualParameters = {};
+	final _parentOutputBuffer:ModifierOutput;
 
 	// UVT cache: avoids re-computing identical UV data every frame for the same hold tile
 	var _uvtCacheKeys:Array<Dynamic> = [];
+	var _uvtCacheSubsKeys:Array<Int> = [];
 	var _uvtCacheVals:Array<openfl.Vector<Float>> = [];
-	var _uvtCacheSubs:Int = -1;
 
-	// Per-hold pools to avoid per-frame allocations of geometry/color buffers.
-	var _holdVerticesPool:ObjectMap<FlxSprite, openfl.Vector<Float>> = new ObjectMap<FlxSprite, openfl.Vector<Float>>();
-	var _holdColorsPool:ObjectMap<FlxSprite, NativeVector<ColorTransform>> = new ObjectMap<FlxSprite, NativeVector<ColorTransform>>();
-	var _holdPoolSubs:ObjectMap<FlxSprite, Int> = new ObjectMap<FlxSprite, Int>();
+	// Frame slots mirror ArrowRenderer: memory follows peak simultaneous holds,
+	// never every Note object that existed during the song.
+	var _slots:Array<HoldRenderSlot> = [];
+	var _slotIndex:Int = 0;
+	public var dbgSlotsReused(default, null):Int = 0;
 
-	inline private function _getPooledVertices(item:FlxSprite, subs:Int):openfl.Vector<Float> {
-		final oldSubs = _holdPoolSubs.get(item);
-		var verts = _holdVerticesPool.get(item);
-		if (verts == null || oldSubs == null || oldSubs != subs || verts.length != subs * 8) {
-			verts = new openfl.Vector<Float>(subs * 8, true);
-			_holdVerticesPool.set(item, verts);
-			_holdPoolSubs.set(item, subs);
-		}
-		return verts;
+	public inline function beginFrame():Void {
+		_slotIndex = 0;
+		dbgGetPathCalls = 0;
+		dbgSlotsReused = 0;
 	}
 
-	inline private function _getPooledColors(item:FlxSprite, subs:Int):NativeVector<ColorTransform> {
-		final oldSubs = _holdPoolSubs.get(item);
-		var cols = _holdColorsPool.get(item);
-		if (cols == null || oldSubs == null || oldSubs != subs || cols.length != subs) {
-			cols = new NativeVector<ColorTransform>(subs);
-			for (i in 0...subs)
-				cols[i] = new ColorTransform();
-			_holdColorsPool.set(item, cols);
-			_holdPoolSubs.set(item, subs);
-		}
-		return cols;
+	inline private function nextSlot(subs:Int):HoldRenderSlot {
+		if (_slotIndex >= _slots.length)
+			_slots.push(new HoldRenderSlot());
+		else if (collectDebugStats)
+			dbgSlotsReused++;
+		final slot = _slots[_slotIndex++];
+		slot.ensureCapacity(subs);
+		return slot;
 	}
 
-	inline private function _getCachedUVT(item:FlxSprite, subs:Int):openfl.Vector<Float> {
-		if (subs != _uvtCacheSubs) {
-			// Subdivision count changed (settings) — invalidate entire cache
-			_uvtCacheKeys = [];
-			_uvtCacheVals = [];
-			_uvtCacheSubs = subs;
-		}
+	private function _getCachedUVT(item:FlxSprite, subs:Int):openfl.Vector<Float> {
 		final frame = item.frame;
-		final idx = _uvtCacheKeys.indexOf(frame);
-		if (idx >= 0) return _uvtCacheVals[idx];
+		for (i in 0..._uvtCacheKeys.length)
+			if (_uvtCacheKeys[i] == frame && _uvtCacheSubsKeys[i] == subs)
+				return _uvtCacheVals[i];
 		final uvt:openfl.Vector<Float> = ModchartUtil.getHoldUVT(item, subs);
 		_uvtCacheKeys.push(frame);
+		_uvtCacheSubsKeys.push(subs);
 		_uvtCacheVals.push(uvt);
 		return uvt;
 	}
 
 	public function new(parent:PlayField) {
 		super(parent);
+		_directionOutput = {pos: _directionPos, visuals: _directionVisuals};
+		_parentOutputBuffer = {pos: _parentPos, visuals: _parentVisuals};
 
 		parent.setPercent('dizzyHolds', 1, -1);
 	}
 
-	inline private function __rotateTail(pos:Vector3) {
+	inline private function __rotateTailInto(pos:Vector3):Vector3 {
 		if (__parentOutput == null || (__rotateX == 0 && __rotateY == 0 && __rotateZ == 0))
 			return pos;
 
-		var tailFactor = pos.subtract(new Vector3(__parentOutput.rawX, __parentOutput.rawY, __parentOutput.rawZ));
-		tailFactor = ModchartUtil.rotate3DVector(tailFactor, __rotateX, __rotateY, __rotateZ);
-		return new Vector3(__parentOutput.rawX + tailFactor.x, __parentOutput.rawY + tailFactor.y, __parentOutput.rawZ + tailFactor.z);
+		_tailScratch.setTo(pos.x - __parentOutput.rawX, pos.y - __parentOutput.rawY, pos.z - __parentOutput.rawZ);
+		ModchartUtil.rotate3DVectorInto(_tailScratch, __rotateX, __rotateY, __rotateZ, _tailScratch);
+		pos.setTo(__parentOutput.rawX + _tailScratch.x, __parentOutput.rawY + _tailScratch.y, __parentOutput.rawZ + _tailScratch.z);
+		return pos;
 	}
 
 	/**
@@ -118,6 +125,17 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		return Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
 	}
 
+	inline private function midpointError(start:Vector3, middle:Vector3, end:Vector3):Float {
+		final dx = middle.x - (start.x + end.x) * 0.5;
+		final dy = middle.y - (start.y + end.y) * 0.5;
+		return Math.sqrt(dx * dx + dy * dy);
+	}
+
+	inline private function visualDifference(a:VisualParameters, b:VisualParameters):Float {
+		return Math.max(Math.abs(a.alpha - b.alpha), Math.max(Math.abs(a.glow - b.glow),
+			Math.max(Math.abs(a.glowR - b.glowR), Math.max(Math.abs(a.glowG - b.glowG), Math.abs(a.glowB - b.glowB)))));
+	}
+
 	/**
 	 * Returns the normal points along the hold path at specific hitTime using.
 	 *
@@ -126,7 +144,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 	 * @see https://en.wikipedia.org/wiki/Unit_circle
 	 */
 	@:noCompletion
-	inline private function getHoldSegment(hold:FlxSprite, basePos:Vector3, params:ArrowData, doClip:Bool = true):HoldSegmentOutput {
+	inline private function getHoldSegmentInto(hold:FlxSprite, basePos:Vector3, params:ArrowData, dest:HoldSegmentOutput, doClip:Bool = true):HoldSegmentOutput {
 		@:privateAccess
 		final holdIsEnd = Adapter.instance.isHoldEnd(hold);
 		var holdTime = params.hitTime;
@@ -134,7 +152,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		var clipped = false;
 
 		var holdDistance = params.distance;
-		var parentDistance = Math.max(0, parentTime - Adapter.instance.getSongPosition());
+		var parentDistance = Math.max(0, parentTime - __cachedSongPos);
 
 		params.hitTime = FlxMath.lerp(parentTime, holdTime, __long);
 		params.distance = FlxMath.lerp(parentDistance, holdDistance, __long);
@@ -147,29 +165,37 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 
 		final size = hold.frame.frame.width * hold.scale.x * .5;
 
-		var origin:ModifierOutput = parent.getNotePath(copyVec3(basePos, _pathInputA), params);
-		var curPoint = new Vector3(origin.pos.x, origin.pos.y, 0);
+		if (collectDebugStats) dbgGetPathCalls++;
+		var origin:ModifierOutput = parent.getNotePathInto(copyVec3(basePos, _pathInputA), params, dest.modifierOutput, dest.modifierPos, dest.visuals);
+		dest.visuals = origin.visuals;
+		final curPoint = dest.origin;
+		curPoint.setTo(origin.pos.x, origin.pos.y, 0);
 		final depth = (origin.pos.z - 1) * 1000;
 		final worldX = origin.rawX;
 		final worldY = origin.rawY;
 		final worldZ = origin.rawZ;
 
 		// before this, bc it fails with optimiz eholds too
-		var unit:Vector3;
+		var unitX = 0.0;
+		var unitY = 1.0;
 
 		if (Config.OPTIMIZE_HOLDS) {
-			unit = __holdUnitUp; // reuse static up-vector, no allocation
+			unitX = __holdUnitUp.x;
+			unitY = __holdUnitUp.y;
 		} else {
-			var next = parent.getNotePath(copyVec3(basePos, _pathInputB), params, 1, false, true);
-			next.pos.z = 0;
-
-			// normalized points difference (from 0-1)
-			unit = next.pos.subtract(curPoint);
-			unit.normalize();
+			if (collectDebugStats) dbgGetPathCalls++;
+			final next = parent.getNotePathInto(copyVec3(basePos, _pathInputB), params, _directionOutput, _directionPos, _directionVisuals, 1, false, true);
+			unitX = next.pos.x - curPoint.x;
+			unitY = next.pos.y - curPoint.y;
+			final unitLength = Math.sqrt(unitX * unitX + unitY * unitY);
+			if (unitLength > 0.000001) { unitX /= unitLength; unitY /= unitLength; }
+			else { unitX = 0; unitY = 1; }
 		}
 
-		var quad0 = new Vector3(-unit.y * size, unit.x * size);
-		var quad1 = new Vector3(unit.y * size, -unit.x * size);
+		final quad0 = dest.left;
+		final quad1 = dest.right;
+		quad0.setTo(-unitY * size, unitX * size, 0);
+		quad1.setTo(unitY * size, -unitX * size, 0);
 
 		final visuals = origin.visuals;
 		final visualScaleY = holdIsEnd ? Math.min(visuals.scaleY, 1.15) : visuals.scaleY;
@@ -177,10 +203,8 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		for (i in 0...2) {
 			var quad = i == 0 ? quad0 : quad1;
 			var rotation = quad;
-			var rotate = __dizzy != 0;
-
-			if (rotate)
-				rotation = ModchartUtil.rotate3DVector(quad, 0, visuals.angleY * __dizzy, 0);
+			if (__dizzy != 0)
+				rotation = ModchartUtil.rotate3DVectorInto(quad, 0, visuals.angleY * __dizzy, 0, _rotationScratch);
 
 			if (visuals.skewX != 0 || visuals.skewY != 0) {
 				__matrix.identity();
@@ -194,24 +218,19 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 			rotation.x = rotation.x * visuals.scaleX;
 			rotation.y = rotation.y * visualScaleY;
 
-			var view = new Vector3(rotation.x + worldX, rotation.y + worldY, worldZ + (rotation.z * 0.001 * Config.Z_SCALE));
-			view = __rotateTail(view);
+			_viewScratch.setTo(rotation.x + worldX, rotation.y + worldY, worldZ + (rotation.z * 0.001 * Config.Z_SCALE));
+			__rotateTailInto(_viewScratch);
 
 			// The result of the perspective projection of rotation
-			var projection = this.view.transformVector(view);
+			var projection = this.view.transformVector(_viewScratch);
 			quad.x = projection.x;
 			quad.y = projection.y;
 			quad.z = projection.z;
 		}
 
-		return {
-			origin: curPoint,
-			left: quad0,
-			right: quad1,
-			visuals: origin.visuals,
-			depth: depth,
-			clipped: clipped
-		};
+		dest.depth = depth;
+		dest.clipped = clipped;
+		return dest;
 	}
 
 	private var __long:Float = 0.0;
@@ -226,7 +245,14 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 
 	@:noCompletion
 	inline private function updateIndices(subdivisionCount:Int) {
+		if (subdivisionCount < _indicesBySubs.length && _indicesBySubs[subdivisionCount] != null) {
+			_indices = _indicesBySubs[subdivisionCount];
+			return;
+		}
 		_indices = new openfl.Vector<Int>(subdivisionCount * 6, true);
+		while (_indicesBySubs.length <= subdivisionCount)
+			_indicesBySubs.push(null);
+		_indicesBySubs[subdivisionCount] = _indices;
 
 		for (subdivision in 0...subdivisionCount) {
 			var vertexPosition = subdivision * 4;
@@ -249,7 +275,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 	var __lastRY:Float = 0;
 	var __lastRZ:Float = 0;
 
-	// YOU MOTHERFUCKER
+	// Player-local modifier values reused across consecutive holds.
 	var __lastPlayer:Int = -1;
 
 	/** Pre-allocated ArrowData buffer reused by getArrowParams() to avoid per-segment heap allocation. */
@@ -307,18 +333,14 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		Manager.HOLD_SIZE = item.width;
 		Manager.HOLD_SIZEDIV2 = item.width * .5;
 
-		final HOLD_SUBDIVISIONS = Adapter.instance.getHoldSubdivisions(item);
-
-		// Only reallocate indices when subdivision count changes (global setting)
-		if (HOLD_SUBDIVISIONS != __lastHoldSubs)
-			updateIndices(HOLD_SUBDIVISIONS);
+		final REQUESTED_SUBDIVISIONS = Std.int(Math.max(1, Adapter.instance.getHoldSubdivisions(item)));
 
 		final player = Adapter.instance.getPlayerFromArrow(item);
 		final lane = Adapter.instance.getLaneFromArrow(item);
 		final hitten = Adapter.instance.arrowHit(item);
 		final holdHitTime = Adapter.instance.getTimeFromArrow(item);
 		final holdParentTime = Adapter.instance.getHoldParentTime(item);
-		final songPosNow = Adapter.instance.getSongPosition();
+		final songPosNow = parent.state.songPosition;
 
 		__cachedHoldPlayer = player;
 		__cachedHoldLane = lane;
@@ -327,14 +349,10 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		__cachedHoldHitten = hitten;
 		__cachedSongPos = songPosNow;
 
-		basePos = ModchartUtil.getHalfPos();
-		basePos.x += Adapter.instance.getDefaultReceptorX(lane, player);
-		basePos.y += Adapter.instance.getDefaultReceptorY(lane, player);
+		basePos = _basePos;
+		basePos.setTo(Adapter.instance.getDefaultReceptorX(lane, player) + Manager.ARROW_SIZEDIV2,
+			Adapter.instance.getDefaultReceptorY(lane, player) + Manager.ARROW_SIZEDIV2, 0);
 
-		// Reuse per-hold buffers to avoid per-frame heap churn.
-		var vertices = _getPooledVertices(item, HOLD_SUBDIVISIONS);
-		var transfTotal = _getPooledColors(item, HOLD_SUBDIVISIONS);
-		var tID = 0;
 		final holdIsEnd:Bool = Adapter.instance.isHoldEnd(item);
 		var lastData:ArrowData = null;
 		var lastSegment:Null<HoldSegmentOutput> = null;
@@ -366,18 +384,44 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		_parentDataBuf.isHoldBody = false;
 		final parentData = _parentDataBuf;
 		if (__rotateX != 0 || __rotateY != 0 || __rotateZ != 0) {
-			__parentOutput = parent.getNotePath(copyVec3(basePos, _pathInputA), parentData);
-		}
-
-		var vertPointer = 0;
+			if (collectDebugStats) dbgGetPathCalls++;
+			__parentOutput = parent.getNotePathInto(copyVec3(basePos, _pathInputA), parentData, _parentOutputBuffer, _parentPos, _parentVisuals);
+		} else __parentOutput = null;
 
 		final holdHeight:Float = item.width * Config.HOLD_END_SCALE;
-		final holdTimeInterval:Float = (Adapter.instance.getHoldLength(item) * (holdIsEnd ? Config.HOLD_END_SCALE : 1.0)) / HOLD_SUBDIVISIONS;
+		final fullHoldTime:Float = Adapter.instance.getHoldLength(item) * (holdIsEnd ? Config.HOLD_END_SCALE : 1.0);
+		var HOLD_SUBDIVISIONS = REQUESTED_SUBDIVISIONS;
+		var useAdaptiveEndpoints = false;
+		if (!holdIsEnd && REQUESTED_SUBDIVISIONS > 1) {
+			getHoldSegmentInto(item, basePos, getArrowParams(item, 0), _probeStart);
+			getHoldSegmentInto(item, basePos, getArrowParams(item, fullHoldTime * 0.5), _probeMid);
+			getHoldSegmentInto(item, basePos, getArrowParams(item, fullHoldTime), _probeEnd);
+			final geometryError = Math.max(midpointError(_probeStart.left, _probeMid.left, _probeEnd.left),
+				midpointError(_probeStart.right, _probeMid.right, _probeEnd.right));
+			final visualsStable = visualDifference(_probeStart.visuals, _probeMid.visuals) <= (1.0 / 255.0)
+				&& visualDifference(_probeStart.visuals, _probeEnd.visuals) <= (1.0 / 255.0);
+			if (_probeStart.clipped == _probeMid.clipped && _probeMid.clipped == _probeEnd.clipped
+				&& geometryError <= 0.75 && visualsStable) {
+				HOLD_SUBDIVISIONS = 1;
+				useAdaptiveEndpoints = true;
+			}
+		}
+
+		if (HOLD_SUBDIVISIONS != __lastHoldSubs)
+			updateIndices(HOLD_SUBDIVISIONS);
+		final slot = nextSlot(HOLD_SUBDIVISIONS);
+		var vertices = slot.vertices;
+		var transfTotal = slot.colors;
+		var tID = 0;
+		var vertPointer = 0;
+		final holdTimeInterval:Float = fullHoldTime / HOLD_SUBDIVISIONS;
 		var timeScale:Float = 1;
 		var firstIteration:Bool = true;
 
 		var hasC = false;
 		var hasCOff = false;
+		var nextSegment = _segmentA;
+		var spareSegment = _segmentB;
 
 		for (subIndex in 0...HOLD_SUBDIVISIONS) {
 			var holdTimeProgress = holdTimeInterval * subIndex * timeScale;
@@ -385,8 +429,13 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 			var out1:HoldSegmentOutput;
 			var out2:HoldSegmentOutput;
 
-			out1 = firstIteration ? getHoldSegment(item, basePos, lastData != null ? lastData : getArrowParams(item, holdTimeProgress)) : lastSegment;
-			out2 = getHoldSegment(item, basePos, (lastData = getArrowParams(item, holdTimeProgress + (holdTimeInterval * timeScale))));
+			if (firstIteration && useAdaptiveEndpoints) {
+				out1 = _probeStart;
+				out2 = _probeEnd;
+			} else {
+				out1 = firstIteration ? getHoldSegmentInto(item, basePos, lastData != null ? lastData : getArrowParams(item, holdTimeProgress), nextSegment) : lastSegment;
+				out2 = getHoldSegmentInto(item, basePos, (lastData = getArrowParams(item, holdTimeProgress + (holdTimeInterval * timeScale))), spareSegment);
+			}
 
 			if (firstIteration) {
 				item._z = out1.depth;
@@ -395,21 +444,26 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 					var segmentLength = getSegmentScreenLength(out1, out2);
 
 					if (out1.clipped || out2.clipped) {
-						final rawStartSegment = getHoldSegment(item, basePos, getArrowParams(item, holdTimeProgress), false);
-						final rawEndSegment = getHoldSegment(item, basePos, getArrowParams(item, holdTimeProgress + holdTimeInterval), false);
+						final rawStartSegment = getHoldSegmentInto(item, basePos, getArrowParams(item, holdTimeProgress), _rawSegmentA, false);
+						final rawEndSegment = getHoldSegmentInto(item, basePos, getArrowParams(item, holdTimeProgress + holdTimeInterval), _rawSegmentB, false);
 						segmentLength = getSegmentScreenLength(rawStartSegment, rawEndSegment);
 					}
 
 					if (segmentLength > 0) {
 						final rawTimeScale = (holdHeight / HOLD_SUBDIVISIONS) / segmentLength;
-						timeScale = Math.min(rawTimeScale, 1.15);
-						out2 = getHoldSegment(item, basePos, (lastData = getArrowParams(item, holdTimeInterval * timeScale)));
+						// A cap may compress to fit a short projected segment, but never
+						// stretches past its authored length (the old 1.15 cap looked gummy).
+						timeScale = Math.min(rawTimeScale, 1.0);
+						out2 = getHoldSegmentInto(item, basePos, (lastData = getArrowParams(item, holdTimeInterval * timeScale)), spareSegment);
 					}
 				}
 			}
 
 			__lastPlayer = player;
 			lastSegment = out2;
+			final swapSegment = nextSegment;
+			nextSegment = spareSegment;
+			spareSegment = swapSegment;
 
 			if (out1.visuals.alpha > 0)
 				canDraw = true;
@@ -452,21 +506,21 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		if (!canDraw)
 			return null;
 
-		var dc:DrawCommand = {
-			parent: item,
-			graphic: item.graphic,
-			antialiasing: item.antialiasing,
-			blend: item.blend,
-			cameras: ModchartUtil.resolveCameras(parent, item),
-			shader: item.shader,
-
-			vertices: vertices,
-			uvs: _getCachedUVT(item, HOLD_SUBDIVISIONS),
-			indices: _indices,
-			colors: transfTotal,
-			isColored: hasC,
-			hasColorOffsets: hasCOff
-		};
+		final dc = slot.command;
+		dc.parent = item;
+		dc.graphic = item.graphic;
+		dc.antialiasing = item.antialiasing;
+		dc.blend = item.blend;
+		dc.cameras = ModchartUtil.resolveCameras(parent, item, slot.cameras);
+		dc.shader = item.shader;
+		dc.vertices = vertices;
+		dc.uvs = _getCachedUVT(item, HOLD_SUBDIVISIONS);
+		dc.indices = _indices;
+		dc.color = null;
+		dc.colors = transfTotal;
+		dc.isColored = hasC;
+		dc.hasColorOffsets = hasCOff;
+		dc.zIndex = 0;
 
 		__lastHoldSubs = HOLD_SUBDIVISIONS;
 
@@ -495,9 +549,31 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 
 	override function dispose() {
 		_uvtCacheKeys = [];
+		_uvtCacheSubsKeys = [];
 		_uvtCacheVals = [];
-		_holdVerticesPool = new ObjectMap<FlxSprite, openfl.Vector<Float>>();
-		_holdColorsPool = new ObjectMap<FlxSprite, NativeVector<ColorTransform>>();
-		_holdPoolSubs = new ObjectMap<FlxSprite, Int>();
+		_indicesBySubs = [];
+		_slots.resize(0);
+	}
+}
+
+private class HoldRenderSlot {
+	public var vertices:openfl.Vector<Float> = new openfl.Vector<Float>(0, true);
+	public var colors:NativeVector<ColorTransform> = new NativeVector<ColorTransform>(0);
+	public final cameras:Array<FlxCamera> = [];
+	public final command:DrawCommand;
+	var capacity:Int = 0;
+
+	public function new() {
+		command = {parent: null, graphic: null, antialiasing: false, blend: null, shader: null, cameras: cameras,
+			vertices: vertices, uvs: null, indices: null, isColored: false, hasColorOffsets: false, color: null, colors: colors, zIndex: 0};
+	}
+
+	public function ensureCapacity(subs:Int):Void {
+		if (subs == capacity)
+			return;
+		capacity = subs;
+		vertices = new openfl.Vector<Float>(capacity * 8, true);
+		colors = new NativeVector<ColorTransform>(capacity);
+		for (i in 0...capacity) colors[i] = new ColorTransform();
 	}
 }

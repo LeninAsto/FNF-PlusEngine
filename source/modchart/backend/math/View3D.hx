@@ -132,14 +132,17 @@ final class View3D {
 	}
 
 	private inline function updateCameraBasis():Void {
-		// pendejada mas pendeja alaverga
-		__forward = position - target;
+		__forward.setTo(position.x - target.x, position.y - target.y, position.z - target.z);
 		__forward.normalize();
 
-		__right = up.crossProduct(__forward);
+		__right.setTo(up.y * __forward.z - up.z * __forward.y,
+			up.z * __forward.x - up.x * __forward.z,
+			up.x * __forward.y - up.y * __forward.x);
 		__right.normalize();
 
-		__up = __forward.crossProduct(__right);
+		__up.setTo(__forward.y * __right.z - __forward.z * __right.y,
+			__forward.z * __right.x - __forward.x * __right.z,
+			__forward.x * __right.y - __forward.y * __right.x);
 
 		__dirtyCamera = false;
 	}
@@ -148,8 +151,13 @@ final class View3D {
 		if (__dirtyCamera)
 			updateCameraBasis();
 
-		var p = v - position;
-		return new Vector3(p.dotProduct(__right), p.dotProduct(__up), p.dotProduct(__forward));
+		final px = v.x - position.x;
+		final py = v.y - position.y;
+		final pz = v.z - position.z;
+		v.setTo(px * __right.x + py * __right.y + pz * __right.z,
+			px * __up.x + py * __up.y + pz * __up.z,
+			px * __forward.x + py * __forward.y + pz * __forward.z);
+		return v;
 	}
 
 	/**
@@ -171,7 +179,7 @@ final class View3D {
 
 		var world:Vector3;
 		if (useCamera) {
-			world = applyViewTransform(vector); // allocates, but camera mode is rarely used
+			world = applyViewTransform(vector);
 		} else {
 			world = vector;
 		}

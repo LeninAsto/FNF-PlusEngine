@@ -20,6 +20,10 @@ class Bounce extends Modifier {
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
 
+	override public function isActive(player:Int):Bool
+		return getPercent('bounce', player) != 0 || getPercent('bounceX', player) != 0
+			|| getPercent('bounceY', player) != 0 || getPercent('bounceZ', player) != 0;
+
 	override public function allowOnStraightHolds():Bool
 		return false;
 }

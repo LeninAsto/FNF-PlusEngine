@@ -96,6 +96,25 @@ class Scale extends Modifier {
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
 
+	override public function isActive(player:Int):Bool {
+		for (axis in 0...scaleIDs.length) {
+			if (getUnsafe(scaleIDs[axis], player) != 1 || getUnsafe(tinyIDs[axis], player) != 0)
+				return true;
+			if (Config.COLUMN_SPECIFIC_MODIFIERS)
+				for (lane in 0...scaleLaneIDs[axis].length)
+					if ((hasUnsafeForPlayer(scaleLaneIDs[axis][lane], player) && getUnsafe(scaleLaneIDs[axis][lane], player) != 1)
+						|| getUnsafe(tinyLaneIDs[axis][lane], player) != 0)
+						return true;
+		}
+		if (getUnsafe(miniID, player) != 0 || getUnsafe(squishID, player) != 0 || getUnsafe(stretchID, player) != 0)
+			return true;
+		if (Config.COLUMN_SPECIFIC_MODIFIERS)
+			for (lane in 0...miniLaneIDs.length)
+				if (getUnsafe(miniLaneIDs[lane], player) != 0 || getUnsafe(squishLaneIDs[lane], player) != 0 || getUnsafe(stretchLaneIDs[lane], player) != 0)
+					return true;
+		return false;
+	}
+
 	override public function transformMode():TransformMode
 		return TransformMode.FIELD;
 }

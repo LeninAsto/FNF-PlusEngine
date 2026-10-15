@@ -25,4 +25,7 @@ class Invert extends Modifier {
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function isActive(player:Int):Bool
+		return getUnsafe(invID, player) != 0 || getUnsafe(flpID, player) != 0;
 }

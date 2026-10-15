@@ -27,8 +27,22 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		isHoldBody: false
 	};
 	final _orientInput:Vector3 = new Vector3();
+	final _rotated:Vector3 = new Vector3();
+	final _viewInput:Vector3 = new Vector3();
+	final _outputPos:Vector3 = new Vector3();
+	final _outputVisuals:VisualParameters = {};
+	final _output:ModifierOutput;
+	final _orientPos:Vector3 = new Vector3();
+	final _orientVisuals:VisualParameters = {};
+	final _orientOutput:ModifierOutput;
 	var _slots:Array<ArrowRenderSlot> = [];
 	var _slotIndex:Int = 0;
+
+	public function new(parent:PlayField) {
+		super(parent);
+		_output = {pos: _outputPos, visuals: _outputVisuals};
+		_orientOutput = {pos: _orientPos, visuals: _orientVisuals};
+	}
 
 	/** Reuses command and geometry storage after the previous frame was submitted. */
 	public inline function beginFrame():Void
@@ -87,7 +101,7 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 
 		// setup the position
 		var arrowTime = sourceTime;
-		var songPos = Adapter.instance.getSongPosition();
+		var songPos = parent.state.songPosition;
 		var arrowDiff = arrowTime - songPos;
 
 		final canUseLast = player == __lastPlayer;
@@ -114,7 +128,7 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		arrowPosition.setTo(Adapter.instance.getDefaultReceptorX(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2,
 			Adapter.instance.getDefaultReceptorY(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2, 0);
 
-		final output = parent.getNotePath(arrowPosition, arrowData);
+		final output = parent.getNotePathInto(arrowPosition, arrowData, _output, _outputPos, _outputVisuals);
 		arrowPosition.setTo(output.rawX, output.rawY, output.rawZ);
 		var visualAngleZ = output.visuals.angleZ;
 
@@ -122,8 +136,7 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		if (orient != 0) {
 			_orientInput.setTo(Adapter.instance.getDefaultReceptorX(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2,
 				Adapter.instance.getDefaultReceptorY(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2, 0);
-			final nextOutput = parent.getNotePath(_orientInput,
-				arrowData, 1, false, true);
+			final nextOutput = parent.getNotePathInto(_orientInput, arrowData, _orientOutput, _orientPos, _orientVisuals, 1, false, true);
 			final thisPos = output.pos;
 			final nextPos = nextOutput.pos;
 
@@ -158,8 +171,8 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 			rotationVector.setTo(planeVertices[vertPointer], planeVertices[vertPointer + 1], 0);
 
 			// The result of the vert rotation
-			var rotation = ModchartUtil.rotate3DVector(rotationVector, visualAngleX, visualAngleY,
-				ModchartUtil.getFrameAngle(arrow) + visualAngleZ + arrow.angle);
+			var rotation = ModchartUtil.rotate3DVectorInto(rotationVector, visualAngleX, visualAngleY,
+				ModchartUtil.getFrameAngle(arrow) + visualAngleZ + arrow.angle, _rotated);
 
 			// apply skewness
 			if (output.visuals.skewX != 0 || output.visuals.skewY != 0) {
@@ -174,11 +187,11 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 			rotation.x = rotation.x * output.visuals.scaleX;
 			rotation.y = rotation.y * output.visuals.scaleY;
 
-			var view = new Vector3(rotation.x + arrowPosition.x, rotation.y + arrowPosition.y,
+			_viewInput.setTo(rotation.x + arrowPosition.x, rotation.y + arrowPosition.y,
 				(rotation.z * 0.001 * Config.Z_SCALE) + arrowPosition.z);
 
 			// The result of the perspective projection of rotation
-			final projection = this.view.transformVector(view);
+			final projection = this.view.transformVector(_viewInput);
 
 			planeVertices[vertPointer] = projection.x;
 			planeVertices[vertPointer + 1] = projection.y;

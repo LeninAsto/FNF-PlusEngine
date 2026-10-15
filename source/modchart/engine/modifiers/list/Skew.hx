@@ -85,6 +85,19 @@ class Skew extends Modifier {
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
 
+	override public function isActive(player:Int):Bool {
+		if (getUnsafe(xID, player) != 0 || getUnsafe(yID, player) != 0 || getUnsafe(noteSkewID, player) != 0
+			|| getUnsafe(noteSkewXID, player) != 0 || getUnsafe(noteSkewYID, player) != 0
+			|| getUnsafe(fieldXID, player) != 0 || getUnsafe(fieldYID, player) != 0)
+			return true;
+		for (lane in 0...xLaneIDs.length)
+			if (getUnsafe(xLaneIDs[lane], player) != 0 || getUnsafe(yLaneIDs[lane], player) != 0
+				|| getUnsafe(noteSkewLaneIDs[lane], player) != 0 || getUnsafe(noteSkewXLaneIDs[lane], player) != 0
+				|| getUnsafe(noteSkewYLaneIDs[lane], player) != 0)
+				return true;
+		return false;
+	}
+
 	override public function transformMode():TransformMode
 		return TransformMode.FIELD;
 }

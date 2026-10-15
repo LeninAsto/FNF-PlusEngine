@@ -31,19 +31,17 @@ final class ModifierGroup {
 	public static final COMPILED_MODIFIERS = ModifiersMacro.get();
 
 	/**
-	 * A 2D array storing percentage values, indexed by hashed string keys.
+	 * A collision-free registry storing modifier values by compact integer ID.
 	 *
 	 * **Usage Notes:**
-	 * - Do not access `percents` directly, as all keys are hashed into 16-bit integers.
+	 * - Do not access `percents` directly; names are registered as compact IDs.
 	 * - Use `getPercent(name, player)` to retrieve a value.
 	 * - Use `setPercent(name, value, player)` to modify values safely.
 	 *
-	 * **Hashing Mechanism:**
-	 * - Keys are automatically converted to lowercase and hashed into a 16-bit integer.
-	 * - This ensures efficient storage and retrieval while avoiding direct string key lookups.
+	 * Names are resolved once; modifiers cache their IDs for the render hot path.
 	 */
 	public var percents(default, never):PercentArray = new PercentArray();
-	@:noCompletion private var __explicitPercentPlayers:Vector<Int> = new Vector<Int>(Std.int(Math.pow(2, 16)));
+	@:noCompletion private var __explicitPercentPlayers:Array<Int> = [];
 
 	/**
 	 * A `StringMap` that maps modifier names/identifiers to their corresponding `Modifier` class.
@@ -71,6 +69,13 @@ final class ModifierGroup {
 	@:noCompletion private var __cachedArgs:ModifierParameters;
 	/** Reused anchor args for straight holds so blocked mods follow the head uniformly. */
 	@:noCompletion private var __cachedStraightArgs:ModifierParameters;
+	public var dbgPathCalls(default, null):Int = 0;
+	public var dbgModifierCalls(default, null):Int = 0;
+	public var trackDebugStats:Bool = false;
+	@:noCompletion private var __debugFrame:Int = -1;
+	@:noCompletion private var __activeFrame:Int = -1;
+	@:noCompletion private var __activeByMode:Array<Array<Array<Modifier>>> = [];
+	static final __MODE_VALUES:Array<Int> = [1, 3, 5, 9, 15];
 
 	@:noCompletion private var __sortedModifiers:Vector<Modifier> = new Vector<Modifier>(32);
 	@:noCompletion private var __modifierCount:Int = 0;
@@ -93,13 +98,10 @@ final class ModifierGroup {
 
 	public function new(playfield:PlayField) {
 		this.playfield = playfield;
-		for (i in 0...__explicitPercentPlayers.length)
-			__explicitPercentPlayers[i] = 0;
-
 		// Pre-allocate reusable args struct to avoid 1 heap alloc per getPath() call
 		__cachedArgs = {songTime: 0, hitTime: 0, distance: 0, sourceTime: 0, curBeat: 0};
 		__cachedStraightArgs = {songTime: 0, hitTime: 0, distance: 0, sourceTime: 0, curBeat: 0};
-		@:privateAccess __modSplineActiveID = percents.__hashKey('modSpline');
+		__modSplineActiveID = percents.getID('modSpline');
 
 		__loadModifiers();
 	}
@@ -123,16 +125,52 @@ final class ModifierGroup {
 	 * - Adjusts the `z` position based on `Config.Z_SCALE` and projects the final position.
 	 */
 	public inline function getPath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true, ?transformMode:Int = 15):ModifierOutput {
-		if (!allowVis && !allowPos)
-			return {pos: pos, visuals: {}, rawX: pos.x, rawY: pos.y, rawZ: pos.z};
+		final outPos = new Vector3();
+		final outVisuals:VisualParameters = {};
+		final out:ModifierOutput = {pos: outPos, visuals: outVisuals};
+		return getPathInto(pos, data, out, outPos, outVisuals, posDiff, allowVis, allowPos, transformMode);
+	}
+
+	/** Allocation-free renderer path. Public wrappers keep the old API intact. */
+	public function getPathInto(pos:Vector3, data:ArrowData, out:ModifierOutput, outPos:Vector3, visuals:VisualParameters,
+			?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true, ?transformMode:Int = 15):ModifierOutput {
+		if (trackDebugStats && __debugFrame != playfield.state.frameId) {
+			__debugFrame = playfield.state.frameId;
+			dbgPathCalls = 0;
+			dbgModifierCalls = 0;
+		}
+		if (trackDebugStats)
+			dbgPathCalls++;
+		__refreshActiveModifiers();
+
+		visuals.scaleX = 1;
+		visuals.scaleY = 1;
+		visuals.alpha = 1;
+		visuals.glow = 0;
+		visuals.glowR = 1;
+		visuals.glowG = 1;
+		visuals.glowB = 1;
+		visuals.angleX = 0;
+		visuals.angleY = 0;
+		visuals.angleZ = 0;
+		visuals.skewX = 0;
+		visuals.skewY = 0;
+
+		if (!allowVis && !allowPos) {
+			outPos.setTo(pos.x, pos.y, pos.z);
+			out.pos = outPos;
+			out.visuals = visuals;
+			out.rawX = pos.x;
+			out.rawY = pos.y;
+			out.rawZ = pos.z;
+			return out;
+		}
 
 		final hitTime = data.hitTime + posDiff;
 		final distance = data.distance + posDiff;
 		
-		var visuals:VisualParameters = {};
-
-		final songPos = Adapter.instance.getSongPosition();
-		final beat = Adapter.instance.getCurrentBeat();
+		final songPos = playfield.state.songPosition;
+		final beat = playfield.state.beat;
 
 		// Reuse pre-allocated args to avoid per-call heap allocation
 		final args = __cachedArgs;
@@ -159,17 +197,19 @@ final class ModifierGroup {
 		straightArgs.straightHolds = data.straightHolds;
 		straightArgs.isHoldBody = data.isHoldBody;
 
-		// sorta optimizations
-		final mods = __sortedModifiers;
-		final len = __modifierCount;
+		// Iterate the frame-local active list in registration order.
+		final mods = __activeByMode[data.player][__modeIndex(transformMode)];
+		final len = mods.length;
 
 		for (i in 0...len) {
 			final mod = mods[i];
 			final useStraightAnchor = args.straightHolds && !mod.allowOnStraightHolds();
 			final activeArgs = useStraightAnchor ? straightArgs : args;
 
-			if (!mod.supportsMode(cast transformMode) || !mod.shouldRun(activeArgs))
+			if (!mod.shouldRun(activeArgs))
 				continue;
+			if (trackDebugStats)
+				dbgModifierCalls++;
 
 			if (allowPos)
 				pos = mod.render(pos, activeArgs);
@@ -181,15 +221,45 @@ final class ModifierGroup {
 		final rawY = pos.y;
 		final rawZ = pos.z;
 		pos = playfield.view.transformVector(pos);
-		final output:ModifierOutput = {
-			pos: pos,
-			visuals: visuals,
-			rawX: rawX,
-			rawY: rawY,
-			rawZ: rawZ
-		};
+		outPos.setTo(pos.x, pos.y, pos.z);
+		out.pos = outPos;
+		out.visuals = visuals;
+		out.rawX = rawX;
+		out.rawY = rawY;
+		out.rawZ = rawZ;
+		return out;
+	}
 
-		return output;
+	private function __refreshActiveModifiers():Void {
+		final frame = playfield.state.frameId;
+		if (__activeFrame == frame)
+			return;
+		__activeFrame = frame;
+		final players = Adapter.instance.getPlayerCount();
+		while (__activeByMode.length < players)
+			__activeByMode.push([[], [], [], [], []]);
+		for (player in 0...players) {
+			final modes = __activeByMode[player];
+			for (active in modes) active.resize(0);
+			for (i in 0...__modifierCount) {
+				final mod = __sortedModifiers[i];
+				if (mod == null || !mod.isActive(player))
+					continue;
+				for (modeIndex in 0...__MODE_VALUES.length)
+					if (mod.supportsMode(cast __MODE_VALUES[modeIndex]))
+						modes[modeIndex].push(mod);
+			}
+		}
+	}
+
+	private inline function __modeIndex(mode:Int):Int {
+		return switch (mode) {
+			case 1: 0;
+			case 3: 1;
+			case 5: 2;
+			case 9: 3;
+			default: 4;
+		}
 	}
 
 	public inline function addScriptedModifier(name:String, instance:Modifier)
@@ -218,11 +288,12 @@ final class ModifierGroup {
 		}
 	}
 
-	// Note: __hashKey in PercentArray is now case-insensitive, so no toLowerCase() needed.
 	public inline function setPercent(name:String, value:Float, player:Int = -1) {
-		final id = @:privateAccess percents.__hashKey(name);
+		__activeFrame = -1;
+		final id = percents.getID(name);
 		final lowerName = name.toLowerCase();
-		__rememberPercent(id, lowerName);
+		final canonicalName = percents.getName(id) ?? lowerName;
+		__rememberPercent(id, canonicalName);
 		final possiblePercs = percents.getUnsafe(id);
 		final generate = possiblePercs == null;
 		final percs = generate ? __getPercentTemplate() : possiblePercs;
@@ -239,7 +310,7 @@ final class ModifierGroup {
 		if (generate)
 			percents.setUnsafe(id, percs);
 
-		if (lowerName.indexOf('spline') == 0 && lowerName != 'modspline')
+		if (canonicalName.indexOf('spline') == 0 && canonicalName != 'modspline')
 			__setUnsafe(__modSplineActiveID, 1, player);
 	}
 
@@ -251,11 +322,21 @@ final class ModifierGroup {
 		return 0;
 	}
 
+	public inline function addAlias(parent:String, alias:String):Int
+		return percents.addAlias(parent, alias);
+
+	public inline function resolvePercentID(name:String):Int
+		return percents.getID(name);
+
+	public inline function getPercentByID(id:Int, player:Int):Float
+		return __getUnsafe(id, player);
+
 	public inline function setRawValue(name:String, value:Float, player:Int = -1) setPercent(name, value, player);
 
 	public inline function getRawValue(name:String, player:Int) return getPercent(name, player);
 
 	public function resetPercents(player:Int = -1):Void {
+		__activeFrame = -1;
 		for (i in 0...__knownPercentCount) {
 			final id = __knownPercentIDs[i];
 			final percs = percents.getUnsafe(id);
@@ -286,7 +367,8 @@ final class ModifierGroup {
 		return percents.getUnsafe(id) != null;
 
 	inline private function __hasUnsafeForPlayer(id:Int, player:Int):Bool
-		return (percents.getUnsafe(id) != null) && ((__explicitPercentPlayers[id] & __playerMask(player)) != 0);
+		return (percents.getUnsafe(id) != null) && id < __explicitPercentPlayers.length
+			&& ((__explicitPercentPlayers[id] & __playerMask(player)) != 0);
 
 	inline private function __setUnsafe(id:Int, value:Float, player:Int = -1) {
 		var possiblePercs = percents.getUnsafe(id);
@@ -306,6 +388,8 @@ final class ModifierGroup {
 	}
 
 	inline private function __markExplicit(id:Int, player:Int):Void {
+		while (__explicitPercentPlayers.length <= id)
+			__explicitPercentPlayers.push(0);
 		__explicitPercentPlayers[id] = __explicitPercentPlayers[id] | __playerMask(player);
 	}
 
@@ -322,6 +406,7 @@ final class ModifierGroup {
 
 	@:noCompletion
 	inline private function __addModifier(name:String, modifier:Modifier) {
+		__activeFrame = -1;
 		modifiers.set(name, modifier);
 		@:privateAccess modifier.pf = playfield;
 
@@ -352,10 +437,6 @@ final class ModifierGroup {
 		for (i in 0...vector.length)
 			vector[i] = 0;
 		return vector;
-	}
-
-	inline private function __findID(str:String) {
-		@:privateAccess percents.__hashKey(str.toLowerCase());
 	}
 
 	function __rememberPercent(id:Int, lowerName:String):Void {
