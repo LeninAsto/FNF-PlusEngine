@@ -6733,9 +6733,11 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	function updateWaveform()
 	{
 		#if (lime_cffi && !macro)
-		if (curSec < 0 || curSec >= cachedSectionTimes.length || !waveformEnabled)
+		if (!waveformEnabled || waveformSprite == null || gridBg == null || cachedSectionTimes == null || curSec < 0
+			|| curSec + 1 >= cachedSectionTimes.length)
 		{
-			waveformSprite.visible = false;
+			if (waveformSprite != null)
+				waveformSprite.visible = false;
 			return;
 		}
 
@@ -6743,10 +6745,13 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		waveformSprite.y = gridBg.y;
 		var width:Int = Std.int(GRID_SIZE * GRID_COLUMNS_PER_PLAYER * GRID_PLAYERS);
 		var height:Int = Std.int(gridBg.height);
-		if (Std.int(waveformSprite.height) != height && waveformSprite.pixels != null)
+		if (waveformSprite.pixels == null || Std.int(waveformSprite.width) != width || Std.int(waveformSprite.height) != height)
 		{
-			waveformSprite.pixels.dispose();
-			waveformSprite.pixels.disposeImage();
+			if (waveformSprite.pixels != null)
+			{
+				waveformSprite.pixels.dispose();
+				waveformSprite.pixels.disposeImage();
+			}
 			waveformSprite.makeGraphic(width, height, 0x00FFFFFF);
 		}
 		waveformSprite.pixels.fillRect(new Rectangle(0, 0, width, height), 0x00FFFFFF);
@@ -6768,12 +6773,23 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				null;
 		}
 		@:privateAccess
-		if (sound != null && sound._sound != null && sound._sound.__buffer != null)
+		var buffer:AudioBuffer = sound != null && sound._sound != null ? sound._sound.__buffer : null;
+		// Streamed Vorbis audio deliberately has no decoded PCM data. In that case the
+		// waveform is unavailable, but the chart editor must still remain usable.
+		if (buffer == null || buffer.data == null)
 		{
-			var bytes:Bytes = sound._sound.__buffer.data.toBytes();
-			wavData = waveformData(sound._sound.__buffer, bytes, cachedSectionTimes[curSec] - Conductor.offset,
-				cachedSectionTimes[curSec + 1] - Conductor.offset, 1, wavData, height);
+			waveformSprite.visible = false;
+			return;
 		}
+
+		var bytes:Bytes = buffer.data.toBytes();
+		if (bytes == null || bytes.length < 2)
+		{
+			waveformSprite.visible = false;
+			return;
+		}
+		wavData = waveformData(buffer, bytes, cachedSectionTimes[curSec] - Conductor.offset,
+			cachedSectionTimes[curSec + 1] - Conductor.offset, 1, wavData, height);
 
 		// Draws
 		var gSize:Int = Std.int(GRID_SIZE * 8);
