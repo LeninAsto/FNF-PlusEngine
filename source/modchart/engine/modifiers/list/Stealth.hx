@@ -56,7 +56,7 @@ class Stealth extends Modifier {
 	private inline function computeSudden(data:VisualParameters, params:ModifierParameters) {
 		final player = params.player;
 
-		final sudden = getUnsafe(_suddenID, player);
+		final sudden = FlxMath.bound(getUnsafe(_suddenID, player), 0, 1);
 
 		if (sudden == 0)
 			return;
@@ -68,14 +68,22 @@ class Stealth extends Modifier {
 		final alpha = FlxMath.remapToRange(FlxMath.bound(params.distance, end, start), end, start, 1, 0);
 
 		if (glow != 0)
-			data.glow += Math.max(0, (1 - alpha) * sudden * 2) * glow;
-		data.alpha *= alpha * sudden;
+		{
+			// Sudden starts at alpha 0, so the old `(1 - alpha) * 2` glow
+			// peaked while the arrow was still culled. A bell-shaped glow keeps
+			// the flash inside the visible fade instead of revealing fragments.
+			final fadeGlow = 4 * alpha * (1 - alpha);
+			data.glow += fadeGlow * sudden * glow;
+		}
+		// Blend the fade with the modifier strength. Multiplying by `sudden`
+		// made every partial value cap the whole note at that opacity.
+		data.alpha *= FlxMath.lerp(1, alpha, sudden);
 	}
 
 	private inline function computeHidden(data:VisualParameters, params:ModifierParameters) {
 		final player = params.player;
 
-		final hidden = getUnsafe(_hiddenID, player);
+		final hidden = FlxMath.bound(getUnsafe(_hiddenID, player), 0, 1);
 
 		if (hidden == 0)
 			return;
@@ -88,12 +96,12 @@ class Stealth extends Modifier {
 
 		if (glow != 0)
 			data.glow += Math.max(0, (1 - alpha) * hidden * 2) * glow;
-		data.alpha *= alpha * hidden;
+		data.alpha *= FlxMath.lerp(1, alpha, hidden);
 	}
 
 	override public function visuals(data:VisualParameters, params:ModifierParameters) {
 		final player = params.player;
-		final lane = params.lane;
+		final lane = getLaneSlot(params.lane, _stealthIDs.length);
 
 		// Use pre-computed IDs to avoid Std.string(lane) + string concat allocations
 		final stealthVal = getUnsafeLaneAdd(_stealthID, _stealthIDs[lane], player);

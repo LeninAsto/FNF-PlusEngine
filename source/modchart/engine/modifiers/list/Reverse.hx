@@ -75,7 +75,8 @@ class Reverse extends Modifier {
 	}
 
 	public function getReverseValue(dir:Int, player:Int) {
-		var kNum = getKeyCount();
+		var kNum = getKeyCount(player);
+		final lane = getLaneSlot(dir, _reverseIDs.length);
 		var val:Float = 0;
 		if (dir >= Math.floor(kNum * 0.5))
 			val = val + getUnsafe(_splitID, player);
@@ -89,7 +90,7 @@ class Reverse extends Modifier {
 		if (dir >= first && dir <= last)
 			val = val + getUnsafe(_crossID, player);
 
-		val = val + getUnsafeLaneAdd(_reverseID, _reverseIDs[dir], player);
+		val = val + getUnsafeLaneAdd(_reverseID, _reverseIDs[lane], player);
 
 		if (getUnsafe(_unboundedReverseID, player) == 0) {
 			val %= 2;
@@ -139,7 +140,7 @@ class Reverse extends Modifier {
 	// Modifies scroll in-place
 	function applyScrollMods(scroll:Vector3, params:ModifierParameters) {
 		var player = params.player;
-		var lane = params.lane;
+		var lane = getLaneSlot(params.lane, _xmodIDs.length);
 		var angleX = 0.;
 		var angleY = 0.;
 		var angleZ = 0.;

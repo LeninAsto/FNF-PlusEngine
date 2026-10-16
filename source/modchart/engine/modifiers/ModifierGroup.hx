@@ -74,6 +74,7 @@ final class ModifierGroup {
 	public var trackDebugStats:Bool = false;
 	@:noCompletion private var __debugFrame:Int = -1;
 	@:noCompletion private var __activeFrame:Int = -1;
+	@:noCompletion private var __activeDirty:Bool = true;
 	@:noCompletion private var __activeByMode:Array<Array<Array<Modifier>>> = [];
 	static final __MODE_VALUES:Array<Int> = [1, 3, 5, 9, 15];
 
@@ -232,10 +233,11 @@ final class ModifierGroup {
 
 	private function __refreshActiveModifiers():Void {
 		final frame = playfield.state.frameId;
-		if (__activeFrame == frame)
+		final players = Adapter.instance.getPlayerCount();
+		if (!__activeDirty && __activeFrame == frame && __activeByMode.length >= players)
 			return;
 		__activeFrame = frame;
-		final players = Adapter.instance.getPlayerCount();
+		__activeDirty = false;
 		while (__activeByMode.length < players)
 			__activeByMode.push([[], [], [], [], []]);
 		for (player in 0...players) {
@@ -289,7 +291,7 @@ final class ModifierGroup {
 	}
 
 	public inline function setPercent(name:String, value:Float, player:Int = -1) {
-		__activeFrame = -1;
+		__activeDirty = true;
 		final id = percents.getID(name);
 		final lowerName = name.toLowerCase();
 		final canonicalName = percents.getName(id) ?? lowerName;
@@ -315,11 +317,13 @@ final class ModifierGroup {
 	}
 
 	public inline function getPercent(name:String, player:Int):Float {
-		final percs = percents.get(name);
+		final id = percents.getID(name);
+		final percs = percents.getUnsafe(id);
 
 		if (percs != null)
 			return percs[player];
-		return 0;
+		final canonicalName = percents.getName(id) ?? name.toLowerCase();
+		return __getDefaultPercent(canonicalName);
 	}
 
 	public inline function addAlias(parent:String, alias:String):Int
@@ -336,7 +340,7 @@ final class ModifierGroup {
 	public inline function getRawValue(name:String, player:Int) return getPercent(name, player);
 
 	public function resetPercents(player:Int = -1):Void {
-		__activeFrame = -1;
+		__activeDirty = true;
 		for (i in 0...__knownPercentCount) {
 			final id = __knownPercentIDs[i];
 			final percs = percents.getUnsafe(id);
@@ -406,7 +410,7 @@ final class ModifierGroup {
 
 	@:noCompletion
 	inline private function __addModifier(name:String, modifier:Modifier) {
-		__activeFrame = -1;
+		__activeDirty = true;
 		modifiers.set(name, modifier);
 		@:privateAccess modifier.pf = playfield;
 

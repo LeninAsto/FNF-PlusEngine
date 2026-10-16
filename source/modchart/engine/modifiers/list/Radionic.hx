@@ -1,5 +1,6 @@
 package modchart.engine.modifiers.list;
 
+import flixel.math.FlxMath;
 import modchart.backend.core.ModifierParameters;
 import modchart.backend.core.VisualParameters;
 
@@ -45,13 +46,21 @@ class Radionic extends Modifier {
 			return data;
 			
 		final amount = 0.6;
+		final strength = FlxMath.bound(perc, 0, 1);
+		final pulse = FlxEase.cubeOut(params.curBeat - Math.floor(params.curBeat));
+		final pulseScale = 1 + amount - pulse * amount;
+		final scale = FlxMath.lerp(1, pulseScale, strength);
 
-		data.scaleX = perc * (data.scaleY = 1 + amount - FlxEase.cubeOut((params.curBeat - Math.floor(params.curBeat))) * amount);
-		data.glow = perc * (-(amount - FlxEase.cubeOut((params.curBeat - Math.floor(params.curBeat))) * amount) * 2);
+		data.scaleX *= scale;
+		data.scaleY *= scale;
+		data.glow += strength * (-(amount - pulse * amount) * 2);
 
 		return data;
 	}
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function isActive(player:Int):Bool
+		return getPercent('radionic', player) != 0;
 }

@@ -190,7 +190,7 @@ class AssetLoader
 	/** Keeps long OGG tracks compressed and streamable for native tempo processing. */
 	public static function loadStreamedSound(path:String):Sound
 	{
-		#if (lime_vorbis && sys)
+		#if (lime_vorbis && sys && !mobile)
 		if (path != null && path.length > 0)
 		{
 			try
