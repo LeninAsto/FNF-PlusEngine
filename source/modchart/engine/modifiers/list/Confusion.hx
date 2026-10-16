@@ -47,6 +47,8 @@ class Confusion extends Modifier {
 		}
 
 		var angle = 0.;
+		// PlusEngine keeps confusion as a static angle. Continuous rotation
+		// belongs to dizzy/roll/twirl below.
 		angle += confVal;
 		angle += angVal;
 		angle += offVal;

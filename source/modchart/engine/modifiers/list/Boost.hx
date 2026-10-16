@@ -30,7 +30,7 @@ class Boost extends Modifier {
 
 	override public function render(curPos:Vector3, params:ModifierParameters) {
 		var player = params.player;
-		var lane = params.lane;
+		var lane = getLaneSlot(params.lane, _boostIDs.length);
 
 		var fYOffset = params.distance;
 
@@ -57,7 +57,10 @@ class Boost extends Modifier {
 		final wave = getUnsafeLaneAdd(_waveID, _waveIDs[lane], player);
 
 		if (wave != 0) {
-			curPos.y += wave * 20.0 * sin(fYOffset / 96.);
+			// This metric has always been exposed with a default of 1, but was
+			// never read. It controls the frequency without changing amplitude.
+			final waveMult = getUnsafe(_waveMult, player);
+			curPos.y += wave * 20.0 * sin((fYOffset / 96.) * waveMult);
 		}
 
 		return curPos;

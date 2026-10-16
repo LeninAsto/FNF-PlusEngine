@@ -37,11 +37,6 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 	var _indicesBySubs:Array<openfl.Vector<Int>> = [];
 	final _segmentA:HoldSegmentOutput = new HoldSegmentOutput();
 	final _segmentB:HoldSegmentOutput = new HoldSegmentOutput();
-	final _rawSegmentA:HoldSegmentOutput = new HoldSegmentOutput();
-	final _rawSegmentB:HoldSegmentOutput = new HoldSegmentOutput();
-	final _probeStart:HoldSegmentOutput = new HoldSegmentOutput();
-	final _probeMid:HoldSegmentOutput = new HoldSegmentOutput();
-	final _probeEnd:HoldSegmentOutput = new HoldSegmentOutput();
 	final _directionPos:Vector3 = new Vector3();
 	final _directionVisuals:VisualParameters = {};
 	final _directionOutput:ModifierOutput;
@@ -111,32 +106,6 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 	}
 
 	/**
-	 * Measures the visible distance between two hold segments on screen.
-	 * Using the projected center avoids over-stretching the cap with strong scroll modifiers.
-	 */
-	@:noCompletion
-	inline private function getSegmentScreenLength(first:HoldSegmentOutput, second:HoldSegmentOutput):Float {
-		final startX = (first.left.x + first.right.x) * 0.5;
-		final startY = (first.left.y + first.right.y) * 0.5;
-		final endX = (second.left.x + second.right.x) * 0.5;
-		final endY = (second.left.y + second.right.y) * 0.5;
-		final deltaX = endX - startX;
-		final deltaY = endY - startY;
-		return Math.sqrt((deltaX * deltaX) + (deltaY * deltaY));
-	}
-
-	inline private function midpointError(start:Vector3, middle:Vector3, end:Vector3):Float {
-		final dx = middle.x - (start.x + end.x) * 0.5;
-		final dy = middle.y - (start.y + end.y) * 0.5;
-		return Math.sqrt(dx * dx + dy * dy);
-	}
-
-	inline private function visualDifference(a:VisualParameters, b:VisualParameters):Float {
-		return Math.max(Math.abs(a.alpha - b.alpha), Math.max(Math.abs(a.glow - b.glow),
-			Math.max(Math.abs(a.glowR - b.glowR), Math.max(Math.abs(a.glowG - b.glowG), Math.abs(a.glowB - b.glowB)))));
-	}
-
-	/**
 	 * Returns the normal points along the hold path at specific hitTime using.
 	 *
 	 * Based on schmovin' hold system
@@ -198,7 +167,6 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		quad1.setTo(unitY * size, -unitX * size, 0);
 
 		final visuals = origin.visuals;
-		final visualScaleY = holdIsEnd ? Math.min(visuals.scaleY, 1.15) : visuals.scaleY;
 		@:privateAccess
 		for (i in 0...2) {
 			var quad = i == 0 ? quad0 : quad1;
@@ -216,7 +184,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 				rotation.y = __matrix.__transformY(rotation.x, rotation.y);
 			}
 			rotation.x = rotation.x * visuals.scaleX;
-			rotation.y = rotation.y * visualScaleY;
+			rotation.y = rotation.y * visuals.scaleY;
 
 			_viewScratch.setTo(rotation.x + worldX, rotation.y + worldY, worldZ + (rotation.z * 0.001 * Config.Z_SCALE));
 			__rotateTailInto(_viewScratch);
@@ -388,24 +356,11 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 			__parentOutput = parent.getNotePathInto(copyVec3(basePos, _pathInputA), parentData, _parentOutputBuffer, _parentPos, _parentVisuals);
 		} else __parentOutput = null;
 
-		final holdHeight:Float = item.width * Config.HOLD_END_SCALE;
-		final fullHoldTime:Float = Adapter.instance.getHoldLength(item) * (holdIsEnd ? Config.HOLD_END_SCALE : 1.0);
-		var HOLD_SUBDIVISIONS = REQUESTED_SUBDIVISIONS;
-		var useAdaptiveEndpoints = false;
-		if (!holdIsEnd && REQUESTED_SUBDIVISIONS > 1) {
-			getHoldSegmentInto(item, basePos, getArrowParams(item, 0), _probeStart);
-			getHoldSegmentInto(item, basePos, getArrowParams(item, fullHoldTime * 0.5), _probeMid);
-			getHoldSegmentInto(item, basePos, getArrowParams(item, fullHoldTime), _probeEnd);
-			final geometryError = Math.max(midpointError(_probeStart.left, _probeMid.left, _probeEnd.left),
-				midpointError(_probeStart.right, _probeMid.right, _probeEnd.right));
-			final visualsStable = visualDifference(_probeStart.visuals, _probeMid.visuals) <= (1.0 / 255.0)
-				&& visualDifference(_probeStart.visuals, _probeEnd.visuals) <= (1.0 / 255.0);
-			if (_probeStart.clipped == _probeMid.clipped && _probeMid.clipped == _probeEnd.clipped
-				&& geometryError <= 0.75 && visualsStable) {
-				HOLD_SUBDIVISIONS = 1;
-				useAdaptiveEndpoints = true;
-			}
-		}
+		// Match FunkinModchart's fixed subdivision flow. Reducing a hold to one
+		// adaptive quad changes modifier curves and creates blocky alpha patterns.
+		final HOLD_SUBDIVISIONS = REQUESTED_SUBDIVISIONS;
+		final holdTimeScale = holdIsEnd ? 0.5 * Config.HOLD_END_SCALE : 1.0;
+		final fullHoldTime:Float = Adapter.instance.getHoldLength(item) * holdTimeScale;
 
 		if (HOLD_SUBDIVISIONS != __lastHoldSubs)
 			updateIndices(HOLD_SUBDIVISIONS);
@@ -415,7 +370,6 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		var tID = 0;
 		var vertPointer = 0;
 		final holdTimeInterval:Float = fullHoldTime / HOLD_SUBDIVISIONS;
-		var timeScale:Float = 1;
 		var firstIteration:Bool = true;
 
 		var hasC = false;
@@ -424,40 +378,18 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		var spareSegment = _segmentB;
 
 		for (subIndex in 0...HOLD_SUBDIVISIONS) {
-			var holdTimeProgress = holdTimeInterval * subIndex * timeScale;
+			var holdTimeProgress = holdTimeInterval * subIndex;
 
 			var out1:HoldSegmentOutput;
 			var out2:HoldSegmentOutput;
 
-			if (firstIteration && useAdaptiveEndpoints) {
-				out1 = _probeStart;
-				out2 = _probeEnd;
-			} else {
-				out1 = firstIteration ? getHoldSegmentInto(item, basePos, lastData != null ? lastData : getArrowParams(item, holdTimeProgress), nextSegment) : lastSegment;
-				out2 = getHoldSegmentInto(item, basePos, (lastData = getArrowParams(item, holdTimeProgress + (holdTimeInterval * timeScale))), spareSegment);
-			}
+			out1 = firstIteration ? getHoldSegmentInto(item, basePos,
+				lastData != null ? lastData : getArrowParams(item, holdTimeProgress), nextSegment) : lastSegment;
+			out2 = getHoldSegmentInto(item, basePos,
+				(lastData = getArrowParams(item, holdTimeProgress + holdTimeInterval)), spareSegment);
 
-			if (firstIteration) {
+			if (firstIteration)
 				item._z = out1.depth;
-
-				if (holdIsEnd) {
-					var segmentLength = getSegmentScreenLength(out1, out2);
-
-					if (out1.clipped || out2.clipped) {
-						final rawStartSegment = getHoldSegmentInto(item, basePos, getArrowParams(item, holdTimeProgress), _rawSegmentA, false);
-						final rawEndSegment = getHoldSegmentInto(item, basePos, getArrowParams(item, holdTimeProgress + holdTimeInterval), _rawSegmentB, false);
-						segmentLength = getSegmentScreenLength(rawStartSegment, rawEndSegment);
-					}
-
-					if (segmentLength > 0) {
-						final rawTimeScale = (holdHeight / HOLD_SUBDIVISIONS) / segmentLength;
-						// A cap may compress to fit a short projected segment, but never
-						// stretches past its authored length (the old 1.15 cap looked gummy).
-						timeScale = Math.min(rawTimeScale, 1.0);
-						out2 = getHoldSegmentInto(item, basePos, (lastData = getArrowParams(item, holdTimeInterval * timeScale)), spareSegment);
-					}
-				}
-			}
 
 			__lastPlayer = player;
 			lastSegment = out2;
@@ -465,7 +397,9 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 			nextSegment = spareSegment;
 			spareSegment = swapSegment;
 
-			if (out1.visuals.alpha > 0)
+			// A hold can cross into sudden/hidden's visible range inside this quad.
+			// Checking only the first endpoint used to discard that whole piece.
+			if (out1.visuals.alpha > 0 || out2.visuals.alpha > 0)
 				canDraw = true;
 
 			var vertPos = (vertPointer++) * 8;
@@ -574,6 +508,6 @@ private class HoldRenderSlot {
 		capacity = subs;
 		vertices = new openfl.Vector<Float>(capacity * 8, true);
 		colors = new NativeVector<ColorTransform>(capacity);
-		for (i in 0...capacity) colors[i] = new ColorTransform();
+		for (i in 0...colors.length) colors[i] = new ColorTransform();
 	}
 }

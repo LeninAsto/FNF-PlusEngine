@@ -68,7 +68,7 @@ class Skew extends Modifier {
 	}
 
 	override public function visuals(data:VisualParameters, params:ModifierParameters):VisualParameters {
-		final lane = params.lane;
+		final lane = getLaneSlot(params.lane, xLaneIDs.length);
 		final player = params.player;
 
 		data.skewX += getUnsafeLaneAdd(xID, xLaneIDs[lane], player);

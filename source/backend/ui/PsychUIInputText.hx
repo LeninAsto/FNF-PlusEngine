@@ -417,11 +417,15 @@ class PsychUIInputText extends FlxSpriteGroup {
 	public var unfocus:Void->Void;
 
 	public static function set_focusOn(v:PsychUIInputText) {
-		if (focusOn != null && focusOn != v && focusOn.exists) {
-			if (focusOn.unfocus != null)
-				focusOn.unfocus();
-			focusOn.resetCaret();
-			#if android focusOn.setSoftKeyboard(false); #end
+		final previous = focusOn;
+		if (previous != null && previous != v && previous.exists) {
+			if (previous.unfocus != null)
+				previous.unfocus();
+			// An unfocus callback may remove or destroy its control. Do not touch
+			// cursor data after that point unless the input is still usable.
+			if (previous.exists && previous._boundaries != null)
+				previous.resetCaret();
+			#if android if (previous.exists) previous.setSoftKeyboard(false); #end
 		}
 		focusOn = v;
 		#if android if (v != null && v.showSoftKeyboardOnFocus) v.setSoftKeyboard(true); #end
@@ -515,11 +519,12 @@ class PsychUIInputText extends FlxSpriteGroup {
 	public function resetCaret() {
 		selectIndex = -1;
 		caretIndex = 0;
-		updateCaret();
+		if (_boundaries != null)
+			updateCaret();
 	}
 
 	public function updateCaret() {
-		if (textObj == null || !textObj.exists)
+		if (_boundaries == null || textObj == null || !textObj.exists || textObj.textField == null)
 			return;
 
 		var textField = textObj.textField;
@@ -585,9 +590,9 @@ class PsychUIInputText extends FlxSpriteGroup {
 	}
 
 	override public function destroy() {
-		_boundaries = null;
 		if (focusOn == this)
 			focusOn = null;
+		_boundaries = null;
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 		super.destroy();
 	}
