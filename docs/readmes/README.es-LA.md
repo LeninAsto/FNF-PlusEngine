@@ -5,7 +5,7 @@
 **[EN-US](../../README.md) | ES-LA | [ID-ID](README.id-ID.md)**
 
 
-![Made with](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Elaborado+con&secondaryLabel=Haxe&primaryBGColor=%23689bb1&primaryTextColor=%23ffffff&secondaryBGColor=%23fea948&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&tertiaryBGColor=%23c14dff&tertiaryTextColor=%23FFFFFF&tertiaryFontSize=12&tertiaryFontWeight=700&tertiaryLetterSpacing=2&tertiaryFontFamily=Arial&tertiaryTextTransform=capitalize&tertiaryIconColor=%23FFFFFF&tertiaryIconSize=16&tertiaryIconPosition=left&secondaryIcon=haxe&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)
+![Made with](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Hecho+en&secondaryLabel=Haxe&primaryBGColor=%23689bb1&primaryTextColor=%23ffffff&secondaryBGColor=%23fea948&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&tertiaryBGColor=%23c14dff&tertiaryTextColor=%23FFFFFF&tertiaryFontSize=12&tertiaryFontWeight=700&tertiaryLetterSpacing=2&tertiaryFontFamily=Arial&tertiaryTextTransform=capitalize&tertiaryIconColor=%23FFFFFF&tertiaryIconSize=16&tertiaryIconPosition=left&secondaryIcon=haxe&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)
 [![Design with](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Diseñado+con&secondaryLabel=Material+Design&primaryBGColor=%23689bb1&primaryTextColor=%23ffffff&secondaryBGColor=%2300639b&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=materialdesign&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://m3.material.io/)
 
 [![Play Console](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Certificado+por&secondaryLabel=Play+Console&primaryBGColor=%23ffffff&primaryTextColor=%2368a4f1&secondaryBGColor=%23488fef&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=googleplay&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://developer.android.com/distribute/console)
@@ -34,7 +34,7 @@ Motor basado en Psych 1.0.4 con las correcciones y mejoras de [Psych Continued](
   Y más de 100 más...
 </a>
 
-Creado con [contrib.rocks](https://contrib.rocks/).
+Creado con (contrib.rocks)[https://contrib.rocks/].
 
 ¡Las contribuciones son bienvenidas! Si tienes ideas, mejoras o correcciones, siéntete libre de hacer un fork del repositorio y abrir un pull request.
 

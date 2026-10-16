@@ -1,88 +1,159 @@
-1.2.7 - March 23, 2026
+1.3-prerelease - July 28, 2026
 
-The storage bug in Android has been fixed.
-V-Sync has been reinstated.
-New Freeplay UI; you can switch between the Psych UI and the new one in settings.
-New File Manager for Android users; access it from Options => Mobile Settings => Open File Manager.
-New option to allow the health bar to exceed the given limits.
-The default Psych score has been restored; you can switch it in settings.
-An option has been added to prevent time text bumps in PlayState (at this rate, PlayState should look the same as in the Psych Engine =p).
-A native dropdown menu has been added for Android.
-A problem with the Text Box that caused it to skip a letter when deleting has been fixed.
-New gameplay modifier: Opponent Drain.
-New and improved chart parser for this engine, "psych_v2," for faster chart loading.
-New experimental option for Android users: WavyTimeBar. This will display the time bar in a wave pattern instead of the standard format. Original
-https://github.com/user-attachments/assets/2dc71f03-6146-438d-90fb-f1f2e34a50cd
-The logic and positions of the enable/disable all buttons for mods in the mods menu state have been fixed.
-Sustains Splashes will now be customizable from their own integrated editor in the master editor menu.
-New chart converters: "codename to psych" and nmv (nightmare vision) to psych"
-The engine's own transition has been added back.
-The "y" position of the difficulty in the story menu state has been fixed.
-Native crash activity has been added for Android.
+Quick Summary
+-------------
+This update is a big cleanup and feature pass after 1.2: Android storage/build support was improved, Freeplay and Options received major upgrades, Lua/modchart support became much stronger, the UI gained a Material-style component system, and many old/unused systems and bundled assets were removed. It also fixes a lot of mobile, editor, chart loading, video, note splash, modchart, and workflow issues.
 
-An app will be released to install mods from zip files without needing much extra equipment. You'll also be able to install mods for other engines, including vSlice Mobile!
+Added
+-----
+- Added Spanish (es-LA) and Indonesian (id-ID) README files, plus refreshed the main README with badges, platform notes, contributor links, and updated Android build requirements.
+- Added Android adaptive launcher icons and Android resource templates, including monochrome/background/foreground icon layers.
+- Added Android build configuration through source/mobile/include_android.xml, including modern storage permissions, AndroidX, SDK 36, NDK r27d, Gradle updates, and Java 21 requirements.
+- Added a new InitState/InitialState boot flow to start the game or scripted/mod states more safely.
+- Added a new asset loading layer: AssetCache, AssetLoader, AssetResolver, TextureOptimizer, MemoryUtil, ThreadUtil, and BuildInfo helpers.
+- Added scriptable state support: ScriptableState, ScriptableSubstate, LuaState, LuaSubstate, CustomState, LuaHostContext, LuaHostKind, and scripted state/substate presets in assets/shared/scripts.
+- Added an option to enable Scriptable Custom States from Legacy Settings.
+- Added an option to disable ResultsState at the end of songs.
+- Added an option to use Psych-style Freeplay instead of the PlusEngine Freeplay.
+- Added FreeplayStateSelector and a restored Psych-style FreeplayState_Psych.
+- Added a heavily reworked PlusEngine Freeplay with song cards, background caching/swapping, album roll assets, loading indicators, and richer metadata support.
+- Added song_meta.json files for base game songs and new base-game/collab song entries such as 2hot, blazin, ridge, smash, and lit-up.
+- Added album roll images, platform icons, license icons, and related Freeplay/card artwork.
+- Added a Material Design 3 inspired UI toolkit: buttons, cards, chips, dialogs, switches, sliders, tabs, progress indicators, wavy progress indicators, snackbars, tooltips, text fields, menus, badges, dividers, FABs, checkboxes, and radio buttons.
+- Added OptionsMenuTheme and ThemeAccentColorSubState with a live accent color picker, HEX copy/paste, controller pointer support, and MD3 widget preview.
+- Added menu theme settings such as accent color, custom accent color, dark theme, and theme mode.
+- Added new visual/gameplay options: Note RGB toggle, Color Quantization, Time Text Bump, Version Text on Gameplay, Dynamic Combo Digits, NF Rating Style, Health Bar Overflow, Pause Countdown, Hey Intro, Break Timer, icon bounce style, and per-element rating/combo visibility toggles.
+- Added Legacy Settings with Psych score text, vanilla transition, lower volume when focus is lost, Psych Freeplay selection, scriptable custom states, character drag-to-move, and ResultsState toggle.
+- Added Modchart Settings as a replacement for the old Modchart Options menu.
+- Added Mobile Settings with touch pointer visibility, mobile debug buttons, touch control alpha, infinity display handling, mobile receptor alignment, and Android storage location selection.
+- Added AndroidPermissionsState for requesting storage permissions and checking Android storage status.
+- Added Android storage mode support for internal/scoped storage and public external storage, including directory creation, permission requests, asset copying for mods/sm folders, and verification helpers.
+- Added Android native/JNI helpers for orientation, keyboard status, clipboard, manual back button, activity title, and Android device checks.
+- Added hardcoded mobile touchpad/action modes and TouchScroll support for direct touch/swipe navigation.
+- Added new mobile Lua callbacks for touchpad input, touch object checks, haptics/vibration, touchpad creation/removal, Android back/menu buttons, orientation, toast messages, clipboard, and activity title.
+- Added a touch pointer/debug overlay option for mobile.
+- Added new mobile hitbox and touchpad assets, including updated touchpad buttons.
+- Added NoRGB note skins, NoRGB note splashes, hold cover variants, pixel note skins, pixel note splashes, and new miss/combo/rating sprites.
+- Added a legacy note color editor alongside the newer RGB/HSV note color flow.
+- Added SustainSplash support and a dedicated path for customizable sustain splashes.
+- Added new note splash config/cache behavior and fallback logic between RGB and NoRGB splash assets.
+- Added a Material-style volume tray and global loading overlay.
+- Added a custom cursor object and UI cursor asset.
+- Added a new watermark image and new watermark handling.
+- Added MusicPlayerPsych for the Psych-style Freeplay/music preview flow.
+- Added hxcodec compatibility folders for v2.5.0, v2.6.0, and v3.0.0 video classes.
+- Added VideoSpriteManager and improved Lua video sprite management.
+- Added Lua video functions such as precacheLuaVideoSprite, removeLuaVideo, forceRemoveLuaVideo, getLuaVideoVolume, and broader playLuaVideoSprite argument support.
+- Added Lua state/substate helpers: switchLuaState, openLuaSubstate, closeLuaSubstate, callStateFunction, callSubstateFunction, state/global variable helpers, and host metadata helpers.
+- Added Lua compatibility functions such as getScore, getMisses, getHits, changePresence, getGlobalFromScript, and setGlobalFromScript.
+- Added safer Lua callback routing by tracking scripts by Lua state and by host context.
+- Added Lua support for applying temporary gameplay controls through changeControls/applyGameplayControls and restoring them safely.
+- Added advanced modchart Lua helpers: addNow, setAddNow, getChartNotes, setHoldSubdivisions, getHoldSubdivisions, named playfield handling, scripted Lua modifiers, raw modifier value access, and scheduled/repeated callbacks.
+- Added ModchartConverterState with codename/NMV-style conversion output scaffolding.
+- Added automatic modchart initialization when onInitModchart is detected, plus a modchart warning and optional debug overlay.
+- Added a new modchart rendering pipeline: CtxRenderer, Context, DrawCommand, BaseRenderer, ArrowRenderer, HoldRenderer, PathRenderer, View3D, TransformMode, SortUtil, VectorUtil, and editor preview context.
+- Added modchart path caching, transform modes, lane/player-aware renderer handling, adaptive hold subdivisions, and better path rendering controls.
+- Added new modchart modifiers: Asymptote, Attenuate, Cubic, Digital, Field, Orient, Parabola, RandomSpeed, StraightHolds, LuaModifier, plus updates/aliases for existing modifiers.
+- Added NMV/NotITG-style modifier aliases and better lane-specific modifier access.
+- Added Lua-created/custom modifiers.
+- Added new hardcoded gameplay events: Lyric Event and Add Secondary Icon.
+- Added Opponent Drain gameplay changer.
+- Added ResultsState hit viewer and an option to disable ResultsState in Legacy Settings.
+- Added BreakTimerHud and StepmaniaHud helpers.
+- Added fullscreen mode preference support, including Windows fullscreen modes.
+- Added Windows GDI effects option and Windows GDI Lua controls with explicit user preference gating.
+- Added Windows/slushithings helpers under source/slushithings, including WindowsCPP and CPP/RAM helpers.
+- Added window-related Lua helpers and optimized window tween handling.
+- Added build workflow improvements, dispatchable/dev build workflow support, artifact upload updates, Discord webhook summary notification, and platform build fixes.
+- Added updated OpenFL, Android NDK/Gradle/Gradle Plugin, and Haxe setup workflow changes.
+- Added issue template tweaks and .gitignore improvements.
 
-That's all, remember there may be bugs and other issues. Share this engine so everyone can learn about it and try to contribute in any way you can.
+Removed
+-------
+- Removed SScript support from Project.xml and deleted source/psychlua/SScript.hx.
+- Removed hscript-improved and SSCRIPT_ALLOWED project wiring.
+- Removed CopyState support and COPYSTATE_ALLOWED project define.
+- Removed the old FunkinPreloader class.
+- Removed old script type/config glue such as ScriptType.hx and source/_hscript/Config.hx.
+- Removed the old StateScriptHandler in favor of ScriptableState/ScriptableSubstate.
+- Removed old MP4Handler/VideoHandler wrapper classes in favor of the hxcodec compatibility folders and VideoSprite flow.
+- Removed old Cam3DFunctions and old ShaderCompatibility/VFD overlay shader code.
+- Removed old modchart renderer classes: ModchartCamera3D, ModchartRenderer, ModchartArrowRenderer, ModchartHoldRenderer, ModchartPathRenderer, and ModchartPerspective.
+- Removed/replaced the old FieldRotate modifier.
+- Removed old ModchartOptionsSubState and replaced it with ModchartSettingsSubState.
+- Removed DebugButton and old AudioVisualizer code.
+- Removed legacy Lenin/slushithings scripting folders and moved/rewired Windows API code under source/slushithings.
+- Removed HeavyChartManager, NoteSpawner, and PreloadedChartNote.
+- Removed the VirusTotal workflow file from GitHub Actions.
+- Removed the old GitHub chat instructions file.
+- Removed old iOS icon slices and old mobile icon files, replacing Android icon handling with adaptive resources.
+- Removed many embedded/base game chart/audio assets from the repository, including many base_game song audio files, week sound effects, shared music, shared sound effects, and hitsounds.
+- Removed old Erect/Nightmare chart JSONs from base_game/shared/data while adding song metadata files instead.
+- Removed several unused/exclude assets and unused credit icons.
+- Removed duplicate watermark/icon credit assets.
+- Removed old UI assets and reorganized transition/result UI assets into newer folders.
+- Removed modsList.txt from the repository root.
 
-NOTE: I'll be starting my studies these next few days, so I might not be as active, but I'll keep fixing the engine as much as I can!
-
-================================================================================================
-1.2.6 Hotfix - February 24, 2026
-
-SScript is dead; many checks have been added to HScript for mods in both 0.7.3 and 1.0.4
-Fixed a bug that prevented the Alphabet from loading on mobile
-Fixed a crash on mobile when starting the game due to incorrect assets (uninstalling and reinstalling is required)
-Fixed a bug in the Character Editor that caused a crash when importing a Texture Atlas
-Re-added controls in freeplay mode to allow normal navigation; previously, the list could not be moved
-Some hardcoded events have been removed
-Improved Hibox Arrows on mobile
-
-================================================================================================
-1.2.5 - February 24, 2026
-
-Hey everyone! Today Plus Engine updated to version 1.2.5!!
-You know, if you encounter any bugs or crashes, report them on the discord or any other issues!!
-
-New
-Source code restructured to match the base game. Don't worry, it won't break your mods "StructureOld".
-Collab 1 of the base game ported.
-Added InitState to start ModState or the game without errors.
-Mobile: Added a new control scheme, "Hitbox Arrows," just like the mobile base game.
-You can now use ndlls in the game for your mods. You can use Lua functions, or load them with Lua's FFI.
-Windows: You can select your fullscreen mode from the settings: between borders or exclusive.
-New option to quantitatively color notes, just like StepMania.
-Added legacy settings, with the following options: Use SScript, Legacy Memory Management, Legacy FileSystem Access, Use Legacy Font, and Use Legacy Init Shader (bug).
-Mobile: New Audio Optimizer for low-end and mid-range devices.
-Mobile: New Bitmap Data Optimizer/Texture Optimizer for low-end and mid-range devices.
-New hardcoded events: Secondary Icon, Lyric Event, Change Stage, CnB Screen, Destructive HUD, and Glitchy Notes.
-You can now create ModStates, alter MusicBeatState, MusicBeatSubstate, and create your own GlobalScript in your mods (templates and more coming soon)
-Funkin Modchart updated to 1.2.5
-New modifiers: Streetch, Mini, LuaPath
-New modchart functions: set (improved), ease (improved), getChartNotes (inspired by Troll Engine), set/getHoldSubdivisions
-New advanced LuaJIT functions
-New Lua function "TracetoDisplay" (console only), "doTweenProperty"
-New video functions: set/getLuaVideoRate
-Windows: New Windows effects: windowShake, windowBounce, windowWiggle, windowPulse
-New hit viewer in ResultsState. - New Vietnamese language option
-You can select the icon bump style to your liking
-
-Fixes and Improvements
-Improved ModState.
-ModStates will only activate from the top mod in your mod list.
-Crash Handler with more info.
-Erect stages are now available for their respective songs.
-Android: The icon will now dynamically adapt to your system's color palette (Android 12+, depending on the phone brand).
-Fixed a bug where a crash occurred when you missed a hold note.
-FPS Counter now uses task memory the same as the base game.
-Mobile: You can now hide the FPS and debug buttons in settings.
-Mobile: Touchpads are now hardcoded, which will reduce crashes caused by them.
-Mobile: You can now swipe to select songs or options directly (improved).
-You can now hide the version text in settings.
-Fixed a bug in the alpha version of iconPx.
-Fixed an error in the stage editor when exiting it.
-Fixed a bug that caused character positions to be reversed in the character editor.
-I don't remember what else I added, but that's all for now.
-Until the next update!
+Fixed
+-----
+- Fixed Android directory creation failures when changing storage mode or creating external/internal storage folders.
+- Fixed copying existing mods/sm folders after Android storage initialization.
+- Fixed Android builds and Linux builds in CI.
+- Fixed Android and web XML loading/path issues.
+- Fixed Android startup crashes related to missing/incorrect assets and alphabet loading.
+- Fixed Android button callbacks so back/menu button state is read live instead of captured once.
+- Fixed Android external storage permission/status handling for older and newer Android versions.
+- Fixed mobile touchpad crashes by hardcoding controls and improving touchpad assets/layouts.
+- Fixed mobile song/options navigation with better touch/swipe handling.
+- Fixed mobile FPS/debug button visibility options.
+- Fixed dropdown errors and added safer/native dropdown behavior for Android.
+- Fixed PsychUIInputText text selection and deletion behavior.
+- Fixed story mode null errors.
+- Fixed menu character path issues and then reverted an incorrect menu character path fix.
+- Fixed Little Timmy Mode logic and restored the option.
+- Fixed Disable Hold Animations option/event presence.
+- Fixed Add Secondary Icon behavior and icon offset positioning.
+- Fixed Lyric Event availability.
+- Fixed results-state image paths and numScore position when nfStyleSystem is enabled.
+- Fixed Character Editor crashes, including Texture Atlas import issues and character position inversion.
+- Fixed Stage Editor exit errors.
+- Fixed Charting State behavior for event loading/saving, event copy/paste, drag-drop events, and selected-event UI.
+- Fixed Freeplay navigation, mod reload handling, duplicate vocals cleanup, and switching between Psych and Plus Freeplay.
+- Fixed Freeplay visual bar/background/card behavior and optimized selected-song card/background refresh.
+- Fixed ResultsState navigation back to story/freeplay and added the ability to disable it.
+- Fixed PlayState return paths to use FreeplayStateSelector.
+- Fixed PlayState countdown logic and added safer modchart manager initialization.
+- Fixed BPM calculations in Conductor.
+- Fixed StepMania chart/header parsing details.
+- Fixed the new psych_v2 chart parser/loading path and old Psych structure compatibility.
+- Fixed song format handling and V-Slice/Psych chart compatibility paths.
+- Fixed LuaVideo volume handling and added more reliable video playback controls.
+- Fixed Lua callback errors so non-Haxe exceptions are reported safely.
+- Fixed Lua class resolution and legacy get/setPropertyFromClass compatibility.
+- Fixed Lua/HScript import and class lookup handling for older Psych mods.
+- Fixed script host safety so Lua can run in states/substates without assuming PlayState always exists.
+- Fixed Lua modchart player/field resolution, named playfield lookup, and invalid playfield debug messages.
+- Fixed modchart modifier list resolution and macro class type detection.
+- Fixed modchart path renderer lane/player separation and path buffer reuse.
+- Fixed modchart global-vs-lane modifier composition in several modifiers.
+- Fixed alpha/stealth-related visibility behavior so alpha 1 remains visible and alpha 0 remains invisible.
+- Fixed hold rendering issues, hold subdivisions, hold alpha caching, hold-end scaling controls, and sustain rendering behind strums.
+- Fixed note splash cache/fallback behavior across songs and RGB/NoRGB skins.
+- Fixed vanilla note splashes and note skins.
+- Fixed sustain splash hiding/customization behavior.
+- Fixed miss rating sprite and combo/rating display options.
+- Fixed score text behavior by restoring Psych score text as an option.
+- Fixed time bar/text bump behavior and added options to disable bumps.
+- Fixed health bar smoothing/overflow options.
+- Fixed FPSCounter and TraceDisplay behavior, memory reporting, panel positioning, mobile defaults, and debug levels.
+- Fixed window tween dimension handling and fullscreen behavior.
+- Fixed Windows border color on note hit and GDI effects cleanup/stop handling.
+- Fixed crash handler output and Android native crash activity behavior.
+- Fixed project setup, include paths, temporary file ignore rules, keystore/certificate settings, and asset include rules.
+- Fixed GitHub Actions Haxe setup, artifact upload version, workflow dispatch/dev builds, and Discord webhook 403 errors.
+- Fixed README/localization text by un-Spanishing comments/text in several places and refreshing translations.
+- Fixed duplicate watermark and duplicate icon credit issues.
+- Fixed several unused imports/assets and cleaned source organization for 1.3-prerelease preparation.
 
 ==================================================================================================
 1.2 - December 31, 2025

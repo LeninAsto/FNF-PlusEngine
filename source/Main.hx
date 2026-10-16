@@ -65,6 +65,10 @@ class Main extends Sprite
 
 	public static function main():Void
 	{
+		// Install the handlers before constructing Main so startup/storage failures
+		// on mobile also reach the recovery screen.
+		backend.CrashHandler.init();
+
 		#if (cpp && windows)
 		final maxInstanceSlots:Int = ClientPrefs.loadMaxInstanceSlotsEarly();
 		if (!backend.Native.reserveInstanceSlot(maxInstanceSlots))
@@ -96,8 +100,6 @@ class Main extends Sprite
 		backend.Language.reloadPhrases();
 		#end
 		#end
-		backend.CrashHandler.init();
-
 		#if (cpp && windows)
 		backend.Native.fixScaling();
 		// Initialize window transparency support
