@@ -41,7 +41,9 @@ Made with [contrib.rocks](https://contrib.rocks).
 Contributions are welcome! If you have ideas, improvements, or fixes, feel free to fork the repo and open a pull request.
 
 <div align="center">
+  <h2>Engine Views</h2>
   <img src="https://count.getloli.com/@plus?theme=booru-lisu&padding=7&offset=0&align=top&scale=0.6&pixelated=1&darkmode=auto&prefix=0" alt="counter visitors" >
+  <h2></h2>
 </div>
 
 > This project is subject to bugs, fixes, improvements and changes.
@@ -50,13 +52,12 @@ Contributions are welcome! If you have ideas, improvements, or fixes, feel free 
 
 This project is **open to learn, build, and improve**.
 You’re free to use it as a reference, a base, or a learning resource.
-
 Because code is not a buried treasure —
 **code lives when it’s shared**.
 
-📚 **Learning > hoarding**
-💡 **Sharing > flexing**
-🚀 **Building > gatekeeping**
+ **Learning > hoarding**
+ **Sharing > flexing**
+ **Building > gatekeeping**
 
 I don’t really believe in the mindset of:
 > “Don’t touch my code, don't create other engine, don't use my engine's stuffs, bruh...”
@@ -70,19 +71,18 @@ Source code is:
 - mistakes
 - evolution
 
-If someone improves something I made, **respect** 🫡
+If someone improves something I made, **respect** 
 That’s how this has always worked:
 learn from the past to build the future.
 
-### ⚠️ Important note
+### Important note
 Don’t claim others’ work as your own or sell it as original.
 Respect the effort, learn from it, and create something better.
-
-To those who share: thank you 💙
+To those who share: thank you 
 To those who hide code out of fear or envy:
 relax — progress doesn’t wait.
 
-**Happy coding.**
+**Good Luck!**
 
 ## Developer Credits:
 * Lenin Asto - Main Programmer for Plus Engine
