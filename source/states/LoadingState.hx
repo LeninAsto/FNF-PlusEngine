@@ -807,7 +807,7 @@ class LoadingState extends MusicBeatState
 					imagesToPrepare.push(stageUIAsset(stageUI, rating.image));
 				for (i in 0...10)
 					imagesToPrepare.push(stageUIAsset(stageUI, 'num$i'));
-				for (asset in ['combo', 'miss', 'early', 'late', 'minus'])
+				for (asset in ['combo', 'miss', 'early', 'late', 'minus', 'k', 'dot'])
 					imagesToPrepare.push(stageUIAsset(stageUI, asset));
 				imagesToPrepare.push(pixelStage ? 'pixelUI/minus-pixel' : 'minus');
 

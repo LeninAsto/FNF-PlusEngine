@@ -2569,7 +2569,23 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		playbackRate = FlxMath.bound(value, playbackSlider.min, playbackSlider.max);
 		if (playbackSlider.value != playbackRate)
 			playbackSlider.value = playbackRate;
+		refreshPreservePitchAvailability();
 		setPitch();
+	}
+
+	function refreshPreservePitchAvailability():Void
+	{
+		if (preservePitchCheckBox == null)
+			return;
+
+		var available:Bool = playbackRate <= AudioTempo.MAX_STABLE_TEMPO;
+		if (!available && preservePitchCheckBox.checked)
+		{
+			preservePitchCheckBox.checked = false;
+			chartEditorSave.data.preservePitch = false;
+		}
+		preservePitchCheckBox.active = available;
+		preservePitchCheckBox.alpha = available ? 1 : 0.5;
 	}
 
 	function setPitch(?value:Null<Float>)
@@ -3099,10 +3115,17 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		playbackSlider.label = 'Playback Rate';
 		preservePitchCheckBox = new PsychUICheckBox(215, objY + 19, 'Keep Pitch', 85, function()
 		{
+			if (playbackRate > AudioTempo.MAX_STABLE_TEMPO)
+			{
+				preservePitchCheckBox.checked = false;
+				refreshPreservePitchAvailability();
+				return;
+			}
 			chartEditorSave.data.preservePitch = preservePitchCheckBox.checked;
 			setPitch();
 		});
 		preservePitchCheckBox.checked = chartEditorSave.data.preservePitch == true;
+		refreshPreservePitchAvailability();
 
 		objY += 60;
 		mouseSnapCheckBox = new PsychUICheckBox(objX, objY, 'Mouse Scroll Snap', 100,

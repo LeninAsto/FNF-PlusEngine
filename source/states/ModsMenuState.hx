@@ -981,9 +981,7 @@ class ModItem extends FlxSpriteGroup {
 			} catch (e:Dynamic) {
 				var errorTitle = 'Mod name: ' + Mods.currentModDirectory;
 				var errorMsg = 'An error occurred: $e';
-				#if windows
-				lime.app.Application.current.window.alert(errorMsg, errorTitle);
-				#end
+				CoolUtil.showPopUp(errorMsg, errorTitle);
 				trace('$errorTitle - $errorMsg');
 			}
 		}

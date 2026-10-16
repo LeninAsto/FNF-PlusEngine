@@ -1,5 +1,11 @@
 package shaders;
 
+private typedef ShaderSourceToken =
+{
+	var text:String;
+	var kind:Int;
+}
+
 class ShaderCompatibility
 {
 	public static function adaptRuntimeShaderCode(source:String, shaderName:String = null, stage:String = "fragment"):String
@@ -30,6 +36,7 @@ class ShaderCompatibility
 			}
 		}
 
+		code = normalizeNumericArithmetic(code);
 		return normalizeStrictConstructors(code);
 	}
 
@@ -414,6 +421,267 @@ class ShaderCompatibility
 		}
 		return code;
 	}
+
+	/**
+	 * GLSL desktop drivers commonly accept arithmetic between a float/vector
+	 * and an integer literal. GLSL ES drivers are stricter and reject examples
+	 * such as `red / 255` or `2 * color`. Convert only literals whose other
+	 * operand is known to be floating-point, leaving integer loops, array
+	 * indices and ivec/uvec expressions untouched.
+	 */
+	static function normalizeNumericArithmetic(source:String):String
+	{
+		var tokens:Array<ShaderSourceToken> = tokenizeShaderSource(source);
+		var floatingNames:Map<String, Bool> = collectFloatingNames(tokens);
+
+		for (i in 0...tokens.length)
+		{
+			var token:ShaderSourceToken = tokens[i];
+			if (token.kind != NUMBER_TOKEN || !isPlainIntegerLiteral(token.text))
+				continue;
+
+			var previous:Int = previousCodeToken(tokens, i - 1);
+			var next:Int = nextCodeToken(tokens, i + 1);
+			var needsFloat:Bool = false;
+
+			if (previous >= 0 && isArithmeticOperator(tokens[previous].text))
+			{
+				var leftOperand:Int = previousCodeToken(tokens, previous - 1);
+				needsFloat = isFloatingOperand(tokens, leftOperand, -1, floatingNames);
+			}
+			if (!needsFloat && next >= 0 && isArithmeticOperator(tokens[next].text))
+			{
+				var rightOperand:Int = nextCodeToken(tokens, next + 1);
+				needsFloat = isFloatingOperand(tokens, rightOperand, 1, floatingNames);
+			}
+
+			if (needsFloat)
+				token.text += ".0";
+		}
+
+		var output:StringBuf = new StringBuf();
+		for (token in tokens)
+			output.add(token.text);
+		return output.toString();
+	}
+
+	static inline var TRIVIA_TOKEN:Int = 0;
+	static inline var IDENTIFIER_TOKEN:Int = 1;
+	static inline var NUMBER_TOKEN:Int = 2;
+	static inline var SYMBOL_TOKEN:Int = 3;
+
+	static function tokenizeShaderSource(source:String):Array<ShaderSourceToken>
+	{
+		var tokens:Array<ShaderSourceToken> = [];
+		var i:Int = 0;
+		while (i < source.length)
+		{
+			var start:Int = i;
+			var code:Int = source.charCodeAt(i);
+
+			if (isWhitespaceCode(code))
+			{
+				i++;
+				while (i < source.length && isWhitespaceCode(source.charCodeAt(i)))
+					i++;
+				tokens.push({text: source.substr(start, i - start), kind: TRIVIA_TOKEN});
+				continue;
+			}
+
+			if (source.charAt(i) == "/" && i + 1 < source.length)
+			{
+				var nextChar:String = source.charAt(i + 1);
+				if (nextChar == "/")
+				{
+					i += 2;
+					while (i < source.length && source.charAt(i) != "\n")
+						i++;
+					tokens.push({text: source.substr(start, i - start), kind: TRIVIA_TOKEN});
+					continue;
+				}
+				if (nextChar == "*")
+				{
+					i += 2;
+					while (i + 1 < source.length && !(source.charAt(i) == "*" && source.charAt(i + 1) == "/"))
+						i++;
+					if (i + 1 < source.length)
+						i += 2;
+					tokens.push({text: source.substr(start, i - start), kind: TRIVIA_TOKEN});
+					continue;
+				}
+			}
+
+			if (isIdentifierStart(code))
+			{
+				i++;
+				while (i < source.length && isIdentifierPart(source.charCodeAt(i)))
+					i++;
+				tokens.push({text: source.substr(start, i - start), kind: IDENTIFIER_TOKEN});
+				continue;
+			}
+
+			if (code >= "0".code && code <= "9".code)
+			{
+				i++;
+				while (i < source.length)
+				{
+					var numericCode:Int = source.charCodeAt(i);
+					var numericChar:String = source.charAt(i);
+					if ((numericCode >= "0".code && numericCode <= "9".code) || numericChar == "." || numericChar == "e" || numericChar == "E"
+						|| numericChar == "f" || numericChar == "F" || numericChar == "u" || numericChar == "U")
+					{
+						i++;
+						continue;
+					}
+					if ((numericChar == "+" || numericChar == "-") && i > start && (source.charAt(i - 1) == "e" || source.charAt(i - 1) == "E"))
+					{
+						i++;
+						continue;
+					}
+					break;
+				}
+				tokens.push({text: source.substr(start, i - start), kind: NUMBER_TOKEN});
+				continue;
+			}
+
+			i++;
+			tokens.push({text: source.substr(start, 1), kind: SYMBOL_TOKEN});
+		}
+		return tokens;
+	}
+
+	static function collectFloatingNames(tokens:Array<ShaderSourceToken>):Map<String, Bool>
+	{
+		var names:Map<String, Bool> = [
+			"openfl_Alphav" => true,
+			"openfl_ColorMultiplierv" => true,
+			"openfl_ColorOffsetv" => true,
+			"openfl_TextureCoordv" => true,
+			"openfl_TextureSize" => true,
+			"gl_FragCoord" => true,
+			"gl_PointCoord" => true
+		];
+
+		for (i in 0...tokens.length)
+		{
+			if (tokens[i].kind != IDENTIFIER_TOKEN || !isFloatingType(tokens[i].text))
+				continue;
+			var nameIndex:Int = nextCodeToken(tokens, i + 1);
+			if (nameIndex >= 0 && tokens[nameIndex].kind == IDENTIFIER_TOKEN)
+				names.set(tokens[nameIndex].text, true);
+		}
+		return names;
+	}
+
+	static function isFloatingOperand(tokens:Array<ShaderSourceToken>, index:Int, direction:Int, names:Map<String, Bool>):Bool
+	{
+		if (index < 0 || index >= tokens.length)
+			return false;
+
+		var token:ShaderSourceToken = tokens[index];
+		if (token.kind == IDENTIFIER_TOKEN)
+		{
+			var baseIndex:Int = index;
+			if (direction < 0)
+			{
+				var dot:Int = previousCodeToken(tokens, index - 1);
+				if (dot >= 0 && tokens[dot].text == ".")
+				{
+					var possibleBase:Int = previousCodeToken(tokens, dot - 1);
+					if (possibleBase >= 0)
+						baseIndex = possibleBase;
+				}
+			}
+			if (tokens[baseIndex].kind == IDENTIFIER_TOKEN && names.exists(tokens[baseIndex].text))
+				return true;
+
+			var paren:Int = direction > 0 ? nextCodeToken(tokens, index + 1) : -1;
+			return paren >= 0 && tokens[paren].text == "(" && isFloatingFunction(token.text);
+		}
+
+		if (token.text == "(" && direction > 0)
+			return isFloatingOperand(tokens, nextCodeToken(tokens, index + 1), direction, names);
+
+		if (token.text == ")" && direction < 0)
+		{
+			var depth:Int = 1;
+			var cursor:Int = previousCodeToken(tokens, index - 1);
+			while (cursor >= 0)
+			{
+				if (tokens[cursor].text == ")")
+					depth++;
+				else if (tokens[cursor].text == "(")
+				{
+					depth--;
+					if (depth == 0)
+					{
+						var functionIndex:Int = previousCodeToken(tokens, cursor - 1);
+						return functionIndex >= 0 && tokens[functionIndex].kind == IDENTIFIER_TOKEN && isFloatingFunction(tokens[functionIndex].text);
+					}
+				}
+				cursor = previousCodeToken(tokens, cursor - 1);
+			}
+		}
+		return false;
+	}
+
+	static inline function isArithmeticOperator(value:String):Bool
+		return value == "+" || value == "-" || value == "*" || value == "/";
+
+	static function isFloatingType(value:String):Bool
+		return value == "float" || value == "double" || value == "vec2" || value == "vec3" || value == "vec4" || value == "mat2"
+			|| value == "mat3" || value == "mat4";
+
+	static function isFloatingFunction(value:String):Bool
+	{
+		if (isFloatingType(value))
+			return true;
+		return switch (value)
+		{
+			case "abs", "acos", "asin", "atan", "ceil", "clamp", "cos", "cross", "degrees", "distance", "dot", "exp", "exp2", "floor",
+				"fract", "length", "log", "log2", "max", "min", "mix", "mod", "normalize", "pow", "radians", "reflect", "refract", "sign",
+				"sin", "smoothstep", "sqrt", "step", "tan", "texture", "texture2D": true;
+			default: false;
+		}
+	}
+
+	static function isPlainIntegerLiteral(value:String):Bool
+	{
+		if (value.length == 0)
+			return false;
+		for (i in 0...value.length)
+		{
+			var code:Int = value.charCodeAt(i);
+			if (code < "0".code || code > "9".code)
+				return false;
+		}
+		return true;
+	}
+
+	static function previousCodeToken(tokens:Array<ShaderSourceToken>, index:Int):Int
+	{
+		var cursor:Int = index;
+		while (cursor >= 0 && tokens[cursor].kind == TRIVIA_TOKEN)
+			cursor--;
+		return cursor;
+	}
+
+	static function nextCodeToken(tokens:Array<ShaderSourceToken>, index:Int):Int
+	{
+		var cursor:Int = index;
+		while (cursor < tokens.length && tokens[cursor].kind == TRIVIA_TOKEN)
+			cursor++;
+		return cursor < tokens.length ? cursor : -1;
+	}
+
+	static inline function isWhitespaceCode(code:Int):Bool
+		return code == 32 || code == 9 || code == 10 || code == 13;
+
+	static inline function isIdentifierStart(code:Int):Bool
+		return (code >= "a".code && code <= "z".code) || (code >= "A".code && code <= "Z".code) || code == "_".code;
+
+	static inline function isIdentifierPart(code:Int):Bool
+		return isIdentifierStart(code) || (code >= "0".code && code <= "9".code);
 
 	static function hasAny(source:String, needles:Array<String>):Bool
 	{

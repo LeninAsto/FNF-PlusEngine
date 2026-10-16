@@ -14,9 +14,11 @@ class PreparedChartNote
 	public final gfNote:Bool;
 	public final altAnim:Bool;
 	public final stepCrochet:Float;
+	/** Number of sub-frame taps represented by this runtime note. */
+	public var density:Int;
 
 	public function new(strumTime:Float, column:Int, sustainLength:Float, noteType:String, gottaHit:Bool, gfNote:Bool, altAnim:Bool,
-		stepCrochet:Float)
+		stepCrochet:Float, ?density:Int = 1)
 	{
 		this.strumTime = strumTime;
 		this.column = column;
@@ -26,12 +28,16 @@ class PreparedChartNote
 		this.gfNote = gfNote;
 		this.altAnim = altAnim;
 		this.stepCrochet = stepCrochet;
+		this.density = density;
 	}
 }
 
 /** Pure chart data prepared off the render thread before PlayState starts. */
 class SongLoadPlan
 {
+	public static inline final DENSE_CHART_THRESHOLD:Int = 50000;
+	public static inline final DENSE_TAP_BUCKET_MS:Float = 1000 / 120;
+
 	public static var current(default, null):SongLoadPlan;
 	static var plans:Map<String, SongLoadPlan> = [];
 
@@ -42,6 +48,8 @@ class SongLoadPlan
 	public var sustainCount(default, null):Int = 0;
 	public var compileMs(default, null):Float = 0;
 	public var cacheHit(default, null):Bool = false;
+	public var denseChart(default, null):Bool = false;
+	public var sourceNoteCount(default, null):Int = 0;
 
 	public function new(song:SwagSong, cacheKey:String, ?columns:Int = 4)
 	{
@@ -51,6 +59,12 @@ class SongLoadPlan
 		var bpm:Float = song.bpm;
 		if (song.notes == null)
 			return;
+
+		for (section in song.notes)
+			if (section != null && section.sectionNotes != null)
+				sourceNoteCount += section.sectionNotes.length;
+		denseChart = sourceNoteCount >= DENSE_CHART_THRESHOLD;
+		var denseTaps:Map<Int, Array<PreparedChartNote>> = denseChart ? [] : null;
 
 		for (section in song.notes)
 		{
@@ -78,7 +92,36 @@ class SongLoadPlan
 				var gottaHit:Bool = rawColumn < columns;
 				var gf:Bool = section.gfSection == true && gottaHit == section.mustHitSection;
 				var alt:Bool = section.altAnim == true && !gottaHit;
-				notes.push(new PreparedChartNote(strumTime, column, sustain, type, gottaHit, gf, alt, stepCrochet));
+				if (denseChart && sustain <= 0)
+				{
+					// Several taps in this window occupy the same screen pixel/input frame.
+					// Keep one sprite and retain their gameplay weight in density.
+					var bucket:Int = Math.floor(strumTime / DENSE_TAP_BUCKET_MS);
+					var bucketNotes:Array<PreparedChartNote> = denseTaps.get(bucket);
+					if (bucketNotes == null)
+					{
+						bucketNotes = [];
+						denseTaps.set(bucket, bucketNotes);
+					}
+					var packed:PreparedChartNote = null;
+					for (candidate in bucketNotes)
+						if (candidate.column == column && candidate.gottaHit == gottaHit && candidate.gfNote == gf && candidate.altAnim == alt
+							&& candidate.noteType == type)
+						{
+							packed = candidate;
+							break;
+						}
+					if (packed == null)
+					{
+						packed = new PreparedChartNote(strumTime, column, sustain, type, gottaHit, gf, alt, stepCrochet);
+						bucketNotes.push(packed);
+						notes.push(packed);
+					}
+					else
+						packed.density++;
+				}
+				else
+					notes.push(new PreparedChartNote(strumTime, column, sustain, type, gottaHit, gf, alt, stepCrochet));
 				tapCount++;
 				sustainCount += Std.int(Math.max(0, Math.round(sustain / stepCrochet)));
 			}

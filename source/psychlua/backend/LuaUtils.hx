@@ -238,14 +238,12 @@ class LuaUtils
 						var sub:Dynamic = parsedJson[i];
 						if(sub != null && sub.save != null && !settings.exists(sub.save))
 						{
-							if(sub.type != 'keybind' && sub.type != 'key')
+							var settingType:String = sub.type != null ? Std.string(sub.type).trim().toLowerCase() : 'bool';
+							if(settingType != 'keybind' && settingType != 'key')
 							{
-								var defaultValue:Dynamic = sub.value != null ? sub.value : Reflect.field(sub, 'default');
-								if(defaultValue != null)
-								{
-									//FunkinLua.luaTrace('getModSetting: Found unsaved value "${sub.save}" in Mod: "$modName"');
-									settings.set(sub.save, defaultValue);
-								}
+								var defaultValue:Dynamic = modSettingDefault(sub, settingType);
+								//FunkinLua.luaTrace('getModSetting: Found unsaved value "${sub.save}" in Mod: "$modName"');
+								settings.set(sub.save, defaultValue);
 							}
 							else
 							{
@@ -289,6 +287,26 @@ class LuaUtils
 		#end
 		#end
 		return null;
+	}
+
+	static function modSettingDefault(setting:Dynamic, settingType:String):Dynamic
+	{
+		if (setting.value != null)
+			return setting.value;
+
+		var declaredDefault:Dynamic = Reflect.field(setting, 'default');
+		if (declaredDefault != null)
+			return declaredDefault;
+
+		return switch (settingType)
+		{
+			case 'string', 'str':
+				var choices:Array<Dynamic> = cast setting.options;
+				choices != null && choices.length > 0 ? choices[0] : '';
+			case 'percent': 1;
+			case 'int', 'integer', 'float', 'fl': 0;
+			default: false;
+		}
 	}
 
 	public static function isMap(variable:Dynamic)

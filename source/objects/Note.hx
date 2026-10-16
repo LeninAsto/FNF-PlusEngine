@@ -52,8 +52,8 @@ class Note extends FlxSprite
 		'No Animation'
 	];
 
-	// Rendering optimization: tracks how much this note "costs" to render
-	// Used to prevent FPS drops when there are many notes on screen at once
+	// On dense charts, one visible note can represent several taps that land
+	// inside the same 120 Hz input/render window.
 	public var noteDensity:Float = 1;
 
 	public var extraData:Map<String, Dynamic> = new Map<String, Dynamic>();

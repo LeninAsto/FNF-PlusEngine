@@ -1,6 +1,7 @@
 package ::APP_PACKAGE::
 
 import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageInfo
@@ -14,11 +15,13 @@ import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
 import org.haxe.extension.Extension
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.system.exitProcess
 
 object EngineAndroidBridge {
@@ -29,6 +32,7 @@ object EngineAndroidBridge {
 	private const val PREF_SHOW_LAUNCHER = "show_launcher"
 	private const val PREF_AUTO_START = "auto_start"
 	const val EXTRA_CRASH_FILE = "plus.engine.extra.CRASH_FILE"
+	private val crashActivityStarted = AtomicBoolean(false)
 
 	@JvmStatic
 	fun setLauncherPrefs(showLauncher: Boolean, autoStart: Boolean) {
@@ -41,8 +45,35 @@ object EngineAndroidBridge {
 	}
 
 	@JvmStatic
-	fun showHaxeCrash(title: String?, report: String?) {
-		val context = Extension.mainContext ?: Extension.mainActivity ?: return
+	fun showAlert(title: String?, message: String?): Boolean {
+		val activity = Extension.mainActivity ?: return false
+		if (activity.isFinishing || (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && activity.isDestroyed)) return false
+
+		return runCatching {
+			activity.runOnUiThread {
+				runCatching {
+					AlertDialog.Builder(activity)
+						.setTitle(title.orEmpty())
+						.setMessage(message.orEmpty())
+						.setPositiveButton(android.R.string.ok, null)
+						.setCancelable(true)
+						.show()
+				}.onFailure {
+					Log.e(TAG, "Alert dialog could not be shown.", it)
+					Toast.makeText(activity.applicationContext, message.orEmpty(), Toast.LENGTH_LONG).show()
+				}
+			}
+			true
+		}.getOrElse {
+			Log.e(TAG, "Alert dialog could not be dispatched.", it)
+			false
+		}
+	}
+
+	@JvmStatic
+	fun showHaxeCrash(title: String?, report: String?): Boolean {
+		val context = Extension.mainContext ?: Extension.mainActivity ?: return false
+		if (!crashActivityStarted.compareAndSet(false, true)) return true
 		val timestamp = SimpleDateFormat("yyyy-MM-dd HH:mm:ss.SSS Z", Locale.US).format(Date())
 		val formattedReport = buildString {
 			appendLine("Time: $timestamp")
@@ -53,10 +84,29 @@ object EngineAndroidBridge {
 			appendLine(report ?: "No Haxe crash report was provided.")
 		}
 
-		runCatching {
+		return runCatching {
 			launchCrashActivity(context, formattedReport)
+			scheduleGameProcessExit()
+			true
 		}.onFailure {
+			crashActivityStarted.set(false)
 			Log.e(TAG, "Engine crash activity could not be launched.", it)
+		}.getOrDefault(false)
+	}
+
+	private fun scheduleGameProcessExit() {
+		val gamePid = Process.myPid()
+		Thread({
+			try {
+				// startActivity is asynchronous. Give the recovery process enough time
+				// to create its window before terminating the broken game process.
+				Thread.sleep(1200)
+			} catch (_: InterruptedException) {
+			}
+			Process.killProcess(gamePid)
+		}, "PlusEngine-crash-exit").apply {
+			isDaemon = false
+			start()
 		}
 	}
 

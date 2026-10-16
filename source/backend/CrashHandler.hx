@@ -17,6 +17,8 @@ using flixel.util.FlxArrayUtil;
  */
 class CrashHandler
 {
+	private static var initialized:Bool = false;
+	private static var handlingCrash:Bool = false;
 	// Help link/repository to display in the event of a crash
 	public static final HELP_LINK:String = "https://github.com/Psych-Plus-Team/FNF-PlusEngine";
 
@@ -59,7 +61,7 @@ class CrashHandler
 		if (isNullError)
 		{
 			var funnyMsg = NULL_ERROR_MESSAGES[Std.random(NULL_ERROR_MESSAGES.length)];
-			return '$funnyMsg';
+			return '$funnyMsg\n\nOriginal error: $originalMessage';
 		}
 
 		return originalMessage;
@@ -67,7 +69,12 @@ class CrashHandler
 
 	public static function init():Void
 	{
-		openfl.Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
+		if (initialized)
+			return;
+		initialized = true;
+
+		if (openfl.Lib.current != null && openfl.Lib.current.loaderInfo != null)
+			openfl.Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
 		#if cpp
 		untyped __global__.__hxcpp_set_critical_error_handler(onError);
 		#elseif hl
@@ -77,6 +84,9 @@ class CrashHandler
 
 	private static function onUncaughtError(e:UncaughtErrorEvent):Void
 	{
+		if (!beginCrashHandling())
+			return;
+
 		e.preventDefault();
 		e.stopPropagation();
 		e.stopImmediatePropagation();
@@ -136,20 +146,18 @@ class CrashHandler
 		saveErrorMessage(errorMsg);
 		#end
 
-		#if android
-		showAndroidCrash(errorMsg, "Error!");
-		#else
-		CoolUtil.showPopUp(errorMsg, "Error!");
-		#end
 		#if DISCORD_ALLOWED DiscordClient.shutdown(); #end
-		lime.system.System.exit(1);
+		showCrashAndExit(errorMsg, "Error!");
 	}
 
 	#if (cpp || hl)
 	private static function onError(message:Dynamic):Void
 	{
+		if (!beginCrashHandling())
+			return;
+
 		var crashMessage:String = "Unknown critical error";
-		if (message != null && message.length > 0)
+		if (message != null && Std.string(message).length > 0)
 		{
 			// Add funny message for null errors
 			crashMessage = funnyNullMessage(Std.string(message));
@@ -171,15 +179,34 @@ class CrashHandler
 		saveErrorMessage(errorLog);
 		#end
 
-		#if android
-		showAndroidCrash(errorLog, "Critical Error!");
-		#else
-		CoolUtil.showPopUp(errorLog, "Critical Error!");
-		#end
 		#if DISCORD_ALLOWED DiscordClient.shutdown(); #end
-		lime.system.System.exit(1);
+		showCrashAndExit(errorLog, "Critical Error!");
 	}
 	#end
+
+	private static function beginCrashHandling():Bool
+	{
+		if (handlingCrash)
+		{
+			trace('Crash handler was invoked again while already handling an error.');
+			return false;
+		}
+		handlingCrash = true;
+		return true;
+	}
+
+	private static function showCrashAndExit(message:String, title:String):Void
+	{
+		#if android
+		// The Android bridge starts a recovery Activity in a separate process and
+		// terminates this broken game process after that Activity has had time to open.
+		if (showAndroidCrash(message, title))
+			return;
+		#end
+
+		CoolUtil.showPopUp(message, title);
+		lime.system.System.exit(1);
+	}
 
 	private static function formatCrashText(kind:String, message:String, stack:String, tips:Array<String>):String
 	{
@@ -211,18 +238,18 @@ class CrashHandler
 	}
 
 	#if android
-	private static function showAndroidCrash(message:String, title:String):Void
+	private static function showAndroidCrash(message:String, title:String):Bool
 	{
 		try
 		{
-			lime.system.JNI.createStaticMethod('com/leninasto/plusengine/EngineAndroidBridge', 'showHaxeCrash',
-				'(Ljava/lang/String;Ljava/lang/String;)V', false, true)(title, message);
+			return lime.system.JNI.createStaticMethod('com/leninasto/plusengine/EngineAndroidBridge', 'showHaxeCrash',
+				'(Ljava/lang/String;Ljava/lang/String;)Z', false, true)(title, message);
 		}
 		catch (e:Dynamic)
 		{
 			trace('Android crash activity dispatch failed: $e');
-			CoolUtil.showPopUp(message, title);
 		}
+		return false;
 	}
 	#end
 
