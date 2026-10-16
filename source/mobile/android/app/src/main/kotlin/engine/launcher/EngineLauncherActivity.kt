@@ -57,6 +57,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Surface
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.Typography
@@ -95,6 +96,9 @@ class EngineLauncherActivity : ComponentActivity() {
 		private const val DOCUMENTS_UI_BROWSE_ACTION = "android.provider.action.BROWSE"
 		private const val EXTERNAL_STORAGE_AUTHORITY = "com.android.externalstorage.documents"
 		private const val FORCE_LANDSCAPE_EXTRA = "org.haxe.lime.forceLandscapeBeforeSdl"
+		private const val PREFS_NAME = "plus_engine_launcher"
+		private const val PREF_SHOW_LAUNCHER = "show_launcher"
+		private const val PREF_AUTO_START = "auto_start"
 		private const val PRIMARY_ROOT_ID = "primary"
 		private val DOCUMENTS_UI_PACKAGES = listOf(null, "com.google.android.documentsui", "com.android.documentsui")
 	}
@@ -108,7 +112,10 @@ class EngineLauncherActivity : ComponentActivity() {
 	private var storageRows by mutableStateOf(emptyList<StorageItem>())
 	private var updateState by mutableStateOf(UpdateState())
 	private var modInstallerInstalled by mutableStateOf(false)
+	private var showLauncher by mutableStateOf(true)
+	private var autoStart by mutableStateOf(false)
 	private var gameLaunchPending = false
+	private var autoStartPosted = false
 
 	private val runtimePermissionLauncher = registerForActivityResult(
 		ActivityResultContracts.RequestMultiplePermissions()
@@ -118,7 +125,13 @@ class EngineLauncherActivity : ComponentActivity() {
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+		refreshLauncherPrefs()
 		refreshState()
+
+		if (!showLauncher) {
+			startGame()
+			return
+		}
 
 		setContent {
 			LauncherTheme {
@@ -127,7 +140,11 @@ class EngineLauncherActivity : ComponentActivity() {
 					storageRows = storageRows,
 					updateState = updateState,
 					modInstallerInstalled = modInstallerInstalled,
+					showLauncher = showLauncher,
+					autoStart = autoStart,
 					onStartGame = ::startGame,
+					onShowLauncherChange = ::updateShowLauncher,
+					onAutoStartChange = ::updateAutoStart,
 					onOpenData = { openFolderInFiles(getGameDataDirectory()) },
 					onOpenExternal = { openFolderInFiles(getPublicEngineDirectory()) },
 					onRequestPermissions = ::requestMissingPermissions,
@@ -141,6 +158,8 @@ class EngineLauncherActivity : ComponentActivity() {
 				)
 			}
 		}
+
+		queueAutoStartIfNeeded()
 	}
 
 	override fun onResume() {
@@ -154,6 +173,37 @@ class EngineLauncherActivity : ComponentActivity() {
 		permissions = buildPermissionItems()
 		modInstallerInstalled = findModInstallerPackage() != null
 		refreshStorage()
+	}
+
+	private fun refreshLauncherPrefs() {
+		val prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+		showLauncher = prefs.getBoolean(PREF_SHOW_LAUNCHER, true)
+		autoStart = prefs.getBoolean(PREF_AUTO_START, false)
+	}
+
+	private fun updateShowLauncher(enabled: Boolean) {
+		showLauncher = enabled
+		getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+			.edit()
+			.putBoolean(PREF_SHOW_LAUNCHER, enabled)
+			.apply()
+	}
+
+	private fun updateAutoStart(enabled: Boolean) {
+		autoStart = enabled
+		getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+			.edit()
+			.putBoolean(PREF_AUTO_START, enabled)
+			.apply()
+		if (enabled) queueAutoStartIfNeeded()
+	}
+
+	private fun queueAutoStartIfNeeded() {
+		if (!autoStart || autoStartPosted || gameLaunchPending) return
+		autoStartPosted = true
+		window.decorView.postDelayed({
+			if (autoStart && !gameLaunchPending) startGame()
+		}, 3000L)
 	}
 
 	private fun startGame() {
@@ -616,7 +666,11 @@ private fun LauncherScreen(
 	storageRows: List<StorageItem>,
 	updateState: UpdateState,
 	modInstallerInstalled: Boolean,
+	showLauncher: Boolean,
+	autoStart: Boolean,
 	onStartGame: () -> Unit,
+	onShowLauncherChange: (Boolean) -> Unit,
+	onAutoStartChange: (Boolean) -> Unit,
 	onOpenData: () -> Unit,
 	onOpenExternal: () -> Unit,
 	onRequestPermissions: () -> Unit,
@@ -653,6 +707,27 @@ private fun LauncherScreen(
 				) {
 					item {
 						Header(onStartGame, compact)
+					}
+
+					item {
+						LauncherCard(
+							title = stringResource(R.string.plus_launcher_startup),
+							icon = Icons.Rounded.PlayArrow,
+							modifier = Modifier.fillMaxWidth()
+						) {
+							SettingSwitchRow(
+								title = stringResource(R.string.plus_launcher_show_launcher),
+								description = stringResource(R.string.plus_launcher_show_launcher_desc),
+								checked = showLauncher,
+								onCheckedChange = onShowLauncherChange
+							)
+							SettingSwitchRow(
+								title = stringResource(R.string.plus_launcher_auto_start),
+								description = stringResource(R.string.plus_launcher_auto_start_desc),
+								checked = autoStart,
+								onCheckedChange = onAutoStartChange
+							)
+						}
 					}
 
 					item {
@@ -827,8 +902,8 @@ private fun Header(onStartGame: () -> Unit, compact: Boolean) {
 	Card(
 		modifier = Modifier.fillMaxWidth(),
 		shape = RoundedCornerShape(if (compact) 26.dp else 32.dp),
-		colors = CardDefaults.cardColors(containerColor = Color(0xFF1C2027).copy(alpha = 0.94f)),
-		border = BorderStroke(1.dp, Color.White.copy(alpha = 0.08f)),
+		colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.94f)),
+		border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.18f)),
 		elevation = CardDefaults.cardElevation(defaultElevation = 8.dp)
 	) {
 		if (compact) {
@@ -932,7 +1007,7 @@ private fun LauncherCard(
 		modifier = modifier,
 		shape = RoundedCornerShape(28.dp),
 		colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.92f)),
-		border = BorderStroke(1.dp, Color.White.copy(alpha = 0.07f))
+		border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline.copy(alpha = 0.12f))
 	) {
 		Column(modifier = Modifier.padding(18.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
 			Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -950,6 +1025,26 @@ private fun LauncherCard(
 			Spacer(Modifier.height(4.dp))
 			content()
 		}
+	}
+}
+
+@Composable
+private fun SettingSwitchRow(
+	title: String,
+	description: String,
+	checked: Boolean,
+	onCheckedChange: (Boolean) -> Unit
+) {
+	Row(
+		modifier = Modifier.fillMaxWidth(),
+		verticalAlignment = Alignment.CenterVertically,
+		horizontalArrangement = Arrangement.spacedBy(14.dp)
+	) {
+		Column(modifier = Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+			Text(title, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onSurface)
+			Text(description, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+		}
+		Switch(checked = checked, onCheckedChange = onCheckedChange)
 	}
 }
 

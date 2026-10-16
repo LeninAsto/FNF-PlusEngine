@@ -378,7 +378,8 @@ class OptionsState extends MusicBeatState
 			if (controls.UI_DOWN_P)
 				changeSelection(1);
 
-			if (touchPad.buttonC.justPressed || FlxG.keys.justPressed.CONTROL && controls.mobileC)
+			var touchC:Bool = touchPad != null && touchPad.buttonC != null && touchPad.buttonC.justPressed;
+			if (touchC || FlxG.keys.justPressed.CONTROL && controls.mobileC)
 			{
 				persistentUpdate = false;
 				openSubState(ScriptableSubstate.tryCreate('MobileControlSelectSubState', new mobile.substates.MobileControlSelectSubState()));
@@ -423,7 +424,8 @@ class OptionsState extends MusicBeatState
 		if (controls.UI_RIGHT_P)
 			changeSelection(1);
 
-		if (touchPad.buttonC.justPressed || FlxG.keys.justPressed.CONTROL && controls.mobileC)
+		var touchC:Bool = touchPad != null && touchPad.buttonC != null && touchPad.buttonC.justPressed;
+		if (touchC || FlxG.keys.justPressed.CONTROL && controls.mobileC)
 		{
 			persistentUpdate = false;
 			openSubState(ScriptableSubstate.tryCreate('MobileControlSelectSubState', new mobile.substates.MobileControlSelectSubState()));

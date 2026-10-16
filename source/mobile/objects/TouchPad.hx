@@ -45,7 +45,6 @@ class TouchPad extends MobileInputManager implements IMobileControls
 	public var buttonZ:TouchButton = new TouchButton(0, 0, [MobileInputID.Z]);
 	public var buttonExtra:TouchButton = new TouchButton(0, 0, [MobileInputID.EXTRA_1]);
 	public var buttonExtra2:TouchButton = new TouchButton(0, 0, [MobileInputID.EXTRA_2]);
-	public var buttonPause:TouchButton = new TouchButton(0, 0, [MobileInputID.PAUSE]);
 
 	public var instance:MobileInputManager;
 	public var onButtonDown:FlxTypedSignal<TouchButton->Void> = new FlxTypedSignal<TouchButton->Void>();
@@ -235,37 +234,6 @@ class TouchPad extends MobileInputManager implements IMobileControls
 
 		button.onDown.callback = () -> onButtonDown.dispatch(button);
 		button.onOut.callback = button.onUp.callback = () -> onButtonUp.dispatch(button);
-		return button;
-	}
-	
-	/**
-	 * Creates a standalone button (useful for external use like pause buttons)
-	 */
-	public static function createStandaloneButton(X:Float, Y:Float, Graphic:String, ?Color:FlxColor = 0xFFFFFF, ?IDs:Array<MobileInputID>):TouchButton
-	{
-		var button = new TouchButton(X, Y, IDs);
-		button.label = new FlxSprite();
-		button.loadGraphic(Paths.image('touchpad/bg', "mobile"));
-		button.label.loadGraphic(Paths.image('touchpad/${Graphic.toUpperCase()}', "mobile"));
-
-		button.scale.set(0.243, 0.243);
-		button.updateHitbox();
-		@:privateAccess button.updateLabelPosition();
-
-		button.statusBrightness = [1, 0.8, 0.4];
-		button.statusIndicatorType = BRIGHTNESS;
-		@:privateAccess button.indicateStatus();
-
-		button.bounds.makeGraphic(Std.int(button.width - 50), Std.int(button.height - 50), FlxColor.TRANSPARENT);
-		button.centerBounds();
-
-		button.immovable = true;
-		button.solid = button.moves = false;
-		button.label.antialiasing = button.antialiasing = ClientPrefs.data.antialiasing;
-		button.tag = Graphic.toUpperCase();
-		button.color = Color;
-		button.parentAlpha = button.alpha;
-
 		return button;
 	}
 

@@ -156,7 +156,7 @@ class EventMetaNote extends MetaNote
 		events = eventData[1];
 		// trace('events: $events');
 
-		loadGraphic(Paths.image('editors/eventIcon'));
+		loadGraphic(Paths.image(ChartingState.getEventIconPath('')));
 		setGraphicSize(ChartingState.GRID_SIZE);
 		updateHitbox();
 
@@ -185,6 +185,13 @@ class EventMetaNote extends MetaNote
 
 	public function updateEventText()
 	{
+		var iconEventName:Null<String> = null;
+		if (events != null && events.length > 0 && events[0] != null && events[0].length > 0)
+			iconEventName = events[0][0];
+		loadGraphic(Paths.image(ChartingState.getEventIconPath(iconEventName)));
+		setGraphicSize(ChartingState.GRID_SIZE);
+		updateHitbox();
+
 		var myTime:Float = Math.floor(this.strumTime);
 		if (events.length == 1)
 		{

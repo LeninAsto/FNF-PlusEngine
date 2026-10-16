@@ -69,6 +69,11 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 			null, 'use_flawless_rating');
 		addOption(option);
 
+		var option:Option = new Option('Over Accuracy',
+			'If checked, perfect play can push accuracy past 100%, up to 200% by the end of the song.', 'overAccuracy', BOOL, null,
+			'over_accuracy');
+		addOption(option);
+
 		var option:Option = new Option('Flawless!! Hit Window', 'Changes the amount of time you have\nfor hitting a "Flawless!!" in milliseconds.',
 			'flawlessWindow', FLOAT);
 		option.displayFormat = '%vms';

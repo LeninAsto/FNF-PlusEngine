@@ -9,6 +9,9 @@ class StageWeek1 extends BaseStage
 	var dadbattleLight:FlxSprite;
 	var dadbattleFog:DadBattleFog;
 
+	var fixed_GF_X:Float = 480;
+	var fixed_GF_Y:Float = 280;
+
 	inline function backdrop(image:String, x:Float, y:Float, scrollX:Float = 1, scrollY:Float = 1):FlxSprite
 	{
 		var spr:FlxSprite = new FlxSprite(x, y).loadGraphic(Paths.image(image));
@@ -47,6 +50,16 @@ class StageWeek1 extends BaseStage
 		}
 	}
 
+    #if OPT_VER
+	override function createPost()
+	{
+		super.createPost();
+
+		if (PlayState.SONG.song == 'Tutorial' && dad != null)
+			dad.setPosition(fixed_GF_X, fixed_GF_Y);
+	}
+	#end
+
 	override function eventPushed(event:objects.Note.EventNote)
 	{
 		switch (event.event)
@@ -73,7 +86,7 @@ class StageWeek1 extends BaseStage
 		}
 	}
 
-	override function eventCalled(eventName:String, value1:String, value2:String, flValue1:Null<Float>, flValue2:Null<Float>, strumTime:Float)
+	override function eventCalled(eventName:String, value1:String, value2:String, value3:String, value4:String, flValue1:Null<Float> = null, flValue2:Null<Float> = null, flValue3:Null<Float> = null, flValue4:Null<Float> = null, strumTime:Float)
 	{
 		switch (eventName)
 		{

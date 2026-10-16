@@ -54,7 +54,7 @@ class Bumpy extends Modifier {
 
 	// axisIdx: 0='' 1='x' 2='y' 3='z'; realAxisIdx: 0=z 1=x 2=y
 	private inline function applyBumpy(curPos:Vector3, params:ModifierParameters, axisIdx:Int, realAxisIdx:Int) {
-		final lane = params.lane;
+		final lane = getLaneSlot(params.lane, _bumpyAmtLaneIDs[axisIdx].length);
 		final player = params.player;
 		var distance = params.distance;
 
@@ -84,7 +84,7 @@ class Bumpy extends Modifier {
 
 	// axisIdx: 0='' 1='x' 2='y' 3='z'; realAxisIdx: 0=z 1=x 2=y
 	private inline function applyAngle(vis:VisualParameters, params:ModifierParameters, axisIdx:Int, realAxisIdx:Int) {
-		final lane = params.lane;
+		final lane = getLaneSlot(params.lane, _angAmtLaneIDs[axisIdx].length);
 		final player = params.player;
 		var distance = params.distance;
 
@@ -132,6 +132,18 @@ class Bumpy extends Modifier {
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function isActive(player:Int):Bool {
+		for (axis in 0..._bumpyAmtID.length) {
+			if (getUnsafe(_bumpyAmtID[axis], player) != 0 || getUnsafe(_angAmtID[axis], player) != 0)
+				return true;
+			if (Config.COLUMN_SPECIFIC_MODIFIERS)
+				for (lane in 0..._bumpyAmtLaneIDs[axis].length)
+					if (getUnsafe(_bumpyAmtLaneIDs[axis][lane], player) != 0 || getUnsafe(_angAmtLaneIDs[axis][lane], player) != 0)
+						return true;
+		}
+		return false;
+	}
 
 	override public function allowOnStraightHolds():Bool
 		return false;

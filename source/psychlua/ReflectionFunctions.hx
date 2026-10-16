@@ -16,6 +16,50 @@ class ReflectionFunctions
 {
 	static final instanceStr:Dynamic = "##PSYCHLUA_STRINGTOOBJ";
 
+	static function getLegacyPropertyTarget(objectName:String):Dynamic
+	{
+		if(objectName == null || objectName.trim().length == 0)
+			return LuaUtils.getTargetInstance();
+		return LuaUtils.getObjectDirectly(objectName);
+	}
+
+	static function isLegacyPropertyCall(objectName:String, propertyOrValue:Dynamic, thirdArgument:Dynamic):Bool
+	{
+		if(thirdArgument == null || !Std.isOfType(propertyOrValue, String))
+			return false;
+		if(objectName == null || objectName.trim().length == 0)
+			return true;
+		// The modern form uses a complete path in argument #1. The legacy form
+		// passes an object tag first and a property path second.
+		return objectName.indexOf('.') < 0 && getLegacyPropertyTarget(objectName) != null;
+	}
+
+	static function getPropertyFromTarget(target:Dynamic, property:String, allowMaps:Bool):Dynamic
+	{
+		if(target == null || property == null || property.length == 0)
+			return target;
+		var split:Array<String> = property.split('.');
+		for(part in split)
+		{
+			if(target == null) return null;
+			target = LuaUtils.getVarInArray(target, part, allowMaps);
+		}
+		return target;
+	}
+
+	static function setPropertyOnTarget(target:Dynamic, property:String, value:Dynamic, allowMaps:Bool):Dynamic
+	{
+		if(target == null || property == null || property.length == 0)
+			return null;
+		var split:Array<String> = property.split('.');
+		for(i in 0...split.length - 1)
+		{
+			target = LuaUtils.getVarInArray(target, split[i], allowMaps);
+			if(target == null) return null;
+		}
+		return LuaUtils.setVarInArray(target, split[split.length - 1], value, allowMaps);
+	}
+
 	static function resolveClass(className:String):Class<Dynamic>
 	{
 		return ClassResolver.resolveClass(className);
@@ -24,13 +68,27 @@ class ReflectionFunctions
 	public static function implement(funk:FunkinLua)
 	{
 		var lua:State = funk.lua;
-		Lua_helper.add_callback(lua, "getProperty", function(variable:String, ?allowMaps:Bool = false) {
+		Lua_helper.add_callback(lua, "getProperty", function(variable:String, ?allowMapsOrProperty:Dynamic = false) {
+			// Compatibility with engines/mods using getProperty(object, property).
+			if(Std.isOfType(allowMapsOrProperty, String))
+				return getPropertyFromTarget(getLegacyPropertyTarget(variable), cast allowMapsOrProperty, false);
+
+			var allowMaps:Bool = allowMapsOrProperty == true;
 			var split:Array<String> = variable.split('.');
 			if(split.length > 1)
 				return LuaUtils.getVarInArray(LuaUtils.getPropertyLoop(split, true, allowMaps), split[split.length-1], allowMaps);
 			return LuaUtils.getVarInArray(LuaUtils.getTargetInstance(), variable, allowMaps);
 		});
-		Lua_helper.add_callback(lua, "setProperty", function(variable:String, value:Dynamic, ?allowMaps:Bool = false, ?allowInstances:Bool = false) {
+		Lua_helper.add_callback(lua, "setProperty", function(variable:String, value:Dynamic, ?thirdArgument:Dynamic = null, ?allowInstances:Bool = false) {
+			// Compatibility with setProperty(object, property, value), used by a
+			// number of older Psych/Kade-derived mods.
+			if(isLegacyPropertyCall(variable, value, thirdArgument))
+			{
+				var parsedValue:Dynamic = allowInstances ? parseInstances(thirdArgument) : thirdArgument;
+				return setPropertyOnTarget(getLegacyPropertyTarget(variable), cast value, parsedValue, false);
+			}
+
+			var allowMaps:Bool = thirdArgument == true;
 			var split:Array<String> = variable.split('.');
 			if(split.length > 1) {
 				LuaUtils.setVarInArray(LuaUtils.getPropertyLoop(split, true, allowMaps), split[split.length-1], allowInstances ? parseInstances(value) : value, allowMaps);

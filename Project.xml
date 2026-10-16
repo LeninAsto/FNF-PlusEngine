@@ -59,6 +59,7 @@
 
 	<set name="BUILD_DIR" value="export/debug" if="debug" />
 	<set name="BUILD_DIR" value="export/release" unless="debug" />
+	<set name="BUILD_DIR" value="export/opt_release" if="OPT_VER" />
 	<set name="BUILD_DIR" value="export/32bit" if="32bits" />
 
 	<classpath name="source" />
@@ -67,7 +68,8 @@
 
 	<!-- Assets -->
 	<assets path="assets/fonts" />
-	<assets path="assets/shared" />
+	<assets path="assets/shared" unless="OPT_VER"/>
+	<assets path="assets/shared_opt" rename="assets/shared" if="OPT_VER"/>
 	<assets path="assets/embed" embed="true"/>
 	<assets path="assets/cursor" rename="assets/images/cursor"/>
 	<assets path="assets/videos" if="VIDEOS_ALLOWED"/>
@@ -82,14 +84,13 @@
 	</section>
 
 	<section if="BASE_GAME_FILES">
-		<assets path="assets/base_game" rename="assets"/>
+		<assets path="assets/base_game" rename="assets" unless="OPT_VER"/>
+		<assets path="assets/base_game_opt" rename="assets" if="OPT_VER"/>
 	</section>
 
 	<define name="CHECK_FOR_UPDATES" if="officialBuild"/>
 
 	<section if="MODS_ALLOWED">
-		<!-- WARNING: The base game mod is packaged by CI as Mod-Base-Game.zip.
-		     Keep it out of engine builds so release archives stay separated. -->
 		<assets path='example_mods' rename='mods' embed='false' />
 		<assets path='list.txt' rename='modsList.txt' />
 	</section>

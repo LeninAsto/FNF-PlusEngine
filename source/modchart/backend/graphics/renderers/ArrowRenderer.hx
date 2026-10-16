@@ -17,6 +17,45 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 	// Pre-allocated members to avoid per-call heap allocations
 	final _planeVerts:NativeVector<Float> = new NativeVector<Float>(8);
 	final _projZ:NativeVector<Float> = new NativeVector<Float>(4);
+	final _arrowData:ArrowData = {
+		hitTime: 0,
+		distance: 0,
+		sourceTime: 0,
+		lane: 0,
+		player: 0,
+		isTapArrow: true,
+		isHoldBody: false
+	};
+	final _orientInput:Vector3 = new Vector3();
+	final _rotated:Vector3 = new Vector3();
+	final _viewInput:Vector3 = new Vector3();
+	final _outputPos:Vector3 = new Vector3();
+	final _outputVisuals:VisualParameters = {};
+	final _output:ModifierOutput;
+	final _orientPos:Vector3 = new Vector3();
+	final _orientVisuals:VisualParameters = {};
+	final _orientOutput:ModifierOutput;
+	var _slots:Array<ArrowRenderSlot> = [];
+	var _slotIndex:Int = 0;
+
+	public function new(parent:PlayField) {
+		super(parent);
+		_output = {pos: _outputPos, visuals: _outputVisuals};
+		_orientOutput = {pos: _orientPos, visuals: _orientVisuals};
+	}
+
+	/** Reuses command and geometry storage after the previous frame was submitted. */
+	public inline function beginFrame():Void
+	{
+		_slotIndex = 0;
+	}
+
+	inline function nextSlot():ArrowRenderSlot
+	{
+		if (_slotIndex >= _slots.length)
+			_slots.push(new ArrowRenderSlot());
+		return _slots[_slotIndex++];
+	}
 
 	// Arrow quad indices are always [0,1,2, 1,3,2] — share one instance across all DrawCommands
 	static final _sharedArrowIdx:openfl.Vector<Int> = {
@@ -62,7 +101,7 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 
 		// setup the position
 		var arrowTime = sourceTime;
-		var songPos = Adapter.instance.getSongPosition();
+		var songPos = parent.state.songPosition;
 		var arrowDiff = arrowTime - songPos;
 
 		final canUseLast = player == __lastPlayer;
@@ -77,30 +116,27 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 			arrowTime = songPos + (FlxG.height * 0.25 * centered2);
 			arrowDiff = arrowTime - songPos;
 		}
-		var arrowData:ArrowData = {
-			hitTime: arrowTime,
-			distance: arrowDiff,
-			sourceTime: sourceTime,
-			lane: Adapter.instance.getLaneFromArrow(arrow),
-			player: player,
-			isTapArrow: Adapter.instance.isTapNote(arrow),
-			isHoldBody: false
-		};
+		final arrowData = _arrowData;
+		arrowData.hitTime = arrowTime;
+		arrowData.distance = arrowDiff;
+		arrowData.sourceTime = sourceTime;
+		arrowData.lane = Adapter.instance.getLaneFromArrow(arrow);
+		arrowData.player = player;
+		arrowData.isTapArrow = Adapter.instance.isTapNote(arrow);
+		arrowData.isHoldBody = false;
 
 		arrowPosition.setTo(Adapter.instance.getDefaultReceptorX(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2,
 			Adapter.instance.getDefaultReceptorY(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2, 0);
 
-		final output = parent.getNotePath(arrowPosition, arrowData);
+		final output = parent.getNotePathInto(arrowPosition, arrowData, _output, _outputPos, _outputVisuals);
 		arrowPosition.setTo(output.rawX, output.rawY, output.rawZ);
 		var visualAngleZ = output.visuals.angleZ;
 
 		// internal mods
 		if (orient != 0) {
-			final nextOutput = parent.getNotePath(new Vector3(Adapter.instance.getDefaultReceptorX(arrowData.lane, arrowData.player)
-				+ Manager.ARROW_SIZEDIV2,
-				Adapter.instance.getDefaultReceptorY(arrowData.lane, arrowData.player)
-				+ Manager.ARROW_SIZEDIV2),
-				arrowData, 1, false, true);
+			_orientInput.setTo(Adapter.instance.getDefaultReceptorX(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2,
+				Adapter.instance.getDefaultReceptorY(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2, 0);
+			final nextOutput = parent.getNotePathInto(_orientInput, arrowData, _orientOutput, _orientPos, _orientVisuals, 1, false, true);
 			final thisPos = output.pos;
 			final nextPos = nextOutput.pos;
 
@@ -135,8 +171,8 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 			rotationVector.setTo(planeVertices[vertPointer], planeVertices[vertPointer + 1], 0);
 
 			// The result of the vert rotation
-			var rotation = ModchartUtil.rotate3DVector(rotationVector, visualAngleX, visualAngleY,
-				ModchartUtil.getFrameAngle(arrow) + visualAngleZ + arrow.angle);
+			var rotation = ModchartUtil.rotate3DVectorInto(rotationVector, visualAngleX, visualAngleY,
+				ModchartUtil.getFrameAngle(arrow) + visualAngleZ + arrow.angle, _rotated);
 
 			// apply skewness
 			if (output.visuals.skewX != 0 || output.visuals.skewY != 0) {
@@ -151,11 +187,11 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 			rotation.x = rotation.x * output.visuals.scaleX;
 			rotation.y = rotation.y * output.visuals.scaleY;
 
-			var view = new Vector3(rotation.x + arrowPosition.x, rotation.y + arrowPosition.y,
+			_viewInput.setTo(rotation.x + arrowPosition.x, rotation.y + arrowPosition.y,
 				(rotation.z * 0.001 * Config.Z_SCALE) + arrowPosition.z);
 
 			// The result of the perspective projection of rotation
-			final projection = this.view.transformVector(view);
+			final projection = this.view.transformVector(_viewInput);
 
 			planeVertices[vertPointer] = projection.x;
 			planeVertices[vertPointer + 1] = projection.y;
@@ -168,7 +204,8 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 
 		// @formatter:off
 		// build directly as openfl.Vector to avoid conversion at render time
-		var vertices = new openfl.Vector<Float>(8, true);
+		final slot = nextSlot();
+		final vertices = slot.vertices;
 		// top left
 		vertices[0] = planeVertices[0];
 		vertices[1] = planeVertices[1];
@@ -185,7 +222,7 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 
 		final uvRectangle = arrow.frame.uv;
 		// build UVs as openfl.Vector to avoid conversion at render time
-		var uvData = new openfl.Vector<Float>(12, true);
+		final uvData = slot.uvs;
 		var k = 0;
 
 		#if (flixel == "6.1.0")
@@ -248,25 +285,65 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		if ((arrow.alpha * output.visuals.alpha) <= 0)
 			return null;
 
-		var color = new ColorTransform(negGlow, negGlow, negGlow, arrow.alpha * output.visuals.alpha, Math.round(output.visuals.glowR * absGlow),
-			Math.round(output.visuals.glowG * absGlow), Math.round(output.visuals.glowB * absGlow));
+		final color = slot.color;
+		color.redMultiplier = negGlow;
+		color.greenMultiplier = negGlow;
+		color.blueMultiplier = negGlow;
+		color.alphaMultiplier = arrow.alpha * output.visuals.alpha;
+		color.redOffset = Math.round(output.visuals.glowR * absGlow);
+		color.greenOffset = Math.round(output.visuals.glowG * absGlow);
+		color.blueOffset = Math.round(output.visuals.glowB * absGlow);
+		color.alphaOffset = 0;
 
 		// make the instruction
-		var dc:DrawCommand = {
-			parent: arrow,
-			graphic: arrow.graphic,
-			antialiasing: arrow.antialiasing,
-			blend: arrow.blend,
-			cameras: ModchartUtil.resolveCameras(parent, arrow),
-			shader: arrow.shader,
-
-			vertices: vertices,
-			indices: _sharedArrowIdx,
-			uvs: uvData,
-			color: color,
-			isColored: color.hasRGBMultipliers() || color.alphaMultiplier != 1,
-			hasColorOffsets: color.hasRGBAOffsets()
-		};
+		final dc = slot.command;
+		dc.parent = arrow;
+		dc.graphic = arrow.graphic;
+		dc.antialiasing = arrow.antialiasing;
+		dc.blend = arrow.blend;
+		dc.cameras = ModchartUtil.resolveCameras(parent, arrow, slot.cameras);
+		dc.shader = arrow.shader;
+		dc.vertices = vertices;
+		dc.indices = _sharedArrowIdx;
+		dc.uvs = uvData;
+		dc.color = color;
+		dc.colors = null;
+		dc.isColored = color.hasRGBMultipliers() || color.alphaMultiplier != 1;
+		dc.hasColorOffsets = color.hasRGBAOffsets();
+		dc.zIndex = 0;
 		return dc;
+	}
+}
+
+private class ArrowRenderSlot
+{
+	public final vertices:openfl.Vector<Float>;
+	public final uvs:openfl.Vector<Float>;
+	public final color:ColorTransform;
+	public final cameras:Array<FlxCamera>;
+	public final command:DrawCommand;
+
+	public function new()
+	{
+		vertices = new openfl.Vector<Float>(8, true);
+		uvs = new openfl.Vector<Float>(12, true);
+		color = new ColorTransform();
+		cameras = [];
+		command = {
+			parent: null,
+			graphic: null,
+			antialiasing: false,
+			blend: null,
+			shader: null,
+			cameras: cameras,
+			vertices: vertices,
+			uvs: uvs,
+			indices: null,
+			isColored: false,
+			hasColorOffsets: false,
+			color: color,
+			colors: null,
+			zIndex: 0
+		};
 	}
 }

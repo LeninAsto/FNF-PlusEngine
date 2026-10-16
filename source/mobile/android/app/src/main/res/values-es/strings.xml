@@ -4,6 +4,11 @@
 	<string name="plus_launcher_title">Launcher de Plus Engine</string>
 	<string name="plus_launcher_subtitle">Elige como quieres iniciar el engine.</string>
 	<string name="plus_launcher_start_game">Iniciar juego</string>
+	<string name="plus_launcher_startup">Inicio</string>
+	<string name="plus_launcher_show_launcher">Mostrar launcher</string>
+	<string name="plus_launcher_show_launcher_desc">Si se desactiva, la app abrira el engine directamente la proxima vez.</string>
+	<string name="plus_launcher_auto_start">Inicio automatico</string>
+	<string name="plus_launcher_auto_start_desc">Si se activa, el launcher inicia el engine automaticamente despues de 3 segundos.</string>
 	<string name="plus_launcher_files">Archivos</string>
 	<string name="plus_launcher_open_data">Abrir /data</string>
 	<string name="plus_launcher_open_external">Abrir /external</string>
@@ -39,4 +44,12 @@
 	<string name="plus_launcher_game_data">Datos juego</string>
 	<string name="plus_launcher_mods">Mods</string>
 	<string name="plus_launcher_apk">APK</string>
+	<string name="plus_crash_title">Plus Engine se detuvo</string>
+	<string name="plus_crash_subtitle">Puedes reabrir el juego o cerrar esta pantalla.</string>
+	<string name="plus_crash_restart">Volver al launcher</string>
+	<string name="plus_crash_close">Cerrar</string>
+	<string name="plus_crash_details">Detalles tecnicos</string>
+	<string name="plus_crash_show_details">Ver detalles</string>
+	<string name="plus_crash_hide_details">Ocultar detalles</string>
+	<string name="plus_crash_empty">No se escribio ningun reporte. La app se detuvo antes de que Android pudiera guardar los detalles.</string>
 </resources>

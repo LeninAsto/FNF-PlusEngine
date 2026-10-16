@@ -4,6 +4,9 @@ import flixel.util.FlxSave;
 import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepadInputID;
 import states.TitleState;
+#if android
+import mobile.backend.PsychJNI;
+#end
 
 // Add a variable here and it will get automatically saved
 @:structInit class SaveVariables
@@ -23,6 +26,8 @@ import states.TitleState;
 	public var infinityDisplay:Bool = false; // Extend viewport vertically for modern screens while keeping game at 16:9
 	#if android
 	public var storageType:String = "EXTERNAL_DATA";
+	public var showAndroidLauncher:Bool = true;
+	public var androidLauncherAutoStart:Bool = false;
 	#end
 	public var popUpRating:Bool = true;
 	public var showVersionText:Bool = false;
@@ -54,6 +59,7 @@ import states.TitleState;
 	public var badShitBreakCombo:Bool = false; // When true, Bad and Shit will break the combo
 	public var systemScoreMultiplier:String = 'Psych'; // 'Psych', 'Codename'
 	public var useFlawlessRating:Bool = false;
+	public var overAccuracy:Bool = false;
 	public var flawlessWindow:Float = 20.0;
 	public var sickWindow:Float = 45.0;
 	public var goodWindow:Float = 90.0;
@@ -74,12 +80,14 @@ import states.TitleState;
 		// oh yeah when you calculate the bps divide it by the songSpeed or rate because it wont scroll correctly when speeds exist.
 		// -kade
 		'songspeed' => 1.0,
+		'preservepitch' => false,
 		'healthgain' => 1.0,
 		'healthloss' => 1.0,
 		'instakill' => false,
 		'practice' => false,
 		'botplay' => false,
 		'botplayType' => 'Normal',
+		'botplayCPUProfile' => 'Skilled',
 		'opponentdrain' => false, // JS Engine-style: opponent note hits drain player health
 		'opponentplay' => false,
 		'perfect' => false, // Perfect Mode - insta-kill on any judgement below Sick
@@ -91,7 +99,7 @@ import states.TitleState;
 	public var antialiasing:Bool = true;
 	public var lowQuality:Bool = false;
 	public var shaders:Bool = true;
-	public var cacheOnGPU:Bool = #if !switch false #else true #end; // GPU Caching made by Raltyro
+	public var cacheOnGPU:Bool = true; // Hardware acceleration / GPU texture caching
 	public var camZooms:Bool = true;
 	public var hideHud:Bool = false;
 	public var healthBarAlpha:Float = 1;
@@ -110,6 +118,9 @@ import states.TitleState;
 	public var showComboNum:Bool = true;
 	public var showTimingTags:Bool = false;
 	public var showHitMs:Bool = false;
+	#if android
+	public var runOnLightVisual:Bool = true;
+	#end
 	public var comboInGame:Bool = false;
 	public var nfRatingStyle:Bool = false;
 	public var endCountdown:Bool = false; // Enables/disables the end countdown
@@ -159,7 +170,9 @@ import states.TitleState;
 	public var showWatermark:Bool = false;
 	public var titleIntroVideo:Bool = true;
 	public var autoPause:Bool = true;
+	#if (cpp && windows)
 	public var instantWindowClose:Bool = true;
+	#end
 	public var menuAccentColor:String = 'Purple';
 	public var menuAccentColorCustom:Int = 0xFF6F52D8;
 	public var menuDarkTheme:Bool = false;
@@ -177,7 +190,8 @@ import states.TitleState;
 	public var heyIntro:Bool = false; // Boyfriend and Girlfriend do Hey! animation on countdown Go!
 	public var breakTimer:Bool = false; // Show timer when next notes are approaching
 	public var usePsychFreeplay:Bool = true; // Use Psych-style legacy Freeplay instead of PlusEngine Freeplay
-	public var dragCharacterToMove:Bool = false;
+	public var cneStyleDragCharacter:Bool = false;
+	public var canDragCameraStage:Bool = true;
 
 	// Mod compatibility / security
 	public var scriptWarns:Bool = true; // Show warnings for deprecated Lua/HScript compatibility APIs
@@ -392,6 +406,7 @@ class ClientPrefs
 		FlxG.save.flush();
 		#if android
 		StorageUtil.saveStorageTypePreference(data.storageType);
+		PsychJNI.setLauncherPrefs(data.showAndroidLauncher, data.androidLauncherAutoStart);
 		#end
 
 		// Placing this in a separate save so that it can be manually deleted without removing your Score and stuff
@@ -411,6 +426,14 @@ class ClientPrefs
 		for (key in Reflect.fields(data))
 			if (key != 'gameplaySettings' && Reflect.hasField(FlxG.save.data, key))
 				Reflect.setField(data, key, Reflect.field(FlxG.save.data, key));
+
+		if (!Reflect.hasField(FlxG.save.data, 'hardwareAccelerationDefaulted'))
+		{
+			data.cacheOnGPU = true;
+			Reflect.setField(FlxG.save.data, 'cacheOnGPU', true);
+			Reflect.setField(FlxG.save.data, 'hardwareAccelerationDefaulted', true);
+			FlxG.save.flush();
+		}
 
 		if (!Reflect.hasField(FlxG.save.data, 'fpsCounterMode'))
 		{

@@ -1,5 +1,6 @@
 package options;
 
+import backend.BotplayCPU;
 import objects.AttachedText;
 import objects.CheckboxThingie;
 import options.Option.OptionType;
@@ -49,6 +50,8 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 		option.displayFormat = '%vX';
 		option.decimals = 2;
 		optionsArray.push(option);
+		var preservePitch = new GameplayOption('Preserve Voice Pitch', 'preservepitch', BOOL, false);
+		optionsArray.push(preservePitch);
 		#end
 
 		var option:GameplayOption = new GameplayOption('Health Gain Multiplier', 'healthgain', FLOAT, 1);
@@ -81,6 +84,13 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 			botType.setValue('Normal');
 		botType.showCondition = function() return ClientPrefs.getGameplaySetting('botplay');
 		optionsArray.push(botType);
+
+		var cpuProfile:GameplayOption = new GameplayOption('CPU Profile', 'botplayCPUProfile', STRING, 'Skilled', BotplayCPU.PROFILES.copy());
+		if (cpuProfile.options.indexOf(Std.string(cpuProfile.getValue())) < 0)
+			cpuProfile.setValue(BotplayCPU.normalizeProfile(cpuProfile.getValue()));
+		cpuProfile.showCondition = function() return ClientPrefs.getGameplaySetting('botplay')
+			&& CoolUtil.botplayType(ClientPrefs.getGameplaySetting('botplayType', 'Normal')) == 'CPU';
+		optionsArray.push(cpuProfile);
 	}
 
 	public function getOptionByName(name:String)

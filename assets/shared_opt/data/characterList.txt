@@ -1,0 +1,9 @@
+﻿bf
+dad
+gf
+pico
+bf-pixel
+gf-pixel
+bf-pixel-opponent
+pico-dead
+pico-playable

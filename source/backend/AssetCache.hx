@@ -11,17 +11,52 @@ class AssetCache
 	public static var currentTrackedAssets:Map<String, FlxGraphic> = [];
 	public static var currentTrackedSounds:Map<String, Sound> = [];
 	public static var localTrackedAssets:Array<String> = [];
+	private static var localTrackedAssetSet:Map<String, Bool> = [];
 	public static var missingBitmapCache:Map<String, Bool> = [];
 
 	public static function remember(key:String):Void
 	{
-		if (key != null)
-			localTrackedAssets.push(key);
+		if (key == null || localTrackedAssetSet.exists(key))
+			return;
+
+		localTrackedAssetSet.set(key, true);
+		localTrackedAssets.push(key);
+	}
+
+	public static function isRemembered(key:String):Bool
+	{
+		if (key == null)
+			return false;
+
+		if (localTrackedAssetSet.exists(key))
+			return true;
+
+		// Keep compatibility with scripts that still modify the legacy public array.
+		if (localTrackedAssets.contains(key))
+		{
+			localTrackedAssetSet.set(key, true);
+			return true;
+		}
+
+		return false;
+	}
+
+	public static function forget(key:String):Bool
+	{
+		if (key == null)
+			return false;
+
+		var removed:Bool = localTrackedAssetSet.remove(key);
+		// Also collapse duplicates left by older code or third-party scripts.
+		while (localTrackedAssets.remove(key))
+			removed = true;
+		return removed;
 	}
 
 	public static function resetLocalTracking():Void
 	{
 		localTrackedAssets = [];
+		localTrackedAssetSet = [];
 		missingBitmapCache = [];
 	}
 

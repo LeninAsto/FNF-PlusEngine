@@ -90,6 +90,8 @@ class VideoSpriteManager extends FlxVideoSprite
 
 		var loop = isLooped == true;
 		load(resolvedPath, loop ? ['input-repeat=65545'] : null);
+		if (bitmap != null && PlayState.instance != null)
+			bitmap.rate = PlayState.instance.playbackRate;
 		play();
 	}
 }

@@ -21,4 +21,19 @@ class Context {
 
 		view = new View3D();
 	}
+
+	public function dispose():Void {
+		if (arrowRenderer != null)
+			arrowRenderer.dispose();
+		if (holdRenderer != null)
+			holdRenderer.dispose();
+		if (pathRenderer != null)
+			pathRenderer.dispose();
+
+		arrowRenderer = null;
+		holdRenderer = null;
+		pathRenderer = null;
+		view = null;
+		parent = null;
+	}
 }

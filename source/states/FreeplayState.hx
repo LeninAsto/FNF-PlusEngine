@@ -5,6 +5,7 @@ import backend.AssetLoader;
 import backend.WeekData;
 import backend.Highscore;
 import backend.Song;
+import backend.AccuracyTools;
 import objects.HealthIcon;
 import objects.MusicPlayer;
 import options.GameplayChangersSubstate;
@@ -142,10 +143,6 @@ class FreeplayState extends MusicBeatState
 	public var lastThemeSignature:String = "";
 
 	// Opponent Mode toggle
-	public static var viewingOpponentScores:Bool = false;
-
-	public var opponentModeText:FlxText;
-
 	// Variables para el zoom del bg
 	public var bgZoom:Float = 1;
 	public var defaultBgZoom:Float = 1;
@@ -156,6 +153,7 @@ class FreeplayState extends MusicBeatState
 	#if funkin.vis
 	public var _analyzer:SpectralAnalyzer = null;
 	public var _analyzerLevels:Array<funkin.vis.dsp.SpectralAnalyzer.Bar> = null;
+	public var _vizAnalyzerSource:lime.media.AudioSource = null;
 	public var _needsAnalyzerInit:Bool = false;
 	public var _vizMusicRef:FlxSound = null;
 	public var _vizBeatPulse:Float = 0;
@@ -644,12 +642,6 @@ class FreeplayState extends MusicBeatState
 		createSongInfoCard();
 
 		// Opponent Mode indicator
-		opponentModeText = new FlxText(FlxG.width * 0.68, 5, 0, "", 20);
-		opponentModeText.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.YELLOW, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-		opponentModeText.borderSize = 1.5;
-		opponentModeText.visible = false;
-		add(opponentModeText);
-
 		missingTextCardY = Math.max(90, (FlxG.height * 0.5) - 120);
 		missingTextBG = new FlxSprite(missingTextHiddenX, missingTextCardY);
 		MD3ShapeTools.fillAndStrokeRoundRect(missingTextBG, 430, 220, 24, 3, OptionsMenuTheme.cardFill(false), OptionsMenuTheme.cardStroke(true));
@@ -790,7 +782,7 @@ class FreeplayState extends MusicBeatState
 
 	function updateMissingCardLayout(message:String):Void
 	{
-		final displayText = 'No chart is available for this difficulty.';
+		final displayText = (message != null && message.length > 0) ? message : 'No chart is available for this difficulty.';
 		missingText.text = displayText;
 		missingText.wordWrap = false;
 		if (missingText.textField != null)
@@ -843,6 +835,28 @@ class FreeplayState extends MusicBeatState
 	{
 		songs.push(new SongMetadata(songName, weekNum, songCharacter, color));
 	}
+
+	function getChartPlayError(song:SwagSong):String
+	{
+		if (song == null)
+			return 'No chart is available for this difficulty!';
+		if (song.notes == null || song.notes.length == 0)
+			return 'No chart is available for this difficulty!';
+		if (!isValidBpm(song.bpm))
+			return 'This chart has an invalid BPM, so it cannot be played.';
+
+		for (section in song.notes)
+		{
+			if (section == null)
+				continue;
+			if (section.changeBPM == true && !isValidBpm(section.bpm))
+				return 'This chart has an invalid BPM, so it cannot be played.';
+		}
+		return null;
+	}
+
+	inline function isValidBpm(value:Null<Float>):Bool
+		return value != null && !Math.isNaN(value) && value > 0;
 
 	function songMatchesFilter(song:SongMetadata, queryLower:String):Bool
 	{
@@ -977,6 +991,14 @@ class FreeplayState extends MusicBeatState
 			freeplayTouchInputBlockTime -= elapsed;
 
 		var searchFocused:Bool = searchField != null && searchField.focused;
+		var touchUp:Bool = touchPad != null && touchPad.buttonUp != null && touchPad.buttonUp.justPressed;
+		var touchDown:Bool = touchPad != null && touchPad.buttonDown != null && touchPad.buttonDown.justPressed;
+		var touchA:Bool = touchPad != null && touchPad.buttonA != null && touchPad.buttonA.justPressed;
+		var touchB:Bool = touchPad != null && touchPad.buttonB != null && touchPad.buttonB.justPressed;
+		var touchC:Bool = touchPad != null && touchPad.buttonC != null && touchPad.buttonC.justPressed;
+		var touchX:Bool = touchPad != null && touchPad.buttonX != null && touchPad.buttonX.justPressed;
+		var touchY:Bool = touchPad != null && touchPad.buttonY != null && touchPad.buttonY.justPressed;
+		var touchZ:Bool = touchPad != null && touchPad.buttonZ != null && touchPad.buttonZ.justPressed;
 
 		if (searchFocused && FlxG.keys.justPressed.ESCAPE)
 		{
@@ -1021,7 +1043,7 @@ class FreeplayState extends MusicBeatState
 				{
 					if (!Paths.currentTrackedSounds.exists(cacheKey))
 						Paths.currentTrackedSounds.set(cacheKey, pendingSound);
-					Paths.localTrackedAssets.push(cacheKey);
+					Paths.rememberAsset(cacheKey);
 				}
 
 				freeplayMenuMusicActive = false;
@@ -1076,6 +1098,7 @@ class FreeplayState extends MusicBeatState
 			_vizMusicRef = FlxG.sound.music;
 			_analyzer = null;
 			_analyzerLevels = null;
+			_vizAnalyzerSource = null;
 			_needsAnalyzerInit = _vizMusicRef != null;
 		}
 
@@ -1086,17 +1109,25 @@ class FreeplayState extends MusicBeatState
 			@:privateAccess
 			if (FlxG.sound.music._channel != null && FlxG.sound.music._channel.__audioSource != null)
 			{
-				_analyzer = new SpectralAnalyzer(FlxG.sound.music._channel.__audioSource, VIZ_BAR_COUNT, 0.08, 25);
-				_analyzer.minFreq = 40;
-				_analyzer.maxFreq = 18000;
-				_analyzer.minDb = -80;
-				_analyzer.maxDb = -15;
-				#if mobile
-				_analyzer.fftN = 256;
-				#elseif !web
-				_analyzer.fftN = 512;
-				#end
-				_needsAnalyzerInit = false;
+				_vizAnalyzerSource = backend.AssetLoader.analyzerSource(FlxG.sound.music._channel.__audioSource);
+				if (_vizAnalyzerSource == null)
+				{
+					_needsAnalyzerInit = false;
+				}
+				else
+				{
+					_analyzer = new SpectralAnalyzer(_vizAnalyzerSource, VIZ_BAR_COUNT, 0.08, 25);
+					_analyzer.minFreq = 40;
+					_analyzer.maxFreq = 18000;
+					_analyzer.minDb = -80;
+					_analyzer.maxDb = -15;
+					#if mobile
+					_analyzer.fftN = 256;
+					#elseif !web
+					_analyzer.fftN = 512;
+					#end
+					_needsAnalyzerInit = false;
+				}
 			}
 		}
 		_vizUpdateAccum += elapsed;
@@ -1110,7 +1141,16 @@ class FreeplayState extends MusicBeatState
 				_vizUpdateAccum = 0;
 				if (_analyzer != null)
 				{
-					_analyzerLevels = _analyzer.getLevels(_analyzerLevels);
+					try
+					{
+						_analyzerLevels = _analyzer.getLevels(_analyzerLevels);
+					}
+					catch (_:Dynamic)
+					{
+						_analyzer = null;
+						_vizAnalyzerSource = null;
+						_analyzerLevels = [];
+					}
 					for (i in 0...vizBarsGroup.members.length)
 					{
 						var level:Float = (i < _analyzerLevels.length) ? _analyzerLevels[i].value : 0.0;
@@ -1191,20 +1231,8 @@ class FreeplayState extends MusicBeatState
 		if (Math.abs(lerpRating - intendedRating) <= 0.01)
 			lerpRating = intendedRating;
 
-		var ratingPercent:Float = CoolUtil.floorDecimal(lerpRating * 100, 2);
-		var ratingSplit:Array<String> = Std.string(Math.abs(ratingPercent)).split('.');
-		if (ratingSplit.length < 2) // No decimals, add an empty space
-			ratingSplit.push('');
-
-		while (ratingSplit[1].length < 2) // Less than 2 decimals in it, add decimals then
-			ratingSplit[1] += '0';
-
-		var ratingDisplay:String = ratingSplit.join('.');
-		if (ratingPercent < 0)
-			ratingDisplay = '-' + ratingDisplay;
-
 		var shiftMult:Int = 1;
-		if ((FlxG.keys.pressed.SHIFT || touchPad.buttonZ.justPressed) && !player.playingMusic)
+		if ((FlxG.keys.pressed.SHIFT || touchZ) && !player.playingMusic)
 			shiftMult = 3;
 
 		if (!searchFocused && !player.playingMusic)
@@ -1227,12 +1255,12 @@ class FreeplayState extends MusicBeatState
 						changeSelection();
 						holdTime = 0;
 					}
-					if (controls.UI_UP_P || touchPad.buttonUp.justPressed)
+					if (controls.UI_UP_P || touchUp)
 					{
 						changeSelection(-shiftMult);
 						holdTime = 0;
 					}
-					if (controls.UI_DOWN_P || touchPad.buttonDown.justPressed)
+					if (controls.UI_DOWN_P || touchDown)
 					{
 						changeSelection(shiftMult);
 						holdTime = 0;
@@ -1240,7 +1268,7 @@ class FreeplayState extends MusicBeatState
 
 					if (controls.UI_DOWN
 						|| controls.UI_UP
-						|| (touchPad.buttonDown.justPressed || touchPad.buttonUp.justPressed))
+						|| (touchDown || touchUp))
 					{
 						var checkLastHold:Int = Math.floor((holdTime - 0.5) * 10);
 						holdTime += elapsed;
@@ -1248,7 +1276,7 @@ class FreeplayState extends MusicBeatState
 
 						if (holdTime > 0.5 && checkNewHold - checkLastHold > 0)
 						{
-							var isUp:Bool = controls.UI_UP || touchPad.buttonUp.justPressed;
+							var isUp:Bool = controls.UI_UP || touchUp;
 							changeSelection((checkNewHold - checkLastHold) * (isUp ? -shiftMult : shiftMult));
 						}
 					}
@@ -1261,42 +1289,15 @@ class FreeplayState extends MusicBeatState
 			}
 			else
 			{
-				if (controls.UI_UP_P || touchPad.buttonUp.justPressed)
+				if (controls.UI_UP_P || touchUp)
 				{
 					changeDifficultySelection(-1);
 				}
-				if (controls.UI_DOWN_P || touchPad.buttonDown.justPressed)
+				if (controls.UI_DOWN_P || touchDown)
 				{
 					changeDifficultySelection(1);
 				}
 			}
-		}
-
-		// Toggle between normal and opponent mode scores
-		if (!searchFocused && FlxG.keys.justPressed.TAB && !player.playingMusic)
-		{
-			viewingOpponentScores = !viewingOpponentScores;
-			FlxG.sound.play(Paths.sound('scrollMenu'));
-
-			// Update scores with new mode
-			#if !switch
-			intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty, viewingOpponentScores);
-			intendedRating = Highscore.getRating(songs[curSelected].songName, curDifficulty, viewingOpponentScores);
-			#end
-
-			// Update UI
-			if (viewingOpponentScores)
-			{
-				opponentModeText.text = "[OPPONENT MODE]";
-				opponentModeText.visible = true;
-			}
-			else
-			{
-				opponentModeText.visible = false;
-			}
-
-			if (songInfoCardData != null)
-				applySongInfoCardData(songInfoCardData);
 		}
 
 		if (!searchFocused && FlxG.keys.justPressed.B && !player.playingMusic && searchField != null)
@@ -1304,7 +1305,7 @@ class FreeplayState extends MusicBeatState
 			searchField.focus();
 		}
 
-		if (!searchFocused && (controls.BACK || touchPad.buttonB.justPressed #if android || FlxG.android.justReleased.BACK #end))
+		if (!searchFocused && (controls.BACK || touchB #if android || FlxG.android.justReleased.BACK #end))
 		{
 			if (player.playingMusic)
 			{
@@ -1344,14 +1345,14 @@ class FreeplayState extends MusicBeatState
 		}
 
 		if (!searchFocused
-			&& (FlxG.keys.justPressed.CONTROL || touchPad.buttonC.justPressed)
+			&& (FlxG.keys.justPressed.CONTROL || touchC)
 			&& !player.playingMusic)
 		{
 			persistentUpdate = false;
 			removeTouchPad();
 			openSubState(backend.ScriptableSubstate.tryCreate('options.GameplayChangersSubstate', new GameplayChangersSubstate()));
 		}
-		if (!searchFocused && (FlxG.keys.justPressed.SPACE || touchPad.buttonX.justPressed))
+		if (!searchFocused && (FlxG.keys.justPressed.SPACE || touchX))
 		{
 			if (instPlaying != curSelected && !player.playingMusic)
 			{
@@ -1370,9 +1371,11 @@ class FreeplayState extends MusicBeatState
 
 				var poop:String = Highscore.formatSong(songs[curSelected].songName.toLowerCase(), curDifficulty);
 				Song.loadFromJson(poop, songs[curSelected].songName.toLowerCase());
-				if (PlayState.SONG == null)
+				var chartError:String = getChartPlayError(PlayState.SONG);
+				if (chartError != null)
 				{
-					showMissingCard('No chart is available for this difficulty!');
+					showMissingCard(chartError);
+					FlxG.sound.play(Paths.sound('cancelMenu'));
 					return;
 				}
 				if (PlayState.SONG.needsVoices)
@@ -1443,7 +1446,7 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 		else if (!searchFocused
-			&& (controls.ACCEPT || touchPad.buttonA.justPressed)
+			&& (controls.ACCEPT || touchA)
 			&& !player.playingMusic)
 		{
 			if (!inDifficultySelect)
@@ -1460,20 +1463,20 @@ class FreeplayState extends MusicBeatState
 				try
 				{
 					Song.loadFromJson(poop, songLowercase);
-					if (PlayState.SONG == null)
-						throw 'Chart failed to load: $poop';
+					var chartError:String = getChartPlayError(PlayState.SONG);
+					if (chartError != null)
+						throw chartError;
 				}
-				catch (e:haxe.Exception)
+				catch (e:Dynamic)
 				{
-					trace('ERROR! ${e.message}');
+					trace('ERROR! $e');
 
-					var errorStr:String = e.message;
+					var errorStr:String = Std.string(e);
 					if (errorStr.contains('There is no TEXT asset with an ID of')
 						|| errorStr.contains('Invalid difficulty index')
-						|| errorStr.contains('chart file not found'))
+						|| errorStr.contains('chart file not found')
+						|| errorStr.contains('Chart failed to load'))
 						errorStr = 'No chart is available for this difficulty!';
-					else
-						errorStr += '\n\n' + e.stack;
 
 					showMissingCard(errorStr);
 					FlxG.sound.play(Paths.sound('cancelMenu'));
@@ -1498,7 +1501,7 @@ class FreeplayState extends MusicBeatState
 				#end
 			}
 		}
-		else if (!searchFocused && (controls.RESET || touchPad.buttonY.justPressed) && !player.playingMusic)
+		else if (!searchFocused && (controls.RESET || touchY) && !player.playingMusic)
 		{
 			persistentUpdate = false;
 			removeTouchPad();
@@ -1554,8 +1557,8 @@ class FreeplayState extends MusicBeatState
 
 		curDifficulty = FlxMath.wrap(curDifficulty + change, 0, Difficulty.list.length - 1);
 		#if !switch
-		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty, viewingOpponentScores);
-		intendedRating = Highscore.getRating(songs[curSelected].songName, curDifficulty, viewingOpponentScores);
+		intendedScore = Highscore.getScore(songs[curSelected].songName, curDifficulty);
+		intendedRating = Highscore.getRating(songs[curSelected].songName, curDifficulty);
 		#end
 
 		lastDifficultyName = Difficulty.getString(curDifficulty, false);
@@ -1606,8 +1609,8 @@ class FreeplayState extends MusicBeatState
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 
 		#if !switch
-		intendedScore = Highscore.getScore(songs[curSelected].songName, difficultySelector.curSelected, viewingOpponentScores);
-		intendedRating = Highscore.getRating(songs[curSelected].songName, difficultySelector.curSelected, viewingOpponentScores);
+		intendedScore = Highscore.getScore(songs[curSelected].songName, difficultySelector.curSelected);
+		intendedRating = Highscore.getRating(songs[curSelected].songName, difficultySelector.curSelected);
 		#end
 
 		// Actualizar textos de score cuando cambia la selección
@@ -2100,8 +2103,9 @@ class FreeplayState extends MusicBeatState
 			for (i in 0...diffList.length)
 			{
 				var diffName:String = diffList[i];
-				var score:Int = Highscore.getScore(data.songName, i, viewingOpponentScores);
-				scoreLines.push('${diffName}: ${score}');
+				var score:Int = Highscore.getScore(data.songName, i);
+				var accuracy:Float = Highscore.getRating(data.songName, i);
+				scoreLines.push('${diffName}: ${score} (${AccuracyTools.format(accuracy)})');
 			}
 			songInfoCardScores.text = 'Diff and Scores:\n' + scoreLines.join('\n');
 		}
@@ -3140,9 +3144,7 @@ class FreeplayState extends MusicBeatState
 		{
 			openfl.Assets.cache.clear(key);
 			Paths.currentTrackedSounds.remove(key);
-			while (Paths.localTrackedAssets.remove(key))
-			{
-			}
+			Paths.forgetAsset(key);
 		}
 	}
 
@@ -3557,27 +3559,12 @@ class DifficultySelector
 			#if !switch
 			var score:Int = 0;
 			var accuracy:Float = 0;
-			score = Highscore.getScore(songName, diffIndex, FreeplayState.viewingOpponentScores);
-			accuracy = Highscore.getRating(songName, diffIndex, FreeplayState.viewingOpponentScores);
-
-			var accPercent:String = '';
-			if (accuracy > 0)
-			{
-				var ratingSplit:Array<String> = Std.string(CoolUtil.floorDecimal(accuracy * 100, 2)).split('.');
-				if (ratingSplit.length < 2)
-					ratingSplit.push('');
-				while (ratingSplit[1].length < 2)
-					ratingSplit[1] += '0';
-				accPercent = ratingSplit.join('.');
-			}
-			else
-			{
-				accPercent = '0.00';
-			}
+			score = Highscore.getScore(songName, diffIndex);
+			accuracy = Highscore.getRating(songName, diffIndex);
 
 			if (score > 0)
 			{
-				scoreText.text = Language.getPhrase('new_personal_best', 'Score: {1}\nAccuracy: {2}%', [score, accPercent]);
+				scoreText.text = 'Score: ${score}\nAccuracy: ${AccuracyTools.format(accuracy)}';
 			}
 			else
 			{

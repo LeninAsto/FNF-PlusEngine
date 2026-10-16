@@ -167,6 +167,10 @@ class MusicBeatState extends BaseMusicBeatState
 
 	override function update(elapsed:Float)
 	{
+		#if (cpp && lime_openal)
+		if (AudioDeviceMonitor.update(Std.int(elapsed * 1000)))
+			onAudioDeviceReopened();
+		#end
 		NetworkCheckToast.updateRequests();
 
 		// everyStep();
@@ -238,6 +242,18 @@ class MusicBeatState extends BaseMusicBeatState
 		});
 
 		super.update(elapsed);
+	}
+
+	/** Restarts menu/state music after OpenAL changes its physical output. */
+	function onAudioDeviceReopened():Void
+	{
+		var music = FlxG.sound.music;
+		if (music == null || !music.playing) return;
+
+		var time = music.time;
+		music.pause();
+		music.time = time;
+		music.play();
 	}
 
 	public static function switchState(nextState:FlxState = null)

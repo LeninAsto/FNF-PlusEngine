@@ -134,7 +134,7 @@ class FileDialogHandler extends FlxBasic
 		removeEvents();
 		this.completed = true;
 		if (onCancel != null)
-			onError();
+			onCancel();
 	}
 
 	function onErrorFn(_)

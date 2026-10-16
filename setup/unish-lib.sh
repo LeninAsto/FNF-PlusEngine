@@ -14,6 +14,7 @@ haxelib git hxcpp https://github.com/Psych-Plus-Team/hxcpp
 
 echo "[Core] lime"
 haxelib git lime https://github.com/Psych-Plus-Team/lime
+sh ./setup/unish-openal.sh
 
 echo "[Core] openfl git"
 haxelib git openfl https://github.com/Psych-Plus-Team/openfl.git --quiet

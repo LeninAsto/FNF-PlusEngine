@@ -5,6 +5,7 @@ import options.BaseOptionsMenu;
 import options.Option;
 #if android
 import mobile.backend.StorageUtil;
+import mobile.backend.PsychJNI;
 #end
 
 class MobileSettingsSubState extends BaseOptionsMenu
@@ -81,6 +82,8 @@ class MobileSettingsSubState extends BaseOptionsMenu
 		{
 			if (Main.traceButton != null)
 				Main.traceButton.updatePosition();
+			if (Main.modsButton != null)
+				Main.modsButton.updatePosition();
 		};
 		addOption(option);
 
@@ -102,6 +105,17 @@ class MobileSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		#if android
+		option = new Option('Show Android Launcher',
+			'If checked, the Android launcher opens before the engine.\nTurn it back on here if you disabled it from the launcher.',
+			'showAndroidLauncher', BOOL);
+		option.onChange = () -> PsychJNI.setLauncherPrefs(ClientPrefs.data.showAndroidLauncher, ClientPrefs.data.androidLauncherAutoStart);
+		addOption(option);
+
+		option = new Option('Launcher Auto-start',
+			'If checked, the Android launcher automatically starts the engine after 3 seconds.', 'androidLauncherAutoStart', BOOL);
+		option.onChange = () -> PsychJNI.setLauncherPrefs(ClientPrefs.data.showAndroidLauncher, ClientPrefs.data.androidLauncherAutoStart);
+		addOption(option);
+
 		option = new Option('Mods Storage Location',
 			'Choose where Android mods and saved files should live.\nINTERNAL uses scoped app storage, EXTERNAL uses public storage.', 'storageType', STRING,
 			storageOptions);

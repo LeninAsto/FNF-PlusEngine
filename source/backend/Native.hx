@@ -6,6 +6,9 @@ import lime.system.System;
 import flixel.FlxG;
 import flixel.util.FlxColor;
 import flixel.util.FlxStringUtil;
+#if lime_openal
+import lime.media.openal.AL;
+#end
 #if cpp
 import cpp.vm.Gc;
 #end
@@ -193,7 +196,7 @@ class Native
 
 	/**
 	 * Builds a simplified system information report.
-	 * Shows only GPU name and OpenGL version.
+	 * Shows the GPU, exact OpenGL runtime and OpenAL Soft runtime.
 	 */
 	public static function buildSystemInfo():String
 	{
@@ -211,36 +214,60 @@ class Native
 			info += 'GPU: Unknown\n';
 		}
 
-		// OpenGL Version Detection
+		info += 'OpenGL: ${getOpenGLVersion()}\n';
+		info += 'OpenAL Soft: ${getOpenALSoftVersion()}\n';
+
+		return info;
+	}
+
+	/** Returns GL_VERSION exactly as reported by the active driver. */
+	public static function getOpenGLVersion():String
+	{
 		#if (!flash && sys)
 		try
 		{
 			@:privateAccess
-			var gl = FlxG.stage.context3D.gl;
+			final gl = FlxG.stage.context3D.gl;
 			if (gl != null)
 			{
-				var glslVersion = gl.getParameter(gl.SHADING_LANGUAGE_VERSION);
-
-				// Check for modern rendering support
-				var supportsModern = checkModernGLSupport(glslVersion);
-
-				if (supportsModern)
-				{
-					info += 'OpenGL: Modern (GLSL 3.3+)\n';
-				}
-				else
-				{
-					info += 'OpenGL: Legacy (GLSL 1.2) - Limited shader support\n';
-				}
+				final version:Dynamic = gl.getParameter(gl.VERSION);
+				if (version != null && StringTools.trim(Std.string(version)) != '')
+					return StringTools.trim(Std.string(version));
 			}
 		}
-		catch (e:Dynamic)
-		{
-			info += 'OpenGL: Unable to detect\n';
-		}
+		catch (e:Dynamic) {}
 		#end
+		return 'Unable to detect';
+	}
 
-		return info;
+	/** Short runtime label used by debug overlays, e.g. OpenGL ES 3.2. */
+	public static function getOpenGLLabel():String
+	{
+		final raw = getOpenGLVersion();
+		if (raw == 'Unable to detect')
+			return 'OpenGL Unknown';
+
+		final isES = raw.toUpperCase().indexOf('OPENGL ES') != -1;
+		final version = ~/([0-9]+\.[0-9]+(?:\.[0-9]+)?)/;
+		return 'OpenGL${isES ? ' ES' : ''} ${version.match(raw) ? version.matched(1) : raw}';
+	}
+
+	/** Reports the active OpenAL implementation and its exact runtime version. */
+	public static function getOpenALSoftVersion():String
+	{
+		#if lime_openal
+		try
+		{
+			final renderer = StringTools.trim(AL.getString(AL.RENDERER));
+			final version = StringTools.trim(AL.getString(AL.VERSION));
+			if (renderer != '' && version != '')
+				return '$renderer | $version';
+			if (version != '')
+				return version;
+		}
+		catch (e:Dynamic) {}
+		#end
+		return 'Unable to detect';
 	}
 
 	/**

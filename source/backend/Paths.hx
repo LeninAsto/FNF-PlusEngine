@@ -10,7 +10,6 @@ import openfl.display.BitmapData;
 import openfl.display3D.textures.RectangleTexture;
 import openfl.utils.AssetType;
 import openfl.utils.Assets as OpenFlAssets;
-import openfl.system.System;
 import openfl.geom.Rectangle;
 import lime.utils.Assets;
 import flash.media.Sound;
@@ -125,37 +124,61 @@ class Paths
 	}
 
 	static var tempFramesCache:Map<String, FlxAtlasFrames> = [];
+	// Avoid resolving the same mod PNG/XML paths for every generated note.
+	static var tempSparrowLookup:Map<String, FlxAtlasFrames> = [];
+	static var retainTempFramesOnce:Bool = false;
 
 	static var animateAtlasExistenceCache:Map<String, Bool> = [];
 	static var animateAtlasAnimationCache:Map<String, String> = [];
 	static var animateAtlasSpriteJsonCache:Map<String, Array<String>> = [];
 	static var animateAtlasPageKeysCache:Map<String, Array<String>> = [];
+	private static var initialized:Bool = false;
 
 	public static function init():Void
 	{
+		if (initialized)
+			return;
+		initialized = true;
+
 		FlxG.signals.preStateSwitch.add(function()
 		{
-			clearTempFramesCache();
+			if (retainTempFramesOnce)
+				retainTempFramesOnce = false;
+			else
+			{
+				var releasedFrames:Int = clearTempFramesCache();
+				if (releasedFrames > 0)
+					MemoryManager.requestCollection('temporary atlas cache', releasedFrames);
+			}
+		});
+
+		FlxG.signals.postStateSwitch.add(function()
+		{
+			// LoadingState may already have worker threads running. It performs the
+			// pending collection itself after those workers have shut down.
+			if (!Std.isOfType(FlxG.state, states.LoadingState))
+				MemoryManager.runPendingCollection();
 		});
 	}
 
-	public static function clearTempFramesCache():Void
+	/** Keeps loading-screen atlas parsing alive until the target state consumes it. */
+	public static inline function retainTempFramesForNextState():Void
+		retainTempFramesOnce = true;
+
+	public static function clearTempFramesCache():Int
 	{
 		if (tempFramesCache == null)
-			return;
+			return 0;
 
-		var count = 0;
-		for (key => frames in tempFramesCache)
-		{
-			if (frames != null && frames.parent != null)
-			{
-				frames.parent.persist = false;
-				frames.parent.destroyOnNoUse = true;
-				count++;
-			}
-		}
+		var released:Int = 0;
+		for (_ in tempFramesCache.keys())
+			released++;
 
+		// The atlas does not own its parent graphic. AssetCache does, so changing
+		// these flags here can destroy a bitmap that is still present in its map.
 		tempFramesCache.clear();
+		tempSparrowLookup.clear();
+		return released;
 	}
 
 	public static function hasAnimateAtlas(key:String):Bool
@@ -285,7 +308,7 @@ class Paths
 	}
 
 	// haya I love you for the base cache dump I took to the max
-	public static function clearUnusedMemory()
+	public static function clearUnusedMemory(runGarbageCollector:Bool = false)
 	{
 		var keysToRemove:Array<String> = [];
 
@@ -293,7 +316,7 @@ class Paths
 		for (key in currentTrackedAssets.keys())
 		{
 			// if it is not currently contained within the used local assets
-			if (!localTrackedAssets.contains(key) && !isAssetExcluded(key))
+			if (!AssetCache.isRemembered(key) && !isAssetExcluded(key))
 			{
 				if (destroyGraphic(currentTrackedAssets.get(key)))
 					keysToRemove.push(key); // and remove the key from local cache map
@@ -303,11 +326,33 @@ class Paths
 		for (key in keysToRemove)
 			currentTrackedAssets.remove(key);
 
-		System.gc();
+		var releasedAssets:Int = keysToRemove.length + clearTempFramesCache();
+		if (releasedAssets > 0 || runGarbageCollector)
+			MemoryManager.requestCollection('Paths.clearUnusedMemory', releasedAssets);
+		if (runGarbageCollector)
+			MemoryManager.runPendingCollection(true);
 	}
 
 	// define the locally tracked assets
 	public static var localTrackedAssets:Array<String> = AssetCache.localTrackedAssets;
+
+	public static function rememberAsset(key:String):Void
+	{
+		AssetCache.remember(key);
+		localTrackedAssets = AssetCache.localTrackedAssets;
+	}
+
+	public static function isAssetRemembered(key:String):Bool
+	{
+		return AssetCache.isRemembered(key);
+	}
+
+	public static function forgetAsset(key:String):Bool
+	{
+		var removed:Bool = AssetCache.forget(key);
+		localTrackedAssets = AssetCache.localTrackedAssets;
+		return removed;
+	}
 
 	@:access(flixel.system.frontEnds.BitmapFrontEnd._cache)
 	public static function clearStoredMemory()
@@ -325,15 +370,17 @@ class Paths
 			}
 		}
 
+		var destroyedGraphics:Int = 0;
 		for (graphic in graphicsToDestroy)
-			destroyGraphic(graphic);
+			if (destroyGraphic(graphic))
+				destroyedGraphics++;
 
 		var soundsToRemove:Array<String> = [];
 
 		// clear all sounds that are cached
 		for (key => asset in currentTrackedSounds)
 		{
-			if (!localTrackedAssets.contains(key) && !isAssetExcluded(key) && asset != null)
+			if (!AssetCache.isRemembered(key) && !isAssetExcluded(key) && asset != null)
 			{
 				Assets.cache.clear(key);
 				soundsToRemove.push(key);
@@ -342,6 +389,10 @@ class Paths
 
 		for (key in soundsToRemove)
 			currentTrackedSounds.remove(key);
+
+		var releasedAssets:Int = destroyedGraphics + soundsToRemove.length;
+		if (releasedAssets > 0)
+			MemoryManager.requestCollection('Paths.clearStoredMemory', releasedAssets);
 
 		// flags everything to be cleared out next unused memory clear
 		AssetCache.resetLocalTracking();
@@ -408,6 +459,9 @@ class Paths
 
 		for (key in keysToRemove)
 			currentTrackedAssets.remove(key);
+
+		if (keysToRemove.length > 0)
+			MemoryManager.requestCollection('Paths.freeGraphicsFromMemory', keysToRemove.length);
 	}
 
 	static function destroyGraphic(graphic:FlxGraphic):Bool
@@ -468,7 +522,7 @@ class Paths
 		return returnSound('music/$key', modsAllowed);
 
 	inline static public function inst(song:String, ?modsAllowed:Bool = true):Sound
-		return returnSound('${formatToSongPath(song)}/Inst', 'songs', modsAllowed);
+		return returnSound('${formatToSongPath(song)}/Inst', 'songs', modsAllowed, true, true);
 
 	inline static public function voices(song:String, postfix:String = null, ?modsAllowed:Bool = true):Sound
 	{
@@ -476,7 +530,7 @@ class Paths
 		if (postfix != null)
 			songKey += '-' + postfix;
 		// trace('songKey test: $songKey');
-		return returnSound(songKey, 'songs', modsAllowed, false);
+		return returnSound(songKey, 'songs', modsAllowed, false, true);
 	}
 
 	inline static public function soundRandom(key:String, min:Int, max:Int, ?modsAllowed:Bool = true)
@@ -537,29 +591,16 @@ class Paths
 		// from different mods don't leak into each other.
 		if (currentTrackedAssets.exists(resolvedFile))
 		{
-			AssetCache.remember(resolvedFile);
-			localTrackedAssets = AssetCache.localTrackedAssets;
-			return currentTrackedAssets.get(resolvedFile);
+			var cached:FlxGraphic = currentTrackedAssets.get(resolvedFile);
+			if (cached != null && cached.bitmap != null)
+			{
+				AssetCache.remember(resolvedFile);
+				localTrackedAssets = AssetCache.localTrackedAssets;
+				return cached;
+			}
+			currentTrackedAssets.remove(resolvedFile);
 		}
 		return cacheBitmap(key, parentFolder, bitmap, allowGPU);
-	}
-
-	static public function uiImage(assetName:String, useSuffix:Bool = true, ?parentFolder:String = null, ?allowGPU:Bool = true):FlxGraphic
-	{
-		var path:String = getUIPath(assetName, useSuffix);
-		return image(path, parentFolder, allowGPU);
-	}
-
-	static public function uiImageExists(assetName:String, useSuffix:Bool = true, ?parentFolder:String = null):Bool
-	{
-		var path:String = getUIPath(assetName, useSuffix);
-		return fileExists(path, IMAGE, false, parentFolder);
-	}
-
-	static public function getUIAtlas(assetName:String, useSuffix:Bool = true, ?parentFolder:String = null, ?allowGPU:Bool = true):FlxAtlasFrames
-	{
-		var path:String = getUIPath(assetName, useSuffix);
-		return getAtlas(path, parentFolder, allowGPU);
 	}
 
 	public static function cacheBitmap(key:String, ?parentFolder:String = null, ?bitmap:BitmapData, ?allowGPU:Bool = true):FlxGraphic
@@ -686,23 +727,51 @@ class Paths
 		return parentFrames;
 	}
 
-	inline static public function getSparrowAtlas(key:String, ?parentFolder:String = null, ?allowGPU:Bool = true):FlxAtlasFrames
+	static function sparrowLookupKey(key:String, parentFolder:String, allowGPU:Bool):String
 	{
+		var mod:String = '';
+		#if MODS_ALLOWED
+		mod = Mods.currentModDirectory == null ? '' : Mods.currentModDirectory;
+		#end
+		return '$mod|$currentLevel|$parentFolder|$allowGPU|$key';
+	}
+
+	static public function getSparrowAtlas(key:String, ?parentFolder:String = null, ?allowGPU:Bool = true):FlxAtlasFrames
+	{
+		var logicalKey:String = sparrowLookupKey(key, parentFolder, allowGPU);
+		var logicalCached:FlxAtlasFrames = tempSparrowLookup.get(logicalKey);
+		if (logicalCached != null)
+			return logicalCached;
+
 		if (key.contains('psychic'))
 			trace(key, parentFolder, allowGPU);
 		var imageLoaded:FlxGraphic = image(key, parentFolder, allowGPU);
+		var translatedXml:String = Language.getFileTranslation('images/$key') + '.xml';
+		var xmlPath:String = getPath(translatedXml, TEXT, parentFolder, true);
 		#if MODS_ALLOWED
-		var xmlExists:Bool = false;
-
 		var xml:String = modsXml(key);
 		if (safeModPathExists(xml))
-			xmlExists = true;
-
-		return FlxAtlasFrames.fromSparrow(imageLoaded,
-			(xmlExists ? stripBOM(safeFileContent(xml)) : stripBOM(getTextFromFile(Language.getFileTranslation('images/$key') + '.xml', true))));
-		#else
-		return FlxAtlasFrames.fromSparrow(imageLoaded, stripBOM(getTextFromFile(Language.getFileTranslation('images/$key') + '.xml', true)));
+			xmlPath = xml;
 		#end
+
+		var imagePath:String = getPath(Language.getFileTranslation('images/$key') + '.png', IMAGE, parentFolder, true);
+		var cacheKey:String = '$imagePath|$xmlPath|$allowGPU';
+		var cached:FlxAtlasFrames = tempFramesCache.get(cacheKey);
+		if (cached != null)
+		{
+			tempSparrowLookup.set(logicalKey, cached);
+			return cached;
+		}
+
+		#if MODS_ALLOWED
+		var xmlData:String = xmlPath == xml ? stripBOM(safeFileContent(xml)) : stripBOM(getTextFromFile(translatedXml, true));
+		#else
+		var xmlData:String = stripBOM(getTextFromFile(translatedXml, true));
+		#end
+		var frames:FlxAtlasFrames = FlxAtlasFrames.fromSparrow(imageLoaded, xmlData);
+		tempFramesCache.set(cacheKey, frames);
+		tempSparrowLookup.set(logicalKey, frames);
+		return frames;
 	}
 
 	inline static public function getPackerAtlas(key:String, ?parentFolder:String = null, ?allowGPU:Bool = true):FlxAtlasFrames
@@ -749,18 +818,19 @@ class Paths
 
 	public static var currentTrackedSounds:Map<String, Sound> = AssetCache.currentTrackedSounds;
 
-	public static function returnSound(key:String, ?path:String, ?modsAllowed:Bool = true, ?beepOnNull:Bool = true)
+	public static function returnSound(key:String, ?path:String, ?modsAllowed:Bool = true, ?beepOnNull:Bool = true, ?stream:Bool = false)
 	{
 		var file:String = getPath(Language.getFileTranslation(key) + '.$SOUND_EXT', SOUND, path, modsAllowed);
+		var cacheKey:String = stream ? file + '#stream' : file;
 
 		// trace('precaching sound: $file');
-		if (!currentTrackedSounds.exists(file))
+		if (!currentTrackedSounds.exists(cacheKey))
 		{
-			var sound:Sound = AssetLoader.loadSound(file);
+			var sound:Sound = stream ? AssetLoader.loadStreamedSound(file) : AssetLoader.loadSound(file);
 
 			if (sound != null)
 			{
-				AssetCache.cacheSound(file, sound);
+				AssetCache.cacheSound(cacheKey, sound);
 				currentTrackedSounds = AssetCache.currentTrackedSounds;
 			}
 			else if (beepOnNull)
@@ -770,9 +840,9 @@ class Paths
 				return FlxAssets.getSound('flixel/sounds/beep');
 			}
 		}
-		AssetCache.remember(file);
+		AssetCache.remember(cacheKey);
 		localTrackedAssets = AssetCache.localTrackedAssets;
-		return currentTrackedSounds.get(file);
+		return currentTrackedSounds.get(cacheKey);
 	}
 
 	#if MODS_ALLOWED
@@ -809,6 +879,9 @@ class Paths
 		if (!list.contains(normalizedPath))
 			list.push(normalizedPath);
 	}
+
+	static var cachedModsRoots:Array<String> = null;
+	static var cachedModsRootsSignature:String = null;
 
 	public static function safeModPathExists(path:String):Bool
 	{
@@ -874,6 +947,10 @@ class Paths
 
 	public static function getModsRootDirectories():Array<String>
 	{
+		var signature:String = #if android ClientPrefs.data.storageType #else Sys.getCwd() #end;
+		if (cachedModsRoots != null && cachedModsRootsSignature == signature)
+			return cachedModsRoots.copy();
+
 		var roots:Array<String> = [];
 		#if android
 		if (StorageUtil.useExternalModsStorage())
@@ -886,7 +963,9 @@ class Paths
 		#else
 		addUniqueModsRoot(roots, Sys.getCwd() + 'mods/');
 		#end
-		return roots;
+		cachedModsRoots = roots;
+		cachedModsRootsSignature = signature;
+		return roots.copy();
 	}
 
 	public static function getModsSearchRoots(?key:String):Array<String>
@@ -909,14 +988,36 @@ class Paths
 		if (path == null || path.length == 0)
 			return null;
 
-		var normalizedPath:String = path.replace('\\', '/');
+		var normalizedPath:String = path.trim().replace('\\', '/');
 		var roots:Array<String> = getModsRootDirectories();
 
 		for (root in roots)
 		{
-			if (normalizedPath.startsWith(root))
-				return normalizedPath.substr(root.length);
+			var normalizedRoot:String = root.replace('\\', '/');
+			if (!normalizedRoot.endsWith('/'))
+				normalizedRoot += '/';
+
+			#if windows
+			if (normalizedPath.toLowerCase().startsWith(normalizedRoot.toLowerCase()))
+			#else
+			if (normalizedPath.startsWith(normalizedRoot))
+			#end
+				return normalizedPath.substr(normalizedRoot.length);
 		}
+
+		// Script paths may be stored relative to the executable instead of as
+		// absolute paths. Accept both "mods/foo/..." and "./mods/foo/...".
+		while (normalizedPath.startsWith('./'))
+			normalizedPath = normalizedPath.substr(2);
+		#if windows
+		var comparablePath:String = normalizedPath.toLowerCase();
+		#else
+		var comparablePath:String = normalizedPath;
+		#end
+		var marker:String = 'mods/';
+		var markerIndex:Int = comparablePath.startsWith(marker) ? 0 : comparablePath.lastIndexOf('/' + marker);
+		if (markerIndex >= 0)
+			return normalizedPath.substr(markerIndex + (markerIndex == 0 ? marker.length : marker.length + 1));
 
 		return null;
 	}

@@ -83,66 +83,29 @@ class NoteSplash extends FlxSprite
 			splash = null;
 			if (PlayState.SONG != null && PlayState.SONG.splashSkin != null && PlayState.SONG.splashSkin.length > 0)
 			{
-				splash = PlayState.SONG.splashSkin;
-				useSkinPostfix = false;
+				if (requestedSplashExists(PlayState.SONG.splashSkin, PlayState.isPixelStage))
+				{
+					splash = PlayState.SONG.splashSkin;
+					useSkinPostfix = false;
+				}
 			}
 		}
 		splash = resolveNoteSplashPath(splash, PlayState.isPixelStage, useSkinPostfix);
 
 		texture = splash;
 		frames = null;
-		var atlasPath:String = 'images/$texture';
-		var loadedAtlas:Bool = false;
-		if (framesCache.exists(atlasPath))
-		{
-			frames = framesCache.get(atlasPath);
-			loadedAtlas = frames != null;
-		}
-		else
-		{
-			frames = getSplashAtlas(texture);
-			if (frames != null)
-			{
-				framesCache.set(atlasPath, frames);
-				loadedAtlas = true;
-			}
-		}
+		frames = getCachedSplashAtlas(texture);
+		var loadedAtlas:Bool = frames != null;
 		if (frames == null)
 		{
 			texture = resolveNoteSplashPath(null, PlayState.isPixelStage);
-			atlasPath = 'images/$texture';
-			if (framesCache.exists(atlasPath))
-			{
-				frames = framesCache.get(atlasPath);
-				loadedAtlas = frames != null;
-			}
-			else
-			{
-				frames = getSplashAtlas(texture);
-				if (frames != null)
-				{
-					framesCache.set(atlasPath, frames);
-					loadedAtlas = true;
-				}
-			}
+			frames = getCachedSplashAtlas(texture);
+			loadedAtlas = frames != null;
 			if (frames == null)
 			{
 				texture = resolveSplashCandidate(defaultNoteSplash, PlayState.isPixelStage);
-				atlasPath = 'images/$texture';
-				if (framesCache.exists(atlasPath))
-				{
-					frames = framesCache.get(atlasPath);
-					loadedAtlas = frames != null;
-				}
-				else
-				{
-					frames = getSplashAtlas(texture);
-					if (frames != null)
-					{
-						framesCache.set(atlasPath, frames);
-						loadedAtlas = true;
-					}
-				}
+				frames = getCachedSplashAtlas(texture);
+				loadedAtlas = frames != null;
 			}
 		}
 
@@ -264,6 +227,20 @@ class NoteSplash extends FlxSprite
 			}
 		}
 
+		if (maxAnims <= 0)
+		{
+			var fallback:String = getDefaultNoteSplashPath(PlayState.isPixelStage);
+			if (texture != fallback && splashPathExists(fallback, false, true))
+			{
+				loadSplash(fallback);
+				return;
+			}
+
+			texture = null;
+			makeGraphic(1, 1, FlxColor.TRANSPARENT);
+			updateHitbox();
+		}
+
 		this.config = tempConfig;
 		configs.set(path, this.config);
 	}
@@ -277,6 +254,7 @@ class NoteSplash extends FlxSprite
 	public static function clearCache():Void
 	{
 		framesCache.clear();
+		configs.clear();
 	}
 
 	public function spawnSplashNote(?x:Float = 0, ?y:Float = 0, ?noteData:Int = 0, ?note:Note, ?randomize:Bool = true)
@@ -290,9 +268,13 @@ class NoteSplash extends FlxSprite
 		{
 			var loadedTexture:String = resolveNoteSplashPath(null, PlayState.isPixelStage);
 			if (note != null && note.noteSplashData.texture != null)
-				loadedTexture = resolveNoteSplashPath(note.noteSplashData.texture, PlayState.isPixelStage, false);
+				loadedTexture = requestedSplashExists(note.noteSplashData.texture, PlayState.isPixelStage) ?
+					resolveNoteSplashPath(note.noteSplashData.texture, PlayState.isPixelStage, false) :
+					resolveNoteSplashPath(null, PlayState.isPixelStage);
 			else if (PlayState.SONG != null && PlayState.SONG.splashSkin != null && PlayState.SONG.splashSkin.length > 0)
-				loadedTexture = resolveNoteSplashPath(PlayState.SONG.splashSkin, PlayState.isPixelStage, false);
+				loadedTexture = requestedSplashExists(PlayState.SONG.splashSkin, PlayState.isPixelStage) ?
+					resolveNoteSplashPath(PlayState.SONG.splashSkin, PlayState.isPixelStage, false) :
+					resolveNoteSplashPath(null, PlayState.isPixelStage);
 
 			if (texture != loadedTexture)
 				loadSplash(loadedTexture);
@@ -314,6 +296,12 @@ class NoteSplash extends FlxSprite
 
 		this.noteData = noteData;
 		var anim:String = playDefaultAnim();
+		if (anim == null)
+		{
+			kill();
+			spawned = false;
+			return;
+		}
 
 		var tempShader:RGBPalette = null;
 		var colorIndex:Int = Note.normalizeNoteData(noteData);
@@ -522,7 +510,49 @@ class NoteSplash extends FlxSprite
 	{
 		if (!splashPathExists(splash, false, true))
 			return null;
-		return Paths.getSparrowAtlas(splash);
+
+		var atlas:Dynamic = Paths.getSparrowAtlas(splash);
+		if (!atlasLooksUsable(atlas))
+			return null;
+
+		return atlas;
+	}
+
+	static function getCachedSplashAtlas(splash:String):Dynamic
+	{
+		var path:String = 'images/$splash';
+		var atlas:Dynamic = framesCache.get(path);
+		if (!atlasLooksUsable(atlas))
+		{
+			framesCache.remove(path);
+			atlas = getSplashAtlas(splash);
+			if (atlas != null)
+				framesCache.set(path, atlas);
+		}
+		return atlas;
+	}
+
+	static function atlasLooksUsable(atlas:Dynamic):Bool
+	{
+		if (atlas == null || atlas.parent == null || atlas.parent.bitmap == null || atlas.frames == null || atlas.frames.length <= 0)
+			return false;
+
+		var width:Float = atlas.parent.width;
+		var height:Float = atlas.parent.height;
+		var frames:Array<Dynamic> = cast atlas.frames;
+		for (frame in frames)
+		{
+			if (frame == null || frame.frame == null)
+				return false;
+
+			var rect = frame.frame;
+			if (rect.width <= 0 || rect.height <= 0)
+				return false;
+			if (rect.x < 0 || rect.y < 0 || rect.x + rect.width > width || rect.y + rect.height > height)
+				return false;
+		}
+
+		return true;
 	}
 
 	public static function splashPathExists(splash:String, ?pixel:Null<Bool>, ?rawOnly:Bool = false):Bool
@@ -608,6 +638,13 @@ class NoteSplash extends FlxSprite
 		else
 			splash = splashNameToPath(splash);
 
+		if (Note.usesClassicColors() && isRgbSplashPath(splash))
+		{
+			var classic:String = resolveSplashCandidate(classicNoteSplash, pixel);
+			if (splashPathExists(classic, false, true))
+				return classic;
+		}
+
 		if (useSkinPostfix && !Note.usesClassicColors())
 		{
 			var postfix:String = getSplashSkinPostfix();
@@ -626,6 +663,19 @@ class NoteSplash extends FlxSprite
 
 		return getDefaultNoteSplashPath(pixel);
 	}
+
+	public static function requestedSplashExists(splash:String, ?pixel:Null<Bool>):Bool
+	{
+		if (splash == null || splash.length < 1)
+			return false;
+
+		var normalized:String = splashNameToPath(splash);
+		var resolved:String = resolveSplashCandidate(normalized, pixel);
+		return splashPathExists(resolved, false, true);
+	}
+
+	static inline function isRgbSplashPath(splash:String):Bool
+		return splash != null && splash.startsWith('noteSplashes/');
 
 	public static function splashNameToPath(splash:String):String
 	{

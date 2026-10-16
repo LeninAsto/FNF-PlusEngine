@@ -8,6 +8,9 @@ class ShaderCompatibility
 			return null;
 
 		var code:String = source.replace("\r\n", "\n").replace("\r", "\n");
+		if (code.length > 0 && code.charCodeAt(0) == 0xFEFF)
+			code = code.substr(1);
+		code = normalizeVersionDirective(code);
 		var dialect:String = getShaderDialect(code, shaderName);
 
 		if (dialect != null)
@@ -28,6 +31,41 @@ class ShaderCompatibility
 		}
 
 		return normalizeStrictConstructors(code);
+	}
+
+	/**
+	 * Keeps a single version directive at the beginning of runtime shaders and
+	 * maps the common desktop/ES versions to the active target. OpenFL inserts
+	 * its precision prefix immediately after this directive.
+	 */
+	static function normalizeVersionDirective(source:String):String
+	{
+		var lines:Array<String> = source.split("\n");
+		var version:EReg = ~/^\s*#version\s+([0-9]+)/i;
+		var requested:Int = 0;
+		var body:Array<String> = [];
+
+		for (line in lines)
+		{
+			if (version.match(line))
+			{
+				if (requested == 0)
+					requested = Std.parseInt(version.matched(1));
+				continue;
+			}
+			body.push(line);
+		}
+
+		if (requested == 0)
+			return source;
+
+		#if (android || ios)
+		var targetVersion:String = requested >= 300 ? "#version 300 es" : "#version 100";
+		#else
+		var targetVersion:String = requested >= 300 ? "#version 330" : "#version 120";
+		#end
+
+		return targetVersion + "\n" + body.join("\n");
 	}
 
 	static function getShaderDialect(source:String, shaderName:String):String
@@ -126,10 +164,25 @@ class ShaderCompatibility
 		var output:Array<String> = [];
 		var waitingMainBrace:Bool = false;
 		var inserted:Bool = false;
+		var wrappingMain:Bool = false;
+		var mainBaseDepth:Int = 0;
+		var outputDepth:Int = 0;
 		var mainDecl:EReg = ~/^\s*void\s+(?:main|mainImage)\s*\(/;
 
 		for (line in lines)
 		{
+			var opens:Int = countChar(line, "{");
+			var closes:Int = countChar(line, "}");
+
+			// Keep the original function body in a nested scope. GLSL permits a
+			// local to shadow a global, so moving both into the same scope would
+			// otherwise break valid legacy shaders (for example, `uv`).
+			if (wrappingMain && outputDepth + opens - closes <= mainBaseDepth)
+			{
+				output.push("\t}");
+				wrappingMain = false;
+			}
+
 			output.push(line);
 
 			if (!inserted && mainDecl.match(line))
@@ -138,6 +191,9 @@ class ShaderCompatibility
 				{
 					for (declaration in declarations)
 						output.push(declaration);
+					output.push("\t{");
+					mainBaseDepth = outputDepth;
+					wrappingMain = true;
 					inserted = true;
 				}
 				else
@@ -149,9 +205,16 @@ class ShaderCompatibility
 			{
 				for (declaration in declarations)
 					output.push(declaration);
+				output.push("\t{");
+				mainBaseDepth = outputDepth;
+				wrappingMain = true;
 				inserted = true;
 				waitingMainBrace = false;
 			}
+
+			outputDepth += opens - closes;
+			if (outputDepth < 0)
+				outputDepth = 0;
 		}
 
 		if (!inserted)

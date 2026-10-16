@@ -329,9 +329,16 @@ class TypedTouchButton<T:FlxSprite> extends FlxSprite implements IFlxInput
 		{
 			// Allow 'swiping' to press a button (dragging it over the button while pressed)
 			if (allowSwiping && input.pressed)
+			{
+				currentInput = input;
 				onDownHandler();
+			}
 			else
 				onOverHandler();
+		}
+		else if (status == TouchButton.PRESSED && input == currentInput && input.pressed)
+		{
+			this.input.press();
 		}
 	}
 

@@ -28,6 +28,7 @@ typedef StickerSubStateParams =
 
 class StickerSubState extends MusicBeatSubstate
 {
+	public static final SHITPOST_CHANCE:Float = 5;
 	public static var transitionSprite:Null<StickerTransitionSprite> = null;
 	public var grpStickers:FlxTypedGroup<StickerSprite>;
 
@@ -50,7 +51,7 @@ class StickerSubState extends MusicBeatSubstate
 		transitionSprite ??= new StickerTransitionSprite();
 		targetState = params.targetState != null ? params.targetState : _ -> states.FreeplayStateSelector.create();
 		playOutOnTarget = params.playOutOnTarget == true;
-		stickerPackId = params.stickerPack != null ? params.stickerPack : "default";
+		stickerPackId = params.stickerPack != null ? params.stickerPack : "stickers-set-1";
 		stickerPack = resolveStickerPack(stickerPackId);
 		grpStickers = new FlxTypedGroup<StickerSprite>();
 		resolveStickerSounds();
@@ -68,6 +69,11 @@ class StickerSubState extends MusicBeatSubstate
 		}
 		else
 			regenStickers();
+	}
+
+	public static function randomPack(defaultPack:String = "stickers-set-1"):String
+	{
+		return FlxG.random.bool(SHITPOST_CHANCE) ? "shitpost" : defaultPack;
 	}
 
 	static function resolveStickerPack(id:String):Null<StickerPack>

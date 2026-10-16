@@ -14,6 +14,7 @@ class Event {
 	public var prev:Event = null;
 
 	public var callback:Event->Void;
+	private var initialCallback:Event->Void;
 	public var parent:EventManager;
 
 	private var mercy:Bool = false;
@@ -25,6 +26,7 @@ class Event {
 	public function new(beat:Float, callback:Event->Void, parent:EventManager, ?mercy:Bool = false) {
 		this.beat = beat;
 		this.callback = callback;
+		this.initialCallback = callback;
 		this.mercy = mercy;
 
 		this.parent = parent;
@@ -42,6 +44,12 @@ class Event {
 	}
 
 	public function create() {}
+
+	public function reset():Void {
+		active = false;
+		fired = false;
+		callback = initialCallback;
+	}
 
 	public inline function setModPercent(name, value, player) {
 		parent.setModPercent(name, value, player);

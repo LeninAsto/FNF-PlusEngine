@@ -19,6 +19,8 @@ class Field extends Modifier {
 	var fieldOriginXID:Int;
 	var fieldOriginYID:Int;
 	var fieldOriginZID:Int;
+	final _origin:Vector3 = new Vector3();
+	final _rotation:Vector3 = new Vector3();
 
 	public function new(pf) {
 		super(pf);
@@ -54,10 +56,8 @@ class Field extends Modifier {
 		if (fieldPitch != 0 || fieldYaw != 0 || fieldRoll != 0) {
 			final origin = getFieldOrigin(params);
 			final zScale = FlxG.height;
-			final diff = curPos.subtract(origin);
-			diff.z *= zScale;
-
-			final out = ModchartUtil.rotate3DVector(diff, fieldPitch, fieldYaw, fieldRoll);
+			_rotation.setTo(curPos.x - origin.x, curPos.y - origin.y, (curPos.z - origin.z) * zScale);
+			final out = ModchartUtil.rotate3DVectorInto(_rotation, fieldPitch, fieldYaw, fieldRoll, _rotation);
 			out.z /= zScale;
 
 			origin.addToOutput(out, curPos);
@@ -81,15 +81,20 @@ class Field extends Modifier {
 		}
 		x -= 56;
 
-		return new Vector3(
-			hasUnsafe(fieldOriginXID) ? getUnsafe(fieldOriginXID, player) : x,
+		_origin.setTo(hasUnsafe(fieldOriginXID) ? getUnsafe(fieldOriginXID, player) : x,
 			hasUnsafe(fieldOriginYID) ? getUnsafe(fieldOriginYID, player) : HEIGHT * 0.5,
-			hasUnsafe(fieldOriginZID) ? getUnsafe(fieldOriginZID, player) : 0
-		);
+			hasUnsafe(fieldOriginZID) ? getUnsafe(fieldOriginZID, player) : 0);
+		return _origin;
 	}
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function isActive(player:Int):Bool
+		return getUnsafe(fieldXID, player) != 0 || getUnsafe(fieldYID, player) != 0
+			|| getUnsafe(fieldZID, player) != 0 || getUnsafe(fieldDepthID, player) != 0
+			|| getUnsafe(fieldPitchID, player) != 0 || getUnsafe(fieldYawID, player) != 0 || getUnsafe(fieldRollID, player) != 0
+			|| getUnsafe(fieldRotateXID, player) != 0 || getUnsafe(fieldRotateYID, player) != 0 || getUnsafe(fieldRotateZID, player) != 0;
 
 	override public function transformMode():TransformMode
 		return TransformMode.FIELD;

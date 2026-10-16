@@ -34,6 +34,7 @@ class Reverse extends Modifier {
 	var _curvedScrollXIDs:Array<Int>;
 	var _curvedScrollYIDs:Array<Int>;
 	var _curvedScrollZIDs:Array<Int>;
+	final _scrollRotation:Vector3 = new Vector3();
 
 	public function new(pf) {
 		super(pf);
@@ -74,7 +75,8 @@ class Reverse extends Modifier {
 	}
 
 	public function getReverseValue(dir:Int, player:Int) {
-		var kNum = getKeyCount();
+		var kNum = getKeyCount(player);
+		final lane = getLaneSlot(dir, _reverseIDs.length);
 		var val:Float = 0;
 		if (dir >= Math.floor(kNum * 0.5))
 			val = val + getUnsafe(_splitID, player);
@@ -88,7 +90,7 @@ class Reverse extends Modifier {
 		if (dir >= first && dir <= last)
 			val = val + getUnsafe(_crossID, player);
 
-		val = val + getUnsafeLaneAdd(_reverseID, _reverseIDs[dir], player);
+		val = val + getUnsafeLaneAdd(_reverseID, _reverseIDs[lane], player);
 
 		if (getUnsafe(_unboundedReverseID, player) == 0) {
 			val %= 2;
@@ -138,7 +140,7 @@ class Reverse extends Modifier {
 	// Modifies scroll in-place
 	function applyScrollMods(scroll:Vector3, params:ModifierParameters) {
 		var player = params.player;
-		var lane = params.lane;
+		var lane = getLaneSlot(params.lane, _xmodIDs.length);
 		var angleX = 0.;
 		var angleY = 0.;
 		var angleZ = 0.;
@@ -170,8 +172,7 @@ class Reverse extends Modifier {
 		if (angleX == 0 && angleZ == 0)
 			return;
 
-		// rotate3DVector allocates internally; only call when actually needed
-		var rotated = ModchartUtil.rotate3DVector(scroll, angleX, angleY, angleZ);
+		var rotated = ModchartUtil.rotate3DVectorInto(scroll, angleX, angleY, angleZ, _scrollRotation);
 		scroll.x = rotated.x;
 		scroll.y = rotated.y;
 		scroll.z = rotated.z;

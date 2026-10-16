@@ -215,7 +215,7 @@ class CrashHandler
 	{
 		try
 		{
-			lime.system.JNI.createStaticMethod('org/haxe/lime/LimeCrashHandler', 'showHaxeCrash',
+			lime.system.JNI.createStaticMethod('com/leninasto/plusengine/EngineAndroidBridge', 'showHaxeCrash',
 				'(Ljava/lang/String;Ljava/lang/String;)V', false, true)(title, message);
 		}
 		catch (e:Dynamic)

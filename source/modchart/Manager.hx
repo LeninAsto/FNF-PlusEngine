@@ -138,6 +138,9 @@ final class Manager extends FlxBasic
 			__hasRenderableModchartContent = true;
 	}
 
+	private inline function __modifierNeedsRender(name:String):Bool
+		return name == null || name.toLowerCase() != 'spawntime';
+
 	/**
 	 * Internal helper function to apply a function to each playfield.
 	 *
@@ -207,7 +210,7 @@ final class Manager extends FlxBasic
 	 */
 	public inline function setPercent(name:String, value:Float, player:Int = -1, field:Int = -1)
 	{
-		requestRender();
+		requestRender(__modifierNeedsRender(name));
 		iteratePlayfields((pf) -> pf.setPercent(name, value, player), field);
 	}
 
@@ -260,7 +263,7 @@ final class Manager extends FlxBasic
 	 */
 	public inline function setRawValue(name:String, value:Float, player:Int = -1, field:Int = -1)
 	{
-		requestRender();
+		requestRender(__modifierNeedsRender(name));
 		iteratePlayfields((pf) -> pf.setRawValue(name, value, player), field);
 	}
 
@@ -291,6 +294,9 @@ final class Manager extends FlxBasic
 				continue;
 
 			final value = playfield.getPercent('spawnTime', player);
+			// A positive playfield value is the requested window, not a lower bound.
+			// We still return the largest window so PlayState creates enough notes for
+			// every field; CtxRenderer applies each field's own window before rendering.
 			final spawnTime = value > 0 ? value : fallback;
 			if (spawnTime > result)
 				result = spawnTime;
@@ -333,7 +339,7 @@ final class Manager extends FlxBasic
 	 */
 	public inline function set(name:String, beat:Float, value:Float, player:Int = -1, field:Int = -1)
 	{
-		requestRender();
+		requestRender(__modifierNeedsRender(name));
 		iteratePlayfields((pf) -> pf.set(name, beat, value, player), field);
 	}
 
@@ -362,7 +368,7 @@ final class Manager extends FlxBasic
 	 */
 	public inline function ease(name:String, beat:Float, length:Float, value:Float = 1, easeFunc:EaseFunction, player:Int = -1, field:Int = -1)
 	{
-		requestRender();
+		requestRender(__modifierNeedsRender(name));
 		iteratePlayfields((pf) -> pf.ease(name, beat, length, value, easeFunc, player), field);
 	}
 
@@ -391,7 +397,7 @@ final class Manager extends FlxBasic
 	 */
 	public inline function add(name:String, beat:Float, length:Float, value:Float = 1, easeFunc:EaseFunction, player:Int = -1, field:Int = -1)
 	{
-		requestRender();
+		requestRender(__modifierNeedsRender(name));
 		iteratePlayfields((pf) -> pf.add(name, beat, length, value, easeFunc, player), field);
 	}
 
@@ -406,7 +412,7 @@ final class Manager extends FlxBasic
 	 */
 	public inline function setAdd(name:String, beat:Float, value:Float, player:Int = -1, field:Int = -1)
 	{
-		requestRender();
+		requestRender(__modifierNeedsRender(name));
 		iteratePlayfields((pf) -> pf.setAdd(name, beat, value, player), field);
 	}
 
@@ -595,11 +601,24 @@ final class Manager extends FlxBasic
 		__frameToken++;
 		final songPos = Adapter.instance.getSongPosition();
 		final beat = Adapter.instance.getCurrentBeat();
+		Adapter.instance.beginModchartFrame(__frameToken);
 
 		iteratePlayfields(pf -> pf.beginFrame(__frameToken, songPos, beat));
 		__updateScheduledPlayfieldOps(beat);
 
 		iteratePlayfields(pf -> pf.update(elapsed));
+	}
+
+	public function refreshFrameState():Void
+	{
+		if (!__primary || Adapter.instance == null)
+			return;
+
+		__frameToken++;
+		final songPos = Adapter.instance.getSongPosition();
+		final beat = Adapter.instance.getCurrentBeat();
+		Adapter.instance.beginModchartFrame(__frameToken);
+		iteratePlayfields(pf -> pf.beginFrame(__frameToken, songPos, beat));
 	}
 
 	/**
@@ -618,7 +637,10 @@ final class Manager extends FlxBasic
 		}
 
 		__wasRendering = true;
+		final collectStart = renderer.collectDebugStats ? haxe.Timer.stamp() : 0.0;
 		final playerItems = Adapter.instance.getArrowItems();
+		if (renderer.collectDebugStats)
+			renderer.dbgCollectMs = (haxe.Timer.stamp() - collectStart) * 1000.0;
 
 		if (playerItems == null)
 			return;
@@ -631,7 +653,7 @@ final class Manager extends FlxBasic
 		if (state != null && (!state.modchartManagerEnabled || !state.modchartControlsStrumRender))
 			return false;
 
-		return Config.RENDER_ARROW_PATHS || __hasExtraPlayfields() || (__renderRequested && __hasRenderableModchartContent) || __hasEvents();
+		return Config.RENDER_ARROW_PATHS || __hasExtraPlayfields() || (__renderRequested && __hasRenderableModchartContent) || __hasRenderableEvents();
 	}
 
 	private inline function __hasRuntimeWork():Bool
@@ -659,6 +681,16 @@ final class Manager extends FlxBasic
 		for (playfield in playfields)
 		{
 			if (playfield != null && playfield.events.totalEvents > 0)
+				return true;
+		}
+		return false;
+	}
+
+	private function __hasRenderableEvents():Bool
+	{
+		for (playfield in playfields)
+		{
+			if (playfield != null && playfield.events.hasRenderableEvents())
 				return true;
 		}
 		return false;
@@ -778,6 +810,27 @@ final class Manager extends FlxBasic
 		return true;
 	}
 
+	private function __deactivateNamedPlayfield(name:String):Bool
+	{
+		final entry = __namedPlayfields.get(name);
+		if (entry == null || !entry.active)
+			return false;
+
+		final field = __findPlayfieldIndex(entry.playfield);
+		if (field != -1)
+			playfields[field] = null;
+		entry.active = false;
+		return true;
+	}
+
+	private function __hasLaterNamedAdd(name:String, beat:Float):Bool
+	{
+		for (operation in __scheduledPlayfieldOps)
+			if (operation.add && operation.name == name && operation.beat >= beat)
+				return true;
+		return false;
+	}
+
 	private function __updateScheduledPlayfieldOps(curBeat:Float):Void
 	{
 		var index = 0;
@@ -805,7 +858,10 @@ final class Manager extends FlxBasic
 			}
 			else if (operation.name != null)
 			{
-				__removeNamedPlayfieldNow(operation.name);
+				if (__hasLaterNamedAdd(operation.name, operation.beat))
+					__deactivateNamedPlayfield(operation.name);
+				else
+					__removeNamedPlayfieldNow(operation.name);
 			}
 			else
 			{

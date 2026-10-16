@@ -1,9 +1,5 @@
 package states.stages.objects;
 
-#if funkin.vis
-import funkin.vis.dsp.SpectralAnalyzer;
-#end
-
 class ABotSpeaker extends FlxSpriteGroup
 {
 	final VIZ_MAX = 7; // ranges from viz1 to viz7
@@ -17,7 +13,7 @@ class ABotSpeaker extends FlxSpriteGroup
 	public var speaker:FlxAnimate;
 
 	#if funkin.vis
-	var analyzer:SpectralAnalyzer;
+	var spectrum:objects.ABotSpectrum;
 	#end
 	var volumes:Array<Float> = [];
 
@@ -85,21 +81,22 @@ class ABotSpeaker extends FlxSpriteGroup
 	}
 
 	#if funkin.vis
-	var levels:Array<Bar>;
 	var levelMax:Int = 0;
 
 	override function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
-		if (analyzer == null)
+		if (spectrum == null)
 			return;
 
-		levels = analyzer.getLevels(levels);
+		volumes = spectrum.levels();
+		if (!spectrum.ready)
+			return;
 		var oldLevelMax = levelMax;
 		levelMax = 0;
-		for (i in 0...Std.int(Math.min(vizSprites.length, levels.length)))
+		for (i in 0...Std.int(Math.min(vizSprites.length, volumes.length)))
 		{
-			var animFrame:Int = Math.round(levels[i].value * 5);
+			var animFrame:Int = Math.round(volumes[i] * 5);
 			animFrame = Std.int(Math.abs(FlxMath.bound(animFrame, 0, 5) - 5)); // shitty dumbass flip, cuz dave got da shit backwards lol!
 
 			vizSprites[i].animation.curAnim.curFrame = animFrame;
@@ -120,17 +117,21 @@ class ABotSpeaker extends FlxSpriteGroup
 		speaker.anim.play('anim', true);
 	}
 
+	override function destroy():Void
+	{
+		#if funkin.vis
+		if (spectrum != null) spectrum.dispose();
+		spectrum = null;
+		#end
+		super.destroy();
+	}
+
 	#if funkin.vis
 	public function initAnalyzer()
 	{
-		@:privateAccess
-		analyzer = new SpectralAnalyzer(snd._channel.__audioSource, 7, 0.1, 40);
-
-		#if !web
-		// On native it uses FFT stuff that isn't as optimized as the direct browser stuff we use on HTML5
-		// So we want to manually change it!
-		analyzer.fftN = 256;
-		#end
+		if (spectrum == null)
+			spectrum = new objects.ABotSpectrum(7, 0.1, 40);
+		spectrum.bind(snd);
 	}
 	#end
 

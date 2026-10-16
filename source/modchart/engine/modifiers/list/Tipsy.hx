@@ -18,14 +18,18 @@ class Tipsy extends Modifier {
 
 		var tipsy = (cos((params.songTime * 0.001 * ((speed * 1.2) + 1.2) + params.lane * ((offset * 1.8) + 1.8))) * ARROW_SIZE * .4);
 
-		var tipAddition = new Vector3(xVal, yVal, zVal);
-		tipAddition.scaleBy(tipsy);
-
-		return curPos.add(tipAddition);
+		curPos.x += xVal * tipsy;
+		curPos.y += yVal * tipsy;
+		curPos.z += zVal * tipsy;
+		return curPos;
 	}
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function isActive(player:Int):Bool
+		return getPercent('tipsy', player) != 0 || getPercent('tipsyX', player) != 0
+			|| getPercent('tipsyY', player) != 0 || getPercent('tipsyZ', player) != 0;
 
 	override public function allowOnStraightHolds():Bool
 		return false;

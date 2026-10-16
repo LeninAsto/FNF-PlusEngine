@@ -97,6 +97,18 @@ class Beat extends Modifier {
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
 
+	override public function isActive(player:Int):Bool {
+		for (axis in 0...beatAmtIDs.length) {
+			if (getUnsafe(beatAmtIDs[axis], player) != 0)
+				return true;
+			if (Config.COLUMN_SPECIFIC_MODIFIERS)
+				for (lane in 0...beatAmtLaneIDs[axis].length)
+					if (getUnsafe(beatAmtLaneIDs[axis][lane], player) != 0)
+						return true;
+		}
+		return false;
+	}
+
 	override public function allowOnStraightHolds():Bool
 		return false;
 }

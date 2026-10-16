@@ -118,7 +118,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		healthBar.scrollFactor.set();
 		healthBar.cameras = [camHUD];
 
-		healthIcon = new HealthIcon(character.healthIcon, false, false);
+		healthIcon = new HealthIcon(character.healthIcon, false, false, character.iconFps);
 		healthIcon.y = FlxG.height - 150;
 		healthIcon.cameras = [camHUD];
 
@@ -655,6 +655,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 	var flipXCheckBox:PsychUICheckBox;
 	var noAntialiasingCheckBox:PsychUICheckBox;
 	var animatedIconCheckBox:PsychUICheckBox;
+	var iconFpsStepper:PsychUINumericStepper;
 
 	var healthColorStepperR:PsychUINumericStepper;
 	var healthColorStepperG:PsychUINumericStepper;
@@ -692,7 +693,14 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		animatedIconCheckBox.onClick = function()
 		{
 			character.animatedIcon = animatedIconCheckBox.checked;
-			healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon);
+			healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon, character.iconFps);
+		};
+
+		iconFpsStepper = new PsychUINumericStepper(animatedIconCheckBox.x, animatedIconCheckBox.y + 30, 1, character.iconFps, 1, 120, 0);
+		iconFpsStepper.onValueChange = function() {
+			character.iconFps = Math.round(iconFpsStepper.value);
+			healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon == true, character.iconFps);
+			unsavedProgress = true;
 		};
 
 		vocalsInputText = new PsychUIInputText(15, healthIconInputText.y + 35, 75, character.vocalsFile != null ? character.vocalsFile : '', 8);
@@ -751,6 +759,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		tab_group.add(decideIconColor);
 		tab_group.add(healthIconInputText);
 		tab_group.add(animatedIconCheckBox);
+		tab_group.add(iconFpsStepper);
 		tab_group.add(vocalsInputText);
 		tab_group.add(singDurationStepper);
 		tab_group.add(scaleStepper);
@@ -776,7 +785,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			if (sender == healthIconInputText)
 			{
 				var lastIcon = healthIcon.getCharacter();
-				healthIcon.changeIcon(healthIconInputText.text, false, character.animatedIcon == true);
+				healthIcon.changeIcon(healthIconInputText.text, false, character.animatedIcon == true, character.iconFps);
 				character.healthIcon = healthIconInputText.text;
 				if (lastIcon != healthIcon.getCharacter())
 					updatePresence();
@@ -923,6 +932,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		positionCameraYStepper.value = character.cameraPosition[1];
 
 		animatedIconCheckBox.checked = character.animatedIcon == true;
+		iconFpsStepper.value = character.iconFps;
 		reloadAnimationDropDown();
 		updateHealthBar();
 	}
@@ -1125,7 +1135,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			changedOffset = true;
 		}
 
-		if (ClientPrefs.data.dragCharacterToMove)
+		if (ClientPrefs.data.cneStyleDragCharacter)
 			handleMouseDrag();
 
 		var anim = anims[curAnim];
@@ -1281,7 +1291,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		healthColorStepperB.value = character.healthColorArray[2];
 		healthBar.leftBar.color = healthBar.rightBar.color = FlxColor.fromRGB(character.healthColorArray[0], character.healthColorArray[1],
 			character.healthColorArray[2]);
-		healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon == true);
+		healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon == true, character.iconFps);
 		updatePresence();
 	}
 
@@ -1570,6 +1580,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			"scale": character.jsonScale,
 			"sing_duration": character.singDuration,
 			"healthicon": character.healthIcon,
+			"fpsicon": character.iconFps,
 
 			"position": character.positionArray,
 			"camera_position": character.cameraPosition,
@@ -1603,12 +1614,18 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		if (!controls.mobileC || FlxG.stage == null || UI_box == null || UI_characterbox == null)
 			return;
 
+		if (!ClientPrefs.data.canDragCameraStage)
+		{
+			isDragging = false;
+			return;
+		}
+
 		switch (e.type)
 		{
 			case MouseEvent.MOUSE_DOWN:
 				if (!isMouseOverUI())
 				{
-					var overChar:Bool = ClientPrefs.data.dragCharacterToMove
+					var overChar:Bool = ClientPrefs.data.cneStyleDragCharacter
 						&& character != null
 						&& FlxG.mouse.overlaps(character, camEditor);
 

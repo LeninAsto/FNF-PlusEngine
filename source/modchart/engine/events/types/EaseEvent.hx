@@ -29,6 +29,11 @@ class EaseEvent extends Event {
 
 	var entryPerc:Null<Float> = null;
 
+	override public function reset():Void {
+		super.reset();
+		entryPerc = null;
+	}
+
 	override function update(curBeat:Float) {
 		if (fired)
 			return;

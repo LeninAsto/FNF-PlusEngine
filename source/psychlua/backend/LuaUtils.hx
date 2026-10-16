@@ -51,17 +51,25 @@ class LuaUtils
 	{
 		return (options != null) ? {
 			type: getTweenTypeByString(options.type),
-			startDelay: options.startDelay,
+			startDelay: options.startDelay != null ? options.startDelay : 0.0,
 			onUpdate: options.onUpdate,
 			onStart: options.onStart,
 			onComplete: options.onComplete,
-			loopDelay: options.loopDelay,
+			loopDelay: options.loopDelay != null ? options.loopDelay : 0.0,
 			ease: getTweenEaseByString(options.ease)
 		} : null;
 	}
 
 	public static function setVarInArray(instance:Dynamic, variable:String, value:Dynamic, allowMaps:Bool = false):Any
 	{
+		if(instance == null)
+		{
+			#if LUA_ALLOWED
+			FunkinLua.luaTrace('setProperty: Cannot set "$variable" because its parent object is null', false, false, FlxColor.RED);
+			#end
+			return null;
+		}
+
 		var legacyBar:Dynamic = getLegacyBarSprite(instance, variable);
 		if(legacyBar != null)
 		{
@@ -83,6 +91,8 @@ class LuaUtils
 
 			for (i in 1...splitProps.length)
 			{
+				if(target == null)
+					return null;
 				var j:Dynamic = splitProps[i].substr(0, splitProps[i].length - 1);
 				if(i >= splitProps.length-1) //Last array
 					target[j] = value;
@@ -107,11 +117,26 @@ class LuaUtils
 			MusicBeatState.getVariables().set(variable, value);
 			return value;
 		}
-		Reflect.setProperty(instance, variable, value);
-		return value;
+		try
+		{
+			Reflect.setProperty(instance, variable, value);
+			return value;
+		}
+		catch(e:Dynamic)
+		{
+			#if LUA_ALLOWED
+			FunkinLua.luaTrace('setProperty: Could not set "$variable": $e', false, false, FlxColor.RED);
+			#else
+			FlxG.log.warn('setProperty: Could not set "$variable": $e');
+			#end
+			return null;
+		}
 	}
 	public static function getVarInArray(instance:Dynamic, variable:String, allowMaps:Bool = false):Any
 	{
+		if(instance == null)
+			return null;
+
 		var legacyBar:Dynamic = getLegacyBarSprite(instance, variable);
 		if(legacyBar != null)
 			return legacyBar;
@@ -131,6 +156,8 @@ class LuaUtils
 
 			for (i in 1...splitProps.length)
 			{
+				if(target == null)
+					return null;
 				var j:Dynamic = splitProps[i].substr(0, splitProps[i].length - 1);
 				target = target[j];
 			}
@@ -152,16 +179,50 @@ class LuaUtils
 			if(retVal != null)
 				return retVal;
 		}
-		return Reflect.getProperty(instance, variable);
+		try
+		{
+			return Reflect.getProperty(instance, variable);
+		}
+		catch(e:Dynamic)
+		{
+			#if LUA_ALLOWED
+			FunkinLua.luaTrace('getProperty: Could not read "$variable": $e', false, false, FlxColor.RED);
+			#else
+			FlxG.log.warn('getProperty: Could not read "$variable": $e');
+			#end
+			return null;
+		}
 	}
 
 	public static function getModSetting(saveTag:String, ?modName:String = null)
 	{
 		#if MODS_ALLOWED
 		if(FlxG.save.data.modSettings == null) FlxG.save.data.modSettings = new Map<String, Dynamic>();
+		if(modName != null) modName = modName.trim();
+		if(modName == null || modName.length == 0)
+		{
+			#if LUA_ALLOWED
+			if(FunkinLua.lastCalledScript != null && FunkinLua.lastCalledScript.modFolder != null)
+				modName = FunkinLua.lastCalledScript.modFolder;
+			#end
+			if(modName == null || modName.length == 0)
+				modName = Mods.currentModDirectory;
+		}
+
+		// Preserve the real installed folder spelling. This matters on Linux and
+		// also tolerates mods passing their display name with different casing.
+		if(modName != null && modName.length > 0)
+		{
+			for(folder in Mods.getModDirectories())
+				if(folder.toLowerCase() == modName.toLowerCase())
+				{
+					modName = folder;
+					break;
+				}
+		}
 
 		var settings:Map<String, Dynamic> = FlxG.save.data.modSettings.get(modName);
-		var path:String = Paths.mods('$modName/data/settings.json');
+		var path:String = haxe.io.Path.join([Paths.getModDirectory(modName), 'data', 'settings.json']);
 		if(FileSystem.exists(path))
 		{
 			if(settings == null || !settings.exists(saveTag))
@@ -179,10 +240,11 @@ class LuaUtils
 						{
 							if(sub.type != 'keybind' && sub.type != 'key')
 							{
-								if(sub.value != null)
+								var defaultValue:Dynamic = sub.value != null ? sub.value : Reflect.field(sub, 'default');
+								if(defaultValue != null)
 								{
 									//FunkinLua.luaTrace('getModSetting: Found unsaved value "${sub.save}" in Mod: "$modName"');
-									settings.set(sub.save, sub.value);
+									settings.set(sub.save, defaultValue);
 								}
 							}
 							else
@@ -324,7 +386,12 @@ class LuaUtils
 		var end = split.length;
 		if(getProperty) end = split.length-1;
 
-		for (i in 1...end) obj = getVarInArray(obj, split[i], allowMaps);
+		for (i in 1...end)
+		{
+			if(obj == null)
+				return null;
+			obj = getVarInArray(obj, split[i], allowMaps);
+		}
 		return obj;
 	}
 
@@ -566,11 +633,22 @@ class LuaUtils
 		return tag.trim().replace(' ', '_').replace('.', '');
 
 	public static function tweenPrepare(tag:String, vars:String) {
-		if(tag != null) cancelTween(tag);
-		var variables:Array<String> = vars.split('.');
-		var sexyProp:Dynamic = LuaUtils.getObjectDirectly(variables[0]);
-		if(variables.length > 1) sexyProp = LuaUtils.getVarInArray(LuaUtils.getPropertyLoop(variables), variables[variables.length-1]);
-		return sexyProp;
+		if(vars == null) return null;
+		vars = vars.trim();
+		var target:Dynamic = vars.length == 0 ? getTargetInstance() : getObjectDirectly(vars.split('.')[0]);
+		if(vars.length > 0)
+		{
+			var variables:Array<String> = vars.split('.');
+			for(i in 1...variables.length)
+			{
+				if(target == null) return null;
+				target = getVarInArray(target, variables[i]);
+			}
+		}
+		// Match Psych: reusing a tag replaces its active tween, but only after a
+		// valid destination was found so a typo cannot kill a working tween.
+		if(target != null && tag != null) cancelTween(tag);
+		return target;
 	}
 
 	public static function getBuildTarget():String
@@ -614,6 +692,7 @@ class LuaUtils
 
 	//buncho string stuffs
 	public static function getTweenTypeByString(?type:String = '') {
+		if(type == null) type = '';
 		switch(type.toLowerCase().trim())
 		{
 			case 'backward': return FlxTweenType.BACKWARD;
@@ -625,6 +704,7 @@ class LuaUtils
 	}
 
 	public static function getTweenEaseByString(?ease:String = '') {
+		if(ease == null) ease = '';
 		switch(ease.toLowerCase().trim()) {
 			case 'accelerate': return FlxEase.quadIn;
 			case 'backin': return FlxEase.backIn;

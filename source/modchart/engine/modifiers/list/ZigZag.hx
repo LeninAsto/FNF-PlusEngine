@@ -20,6 +20,9 @@ class ZigZag extends Modifier {
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
 
+	override public function isActive(player:Int):Bool
+		return getPercent('zigZag', player) != 0;
+
 	override public function allowOnStraightHolds():Bool
 		return false;
 }

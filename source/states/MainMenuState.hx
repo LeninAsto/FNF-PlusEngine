@@ -28,7 +28,11 @@ class MainMenuState extends MusicBeatState
 	public static var curColumn:MainMenuColumn = MainMenuColumn.CENTER;
 
 	static function get_isOpt():String
-		return Mods.getEditionName();
+	#if OPT_VER
+		return "Optimized";
+	#else
+	    return "";
+	#end
 
 	static function get_psychEngineVersion():String
 	{

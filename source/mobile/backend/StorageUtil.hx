@@ -17,6 +17,11 @@ class StorageUtil
 	private static final publicFolderName:String = '.PlusEngine';
 	private static final legacyPublicFolderName:String = 'PlusEngine';
 	private static final androidPackageName:String = 'com.leninasto.plusengine';
+	#if android
+	private static var cachedStorageType:String = null;
+	private static var cachedInternalDirectory:String = null;
+	private static var cachedPublicDirectory:String = null;
+	#end
 
 	public static function getStorageDirectory(?force:Bool = false):String
 	{
@@ -94,6 +99,9 @@ class StorageUtil
 
 	private static function readStorageType():String
 	{
+		if (cachedStorageType != null)
+			return cachedStorageType;
+
 		final storageTypePath = getStorageTypeFilePath();
 		var storageType = normalizeStorageType(ClientPrefs.data.storageType);
 
@@ -121,7 +129,8 @@ class StorageUtil
 			trace('Failed to read storage type, using current preference: ${Std.string(e)}');
 		}
 
-		return storageType;
+		cachedStorageType = storageType;
+		return cachedStorageType;
 	}
 
 	public static function saveStorageTypePreference(storageType:String):Void
@@ -132,6 +141,7 @@ class StorageUtil
 			ensureDirectory(rootDir);
 			File.saveContent(getStorageTypeFilePath(), normalizedStorageType);
 			ClientPrefs.data.storageType = normalizedStorageType;
+			cachedStorageType = normalizedStorageType;
 		}
 		catch (e:Dynamic)
 		{
@@ -157,13 +167,18 @@ class StorageUtil
 
 	public static function getInternalStorageDirectory():String
 	{
+		if (cachedInternalDirectory != null)
+			return cachedInternalDirectory;
+
 		final path = AndroidContext.getExternalFilesDir();
 		if (path != null && path.length > 0)
 		{
 			ensureDirectory(path);
-			return path;
+			cachedInternalDirectory = path;
+			return cachedInternalDirectory;
 		}
-		return getForcedInternalStorageDirectory();
+		cachedInternalDirectory = getForcedInternalStorageDirectory();
+		return cachedInternalDirectory;
 	}
 
 	private static function getForcedInternalStorageDirectory():String
@@ -175,13 +190,17 @@ class StorageUtil
 
 	public static function getPublicStorageDirectory():String
 	{
+		if (cachedPublicDirectory != null)
+			return cachedPublicDirectory;
+
 		var basePath = AndroidEnvironment.getExternalStorageDirectory();
 		if (basePath == null || basePath == '')
 			basePath = '/storage/emulated/0';
 
 		final dir = Path.join([basePath, publicFolderName]);
 		ensureDirectory(dir);
-		return dir;
+		cachedPublicDirectory = dir;
+		return cachedPublicDirectory;
 	}
 
 	private static function getForcedPublicStorageDirectory():String

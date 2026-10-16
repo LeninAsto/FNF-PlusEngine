@@ -1,0 +1,21 @@
+{
+	"animations": {
+		"hold": {
+			"name": "hold",
+			"prefix": "holdCover0",
+			"fps": 24,
+			"looped": true,
+			"offsets": [0, 0]
+		},
+		"end": {
+			"name": "end",
+			"prefix": "holdCoverEnd0",
+			"fps": 24,
+			"looped": false,
+			"offsets": [0, 0]
+		}
+	},
+	"scale": 1,
+	"allowRGB": true,
+	"allowPixel": true
+}

@@ -61,8 +61,8 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		};
 		addOption(option);
 
-		var option:Option = new Option('GPU Caching', // Name
-			"If checked, allows the GPU to be used for caching textures, decreasing RAM usage.\nDon't turn this on if you have a shitty Graphics Card.", // Description
+		var option:Option = new Option('Hardware Acceleration', // Name
+			"If enabled, stores compatible images directly on the GPU to reduce RAM usage and improve rendering stability, especially on Android.\nRecommended for most devices.", // Description
 			'cacheOnGPU', BOOL);
 		addOption(option);
 

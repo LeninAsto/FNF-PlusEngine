@@ -41,15 +41,15 @@ class ReceptorScroll extends Modifier {
 		var noteTime = songTime + params.distance;
 		var noteCycle = Math.floor(noteTime / moveSpeed) % 2;
 		
-		if (currentCycle == noteCycle) {
-			data.alpha = 1.0;
-		} else {
-			data.alpha = 0.3;
-		}
+		final targetAlpha = currentCycle == noteCycle ? 1.0 : 0.3;
+		data.alpha *= FlxMath.lerp(1, targetAlpha, FlxMath.bound(perc, 0, 1));
 
 		return data;
 	}
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function isActive(player:Int):Bool
+		return getPercent('receptorScroll', player) != 0;
 }

@@ -1,6 +1,7 @@
 package objects;
 
 import flixel.math.FlxRect;
+import flixel.util.FlxGradient;
 
 class Bar extends FlxSpriteGroup
 {
@@ -117,6 +118,14 @@ class Bar extends FlxSpriteGroup
 			leftBar.color = left;
 		if (right != null)
 			rightBar.color = right;
+	}
+
+	public function setGradientColors(start:FlxColor, end:FlxColor, empty:FlxColor = FlxColor.BLACK)
+	{
+		leftBar.loadGraphic(FlxGradient.createGradientBitmapData(Std.int(bg.width), Std.int(bg.height), [start, end], 1, 180));
+		leftBar.color = FlxColor.WHITE;
+		rightBar.color = empty;
+		regenerateClips();
 	}
 
 	/**

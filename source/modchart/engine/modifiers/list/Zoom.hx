@@ -12,17 +12,16 @@ class Zoom extends Modifier {
 
 		// center zoom
 		if (__curPercent != 1)
-			curPos = __applyZoom(curPos, new Vector3(FlxG.width * .5, FlxG.height * .5), __curPercent);
+			__applyZoom(curPos, FlxG.width * .5, FlxG.height * .5, __curPercent);
 		if (__localPercent != 1)
-			curPos = __applyZoom(curPos, new Vector3(getReceptorX(Math.round(getKeyCount(params.player) * .5), params.player), FlxG.height * .5),
-				__localPercent);
+			__applyZoom(curPos, getReceptorX(Math.round(getKeyCount(params.player) * .5), params.player), FlxG.height * .5, __localPercent);
 		return curPos;
 	}
 
-	inline function __applyZoom(pos:Vector3, origin:Vector3, amount:Float) {
-		var diff = pos.subtract(origin);
-		diff.scaleBy(amount);
-		return diff.add(origin);
+	inline function __applyZoom(pos:Vector3, originX:Float, originY:Float, amount:Float):Void {
+		pos.x = (pos.x - originX) * amount + originX;
+		pos.y = (pos.y - originY) * amount + originY;
+		pos.z *= amount;
 	}
 
 	override public function visuals(data:VisualParameters, params:ModifierParameters):VisualParameters {
@@ -44,6 +43,10 @@ class Zoom extends Modifier {
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function isActive(player:Int):Bool
+		return getPercent('zoom', player) != 0 || getPercent('mini', player) != 0
+			|| getPercent('localZoom', player) != 0 || getPercent('localMini', player) != 0;
 
 	override public function transformMode():TransformMode
 		return TransformMode.FIELD;

@@ -48,6 +48,7 @@ class NotesColorSubState extends MusicBeatSubstate
 	var tipTxt:FlxText;
 
 	var colorModeText:FlxText;
+	var closeCooldown:Float = 0.18;
 
 	public function new()
 	{
@@ -190,9 +191,16 @@ class NotesColorSubState extends MusicBeatSubstate
 
 		addTouchPad('NONE', 'B_C');
 		controls.isInSubstate = true;
-		touchPad.buttonB.x = FlxG.width - 132;
-		touchPad.buttonC.x = 0;
-		touchPad.buttonC.y = FlxG.height - 135;
+		if (touchPad != null)
+		{
+			if (touchPad.buttonB != null)
+				touchPad.buttonB.x = FlxG.width - 132;
+			if (touchPad.buttonC != null)
+			{
+				touchPad.buttonC.x = 0;
+				touchPad.buttonC.y = FlxG.height - 135;
+			}
+		}
 	}
 
 	function updateTip()
@@ -244,7 +252,10 @@ class NotesColorSubState extends MusicBeatSubstate
 
 	override function update(elapsed:Float)
 	{
-		if (controls.BACK)
+		if (closeCooldown > 0)
+			closeCooldown -= elapsed;
+
+		if (closeCooldown <= 0 && controls.BACK)
 		{
 			FlxG.mouse.visible = false;
 			FlxG.sound.play(Paths.sound('cancelMenu'));
@@ -553,40 +564,44 @@ class NotesColorSubState extends MusicBeatSubstate
 				}
 			}
 		}
-		else if (touchPad.buttonC.justPressed || controls.RESET && hexTypeNum < 0)
+		else
 		{
-			if (classicMode)
+			var touchReset:Bool = touchPad != null && touchPad.buttonC != null && touchPad.buttonC.justPressed;
+			if ((touchReset || controls.RESET) && hexTypeNum < 0)
 			{
-				if (FlxG.keys.pressed.SHIFT || FlxG.gamepads.anyPressed(LEFT_SHOULDER))
+				if (classicMode)
+				{
+					if (FlxG.keys.pressed.SHIFT || FlxG.gamepads.anyPressed(LEFT_SHOULDER))
+					{
+						for (i in 0...3)
+							classicHSV(curSelectedNote)[i] = 0;
+					}
+					else
+						classicHSV(curSelectedNote)[curSelectedMode] = 0;
+				}
+				else if (FlxG.keys.pressed.SHIFT || FlxG.gamepads.anyPressed(LEFT_SHOULDER))
 				{
 					for (i in 0...3)
-						classicHSV(curSelectedNote)[i] = 0;
-				}
-				else
-					classicHSV(curSelectedNote)[curSelectedMode] = 0;
-			}
-			else if (FlxG.keys.pressed.SHIFT || FlxG.gamepads.anyPressed(LEFT_SHOULDER))
-			{
-				for (i in 0...3)
-				{
-					var strumRGB:RGBShaderReference = myNotes.members[curSelectedNote].rgbShader;
-					var color:FlxColor = !onPixel ? ClientPrefs.defaultData.arrowRGB[curSelectedNote][i] : ClientPrefs.defaultData.arrowRGBPixel[curSelectedNote][i];
-					switch (i)
 					{
-						case 0:
-							getShader().r = strumRGB.r = color;
-						case 1:
-							getShader().g = strumRGB.g = color;
-						case 2:
-							getShader().b = strumRGB.b = color;
+						var strumRGB:RGBShaderReference = myNotes.members[curSelectedNote].rgbShader;
+						var color:FlxColor = !onPixel ? ClientPrefs.defaultData.arrowRGB[curSelectedNote][i] : ClientPrefs.defaultData.arrowRGBPixel[curSelectedNote][i];
+						switch (i)
+						{
+							case 0:
+								getShader().r = strumRGB.r = color;
+							case 1:
+								getShader().g = strumRGB.g = color;
+							case 2:
+								getShader().b = strumRGB.b = color;
+						}
+						dataArray[curSelectedNote][i] = color;
 					}
-					dataArray[curSelectedNote][i] = color;
 				}
+				if (!classicMode)
+					setShaderColor(!onPixel ? ClientPrefs.defaultData.arrowRGB[curSelectedNote][curSelectedMode] : ClientPrefs.defaultData.arrowRGBPixel[curSelectedNote][curSelectedMode]);
+				FlxG.sound.play(Paths.sound('cancelMenu'), 0.6);
+				updateColors();
 			}
-			if (!classicMode)
-				setShaderColor(!onPixel ? ClientPrefs.defaultData.arrowRGB[curSelectedNote][curSelectedMode] : ClientPrefs.defaultData.arrowRGBPixel[curSelectedNote][curSelectedMode]);
-			FlxG.sound.play(Paths.sound('cancelMenu'), 0.6);
-			updateColors();
 		}
 	}
 

@@ -85,8 +85,9 @@ class ModSettingsSubState extends BaseOptionsMenu
 						}
 
 					default:
-						if (option.value != null)
-							newOption.defaultValue = option.value;
+						var configuredDefault:Dynamic = option.value != null ? option.value : Reflect.field(option, 'default');
+						if (configuredDefault != null)
+							newOption.defaultValue = configuredDefault;
 
 						@:privateAccess
 						{

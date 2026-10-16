@@ -175,7 +175,11 @@ class Song
 	{
 		if (folder == null)
 			folder = jsonInput;
+		SongLoadMetrics.begin();
+		var chartStarted:Float = haxe.Timer.stamp();
+		CompiledChartCache.resetHit();
 		PlayState.SONG = getChart(jsonInput, folder);
+		SongLoadMetrics.recordChart((haxe.Timer.stamp() - chartStarted) * 1000, CompiledChartCache.lastHit);
 		loadedSongName = folder;
 		chartPath = _lastPath;
 		if (PlayState.SONG == null)
@@ -221,6 +225,54 @@ class Song
 
 	static var _lastPath:String;
 
+	public static function expectedChartPath(jsonInput:String, ?folder:String):String
+	{
+		if (folder == null)
+			folder = jsonInput;
+		return Paths.json('${Paths.formatToSongPath(folder)}/${Paths.formatToSongPath(jsonInput)}');
+	}
+
+	/** Resolves a Psych chart path without loading or parsing the chart. */
+	public static function resolveChartPath(jsonInput:String, ?folder:String):Null<String>
+	{
+		if (folder == null)
+			folder = jsonInput;
+
+		var formattedFolder:String = Paths.formatToSongPath(folder);
+		var formattedSong:String = Paths.formatToSongPath(jsonInput);
+		var directPath:String = Paths.json('$formattedFolder/$formattedSong');
+		if (AssetLoader.exists(directPath, TEXT))
+			return directPath;
+
+		var hasDifficultySuffix:Bool = false;
+		for (diff in Difficulty.list)
+		{
+			var suffix:String = '-' + Paths.formatToSongPath(diff);
+			if (formattedSong.endsWith(suffix))
+			{
+				hasDifficultySuffix = true;
+				break;
+			}
+		}
+
+		var normal:String = Paths.formatToSongPath(Difficulty.getDefault());
+		if (!hasDifficultySuffix)
+		{
+			var normalPath:String = Paths.json('$formattedFolder/$formattedSong-$normal');
+			if (AssetLoader.exists(normalPath, TEXT))
+				return normalPath;
+		}
+		else if (formattedSong.endsWith('-$normal'))
+		{
+			var baseSong:String = formattedSong.substr(0, formattedSong.length - normal.length - 1);
+			var basePath:String = Paths.json('$formattedFolder/$baseSong');
+			if (AssetLoader.exists(basePath, TEXT))
+				return basePath;
+		}
+
+		return null;
+	}
+
 	public static function getChart(jsonInput:String, ?folder:String):SwagSong
 	{
 		if (folder == null)
@@ -228,7 +280,12 @@ class Song
 
 		var formattedFolder:String = Paths.formatToSongPath(folder);
 		var formattedSong:String = Paths.formatToSongPath(jsonInput);
-		_lastPath = Paths.json('$formattedFolder/$formattedSong');
+		_lastPath = resolveChartPath(jsonInput, folder);
+		if (_lastPath == null)
+		{
+			_lastPath = expectedChartPath(jsonInput, folder);
+			return null;
+		}
 
 		#if MODS_ALLOWED
 		// Compatibility with Psych 0.7.3: If the chart doesn't exist,
@@ -273,6 +330,12 @@ class Song
 			}
 		}
 		#end
+		var compiled:SwagSong = CompiledChartCache.load(_lastPath);
+		if (compiled != null)
+		{
+			lastDetectedSourceFormat = 'compiled_cache';
+			return compiled;
+		}
 		var rawData:String = chartCache.get(_lastPath);
 		if (rawData == null)
 		{
@@ -281,7 +344,10 @@ class Song
 				chartCache.set(_lastPath, rawData);
 		}
 
-		return rawData != null ? parseJSON(rawData, jsonInput) : null;
+		var parsed:SwagSong = rawData != null ? parseJSON(rawData, jsonInput) : null;
+		if (parsed != null)
+			CompiledChartCache.save(_lastPath, parsed);
+		return parsed;
 	}
 
 	public static function getEventsChart(folder:String):SwagSong

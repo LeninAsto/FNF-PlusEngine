@@ -17,11 +17,11 @@ class HealthIcon extends FlxSprite
 	public var isAnimated:Bool = false;
 	public var animFPS:Int = 24;
 
-	public function new(char:String = 'face', isPlayer:Bool = false, ?allowGPU:Bool = true)
+	public function new(char:String = 'face', isPlayer:Bool = false, ?allowGPU:Bool = true, ?animFPS:Int = 24)
 	{
 		super();
 		this.isPlayer = isPlayer;
-		changeIcon(char, allowGPU);
+		changeIcon(char, allowGPU, false, animFPS);
 		scrollFactor.set();
 	}
 
@@ -36,10 +36,11 @@ class HealthIcon extends FlxSprite
 	private var iconOffsets:Array<Float> = [0, 0];
 	public static var verboseIconLoading:Bool = false;
 
-	public function changeIcon(char:String, ?allowGPU:Bool = true, ?forceAnimated:Bool = false)
+	public function changeIcon(char:String, ?allowGPU:Bool = true, ?forceAnimated:Bool = false, ?animFPS:Int = 24)
 	{
-		if (this.char != char)
+		if (this.char != char || this.animFPS != animFPS)
 		{
+			this.animFPS = animFPS;
 			try
 			{
 				var requestedChar:String = char;

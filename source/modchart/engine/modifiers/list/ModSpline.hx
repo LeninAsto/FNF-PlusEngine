@@ -190,6 +190,9 @@ class ModSpline extends Modifier {
 	override public function shouldRun(params:ModifierParameters):Bool
 		return getUnsafe(activeID, params.player) != 0;
 
+	override public function isActive(player:Int):Bool
+		return getUnsafe(activeID, player) != 0;
+
 	override public function allowOnStraightHolds():Bool
 		return false;
 }

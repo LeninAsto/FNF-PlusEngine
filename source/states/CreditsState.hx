@@ -43,8 +43,11 @@ class CreditsState extends MusicBeatState
 
 		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
-		bg.color = FlxColor.BLACK;
-		bg.alpha = 0.9;
+		// menuDesat is meant to receive the exact credit tint. Lowering its alpha
+		// blends every configured colour with the camera background and makes the
+		// displayed value darker than the hex stored in credits.txt.
+		bg.color = FlxColor.WHITE;
+		bg.alpha = 1;
 		add(bg);
 		bg.screenCenter();
 

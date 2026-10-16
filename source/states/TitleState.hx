@@ -156,7 +156,7 @@ class TitleState extends MusicBeatState
 	#if VIDEOS_ALLOWED
 	function shouldPlayIntroVideo():Bool
 	{
-		return ClientPrefs.data.titleIntroVideo && !introVideoPlayed && Paths.fileExists('videos/intro.${Paths.VIDEO_EXT}', AssetType.BINARY, true);
+		return ClientPrefs.data.titleIntroVideo && !introVideoPlayed && AssetLoader.exists(Paths.video('intro'), AssetType.BINARY);
 	}
 
 	function playIntroVideo():Void
@@ -457,6 +457,14 @@ class TitleState extends MusicBeatState
 		#if VIDEOS_ALLOWED
 		if (waitingForIntroVideo)
 		{
+			// The title movie is a startup splash, so a single Enter press should
+			// dismiss it. VideoSprite normally uses a one-second hold for gameplay
+			// cutscenes; keep that behaviour everywhere else.
+			if (FlxG.keys.justPressed.ENTER && introVideo != null)
+			{
+				introVideo.skipFromPause();
+				return;
+			}
 			super.update(elapsed);
 			return;
 		}

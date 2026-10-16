@@ -34,9 +34,10 @@ class Transform extends Modifier {
 	}
 
 	function getAliasValue(ids:Array<Int>, laneIDs:Array<Array<Int>>, lane:Int, player:Int):Float {
+		final laneSlot = getLaneSlot(lane, laneIDs[0].length);
 		for (i in 0...laneIDs.length)
-			if (hasUnsafeForPlayer(laneIDs[i][lane], player))
-				return getUnsafe(ids[i], player) + getUnsafe(laneIDs[i][lane], player);
+			if (hasUnsafeForPlayer(laneIDs[i][laneSlot], player))
+				return getUnsafe(ids[i], player) + getUnsafe(laneIDs[i][laneSlot], player);
 
 		for (id in ids)
 			if (hasUnsafeForPlayer(id, player))
@@ -58,4 +59,18 @@ class Transform extends Modifier {
 
 	override public function shouldRun(params:ModifierParameters):Bool
 		return true;
+
+	override public function isActive(player:Int):Bool {
+		if (getUnsafe(xOID, player) != 0 || getUnsafe(yOID, player) != 0 || getUnsafe(zOID, player) != 0)
+			return true;
+		for (axis in 0...xIDs.length) {
+			if (getUnsafe(xIDs[axis], player) != 0 || getUnsafe(yIDs[axis], player) != 0 || getUnsafe(zIDs[axis], player) != 0)
+				return true;
+			for (lane in 0...xLaneIDs[axis].length)
+				if (getUnsafe(xLaneIDs[axis][lane], player) != 0 || getUnsafe(yLaneIDs[axis][lane], player) != 0
+					|| getUnsafe(zLaneIDs[axis][lane], player) != 0)
+					return true;
+		}
+		return false;
+	}
 }

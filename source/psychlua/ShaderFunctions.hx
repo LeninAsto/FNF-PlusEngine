@@ -1,6 +1,8 @@
 package psychlua;
 
 import backend.ClientPrefs;
+import backend.GLCapabilities;
+import backend.Native;
 
 #if (!flash && sys)
 import flixel.addons.display.FlxRuntimeShader;
@@ -11,6 +13,19 @@ class ShaderFunctions
 	public static function implement(funk:FunkinLua)
 	{
 		var lua = funk.lua;
+		// Read-only GPU capability API. Mods can select a modern effect or a safe fallback.
+		funk.addLocalCallback("getOpenGLVersion", () -> Native.getOpenGLVersion());
+		funk.addLocalCallback("getOpenGLTier", () -> GLCapabilities.tierLabel());
+		funk.addLocalCallback("isOpenGLES", function() {
+			GLCapabilities.init();
+			return GLCapabilities.isES;
+		});
+		funk.addLocalCallback("getOpenGLMaxTextureSize", function() {
+			GLCapabilities.init();
+			return GLCapabilities.maxTextureSize;
+		});
+		funk.addLocalCallback("supportsOpenGLFeature", (feature:String) -> GLCapabilities.supports(feature));
+
 		// shader shit
 		funk.addLocalCallback("initLuaShader", function(name:String) {
 			if(!ClientPrefs.data.shaders) return false;

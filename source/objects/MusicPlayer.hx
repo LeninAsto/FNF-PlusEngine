@@ -181,7 +181,8 @@ class MusicPlayer extends FlxGroup
 			}
 		}
 
-		if (instance.touchPad.buttonC.justPressed || controls.RESET)
+		var touchReset:Bool = instance != null && instance.touchPad != null && instance.touchPad.buttonC != null && instance.touchPad.buttonC.justPressed;
+		if (touchReset || controls.RESET)
 		{
 			playbackRate = 1;
 			setPlaybackRate();

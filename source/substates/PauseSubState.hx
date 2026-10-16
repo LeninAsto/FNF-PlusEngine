@@ -501,12 +501,18 @@ class PauseSubState extends MusicBeatSubstate
 					if (!PlayState.exitToScriptedStateIfNeeded())
 					{
 						Mods.loadTopMod();
-						if (PlayState.isStoryMode)
-							MusicBeatState.switchState(backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()));
-						else
-							MusicBeatState.switchState(states.FreeplayStateSelector.create());
-
-						FlxG.sound.playMusic(Paths.music('freakyMenu'));
+						var target = PlayState.isStoryMode ?
+							() -> backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()) :
+							() -> states.FreeplayStateSelector.create();
+						openSubState(new StickerSubState({
+							targetState: _ ->
+							{
+								FlxG.sound.playMusic(Paths.music('freakyMenu'));
+								return target();
+							},
+							stickerPack: StickerSubState.randomPack(),
+							playOutOnTarget: true
+						}));
 					}
 					PlayState.changedDifficulty = false;
 					PlayState.chartingMode = false;

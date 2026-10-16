@@ -1,48 +1,67 @@
 package modchart.backend.core;
 
+import haxe.ds.StringMap;
 import haxe.ds.Vector;
 
-// basicly 2d vector with string hashing
-// used to store modifier values
+/**
+ * Collision-free registry for modifier values.
+ *
+ * Names are resolved once to compact integer IDs. Hot modifier code keeps those
+ * IDs and reads the player vectors directly, avoiding both repeated string
+ * lookups and the old 16-bit hash collisions.
+ */
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
 @:noDebug
 #end
 final class PercentArray {
-	private var vector:Vector<Vector<Float>>;
+	private var ids:StringMap<Int> = new StringMap();
+	private var names:Array<String> = [];
+	private var values:Array<Vector<Float>> = [];
 
-	public function new() {
-		vector = new Vector<Vector<Float>>(Std.int(Math.pow(2, 16))); // preallocate by max 16-bit integer
-	}
+	public function new() {}
 
-	// hash the key to a 16-bit integer (case-insensitive: avoids String.toLowerCase() allocation in callers)
-	@:noDebug @:noCompletion inline private function __hashKey(key:String):Int {
-		var hash:Int = 0;
-		var len = key.length;
-		for (i in 0...len) {
-			var c = StringTools.unsafeCodeAt(key, i);
-			// inline lowercase: 'A'-'Z' (65-90) -> 'a'-'z' (97-122)
-			if (c >= 65 && c <= 90)
-				c += 32;
-			hash = hash * 31 + c;
-		}
+	@:noDebug
+	public function getID(key:String):Int {
+		final normalized = key.toLowerCase();
+		final existing = ids.get(normalized);
+		if (existing != null)
+			return existing;
 
-		return hash & 0xFFFF; // 16-bit hash
+		final id = names.length;
+		ids.set(normalized, id);
+		names.push(normalized);
+		values.push(null);
+		return id;
 	}
 
 	@:noDebug
 	inline public function set(key:String, value:Vector<Float>):Void
-		setUnsafe(__hashKey(key), value);
+		setUnsafe(getID(key), value);
 
 	@:noDebug
-	public function get(key:String):Vector<Float>
-		return getUnsafe(__hashKey(key));
+	inline public function get(key:String):Vector<Float>
+		return getUnsafe(getID(key));
+
+	@:noDebug
+	public function addAlias(parent:String, alias:String):Int {
+		final id = getID(parent);
+		ids.set(alias.toLowerCase(), id);
+		return id;
+	}
+
+	@:noDebug
+	inline public function getName(id:Int):Null<String>
+		return id >= 0 && id < names.length ? names[id] : null;
 
 	@:noDebug
 	inline public function getUnsafe(id:Int):Vector<Float>
-		return vector.get(id);
+		return id >= 0 && id < values.length ? values[id] : null;
 
 	@:noDebug
-	inline public function setUnsafe(id:Int, value:Vector<Float>):Void
-		vector.set(id, value);
+	public function setUnsafe(id:Int, value:Vector<Float>):Void {
+		while (values.length <= id)
+			values.push(null);
+		values[id] = value;
+	}
 }

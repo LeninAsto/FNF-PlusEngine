@@ -279,7 +279,7 @@ class ResultsState extends MusicBeatState
 		bgFlash.alpha = 1;
 		FlxTween.tween(bgFlash, {alpha: 0}, 5 / 24);
 
-		var clearPercentFloat = scoreData.tallies.totalNotes == 0 ? 0.0 : ResultRankTools.tallyCompletion(scoreData.tallies) * 100;
+		var clearPercentFloat = scoreData.accuracy * 100;
 		clearPercentTarget = Math.floor(clearPercentFloat);
 		clearPercentLerp = Std.int(Math.max(0, clearPercentTarget - 36));
 
@@ -432,12 +432,33 @@ class ResultsState extends MusicBeatState
 	{
 		busy = true;
 		fadeOutResultsAudio();
-		var target = boolParam('isWeek') ? () -> new states.StoryMenuState() : () -> states.FreeplayStateSelector.create();
+		var target = boolParam('isWeek') ? () -> new states.StoryMenuState() : () ->
+		{
+			var freeplay = states.FreeplayStateSelector.create();
+			if (Std.isOfType(freeplay, states.FreeplayState_Psych))
+				startPsychFreeplayMusic();
+			return freeplay;
+		};
 		openSubState(new StickerSubState({
 			targetState: _ -> target(),
-			stickerPack: 'default',
+			stickerPack: StickerSubState.randomPack(),
 			playOutOnTarget: true
 		}));
+	}
+
+	function startPsychFreeplayMusic():Void
+	{
+		var menuMusic = Paths.music('freakyMenu');
+		var music = FlxG.sound.music;
+		if (music != null)
+			FlxTween.cancelTweensOf(music);
+		var alreadyPlaying:Bool = music != null && music.playing && @:privateAccess music._sound == menuMusic;
+		if (!alreadyPlaying)
+			FlxG.sound.playMusic(menuMusic);
+		else
+		{
+			music.volume = 1;
+		}
 	}
 
 	function fadeOutResultsAudio():Void
@@ -494,11 +515,32 @@ class ResultsState extends MusicBeatState
 		{
 			var atlas:PsychFlxAnimate = cast anim.sprite;
 			var start:String = anim.data.startFrameLabel == null ? '' : anim.data.startFrameLabel;
-			atlas.anim.play(start, true);
 			if (anim.data.loopFrameLabel != null)
-				atlas.anim.onComplete.add(() -> atlas.anim.play(anim.data.loopFrameLabel, true));
+			{
+				var introName:String = 'resultIntro';
+				var loopName:String = 'resultLoop';
+				if (start.length > 0)
+					atlas.addByFrameLabel(introName, start, 0, false);
+				else
+					introName = '';
+				atlas.addByFrameLabel(loopName, anim.data.loopFrameLabel, 0, true);
+
+				var switchToLoop:Void->Void = null;
+				switchToLoop = function()
+				{
+					atlas.anim.onComplete.remove(switchToLoop);
+					atlas.anim.play(loopName, true);
+				};
+				atlas.anim.onComplete.add(switchToLoop);
+				atlas.anim.play(introName, true);
+			}
 			else if (anim.data.loopFrame != null)
+			{
+				atlas.anim.play(start, true);
 				atlas.anim.onComplete.add(() -> atlas.anim.play('', true, false, anim.data.loopFrame));
+			}
+			else
+				atlas.anim.play(start, true);
 			return;
 		}
 		#end
@@ -539,26 +581,26 @@ class ResultsState extends MusicBeatState
 		{
 			case PERFECT_GOLD | PERFECT:
 				naughty ? [
-					anim('animateatlas', 'resultScreen/results-bf/resultsPERFECT/bed', [403, -305], 500, 0, 1, 'INTRO', null, 'LOOP START'),
-					anim('animateatlas', 'resultScreen/results-bf/resultsPERFECT/hearts', [630, 300], 501, 4.41, 1, '', 43)
+					anim('animateatlas', 'resultScreen/results-bf/resultsPERFECT/bed', [1355, 368], 500, 0, 1, 'INTRO', null, 'LOOP START'),
+					anim('animateatlas', 'resultScreen/results-bf/resultsPERFECT/hearts', [1355, 368], 501, 4.41, 1, '', 43)
 				] : [
-					anim('animateatlas', 'resultScreen/results-bf/resultsPERFECT/bed', [403, -305], 500, 0, 1, 'INTRO 2', null, 'LOOP 2'),
-					anim('animateatlas', 'resultScreen/results-bf/resultsPERFECT/tickleFight', [413, 314], 501, 4.41, 0.6, '', null, 'LOOP', 'tickleFight')
+					anim('animateatlas', 'resultScreen/results-bf/resultsPERFECT/bed', [1355, 368], 500, 0, 1, 'INTRO 2', null, 'LOOP 2'),
+					anim('animateatlas', 'resultScreen/results-bf/resultsPERFECT/tickleFight', [1355, 368], 501, 4.41, 0.6, '', null, 'LOOP', 'tickleFight')
 				];
 			case EXCELLENT:
-				[anim('animateatlas', 'resultScreen/results-bf/resultsEXCELLENT', [560.85, -410.35], 500, 0, 1, '', 29)];
+				[anim('animateatlas', 'resultScreen/results-bf/resultsEXCELLENT', [1325.85, 417.65], 500, 0, 1, '', 29)];
 			case GREAT:
 				[
-					anim('animateatlas', 'resultScreen/results-bf/resultsGREAT/gf', [563.364, -123.186], 499, 0.25, 0.93, '', 9),
-					anim('animateatlas', 'resultScreen/results-bf/resultsGREAT/bf', [655.3, -247.95], 500, 0, 0.93, '', 15)
+					anim('animateatlas', 'resultScreen/results-bf/resultsGREAT/gf', [816.36, 337.81], 499, 0.25, 0.93, '', 9),
+					anim('animateatlas', 'resultScreen/results-bf/resultsGREAT/bf', [934, 372.05], 500, 0, 0.93, '', 15)
 				];
 			case GOOD:
 				[
-					anim('animateatlas', 'resultScreen/results-bf/resultsGOOD/bf', [645.4, -214.8], 501, 0, 1, '', 14),
+					anim('animateatlas', 'resultScreen/results-bf/resultsGOOD/bf', [652.4, 389.2], 501, 0, 1, '', 14),
 					anim('sparrow', 'resultScreen/results-bf/resultsGOOD/resultGirlfriendGOOD', [629, 323], 500, 0.91, 1, '', 9)
 				];
 			case SHIT:
-				[anim('animateatlas', 'resultScreen/results-bf/resultsSHIT', [570.5, -390.5], 500, 0, 1, '', null, 'Loop Start')];
+				[anim('animateatlas', 'resultScreen/results-bf/resultsSHIT', [-16.5, 23.5], 500, 0, 1, 'Intro', null, 'Loop Start')];
 		}
 	}
 
@@ -623,6 +665,7 @@ class ResultsState extends MusicBeatState
 		var totalNotesHit:Int = totalNotes > 0 ? Std.int(Math.max(0, totalNotes - missed)) : sick + good + bad + shit;
 		return {
 			score: intParam('score'),
+			accuracy: FlxMath.bound(floatParam('accuracy'), 0, 2),
 			tallies: {
 				sick: sick,
 				good: good,
@@ -665,6 +708,17 @@ class ResultsState extends MusicBeatState
 		return parsed == null ? fallback : parsed;
 	}
 
+	function floatParam(name:String, fallback:Float = 0):Float
+	{
+		var value:Dynamic = fieldParam(name);
+		if (value == null)
+			return fallback;
+		if (Std.isOfType(value, Float) || Std.isOfType(value, Int))
+			return value;
+		var parsed:Float = Std.parseFloat(Std.string(value));
+		return Math.isNaN(parsed) ? fallback : parsed;
+	}
+
 	function boolParam(name:String):Bool
 	{
 		var value:Dynamic = fieldParam(name);
@@ -679,6 +733,7 @@ class ResultsState extends MusicBeatState
 typedef ResultScoreData =
 {
 	var score:Int;
+	var accuracy:Float;
 	var tallies:ResultTallyData;
 }
 
@@ -809,7 +864,7 @@ enum abstract ResultRank(String)
 
 class ResultRankTools
 {
-	static inline var RANK_PERFECT_THRESHOLD:Float = 1.00;
+	static inline var RANK_PERFECT_THRESHOLD:Float = 0.98;
 	static inline var RANK_EXCELLENT_THRESHOLD:Float = 0.90;
 	static inline var RANK_GREAT_THRESHOLD:Float = 0.80;
 	static inline var RANK_GOOD_THRESHOLD:Float = 0.60;
@@ -820,8 +875,8 @@ class ResultRankTools
 			return SHIT;
 		if (scoreData.tallies.sick == scoreData.tallies.totalNotes)
 			return PERFECT_GOLD;
-		var completionAmount:Float = tallyCompletion(scoreData.tallies);
-		if (completionAmount == RANK_PERFECT_THRESHOLD)
+		var completionAmount:Float = FlxMath.bound(scoreData.accuracy, 0, 1);
+		if (completionAmount >= RANK_PERFECT_THRESHOLD)
 			return PERFECT;
 		if (completionAmount >= RANK_EXCELLENT_THRESHOLD)
 			return EXCELLENT;

@@ -1,6 +1,9 @@
 package objects;
 
 import flixel.addons.display.FlxPieDial;
+#if android
+import mobile.backend.TouchUtil;
+#end
 #if hxvlc
 import hxvlc.flixel.FlxVideoSprite;
 #end
@@ -115,7 +118,11 @@ class VideoSprite extends FlxSpriteGroup
 	{
 		if (canSkip)
 		{
-			if (Controls.instance.pressed('accept'))
+			var holdingSkip:Bool = Controls.instance.pressed('accept');
+			#if android
+			holdingSkip = holdingSkip || TouchUtil.pressed;
+			#end
+			if (holdingSkip)
 			{
 				holdingTime = Math.max(0, Math.min(_timeToSkip, holdingTime + elapsed));
 			}

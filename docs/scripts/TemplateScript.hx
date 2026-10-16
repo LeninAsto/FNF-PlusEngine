@@ -242,19 +242,19 @@ function onMoveCamera(focus:String)
 
 
 // Event notes hooks
-function onEvent(name:String, value1:String, value2:String, strumTime:Float)
+function onEvent(name:String, value1:String, value2:String, value3:String, value4:String, strumTime:Float)
 {
 	// Event note triggered
 
-	// print('Event triggered: ', name, value1, value2, strumTime);
+	// print('Event triggered: ', name, value1, value2, value3, value4 strumTime);
 }
 
-function onEventPushed(name:String, value1:String, value2:String, strumTime:Float)
+function onEventPushed(name:String, value1:String, value2:String, value3:String, value4:String, strumTime:Float)
 {
 	// Called for every event note, recommended to precache assets
 }
 
-function eventEarlyTrigger(name:String, value1:String, value2:String, strumTime:Float)
+function eventEarlyTrigger(name:String, value1:String, value2:String, value3:String, value4:String, strumTime:Float)
 {
 	/*
 	Here's a port of the Kill Henchmen early trigger:

@@ -449,50 +449,6 @@ class Mods
 		return 'freakyMenu';
 	}
 
-	public static function getEditionName(?folder:String = null):String
-	{
-		#if MODS_ALLOWED
-		function read(candidate:String):String
-		{
-			if (candidate == null || StringTools.trim(candidate).length < 1)
-				return '';
-
-			var value:Dynamic = getPackField(candidate, 'editionName');
-			if (value == null)
-				value = getPackField(candidate, 'edition');
-
-			if (value == null)
-				return '';
-
-			var text:String = StringTools.trim(Std.string(value));
-			return text.length > 0 ? text : '';
-		}
-
-		var direct:String = read(folder);
-		if (direct.length > 0)
-			return direct;
-
-		var current:String = read(currentModDirectory);
-		if (current.length > 0)
-			return current;
-
-		for (mod in getGlobalMods())
-		{
-			var global:String = read(mod);
-			if (global.length > 0)
-				return global;
-		}
-
-		for (mod in parseList().enabled)
-		{
-			var enabled:String = read(mod);
-			if (enabled.length > 0)
-				return enabled;
-		}
-		#end
-		return '';
-	}
-
 	public static function getLuaMode(folder:String):String
 	{
 		var value:Dynamic = getPackField(folder, 'luaMode');

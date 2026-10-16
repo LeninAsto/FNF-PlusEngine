@@ -58,6 +58,14 @@
 		</activity>
 
 		<activity
+			android:name="::APP_PACKAGE::.EngineCrashActivity"
+			android:label="@string/plus_launcher_recovery_title"
+			android:theme="@style/LimeAppMainTheme"
+			android:process=":lime_crash"
+			android:excludeFromRecents="true"
+			android:exported="false" />
+
+		<activity
 			android:name="org.haxe.lime.LimeCrashActivity"
 			android:label="@string/plus_launcher_recovery_title"
 			android:theme="@style/LimeAppMainTheme"

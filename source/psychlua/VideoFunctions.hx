@@ -10,6 +10,8 @@ class VideoFunctions
 	private static var activeVideos:Map<String, FlxVideoSprite> = new Map();
 	private static var videoVolumes:Map<String, Float> = new Map();
 	private static var videoFronts:Map<String, Bool> = new Map();
+	private static var videoCameras:Map<String, String> = new Map();
+	private static var pausedByGameplay:Map<String, Bool> = new Map();
 
 	private static var isDestroyed:Map<String, Bool> = new Map();
 	private static var allowDestroy:Map<String, Bool> = new Map();
@@ -20,7 +22,7 @@ class VideoFunctions
 
 		#if VIDEOS_ALLOWED
 		Lua_helper.add_callback(lua, "precacheLuaVideoSprite",
-			function(tag:String, path:String, ?x:Float = 0, ?y:Float = 0, ?volumeOrFront:Dynamic = 1.0, ?front:Bool = false)
+			function(tag:String, path:String, ?x:Float = 0, ?y:Float = 0, ?cameraOrVolume:Dynamic = "camHUD", ?volumeOrFront:Dynamic = 1.0, ?front:Bool = false)
 			{
 				if (tag == null || tag.trim() == '')
 				{
@@ -34,13 +36,13 @@ class VideoFunctions
 					return;
 				}
 
-				var options = parseLuaVideoArgs(volumeOrFront, front);
+				var options = parseLuaVideoArgs(cameraOrVolume, volumeOrFront, front);
 				forceRemoveLuaVideo(tag);
-				createLuaVideo(tag, path, x, y, options.volume, options.front, funk, false);
+				createLuaVideo(tag, path, x, y, options.camera, options.volume, options.front, funk, false);
 			});
 
 		Lua_helper.add_callback(lua, "playLuaVideoSprite",
-			function(tag:String, ?path:String = null, ?x:Float = 0, ?y:Float = 0, ?volumeOrFront:Dynamic = 1.0, ?front:Bool = false)
+			function(tag:String, ?path:String = null, ?x:Float = 0, ?y:Float = 0, ?cameraOrVolume:Dynamic = "camHUD", ?volumeOrFront:Dynamic = 1.0, ?front:Bool = false)
 			{
 				if (tag == null || tag.trim() == '')
 				{
@@ -50,7 +52,7 @@ class VideoFunctions
 
 				var variables = MusicBeatState.getVariables();
 				var existingVideo = variables.get(tag);
-				var options = parseLuaVideoArgs(volumeOrFront, front);
+				var options = parseLuaVideoArgs(cameraOrVolume, volumeOrFront, front);
 
 				if (existingVideo != null && Std.isOfType(existingVideo, FlxVideoSprite))
 				{
@@ -60,8 +62,10 @@ class VideoFunctions
 					{
 						videoVolumes.set(tag, options.volume);
 						videoFronts.set(tag, options.front);
+						videoCameras.set(tag, options.camera);
 						videoSprite.x = x;
 						videoSprite.y = y;
+						applyLuaVideoCamera(videoSprite, options.camera);
 						playFront = options.front;
 					}
 					playStoredLuaVideo(tag, videoSprite, playFront);
@@ -79,7 +83,7 @@ class VideoFunctions
 					forceRemoveLuaVideo(tag);
 				}
 
-				createLuaVideo(tag, path, x, y, options.volume, options.front, funk, true);
+				createLuaVideo(tag, path, x, y, options.camera, options.volume, options.front, funk, true);
 			});
 
 		Lua_helper.add_callback(lua, "pauseLuaVideoSprite", function(tag:String)
@@ -168,35 +172,56 @@ class VideoFunctions
 	}
 
 	#if VIDEOS_ALLOWED
-	private static function parseLuaVideoArgs(volumeOrFront:Dynamic, front:Bool):Dynamic
+	private static function parseLuaVideoArgs(cameraOrVolume:Dynamic, volumeOrFront:Dynamic, front:Bool):Dynamic
 	{
+		var camera:String = "camHUD";
 		var volume:Float = 1.0;
-		if (Std.isOfType(volumeOrFront, Bool))
+
+		if (Std.isOfType(cameraOrVolume, String))
 		{
-			front = cast volumeOrFront;
+			var cameraName = Std.string(cameraOrVolume).trim();
+			if (cameraName != '')
+				camera = cameraName;
+
+			if (Std.isOfType(volumeOrFront, Bool))
+				front = cast volumeOrFront;
+			else if (volumeOrFront != null)
+			{
+				volume = Std.parseFloat(Std.string(volumeOrFront));
+				if (Math.isNaN(volume))
+					volume = 1.0;
+			}
 		}
-		else if (volumeOrFront != null)
+		else if (Std.isOfType(cameraOrVolume, Bool))
 		{
-			volume = Std.parseFloat(Std.string(volumeOrFront));
+			front = cast cameraOrVolume;
+		}
+		else if (cameraOrVolume != null)
+		{
+			volume = Std.parseFloat(Std.string(cameraOrVolume));
 			if (Math.isNaN(volume))
 				volume = 1.0;
+
+			if (Std.isOfType(volumeOrFront, Bool))
+				front = cast volumeOrFront;
 		}
 
-		return {volume: clampVideoVolume(volume), front: front};
+		return {camera: camera, volume: clampVideoVolume(volume), front: front};
 	}
 
-	private static function createLuaVideo(tag:String, path:String, x:Float, y:Float, volume:Float, front:Bool, funk:FunkinLua, autoPlay:Bool):Void
+	private static function createLuaVideo(tag:String, path:String, x:Float, y:Float, camera:String, volume:Float, front:Bool, funk:FunkinLua, autoPlay:Bool):Void
 	{
 		isDestroyed.set(tag, false);
 		allowDestroy.set(tag, false);
 		videoVolumes.set(tag, volume);
 		videoFronts.set(tag, front);
+		videoCameras.set(tag, camera);
 
 		var videoSprite:FlxVideoSprite = new FlxVideoSprite();
 		videoSprite.active = false;
 		videoSprite.visible = autoPlay;
 		videoSprite.antialiasing = ClientPrefs.data.antialiasing;
-		videoSprite.cameras = [PlayState.instance.camHUD];
+		applyLuaVideoCamera(videoSprite, camera);
 		videoSprite.x = x;
 		videoSprite.y = y;
 
@@ -205,12 +230,14 @@ class VideoFunctions
 			videoSprite.updateHitbox();
 			videoSprite.x = x;
 			videoSprite.y = y;
+			applySongRate(videoSprite);
 			applyStoredLuaVideoVolume(tag, videoSprite);
 			trace('Video "$tag" loaded successfully');
 		});
 
 		videoSprite.bitmap.onPlaying.add(function()
 		{
+			applySongRate(videoSprite);
 			pulseLuaVideoVolume(tag, videoSprite);
 		});
 
@@ -239,9 +266,11 @@ class VideoFunctions
 			allowDestroy.remove(tag);
 			videoVolumes.remove(tag);
 			videoFronts.remove(tag);
+			videoCameras.remove(tag);
 			return;
 		}
 		applyStoredLuaVideoVolume(tag, videoSprite);
+		applySongRate(videoSprite);
 
 		new flixel.util.FlxTimer().start(2.0, function(tmr:flixel.util.FlxTimer)
 		{
@@ -272,32 +301,58 @@ class VideoFunctions
 			if (videoSprite != null && videoSprite.bitmap != null)
 			{
 				videoSprite.play();
+				applySongRate(videoSprite);
 				pulseLuaVideoVolume(tag, videoSprite);
 			}
 		});
 	}
 
+	public static function setPlaybackRate(rate:Float):Void
+	{
+		#if VIDEOS_ALLOWED
+		if (Math.isNaN(rate) || rate <= 0)
+			rate = 1;
+		for (video in activeVideos)
+			if (video != null && video.bitmap != null)
+				video.bitmap.rate = rate;
+		#end
+	}
+
+	private static function applySongRate(video:FlxVideoSprite):Void
+	{
+		if (video == null || video.bitmap == null)
+			return;
+		var rate:Float = PlayState.instance != null ? PlayState.instance.playbackRate : 1;
+		video.bitmap.rate = rate > 0 && !Math.isNaN(rate) ? rate : 1;
+	}
+
 	private static function addLuaVideoToState(videoSprite:FlxVideoSprite, front:Bool):Void
 	{
-		if (PlayState.instance == null || PlayState.instance.members == null)
+		final instance = psychlua.backend.LuaUtils.getTargetInstance();
+		if (instance == null || instance.members == null)
 			return;
-		if (PlayState.instance.members.contains(videoSprite))
+		if (instance.members.contains(videoSprite))
 			return;
 
 		if (front)
 		{
-			PlayState.instance.add(videoSprite);
+			instance.add(videoSprite);
 		}
 		else
 		{
-			var position:Int = PlayState.instance.members.indexOf(PlayState.instance.gfGroup);
-			if (PlayState.instance.members.indexOf(PlayState.instance.boyfriendGroup) < position)
-				position = PlayState.instance.members.indexOf(PlayState.instance.boyfriendGroup);
-			if (PlayState.instance.members.indexOf(PlayState.instance.dadGroup) < position)
-				position = PlayState.instance.members.indexOf(PlayState.instance.dadGroup);
-
-			PlayState.instance.insert(position, videoSprite);
+			if (PlayState.instance == null || !PlayState.instance.isDead)
+				instance.insert(instance.members.indexOf(psychlua.backend.LuaUtils.getLowestCharacterGroup()), videoSprite);
+			else
+				substates.GameOverSubstate.instance.insert(substates.GameOverSubstate.instance.members.indexOf(substates.GameOverSubstate.instance.boyfriend), videoSprite);
 		}
+	}
+
+	private static function applyLuaVideoCamera(videoSprite:FlxVideoSprite, camera:String):Void
+	{
+		if (videoSprite == null)
+			return;
+
+		videoSprite.cameras = [psychlua.backend.LuaUtils.cameraFromString(camera)];
 	}
 
 	private static function forceRemoveLuaVideo(tag:String):Void
@@ -348,8 +403,13 @@ class VideoFunctions
 
 		if (video == null || !Std.isOfType(video, FlxVideoSprite))
 		{
+			activeVideos.remove(tag);
 			videoVolumes.remove(tag);
 			videoFronts.remove(tag);
+			videoCameras.remove(tag);
+			pausedByGameplay.remove(tag);
+			isDestroyed.remove(tag);
+			allowDestroy.remove(tag);
 			return;
 		}
 
@@ -361,6 +421,8 @@ class VideoFunctions
 		activeVideos.remove(tag);
 		videoVolumes.remove(tag);
 		videoFronts.remove(tag);
+		videoCameras.remove(tag);
+		pausedByGameplay.remove(tag);
 
 		if (videoSprite.bitmap != null)
 		{
@@ -471,11 +533,13 @@ class VideoFunctions
 	public static function pauseAll():Void
 	{
 		#if VIDEOS_ALLOWED
+		pausedByGameplay.clear();
 		for (tag => video in activeVideos)
 		{
-			if (video != null && video.bitmap.isPlaying)
+			if (video != null && video.bitmap != null && video.bitmap.isPlaying)
 			{
 				video.pause();
+				pausedByGameplay.set(tag, true);
 			}
 		}
 		#end
@@ -484,13 +548,15 @@ class VideoFunctions
 	public static function resumeAll():Void
 	{
 		#if VIDEOS_ALLOWED
-		for (tag => video in activeVideos)
+		for (tag in pausedByGameplay.keys())
 		{
-			if (video != null && !video.bitmap.isPlaying)
+			final video = activeVideos.get(tag);
+			if (video != null && video.bitmap != null && !video.bitmap.isPlaying)
 			{
 				video.resume();
 			}
 		}
+		pausedByGameplay.clear();
 		#end
 	}
 
@@ -505,12 +571,15 @@ class VideoFunctions
 
 		for (tag in tags)
 		{
+			allowDestroy.set(tag, true);
 			removeLuaVideo(tag);
 		}
 
 		activeVideos.clear();
 		videoVolumes.clear();
 		videoFronts.clear();
+		videoCameras.clear();
+		pausedByGameplay.clear();
 		#end
 	}
 	#end

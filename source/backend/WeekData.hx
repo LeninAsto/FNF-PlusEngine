@@ -135,27 +135,24 @@ class WeekData
 		for (i in 0...directories.length)
 		{
 			var directory:String = directories[i] + 'weeks/';
-			if (Paths.safeModIsDirectory(directory))
+			var listOfWeeks:Array<String> = CoolUtil.coolTextFile(directory + 'weekList.txt');
+			for (daWeek in listOfWeeks)
 			{
-				var listOfWeeks:Array<String> = CoolUtil.coolTextFile(directory + 'weekList.txt');
-				for (daWeek in listOfWeeks)
+				if (daWeek == null || daWeek.length == 0)
+					continue;
+				var path:String = directory + daWeek + '.json';
+				if (AssetLoader.exists(path, TEXT))
 				{
-					if (daWeek == null || daWeek.length == 0)
-						continue;
-					var path:String = directory + daWeek + '.json';
-					if (AssetLoader.exists(path, TEXT))
-					{
-						addWeek(daWeek, path, directories[i], i, originalLength);
-					}
+					addWeek(daWeek, path, directories[i], i, originalLength);
 				}
+			}
 
-				for (file in Paths.readDirectory(directory))
+			for (file in Paths.readDirectory(directory))
+			{
+				var path = directory + file;
+				if (!Paths.safeModIsDirectory(path) && file.endsWith('.json'))
 				{
-					var path = haxe.io.Path.join([directory, file]);
-					if (!Paths.safeModIsDirectory(path) && file.endsWith('.json'))
-					{
-						addWeek(file.substr(0, file.length - 5), path, directories[i], i, originalLength);
-					}
+					addWeek(file.substr(0, file.length - 5), path, directories[i], i, originalLength);
 				}
 			}
 		}
