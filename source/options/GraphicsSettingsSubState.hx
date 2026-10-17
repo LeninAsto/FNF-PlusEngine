@@ -12,8 +12,8 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 
 	public function new()
 	{
-		title = Language.getPhrase('graphics_menu', 'Graphics Settings');
-		rpcTitle = 'Graphics Settings Menu'; // for Discord Rich Presence
+		title = Language.getPhrase('options.menus.graphics.title', Language.getPhrase('graphics_menu', 'Graphics Settings'));
+		rpcTitle = Language.getPhrase('options.menus.graphics.presence', 'Graphics Settings Menu'); // for Discord Rich Presence
 		#if windows
 		initialFullscreenMode = ClientPrefs.data.fullscreenMode;
 		#end

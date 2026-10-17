@@ -4,8 +4,8 @@ class LegacySettingsSubState extends BaseOptionsMenu
 {
 	public function new()
 	{
-		title = Language.getPhrase('legacy_menu', 'Legacy Settings');
-		rpcTitle = 'Legacy Settings Menu';
+		title = Language.getPhrase('options.menus.legacy.title', Language.getPhrase('legacy_menu', 'Legacy Settings'));
+		rpcTitle = Language.getPhrase('options.menus.legacy.presence', 'Legacy Settings Menu');
 
 		var option:Option = new Option('Use Psych Score Text', 'If checked, keeps the original Psych Engine score text format during gameplay.',
 			'psychScoreText', BOOL);

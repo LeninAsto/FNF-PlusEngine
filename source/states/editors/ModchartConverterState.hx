@@ -16,7 +16,7 @@ class ModchartConverterState extends MusicBeatState
 		FlxG.camera.bgColor = 0xFF10151D;
 
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence('Modchart Converter');
+		DiscordClient.changePresence(Language.getPhrase('editors.modchart_converter.presence', 'Modchart Converter'));
 		#end
 
 		var bg:FlxSprite = new FlxSprite().makeGraphic(1, 1, 0xFF10151D);
@@ -29,19 +29,20 @@ class ModchartConverterState extends MusicBeatState
 		accent.scrollFactor.set();
 		add(accent);
 
-		var title = new FlxText(24, 18, FlxG.width - 48, 'Modchart Converter', 32);
+		var title = new FlxText(24, 18, FlxG.width - 48, Language.getPhrase('editors.modchart_converter.title', 'Modchart Converter'), 32);
 		title.setFormat(Paths.font('vcr.ttf'), 32, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		title.scrollFactor.set();
 		add(title);
 
-		statusText = new FlxText(24, 64, FlxG.width - 48, 'Copy an NVME Lua modchart to the clipboard, and then click \"Convert Clipboard\"".', 18);
+		statusText = new FlxText(24, 64, FlxG.width - 48,
+			Language.getPhrase('editors.modchart_converter.intro', 'Copy an NVME Lua modchart to the clipboard, and then click "Convert Clipboard".'), 18);
 		statusText.setFormat(Paths.font('vcr.ttf'), 18, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		statusText.scrollFactor.set();
 		add(statusText);
 
 		var helpText = new FlxText(24, 102, 420,
-			'This tool performs a practical first-pass conversion.\n' +
-			'Reassign the steps, remove the NVMe radian helpers, and remember that fieldYaw is the name of the Plus side.',
+			Language.getPhrase('editors.modchart_converter.help',
+				'This tool performs a practical first-pass conversion.\nReassign the steps, remove the NVMe radian helpers, and remember that fieldYaw is the name of the Plus side.'),
 			16);
 		helpText.setFormat(Paths.font('vcr.ttf'), 16, FlxColor.fromRGB(215, 225, 235), LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		helpText.scrollFactor.set();
@@ -56,27 +57,31 @@ class ModchartConverterState extends MusicBeatState
 		previewText.wordWrap = true;
 		add(previewText);
 
-		var convertButton = new PsychUIButton(24, FlxG.height - 86, 'Convert Clipboard', function()
+		var convertButton = new PsychUIButton(24, FlxG.height - 86,
+			Language.getPhrase('editors.modchart_converter.actions.convert_clipboard', 'Convert Clipboard'), function()
 		{
 			convertClipboard();
 		});
 		add(convertButton);
 
-		var templateButton = new PsychUIButton(184, FlxG.height - 86, 'Copy Starter', function()
+		var templateButton = new PsychUIButton(184, FlxG.height - 86,
+			Language.getPhrase('editors.modchart_converter.actions.copy_starter', 'Copy Starter'), function()
 		{
 			Clipboard.text = makeStarterTemplate();
-			setStatus('The initial template has been copied to the clipboard.');
+			setStatus(Language.getPhrase('editors.modchart_converter.status.starter_copied', 'The initial template has been copied to the clipboard.'));
 			showPreview(Clipboard.text);
 		});
 		add(templateButton);
 
-		var backButton = new PsychUIButton(344, FlxG.height - 86, 'Back', function()
+		var backButton = new PsychUIButton(344, FlxG.height - 86,
+			Language.getPhrase('editors.modchart_converter.actions.back', 'Back'), function()
 		{
 			MusicBeatState.switchState(new MasterEditorMenu());
 		});
 		add(backButton);
 
-		setStatus('Done. Import a modchart from the clipboard or copy the initial template.');
+		setStatus(Language.getPhrase('editors.modchart_converter.status.ready',
+			'Done. Import a modchart from the clipboard or copy the initial template.'));
 		showPreview(makeStarterTemplate());
 
 		super.create();
@@ -105,7 +110,7 @@ class ModchartConverterState extends MusicBeatState
 
 		var preview = text;
 		if (preview.length > 1800)
-			preview = preview.substr(0, 1800) + '\n\n... preview truncated ...';
+			preview = preview.substr(0, 1800) + '\n\n' + Language.getPhrase('editors.modchart_converter.preview_truncated', '... preview truncated ...');
 
 		previewText.text = preview;
 	}
@@ -115,14 +120,16 @@ class ModchartConverterState extends MusicBeatState
 		var source = Clipboard.text;
 		if (source == null || source.trim().length == 0)
 		{
-			setStatus('The clipboard is empty. First, copy an NVMe script.');
-			showPreview('No text was found in the clipboard.');
+			setStatus(Language.getPhrase('editors.modchart_converter.status.clipboard_empty',
+				'The clipboard is empty. First, copy an NVMe script.'));
+			showPreview(Language.getPhrase('editors.modchart_converter.no_clipboard_text', 'No text was found in the clipboard.'));
 			return;
 		}
 
 		var converted = convertNvmToPlus(source);
 		Clipboard.text = converted;
-		setStatus('Converts ' + source.length + ' characters in ' + converted.length + ' and copied to the clipboard again.');
+		setStatus(Language.getPhrase('editors.modchart_converter.status.converted',
+			'Converted {1} characters into {2} and copied the result to the clipboard.', [source.length, converted.length]));
 		showPreview(converted);
 	}
 

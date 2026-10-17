@@ -1,0 +1,18 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.master",
+  "presence": "Editors Main Menu",
+  "note_rgb_disabled": "Note RGB is disabled!!!",
+  "no_mod_directory": "< No Mod Directory Loaded >",
+  "loaded_mod_directory": "< Loaded Mod Directory: {1} >",
+  "items": {
+    "chart_editor": "Chart Editor",
+    "character_editor": "Character Editor",
+    "stage_editor": "Stage Editor",
+    "week_editor": "Week Editor",
+    "menu_character_editor": "Menu Character Editor",
+    "dialogue_editor": "Dialogue Editor",
+    "dialogue_portrait_editor": "Dialogue Portrait Editor",
+    "note_splash_editor": "Note Splash Editor"
+  }
+}

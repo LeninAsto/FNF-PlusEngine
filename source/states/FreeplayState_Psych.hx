@@ -70,7 +70,7 @@ class FreeplayState_Psych extends MusicBeatState
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("In the Menus", null);
+		DiscordClient.changePresence(Language.getPhrase('freeplay.presence', 'In the Menus'), null);
 		#end
 
 		final accept:String = (controls.mobileC) ? "A" : "ACCEPT";
@@ -80,8 +80,8 @@ class FreeplayState_Psych extends MusicBeatState
 		{
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
-			MusicBeatState.switchState(new states.ErrorState("NO WEEKS ADDED FOR FREEPLAY\n\nPress " + accept + " to go to the Week Editor Menu.\nPress "
-				+ reject + " to return to Main Menu.",
+			MusicBeatState.switchState(new states.ErrorState(Language.getPhrase('freeplay.errors.no_weeks',
+				'NO WEEKS ADDED FOR FREEPLAY\n\nPress {1} to go to the Week Editor Menu.\nPress {2} to return to Main Menu.', [accept, reject]),
 				function() MusicBeatState.switchState(new states.editors.WeekEditorState()),
 				function() MusicBeatState.switchState(new states.MainMenuState())));
 			return;
@@ -181,11 +181,11 @@ class FreeplayState_Psych extends MusicBeatState
 		final control:String = (controls.mobileC) ? "C" : "CTRL";
 		final reset:String = (controls.mobileC) ? "Y" : "RESET";
 
-		var leText:String = Language.getPhrase("freeplay_tip",
-			"Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.",
+		var leText:String = Language.getPhrase('freeplay.psych.tip', Language.getPhrase('freeplay_tip',
+			'Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.'),
 			[space, control, reset]);
 		#if (MODS_ALLOWED && sys && !mobile)
-		leText += " / F5 reloads mods / drop a mod folder to import it.";
+		leText += Language.getPhrase('freeplay.psych.desktop_mod_tip', ' / F5 reloads mods / drop a mod folder to import it.');
 		#end
 		bottomString = leText;
 
@@ -295,7 +295,8 @@ class FreeplayState_Psych extends MusicBeatState
 			}
 			#end
 
-			scoreText.text = 'PERSONAL BEST: ${lerpScore} (${AccuracyTools.format(lerpRating)})';
+			scoreText.text = Language.getPhrase('freeplay.score.personal_best', 'PERSONAL BEST: {1} ({2})',
+				[lerpScore, AccuracyTools.format(lerpRating)]);
 			positionHighscore();
 
 			if (songs.length > 1)
@@ -519,7 +520,8 @@ class FreeplayState_Psych extends MusicBeatState
 			}
 			catch (e:Dynamic)
 			{
-				report.add(SongCheckSeverity.ERROR, 'chart-load-exception', 'Unexpected error while loading the chart: ${Std.string(e)}', report.chartPath);
+				report.add(SongCheckSeverity.ERROR, 'chart-load-exception',
+					Language.getPhrase('freeplay.errors.chart_load_exception', 'Unexpected error while loading the chart: {1}', [Std.string(e)]), report.chartPath);
 			}
 		}
 		SongLoadMetrics.recordChecker((Timer.stamp() - checkerStarted) * 1000 - SongLoadMetrics.chartMs);

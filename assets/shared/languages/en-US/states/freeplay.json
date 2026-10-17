@@ -1,0 +1,59 @@
+{
+  "$schema": 1,
+  "$namespace": "freeplay",
+  "presence": "In the Menus",
+  "title": "FREEPLAY",
+  "score": {
+    "personal_best": "PERSONAL BEST: {1} ({2})",
+    "details": "Score: {1}\nAccuracy: {2}",
+    "none": "No score yet"
+  },
+  "errors": {
+    "no_weeks": "NO WEEKS ADDED FOR FREEPLAY\n\nPress {1} to go to the Week Editor Menu.\nPress {2} to return to Main Menu.",
+    "chart_load_exception": "Unexpected error while loading the chart: {1}",
+    "no_chart": "No chart is available for this difficulty!",
+    "invalid_bpm": "This chart has an invalid BPM, so it cannot be played."
+  },
+  "search": {
+    "placeholder": "Search...",
+    "helper": "Press B to focus, ESC to exit"
+  },
+  "tip": "Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.",
+  "desktop_mod_tip": " / F5 reloads mods / drop a mod folder to import it.",
+  "song_info": {
+    "loading": "Loading...",
+    "scores": "Diff and Scores:\n{1}",
+    "time": "Time: {1}",
+    "bpm": "BPM: {1}",
+    "author": "By: {1}"
+  },
+  "licenses": {
+    "no-licenses": "No License",
+    "creative-commons": "Creative Commons",
+    "cc-by": "CC BY",
+    "cc-by-sa": "CC BY-SA",
+    "cc-by-nd": "CC BY-ND",
+    "cc-by-nc": "CC BY-NC",
+    "cc-by-nc-sa": "CC BY-NC-SA",
+    "cc-by-nc-nd": "CC BY-NC-ND",
+    "public-domain": "Public Domain",
+    "royalty-free": "Royalty Free",
+    "copyright": "Copyright",
+    "permission-required": "Permission Required",
+    "comercial-use": "Commercial Use",
+    "no-comercial": "Non-Commercial",
+    "no-derivatives": "No Derivatives",
+    "share-alike": "Share Alike",
+    "atribution-required": "Attribution Required",
+    "redistribution-allow": "Redistribution Allowed",
+    "modify-allow": "Modification Allowed",
+    "streaming-allow": "Streaming Allowed",
+    "public-access": "Public Access",
+    "public-execution": "Public Performance",
+    "sync": "Sync"
+  },
+  "psych": {
+    "tip": "Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.",
+    "desktop_mod_tip": " / F5 reloads mods / drop a mod folder to import it."
+  }
+}

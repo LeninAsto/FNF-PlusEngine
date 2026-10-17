@@ -76,7 +76,7 @@ class OptionsState extends MusicBeatState
 
 	function getDisplayLabel(label:String):String
 	{
-		return switch (label)
+		var fallback:String = switch (label)
 		{
 			case 'Note Colors': Language.getPhrase('notes', 'Note Colors');
 			case 'Controls': Language.getPhrase('controls', 'Controls');
@@ -89,12 +89,14 @@ class OptionsState extends MusicBeatState
 			case 'Language': Language.getPhrase('language_menu', 'Language');
 			case 'Mobile': Language.getPhrase('mobile_settings', 'Mobile Settings');
 			default: Language.getPhrase('options_$label', label);
-		}
+		};
+		var key:String = label.toLowerCase().replace(' ', '_');
+		return Language.getPhrase('options.categories.$key.name', fallback);
 	}
 
 	function getOptionDescription(label:String):String
 	{
-		return switch (label)
+		var fallback:String = switch (label)
 		{
 			case 'Note Colors': Language.getPhrase('description_notes', 'Change note colors and note splash colors.');
 			case 'Controls': Language.getPhrase('description_controls', 'Change keyboard and gamepad binds.');
@@ -108,7 +110,9 @@ class OptionsState extends MusicBeatState
 			case 'Language': Language.getPhrase('description_language_menu', 'Change the active language.');
 			case 'Mobile': Language.getPhrase('description_mobile_settings', 'Change mobile controls and layout settings.');
 			default: '';
-		}
+		};
+		var key:String = label.toLowerCase().replace(' ', '_');
+		return Language.getPhrase('options.categories.$key.description', fallback);
 	}
 
 	function restoreOptionTexts():Void
@@ -120,7 +124,7 @@ class OptionsState extends MusicBeatState
 			var item = grpOptions.members[i];
 			if (item != null && i < options.length)
 			{
-				item.text = Language.getPhrase('options_${options[i]}', options[i]);
+				item.text = getDisplayLabel(options[i]);
 				item.setScale(1);
 			}
 		}
@@ -199,7 +203,7 @@ class OptionsState extends MusicBeatState
 	override function create()
 	{
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("Options Menu", null);
+		DiscordClient.changePresence(Language.getPhrase('options.common.presence', 'Options Menu'), null);
 		#end
 		OptionsMenuTheme.syncAccent();
 		menuStyle = normalizeMenuStyle(ClientPrefs.data.optionsMenuStyle);
@@ -215,7 +219,9 @@ class OptionsState extends MusicBeatState
 		if (controls.mobileC)
 		{
 			var tipText:FlxText = new FlxText(150, FlxG.height - 24, 0,
-				Language.getPhrase('mobile_controls_tip', 'Press {1} to Go Mobile Controls Menu', [(FlxG.onMobile ? 'C' : 'CTRL or C')]), 16);
+				Language.getPhrase('options.mobile_controls_tip',
+					Language.getPhrase('mobile_controls_tip', 'Press {1} to Go Mobile Controls Menu'),
+					[(FlxG.onMobile ? 'C' : 'CTRL or C')]), 16);
 			tipText.setFormat("VCR OSD Mono", 17, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			tipText.borderSize = 1.25;
 			tipText.scrollFactor.set();
@@ -273,7 +279,7 @@ class OptionsState extends MusicBeatState
 		super.closeSubState();
 		ClientPrefs.saveSettings();
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("Options Menu", null);
+		DiscordClient.changePresence(Language.getPhrase('options.common.presence', 'Options Menu'), null);
 		#end
 		controls.isInSubstate = false;
 		substateInputBlocked = false;
@@ -629,7 +635,7 @@ class OptionsState extends MusicBeatState
 		else
 			for (num => option in options)
 			{
-				var optionText:Alphabet = new Alphabet(0, 0, Language.getPhrase('options_$option', option), true);
+				var optionText:Alphabet = new Alphabet(0, 0, getDisplayLabel(option), true);
 				optionText.targetY = num;
 				optionText.isMenuItem = false;
 				optionText.changeX = false;

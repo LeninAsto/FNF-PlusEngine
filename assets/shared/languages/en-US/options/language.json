@@ -1,0 +1,6 @@
+{
+  "$schema": 1,
+  "$namespace": "options.language",
+  "hint": "ACCEPT applies the selected language.",
+  "applied_badge": "Active"
+}

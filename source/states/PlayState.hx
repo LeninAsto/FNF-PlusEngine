@@ -300,6 +300,7 @@ class PlayState extends MusicBeatState
 	var lyricTween:FlxTween;
 	var versionText:FlxText;
 	var verTween:FlxTween;
+	var languageRevision:Int = -1;
 	var gfIconSide:String = '';
 	var gfIconSwapOnSing:Bool = false;
 
@@ -446,12 +447,12 @@ class PlayState extends MusicBeatState
 		storyDifficultyText = Difficulty.getString();
 
 		if (isStoryMode)
-			detailsText = "Story Mode: " + WeekData.getCurrentWeek().weekName;
+			detailsText = Language.getPhrase('playstate.presence.story', 'Story Mode: {1}', [WeekData.getCurrentWeek().weekName]);
 		else
-			detailsText = "Freeplay";
+			detailsText = Language.getPhrase('playstate.presence.freeplay', 'Freeplay');
 
 		// String for when the game is paused
-		detailsPausedText = "Paused - " + detailsText;
+		detailsPausedText = Language.getPhrase('playstate.presence.paused', 'Paused - {1}', [detailsText]);
 		#end
 
 		GameOverSubstate.resetVariables();
@@ -724,10 +725,7 @@ class PlayState extends MusicBeatState
 
 		if(ClientPrefs.data.showVersionText && !ClientPrefs.data.hideHud)
 		{
-			var ver = SONG.song + ' (' + Difficulty.getString() + ') - Plus Engine v' + MainMenuState.plusEngineVersion;
-			if(BuildInfo.githubDevBuild && BuildInfo.commit.length > 0)
-				ver += ' #' + BuildInfo.shortCommit();
-			versionText = new FlxText(0, -22, FlxG.width, ver, 14);
+			versionText = new FlxText(0, -22, FlxG.width, versionLabel(), 14);
 			versionText.setFormat(Paths.font("vcr.ttf"), 14, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			versionText.scrollFactor.set();
 			versionText.borderSize = 1;
@@ -1640,7 +1638,7 @@ class PlayState extends MusicBeatState
 	{
 		if (cpuControlled && !isBotplayCPU())
 		{
-			scoreTxt.text = 'BOTPLAY MODE';
+			scoreTxt.text = Language.getPhrase('playstate.hud.botplay_mode', 'BOTPLAY MODE');
 			return;
 		}
 
@@ -1654,20 +1652,48 @@ class PlayState extends MusicBeatState
 		var score:String = ClientPrefs.data.abbreviateScore ? CoolUtil.formatScore(songScore) : Std.string(songScore);
 		if(ClientPrefs.data.psychScoreText)
 		{
-			if(!instakillOnMiss) tempScore = Language.getPhrase('score_text', 'Score: {1} | Misses: {2} | Rating: {3}', [score, songMisses, str]);
-			else tempScore = Language.getPhrase('score_text_instakill', 'Score: {1} | Rating: {2}', [score, str]);
+			if(!instakillOnMiss) tempScore = Language.getPhrase('playstate.hud.score.psych',
+				Language.getPhrase('score_text', 'Score: {1} | Misses: {2} | Rating: {3}', [score, songMisses, str]), [score, songMisses, str]);
+			else tempScore = Language.getPhrase('playstate.hud.score.psych_instakill',
+				Language.getPhrase('score_text_instakill', 'Score: {1} | Rating: {2}', [score, str]), [score, str]);
 		}
 		else
 		{
 			var tps:String = Std.string(getTPS());
-			if(!instakillOnMiss) tempScore = Language.getPhrase('score_text_plus', 'Score: {1} | Misses: {2} | Combo: {3} | TPS: {4} | Rating: {5}', [score, songMisses, combo, tps, str]);
-			else tempScore = Language.getPhrase('score_text_plus_instakill', 'Score: {1} | Combo: {2} | TPS: {3} | Rating: {4}', [score, combo, tps, str]);
+			if(!instakillOnMiss) tempScore = Language.getPhrase('playstate.hud.score.plus',
+				Language.getPhrase('score_text_plus', 'Score: {1} | Misses: {2} | Combo: {3} | TPS: {4} | Rating: {5}',
+					[score, songMisses, combo, tps, str]), [score, songMisses, combo, tps, str]);
+			else tempScore = Language.getPhrase('playstate.hud.score.plus_instakill',
+				Language.getPhrase('score_text_plus_instakill', 'Score: {1} | Combo: {2} | TPS: {3} | Rating: {4}', [score, combo, tps, str]),
+				[score, combo, tps, str]);
 		}
 		scoreTxt.text = tempScore;
 	}
 
 	function botplayLabel():String
-		return modes.label(cpuControlled, practiceMode, isBotplayCPU() ? 'BOTPLAY CPU: ${botplayCPUProfile().toUpperCase()}' : 'BOTPLAY');
+		return modes.label(cpuControlled, practiceMode, isBotplayCPU()
+			? Language.getPhrase('playstate.hud.botplay_cpu', 'BOTPLAY CPU: {1}', [botplayCPUProfile().toUpperCase()])
+			: Language.getPhrase('playstate.hud.botplay', 'BOTPLAY'));
+
+	function versionLabel():String
+	{
+		var value:String = Language.getPhrase('playstate.hud.version', '{1} ({2}) - Plus Engine v{3}',
+			[SONG.song, Difficulty.getString(), MainMenuState.plusEngineVersion]);
+		if(BuildInfo.githubDevBuild && BuildInfo.commit.length > 0)
+			value += ' #' + BuildInfo.shortCommit();
+		return value;
+	}
+
+	function refreshLocalizedHud():Void
+	{
+		languageRevision = Language.revision;
+		if (scoreTxt != null)
+			updateScoreText();
+		if (botplayTxt != null)
+			botplayTxt.text = botplayLabel();
+		if (versionText != null)
+			versionText.text = versionLabel();
+	}
 
 	function botplayKind():String
 		return CoolUtil.botplayType(ClientPrefs.getGameplaySetting('botplayType', 'Normal'));
@@ -2380,6 +2406,8 @@ class PlayState extends MusicBeatState
 		}
 		else FlxG.camera.followLerp = 0;
 		callOnScripts('onUpdate', [elapsed]);
+		if (languageRevision != Language.revision)
+			refreshLocalizedHud();
 
 		super.update(elapsed);
 		if (audioRecoveryPending && startedCountdown && !startingSong && !endingSong && !paused && FlxG.sound.music != null)
@@ -2714,7 +2742,7 @@ class PlayState extends MusicBeatState
 			opponentVocals.pause();
 
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("Chart Editor", null, null, true);
+		DiscordClient.changePresence(Language.getPhrase('playstate.presence.chart_editor', 'Chart Editor'), null, null, true);
 		DiscordClient.resetClientID();
 		#end
 
@@ -2799,7 +2827,8 @@ class PlayState extends MusicBeatState
 
 				#if DISCORD_ALLOWED
 				// Game Over doesn't get his its variable because it's only used here
-				if(autoUpdateRPC) DiscordClient.changePresence("Game Over - " + detailsText, SONG.song + " (" + storyDifficultyText + ")", iconP2.getCharacter());
+				if(autoUpdateRPC) DiscordClient.changePresence(Language.getPhrase('playstate.presence.game_over', 'Game Over - {1}', [detailsText]),
+					SONG.song + " (" + storyDifficultyText + ")", iconP2.getCharacter());
 				#end
 				isDead = true;
 				return true;
@@ -3966,7 +3995,7 @@ class PlayState extends MusicBeatState
 			if (comboGroup.members.indexOf(msTxt) < 0)
 				comboGroup.add(msTxt);
 
-			msTxt.text = Std.string(Std.int(Math.round(hitDiff))) + 'ms';
+		msTxt.text = Language.getPhrase('playstate.hud.milliseconds', '{1}ms', [Std.int(Math.round(hitDiff))]);
 			msTxt.color = color;
 			msTxt.alpha = 1;
 			msTxt.visible = true;

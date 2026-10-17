@@ -89,7 +89,7 @@ class ResultsState extends MusicBeatState
 
 		var fontLetters:String = "AaBbCcDdEeFfGgHhiIJjKkLlMmNnOoPpQqRrSsTtUuVvWwXxYyZz:1234567890().-";
 		songName = new FlxBitmapText(FlxBitmapFont.fromMonospace(Paths.image("resultScreen/tardlingSpritesheet"), fontLetters, FlxPoint.get(49, 61)));
-		songName.text = stringParam('songName', 'Song');
+		songName.text = stringParam('songName', Language.getPhrase('states.results.unknown_song', 'Song'));
 		songName.letterSpacing = -15;
 		songName.angle = -4.4;
 		songName.visible = false;

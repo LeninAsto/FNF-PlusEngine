@@ -638,8 +638,9 @@ class GameplayOption
 	public function new(name:String, variable:String, type:OptionType, defaultValue:Dynamic = 'null variable value', ?options:Array<String> = null)
 	{
 		_name = name;
-		this.name = Language.getPhrase('setting_$name', name);
 		this.variable = variable;
+		var key = Option.normalizeTranslationKey(variable);
+		this.name = Language.getPhrase('options.gameplay_changers.$key.name', Language.getPhrase('setting_$name', name));
 		this.type = type;
 		this.defaultValue = defaultValue;
 		this.options = options;
@@ -726,7 +727,10 @@ class GameplayOption
 		if (child != null)
 		{
 			_text = newValue;
-			child.text = Language.getPhrase('setting_$_name-$_text', _text);
+			var key = Option.normalizeTranslationKey(variable);
+			var valueKey = Option.normalizeTranslationKey(_text);
+			child.text = Language.getPhrase('options.gameplay_changers.$key.values.$valueKey',
+				Language.getPhrase('setting_$_name-$_text', _text));
 			return _text;
 		}
 		return null;

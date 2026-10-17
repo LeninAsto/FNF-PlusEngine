@@ -432,7 +432,10 @@ class TitleState extends MusicBeatState
 		}
 
 		if (swagGoodArray.length == 0)
-			swagGoodArray.push(['Psych Engine', 'Plus Engine']);
+			swagGoodArray.push([
+				Language.getPhrase('states.title.intro.fallback_first', 'Psych Engine'),
+				Language.getPhrase('states.title.intro.fallback_second', 'Plus Engine')
+			]);
 
 		return swagGoodArray;
 	}
@@ -700,17 +703,20 @@ class TitleState extends MusicBeatState
 					FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 					FlxG.sound.music.fadeIn(4, 0, 0.7);
 				case 2:
-					createCoolText(['Psych Engine by', 'Shadow Mario'], -90);
+					createCoolText([Language.getPhrase('states.title.intro.psych_engine_by', 'Psych Engine by'), 'Shadow Mario'], -90);
 				case 3:
-					createCoolText(['Psych Continued by', 'Autistic Lulu'], 80);
+					createCoolText([Language.getPhrase('states.title.intro.psych_continued_by', 'Psych Continued by'), 'Autistic Lulu'], 80);
 				case 4:
-					createCoolText(['Plus Engine by', 'Lenin Asto'], 250);
+					createCoolText([Language.getPhrase('states.title.intro.plus_engine_by', 'Plus Engine by'), 'Lenin Asto'], 250);
 				case 5:
 					deleteCoolText();
 				case 6:
-					createCoolText(['Not associated', 'with'], -40);
+					createCoolText([
+						Language.getPhrase('states.title.intro.not_associated', 'Not associated'),
+						Language.getPhrase('states.title.intro.with', 'with')
+					], -40);
 				case 8:
-					addMoreText('newgrounds', -40);
+					addMoreText(Language.getPhrase('states.title.intro.newgrounds', 'newgrounds'), -40);
 					ngSpr.visible = true;
 				case 9:
 					deleteCoolText();
@@ -722,11 +728,11 @@ class TitleState extends MusicBeatState
 				case 13:
 					deleteCoolText();
 				case 14:
-					addMoreText('Friday');
+					addMoreText(Language.getPhrase('states.title.intro.friday', 'Friday'));
 				case 15:
-					addMoreText('Night');
+					addMoreText(Language.getPhrase('states.title.intro.night', 'Night'));
 				case 16:
-					addMoreText('Funkin'); // credTextShit.text += '\nFunkin';
+					addMoreText(Language.getPhrase('states.title.intro.funkin', 'Funkin')); // credTextShit.text += '\nFunkin';
 
 				case 17:
 					skipIntro();

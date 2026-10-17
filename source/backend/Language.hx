@@ -7,7 +7,11 @@ class Language
 {
 	public static var defaultLangName:String = 'English (US)'; // en-US
 	#if TRANSLATIONS_ALLOWED
+	private static inline var DEFAULT_LANGUAGE_CODE:String = 'en-US';
+	private static inline var JSON_LANGUAGE_ROOT:String = 'languages';
 	private static var phrases:Map<String, String> = [];
+	private static var runtimePhrases:Map<String, String> = [];
+	public static var revision(default, null):Int = 0;
 	// ← NEW CACHE FOR FORMATTED KEYS
 	private static var keyCache:Map<String, String> = [];
 	#end
@@ -32,68 +36,34 @@ class Language
 	{
 		#if TRANSLATIONS_ALLOWED
 		var langFile:String = ClientPrefs.data.language;
+		if (langFile == null || langFile.trim().length == 0)
+			langFile = DEFAULT_LANGUAGE_CODE;
+
 		phrases.clear();
+		runtimePhrases.clear();
 		keyCache.clear(); // ← CLEAR THE KEY CACHE WHEN RECHARGING
-		var hasPhrases:Bool = false;
+		revision++;
 
-		// ← NEW: Try loading from hardcoded .hx files first
-		for (langClass in hardcodedLanguages)
+		// English is always the final offline fallback. Existing hardcoded maps stay
+		// usable while screens are migrated to namespaced JSON bundles.
+		loadHardcodedLanguage(DEFAULT_LANGUAGE_CODE, phrases);
+		loadJsonLanguage(DEFAULT_LANGUAGE_CODE, phrases);
+
+		var selectedLoaded:Bool = langFile == DEFAULT_LANGUAGE_CODE;
+		if (langFile != DEFAULT_LANGUAGE_CODE)
 		{
-			// "9-Code-Name" wow cool word uh
-			var languageCode:String = Reflect.field(langClass, 'languageCode');
-			var languageName:String = Reflect.field(langClass, 'languageName');
-			var translations:Map<String, String> = Reflect.field(langClass, 'translations');
-
-			if (languageCode == langFile && translations != null)
-			{
-				// Load language name
-				phrases.set('language_name', languageName);
-
-				// Load all translations
-				for (key => value in translations)
-				{
-					phrases.set(key.toLowerCase(), value);
-				}
-				hasPhrases = true;
-				break;
-			}
+			selectedLoaded = loadHardcodedLanguage(langFile, phrases);
+			if (!selectedLoaded)
+				selectedLoaded = loadLegacyLanguage(langFile, phrases);
+			if (loadJsonLanguage(langFile, phrases))
+				selectedLoaded = true;
 		}
 
-		// ← FALLBACK: If it is not hardcoded, try loading it from the .lang file
-		if (!hasPhrases)
+		if (!selectedLoaded)
 		{
-			var loadedText:Array<String> = Mods.mergeAllTextsNamed('data/$langFile.lang');
-
-			for (num => phrase in loadedText)
-			{
-				phrase = phrase.trim();
-				if (num < 1 && !phrase.contains(':'))
-				{
-					phrases.set('language_name', phrase.trim());
-					continue;
-				}
-
-				if (phrase.length < 4 || phrase.startsWith('//'))
-					continue;
-
-				var n:Int = phrase.indexOf(':');
-				if (n < 0)
-					continue;
-
-				var key:String = phrase.substr(0, n).trim().toLowerCase();
-
-				var value:String = phrase.substr(n);
-				n = value.indexOf('"');
-				if (n < 0)
-					continue;
-
-				phrases.set(key, value.substring(n + 1, value.lastIndexOf('"')).replace('\\n', '\n'));
-				hasPhrases = true;
-			}
+			ClientPrefs.data.language = DEFAULT_LANGUAGE_CODE;
+			langFile = DEFAULT_LANGUAGE_CODE;
 		}
-
-		if (!hasPhrases)
-			ClientPrefs.data.language = ClientPrefs.defaultData.language;
 
 		var alphaPath:String = getFileTranslation('images/alphabet');
 		if (alphaPath.startsWith('images/'))
@@ -123,6 +93,48 @@ class Language
 				languages.push({code: code, name: name});
 			}
 		}
+
+		// JSON packs can add languages without compiling another Haxe class.
+		for (path in Mods.directoriesWithFile(Paths.getSharedPath(), '$JSON_LANGUAGE_ROOT/index.json'))
+		{
+			try
+			{
+				var raw:String = AssetLoader.loadText(path);
+				if (raw == null || raw.trim().length == 0)
+					continue;
+				var index:Dynamic = haxe.Json.parse(Paths.stripBOM(raw));
+				var entries:Dynamic = Reflect.field(index, 'languages');
+				if (!Std.isOfType(entries, Array))
+					continue;
+
+				for (entry in (cast entries:Array<Dynamic>))
+				{
+					var code:String = Reflect.field(entry, 'code');
+					var name:String = Reflect.field(entry, 'name');
+					if (code == null || code.trim().length == 0)
+						continue;
+					if (name == null || name.trim().length == 0)
+						name = code;
+
+					var found:Bool = false;
+					for (language in languages)
+					{
+						if (language.code == code)
+						{
+							language.name = name;
+							found = true;
+							break;
+						}
+					}
+					if (!found)
+						languages.push({code: code, name: name});
+				}
+			}
+			catch (e:Dynamic)
+			{
+				trace('Could not read language index "$path": $e');
+			}
+		}
 		#else
 		languages.push({code: "en-US", name: defaultLangName});
 		#end
@@ -148,7 +160,9 @@ class Language
 				keyCache.set(key, formattedKey);
 			}
 
-			var str:String = phrases.get(formattedKey);
+			var str:String = runtimePhrases.get(formattedKey);
+			if (str == null)
+				str = phrases.get(formattedKey);
 			if (str == null)
 				str = defaultPhrase;
 			if (str == null)
@@ -190,7 +204,9 @@ class Language
 			keyCache.set(key, formattedKey);
 		}
 
-		var str:String = phrases.get(formattedKey);
+		var str:String = runtimePhrases.get(formattedKey);
+		if (str == null)
+			str = phrases.get(formattedKey);
 		if (str == null)
 			str = defaultPhrase;
 		#else
@@ -212,28 +228,27 @@ class Language
 	{
 		#if TRANSLATIONS_ALLOWED
 		var formattedKey:String = formatKey(key);
-		for (langClass in hardcodedLanguages)
+		var languagePhrases:Map<String, String> = [];
+		loadHardcodedLanguage(DEFAULT_LANGUAGE_CODE, languagePhrases);
+		loadJsonLanguage(DEFAULT_LANGUAGE_CODE, languagePhrases);
+		if (langCode != DEFAULT_LANGUAGE_CODE)
 		{
-			var languageCode:String = Reflect.field(langClass, 'languageCode');
-			if (languageCode != langCode)
-				continue;
-
-			var translations:Map<String, String> = Reflect.field(langClass, 'translations');
-			if (translations != null)
-			{
-				var str:String = translations.get(formattedKey);
-				if (str == null)
-					str = defaultPhrase;
-				if (str == null)
-					str = key;
-
-				if (values != null && values.length > 0)
-					for (num => value in values)
-						str = str.replace('{${num + 1}}', value);
-
-				return str;
-			}
+			var loaded:Bool = loadHardcodedLanguage(langCode, languagePhrases);
+			if (!loaded)
+				loadLegacyLanguage(langCode, languagePhrases);
+			loadJsonLanguage(langCode, languagePhrases);
 		}
+
+		var str:String = languagePhrases.get(formattedKey);
+		if (str == null)
+			str = defaultPhrase;
+		if (str == null)
+			str = key;
+
+		if (values != null && values.length > 0)
+			for (num => value in values)
+				str = str.replace('{${num + 1}}', value);
+		return str;
 		#end
 
 		return getPhrase(key, defaultPhrase, values);
@@ -245,20 +260,198 @@ class Language
 		#if TRANSLATIONS_ALLOWED
 		// ← OPTIMIZATION: Direct cache for file translations (most common)
 		var lowerKey = key.trim().toLowerCase();
-		var str:String = phrases.get(lowerKey);
+		var str:String = runtimePhrases.get(lowerKey);
+		if (str == null)
+			str = phrases.get(lowerKey);
 		if (str != null)
 			key = str;
 		#end
 		return key;
 	}
 
+	/** Overrides a phrase until the next reloadPhrases() call. */
+	public static function setPhrase(key:String, value:String):Bool
+	{
+		#if TRANSLATIONS_ALLOWED
+		if (key == null || key.trim().length == 0 || value == null)
+			return false;
+		runtimePhrases.set(formatKey(key), value);
+		revision++;
+		return true;
+		#else
+		return false;
+		#end
+	}
+
+	public static function removePhrase(key:String):Bool
+	{
+		#if TRANSLATIONS_ALLOWED
+		if (key == null)
+			return false;
+		var formattedKey:String = formatKey(key);
+		if (!runtimePhrases.exists(formattedKey))
+			return false;
+		runtimePhrases.remove(formattedKey);
+		revision++;
+		return true;
+		#else
+		return false;
+		#end
+	}
+
+	public static function clearPhrases():Void
+	{
+		#if TRANSLATIONS_ALLOWED
+		if (runtimePhrases.keys().hasNext())
+		{
+			runtimePhrases.clear();
+			revision++;
+		}
+		#end
+	}
+
+	public static function hasPhrase(key:String):Bool
+	{
+		#if TRANSLATIONS_ALLOWED
+		if (key == null)
+			return false;
+		var formattedKey:String = formatKey(key);
+		return runtimePhrases.exists(formattedKey) || phrases.exists(formattedKey);
+		#else
+		return false;
+		#end
+	}
+
 	#if TRANSLATIONS_ALLOWED
 	// ← OPTIMIZATION: Use a regex as a static variable to avoid recreating it
-	static final hideCharsRegex = ~/[~&\\\/;:<>#.,'"%?!]/g;
+	// Dots are intentionally preserved for namespaced keys such as
+	// "playstate.hud.score" and "editor.charting.tabs.song".
+	static final hideCharsRegex = ~/[~&\\\/;:<>#,'"%?!]/g;
 
 	inline static private function formatKey(key:String)
 	{
 		return hideCharsRegex.replace(key.replace(' ', '_'), '').toLowerCase().trim();
+	}
+
+	private static function loadHardcodedLanguage(langCode:String, target:Map<String, String>):Bool
+	{
+		for (langClass in hardcodedLanguages)
+		{
+			var languageCode:String = Reflect.field(langClass, 'languageCode');
+			if (languageCode != langCode)
+				continue;
+
+			var languageName:String = Reflect.field(langClass, 'languageName');
+			var translations:Map<String, String> = Reflect.field(langClass, 'translations');
+			if (languageName != null)
+				target.set('language_name', languageName);
+			if (translations != null)
+				for (key => value in translations)
+					target.set(formatKey(key), value);
+			return translations != null;
+		}
+		return false;
+	}
+
+	private static function loadLegacyLanguage(langCode:String, target:Map<String, String>):Bool
+	{
+		var loadedText:Array<String> = Mods.mergeAllTextsNamed('data/$langCode.lang');
+		var loaded:Bool = false;
+		for (num => phrase in loadedText)
+		{
+			phrase = phrase.trim();
+			if (num < 1 && !phrase.contains(':'))
+			{
+				target.set('language_name', phrase);
+				continue;
+			}
+			if (phrase.length < 4 || phrase.startsWith('//'))
+				continue;
+
+			var separator:Int = phrase.indexOf(':');
+			if (separator < 0)
+				continue;
+			var quoteStart:Int = phrase.indexOf('"', separator);
+			var quoteEnd:Int = phrase.lastIndexOf('"');
+			if (quoteStart < 0 || quoteEnd <= quoteStart)
+				continue;
+
+			var key:String = formatKey(phrase.substr(0, separator));
+			var value:String = phrase.substring(quoteStart + 1, quoteEnd).replace('\\n', '\n');
+			target.set(key, value);
+			loaded = true;
+		}
+		return loaded;
+	}
+
+	private static function loadJsonLanguage(langCode:String, target:Map<String, String>):Bool
+	{
+		var loaded:Bool = false;
+		var manifestRelative:String = '$JSON_LANGUAGE_ROOT/$langCode/manifest.json';
+		for (manifestPath in Mods.directoriesWithFile(Paths.getSharedPath(), manifestRelative))
+		{
+			try
+			{
+				var rawManifest:String = AssetLoader.loadText(manifestPath);
+				if (rawManifest == null || rawManifest.trim().length == 0)
+					continue;
+				var manifest:Dynamic = haxe.Json.parse(Paths.stripBOM(rawManifest));
+				var languageName:String = Reflect.field(manifest, 'name');
+				if (languageName != null && languageName.trim().length > 0)
+					target.set('language_name', languageName);
+
+				var bundles:Dynamic = Reflect.field(manifest, 'bundles');
+				if (!Std.isOfType(bundles, Array))
+					continue;
+
+				var manifestFolder:String = haxe.io.Path.directory(manifestPath).replace('\\', '/');
+				for (bundleEntry in (cast bundles:Array<Dynamic>))
+				{
+					var bundle:String = Std.string(bundleEntry).replace('\\', '/');
+					if (bundle.length == 0 || bundle.startsWith('/') || bundle.indexOf('..') != -1)
+						continue;
+					var bundlePath:String = '$manifestFolder/$bundle';
+					var rawBundle:String = AssetLoader.loadText(bundlePath);
+					if (rawBundle == null || rawBundle.trim().length == 0)
+						continue;
+
+					var bundleData:Dynamic = haxe.Json.parse(Paths.stripBOM(rawBundle));
+					var namespace:String = Reflect.field(bundleData, "$namespace");
+					if (namespace == null)
+						namespace = '';
+					if (addJsonPhrases(bundleData, namespace, target) > 0)
+						loaded = true;
+				}
+			}
+			catch (e:Dynamic)
+			{
+				trace('Could not load JSON language manifest "$manifestPath": $e');
+			}
+		}
+		return loaded;
+	}
+
+	private static function addJsonPhrases(data:Dynamic, prefix:String, target:Map<String, String>):Int
+	{
+		if (data == null)
+			return 0;
+
+		var added:Int = 0;
+		for (field in Reflect.fields(data))
+		{
+			if (field.startsWith('$'))
+				continue;
+			var value:Dynamic = Reflect.field(data, field);
+			var key:String = prefix == null || prefix.length == 0 ? field : '$prefix.$field';
+			if (Std.isOfType(value, String))
+			{
+				target.set(formatKey(key), cast value);
+				added++;
+			}
+			else if (value != null && !Std.isOfType(value, Array))
+				added += addJsonPhrases(value, key, target);
+		}
+		return added;
 	}
 	#end
 
@@ -299,6 +492,31 @@ class Language
 		Lua_helper.add_callback(lua, "getFileTranslation", function(key:String)
 		{
 			return getFileTranslation(key);
+		});
+
+		Lua_helper.add_callback(lua, "setTranslationPhrase", function(key:String, value:String)
+		{
+			return setPhrase(key, value);
+		});
+
+		Lua_helper.add_callback(lua, "removeTranslationPhrase", function(key:String)
+		{
+			return removePhrase(key);
+		});
+
+		Lua_helper.add_callback(lua, "hasTranslationPhrase", function(key:String)
+		{
+			return hasPhrase(key);
+		});
+
+		Lua_helper.add_callback(lua, "clearTranslationPhrases", function()
+		{
+			clearPhrases();
+		});
+
+		Lua_helper.add_callback(lua, "getCurrentLanguage", function()
+		{
+			return ClientPrefs.data.language;
 		});
 	}
 	#end

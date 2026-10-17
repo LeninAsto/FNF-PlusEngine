@@ -57,9 +57,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 		super();
 		if (title == null)
-			title = 'Options';
+			title = Language.getPhrase('options.common.title', 'Options');
 		if (rpcTitle == null)
-			rpcTitle = 'Options Menu';
+			rpcTitle = Language.getPhrase('options.common.presence', 'Options Menu');
 
 		#if DISCORD_ALLOWED
 		DiscordClient.changePresence(rpcTitle, null);
@@ -289,7 +289,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 						FlxTween.tween(bindingBlack, {alpha: 0.6}, 0.35, {ease: FlxEase.linear});
 						add(bindingBlack);
 
-						bindingText = new Alphabet(FlxG.width / 2, 160, Language.getPhrase('controls_rebinding', 'Rebinding {1}', [curOption.name]), false);
+						bindingText = new Alphabet(FlxG.width / 2, 160,
+							Language.getPhrase('options.controls.rebinding',
+								Language.getPhrase('controls_rebinding', 'Rebinding {1}', [curOption.name]), [curOption.name]), false);
 						bindingText.alignment = CENTERED;
 						add(bindingText);
 
@@ -297,7 +299,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 						final backspace:String = (controls.mobileC) ? "C" : "Backspace";
 
 						bindingText2 = new Alphabet(FlxG.width / 2, 340,
-							Language.getPhrase('controls_rebinding2', 'Hold {1} to Cancel\nHold {2} to Delete', [escape, backspace]), true);
+							Language.getPhrase('options.controls.rebinding_help',
+								Language.getPhrase('controls_rebinding2', 'Hold {1} to Cancel\nHold {2} to Delete', [escape, backspace]),
+								[escape, backspace]), true);
 						bindingText2.alignment = CENTERED;
 						add(bindingText2);
 

@@ -39,7 +39,7 @@ class NoteOffsetState extends MusicBeatState
 	override public function create()
 	{
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("Delay/Combo Offset Menu", null);
+		DiscordClient.changePresence(Language.getPhrase('options.menus.offset.presence', 'Delay/Combo Offset Menu'), null);
 		#end
 
 		// Cameras
@@ -128,7 +128,7 @@ class NoteOffsetState extends MusicBeatState
 		repositionCombo();
 
 		// Note delay stuff
-		beatText = new Alphabet(0, 0, Language.getPhrase('delay_beat_hit', 'Beat Hit!'), true);
+		beatText = new Alphabet(0, 0, offsetPhrase('beat_hit', 'delay_beat_hit', 'Beat Hit!'), true);
 		beatText.setScale(0.6, 0.6);
 		beatText.x += 260;
 		beatText.alpha = 0;
@@ -626,11 +626,11 @@ class NoteOffsetState extends MusicBeatState
 				switch (i)
 				{
 					case 0:
-						dumbTexts.members[i].text = Language.getPhrase('combo_rating_offset', 'Rating Offset:');
+						dumbTexts.members[i].text = offsetPhrase('combo.rating_offset', 'combo_rating_offset', 'Rating Offset:');
 					case 1:
 						dumbTexts.members[i].text = '[' + ClientPrefs.data.comboOffset[0] + ', ' + ClientPrefs.data.comboOffset[1] + ']';
 					case 2:
-						dumbTexts.members[i].text = Language.getPhrase('combo_numbers_offset', 'Numbers Offset:');
+						dumbTexts.members[i].text = offsetPhrase('combo.numbers_offset', 'combo_numbers_offset', 'Numbers Offset:');
 					case 3:
 						dumbTexts.members[i].text = '[' + ClientPrefs.data.comboOffset[2] + ', ' + ClientPrefs.data.comboOffset[3] + ']';
 				}
@@ -640,11 +640,11 @@ class NoteOffsetState extends MusicBeatState
 				switch (i)
 				{
 					case 0:
-						dumbTexts.members[i].text = Language.getPhrase('keyviewer_position_offset', 'KeyViewer Position:');
+						dumbTexts.members[i].text = offsetPhrase('keyviewer.position_offset', 'keyviewer_position_offset', 'KeyViewer Position:');
 					case 1:
 						dumbTexts.members[i].text = '[' + ClientPrefs.data.keyViewerOffset[0] + ', ' + ClientPrefs.data.keyViewerOffset[1] + ']';
 					case 2:
-						dumbTexts.members[i].text = Language.getPhrase('keyviewer_color_setting', 'KeyViewer Color:');
+						dumbTexts.members[i].text = offsetPhrase('keyviewer.color', 'keyviewer_color_setting', 'KeyViewer Color:');
 					case 3:
 						dumbTexts.members[i].text = ClientPrefs.data.keyViewerColor;
 				}
@@ -654,11 +654,11 @@ class NoteOffsetState extends MusicBeatState
 				switch (i)
 				{
 					case 0:
-						dumbTexts.members[i].text = Language.getPhrase('hit_ms_offset', 'Hit MS Offset:');
+						dumbTexts.members[i].text = offsetPhrase('modes.hit_ms', 'hit_ms_offset', 'Hit MS Offset:');
 					case 1:
 						dumbTexts.members[i].text = '[' + ClientPrefs.data.hitMsOffset[0] + ', ' + ClientPrefs.data.hitMsOffset[1] + ']';
 					case 2:
-						dumbTexts.members[i].text = Language.getPhrase('hit_ms_preview', 'Preview:');
+						dumbTexts.members[i].text = offsetPhrase('hit_ms.preview', 'hit_ms_preview', 'Preview:');
 					case 3:
 						dumbTexts.members[i].text = hitMsText != null ? hitMsText.text : '';
 				}
@@ -669,7 +669,7 @@ class NoteOffsetState extends MusicBeatState
 	function updateNoteDelay()
 	{
 		ClientPrefs.data.noteOffset = Math.round(barPercent);
-		timeTxt.text = Language.getPhrase('delay_current_offset', 'Current offset: {1} ms', [Math.floor(barPercent)]);
+		timeTxt.text = offsetPhrase('current_offset', 'delay_current_offset', 'Current offset: {1} ms', [Math.floor(barPercent)]);
 	}
 
 	function updateMode()
@@ -710,32 +710,32 @@ class NoteOffsetState extends MusicBeatState
 		switch (currentMode)
 		{
 			case 0: // Note Delay
-				str = Language.getPhrase('note_delay', 'Note/Beat Delay');
+				str = offsetPhrase('modes.note_delay', 'note_delay', 'Note/Beat Delay');
 				addTouchPad('LEFT_RIGHT', 'A_B_C');
 				addTouchPadCamera();
 			case 1: // Combo Offset
-				str = Language.getPhrase('combo_offset', 'Combo Offset');
+				str = offsetPhrase('modes.combo', 'combo_offset', 'Combo Offset');
 				addTouchPad('NONE', 'A_B_C');
 				addTouchPadCamera();
 				reloadTexts(); // Actualizar textos para combo
 			case 2: // KeyViewer Offset
-				str = Language.getPhrase('keyviewer_offset', 'KeyViewer Offset');
+				str = offsetPhrase('modes.keyviewer', 'keyviewer_offset', 'KeyViewer Offset');
 				addTouchPad('NONE', 'A_B_C');
 				addTouchPadCamera();
 				reloadTexts(); // Actualizar textos para keyviewer
 			case 3:
-				str = Language.getPhrase('hit_ms_offset', 'Hit MS Offset');
+				str = offsetPhrase('modes.hit_ms', 'hit_ms_offset', 'Hit MS Offset');
 				addTouchPad('NONE', 'A_B_C');
 				addTouchPadCamera();
 				repositionHitMs();
 				reloadTexts();
 			default:
-				str = Language.getPhrase('note_delay', 'Note/Beat Delay');
+				str = offsetPhrase('modes.note_delay', 'note_delay', 'Note/Beat Delay');
 				addTouchPad('LEFT_RIGHT', 'A_B_C');
 				addTouchPadCamera();
 		}
 
-		str2 = Language.getPhrase('switch_on_button', '(Press {1} to Switch)', [accept]);
+		str2 = offsetPhrase('switch', 'switch_on_button', '(Press {1} to Switch)', [accept]);
 
 		changeModeText.text = '< ${str.toUpperCase()} ${str2.toUpperCase()} >';
 	}
@@ -754,6 +754,11 @@ class NoteOffsetState extends MusicBeatState
 		hitMsText.x = coolText.x - hitMsText.fieldWidth * 0.5 + ClientPrefs.data.hitMsOffset[0];
 		hitMsText.y = rating.y + rating.height + 8 - ClientPrefs.data.hitMsOffset[1];
 		reloadTexts();
+	}
+
+	inline function offsetPhrase(key:String, legacyKey:String, fallback:String, ?values:Array<Dynamic>):String
+	{
+		return Language.getPhrase('options.offset.$key', Language.getPhrase(legacyKey, fallback, values), values);
 	}
 
 	override function destroy()

@@ -70,7 +70,7 @@ class ControlsSubState extends MusicBeatSubstate
 		super();
 
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("Controls Menu", null);
+		DiscordClient.changePresence(Language.getPhrase('options.menus.controls.presence', 'Controls Menu'), null);
 		#end
 
 		options.push([true]);
@@ -109,7 +109,7 @@ class ControlsSubState extends MusicBeatSubstate
 		controllerSpr.animation.add('gamepad', [1], 1, false);
 		add(controllerSpr);
 
-		var text:Alphabet = new Alphabet(60, 90, 'CTRL', false);
+		var text:Alphabet = new Alphabet(60, 90, Language.getPhrase('options.controls.keyboard_short', 'CTRL'), false);
 		text.alignment = CENTERED;
 		text.setScale(0.4);
 		add(text);
@@ -334,7 +334,9 @@ class ControlsSubState extends MusicBeatSubstate
 					add(bindingBlack);
 
 					bindingText = new Alphabet(FlxG.width / 2, 160,
-						Language.getPhrase('controls_rebinding', 'Rebinding {1}', [options[curOptions[curSelected]][3]]), false);
+						Language.getPhrase('options.controls.rebinding',
+							Language.getPhrase('controls_rebinding', 'Rebinding {1}', [options[curOptions[curSelected]][3]]),
+							[options[curOptions[curSelected]][3]]), false);
 					bindingText.alignment = CENTERED;
 					add(bindingText);
 
@@ -342,7 +344,9 @@ class ControlsSubState extends MusicBeatSubstate
 					final backspace:String = (controls.mobileC) ? "C" : "Backspace";
 
 					bindingText2 = new Alphabet(FlxG.width / 2, 340,
-						Language.getPhrase('controls_rebinding2', 'Hold {1} to Cancel\nHold {2} to Delete', [escape, backspace]), true);
+						Language.getPhrase('options.controls.rebinding_help',
+							Language.getPhrase('controls_rebinding2', 'Hold {1} to Cancel\nHold {2} to Delete', [escape, backspace]),
+							[escape, backspace]), true);
 					bindingText2.alignment = CENTERED;
 					add(bindingText2);
 

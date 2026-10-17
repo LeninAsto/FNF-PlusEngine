@@ -18,8 +18,8 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 	public function new()
 	{
-		title = Language.getPhrase('visuals_menu', 'Visuals Settings');
-		rpcTitle = 'Visuals Settings Menu'; // for Discord Rich Presence
+		title = Language.getPhrase('options.menus.visuals.title', Language.getPhrase('visuals_menu', 'Visuals Settings'));
+		rpcTitle = Language.getPhrase('options.menus.visuals.presence', 'Visuals Settings Menu'); // for Discord Rich Presence
 		lastNonCustomAccent = OptionsMenuTheme.normalizeAccent(ClientPrefs.data.menuAccentColor);
 		if (lastNonCustomAccent == 'Custom')
 			lastNonCustomAccent = 'Purple';

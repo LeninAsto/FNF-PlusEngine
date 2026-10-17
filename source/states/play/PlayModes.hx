@@ -41,10 +41,10 @@ class PlayModes
 
 	public function label(cpu:Bool, practice:Bool, botText:String):String
 	{
-		if (perfect) return Language.getPhrase('perfect_mode', 'Perfect Mode').toUpperCase();
-		if (opponent) return Language.getPhrase('opponent_mode', 'Opponent Mode').toUpperCase();
+		if (perfect) return Language.getPhrase('playstate.modes.perfect', Language.getPhrase('perfect_mode', 'Perfect Mode')).toUpperCase();
+		if (opponent) return Language.getPhrase('playstate.modes.opponent', Language.getPhrase('opponent_mode', 'Opponent Mode')).toUpperCase();
 		if (cpu) return botText;
-		if (practice) return Language.getPhrase('practice_mode', 'Practice Mode').toUpperCase();
+		if (practice) return Language.getPhrase('playstate.modes.practice', Language.getPhrase('practice_mode', 'Practice Mode')).toUpperCase();
 		return '';
 	}
 }

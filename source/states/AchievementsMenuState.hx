@@ -26,7 +26,7 @@ class AchievementsMenuState extends MusicBeatState
 		Paths.clearUnusedMemory();
 
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("Achievements Menu", null);
+		DiscordClient.changePresence(Language.getPhrase('states.achievements.discord', 'Achievements Menu'), null);
 		#end
 
 		// prepare achievement list
@@ -144,8 +144,10 @@ class AchievementsMenuState extends MusicBeatState
 	{
 		return {
 			name: achievement,
-			displayName: unlocked ? Language.getPhrase('achievement_$achievement', data.name) : '???',
-			description: Language.getPhrase('description_$achievement', data.description),
+			displayName: unlocked ? Language.getPhrase('states.achievements.items.$achievement.name',
+				Language.getPhrase('achievement_$achievement', data.name)) : '???',
+			description: Language.getPhrase('states.achievements.items.$achievement.description',
+				Language.getPhrase('description_$achievement', data.description)),
 			curProgress: data.maxScore > 0 ? Achievements.getScore(achievement) : 0,
 			maxProgress: data.maxScore > 0 ? data.maxScore : 0,
 			decProgress: data.maxScore > 0 ? data.maxDecimals : 0,
@@ -256,9 +258,8 @@ class AchievementsMenuState extends MusicBeatState
 		{
 			var val1:Float = options[curSelected].curProgress;
 			var val2:Float = options[curSelected].maxProgress;
-			progressTxt.text = CoolUtil.floorDecimal(val1, options[curSelected].decProgress)
-				+ ' / '
-				+ CoolUtil.floorDecimal(val2, options[curSelected].decProgress);
+			progressTxt.text = Language.getPhrase('states.achievements.progress', '{1} / {2}',
+				[CoolUtil.floorDecimal(val1, options[curSelected].decProgress), CoolUtil.floorDecimal(val2, options[curSelected].decProgress)]);
 
 			barTween = FlxTween.tween(progressBar, {percent: (val1 / val2) * 100}, 0.5, {
 				ease: FlxEase.quadOut,
@@ -305,7 +306,8 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 		add(bg);
 		FlxTween.tween(bg, {alpha: 0.6}, 0.4, {ease: FlxEase.quartInOut});
 
-		var text:Alphabet = new Alphabet(0, 180, Language.getPhrase('reset_achievement', 'Reset Achievement:'), true);
+		var text:Alphabet = new Alphabet(0, 180,
+			Language.getPhrase('states.achievements.reset.title', Language.getPhrase('reset_achievement', 'Reset Achievement:')), true);
 		text.screenCenter(X);
 		text.scrollFactor.set();
 		add(text);
@@ -317,14 +319,16 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 		text.borderSize = 2;
 		add(text);
 
-		yesText = new Alphabet(0, text.y + 120, Language.getPhrase('Yes'), true);
+		yesText = new Alphabet(0, text.y + 120,
+			Language.getPhrase('global.answers.yes', Language.getPhrase('Yes', 'Yes')), true);
 		yesText.screenCenter(X);
 		yesText.x -= 200;
 		yesText.scrollFactor.set();
 		for (letter in yesText.letters)
 			letter.color = FlxColor.RED;
 		add(yesText);
-		noText = new Alphabet(0, text.y + 120, Language.getPhrase('No'), true);
+		noText = new Alphabet(0, text.y + 120,
+			Language.getPhrase('global.answers.no', Language.getPhrase('No', 'No')), true);
 		noText.screenCenter(X);
 		noText.x += 200;
 		noText.scrollFactor.set();
@@ -365,7 +369,7 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 				option.curProgress = 0;
 				option.name = state.nameText.text = '???';
 				if (option.maxProgress > 0)
-					state.progressTxt.text = '0 / ' + option.maxProgress;
+					state.progressTxt.text = Language.getPhrase('states.achievements.progress', '{1} / {2}', [0, option.maxProgress]);
 				state.grpOptions.members[state.curSelected].loadGraphic(Paths.image('achievements/lockedachievement'));
 				state.grpOptions.members[state.curSelected].antialiasing = ClientPrefs.data.antialiasing;
 
