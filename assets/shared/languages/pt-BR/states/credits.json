@@ -1,0 +1,42 @@
+{
+  "$schema": 1,
+  "$namespace": "states.credits",
+  "presence": "Nos Menus",
+  "sections": {
+    "plus_engine": "Além de equipe de motor",
+    "mobile": "Equipa de Portagem Móvel",
+    "psych_engine": "Equipa do motor psicológico",
+    "contributors": "Contribuidores do Motor",
+    "funkin": "Funkin' Crew",
+    "psych_discord": "Discórdia do Psych Engine"
+  },
+  "roles": {
+    "lenin_asto": "Programador do motor Plus",
+    "sirthegamercoder": "Tradução indonésia e coder Helper de Plus Engine",
+    "andres": "Criador e proprietário de vários códigos usados com base no motor Slushi",
+    "theodev": "Proprietário, codificador principal do Funkin Modchart",
+    "autistic_lulu": "Psych Engine 1.0.x correções e manutenção",
+    "homuhomu833": "Chefe Porter do Psych Engine e Autor do linc luajit-rewriten",
+    "karim_akra": "Segundo Porter do motor psicológico",
+    "moxie": "Ajudante de Psych Engine Mobile",
+    "shadow_mario": "Programador principal e chefe do motor psicológico",
+    "riveren": "Artista principal/animador do motor psicológico",
+    "bb_panzu": "Ex-Programador do motor psicológico",
+    "crowplexus": "Linux Support, HScript Iris, Input System v3 e Outros PRs",
+    "kamizeta": "Criador de Pessy, mascote do Psych Engine.",
+    "maxneton": "Loading Screen Easter Egg Artist/Animator.",
+    "keoiki": "Nota Splash Animações e alfabeto latino",
+    "sqirrarng": "Crash Handler e código base para\nForma de onda do editor de gráficos",
+    "elitemastereric": "Suporte a Shaders em Tempo de Execução e Outros PRs",
+    "majigsaw77": ".MP4 Video Loader Library (hxvlc)",
+    "iflicky": "Compositor de Psync e tempo de chá\nE alguns efeitos sonoros",
+    "kadedev": "Corrigido alguns problemas no Editor de Gráficos e Outros PRs",
+    "superpowers04": "LUA JIT Fork",
+    "cheems_and_friends": "Criador do FlxAnimato",
+    "ninjamuffin99": "Programador de Friday Night Funkin'",
+    "phantom_arcade": "Animador da Sexta-feira à Noite",
+    "evilsk8r": "Artista de Friday Night Funkin'",
+    "kawaisprite": "Compositor de Friday Night Funkin'"
+  },
+  "psych_discord_join": "Junta-te à Ala Psiquiátrica!"
+}

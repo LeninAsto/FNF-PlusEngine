@@ -8,8 +8,6 @@ import backend.ThreadUtil;
 class LanguageSubState extends BaseOptionsMenu
 {
 	#if TRANSLATIONS_ALLOWED
-	var languageCodes:Array<String> = [];
-	var languageNames:Array<String> = [];
 	var syncing:Bool = false;
 	var pendingSync:LanguageSyncResult = null;
 
@@ -23,47 +21,28 @@ class LanguageSubState extends BaseOptionsMenu
 
 	function buildOptions():Void
 	{
-		languageCodes = [];
-		languageNames = [];
-		for (entry in Language.getAvailableLanguages())
+		var available = Language.getAvailableLanguages();
+		available.sort(function(a, b):Int
 		{
-			if (languageCodes.contains(entry.code))
-				continue;
-			languageCodes.push(entry.code);
-			languageNames.push(entry.name);
-		}
-
-		var order:Array<Int> = [for (i in 0...languageCodes.length) i];
-		order.sort(function(a:Int, b:Int):Int
-		{
-			var left:String = languageNames[a].toLowerCase();
-			var right:String = languageNames[b].toLowerCase();
+			var left:String = a.name.toLowerCase();
+			var right:String = b.name.toLowerCase();
 			return left < right ? -1 : (left > right ? 1 : 0);
 		});
-		languageCodes = [for (i in order) languageCodes[i]];
-		languageNames = [for (i in order) languageNames[i]];
 
-		var languageOption = new Option(
-			Language.getPhrase('options.language.selector.name', 'Language'),
-			Language.getPhrase('options.language.selector.description', 'Choose an installed language pack.'),
-			'language', STRING, languageNames, 'language_selector');
-		languageOption.getValue = function():Dynamic
+		for (entry in available)
 		{
-			var index:Int = languageCodes.indexOf(ClientPrefs.data.language);
-			return index >= 0 ? languageNames[index] : ClientPrefs.data.language;
-		};
-		languageOption.setValue = function(value:Dynamic):Dynamic
-		{
-			var index:Int = languageNames.indexOf(Std.string(value));
-			if (index >= 0)
-				ClientPrefs.data.language = languageCodes[index];
-			return value;
-		};
-		var defaultIndex:Int = languageCodes.indexOf(ClientPrefs.defaultData.language);
-		languageOption.defaultValue = languageNames[Std.int(Math.max(0, defaultIndex))];
-		languageOption.curOption = Std.int(Math.max(0, languageCodes.indexOf(ClientPrefs.data.language)));
-		languageOption.onChange = applyLanguage;
-		addOption(languageOption);
+			var code:String = entry.code;
+			var active:Bool = code == ClientPrefs.data.language;
+			var label:String = active
+				? Language.getPhrase('options.language.selector.active', '{1} (Active)', [entry.name])
+				: entry.name;
+			var languageOption = new Option(label,
+				Language.getPhrase('options.language.selector.description', 'Apply the {1} language pack.', [entry.name]),
+				'', ACTION, null, 'language_${Option.normalizeTranslationKey(code)}');
+			languageOption.selectable = !active;
+			languageOption.onChange = function() applyLanguage(code);
+			addOption(languageOption);
+		}
 
 		var syncOption = new Option(
 			Language.getPhrase('options.language.sync.name', 'Download or update languages'),
@@ -73,8 +52,9 @@ class LanguageSubState extends BaseOptionsMenu
 		addOption(syncOption);
 	}
 
-	function applyLanguage():Void
+	function applyLanguage(code:String):Void
 	{
+		ClientPrefs.data.language = code;
 		ClientPrefs.saveSettings();
 		Language.reloadPhrases();
 		new FlxTimer().start(0.01, function(_)

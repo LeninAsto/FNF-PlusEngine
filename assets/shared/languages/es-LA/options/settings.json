@@ -100,7 +100,7 @@
     "description": "Si está marcado, sostener un carácter con el mouse o la pantalla táctil moverá la posición, al igual que en Codename Engine."
   },
   "drag_stage_camera": {
-    "name": "Mover c?mara",
+    "name": "Mover cámara",
     "description": "Si no está marcada, la cámara del escenario no se puede arrastrar con el mouse o la pantalla táctil.\nDesmarque esta opción si prefiere el estilo antiguo de Psych."
   },
   "dynamic_combo_digits": {
@@ -216,7 +216,7 @@
     }
   },
   "hitbox_position": {
-    "name": "Posici?n del hitbox",
+    "name": "Posición del hitbox",
     "description": "Si está marcado, el hitbox se colocará en la parte inferior de la pantalla; de lo contrario, permanecerá en la parte superior."
   },
   "icon_bounce_type": {
@@ -286,7 +286,7 @@
     "description": "Muestra estadísticas del renderizador de modchart.\nDeshabilitado por defecto porque tiene un costo de rendimiento."
   },
   "mods_storage_location": {
-    "name": "Ubicaci?n de mods",
+    "name": "Ubicación de mods",
     "description": "Elija dónde deben ubicarse las mods de Android y los archivos guardados.\nINTERNO usa almacenamiento de aplicaciones con alcance, EXTERNO usa almacenamiento público.",
     "values": {
       "internal": "INTERNO",
@@ -353,7 +353,7 @@
   },
   "results_state_at_end": {
     "name": "Estado de resultados al final",
-    "description": "Si se desactiva, endSong no ir? a ResultsState en Freeplay/Historia."
+    "description": "Si se desactiva, endSong no irá a ResultsState en Freeplay/Historia."
   },
   "rgb_notes": {
     "name": "Notas RGB",
@@ -365,7 +365,7 @@
   },
   "score_text_grow_on_hit": {
     "name": "Texto de puntos al acertar",
-    "description": "Si no está marcado, deshabilita el crecimiento del texto de la puntuaci?n.\ncada vez que tocas una nota."
+    "description": "Si se desactiva, el texto de puntuación no crecerá al tocar una nota."
   },
   "script_deprecation_warnings": {
     "name": "Advertencias de desuso de scripts",

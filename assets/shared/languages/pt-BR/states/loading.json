@@ -1,0 +1,20 @@
+{
+  "$schema": 1,
+  "$namespace": "states.loading",
+  "title": "Agora Carregando{1}",
+  "cancelling": "A cancelar o carregamento...",
+  "timeout": "O carregamento está a demorar muito...\nPressione ESC para retornar",
+  "progress": "{1}%  ({2}/{3})",
+  "progress_item": "{1}  {2}",
+  "items": {
+    "atlas": "atlas {1}",
+    "preparing_audio": "Preparando a reprodução de áudio",
+    "preparing_song": "Preparando dados da música",
+    "compiling_chart": "Compilando dados do gráfico",
+    "finishing": "Finalização",
+    "sound": "som {1}",
+    "music": "música {1}",
+    "song": "canção {1}",
+    "image": "imagem {1}"
+  }
+}

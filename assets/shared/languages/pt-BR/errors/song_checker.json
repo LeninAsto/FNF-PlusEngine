@@ -1,0 +1,26 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.song_checker",
+  "title": "CÂNTICO",
+  "prefix": {
+    "error": "[ERROR]",
+    "warning": "[GARN]",
+    "fix": "[FIX]"
+  },
+  "more": "...e {1} mais.",
+  "issues": {
+    "missing_chart": "Gráfico não encontrado para essa dificuldade.",
+    "invalid_chart": "O gráfico existe mas não pôde ser analisado.",
+    "repaired_song_name": "O nome da canção em falta foi restaurado de sua pasta.",
+    "missing_notes": "O gráfico não tem nenhum array de notas.",
+    "repaired_events": "O array de eventos em falta foi substituído por um vazio.",
+    "invalid_bpm": "BPM deve ser maior que zero.",
+    "repaired_speed": "A velocidade de rolagem inválida foi restaurada para 1.",
+    "repaired_gf": "A namorada desaparecida foi restaurada para \"gf\".",
+    "missing_inst": "Falta o áudio instrumental.",
+    "missing_voices": "As vozes estão habilitadas, mas nenhum arquivo vocal padrão ou dividido foi encontrado.",
+    "invalid_section": "Seção {1} não tem lista de notas.",
+    "invalid_note": "Nota mal formada na seção {1}, índice {2}.",
+    "invalid_note_values": "Dados de notas não numéricas na seção {1}, índice {2}."
+  }
+}

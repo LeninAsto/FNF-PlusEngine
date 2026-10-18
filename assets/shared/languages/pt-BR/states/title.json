@@ -1,0 +1,17 @@
+{
+  "$schema": 1,
+  "$namespace": "states.title",
+  "intro": {
+    "psych_engine_by": "Motor Psych por",
+    "psych_continued_by": "Psiquiatria Continuada por",
+    "plus_engine_by": "Além do motor por",
+    "not_associated": "Não associado",
+    "with": "com",
+    "newgrounds": "newgrounds",
+    "friday": "Sexta-feira",
+    "night": "Noite",
+    "funkin": "Funkin",
+    "fallback_first": "Psych Engine",
+    "fallback_second": "Plus Engine"
+  }
+}

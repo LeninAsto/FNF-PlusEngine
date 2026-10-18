@@ -1,0 +1,492 @@
+{
+  "$schema": 1,
+  "$namespace": "options.settings",
+  "abbreviate_score": {
+    "name": "Abreviar a Pontuação",
+    "description": "Se activado, a pontuação será abreviada (por exemplo 10.00K, 1.00M)."
+  },
+  "accent_color": {
+    "name": "Cor do sotaque:",
+    "description": "Escolha uma cor de sotaque predefinida ou abra o seletor de cores personalizado.",
+    "values": {
+      "purple": "Roxo",
+      "teal": "Teal",
+      "rose": "Rosa",
+      "amber": "Amber",
+      "indigo": "Indigo",
+      "green": "Verde",
+      "red": "Vermelho",
+      "black": "Preto",
+      "custom": "Personalizado"
+    }
+  },
+  "align_receptors_to_hitbox": {
+    "name": "Alinhar receptores ? hitbox",
+    "description": "Se marcada, alinha receptores móveis com faixas de hitbox. Útil para alguns layouts, mas pode quebrar scripts."
+  },
+  "allow_phone_screensaver": {
+    "name": "Permitir Screensaver de Telefone",
+    "description": "Se marcada, o telefone irá dormir após ficar inativo por alguns segundos.\n(O tempo depende das opções do seu telefone)"
+  },
+  "anti_aliasing": {
+    "name": "Anti- Aliasing",
+    "description": "Se desmarcado, desabilita o anti-aliasing, aumenta o desempenho\nao custo de imagens mais nítidas."
+  },
+  "auto_pause": {
+    "name": "Pausa Automática",
+    "description": "Se estiver assinalada, o jogo pára automaticamente se a tela não estiver em foco."
+  },
+  "bad_and_shit_break_combo": {
+    "name": "Bad e merda quebrar combinação",
+    "description": "Se marcada, bater em notas ruins ou de merda irá quebrar sua combinação\ne contar como Combo Breaks em vez de apenas Misses."
+  },
+  "bad_hit_window": {
+    "name": "Janela de Acesso Má",
+    "description": "Muda a quantidade de tempo que tem\npor bater num \"Mau\" em milissegundos."
+  },
+  "break_timer": {
+    "name": "Temporizador de pausa",
+    "description": "Se selecionado, aparece um temporizador quando as notas seguintes ainda estão longe."
+  },
+  "camera_zooms": {
+    "name": "Ampliação da Câmera",
+    "description": "Se não estiver assinalada, a câmara não fará zoom numa batida."
+  },
+  "change_window_border_color_with_note_hit": {
+    "name": "Mudar a Cor do Contorno da Janela com o Acesso à Nota",
+    "description": "Pode alterar a cor da borda da janela quando você pressiona uma nota.\\n(Somente para Windows 11, sry)"
+  },
+  "check_for_updates": {
+    "name": "Verificar as Atualizações",
+    "description": "Na compilação do Release, ligue isto para verificar as atualizações quando iniciar o jogo."
+  },
+  "color_accessibility": {
+    "name": "Acessibilidade de Cores",
+    "description": "Selecione várias opções de acordo com seu transtorno de cegueira de cor.",
+    "values": {
+      "none": "Nenhum",
+      "protanopia": "Protanopia",
+      "protanomaly": "Protanomalia",
+      "deuteranopia": "Deuteranopia",
+      "deuteranomaly": "Deuteranomalia",
+      "tritanopia": "Tritanopia",
+      "tritanomaly": "Tritanomalia",
+      "achromatopsia": "Acromatopsia",
+      "achromatomaly": "Acromatomalia"
+    }
+  },
+  "combo_and_rating_in_camgame": {
+    "name": "Combinação e classificação em camGame",
+    "description": "Se habilitado, Combo e Ratings serão renderizados na camada camGame em vez de camHUD."
+  },
+  "combo_stacking": {
+    "name": "Empilhar combos",
+    "description": "Se não forem verificadas, as Avaliações e o Combo não irão empilhar, salvando na Memória do Sistema e tornando-os mais fáceis de ler"
+  },
+  "disable_reset_button": {
+    "name": "Desactivar o Botão de Reiniciar",
+    "description": "Se estiver assinalada, carregar em Reiniciar não fará nada."
+  },
+  "discord_rich_presence": {
+    "name": "Discórdia presença rica",
+    "description": "Desmarque isto para evitar fugas acidentais, irá esconder a Aplicação da sua caixa \"Playing\" na Discord"
+  },
+  "downscroll": {
+    "name": "Downscroll",
+    "description": "Se selecionado, as notas vão para baixo em vez de para cima, bastante simples."
+  },
+  "drag_character": {
+    "name": "Arrastar Caracter",
+    "description": "Se selecionado, segurando um caractere com o mouse / tela de toque irá mover a posição, assim como no Codename Engine."
+  },
+  "drag_stage_camera": {
+    "name": "Arraste a câmera de palco",
+    "description": "Se não estiver assinalada, a câmara de palco não pode ser arrastada com o ecrã do mouse/touch.\nDesmarque isto se preferir o antigo estilo Psych."
+  },
+  "dynamic_combo_digits": {
+    "name": "Dígitos de combinação dinâmicos",
+    "description": "Se selecionado, a combinação irá aparecer com dois dígitos na primeira combinação, e apenas\nQuando chegar a 100 combo vai tornar-se três dígitos."
+  },
+  "dynamic_controls_color": {
+    "name": "Cor dos controles dinâmicos",
+    "description": "Se marcada, a cor dos controles móveis será definida como a cor das notas em suas configurações.\n(ter efeito apenas durante o jogo)"
+  },
+  "enable_3d_cameras": {
+    "name": "Activar as Câmaras 3D",
+    "description": "Activa ou desactiva a funcionalidade da câmara 3D.\nDesativar isso pode melhorar o desempenho pulando transformações 3D."
+  },
+  "end_countdown_seconds": {
+    "name": "Segundos da contagem final",
+    "description": "Quantos segundos antes da música terminar a contagem regressiva aparece (10-30)."
+  },
+  "extra_controls": {
+    "name": "Controlos Extra",
+    "description": "Selecione quantos botões extras você prefere ter?\nEles podem ser usados para mecânica com LUA ou HScript.",
+    "values": {
+      "none": "Nenhuma",
+      "single": "ÚNICO",
+      "double": "DUPLO"
+    }
+  },
+  "flashing_lights": {
+    "name": "Luzes intermitentes",
+    "description": "Desmarque isto se estiver sensível às luzes piscando!"
+  },
+  "flawless_hit_window": {
+    "name": "Sem falhas! Bater na Janela",
+    "description": "Muda a quantidade de tempo que tem\npor bater num \"Flawless!\" em milissegundos."
+  },
+  "fps_counter_mode": {
+    "name": "Modo de contador FPS",
+    "description": "Escolha quanta informação de desempenho é mostrada na sobreposição superior esquerda.",
+    "values": {
+      "hidden": "Escondido",
+      "visible_no_background": "Sem Fundo Visível",
+      "visible_with_background": "Visível com Fundo",
+      "basic_debug": "Depuração Básica",
+      "extended_debug": "Depuração Extendida"
+    }
+  },
+  "framerate": {
+    "name": "Taxa de quadros",
+    "description": "Bastante auto-explicativo, não é?"
+  },
+  "framerate_mode": {
+    "name": "Modo da Taxa de Quadro",
+    "description": "Escolha como o motor lida com atualização / tempo de desenho.\nA psicologia corresponde ao comportamento clássico do motor.",
+    "values": {
+      "psych": "Psych",
+      "fixed": "Fixo",
+      "interpolated": "Interpolado"
+    }
+  },
+  "fullscreen_mode": {
+    "name": "Modo de tela cheia",
+    "description": "Borderless é limitado a 1080p para melhor desempenho shader. Borderless Fix usa resolução de monitor nativo.",
+    "values": {
+      "borderless": "Sem Fronteiras",
+      "borderless_fix": "Correcção sem Fronteiras",
+      "exclusive": "Exclusivo"
+    }
+  },
+  "game_over_vibration": {
+    "name": "Vibração do Jogo Sobre",
+    "description": "Se marcada, seu dispositivo vibrará no fim do jogo."
+  },
+  "ghost_tapping": {
+    "name": "Tapping Fantasma",
+    "description": "Se marcada, você não terá erros ao pressionar as teclas\nenquanto não há notas que possam ser atingidas."
+  },
+  "good_hit_window": {
+    "name": "Janela de boa batida",
+    "description": "Muda a quantidade de tempo que tem\npor bater um \"Bom\" em milissegundos."
+  },
+  "gradient_time_bar": {
+    "name": "Barra de Tempo de Gradiente",
+    "description": "Se marcada, a barra de tempo será sombreada de acordo com a cor do ícone do caractere."
+  },
+  "hardware_acceleration": {
+    "name": "Aceleração do Hardware",
+    "description": "Se habilitado, armazena imagens compatíveis diretamente na GPU para reduzir o uso de RAM e melhorar a estabilidade de renderização, especialmente no Android.\nRecomendado para a maioria dos dispositivos."
+  },
+  "health_bar_opacity": {
+    "name": "Opacidade da Barra de Saúde",
+    "description": "Quão transparente deve ser a barra de saúde e ícones."
+  },
+  "hey_intro": {
+    "name": "Introdução",
+    "description": "Se marcada, BF e GF automaticamente fazer o Hey! animação quando a contagem regressiva diz Go!"
+  },
+  "hide_hud": {
+    "name": "Esconder o HUD",
+    "description": "Se selecionado, esconde a maioria dos elementos HUD."
+  },
+  "hide_sustain_splash": {
+    "name": "Ocultar Splash Sustentar",
+    "description": "Se selecionado, esconde Sustain Splash"
+  },
+  "hitbox_design": {
+    "name": "Desenho de Hitbox",
+    "description": "Escolha como seu hitbox deve ser.",
+    "values": {
+      "no_gradient": "Sem Gradiente",
+      "no_gradient_old": "Sem Gradiente (Velho)",
+      "gradient": "Gradiente",
+      "hidden": "Escondido"
+    }
+  },
+  "hitbox_position": {
+    "name": "Posição da hitbox",
+    "description": "Se estiver assinalada, a caixa será colocada na parte inferior da tela, caso contrário ficará no topo."
+  },
+  "icon_bounce_type": {
+    "name": "Tipo de Salto de Ícones",
+    "description": "Muda a forma como os ícones de saúde saltam.",
+    "values": {
+      "old": "Antigo",
+      "d_b": "D&B",
+      "nf": "NF",
+      "default": "Padrão"
+    }
+  },
+  "infinity_display": {
+    "name": "Exibição Infinita",
+    "description": "Se marcada, estende o viewport verticalmente para telas mais altas, mantendo a área clássica de jogo 16:9."
+  },
+  "instant_window_close": {
+    "name": "Fechar Janela Instantânea",
+    "description": "Se selecionado, fechar o jogo termina instantaneamente em vez de desaparecer a janela."
+  },
+  "key_viewer_color": {
+    "name": "Cor do visor de teclas:",
+    "description": "Selecione a cor para os botões do visualizador de chaves.",
+    "values": {
+      "gray": "Cinza",
+      "red": "Vermelho",
+      "blue": "Azul",
+      "green": "Verde",
+      "purple": "Roxo",
+      "orange": "Laranja",
+      "pink": "Rosa",
+      "cyan": "Ciano",
+      "white": "Branco",
+      "black": "Preto"
+    }
+  },
+  "launcher_auto_start": {
+    "name": "Início automático do lançador",
+    "description": "Se marcada, o lançador Android inicia automaticamente o motor após 3 segundos."
+  },
+  "lighter_hit_path": {
+    "name": "Caminho de Acesso Isqueiro",
+    "description": "Se não estiver assinalado, o caminho visual completo será executado em vez do caminho visual claro.\nSem verificação, isto pode causar desempenho do GAL."
+  },
+  "low_quality": {
+    "name": "Baixa qualidade",
+    "description": "Se selecionado, desactiva alguns detalhes de fundo,\ndiminui os tempos de carga e melhora o desempenho."
+  },
+  "middlescroll": {
+    "name": "Crómio do meio",
+    "description": "Se estiver assinalada, as suas notas ficam centradas."
+  },
+  "mobile_controls_opacity": {
+    "name": "Opacidade dos controles móveis",
+    "description": "Selecciona a opacidade dos botões móveis (cuidados de não o colocar em 0 e perder o controlo dos botões)."
+  },
+  "mobile_trace_button": {
+    "name": "Botão de rastreamento móvel",
+    "description": "Se marcada, mostra o botão de toque de rastreamento nas construções móveis."
+  },
+  "mod_security": {
+    "name": "Segurança Mod",
+    "description": "Se selecionado, verifica mod Lua/HScript e ignora scripts de mods com APIs sensíveis não confiáveis."
+  },
+  "modchart_debug_overlay": {
+    "name": "Debug do Modchart",
+    "description": "Mostra as estatísticas do renderizador de modchart.\nDesactivado por omissão porque tem um custo de desempenho."
+  },
+  "mods_storage_location": {
+    "name": "Local dos mods",
+    "description": "Escolha onde mods Android e arquivos salvos devem viver.\nINTERNAL usa armazenamento de aplicativos escopo, EXTERNAL usa armazenamento público.",
+    "values": {
+      "internal": "INTERNAL",
+      "external": "EXTERNA"
+    }
+  },
+  "nf_rating_style": {
+    "name": "Estilo de rating NF",
+    "description": "Se marcada, classificações e números de combinação bop no lugar em vez de voar/desvanecer."
+  },
+  "note_skins": {
+    "name": "Nota Peles:",
+    "description": "Selecione sua pele de nota preferida."
+  },
+  "note_splash_opacity": {
+    "name": "Nota Opacidade do Splash",
+    "description": "Quão transparente deve ser o Note Splashes."
+  },
+  "note_splashes": {
+    "name": "Nota Splashs:",
+    "description": "Selecione sua variação de splash de nota preferida."
+  },
+  "opponent_notes": {
+    "name": "Notas Opostas",
+    "description": "Se não forem verificadas, as notas do adversário ficam escondidas."
+  },
+  "optimize_hold_rendering": {
+    "name": "Otimizar renderização de espera",
+    "description": "Otimiza a renderização de setas para melhor desempenho.\nNÃO recomendado para modcharts complexos como porões pode parecer incorreto."
+  },
+  "options_menu_style": {
+    "name": "Estilo do Menu Opções",
+    "description": "Altera os menus Opções entre cartões Plus e Psych clássico.",
+    "values": {
+      "plus": "Mais",
+      "psych": "Psych"
+    }
+  },
+  "over_accuracy": {
+    "name": "Sobre Precisão",
+    "description": "Se marcada, a reprodução perfeita pode empurrar precisão acima de 100%, até 200% até o final da música."
+  },
+  "pause_countdown": {
+    "name": "Contagem ao retomar",
+    "description": "Se marcada, a retomada da pausa toca uma contagem regressiva semelhante à contagem regressiva inicial."
+  },
+  "pause_music": {
+    "name": "Pausar música:",
+    "description": "Que música prefere para o Pause Screen?",
+    "values": {
+      "none": "Nenhum",
+      "tea_time": "Hora do chá",
+      "breakfast": "Pequeno-almoço",
+      "breakfast_(pico)": "Pequeno-almoço (Pico)"
+    }
+  },
+  "pop_up_score": {
+    "name": "Apresentar a Pontuação",
+    "description": "Se não estiver assinalada, as notas de toque não mostrarão a classificação e os pop-ups combinados. Útil em dispositivos de baixo nível."
+  },
+  "rating_offset": {
+    "name": "Offset de rating",
+    "description": "Muda quão tarde / cedo você tem que bater para um \"falso!!\"\nValores mais elevados significam que tens de bater mais tarde."
+  },
+  "results_state_at_end": {
+    "name": "Resultados Estado no Final",
+    "description": "Se desmarcado, o endSong não fará transição para ResultsState no modo Freeplay/Story."
+  },
+  "rgb_notes": {
+    "name": "Notas RGB",
+    "description": "Se desmarcado, usa as cores da nota de estilo Classic Psych 0.6.3 e os ativos da nota de raiz."
+  },
+  "safe_frames": {
+    "name": "Quadros Seguros",
+    "description": "Muda quantos quadros você tem para\nbater uma nota mais cedo ou mais tarde."
+  },
+  "score_text_grow_on_hit": {
+    "name": "Pontuação cresce no acerto",
+    "description": "Se não estiver assinalada, desactiva o texto da Pontuação a crescer\nSempre que bates numa nota."
+  },
+  "script_deprecation_warnings": {
+    "name": "Avisos de Deprecação do Programa",
+    "description": "Se selecionada, as APIs de compatibilidade Lua/HScript desatualizadas imprimirão avisos no console de depuração. Desactivar para silenciar mods barulhentos."
+  },
+  "shaders": {
+    "name": "Shaders",
+    "description": "Se não estiver assinalada, desactiva os shaders. Eles são usados para efeitos visuais e podem ser intensivos em CPU em dispositivos mais fracos."
+  },
+  "show_android_launcher": {
+    "name": "Mostrar o Lançador Android",
+    "description": "Se selecionado, o lançador Android abre antes do motor.\nLiga-o aqui se o desligares do lançador."
+  },
+  "show_combo_numbers": {
+    "name": "Mostrar números do combo",
+    "description": "Se desmarcado, esconde popups de número de combinação ao bater notas."
+  },
+  "show_combo_sprite": {
+    "name": "Mostrar Sprite Combo",
+    "description": "Se desmarcado, esconde o popup do COMBO sprite ao bater notas."
+  },
+  "show_early/late_sprites": {
+    "name": "Mostrar sprites Early/Late",
+    "description": "Mostra etiquetas precoces ou tardias nos cantos superiores da imagem de classificação, dependendo do tempo de sucesso."
+  },
+  "show_end_countdown": {
+    "name": "Mostrar contagem regressiva",
+    "description": "Se marcada, mostra uma contagem regressiva nos últimos segundos da música."
+  },
+  "show_hit_ms": {
+    "name": "Mostrar bater em MS",
+    "description": "Mostra o erro de cronometragem do milissegundo ao lado dos pop-ups de julgamento."
+  },
+  "show_key_viewer": {
+    "name": "Mostrar visor de teclas",
+    "description": "Se selecionado, mostra um visualizador de chaves que mostra quais as chaves que estão a ser pressionadas."
+  },
+  "show_rating_sprite": {
+    "name": "Mostrar sprite de rating",
+    "description": "Se desmarcado, esconde a imagem de classificação popup ao bater notas."
+  },
+  "show_version_text_on_gameplay": {
+    "name": "Mostrar o Texto da Versão no Jogo",
+    "description": "Se marcada, mostra o texto da versão durante a jogabilidade."
+  },
+  "show_watermark": {
+    "name": "Mostrar Marca de Água",
+    "description": "Se marcada, mostra a marca d'água na tela."
+  },
+  "sick_hit_window": {
+    "name": "Que nojo! Bater na Janela",
+    "description": "Muda a quantidade de tempo que tem\nPor bater num \"doente!\" em milissegundos."
+  },
+  "smooth_health_bar": {
+    "name": "Barra de Saúde Suave",
+    "description": "Se selecionado, a barra de saúde irá mover- se suavemente em vez de instantaneamente."
+  },
+  "sustains_as_one_note": {
+    "name": "Sustenta como uma nota",
+    "description": "Se estiver assinalada, não é possível carregar em Manter as Notas se falhar,\ne contar como um único Hit/Miss.\nDesmarque isto se preferir o antigo Sistema de Entrada."
+  },
+  "system_score_multiplier": {
+    "name": "Multiplicador de pontos",
+    "description": "Escolha o sistema de pontuação para acertos de notas",
+    "values": {
+      "psych": "Psych",
+      "codename": "Nome de código"
+    }
+  },
+  "time_bar": {
+    "name": "Barra de Tempo:",
+    "description": "O que deve ser exibido na barra de tempo?",
+    "values": {
+      "time_left": "Tempo restante",
+      "time_elapsed": "Tempo decorrido",
+      "song_name": "Nome da Canção",
+      "disabled": "Desactivado"
+    }
+  },
+  "time_text_bump": {
+    "name": "Bump de Texto do Tempo",
+    "description": "Se não estiver assinalada, desactiva a animação de aumento de texto de tempo na batida."
+  },
+  "title_intro_video": {
+    "name": "Título Vídeo de Introdução",
+    "description": "Se marcada, reproduz o vídeo de introdução antes da introdução do título uma vez por lançamento."
+  },
+  "touch_pointer": {
+    "name": "Apontador de Toque",
+    "description": "Se estiver assinalada, mostra uma sobreposição do ponteiro de toque para toques e arrastamentos."
+  },
+  "uncap_fps": {
+    "name": "Descap FPS",
+    "description": "Se selecionado, permite que o renderizador execute o mais rápido possível, mantendo as atualizações limitadas.\nÚtil para monitores de alta atualização, mas pode aumentar o uso de bateria / GPU."
+  },
+  "use_flawless_rating": {
+    "name": "Usar rating Flawless",
+    "description": "Se marcada, adiciona um mais apertado \"Flawless!!\" julgamento acima de Doente."
+  },
+  "use_psych_freeplay": {
+    "name": "Usar o Psych Freeplay",
+    "description": "Se selecionado, usa o estado Psych Engine Freeplay clássico em vez do PlusEngine Freeplay."
+  },
+  "use_psych_score_text": {
+    "name": "Usar pontuação do Psych",
+    "description": "Se marcada, mantém o formato de texto original da pontuação do Psych Engine durante a jogabilidade."
+  },
+  "vanilla_transition": {
+    "name": "Transição de Baunilha",
+    "description": "Se selecionado, usa a transição Psych Engine baunilha em vez do personalizado."
+  },
+  "vsync": {
+    "name": "VSync",
+    "description": "Se marcada, permite VSync, fixação de tela rasgando ao custo de tampar FPS para a taxa de atualização do monitor.\nReinicie o jogo para aplicá-lo completamente."
+  },
+  "windows_gdi_effects": {
+    "name": "Efeitos GDI do Windows",
+    "description": "Permite efeitos GDI desktop Windows. Manter desactivado a menos que queira explicitamente que os mods os usem."
+  },
+  "z_axis_scale": {
+    "name": "Escala de Eixo Z",
+    "description": "Escala os valores do eixo Z para controlar a profundidade percebida.\nValores mais elevados aumentam a profundidade, valores mais baixos aplainam-na."
+  }
+}

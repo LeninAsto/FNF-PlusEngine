@@ -1,0 +1,40 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.note_splash",
+  "ui": {
+    "add_update": "Adicionar/Atualizar",
+    "animation_name": "Nome da Animação:",
+    "animation_prefix": "Prefixo de Animação:",
+    "animations": "Animações:",
+    "blue": "Azul:",
+    "color_to_replace": "Cor a Substituir:",
+    "convert_txt": "Converter TXT",
+    "do_not_replace": "Não substituir",
+    "green": "Verde:",
+    "image": "Imagem:",
+    "indices_optional": "Índices (OPTIONAL):",
+    "maximum_fps": "Máximo FPS:",
+    "minimum_fps": "FPS mínimo:",
+    "note_data": "Dados da Nota:",
+    "red": "Vermelho:",
+    "reload_image": "Recarregar imagem",
+    "remove": "Remover",
+    "replacing_color": "Substituindo a cor:",
+    "save": "Gravar",
+    "scale": "Escala:",
+    "template": "Modelo"
+  },
+  "presence": {
+    "title": "Editor de Splash de Nota"
+  },
+  "help": {
+    "open": "Pressione {1} para obter ajuda",
+    "mobile": "Toque em um Strum\npara gerar um Splash\n\nTeclas de Setas - Mover a Posição\nSegurar Z - Mover Offsets 10x mais rápido\n\n\nC - Copiar Deslocamento Atual\nV - Colar o Deslocamento Copiado no Splash Atual\nEm cada 4 dados de notas subsequentes\num conjunto extra de animações será adicionado",
+    "desktop": "Clique em um Strum ou Espaço de Imprensa\npara gerar um Splash\n\nTeclas de Setas - Mover a Posição\nSegurar Shift - Mover Deslocamentos 10x mais rápido\n\n\nCtrl + C - Copiar a Posição Atual\nCtrl + V - Colar o Deslocamento Copiado na Mancha Atual\nCtrl + R - Restaurar a Posição Atual\nEm cada 4 dados de notas subsequentes\num conjunto extra de animações será adicionado"
+  },
+  "tabs": {
+    "animation": "Animação",
+    "properties": "Propriedades",
+    "shader": "Shader"
+  }
+}

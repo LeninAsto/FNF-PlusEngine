@@ -1,0 +1,59 @@
+{
+  "$schema": 1,
+  "$namespace": "freeplay",
+  "presence": "Nos Menus",
+  "title": "FREEPLAY",
+  "score": {
+    "personal_best": "{1} ({2})",
+    "details": "Pontuação: {1}\nPrecisão: {2}",
+    "none": "Sem pontuação ainda"
+  },
+  "errors": {
+    "no_weeks": "SEM SEMANAS DE LIBERDADE\n\nPressione {1} para ir para o menu Editor Semana.\nPressione {2} para retornar ao Menu Principal.",
+    "chart_load_exception": "Erro inesperado ao carregar o gráfico: {1}",
+    "no_chart": "Nenhum gráfico está disponível para esta dificuldade!",
+    "invalid_bpm": "Este gráfico tem um BPM inválido, por isso não pode ser reproduzido."
+  },
+  "search": {
+    "placeholder": "Procurar...",
+    "helper": "Pressione B para focar, ESC para sair"
+  },
+  "tip": "Pressione {1} para ouvir a música / pressione {2} para abrir o Gameplay Changers Menu / Pressione {3} para reiniciar sua pontuação e precisão.",
+  "desktop_mod_tip": "/ F5 recarrega mods / solta uma pasta mod para importá-la.",
+  "song_info": {
+    "loading": "Carregando...",
+    "scores": "Diferenças e Pontuações:\n{1}",
+    "time": "Tempo: {1}",
+    "bpm": "BPM: {1}",
+    "author": "Por: {1}"
+  },
+  "licenses": {
+    "no-licenses": "Nenhuma Licença",
+    "creative-commons": "Creative Commons",
+    "cc-by": "CC BY",
+    "cc-by-sa": "CC BY-SA",
+    "cc-by-nd": "CC BY-ND",
+    "cc-by-nc": "CC BY-NC",
+    "cc-by-nc-sa": "CC BY-NC-SA",
+    "cc-by-nc-nd": "CC BY-NC-ND",
+    "public-domain": "Domínio Público",
+    "royalty-free": "Livre de Realeza",
+    "copyright": "Copyright",
+    "permission-required": "Permissão Necessária",
+    "comercial-use": "Uso Comercial",
+    "no-comercial": "Não comercial",
+    "no-derivatives": "Sem Derivados",
+    "share-alike": "Compartilhar o Alike",
+    "atribution-required": "Atribuição Necessária",
+    "redistribution-allow": "Redistribuição Permitida",
+    "modify-allow": "Modificação Permitida",
+    "streaming-allow": "Fluxo permitido",
+    "public-access": "Acesso público",
+    "public-execution": "Desempenho Público",
+    "sync": "Sincronizar"
+  },
+  "psych": {
+    "tip": "Pressione {1} para ouvir a música / pressione {2} para abrir o Gameplay Changers Menu / Pressione {3} para reiniciar sua pontuação e precisão.",
+    "desktop_mod_tip": "/ F5 recarrega mods / solta uma pasta mod para importá-la."
+  }
+}

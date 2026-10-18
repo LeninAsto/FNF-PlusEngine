@@ -1,0 +1,21 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.modchart_converter",
+  "presence": "Conversor Modchart",
+  "title": "Conversor Modchart",
+  "intro": "Copie um modchart NVME Lua para a área de transferência e clique em \"Convert Clipboard\".",
+  "help": "Esta ferramenta realiza uma conversão prática de primeira passagem.\nReatribua os passos, remova os auxiliares radianos NVMe e lembre-se que fieldYaw é o nome do lado Plus.",
+  "preview_truncated": "... antevisão truncada...",
+  "no_clipboard_text": "Nenhum texto foi encontrado na área de transferência.",
+  "actions": {
+    "convert_clipboard": "Converter Área de Transferência",
+    "copy_starter": "Copiar o Iniciador",
+    "back": "Voltar"
+  },
+  "status": {
+    "starter_copied": "O modelo inicial foi copiado para a área de transferência.",
+    "ready": "Feito. Importar um modchart da área de transferência ou copiar o modelo inicial.",
+    "clipboard_empty": "A área de transferência está vazia. Primeiro, copie um script NVMe.",
+    "converted": "Converteu os caracteres {1} em {2} e copiou o resultado para a área de transferência."
+  }
+}

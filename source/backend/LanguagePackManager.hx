@@ -2,6 +2,7 @@ package backend;
 
 #if sys
 import haxe.Json;
+import haxe.io.Bytes;
 import haxe.io.Path;
 import sys.FileSystem;
 import sys.io.File;
@@ -23,6 +24,8 @@ class LanguagePackManager
 	static inline var MAX_INDEX_BYTES:Int = 256 * 1024;
 	static inline var MAX_MANIFEST_BYTES:Int = 256 * 1024;
 	static inline var MAX_BUNDLE_BYTES:Int = 1024 * 1024;
+	static inline var MAX_ASSET_BYTES:Int = 16 * 1024 * 1024;
+	static inline var MAX_ASSET_TOTAL_BYTES:Int = 64 * 1024 * 1024;
 	static inline var MAX_LANGUAGES:Int = 64;
 	static inline var MAX_BUNDLES:Int = 128;
 	static final VALID_CODE:EReg = ~/^[A-Za-z]{2,3}(?:-[A-Za-z0-9]{2,8})*$/;
@@ -104,6 +107,7 @@ class LanguagePackManager
 			throw 'Manifest "$code" has an invalid bundle count.';
 
 		var downloaded:Map<String, String> = [];
+		var downloadedAssets:Map<String, Bytes> = [];
 		var manifestBase:String = directoryUrl(manifestUrl);
 		for (rawBundle in bundles)
 		{
@@ -117,11 +121,41 @@ class LanguagePackManager
 			downloaded.set(bundle, data);
 		}
 
+		var rawAssets:Dynamic = Reflect.field(manifest, 'assets');
+		if (rawAssets != null)
+		{
+			if (!Std.isOfType(rawAssets, Array))
+				throw 'Manifest "$code" has an invalid assets list.';
+			var assetEntries:Array<Dynamic> = cast rawAssets;
+			if (assetEntries.length > MAX_BUNDLES)
+				throw 'Manifest "$code" has too many localized assets.';
+			var totalAssetBytes:Int = 0;
+			for (assetEntry in assetEntries)
+			{
+				var source:String = cleanString(Reflect.field(assetEntry, 'source')).replace('\\', '/');
+				var target:String = cleanString(Reflect.field(assetEntry, 'target')).replace('\\', '/');
+				if (!isSafeRelativePath(target))
+					throw 'Unsafe localized asset target in "$code": $target';
+				if (source.length == 0)
+					throw 'Localized asset "$target" has no source.';
+				if (!source.startsWith('https://') && !isSafeRelativePath(source))
+					throw 'Unsafe localized asset source in "$code": $source';
+				var sourceUrl:String = source.startsWith('https://') ? source : joinUrl(manifestBase, source);
+				var bytes:Bytes = downloadBytes(sourceUrl, MAX_ASSET_BYTES);
+				totalAssetBytes += bytes.length;
+				if (totalAssetBytes > MAX_ASSET_TOTAL_BYTES)
+					throw 'Localized assets for "$code" exceeded the allowed total size.';
+				downloadedAssets.set(target, bytes);
+			}
+		}
+
 		Reflect.setField(manifest, 'version', remoteVersion);
 		var languageRoot:String = Path.join([downloadRoot(), code]);
 		ensureDirectory(languageRoot);
 		for (bundle => data in downloaded)
 			atomicWrite(Path.join([languageRoot, bundle]), data);
+		for (target => bytes in downloadedAssets)
+			atomicWriteBytes(Path.join([Paths.getPrimaryModsRoot(), target]), bytes);
 		// The manifest is committed last, so an interrupted download is never selected.
 		atomicWrite(Path.join([languageRoot, 'manifest.json']), Json.stringify(manifest, null, '  '));
 	}
@@ -186,11 +220,40 @@ class LanguagePackManager
 		return data;
 	}
 
+	static function downloadBytes(url:String, maxBytes:Int):Bytes
+	{
+		if (url == null || !url.startsWith('https://'))
+			throw 'Only HTTPS language assets are allowed.';
+		var result:Bytes = null;
+		var failure:String = null;
+		var request = new haxe.Http(url);
+		request.onBytes = function(data:Bytes) result = data;
+		request.onError = function(error:String) failure = error;
+		request.request(false);
+		if (failure != null)
+			throw 'Could not download $url: $failure';
+		if (result == null || result.length == 0)
+			throw 'Empty response from $url';
+		if (result.length > maxBytes)
+			throw 'Download exceeded the allowed size: $url';
+		return result;
+	}
+
 	static function atomicWrite(path:String, data:String):Void
 	{
 		ensureDirectory(Path.directory(path));
 		var temporary:String = path + '.download';
 		File.saveContent(temporary, data);
+		if (FileSystem.exists(path))
+			FileSystem.deleteFile(path);
+		FileSystem.rename(temporary, path);
+	}
+
+	static function atomicWriteBytes(path:String, data:Bytes):Void
+	{
+		ensureDirectory(Path.directory(path));
+		var temporary:String = path + '.download';
+		File.saveBytes(temporary, data);
 		if (FileSystem.exists(path))
 			FileSystem.deleteFile(path);
 		FileSystem.rename(temporary, path);

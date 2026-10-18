@@ -1,0 +1,64 @@
+{
+  "$schema": 1,
+  "$namespace": "options.gameplay_changers",
+  "scrolltype": {
+    "name": "Tipo de Rolo",
+    "values": {
+      "multiplicative": "Multiplicativo",
+      "constant": "Constante"
+    }
+  },
+  "scrollspeed": {
+    "name": "Velocidade de Rolagem"
+  },
+  "songspeed": {
+    "name": "Taxa de reprodução"
+  },
+  "preservepitch": {
+    "name": "Preservar o Pitch de Voz"
+  },
+  "healthgain": {
+    "name": "Multiplicador de ganho de saúde"
+  },
+  "healthloss": {
+    "name": "Multiplicador de Perda de Saúde"
+  },
+  "instakill": {
+    "name": "Instakill na Miss"
+  },
+  "practice": {
+    "name": "Modo de prática"
+  },
+  "perfect": {
+    "name": "Modo Perfeito"
+  },
+  "opponentplay": {
+    "name": "Modo oposto"
+  },
+  "opponentdrain": {
+    "name": "Dreno oposto"
+  },
+  "nodroppenalty": {
+    "name": "Sem Pena de Queda"
+  },
+  "botplay": {
+    "name": "Botplay"
+  },
+  "botplaytype": {
+    "name": "Tipo de Botplay",
+    "values": {
+      "normal": "Normal",
+      "cpu": "CPU"
+    }
+  },
+  "botplaycpuprofile": {
+    "name": "Perfil da CPU",
+    "values": {
+      "perfect": "Perfeito.",
+      "skilled": "Habilidade",
+      "balanced": "Saldo",
+      "casual": "Casual",
+      "chaotic": "Caótico"
+    }
+  }
+}

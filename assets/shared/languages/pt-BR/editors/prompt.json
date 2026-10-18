@@ -1,0 +1,10 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.prompt",
+  "unsaved": "Há progresso por salvar.\nTem certeza que queres sair?",
+  "actions": {
+    "exit": "Sair",
+    "ok": "Está bem.",
+    "cancel": "Cancelar"
+  }
+}

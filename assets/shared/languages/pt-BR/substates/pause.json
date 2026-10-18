@@ -1,0 +1,28 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.pause",
+  "deaths": "Derrotas: {1}",
+  "author": "Por: {1}",
+  "practice_mode": "Modo de prática",
+  "charting_mode": "Modo de Gráfico",
+  "time": "{1} / {2}",
+  "menu": {
+    "resume": "Continuar",
+    "restart_song": "Reiniciar música",
+    "chart_editor": "Editor de Gráficos",
+    "change_difficulty": "Mudar a Dificuldade",
+    "options": "Opções",
+    "exit_to_menu": "Sair para o menu",
+    "leave_charting_mode": "Deixar o Modo de Gráfico",
+    "skip_time": "Saltar o Tempo",
+    "end_song": "Fim da Canção",
+    "toggle_practice_mode": "Alternar o Modo de Prática",
+    "toggle_botplay": "Alternar Botplay",
+    "skip_video": "Ignorar o Vídeo",
+    "back": "VOLTAR"
+  },
+  "errors": {
+    "missing_file": "Arquivo em falta: {1}",
+    "chart": "ERRO ENCARREGADO:\n{1}"
+  }
+}

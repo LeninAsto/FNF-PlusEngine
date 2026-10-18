@@ -86,18 +86,7 @@ class Language
 					if (name == null || name.trim().length == 0)
 						name = code;
 
-					var found:Bool = false;
-					for (language in languages)
-					{
-						if (language.code == code)
-						{
-							language.name = name;
-							found = true;
-							break;
-						}
-					}
-					if (!found)
-						languages.push({code: code, name: name});
+					mergeAvailableLanguage(languages, code, name);
 				}
 			}
 			catch (e:Dynamic)
@@ -105,12 +94,44 @@ class Language
 				trace('Could not read language index "$path": $e');
 			}
 		}
+
+		// Embedded/copy-through manifests are also discovered directly. This keeps
+		// the menu usable if a platform fails to expose index.json during startup.
+		for (assetId in openfl.utils.Assets.list(openfl.utils.AssetType.TEXT))
+		{
+			var normalized:String = assetId.replace('\\', '/');
+			if (!normalized.startsWith('assets/shared/$JSON_LANGUAGE_ROOT/') || !normalized.endsWith('/manifest.json'))
+				continue;
+			try
+			{
+				var manifest:Dynamic = haxe.Json.parse(Paths.stripBOM(AssetLoader.loadText(assetId)));
+				var code:String = Reflect.field(manifest, 'code');
+				var name:String = Reflect.field(manifest, 'name');
+				if (code != null && code.trim().length > 0)
+					mergeAvailableLanguage(languages, code, name == null || name.trim().length == 0 ? code : name);
+			}
+			catch (e:Dynamic)
+				trace('Could not discover language manifest "$assetId": $e');
+		}
 		#else
 		languages.push({code: "en-US", name: defaultLangName});
 		#end
 
 		return languages;
 	}
+
+	#if TRANSLATIONS_ALLOWED
+	static function mergeAvailableLanguage(languages:Array<{code:String, name:String}>, code:String, name:String):Void
+	{
+		for (language in languages)
+			if (language.code == code)
+			{
+				language.name = name;
+				return;
+			}
+		languages.push({code: code, name: name});
+	}
+	#end
 
 	// ← NEW OPTIMIZED FEATURE FOR MULTIPLE TRANSLATIONS
 	public static function getPhrases(keys:Array<String>, defaultPhrases:Array<String> = null):Array<String>

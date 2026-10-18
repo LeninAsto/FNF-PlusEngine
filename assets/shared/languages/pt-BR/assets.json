@@ -1,0 +1,9 @@
+{
+  "$schema": 1,
+  "$namespace": "",
+  "images/mainmenu/menu_story_mode": "images/pt-BR/mainmenu/menu_story_mode",
+  "images/mainmenu/menu_credits": "images/pt-BR/mainmenu/menu_credits",
+  "images/menudifficulties/easy": "images/pt-BR/menudifficulties/easy",
+  "images/menudifficulties/hard": "images/pt-BR/menudifficulties/hard",
+  "images/menu_tracks": "images/pt-BR/Menu_Tracks"
+}

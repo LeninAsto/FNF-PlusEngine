@@ -5,7 +5,8 @@
   "applied_badge": "Activo",
   "selector": {
     "name": "Idioma",
-    "description": "Elija un paquete de idioma instalado."
+    "description": "Aplicar el paquete de idioma {1}.",
+    "active": "{1} (Activo)"
   },
   "sync": {
     "name": "Descargar o actualizar idiomas",

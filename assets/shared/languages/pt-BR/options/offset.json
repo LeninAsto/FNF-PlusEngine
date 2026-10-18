@@ -1,0 +1,24 @@
+{
+  "$schema": 1,
+  "$namespace": "options.offset",
+  "beat_hit": "Bate!",
+  "current_offset": "Deslocamento atual: {1} ms",
+  "switch": "(Pressione {1} para mudar)",
+  "modes": {
+    "note_delay": "Nota/Atraso de Beat",
+    "combo": "Deslocamento de combinação",
+    "keyviewer": "Deslocamento do KeyViewer",
+    "hit_ms": "Carregar em MS Offset"
+  },
+  "combo": {
+    "rating_offset": "Deslocamento de Classificação:",
+    "numbers_offset": "Deslocamento de Números:"
+  },
+  "keyviewer": {
+    "position_offset": "Posição do KeyViewer:",
+    "color": "Cor do KeyViewer:"
+  },
+  "hit_ms": {
+    "preview": "Antevisão:"
+  }
+}

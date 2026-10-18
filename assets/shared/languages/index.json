@@ -10,7 +10,12 @@
       "code": "es-LA",
       "name": "Español (Latinoamérica)",
       "version": 1
+    },
+    {
+      "code": "pt-BR",
+      "name": "Português (Brasil)",
+      "version": 1
     }
   ],
-  "catalogVersion": 1
+  "catalogVersion": 2
 }

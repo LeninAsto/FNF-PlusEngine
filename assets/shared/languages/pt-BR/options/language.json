@@ -1,0 +1,19 @@
+{
+  "$schema": 1,
+  "$namespace": "options.language",
+  "hint": "ACCEPT aplica o idioma selecionado.",
+  "applied_badge": "Activo",
+  "selector": {
+    "name": "Língua",
+    "description": "Aplicar o pacote de idioma {1}.",
+    "active": "{1} (Ativo)"
+  },
+  "sync": {
+    "name": "Baixar ou atualizar idiomas",
+    "description": "Verifica o catálogo oficial e instala pacotes de idiomas novos ou atualizados com segurança.",
+    "success_title": "Línguas atualizadas",
+    "error_title": "A atualização da língua falhou",
+    "success": "Instalado: {1}. Já atual: {2}.",
+    "error": "Não foi possível atualizar pacotes de idiomas:\n{1}"
+  }
+}

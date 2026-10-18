@@ -27,7 +27,7 @@
     "reload": "RECARGAR"
   },
   "hint": "ARRIBA/ABAJO Seleccionar L/R Reordenar ENTER Iniciar ESPACIO Activar/Desactivar (SHIFT=Todo) TAB Configuración Y Seguridad F Filtro / Buscar ESC Salir",
-  "empty": "NO HAY MODS INSTALADOS\nPULSA ATR?S PARA SALIR O INSTALAR UN MOD",
+  "empty": "NO HAY MODS INSTALADOS\nPULSA ATRÁS PARA SALIR O INSTALAR UN MOD",
   "unknown_mod": "Mod desconocido",
   "no_description": "No se proporciona descripción.",
   "status": {

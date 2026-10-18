@@ -1,0 +1,41 @@
+{
+  "$schema": 1,
+  "$namespace": "options.theme_accent",
+  "presence": "Escolhidor de Accent Tema",
+  "title": "Cor do Accent do Tema",
+  "hint": "Visualize widgets MD3 reais enquanto você arrasta o seletor. O ENTER confirma, o Back cancela.",
+  "picker_hint": "Roda + tira de luminância + paleta, sem se transformar em sopa visual.",
+  "live_preview": "Visualização ao vivo habilitada",
+  "use_custom": "Usar acento personalizado",
+  "mini_hint": "O lado direito mostra widgets de motor de estoque pintados com seu sotaque. Se parece amaldiçoado aqui, pareceria amaldiçoado em menus também.",
+  "hex_label": "HEX {1}",
+  "boxes": {
+    "preview": "Antevisão do Tema",
+    "picker": "Seletor de destaque",
+    "components": "Antevisão dos Componentes MD3"
+  },
+  "preview": {
+    "title": "AMOSTRA LIBERDADE",
+    "meta": "Visualização personalizada do sotaque"
+  },
+  "chips": {
+    "active": "Accent ativo",
+    "custom": "Token personalizado",
+    "preset_safe": "Predefinido- seguro",
+    "selected": "Selecionado",
+    "hex": "HEX token"
+  },
+  "sections": {
+    "standard": "Progresso Padrão",
+    "wavy": "Progresso ondulado",
+    "widgets": "Outros Elementos do Motor"
+  },
+  "actions": {
+    "copy_hex": "Copiar HEX",
+    "paste_hex": "Colar HEX",
+    "apply": "Aplicar",
+    "cancel": "Cancelar",
+    "preview": "Antevisão",
+    "accent": "Destaque"
+  }
+}

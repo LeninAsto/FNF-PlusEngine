@@ -1,0 +1,28 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.dialogue_character",
+  "ui": {
+    "add_update": "Adicionar/Atualizar",
+    "animation_name": "Nome da animação:",
+    "animations": "Animações:",
+    "idle_finished_name_on_xml_file": "Nome inválido/acabado no arquivo.XML:",
+    "image_file_name": "Arquivo de imagem:",
+    "load_character": "Carregar o Caracter",
+    "loop_name_on_xml_file": "Nome do circuito no arquivo.XML:",
+    "no_antialiasing": "Sem Antialiasing",
+    "position_offset": "Deslocamento da posição:",
+    "reload_image": "Recarregar imagem",
+    "remove": "Remover",
+    "save_character": "Gravar o Caracter",
+    "scale": "Escala:"
+  },
+  "presence": {
+    "title": "Editor de Caracteres de Diálogo",
+    "editing": "Edição: {1}"
+  },
+  "tabs": {
+    "animations": "Animações",
+    "character": "Caracter",
+    "character_type": "Tipo de Caracter"
+  }
+}

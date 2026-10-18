@@ -1,0 +1,47 @@
+{
+  "$schema": 1,
+  "$namespace": "states.mods_menu",
+  "presence": "No Navegador Mod",
+  "title": "MODELOS",
+  "filter": "{1}",
+  "filters": {
+    "all": "TODOS",
+    "enabled": "ATIVADOS",
+    "disabled": "DEFICIÊNCIA",
+    "launchable": "LUNCHÁVEL"
+  },
+  "search": "PROCURA",
+  "search_query": "{1}{2}",
+  "sections": {
+    "description": "DESCRIÇÃO",
+    "features": "CARACTERÍSTICAS",
+    "changelog": "ALTERAÇÕES"
+  },
+  "restart_notice": "* Movendo/Alternando este mod irá reiniciar o jogo.",
+  "buttons": {
+    "launch": "LANÇAMENTO",
+    "enable": "ENQUANTO",
+    "enabled": "ATIVAR",
+    "disable": "DÁVEIS",
+    "settings": "CONSTITUIÇÕES",
+    "reload": "RELOADE"
+  },
+  "hint": "UP/DOWN Selecione L/R Reordenar espaço de lançamento Liga/Desligar (SHIFT=All) Configurações TAB Y Filtro de segurança F / Search ESC Exit",
+  "empty": "NENHUM MODELOS INSTALADOS\nIMPRENSA DE VOLTAR À EXISTÊNCIA OU INSTLAR UM MODELO",
+  "unknown_mod": "Mod Desconhecido",
+  "no_description": "Nenhuma descrição fornecida.",
+  "status": {
+    "disabled": "Desactivado - activar o lançamento",
+    "launch": "> Pressione ENTER para lançar",
+    "no_launchable_states": "Sem estados lançáveis",
+    "base_game_global": "O jogo base é sempre carregado globalmente",
+    "sensitive_scripts": "Scripts sensíveis detectados - escolha Confiar para ativar",
+    "activation_denied": "Ativação negada - o mod ficou desativado",
+    "trusted": "Confiado - o mod habilitado",
+    "security_disabled": "Mod Security está desativada (ative-o em Opções)"
+  },
+  "settings_error": {
+    "title": "Nome do mod: {1}",
+    "message": "Ocorreu um erro: {1}"
+  }
+}

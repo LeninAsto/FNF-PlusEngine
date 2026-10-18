@@ -1,0 +1,110 @@
+{
+  "$schema": 1,
+  "$namespace": "options",
+  "common": {
+    "title": "Opções",
+    "presence": "O Menu Opções"
+  },
+  "mobile_controls_tip": "Pressione {1} para Ir Menu Controles Móveis",
+  "controls": {
+    "keyboard_short": "CTRL",
+    "rebinding": "Religando {1}",
+    "rebinding_help": "Manter o {1} para Cancelar\nManter o {2} para Excluir"
+  },
+  "categories": {
+    "note_colors": {
+      "name": "Cores das Notas",
+      "description": "Mude as cores das notas e as cores das notas."
+    },
+    "controls": {
+      "name": "Controlos",
+      "description": "Alterar teclado e Gamepad liga."
+    },
+    "adjust_delay_and_combo": {
+      "name": "Ajustar atraso e combinação",
+      "description": "Ajuste o atraso da nota, deslocamento da classificação e colocação combinada."
+    },
+    "graphics": {
+      "name": "Configuração dos Gráficos",
+      "description": "Alterar as configurações de desempenho e renderização."
+    },
+    "visuals": {
+      "name": "Configuração Visual",
+      "description": "Altere as preferências de HUD, câmera e visual."
+    },
+    "gameplay": {
+      "name": "Configuração do Jogo",
+      "description": "Alterar modificadores de jogabilidade e ajudantes."
+    },
+    "legacy": {
+      "name": "Configuração do Legado",
+      "description": "Alterar configurações de compatibilidade para o comportamento Psych/Plus mais antigo."
+    },
+    "mod_security": {
+      "name": "Verificação de Segurança Mod",
+      "description": "Alterar as verificações usadas ao carregar mods."
+    },
+    "modchart": {
+      "name": "Configuração do Modchart",
+      "description": "Alterar o comportamento e compatibilidade do modchart."
+    },
+    "language": {
+      "name": "Língua",
+      "description": "Mude a linguagem ativa."
+    },
+    "mobile": {
+      "name": "Configuração do Móvel",
+      "description": "Alterar controles móveis e configurações de layout."
+    }
+  },
+  "menus": {
+    "modchart": {
+      "title": "Configuração do Modchart",
+      "presence": "Menu Opções do Modchart"
+    },
+    "legacy": {
+      "title": "Configuração do Legado",
+      "presence": "O Menu Configuração do Legado"
+    },
+    "mod_security": {
+      "title": "Verificação de Segurança Mod",
+      "presence": "Verificação de Segurança Mod"
+    },
+    "gameplay": {
+      "title": "Configuração do Jogo",
+      "presence": "O Menu Configuração do Jogo"
+    },
+    "graphics": {
+      "title": "Configuração dos Gráficos",
+      "presence": "O Menu Configuração dos Gráficos"
+    },
+    "visuals": {
+      "title": "Configurações visuais",
+      "presence": "Configurações visuais"
+    },
+    "language": {
+      "title": "Língua",
+      "presence": "Menu Idioma"
+    },
+    "controls": {
+      "presence": "Menu Controles"
+    },
+    "note_colors": {
+      "presence": "O Menu Cores da Nota"
+    },
+    "classic_note_colors": {
+      "presence": "O Menu Cores das Notas Clássicas",
+      "channels": "Brilho de Saturação da Tom"
+    },
+    "offset": {
+      "presence": "Menu Atraso/Combo Offset"
+    },
+    "mobile": {
+      "title": "Configuração do Móvel",
+      "presence": "O Menu Configuração Móvel"
+    },
+    "mod_settings": {
+      "presence": "Configurações do Mod ({1})"
+    }
+  }
+}

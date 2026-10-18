@@ -1,53 +1,91 @@
-# Paquetes de idioma de Plus Engine
+# Plus Engine language packs
 
-`assets/shared/languages/en-US` es la fuente canónica. Cada idioma replica sus archivos y claves; sólo cambian los textos visibles. El engine carga primero `en-US` como respaldo y después aplica el idioma elegido.
+`assets/shared/languages/en-US` is the canonical source. Every language pack mirrors its bundle files and keys; only user-facing values change. Plus Engine loads `en-US` first as the offline fallback, then overlays the selected language.
 
-## Crear un paquete
+## Create a language pack
 
-1. Copia `assets/shared/languages/en-US` a una carpeta con un código BCP 47, por ejemplo `pt-BR`.
-2. Traduce los valores de texto. Conserva las claves, los `$namespace`, las rutas, los saltos de línea y marcadores como `{1}`, `{2}`, `%v` y `%d`.
-3. Edita su `manifest.json`:
+1. Copy `assets/shared/languages/en-US` into a folder named with a BCP 47 code, such as `pt-BR`.
+2. Translate user-facing string values. Keep keys, `$namespace`, line breaks, technical identifiers, and placeholders such as `{1}`, `{2}`, `%v`, and `%d` unchanged.
+3. Edit the copied `manifest.json`:
 
 ```json
 {
   "schemaVersion": 1,
   "code": "pt-BR",
-  "name": "Português (Brasil)",
+  "name": "Portugu?s (Brasil)",
   "version": 1,
   "fallback": ["en-US"],
-  "bundles": ["global.json", "options/common.json"]
+  "bundles": ["global.json", "assets.json", "options/common.json"]
 }
 ```
 
-4. Agrega el idioma a `assets/shared/languages/index.json`:
+4. Add the language to `assets/shared/languages/index.json`:
 
 ```json
 {
   "code": "pt-BR",
-  "name": "Português (Brasil)",
+  "name": "Portugu?s (Brasil)",
   "version": 1
 }
 ```
 
-5. Abre un pull request hacia `Psych-Plus-Team/FNF-PlusEngine`. Al fusionarse en `main`, el catálogo y los archivos quedan disponibles por GitHub Raw.
+5. Open a pull request to `Psych-Plus-Team/FNF-PlusEngine`. After it is merged into `main`, the catalog and package files become available through GitHub Raw.
 
-Para publicar una corrección, aumenta `version` tanto en el manifiesto como en el índice. Si la versión no aumenta, los clientes que ya tengan el paquete lo considerarán actualizado.
+Increase `version` in both the manifest and catalog whenever an existing package changes. Clients skip a package when its installed version is equal to or newer than the catalog version.
 
-## Descarga OTA
+## Localize images and other assets
 
-En **Opciones > Idioma**, la acción **Descargar o actualizar idiomas** obtiene el índice oficial por HTTPS. Para cada idioma nuevo o con una versión mayor, el engine:
+Text and asset redirection are separate. Put path redirects in the pack's `assets.json`, which uses an empty namespace:
 
-1. descarga el manifiesto y todos sus bundles;
-2. rechaza códigos, rutas o tamaños inseguros;
-3. analiza todos los JSON y exige `$namespace` antes de escribirlos;
-4. guarda los bundles en `mods/languages/<código>/`;
-5. escribe el manifiesto al final para que una descarga interrumpida nunca quede activa.
+```json
+{
+  "$schema": 1,
+  "$namespace": "",
+  "images/mainmenu/menu_story_mode": "images/pt-BR/mainmenu/menu_story_mode",
+  "images/menu_tracks": "images/pt-BR/Menu_Tracks"
+}
+```
 
-El selector muestra automáticamente los paquetes instalados. Los archivos descargados viven fuera del ejecutable, por lo que pueden actualizarse sin recompilar el engine.
+The key is the original path requested by the engine. The value is the localized path, without an extension. Keep matching atlas files together: if an image uses Sparrow Atlas, localize both its `.png` and `.xml` under the redirected path. JSON and TXT atlases follow the same rule. Assets without a redirect continue using the original file.
 
-## Reglas de calidad
+Bundled translations currently place localized files under `assets/translations/shared/images/<language-code>/`. A downloadable package must also list every binary file in the optional `assets` section of its manifest:
 
-- Usa UTF-8 y revisa indicadores de mojibake como `U+00C3`, `U+00C2` o el carácter de reemplazo `U+FFFD`.
-- Mantén intactos los marcadores y nombres técnicos.
-- Prefiere etiquetas breves, cercanas al tamaño del inglés, para evitar cortes en botones y editores.
-- Prueba el idioma en 1280×720 y revisa especialmente Opciones, Chart Editor, popups y mensajes de error.
+```json
+{
+  "assets": [
+    {
+      "source": "resources/images/mainmenu/menu_story_mode.png",
+      "target": "images/pt-BR/mainmenu/menu_story_mode.png"
+    },
+    {
+      "source": "resources/images/mainmenu/menu_story_mode.xml",
+      "target": "images/pt-BR/mainmenu/menu_story_mode.xml"
+    }
+  ]
+}
+```
+
+`source` may be relative to the language manifest or an HTTPS URL. `target` is relative to the user's `mods/` directory. Use safe relative targets, keep each file below 16 MiB, and keep the package's localized assets below 64 MiB total.
+
+This mechanism also supports localized XML/JSON atlases, fonts, sounds, or other files that already pass through `Language.getFileTranslation()`. Prefer text for ordinary labels; use localized images only when artwork itself contains text.
+
+## OTA download flow
+
+In **Options > Language**, **Download or update languages** fetches the official catalog over HTTPS. For every new or newer package, Plus Engine:
+
+1. downloads the manifest and all JSON bundles;
+2. validates language codes, paths, sizes, JSON syntax, and namespaces;
+3. downloads and validates optional binary assets;
+4. writes text bundles to `mods/languages/<code>/` and localized assets to their declared `mods/<target>` paths;
+5. commits the manifest last, so an interrupted download never becomes active.
+
+The language screen discovers installed manifests and displays each installed language as its own option. Downloaded packages live outside the executable and can be updated without rebuilding the engine.
+
+## Quality rules
+
+- Save every JSON and documentation file as UTF-8.
+- Check for mojibake indicators such as `U+00C3`, `U+00C2`, or replacement character `U+FFFD`.
+- Preserve placeholders, newlines, file paths, callback names, and engine terminology.
+- Keep short labels close to the English length so they fit buttons and editor controls.
+- Verify that the selected font contains every required glyph.
+- Test at 1280?720, especially Options, Chart Editor, popups, debug messages, and error dialogs.

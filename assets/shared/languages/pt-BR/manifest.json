@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "code": "pt-BR",
+  "name": "Português (Brasil)",
+  "version": 1,
+  "fallback": [
+    "en-US"
+  ],
+  "bundles": [
+    "global.json",
+    "assets.json",
+    "errors/crash_handler.json",
+    "errors/scripting.json",
+    "errors/script_debug.json",
+    "errors/shader.json",
+    "errors/song_checker.json",
+    "errors/popups.json",
+    "substates/language.json",
+    "substates/reset_score.json",
+    "substates/outdated.json",
+    "substates/pause.json",
+    "substates/mod_security.json",
+    "options/common.json",
+    "options/gameplay_changers.json",
+    "options/settings.json",
+    "options/theme_accent.json",
+    "options/note_colors.json",
+    "options/offset.json",
+    "options/mod_security_checks.json",
+    "options/language.json",
+    "editors/master.json",
+    "editors/prompt.json",
+    "editors/modchart_converter.json",
+    "editors/charting.json",
+    "editors/character.json",
+    "editors/dialogue_character.json",
+    "editors/dialogue.json",
+    "editors/menu_character.json",
+    "editors/note_splash.json",
+    "editors/stage.json",
+    "editors/week.json",
+    "editors/playtest.json",
+    "editors/preload_list.json",
+    "states/flashing.json",
+    "states/achievements.json",
+    "states/credits.json",
+    "states/main_menu.json",
+    "states/story_menu.json",
+    "states/freeplay.json",
+    "states/title.json",
+    "states/results.json",
+    "states/mods_menu.json",
+    "states/loading.json",
+    "states/playstate.json"
+  ],
+  "assets": [
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/pt-BR/mainmenu/menu_credits.png",
+      "target": "images/pt-BR/mainmenu/menu_credits.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/pt-BR/mainmenu/menu_credits.xml",
+      "target": "images/pt-BR/mainmenu/menu_credits.xml"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/pt-BR/mainmenu/menu_story_mode.png",
+      "target": "images/pt-BR/mainmenu/menu_story_mode.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/pt-BR/mainmenu/menu_story_mode.xml",
+      "target": "images/pt-BR/mainmenu/menu_story_mode.xml"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/pt-BR/Menu_Tracks.png",
+      "target": "images/pt-BR/Menu_Tracks.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/pt-BR/menudifficulties/easy.png",
+      "target": "images/pt-BR/menudifficulties/easy.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/pt-BR/menudifficulties/hard.png",
+      "target": "images/pt-BR/menudifficulties/hard.png"
+    }
+  ]
+}
