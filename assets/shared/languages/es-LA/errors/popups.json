@@ -1,0 +1,18 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.popups",
+  "common": {
+    "none": "Ninguno"
+  },
+  "mod_settings": {
+    "title": "Nombre del mod: {1}",
+    "parse_error": "Se produjo un error: {1}"
+  },
+  "achievements": {
+    "mod_title": "Nombre del mod: {1}",
+    "invalid_entry": "El logro #{1} no es válido.",
+    "entry_title": "Error en el logro: {1}",
+    "missing_save": "Falta un valor \"guardado\" válido.",
+    "load_error": "Error al cargar logros.json: {1}"
+  }
+}

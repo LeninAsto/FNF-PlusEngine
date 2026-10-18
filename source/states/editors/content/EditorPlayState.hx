@@ -120,7 +120,7 @@ class EditorPlayState extends MusicBeatSubstate
 		scoreTxt.visible = !ClientPrefs.data.hideHud;
 		add(scoreTxt);
 
-		dataTxt = new FlxText(10, 580, FlxG.width - 20, "Section: 0", 20);
+		dataTxt = new FlxText(10, 580, FlxG.width - 20, Language.getPhrase('editors.playtest.ui.section_0', "Section: 0"), 20);
 		dataTxt.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		dataTxt.scrollFactor.set();
 		dataTxt.borderSize = 1.25;
@@ -147,7 +147,8 @@ class EditorPlayState extends MusicBeatSubstate
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence (with Time Left)
-		DiscordClient.changePresence('Playtesting on Chart Editor', PlayState.SONG.song, null, true, songLength);
+		DiscordClient.changePresence(Language.getPhrase('editors.playtest.presence.title', 'Playtesting on Chart Editor'),
+			PlayState.SONG.song, null, true, songLength);
 		#end
 		updateScore();
 		cachePopUpScore();

@@ -1,0 +1,14 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.preload_list",
+  "ui": {
+    "high_qual": "Alta calidad.",
+    "load_file": "Cargar archivo",
+    "load_folder": "Cargar carpeta",
+    "low_qual": "Baja calificación.",
+    "preload_list": "Lista de precarga",
+    "save": "Ahorrar",
+    "story_mode": "Modo historia",
+    "x": "incógnita"
+  }
+}

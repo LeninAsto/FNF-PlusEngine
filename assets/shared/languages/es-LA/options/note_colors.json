@@ -1,0 +1,15 @@
+{
+  "$schema": 1,
+  "$namespace": "options.note_colors",
+  "reset_tip": "Presione {1} para restablecer la parte de nota seleccionada.",
+  "full_reset_tip": "Mantenga presionado {1} + presione la tecla RESET para restablecer completamente la nota seleccionada.",
+  "shift": "Cambio",
+  "press": "PRENSA",
+  "ctrl": "CONTROL",
+  "left_shoulder": "Botón del hombro izquierdo",
+  "mode": "Modo de color: {1}",
+  "modes": {
+    "classic": "Clásico H/S/B",
+    "rgb": "RGB"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "$schema": 1,
+  "$namespace": "global",
+  "actions": {
+    "accept": "Aceptar",
+    "back": "Atrás",
+    "cancel": "Cancelar"
+  },
+  "answers": {
+    "yes": "Sí",
+    "no": "No"
+  }
+}

@@ -1280,7 +1280,7 @@ class PlayState extends MusicBeatState
 			return videoCutscene;
 		}
 		#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
-		else addTextToDebug("Video not found: " + fileName, FlxColor.RED);
+		else addTextToDebug(Language.getPhrase('errors.script_debug.states_playstate.video_not_found_value', "Video not found: {1}", [fileName]), FlxColor.RED);
 		#else
 		else FlxG.log.error("Video not found: " + fileName);
 		#end
@@ -3113,7 +3113,7 @@ class PlayState extends MusicBeatState
 					var len:Int = e.message.indexOf('\n') + 1;
 					if(len <= 0) len = e.message.length;
 					#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
-					addTextToDebug('ERROR ("Set Property" Event) - ' + e.message.substr(0, len), FlxColor.RED);
+					addTextToDebug(Language.getPhrase('errors.script_debug.states_playstate.error_set_property_event_value', "ERROR (\"Set Property\" Event) - {1}", [e.message.substr(0, len)]), FlxColor.RED);
 					#else
 					FlxG.log.warn('ERROR ("Set Property" Event) - ' + e.message.substr(0, len));
 					#end
@@ -5483,7 +5483,7 @@ class PlayState extends MusicBeatState
 			}
 		}
 			#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
-			addTextToDebug('Missing shader $name .frag AND .vert files!', FlxColor.RED);
+			addTextToDebug(Language.getPhrase('errors.script_debug.states_playstate.missing_shader_value_frag_and_vert_files', "Missing shader {1} .frag AND .vert files!", [name]), FlxColor.RED);
 			#else
 			FlxG.log.warn('Missing shader $name .frag AND .vert files!');
 			#end

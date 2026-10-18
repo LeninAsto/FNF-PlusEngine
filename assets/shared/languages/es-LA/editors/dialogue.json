@@ -1,0 +1,19 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.dialogue",
+  "ui": {
+    "angry_textbox": "Cuadro de texto enojado",
+    "character": "Personaje:",
+    "interval_speed_ms": "Intervalo/Velocidad (ms):",
+    "load_dialogue": "Cargar diálogo",
+    "sound_file_name": "Archivo de audio:",
+    "text": "Texto:"
+  },
+  "presence": {
+    "title": "Editor de diálogos",
+    "empty": "(Vacío)"
+  },
+  "tabs": {
+    "dialogue_line": "Línea de diálogo"
+  }
+}

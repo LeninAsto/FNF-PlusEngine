@@ -272,7 +272,10 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 	inline function eventDescription(eventName:String, fallback:String):String
 	{
-		return chartPhrase('events.${options.Option.normalizeTranslationKey(eventName)}', fallback);
+		var key:String = options.Option.normalizeTranslationKey(eventName);
+		if (key.length < 1)
+			key = 'none';
+		return chartPhrase('events.$key', fallback);
 	}
 
 	function localizeTabs(box:PsychUIBox, group:String):Void
@@ -1380,7 +1383,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 						positionNoteYOnTime(event, secNum);
 					}
 					loadSection();
-					showOutput('Zoom: ${Math.round(curZoom * 100)}%');
+					showOutput(chartPhrase('messages.zoom', 'Zoom: {1}%', [Math.round(curZoom * 100)]));
 					updateScrollY();
 				}
 			}
@@ -2443,7 +2446,9 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	function warnIfHighBPM(value:Float, context:String):Void
 	{
 		if (value > HIGH_BPM_WARNING)
-			showOutput('Warning: ${context} BPM is over ${Std.int(HIGH_BPM_WARNING)}. This can make charting harder and may expose weird timing bugs.', true);
+			showOutput(chartPhrase('messages.high_bpm_warning',
+				'Warning: {1} BPM is over {2}. This can make charting harder and may expose weird timing bugs.',
+				[context, Std.int(HIGH_BPM_WARNING)]), true);
 	}
 
 	function loadMusic(?killAudio:Bool = false)
@@ -3249,12 +3254,12 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 						note.updateHitbox();
 					}
 					if (noteTextureInputText.text.trim().length > 0)
-						showOutput('Reloaded notes to: "$textureLoad"');
+						showOutput(chartPhrase('messages.reloaded_notes_to_texture', 'Reloaded notes to: "{1}"', [textureLoad]));
 					else
 						showOutput(chartPhrase('messages.reloaded_notes_to_default_texture', 'Reloaded notes to default texture'));
 				}
 				else
-					showOutput('ERROR: "$textureLoad" not found.', true);
+					showOutput(chartPhrase('messages.texture_not_found', 'ERROR: "{1}" not found.', [textureLoad]), true);
 			}
 		};
 
@@ -3684,12 +3689,12 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 				var str:String = '';
 				if (notesCopyNum > 0)
-					str += 'Notes Copied: $notesCopyNum';
+					str += chartPhrase('messages.notes_copied', 'Notes Copied: {1}', [notesCopyNum]);
 				if (eventsCopyNum > 0)
 				{
 					if (str.length > 0)
 						str += '\n';
-					str += 'Events Copied: $eventsCopyNum';
+					str += chartPhrase('messages.events_copied', 'Events Copied: {1}', [eventsCopyNum]);
 				}
 
 				if (str.length > 0)
@@ -4035,12 +4040,12 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 			var str:String = '';
 			if (nts.length > 0)
-				str += 'Notes Added: ${nts.length}';
+				str += chartPhrase('messages.notes_added', 'Notes Added: {1}', [nts.length]);
 			if (evs.length > 0)
 			{
 				if (str.length > 0)
 					str += '\n';
-				str += 'Events Added: ${evs.length}';
+				str += chartPhrase('messages.events_added', 'Events Added: {1}', [evs.length]);
 			}
 
 			if (str.length > 0)
@@ -4118,7 +4123,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				Song.chartPath = diff ? curdiff : cur;
 				reloadNotesDropdowns();
 				prepareReload();
-				showOutput('Opened chart "${diff ? curdiff : cur}" successfully!');
+				showOutput(chartPhrase('messages.opened_chart', 'Opened chart "{1}" successfully!', [diff ? curdiff : cur]));
 			}
 
 			if (!ignoreProgressCheckBox.checked)
@@ -4721,7 +4726,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 						Song.chartPath = fileDialog.path;
 						reloadNotesDropdowns();
 						prepareReload();
-						showOutput('Opened chart "${Song.chartPath}" successfully!');
+						showOutput(chartPhrase('messages.opened_chart', 'Opened chart "{1}" successfully!', [Song.chartPath]));
 					}
 
 					if (!ignoreProgressCheckBox.checked)
@@ -4731,7 +4736,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				}
 				catch (e:Exception)
 				{
-					showOutput('Error: ${e.message}', true);
+					showOutput(chartPhrase('messages.error_details', 'Error: {1}', [e.message]), true);
 					trace(e.stack);
 				}
 			});
@@ -4808,7 +4813,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 								reloadNotesDropdowns();
 								prepareReload();
 
-								showOutput('Opened autosave "$autosaveName" successfully!');
+								showOutput(chartPhrase('messages.opened_autosave', 'Opened autosave "{1}" successfully!', [autosaveName]));
 							}
 
 							if (!ignoreProgressCheckBox.checked)
@@ -4818,7 +4823,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 						}
 						catch (e:Exception)
 						{
-							showOutput('Error on loading autosave: ${e.message}', true);
+							showOutput(chartPhrase('messages.error_loading_autosave', 'Error on loading autosave: {1}', [e.message]), true);
 						}
 					}
 					else
@@ -4914,7 +4919,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 					}
 					catch (e:Exception)
 					{
-						showOutput('Error: ${e.message}', true);
+						showOutput(chartPhrase('messages.error_details', 'Error: {1}', [e.message]), true);
 						trace(e.stack);
 					}
 				});
@@ -4967,7 +4972,8 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				StorageUtil.saveContent('events.json', PsychJsonPrinter.print({events: PlayState.SONG.events, format: 'psych_v1'}, ['events']));
 				#else
 				fileDialog.save('events.json', PsychJsonPrinter.print({events: PlayState.SONG.events, format: 'psych_v1'}, ['events']),
-					function() showOutput('Events saved successfully to: ${fileDialog.path}'), null, function() showOutput(chartPhrase('messages.error_on_saving_events', 'Error on saving events!'), true));
+					function() showOutput(chartPhrase('messages.events_saved_to', 'Events saved successfully to: {1}', [fileDialog.path])), null,
+					function() showOutput(chartPhrase('messages.error_on_saving_events', 'Error on saving events!'), true));
 				#end
 			}, btnWid);
 			btn.text.alignment = LEFT;
@@ -4998,7 +5004,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 					}
 					catch (e:Exception)
 					{
-						showOutput('Error: ${e.message}', true);
+						showOutput(chartPhrase('messages.error_details', 'Error: {1}', [e.message]), true);
 						trace(e.stack);
 					}
 				}
@@ -5053,7 +5059,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 										PsychJsonPrinter.print(pack.metadata, ['characters', 'difficulties', 'timeChanges']), function()
 									{
 										if (overwriteSavedSomething)
-											showOutput('Files saved successfully to: $path!');
+											showOutput(chartPhrase('messages.files_saved_to', 'Files saved successfully to: {1}!', [path]));
 									});
 								});
 							state.close();
@@ -5093,7 +5099,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				}
 				catch (e:Exception)
 				{
-					showOutput('Error: ${e.message}', true);
+					showOutput(chartPhrase('messages.error_details', 'Error: {1}', [e.message]), true);
 					trace(e.stack);
 				}
 			});
@@ -5201,7 +5207,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 											PsychJsonPrinter.print(pack.metadata, ['characters', 'difficulties', 'timeChanges']), function()
 										{
 											if (overwriteSavedSomething)
-												showOutput('Files saved successfully to: $path!');
+												showOutput(chartPhrase('messages.files_saved_to', 'Files saved successfully to: {1}!', [path]));
 										});
 									});
 								});
@@ -5211,7 +5217,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 						}
 						catch (e:Exception)
 						{
-							showOutput('Error: ${e.message}', true);
+							showOutput(chartPhrase('messages.error_details', 'Error: {1}', [e.message]), true);
 							trace(e.stack);
 						}
 						state.close();
@@ -5338,11 +5344,11 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 										overwriteCheck(path + 'events.json', 'events.json', PsychJsonPrinter.print(pack.events, ['events']), function()
 										{
 											if (overwriteSavedSomething)
-												showOutput('Files saved successfully to: ${fileDialog.path}!');
+												showOutput(chartPhrase('messages.files_saved_to', 'Files saved successfully to: {1}!', [fileDialog.path]));
 										}, true);
 									}
 									else if (overwriteSavedSomething)
-										showOutput('Files saved successfully to: ${fileDialog.path}!');
+									showOutput(chartPhrase('messages.files_saved_to', 'Files saved successfully to: {1}!', [fileDialog.path]));
 								}
 
 								overwriteSavedSomething = false;
@@ -5354,7 +5360,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 					}
 					catch (e:Exception)
 					{
-						showOutput('Error: ${e.message}', true);
+						showOutput(chartPhrase('messages.error_details', 'Error: {1}', [e.message]), true);
 						trace(e.stack);
 					}
 				});
@@ -5395,14 +5401,14 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 						loadedChart.format = 'psych_v1_convert';
 						Song.convert(loadedChart);
 						File.saveContent(fileDialog.path, PsychJsonPrinter.print(loadedChart, ['sectionNotes', 'events']));
-						showOutput('Updated "$filePath" from format "$fmt" to "psych_v1" successfully!');
+						showOutput(chartPhrase('messages.updated_chart_format', 'Updated "{1}" from format "{2}" to "psych_v1" successfully!', [filePath, fmt]));
 					}
 					else
-						showOutput('Chart is already up-to-date! Format: "$fmt"', true);
+						showOutput(chartPhrase('messages.chart_format_up_to_date', 'Chart is already up-to-date! Format: "{1}"', [fmt]), true);
 				}
 				catch (e:Exception)
 				{
-					showOutput('Error: ${e.message}', true);
+					showOutput(chartPhrase('messages.error_details', 'Error: {1}', [e.message]), true);
 					trace(e.stack);
 				}
 			});
@@ -6005,11 +6011,11 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			{
 				File.saveContent(Song.chartPath, chartData);
 				saveSongMetaForEditor();
-				showOutput('Chart saved successfully to: ${Song.chartPath}');
+				showOutput(chartPhrase('messages.chart_saved_to', 'Chart saved successfully to: {1}', [Song.chartPath]));
 			}
 			catch (e:Dynamic)
 			{
-				showOutput('Error on saving chart to ${Song.chartPath}: ${Std.string(e)}', true);
+				showOutput(chartPhrase('messages.error_saving_chart_to', 'Error on saving chart to {1}: {2}', [Song.chartPath, Std.string(e)]), true);
 			}
 		}
 		else
@@ -6024,7 +6030,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 					Song.chartPath = newPath.replace('\\', '/');
 				saveSongMetaForEditor();
 				reloadNotesDropdowns();
-				showOutput('Chart saved successfully to: $newPath');
+				showOutput(chartPhrase('messages.chart_saved_to', 'Chart saved successfully to: {1}', [newPath]));
 			}, null, function() showOutput(chartPhrase('messages.error_on_saving_chart', 'Error on saving chart!'), true));
 		}
 	}
@@ -6363,7 +6369,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				Song.chartPath = droppedFilePath;
 				reloadNotesDropdowns();
 				prepareReload();
-				showOutput('Chart loaded: $fileName');
+				showOutput(chartPhrase('messages.chart_loaded', 'Chart loaded: {1}', [fileName]));
 				droppedFilePath = null;
 			}
 
@@ -6374,7 +6380,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		}
 		catch (e:haxe.Exception)
 		{
-			showOutput('Error loading chart: ${e.message}', true);
+			showOutput(chartPhrase('messages.error_loading_chart', 'Error loading chart: {1}', [e.message]), true);
 			trace(e.stack);
 			droppedFilePath = null;
 		}
@@ -6401,7 +6407,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 			var loadedEvents:Array<Dynamic> = eventsChart.events;
 
-			openSubState(new BasePrompt('${loadedEvents.length} Events found!\nChoose an action:', function(state:BasePrompt)
+			openSubState(new BasePrompt(chartPhrase('messages.events_found_choose_action', '{1} Events found!\nChoose an action:', [loadedEvents.length]), function(state:BasePrompt)
 			{
 				var btnY = 390;
 
@@ -6424,7 +6430,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 					softReloadNotes();
 					state.close();
-					showOutput('Events replaced: $fileName');
+					showOutput(chartPhrase('messages.events_replaced', 'Events replaced: {1}', [fileName]));
 					droppedFilePath = null;
 				});
 				btn.normalStyle.bgColor = FlxColor.RED;
@@ -6442,7 +6448,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 					softReloadNotes();
 					state.close();
-					showOutput('Events added: $fileName');
+					showOutput(chartPhrase('messages.events_added_file', 'Events added: {1}', [fileName]));
 					droppedFilePath = null;
 				});
 				btn.screenCenter(X);
@@ -6463,7 +6469,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		}
 		catch (e:haxe.Exception)
 		{
-			showOutput('Error loading events: ${e.message}', true);
+			showOutput(chartPhrase('messages.error_loading_events', 'Error loading events: {1}', [e.message]), true);
 			trace(e.stack);
 			droppedFilePath = null;
 		}
@@ -6535,7 +6541,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	{
 		if (FileSystem.exists(savePath))
 		{
-			openSubState(new Prompt('Overwrite: "$overwriteName"?', function()
+			openSubState(new Prompt(chartPhrase('messages.overwrite_file', 'Overwrite: "{1}"?', [overwriteName]), function()
 			{
 				overwriteSavedSomething = true;
 				File.saveContent(savePath, saveData);
@@ -6622,7 +6628,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 					selectedNotes = selectedNotes.filter((note:MetaNote) -> !note.isEvent);
 				onSelectNote();
 		}
-		showOutput('Undo #${currentUndo + 1}: ${action.action}');
+		showOutput(chartPhrase('messages.undo_action', 'Undo #{1}: {2}', [currentUndo + 1, action.action]));
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 		currentUndo++;
 	}
@@ -6657,7 +6663,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 					selectedNotes = selectedNotes.filter((note:MetaNote) -> !note.isEvent);
 				onSelectNote();
 		}
-		showOutput('Redo #${currentUndo + 1}: ${action.action}');
+		showOutput(chartPhrase('messages.redo_action', 'Redo #{1}: {2}', [currentUndo + 1, action.action]));
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 	}
 

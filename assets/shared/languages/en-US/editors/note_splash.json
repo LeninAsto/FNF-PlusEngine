@@ -1,0 +1,40 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.note_splash",
+  "ui": {
+    "add_update": "Add/Update",
+    "animation_name": "Animation Name:",
+    "animation_prefix": "Animation Prefix:",
+    "animations": "Animations:",
+    "blue": "Blue:",
+    "color_to_replace": "Color to Replace:",
+    "convert_txt": "Convert TXT",
+    "do_not_replace": "Do not replace",
+    "green": "Green:",
+    "image": "Image:",
+    "indices_optional": "Indices (OPTIONAL):",
+    "maximum_fps": "Maximum FPS:",
+    "minimum_fps": "Minimum FPS:",
+    "note_data": "Note Data:",
+    "red": "Red:",
+    "reload_image": "Reload Image",
+    "remove": "Remove",
+    "replacing_color": "Replacing Color:",
+    "save": "Save",
+    "scale": "Scale:",
+    "template": "Template"
+  },
+  "presence": {
+    "title": "Note Splash Editor"
+  },
+  "help": {
+    "open": "Press {1} for Help",
+    "mobile": "Touch on a Strum\nto spawn a Splash\n\nArrow Keys - Move Offset\nHold Z - Move Offsets 10x faster\n\n\nC - Copy Current Offset\nV - Paste Copied Offset on Current Splash\nOn every 4 subsequent note datas\nan extra set of animations will be added",
+    "desktop": "Click on a Strum or Press Space\nto spawn a Splash\n\nArrow Keys - Move Offset\nHold Shift - Move Offsets 10x faster\n\n\nCtrl + C - Copy Current Offset\nCtrl + V - Paste Copied Offset on Current Splash\nCtrl + R - Reset Current Offset\nOn every 4 subsequent note datas\nan extra set of animations will be added"
+  },
+  "tabs": {
+    "animation": "Animation",
+    "properties": "Properties",
+    "shader": "Shader"
+  }
+}

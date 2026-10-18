@@ -1,0 +1,26 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.song_checker",
+  "title": "REVISOR DE CHARTS",
+  "prefix": {
+    "error": "[ERROR]",
+    "warning": "[ADVERTIR]",
+    "fix": "[ARREGLAR]"
+  },
+  "more": "...y {1} más.",
+  "issues": {
+    "missing_chart": "Gráfico no encontrado para esta dificultad.",
+    "invalid_chart": "El gráfico existe pero no se pudo analizar.",
+    "repaired_song_name": "El nombre de la canción faltante fue restaurado desde su carpeta.",
+    "missing_notes": "El gráfico no tiene matriz de notas.",
+    "repaired_events": "La matriz de eventos faltantes se reemplazó por una vacía.",
+    "invalid_bpm": "BPM debe ser mayor que cero.",
+    "repaired_speed": "La velocidad de desplazamiento no válida se restableció a 1.",
+    "repaired_gf": "El personaje de la novia desaparecida fue restaurado a \"gf\".",
+    "missing_inst": "Falta audio instrumental.",
+    "missing_voices": "Las voces están habilitadas, pero no se encontraron archivos de voz predeterminados o divididos.",
+    "invalid_section": "La sección {1} no tiene lista de notas.",
+    "invalid_note": "Nota con formato incorrecto en la sección {1}, índice {2}.",
+    "invalid_note_values": "Datos de notas no numéricos en la sección {1}, índice {2}."
+  }
+}

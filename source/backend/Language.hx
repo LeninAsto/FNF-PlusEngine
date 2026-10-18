@@ -1,8 +1,5 @@
 package backend;
 
-// Import all languages
-import backend.languages.*;
-
 class Language
 {
 	public static var defaultLangName:String = 'English (US)'; // en-US
@@ -16,21 +13,7 @@ class Language
 	private static var keyCache:Map<String, String> = [];
 	#end
 
-	// ← NEW: List of available hardcoded languages
-	private static var hardcodedLanguages:Array<Class<Dynamic>> = [
-		EnUS, // English (United States)
-		EsLA, // Español (Latin America)
-		EsES, // Español (España)
-		PtBR, // Português (Brasil)
-		FrFR, // Français (France)
-		ItIT, // Italiano (Italia)
-		DeDE, // Deutsch (Deutschland)
-		NlNL, // Nederlands (Nederland)
-		ZhCN, // Chinese (Mainland)
-		ZhHK, // Chinese (Hong Kong)
-		JpJP, // Japanese (Japan)
-		IdID // Indonesian (Bahasa Indonesia)
-	];
+
 
 	public static function reloadPhrases()
 	{
@@ -46,15 +29,12 @@ class Language
 
 		// English is always the final offline fallback. Existing hardcoded maps stay
 		// usable while screens are migrated to namespaced JSON bundles.
-		loadHardcodedLanguage(DEFAULT_LANGUAGE_CODE, phrases);
 		loadJsonLanguage(DEFAULT_LANGUAGE_CODE, phrases);
 
 		var selectedLoaded:Bool = langFile == DEFAULT_LANGUAGE_CODE;
 		if (langFile != DEFAULT_LANGUAGE_CODE)
 		{
-			selectedLoaded = loadHardcodedLanguage(langFile, phrases);
-			if (!selectedLoaded)
-				selectedLoaded = loadLegacyLanguage(langFile, phrases);
+			selectedLoaded = loadLegacyLanguage(langFile, phrases);
 			if (loadJsonLanguage(langFile, phrases))
 				selectedLoaded = true;
 		}
@@ -83,16 +63,6 @@ class Language
 		var languages:Array<{code:String, name:String}> = [];
 
 		#if TRANSLATIONS_ALLOWED
-		// Add hard-coded languages
-		for (langClass in hardcodedLanguages)
-		{
-			var code:String = Reflect.field(langClass, 'languageCode');
-			var name:String = Reflect.field(langClass, 'languageName');
-			if (code != null && name != null)
-			{
-				languages.push({code: code, name: name});
-			}
-		}
 
 		// JSON packs can add languages without compiling another Haxe class.
 		for (path in Mods.directoriesWithFile(Paths.getSharedPath(), '$JSON_LANGUAGE_ROOT/index.json'))
@@ -229,13 +199,10 @@ class Language
 		#if TRANSLATIONS_ALLOWED
 		var formattedKey:String = formatKey(key);
 		var languagePhrases:Map<String, String> = [];
-		loadHardcodedLanguage(DEFAULT_LANGUAGE_CODE, languagePhrases);
 		loadJsonLanguage(DEFAULT_LANGUAGE_CODE, languagePhrases);
 		if (langCode != DEFAULT_LANGUAGE_CODE)
 		{
-			var loaded:Bool = loadHardcodedLanguage(langCode, languagePhrases);
-			if (!loaded)
-				loadLegacyLanguage(langCode, languagePhrases);
+			loadLegacyLanguage(langCode, languagePhrases);
 			loadJsonLanguage(langCode, languagePhrases);
 		}
 
@@ -258,11 +225,11 @@ class Language
 	inline public static function getFileTranslation(key:String)
 	{
 		#if TRANSLATIONS_ALLOWED
-		// ← OPTIMIZATION: Direct cache for file translations (most common)
-		var lowerKey = key.trim().toLowerCase();
-		var str:String = runtimePhrases.get(lowerKey);
+		// File keys use the same normalization as JSON and legacy phrase keys.
+		var formattedKey:String = formatKey(key);
+		var str:String = runtimePhrases.get(formattedKey);
 		if (str == null)
-			str = phrases.get(lowerKey);
+			str = phrases.get(formattedKey);
 		if (str != null)
 			key = str;
 		#end
@@ -333,25 +300,6 @@ class Language
 		return hideCharsRegex.replace(key.replace(' ', '_'), '').toLowerCase().trim();
 	}
 
-	private static function loadHardcodedLanguage(langCode:String, target:Map<String, String>):Bool
-	{
-		for (langClass in hardcodedLanguages)
-		{
-			var languageCode:String = Reflect.field(langClass, 'languageCode');
-			if (languageCode != langCode)
-				continue;
-
-			var languageName:String = Reflect.field(langClass, 'languageName');
-			var translations:Map<String, String> = Reflect.field(langClass, 'translations');
-			if (languageName != null)
-				target.set('language_name', languageName);
-			if (translations != null)
-				for (key => value in translations)
-					target.set(formatKey(key), value);
-			return translations != null;
-		}
-		return false;
-	}
 
 	private static function loadLegacyLanguage(langCode:String, target:Map<String, String>):Bool
 	{
@@ -458,26 +406,7 @@ class Language
 	// Function to retrieve localized introTexts
 	public static function getLocalizedIntroTexts():Array<Array<String>>
 	{
-		#if TRANSLATIONS_ALLOWED
-		var langFile:String = ClientPrefs.data.language;
-
-		// Search in hard-coded languages
-		for (langClass in hardcodedLanguages)
-		{
-			var languageCode:String = Reflect.field(langClass, 'languageCode');
-			if (languageCode == langFile)
-			{
-				var introTexts:Array<Array<String>> = Reflect.field(langClass, 'introTexts');
-				if (introTexts != null && introTexts.length > 0)
-				{
-					return introTexts;
-				}
-				break;
-			}
-		}
-		#end
-
-		// If there are no localized introTexts, return null to use the default file
+		// Intro texts now live in data packs instead of compiled language classes.
 		return null;
 	}
 

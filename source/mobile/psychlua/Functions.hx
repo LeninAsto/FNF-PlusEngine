@@ -90,7 +90,7 @@ class MobileFunctions
 		Lua_helper.add_callback(lua, "vibrate", (?duration:Int, ?period:Int) ->
 		{
 			if (duration == null)
-				return FunkinLua.luaTrace('vibrate: No duration specified.');
+				return FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.vibrate_no_duration_specified', "vibrate: No duration specified."));
 			else if (period == null)
 				period = 0;
 			return Haptic.vibrate(period, duration);
@@ -117,7 +117,7 @@ class MobileFunctions
 		{
 			if (PlayState.instance.luaTouchPad == null)
 			{
-				FunkinLua.luaTrace('addTouchPadCamera: Touch Pad does not exist.');
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.addtouchpadcamera_touch_pad_does_not_exist', "addTouchPadCamera: Touch Pad does not exist."));
 				return;
 			}
 			PlayState.instance.addLuaTouchPadCamera();
@@ -169,7 +169,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace('touchPressedObject: $object does not exist.');
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchpressedobject_value_does_not_exist', "touchPressedObject: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlaps(obj, cam) && TouchUtil.pressed;
@@ -181,7 +181,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace('touchJustPressedObject: $object does not exist.');
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchjustpressedobject_value_does_not_exist', "touchJustPressedObject: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlaps(obj, cam) && TouchUtil.justPressed;
@@ -193,7 +193,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace('touchJustReleasedObject: $object does not exist.');
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchjustreleasedobject_value_does_not_exist', "touchJustReleasedObject: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlaps(obj, cam) && TouchUtil.justReleased;
@@ -205,7 +205,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace('touchReleasedObject: $object does not exist.');
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchreleasedobject_value_does_not_exist', "touchReleasedObject: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlaps(obj, cam) && TouchUtil.released;
@@ -217,7 +217,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace('touchPressedObjectComplex: $object does not exist.');
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchpressedobjectcomplex_value_does_not_exist', "touchPressedObjectComplex: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlapsComplex(obj, cam) && TouchUtil.pressed;
@@ -229,7 +229,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace('touchJustPressedObjectComplex: $object does not exist.');
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchjustpressedobjectcomplex_value_does_not_exist', "touchJustPressedObjectComplex: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlapsComplex(obj, cam) && TouchUtil.justPressed;
@@ -241,7 +241,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace('touchJustReleasedObjectComplex: $object does not exist.');
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchjustreleasedobjectcomplex_value_does_not_exist', "touchJustReleasedObjectComplex: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlapsComplex(obj, cam) && TouchUtil.justReleased;
@@ -253,7 +253,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace('touchReleasedObjectComplex: $object does not exist.');
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchreleasedobjectcomplex_value_does_not_exist', "touchReleasedObjectComplex: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlapsComplex(obj, cam) && TouchUtil.released;
@@ -265,7 +265,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace('touchOverlapsObject: $object does not exist.');
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchoverlapsobject_value_does_not_exist', "touchOverlapsObject: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlaps(obj, cam);
@@ -277,7 +277,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace('touchOverlapsObjectComplex: $object does not exist.');
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchoverlapsobjectcomplex_value_does_not_exist', "touchOverlapsObjectComplex: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlapsComplex(obj, cam);
@@ -340,7 +340,7 @@ class AndroidFunctions
 					hint = null;
 			}
 			if (hint == null)
-				return FunkinLua.luaTrace('setOrientation: No orientation specified.');
+				return FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.setorientation_no_orientation_specified', "setOrientation: No orientation specified."));
 			PsychJNI.setOrientation(FlxG.stage.stageWidth, FlxG.stage.stageHeight, false, hint);
 		});
 
@@ -349,9 +349,9 @@ class AndroidFunctions
 		Lua_helper.add_callback(lua, "showToast", function(text:String, ?duration:Int, ?xOffset:Int, ?yOffset:Int) /* , ?gravity:Int*/
 		{
 			if (text == null)
-				return FunkinLua.luaTrace('showToast: No text specified.');
+				return FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.showtoast_no_text_specified', "showToast: No text specified."));
 			else if (duration == null)
-				return FunkinLua.luaTrace('showToast: No duration specified.');
+				return FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.showtoast_no_duration_specified', "showToast: No duration specified."));
 
 			if (xOffset == null)
 				xOffset = 0;
@@ -368,7 +368,7 @@ class AndroidFunctions
 		Lua_helper.add_callback(lua, "clipboardSetText", function(?text:String):Void
 		{
 			if (text != null)
-				return FunkinLua.luaTrace('clipboardSetText: No text specified.');
+				return FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.clipboardsettext_no_text_specified', "clipboardSetText: No text specified."));
 			PsychJNI.clipboardSetText(text);
 		});
 
@@ -377,7 +377,7 @@ class AndroidFunctions
 		Lua_helper.add_callback(lua, "setActivityTitle", function(text:String):Void
 		{
 			if (text != null)
-				return FunkinLua.luaTrace('setActivityTitle: No text specified.');
+				return FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.setactivitytitle_no_text_specified', "setActivityTitle: No text specified."));
 			PsychJNI.setActivityTitle(text);
 		});
 	}

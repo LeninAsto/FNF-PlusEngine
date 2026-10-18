@@ -65,20 +65,22 @@ class SongCheckReport
 
 	public function displayText(?limit:Int = 10):String
 	{
-		var lines:Array<String> = ['SONG CHECKER'];
+		var lines:Array<String> = [Language.getPhrase('errors.song_checker.title', 'SONG CHECKER')];
 		var shown:Int = 0;
 		for (issue in issues)
 		{
 			if (shown >= limit)
 				break;
-			var prefix:String = issue.severity == ERROR ? '[ERROR]' : issue.severity == WARNING ? '[WARN]' : '[FIX]';
+			var prefix:String = issue.severity == ERROR ? Language.getPhrase('errors.song_checker.prefix.error', '[ERROR]')
+				: issue.severity == WARNING ? Language.getPhrase('errors.song_checker.prefix.warning', '[WARN]')
+				: Language.getPhrase('errors.song_checker.prefix.fix', '[FIX]');
 			lines.push('$prefix ${issue.message}');
 			if (issue.path != null && issue.path.length > 0)
 				lines.push('  ${issue.path}');
 			shown++;
 		}
 		if (issues.length > shown)
-			lines.push('...and ${issues.length - shown} more.');
+			lines.push(Language.getPhrase('errors.song_checker.more', '...and {1} more.', [issues.length - shown]));
 		return lines.join('\n');
 	}
 }
@@ -94,7 +96,8 @@ class SongChecker
 		var report = new SongCheckReport(chartName, songFolder);
 		report.chartPath = Song.resolveChartPath(chartName, songFolder);
 		if (report.chartPath == null)
-			report.add(ERROR, 'missing-chart', 'Chart not found for this difficulty.', Song.expectedChartPath(chartName, songFolder));
+			report.add(ERROR, 'missing-chart', Language.getPhrase('errors.song_checker.issues.missing_chart',
+				'Chart not found for this difficulty.'), Song.expectedChartPath(chartName, songFolder));
 		return report;
 	}
 
@@ -102,43 +105,48 @@ class SongChecker
 	{
 		if (song == null)
 		{
-			report.add(ERROR, 'invalid-chart', 'The chart exists but could not be parsed.', report.chartPath);
+			report.add(ERROR, 'invalid-chart', Language.getPhrase('errors.song_checker.issues.invalid_chart',
+				'The chart exists but could not be parsed.'), report.chartPath);
 			return report;
 		}
 
 		if (song.song == null || song.song.trim().length == 0)
 		{
 			song.song = report.songFolder;
-			report.add(INFO, 'repaired-song-name', 'Missing song name was restored from its folder.');
+			report.add(INFO, 'repaired-song-name', Language.getPhrase('errors.song_checker.issues.repaired_song_name',
+				'Missing song name was restored from its folder.'));
 		}
 		if (song.notes == null)
-			report.add(ERROR, 'missing-notes', 'Chart has no notes array.', report.chartPath);
+			report.add(ERROR, 'missing-notes', Language.getPhrase('errors.song_checker.issues.missing_notes', 'Chart has no notes array.'), report.chartPath);
 		else
 			validateSections(report, song.notes);
 
 		if (song.events == null)
 		{
 			song.events = [];
-			report.add(INFO, 'repaired-events', 'Missing events array was replaced with an empty one.');
+			report.add(INFO, 'repaired-events', Language.getPhrase('errors.song_checker.issues.repaired_events',
+				'Missing events array was replaced with an empty one.'));
 		}
 		if (Math.isNaN(song.bpm) || song.bpm <= 0)
-			report.add(ERROR, 'invalid-bpm', 'BPM must be greater than zero.', report.chartPath);
+			report.add(ERROR, 'invalid-bpm', Language.getPhrase('errors.song_checker.issues.invalid_bpm', 'BPM must be greater than zero.'), report.chartPath);
 		if (Math.isNaN(song.speed) || song.speed <= 0)
 		{
 			song.speed = 1;
-			report.add(INFO, 'repaired-speed', 'Invalid scroll speed was restored to 1.');
+			report.add(INFO, 'repaired-speed', Language.getPhrase('errors.song_checker.issues.repaired_speed',
+				'Invalid scroll speed was restored to 1.'));
 		}
 
 		if (song.gfVersion == null || song.gfVersion.trim().length == 0)
 		{
 			song.gfVersion = 'gf';
-			report.add(INFO, 'repaired-gf', 'Missing girlfriend character was restored to "gf".');
+			report.add(INFO, 'repaired-gf', Language.getPhrase('errors.song_checker.issues.repaired_gf',
+				'Missing girlfriend character was restored to "gf".'));
 		}
 
 		var audioFolder:String = Paths.formatToSongPath(song.song);
 		var inst:String = '$audioFolder/Inst.${Paths.SOUND_EXT}';
 		if (!Paths.fileExists(inst, AssetType.SOUND, false, 'songs'))
-			report.add(ERROR, 'missing-inst', 'Instrumental audio is missing.', inst);
+			report.add(ERROR, 'missing-inst', Language.getPhrase('errors.song_checker.issues.missing_inst', 'Instrumental audio is missing.'), inst);
 
 		if (song.needsVoices)
 		{
@@ -148,7 +156,8 @@ class SongChecker
 			var hasVoices:Bool = Paths.fileExists(voices, AssetType.SOUND, false, 'songs') ||
 				(Paths.fileExists(playerVoices, AssetType.SOUND, false, 'songs') && Paths.fileExists(opponentVoices, AssetType.SOUND, false, 'songs'));
 			if (!hasVoices)
-				report.add(WARNING, 'missing-voices', 'Voices are enabled, but no default or split vocal files were found.', voices);
+				report.add(WARNING, 'missing-voices', Language.getPhrase('errors.song_checker.issues.missing_voices',
+					'Voices are enabled, but no default or split vocal files were found.'), voices);
 		}
 
 		return report;
@@ -161,7 +170,8 @@ class SongChecker
 			var section:SwagSection = sections[sectionIndex];
 			if (section == null || section.sectionNotes == null)
 			{
-				report.add(ERROR, 'invalid-section', 'Section $sectionIndex has no note list.', report.chartPath);
+				report.add(ERROR, 'invalid-section', Language.getPhrase('errors.song_checker.issues.invalid_section',
+					'Section {1} has no note list.', [sectionIndex]), report.chartPath);
 				continue;
 			}
 
@@ -170,12 +180,14 @@ class SongChecker
 				var note:Dynamic = section.sectionNotes[noteIndex];
 				if (!Std.isOfType(note, Array) || (cast note:Array<Dynamic>).length < 3)
 				{
-					report.add(ERROR, 'invalid-note', 'Malformed note at section $sectionIndex, index $noteIndex.', report.chartPath);
+					report.add(ERROR, 'invalid-note', Language.getPhrase('errors.song_checker.issues.invalid_note',
+						'Malformed note at section {1}, index {2}.', [sectionIndex, noteIndex]), report.chartPath);
 					continue;
 				}
 				var values:Array<Dynamic> = cast note;
 				if (!isNumber(values[0]) || !isNumber(values[1]) || !isNumber(values[2]))
-					report.add(ERROR, 'invalid-note-values', 'Non-numeric note data at section $sectionIndex, index $noteIndex.', report.chartPath);
+					report.add(ERROR, 'invalid-note-values', Language.getPhrase('errors.song_checker.issues.invalid_note_values',
+						'Non-numeric note data at section {1}, index {2}.', [sectionIndex, noteIndex]), report.chartPath);
 			}
 		}
 	}

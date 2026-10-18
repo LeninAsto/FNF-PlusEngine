@@ -1,0 +1,21 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.modchart_converter",
+  "presence": "Convertidor de modchart",
+  "title": "Convertidor de modchart",
+  "intro": "Copie un modchart NVME Lua al portapapeles y luego haga clic en \"Convertir portapapeles\".",
+  "help": "Esta herramienta realiza una práctica conversión de primer paso.\nReasigne los pasos, elimine los ayudantes de radianes NVMe y recuerde que fieldYaw es el nombre del lado Plus.",
+  "preview_truncated": "... vista previa truncada...",
+  "no_clipboard_text": "No se encontró ningún texto en el portapapeles.",
+  "actions": {
+    "convert_clipboard": "Convertir portapapeles",
+    "copy_starter": "Iniciador de copia",
+    "back": "Atrás"
+  },
+  "status": {
+    "starter_copied": "La plantilla inicial se ha copiado al portapapeles.",
+    "ready": "Hecho. Importe un modchart desde el portapapeles o copie la plantilla inicial.",
+    "clipboard_empty": "El portapapeles está vacío. Primero, copie un script NVMe.",
+    "converted": "Convirtió los caracteres {1} en {2} y copió el resultado en el portapapeles."
+  }
+}

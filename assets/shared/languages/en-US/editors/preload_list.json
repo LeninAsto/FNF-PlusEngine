@@ -1,0 +1,14 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.preload_list",
+  "ui": {
+    "high_qual": "High Qual.",
+    "load_file": "Load File",
+    "load_folder": "Load Folder",
+    "low_qual": "Low Qual.",
+    "preload_list": "Preload List",
+    "save": "Save",
+    "story_mode": "Story Mode",
+    "x": "X"
+  }
+}

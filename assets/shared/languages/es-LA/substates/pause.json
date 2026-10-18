@@ -1,0 +1,28 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.pause",
+  "deaths": "Bola azul: {1}",
+  "author": "Por: {1}",
+  "practice_mode": "Modo de práctica",
+  "charting_mode": "Modo de gráficos",
+  "time": "{1} / {2}",
+  "menu": {
+    "resume": "Reanudar",
+    "restart_song": "Reiniciar canción",
+    "chart_editor": "Editor de gráficos",
+    "change_difficulty": "Cambiar dificultad",
+    "options": "Opciones",
+    "exit_to_menu": "Salir al menú",
+    "leave_charting_mode": "Salir del modo de gráficos",
+    "skip_time": "Saltar tiempo",
+    "end_song": "Canción final",
+    "toggle_practice_mode": "Alternar modo de práctica",
+    "toggle_botplay": "Alternar juego de bots",
+    "skip_video": "Saltar vídeo",
+    "back": "ATRÁS"
+  },
+  "errors": {
+    "missing_file": "Archivo faltante: {1}",
+    "chart": "ERROR AL CARGAR EL TABLA:\n{1}"
+  }
+}

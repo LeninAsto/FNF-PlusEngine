@@ -253,8 +253,9 @@ class Achievements
 						var achieve:Dynamic = retVal[i];
 						if (achieve == null)
 						{
-							var errorTitle = 'Mod name: ' + Mods.currentModDirectory != null ? Mods.currentModDirectory : "None";
-							var errorMsg = 'Achievement #${i + 1} is invalid.';
+							var modName:String = Mods.currentModDirectory != null ? Mods.currentModDirectory : Language.getPhrase('errors.popups.common.none', 'None');
+							var errorTitle = Language.getPhrase('errors.popups.achievements.mod_title', 'Mod name: {1}', [modName]);
+							var errorMsg = Language.getPhrase('errors.popups.achievements.invalid_entry', 'Achievement #{1} is invalid.', [i + 1]);
 							CoolUtil.showPopUp(errorMsg, errorTitle);
 							continue;
 						}
@@ -262,8 +263,9 @@ class Achievements
 						var key:String = achieve.save;
 						if (key == null || key.trim().length < 1)
 						{
-							var errorTitle = 'Error on Achievement: ' + (achieve.name != null ? achieve.name : achieve.save);
-							var errorMsg = 'Missing valid "save" value.';
+							var errorTitle = Language.getPhrase('errors.popups.achievements.entry_title', 'Error on Achievement: {1}',
+								[achieve.name != null ? achieve.name : achieve.save]);
+							var errorMsg = Language.getPhrase('errors.popups.achievements.missing_save', 'Missing valid "save" value.');
 							CoolUtil.showPopUp(errorMsg, errorTitle);
 							continue;
 						}
@@ -277,8 +279,9 @@ class Achievements
 			}
 			catch (e:Dynamic)
 			{
-				var errorTitle = 'Mod name: ' + Mods.currentModDirectory != null ? Mods.currentModDirectory : "None";
-				var errorMsg = 'Error loading achievements.json: $e';
+				var modName:String = Mods.currentModDirectory != null ? Mods.currentModDirectory : Language.getPhrase('errors.popups.common.none', 'None');
+				var errorTitle = Language.getPhrase('errors.popups.achievements.mod_title', 'Mod name: {1}', [modName]);
+				var errorMsg = Language.getPhrase('errors.popups.achievements.load_error', 'Error loading achievements.json: {1}', [e]);
 				CoolUtil.showPopUp(errorMsg, errorTitle);
 			}
 		}
@@ -293,7 +296,7 @@ class Achievements
 		{
 			if (!achievements.exists(name))
 			{
-				FunkinLua.luaTrace('getAchievementScore: Couldnt find achievement: $name', false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.getachievementscore_couldnt_find_achievement_value', "getAchievementScore: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
 				return -1;
 			}
 			return getScore(name);
@@ -302,7 +305,7 @@ class Achievements
 		{
 			if (!achievements.exists(name))
 			{
-				FunkinLua.luaTrace('setAchievementScore: Couldnt find achievement: $name', false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.setachievementscore_couldnt_find_achievement_value', "setAchievementScore: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
 				return -1;
 			}
 			return setScore(name, value, saveIfNotUnlocked);
@@ -311,7 +314,7 @@ class Achievements
 		{
 			if (!achievements.exists(name))
 			{
-				FunkinLua.luaTrace('addAchievementScore: Couldnt find achievement: $name', false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.addachievementscore_couldnt_find_achievement_value', "addAchievementScore: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
 				return -1;
 			}
 			return addScore(name, value, saveIfNotUnlocked);
@@ -320,7 +323,7 @@ class Achievements
 		{
 			if (!achievements.exists(name))
 			{
-				FunkinLua.luaTrace('unlockAchievement: Couldnt find achievement: $name', false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.unlockachievement_couldnt_find_achievement_value', "unlockAchievement: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
 				return null;
 			}
 			return unlock(name);
@@ -329,7 +332,7 @@ class Achievements
 		{
 			if (!achievements.exists(name))
 			{
-				FunkinLua.luaTrace('isAchievementUnlocked: Couldnt find achievement: $name', false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.isachievementunlocked_couldnt_find_achievement_value', "isAchievementUnlocked: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
 				return null;
 			}
 			return isUnlocked(name);

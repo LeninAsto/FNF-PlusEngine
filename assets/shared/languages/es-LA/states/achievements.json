@@ -1,0 +1,9 @@
+{
+  "$schema": 1,
+  "$namespace": "states.achievements",
+  "discord": "Menú de logros",
+  "progress": "{1} / {2}",
+  "reset": {
+    "title": "Restablecer logro:"
+  }
+}

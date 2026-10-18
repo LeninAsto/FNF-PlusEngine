@@ -86,7 +86,7 @@ class ActorFrameFunctions
 		if (result != 0)
 		{
 			var msg:String = Lua.tostring(funk.lua, -1);
-			FunkinLua.luaTrace('$label failed: $msg', false, false, FlxColor.RED);
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_actorframefunctions.value_failed_value', "{1} failed: {2}", [label, msg]), false, false, FlxColor.RED);
 			Lua.pop(funk.lua, 1);
 			return false;
 		}

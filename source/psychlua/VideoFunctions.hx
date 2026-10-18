@@ -26,13 +26,13 @@ class VideoFunctions
 			{
 				if (tag == null || tag.trim() == '')
 				{
-					FunkinLua.luaTrace('precacheLuaVideoSprite: tag cannot be empty!', false, false, FlxColor.RED);
+					FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_videofunctions.precacheluavideosprite_tag_cannot_be_empty', "precacheLuaVideoSprite: tag cannot be empty!"), false, false, FlxColor.RED);
 					return;
 				}
 
 				if (path == null || path.trim() == '')
 				{
-					FunkinLua.luaTrace('precacheLuaVideoSprite: path cannot be empty!', false, false, FlxColor.RED);
+					FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_videofunctions.precacheluavideosprite_path_cannot_be_empty', "precacheLuaVideoSprite: path cannot be empty!"), false, false, FlxColor.RED);
 					return;
 				}
 
@@ -46,7 +46,7 @@ class VideoFunctions
 			{
 				if (tag == null || tag.trim() == '')
 				{
-					FunkinLua.luaTrace('playLuaVideoSprite: tag cannot be empty!', false, false, FlxColor.RED);
+					FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_videofunctions.playluavideosprite_tag_cannot_be_empty', "playLuaVideoSprite: tag cannot be empty!"), false, false, FlxColor.RED);
 					return;
 				}
 
@@ -74,7 +74,7 @@ class VideoFunctions
 
 				if (path == null || path.trim() == '')
 				{
-					FunkinLua.luaTrace('playLuaVideoSprite: path cannot be empty!', false, false, FlxColor.RED);
+					FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_videofunctions.playluavideosprite_path_cannot_be_empty', "playLuaVideoSprite: path cannot be empty!"), false, false, FlxColor.RED);
 					return;
 				}
 
@@ -166,7 +166,7 @@ class VideoFunctions
 		Lua_helper.add_callback(lua, "playLuaVideoSprite",
 			function(tag:String, path:String, ?x:Float = 0, ?y:Float = 0, ?volume:Float = 1.0, ?front:Bool = false)
 			{
-				FunkinLua.luaTrace('playLuaVideoSprite: Video support is not enabled!', false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_videofunctions.playluavideosprite_video_support_is_not_enabled', "playLuaVideoSprite: Video support is not enabled!"), false, false, FlxColor.RED);
 			});
 		#end
 	}
@@ -260,7 +260,7 @@ class VideoFunctions
 
 		if (!videoSprite.load(backend.Paths.video(path), videoOptions))
 		{
-			FunkinLua.luaTrace('LuaVideo: could not load video "$path"', false, false, FlxColor.RED);
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_videofunctions.luavideo_could_not_load_video_value', "LuaVideo: could not load video \"{1}\"", [path]), false, false, FlxColor.RED);
 			videoSprite.destroy();
 			isDestroyed.remove(tag);
 			allowDestroy.remove(tag);
@@ -375,11 +375,11 @@ class VideoFunctions
 
 		if (sprite == null)
 		{
-			FunkinLua.luaTrace('getLuaVideo: Video "$tag" does not exist!', false, false, FlxColor.RED);
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_videofunctions.getluavideo_video_value_does_not_exist', "getLuaVideo: Video \"{1}\" does not exist!", [tag]), false, false, FlxColor.RED);
 		}
 		else
 		{
-			FunkinLua.luaTrace('getLuaVideo: "$tag" is not a video!', false, false, FlxColor.RED);
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_videofunctions.getluavideo_value_is_not_a_video', "getLuaVideo: \"{1}\" is not a video!", [tag]), false, false, FlxColor.RED);
 		}
 
 		return null;
@@ -463,9 +463,7 @@ class VideoFunctions
 					video.resume();
 					pulseLuaVideoVolume(tag, video);
 				}
-				FunkinLua.luaTrace('setLuaVideoVolume: "$tag" muted. For safest silence, use playLuaVideoSprite("'
-					+ tag
-					+ '", "videoName", x, y, 0) so VLC loads without audio.',
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_videofunctions.setluavideovolume_value_muted_for_safest_silence_use_playluavideosprite_value_videoname_x_', "setLuaVideoVolume: \"{1}\" muted. For safest silence, use playLuaVideoSprite(\"{2}\", \"videoName\", x, y, 0) so VLC loads without audio.", [tag, tag]),
 					false, false, FlxColor.YELLOW);
 			}
 		}

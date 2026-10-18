@@ -141,7 +141,7 @@ class Main extends Sprite
 			}
 			msgInfo += ' $x';
 			if (PlayState.instance != null)
-				PlayState.instance.addTextToDebug('WARNING: $msgInfo', FlxColor.YELLOW);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.main.warning_value', "WARNING: {1}", [msgInfo]), FlxColor.YELLOW);
 		}
 		Iris.error = function(x, ?pos:haxe.PosInfos)
 		{
@@ -163,7 +163,7 @@ class Main extends Sprite
 			}
 			msgInfo += ' $x';
 			if (PlayState.instance != null)
-				PlayState.instance.addTextToDebug('ERROR: $msgInfo', FlxColor.RED);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.main.error_value', "ERROR: {1}", [msgInfo]), FlxColor.RED);
 		}
 		Iris.fatal = function(x, ?pos:haxe.PosInfos)
 		{
@@ -185,7 +185,7 @@ class Main extends Sprite
 			}
 			msgInfo += ' $x';
 			if (PlayState.instance != null)
-				PlayState.instance.addTextToDebug('FATAL: $msgInfo', 0xFFBB0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.main.fatal_value', "FATAL: {1}", [msgInfo]), 0xFFBB0000);
 		}
 		scripting.ScriptBackend.setup();
 		#end

@@ -1,0 +1,40 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.note_splash",
+  "ui": {
+    "add_update": "Agregar/Actualizar",
+    "animation_name": "Nombre de la animación:",
+    "animation_prefix": "Prefijo de animación:",
+    "animations": "Animaciones:",
+    "blue": "Azul:",
+    "color_to_replace": "Color a reemplazar:",
+    "convert_txt": "Convertir TXT",
+    "do_not_replace": "No reemplazar",
+    "green": "Verde:",
+    "image": "Imagen:",
+    "indices_optional": "Índices (OPCIONAL):",
+    "maximum_fps": "FPS máximos:",
+    "minimum_fps": "FPS mínimos:",
+    "note_data": "Datos de nota:",
+    "red": "Rojo:",
+    "reload_image": "Recargar imagen",
+    "remove": "Eliminar",
+    "replacing_color": "Reemplazo de color:",
+    "save": "Ahorrar",
+    "scale": "Escala:",
+    "template": "Plantilla"
+  },
+  "presence": {
+    "title": "Editor de Note Splash"
+  },
+  "help": {
+    "open": "{1} - Ayuda",
+    "mobile": "Tocar en un rasgueo\npara generar un Splash\n\nTeclas de flecha: mover desplazamiento\nMantenga presionado Z: mueva las compensaciones 10 veces más rápido\n\n\nC - Copiar compensación actual\nV - Pegar el desplazamiento copiado en la presentación actual\nEn cada 4 datos de notas posteriores\nse agregará un conjunto adicional de animaciones",
+    "desktop": "Haga clic en un rasgueo o presione la barra espaciadora\npara generar un Splash\n\nTeclas de flecha: mover desplazamiento\nMantenga presionada la tecla Mayús: mueva las compensaciones 10 veces más rápido\n\n\nCtrl + C - Copiar desplazamiento actual\nCtrl + V - Pegar el desplazamiento copiado en el Splash actual\nCtrl + R - Restablecer compensación actual\nEn cada 4 datos de notas posteriores\nse agregará un conjunto adicional de animaciones"
+  },
+  "tabs": {
+    "animation": "Animación",
+    "properties": "Propiedades",
+    "shader": "Shader"
+  }
+}

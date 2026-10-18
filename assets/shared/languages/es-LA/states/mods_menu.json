@@ -1,0 +1,47 @@
+{
+  "$schema": 1,
+  "$namespace": "states.mods_menu",
+  "presence": "En el navegador de mods",
+  "title": "MODOS",
+  "filter": "FILTRO: {1}",
+  "filters": {
+    "all": "TODO",
+    "enabled": "ACTIVADO",
+    "disabled": "DESACTIVADO",
+    "launchable": "LANZABLE"
+  },
+  "search": "BUSCAR",
+  "search_query": "BÚSQUEDA: {1}{2}",
+  "sections": {
+    "description": "DESCRIPCIÓN",
+    "features": "CARACTERÍSTICAS",
+    "changelog": "REGISTRO DE CAMBIOS"
+  },
+  "restart_notice": "* Al mover/alternar este mod se reiniciará el juego.",
+  "buttons": {
+    "launch": "LANZAMIENTO",
+    "enable": "PERMITIR",
+    "enabled": "ACTIVADO",
+    "disable": "DESACTIVAR",
+    "settings": "AJUSTES",
+    "reload": "RECARGAR"
+  },
+  "hint": "ARRIBA/ABAJO Seleccionar L/R Reordenar ENTER Iniciar ESPACIO Activar/Desactivar (SHIFT=Todo) TAB Configuración Y Seguridad F Filtro / Buscar ESC Salir",
+  "empty": "NO HAY MODS INSTALADOS\nPULSA ATR?S PARA SALIR O INSTALAR UN MOD",
+  "unknown_mod": "Mod desconocido",
+  "no_description": "No se proporciona descripción.",
+  "status": {
+    "disabled": "Deshabilitado: habilitar para iniciar",
+    "launch": "> Presione ENTER para iniciar",
+    "no_launchable_states": "No hay estados lanzables",
+    "base_game_global": "El juego base siempre se carga globalmente",
+    "sensitive_scripts": "Scripts confidenciales detectados: elija CONFIANZA para habilitarlos",
+    "activation_denied": "Activación denegada: el mod permaneció deshabilitado",
+    "trusted": "Confiable: mod habilitado",
+    "security_disabled": "Mod Security está deshabilitado (habilítelo en Opciones)"
+  },
+  "settings_error": {
+    "title": "Nombre del mod: {1}",
+    "message": "Se produjo un error: {1}"
+  }
+}

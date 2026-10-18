@@ -44,13 +44,25 @@ class CrashHandler
 		"Object not found. Did you check under the couch? (null)"
 	];
 
+	static inline function phrase(key:String, fallback:String, ?values:Array<Dynamic>):String
+	{
+		try
+		{
+			return Language.getPhrase('errors.crash_handler.$key', fallback, values);
+		}
+		catch (_:Dynamic)
+		{
+			return fallback;
+		}
+	}
+
 	/**
 	 * Adds a funny prefix to null-related error messages
 	 */
 	static function funnyNullMessage(originalMessage:String):String
 	{
 		if (originalMessage == null)
-			return "Null error message (ironic, isn't it?)";
+			return phrase('null_error_message', "Null error message (ironic, isn't it?)");
 
 		var lowerMsg = originalMessage.toLowerCase();
 		var isNullError = lowerMsg.contains("null")
@@ -60,8 +72,9 @@ class CrashHandler
 
 		if (isNullError)
 		{
-			var funnyMsg = NULL_ERROR_MESSAGES[Std.random(NULL_ERROR_MESSAGES.length)];
-			return '$funnyMsg\n\nOriginal error: $originalMessage';
+			var index:Int = Std.random(NULL_ERROR_MESSAGES.length);
+			var funnyMsg = phrase('null_messages.$index', NULL_ERROR_MESSAGES[index]);
+			return phrase('original_error', '{1}\n\nOriginal error: {2}', [funnyMsg, originalMessage]);
 		}
 
 		return originalMessage;
@@ -114,29 +127,29 @@ class CrashHandler
 			switch (e)
 			{
 				case CFunction:
-					stackLabelArr.push("Non-Haxe (C) Function");
+					stackLabelArr.push(phrase('stack.non_haxe_function', 'Non-Haxe (C) Function'));
 				case Module(c):
-					stackLabelArr.push('Module ${c}');
+					stackLabelArr.push(phrase('stack.module', 'Module {1}', [c]));
 				case FilePos(parent, file, line, col):
 					switch (parent)
 					{
 						case Method(cla, func):
-							stackLabelArr.push('${file.replace('.hx', '')}.$func() [line $line]');
+							stackLabelArr.push(phrase('stack.source_line', '{1}.{2}() [line {3}]', [file.replace('.hx', ''), func, line]));
 						case _:
-							stackLabelArr.push('${file.replace('.hx', '')} [line $line]');
+							stackLabelArr.push(phrase('stack.file_line', '{1} [line {2}]', [file.replace('.hx', ''), line]));
 					}
 				case LocalFunction(v):
-					stackLabelArr.push('Local Function ${v}');
+					stackLabelArr.push(phrase('stack.local_function', 'Local Function {1}', [v]));
 				case Method(cl, m):
-					stackLabelArr.push('${cl} - ${m}');
+					stackLabelArr.push(phrase('stack.method', '{1} - {2}', [cl, m]));
 			}
 		}
 		stackLabel = stackLabelArr.join('\r\n');
 
-		var errorMsg = formatCrashText("Hardcoded Error", m, stackLabel, [
-			"This crashed outside hxscript, so it is probably engine/source code or a compiled library path.",
-			"Check the first source line in the stack before the engine loop; that is usually the useful culprit.",
-			"If this only happens after editing scripts/classes, rebuild and make sure the exported assets are not stale."
+		var errorMsg = formatCrashText(phrase('kinds.hardcoded', 'Hardcoded Error'), m, stackLabel, [
+			phrase('tips.hardcoded_origin', 'This crashed outside hxscript, so it is probably engine/source code or a compiled library path.'),
+			phrase('tips.first_source_line', 'Check the first source line in the stack before the engine loop; that is usually the useful culprit.'),
+			phrase('tips.rebuild_assets', 'If this only happens after editing scripts/classes, rebuild and make sure the exported assets are not stale.')
 		]);
 
 		// Display the error in the console/terminal
@@ -147,7 +160,7 @@ class CrashHandler
 		#end
 
 		#if DISCORD_ALLOWED DiscordClient.shutdown(); #end
-		showCrashAndExit(errorMsg, "Error!");
+		showCrashAndExit(errorMsg, phrase('titles.error', 'Error!'));
 	}
 
 	#if (cpp || hl)
@@ -156,31 +169,32 @@ class CrashHandler
 		if (!beginCrashHandling())
 			return;
 
-		var crashMessage:String = "Unknown critical error";
+		var crashMessage:String = phrase('unknown_critical_error', 'Unknown critical error');
 		if (message != null && Std.string(message).length > 0)
 		{
 			// Add funny message for null errors
 			crashMessage = funnyNullMessage(Std.string(message));
 		}
 
-		var errorLog = formatCrashText("Critical Hardcoded Error", crashMessage, haxe.CallStack.toString(haxe.CallStack.exceptionStack(true)), [
-			"This is a native/critical crash path, so the app could not recover cleanly.",
-			"If this appeared during build testing, close every running PlusEngine.exe before rebuilding.",
-			"If mods are enabled, retry with scripts disabled to separate engine crashes from mod-side crashes."
+		var errorLog = formatCrashText(phrase('kinds.critical_hardcoded', 'Critical Hardcoded Error'), crashMessage,
+			haxe.CallStack.toString(haxe.CallStack.exceptionStack(true)), [
+			phrase('tips.native_crash', 'This is a native/critical crash path, so the app could not recover cleanly.'),
+			phrase('tips.close_running_build', 'If this appeared during build testing, close every running PlusEngine.exe before rebuilding.'),
+			phrase('tips.disable_mod_scripts', 'If mods are enabled, retry with scripts disabled to separate engine crashes from mod-side crashes.')
 		]);
 
 		// Display the error in the console/terminal
 		trace('=== CRITICAL ERROR ===');
 		trace(errorLog);
 		trace('======================');
-		trace('For help, visit: $HELP_LINK');
+		trace(phrase('help_inline', 'For help, visit: {1}', [HELP_LINK]));
 
 		#if sys
 		saveErrorMessage(errorLog);
 		#end
 
 		#if DISCORD_ALLOWED DiscordClient.shutdown(); #end
-		showCrashAndExit(errorLog, "Critical Error!");
+		showCrashAndExit(errorLog, phrase('titles.critical_error', 'Critical Error!'));
 	}
 	#end
 
@@ -188,7 +202,7 @@ class CrashHandler
 	{
 		if (handlingCrash)
 		{
-			trace('Crash handler was invoked again while already handling an error.');
+			trace(phrase('recursive_handler', 'Crash handler was invoked again while already handling an error.'));
 			return false;
 		}
 		handlingCrash = true;
@@ -211,28 +225,28 @@ class CrashHandler
 	private static function formatCrashText(kind:String, message:String, stack:String, tips:Array<String>):String
 	{
 		var out:Array<String> = [];
-		out.push('ERROR: $kind');
+		out.push(phrase('format.error_kind', 'ERROR: {1}', [kind]));
 		out.push('');
-		out.push('Message:');
-		out.push(message == null || message.length < 1 ? 'Unknown error' : message);
+		out.push(phrase('format.message', 'Message:'));
+		out.push(message == null || message.length < 1 ? phrase('unknown_error', 'Unknown error') : message);
 
 		if (stack != null && stack.trim().length > 0)
 		{
 			out.push('');
-			out.push('Trace:');
+			out.push(phrase('format.trace', 'Trace:'));
 			out.push(stack);
 		}
 
 		if (tips != null && tips.length > 0)
 		{
 			out.push('');
-			out.push('Tips:');
+			out.push(phrase('format.tips', 'Tips:'));
 			for (tip in tips)
 				out.push('- ' + tip);
 		}
 
 		out.push('');
-		out.push('Need help? Visit:');
+		out.push(phrase('format.need_help', 'Need help? Visit:'));
 		out.push(HELP_LINK);
 		return out.join('\n');
 	}
@@ -247,7 +261,7 @@ class CrashHandler
 		}
 		catch (e:Dynamic)
 		{
-			trace('Android crash activity dispatch failed: $e');
+			trace(phrase('android_dispatch_failed', 'Android crash activity dispatch failed: {1}', [e]));
 		}
 		return false;
 	}
@@ -263,11 +277,11 @@ class CrashHandler
 			if (!FileSystem.exists(folder))
 				FileSystem.createDirectory(folder);
 
-			var fullLog = message + '\n\n========================\nFor help, visit: $HELP_LINK\n========================';
+			var fullLog = message + '\n\n========================\n' + phrase('help_inline', 'For help, visit: {1}', [HELP_LINK]) + '\n========================';
 			File.saveContent(folder + Date.now().toString().replace(' ', '-').replace(':', "'") + '.txt', fullLog);
 		}
 		catch (e:haxe.Exception)
-			trace('Couldn\'t save error message. (${e.message})');
+			trace(phrase('save_failed', 'Couldn\'t save error message. ({1})', [e.message]));
 	}
 	#end
 }

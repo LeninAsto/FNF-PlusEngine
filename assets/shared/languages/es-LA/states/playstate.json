@@ -1,0 +1,29 @@
+{
+  "$schema": 1,
+  "$namespace": "playstate",
+  "presence": {
+    "story": "Modo Historia: {1}",
+    "freeplay": "Freeplay",
+    "paused": "En pausa - {1}",
+    "chart_editor": "Editor de gráficos",
+    "game_over": "Juego terminado - {1}"
+  },
+  "hud": {
+    "version": "{1} ({2}) - Más motor v{3}",
+    "botplay_mode": "MODO DE JUEGO BOTÓN",
+    "botplay": "JUEGO BOTÓN",
+    "botplay_cpu": "CPU de JUEGO BOTP: {1}",
+    "milliseconds": "{1}ms",
+    "score": {
+      "psych": "Puntuación: {1} | Fallos: {2} | Clasificación: {3}",
+      "psych_instakill": "Puntuación: {1} | Clasificación: {2}",
+      "plus": "Puntuación: {1} | Fallos: {2} | Combinado: {3} | TPS: {4} | Clasificación: {5}",
+      "plus_instakill": "Puntuación: {1} | Combinado: {2} | TPS: {3} | Clasificación: {4}"
+    }
+  },
+  "modes": {
+    "perfect": "Modo perfecto",
+    "opponent": "Modo oponente",
+    "practice": "Modo de práctica"
+  }
+}

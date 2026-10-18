@@ -146,8 +146,8 @@ class ModSettingsSubState extends BaseOptionsMenu
 		}
 		catch (e:Dynamic)
 		{
-			var errorTitle = 'Mod name: ' + folder;
-			var errorMsg = 'An error occurred: $e';
+			var errorTitle = Language.getPhrase('errors.popups.mod_settings.title', 'Mod name: {1}', [folder]);
+			var errorMsg = Language.getPhrase('errors.popups.mod_settings.parse_error', 'An error occurred: {1}', [e]);
 			CoolUtil.showPopUp(errorMsg, errorTitle);
 			_crashed = true;
 			close();

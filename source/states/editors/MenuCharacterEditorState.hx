@@ -31,7 +31,8 @@ class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHan
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("Menu Character Editor", "Editting: " + characterFile.image);
+		DiscordClient.changePresence(Language.getPhrase('editors.menu_character.presence.title', 'Menu Character Editor'),
+			Language.getPhrase('editors.menu_character.presence.editing', 'Editing: {1}', [characterFile.image]));
 		#end
 
 		grpWeekCharacters = new FlxTypedGroup<MenuCharacter>();
@@ -46,13 +47,13 @@ class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHan
 		add(new FlxSprite(0, 56).makeGraphic(FlxG.width, 386, 0xFFF9CF51));
 		add(grpWeekCharacters);
 
-		txtOffsets = new FlxText(20, 10, 0, "[0, 0]", 32);
+		txtOffsets = new FlxText(20, 10, 0, Language.getPhrase('editors.menu_character.ui.0_0', "[0, 0]"), 32);
 		txtOffsets.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER);
 		txtOffsets.alpha = 0.7;
 		add(txtOffsets);
 
-		var tipText:FlxText = new FlxText(0, 540, FlxG.width, "Arrow Keys - Change Offset (Hold shift for 10x speed)
-			\nSpace - Play \"Start Press\" animation (Boyfriend Character Type)", 16);
+		var tipText:FlxText = new FlxText(0, 540, FlxG.width, Language.getPhrase('editors.menu_character.ui.arrow_keys_change_offset_hold_shift_for_10x_speed_space_play_start_pre', "Arrow Keys - Change Offset (Hold shift for 10x speed)
+			\nSpace - Play \"Start Press\" animation (Boyfriend Character Type)"), 16);
 		tipText.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, CENTER);
 		tipText.scrollFactor.set();
 		add(tipText);
@@ -72,17 +73,21 @@ class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHan
 	function addEditorBox()
 	{
 		UI_typebox = new PsychUIBox(100, FlxG.height - 230, 120, 180, ['Character Type']);
+		for (tab in UI_typebox.tabs)
+			tab.text.text = Language.getPhrase('editors.menu_character.tabs.${options.Option.normalizeTranslationKey(tab.name)}', tab.name);
 		UI_typebox.scrollFactor.set();
 		addTypeUI();
 		add(UI_typebox);
 
 		UI_mainbox = new PsychUIBox(FlxG.width - 340, FlxG.height - 265, 240, 215, ['Character']);
+		for (tab in UI_mainbox.tabs)
+			tab.text.text = Language.getPhrase('editors.menu_character.tabs.${options.Option.normalizeTranslationKey(tab.name)}', tab.name);
 		UI_mainbox.scrollFactor.set();
 		addCharacterUI();
 		add(UI_mainbox);
 
 		#if !mobile
-		var loadButton:PsychUIButton = new PsychUIButton(0, 480, "Load Character", function()
+		var loadButton:PsychUIButton = new PsychUIButton(0, 480, Language.getPhrase('editors.menu_character.ui.load_character', "Load Character"), function()
 		{
 			loadCharacter();
 		});
@@ -91,7 +96,7 @@ class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHan
 		add(loadButton);
 		#end
 
-		var saveButton:PsychUIButton = new PsychUIButton(0, 480, "Save Character", function()
+		var saveButton:PsychUIButton = new PsychUIButton(0, 480, Language.getPhrase('editors.menu_character.ui.save_character', "Save Character"), function()
 		{
 			saveCharacter();
 		});
@@ -129,14 +134,14 @@ class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHan
 		idleInputText = new PsychUIInputText(10, imageInputText.y + 35, 100, characterFile.idle_anim, 8);
 		confirmInputText = new PsychUIInputText(10, idleInputText.y + 35, 100, characterFile.confirm_anim, 8);
 
-		flipXCheckbox = new PsychUICheckBox(10, confirmInputText.y + 30, "Flip X", 100);
+		flipXCheckbox = new PsychUICheckBox(10, confirmInputText.y + 30, Language.getPhrase('editors.menu_character.ui.flip_x', "Flip X"), 100);
 		flipXCheckbox.onClick = function()
 		{
 			grpWeekCharacters.members[characterTypeRadio.checked].flipX = flipXCheckbox.checked;
 			characterFile.flipX = flipXCheckbox.checked;
 		};
 
-		antialiasingCheckbox = new PsychUICheckBox(10, flipXCheckbox.y + 30, "Antialiasing", 100);
+		antialiasingCheckbox = new PsychUICheckBox(10, flipXCheckbox.y + 30, Language.getPhrase('editors.menu_character.ui.antialiasing', "Antialiasing"), 100);
 		antialiasingCheckbox.checked = grpWeekCharacters.members[characterTypeRadio.checked].antialiasing;
 		antialiasingCheckbox.onClick = function()
 		{
@@ -144,17 +149,17 @@ class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHan
 			characterFile.antialiasing = antialiasingCheckbox.checked;
 		};
 
-		var reloadImageButton:PsychUIButton = new PsychUIButton(140, confirmInputText.y + 30, "Reload Char", function()
+		var reloadImageButton:PsychUIButton = new PsychUIButton(140, confirmInputText.y + 30, Language.getPhrase('editors.menu_character.ui.reload_char', "Reload Char"), function()
 		{
 			reloadSelectedCharacter();
 		});
 
 		scaleStepper = new PsychUINumericStepper(140, imageInputText.y, 0.05, 1, 0.1, 30, 2);
 
-		var confirmDescText = new FlxText(10, confirmInputText.y - 18, 0, 'Start Press animation on the .XML:');
-		tab_group.add(new FlxText(10, imageInputText.y - 18, 0, 'Image file name:'));
-		tab_group.add(new FlxText(10, idleInputText.y - 18, 0, 'Idle animation on the .XML:'));
-		tab_group.add(new FlxText(scaleStepper.x, scaleStepper.y - 18, 0, 'Scale:'));
+		var confirmDescText = new FlxText(10, confirmInputText.y - 18, 0, Language.getPhrase('editors.menu_character.ui.start_press_animation_on_the_xml', 'Start Press animation on the .XML:'));
+		tab_group.add(new FlxText(10, imageInputText.y - 18, 0, Language.getPhrase('editors.menu_character.ui.image_file_name', 'Image file name:')));
+		tab_group.add(new FlxText(10, idleInputText.y - 18, 0, Language.getPhrase('editors.menu_character.ui.idle_animation_on_the_xml', 'Idle animation on the .XML:')));
+		tab_group.add(new FlxText(scaleStepper.x, scaleStepper.y - 18, 0, Language.getPhrase('editors.menu_character.ui.scale', 'Scale:')));
 		tab_group.add(flipXCheckbox);
 		tab_group.add(antialiasingCheckbox);
 		tab_group.add(reloadImageButton);
@@ -195,7 +200,8 @@ class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHan
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("Menu Character Editor", "Editting: " + characterFile.image);
+		DiscordClient.changePresence(Language.getPhrase('editors.menu_character.presence.title', 'Menu Character Editor'),
+			Language.getPhrase('editors.menu_character.presence.editing', 'Editing: {1}', [characterFile.image]));
 		#end
 	}
 

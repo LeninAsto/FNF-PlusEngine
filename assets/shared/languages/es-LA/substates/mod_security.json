@@ -1,0 +1,53 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.mod_security",
+  "title": {
+    "warning": "Advertencia de API sensible",
+    "clean": "Seguridad de mods"
+  },
+  "detected_calls": "Llamadas detectadas (ARRIBA/ABAJO o rueda para desplazarse):",
+  "actions": {
+    "trust": "CONFIANZA",
+    "block": "BLOQUEAR"
+  },
+  "hint": "Izquierda/Derecha para elegir - Ingresar para confirmar",
+  "counter": "Mod {1} / {2}",
+  "body": {
+    "clean": "No se detectaron API confidenciales en los scripts de este mod.",
+    "clean_activation": "CONFIANZA = habilitar el mod.\nBLOQUEAR = mantener el mod desactivado.",
+    "clean_review": "CONFIANZA = los scripts se ejecutan normalmente.\nBLOQUEO = el mod permanece habilitado, los scripts se omiten.",
+    "warning": "Los scripts de este mod utilizan API de las que se puede abusar y provocar daños.",
+    "warning_activation": "CONFIANZA = habilita el mod y ejecuta scripts.   BLOQUEAR = mantener el mod desactivado.",
+    "warning_review": "CONFIANZA = los scripts se ejecutan normalmente.   BLOQUEO = el mod permanece habilitado, los scripts se omiten.",
+    "capabilities": "Este mod puede:"
+  },
+  "categories": {
+    "tamper": "[!!] Intentos de alterar el sistema de seguridad del mod.",
+    "exec": "[!] Ejecuta programas/comandos externos en tu PC",
+    "gdi_effects": "[!] Puede iniciar los efectos de pantalla GDI de Windows fuera del juego",
+    "desktop_control": "[!] Puede alterar los iconos del escritorio, la barra de tareas, la transparencia o el fondo de pantalla",
+    "window_control": "[*] Puede realizar capturas de pantalla, notificar a Windows o alterar la ventana del juego.",
+    "fs_write": "[!] Escribe, modifica o elimina archivos en tu PC",
+    "haxe_eval": "[!] Ejecuta código Haxe/Lua arbitrario en tiempo de ejecución",
+    "fs_read": "[*] Lee archivos desde tu PC",
+    "reflect": "[*] Utiliza reflexión/búsqueda de clases dinámica",
+    "exit": "[*] Puede forzar el cierre del proceso del juego.",
+    "recon": "[*] Lee variables de entorno/información del sistema",
+    "other": "[*] Otras API confidenciales (consulte la lista a continuación)",
+    "common_only": "(solo se encontraron API comunes; revise la lista a continuación)"
+  },
+  "no_findings": "(no se detectaron API sensibles)",
+  "list_range": "{1}-{2} de {3}",
+  "item": "{1} artículo",
+  "items": "Artículos {1}",
+  "details": {
+    "windows_gdi_effects": "responsable: initGDIThread/prepareGDIEFfect/enableGDIEFfect; puede ejecutar efectos visuales GDI a nivel de escritorio",
+    "windows_gdi_internals": "responsable: SlushiWinGDI/WinGDIThread; puede acceder al hilo o registro del efecto GDI directamente",
+    "windows_desktop_control": "responsable: hideDesktopIcons/hideTaskBar/moveDesktopElements; puede ocultar/mover la interfaz de usuario del escritorio o cambiar la transparencia",
+    "windows_wallpaper_control": "responsable: cambiarWindowsWallpaper/setDesktopWallpaper; puede cambiar o restaurar el fondo de pantalla de Windows",
+    "windows_shellwindow_control": "responsable: captureScreenshot/showNotification/setWindowOpacity; puede capturar la pantalla, notificar a Windows o alterar las imágenes de la ventana",
+    "windowsapi": "responsable: slushithings.windows.WindowsAPI; puede acceder a los ayudantes nativos de Plus Engine Windows",
+    "windowscpp": "responsable: slushithings.windows.WindowsCPP; puede llamar a funciones nativas de Windows de bajo nivel",
+    "import_windows_native_apis": "responsable: importar slushithings.windows.*; puede desbloquear el acceso al asistente de Windows/GDI desde HScript"
+  }
+}

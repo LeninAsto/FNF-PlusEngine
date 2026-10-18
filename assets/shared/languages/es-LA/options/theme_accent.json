@@ -1,0 +1,41 @@
+{
+  "$schema": 1,
+  "$namespace": "options.theme_accent",
+  "presence": "Selector de acento temático",
+  "title": "Color de acento del tema",
+  "hint": "Obtenga una vista previa de los widgets MD3 reales mientras arrastra el selector. ENTER confirma, BACK cancela.",
+  "picker_hint": "Rueda + tira luminosa + paleta, sin convertirse en sopa visual.",
+  "live_preview": "Vista previa en vivo habilitada",
+  "use_custom": "Usar acento personalizado",
+  "mini_hint": "El lado derecho muestra los widgets del motor original teñidos con tu acento. Si parece maldito aquí, también parecerá maldito en los menús.",
+  "hex_label": "HEXAGONAL {1}",
+  "boxes": {
+    "preview": "Vista previa del tema",
+    "picker": "Selector de acento",
+    "components": "Vista previa de los componentes MD3"
+  },
+  "preview": {
+    "title": "MUESTRA DE JUEGO GRATIS",
+    "meta": "Vista previa de acento personalizado"
+  },
+  "chips": {
+    "active": "Acento activo",
+    "custom": "Ficha personalizada",
+    "preset_safe": "Preestablecido seguro",
+    "selected": "Seleccionado",
+    "hex": "ficha hexagonal"
+  },
+  "sections": {
+    "standard": "Progreso estándar",
+    "wavy": "Progreso ondulado",
+    "widgets": "Otros widgets del motor"
+  },
+  "actions": {
+    "copy_hex": "Copiar hexadecimal",
+    "paste_hex": "Pegar HEX",
+    "apply": "Aplicar",
+    "cancel": "Cancelar",
+    "preview": "Avance",
+    "accent": "Acento"
+  }
+}

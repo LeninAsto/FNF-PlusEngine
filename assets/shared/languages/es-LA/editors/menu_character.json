@@ -1,0 +1,25 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.menu_character",
+  "ui": {
+    "0_0": "[0, 0]",
+    "antialiasing": "Antialiasing",
+    "arrow_keys_change_offset_hold_shift_for_10x_speed_space_play_start_pre": "Teclas de flecha: cambiar compensación (mantenga presionada la tecla Mayús para una velocidad de 10x)\n\t\t\t\nEspacio: reproduce la animación \"Iniciar prensa\" (tipo de personaje novio)",
+    "flip_x": "Voltear X",
+    "idle_animation_on_the_xml": "Animación inactiva en.XML:",
+    "image_file_name": "Archivo de imagen:",
+    "load_character": "Cargar carácter",
+    "reload_char": "Recargar carbón",
+    "save_character": "Guardar personaje",
+    "scale": "Escala:",
+    "start_press_animation_on_the_xml": "Iniciar animación de prensa en el.XML:"
+  },
+  "presence": {
+    "title": "Editor de caracteres de menú",
+    "editing": "Edición: {1}"
+  },
+  "tabs": {
+    "character": "Personaje",
+    "character_type": "Tipo de personaje"
+  }
+}

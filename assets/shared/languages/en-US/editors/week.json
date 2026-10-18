@@ -1,0 +1,36 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.week",
+  "ui": {
+    "background_asset": "Background Asset:",
+    "characters": "Characters:",
+    "copy_color": "Copy Color",
+    "default_difficulties_are_easy_normal_hard_without_quotes": "Default difficulties are \"Easy, Normal, Hard\"\nwithout quotes.",
+    "difficulties": "Difficulties:",
+    "display_name": "Display Name:",
+    "freeplay": "Freeplay",
+    "hidden_until_unlocked": "Hidden until Unlocked",
+    "hide_week_from_freeplay": "Hide Week from Freeplay?",
+    "hide_week_from_story_mode": "Hide Week from Story Mode?",
+    "load_week": "Load Week",
+    "paste_color": "Paste Color",
+    "save_week": "Save Week",
+    "selected_background_color_r_g_b": "Selected background Color R/G/B:",
+    "selected_icon": "Selected icon:",
+    "songs": "Songs:",
+    "story_mode": "Story Mode",
+    "week_file": "Week File:",
+    "week_file_name_of_the_week_you_have_to_finish_for_unlocking": "Week File name of the Week you have\nto finish for Unlocking:",
+    "week_name_for_reset_score_menu": "Week Name (for Reset Score Menu):",
+    "week_starts_locked": "Week starts Locked"
+  },
+  "presence": {
+    "title": "Week Editor",
+    "editing": "Editing: {1}"
+  },
+  "tabs": {
+    "freeplay": "Freeplay",
+    "other": "Other",
+    "week": "Week"
+  }
+}

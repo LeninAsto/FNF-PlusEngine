@@ -625,12 +625,12 @@ class ModchartFunctions
 			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
 			if (mod == null)
 			{
-				PlayState.instance.addTextToDebug('setModifierPath: modifier not found: ' + modName, 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.setmodifierpath_modifier_not_found_value', "setModifierPath: modifier not found: {1}", [modName]), 0xFFFF0000);
 				return;
 			}
 			if (!Std.isOfType(mod, PathModifier))
 			{
-				PlayState.instance.addTextToDebug('setModifierPath: modifier is not a PathModifier: ' + modName, 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.setmodifierpath_modifier_is_not_a_pathmodifier_value', "setModifierPath: modifier is not a PathModifier: {1}", [modName]), 0xFFFF0000);
 				return;
 			}
 
@@ -673,7 +673,7 @@ class ModchartFunctions
 			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
 			if (mod == null || !Std.isOfType(mod, PathModifier))
 			{
-				PlayState.instance.addTextToDebug('setModifierPathOffset: PathModifier not found: ' + modName, 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.setmodifierpathoffset_pathmodifier_not_found_value', "setModifierPathOffset: PathModifier not found: {1}", [modName]), 0xFFFF0000);
 				return;
 			}
 
@@ -707,7 +707,7 @@ class ModchartFunctions
 			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
 			if (mod == null || !Std.isOfType(mod, PathModifier))
 			{
-				PlayState.instance.addTextToDebug('setModifierPathBound: PathModifier not found: ' + modName, 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.setmodifierpathbound_pathmodifier_not_found_value', "setModifierPathBound: PathModifier not found: {1}", [modName]), 0xFFFF0000);
 				return;
 			}
 
@@ -1033,7 +1033,7 @@ class ModchartFunctions
 			var swagSong = Song.getChart(chartName, songName);
 			if (swagSong == null)
 			{
-				PlayState.instance.addTextToDebug('ERROR: chart "$chartName" not found in song "$songName"', 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.error_chart_value_not_found_in_song_value', "ERROR: chart \"{1}\" not found in song \"{2}\"", [chartName, songName]), 0xFFFF0000);
 				return null;
 			}
 
@@ -1161,7 +1161,7 @@ class ModchartFunctions
 		final name = Std.string(field).trim();
 		final playfield = Manager.instance.getNamedPlayfield(name);
 		if (playfield == null && reportMissing && PlayState.instance != null)
-			PlayState.instance.addTextToDebug(context + ': playfield not found: ' + name, 0xFFFF0000);
+			PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_playfield_not_found_value', "{1}: playfield not found: {2}", [context, name]), 0xFFFF0000);
 		return playfield;
 	}
 
@@ -1305,13 +1305,13 @@ class ModchartFunctions
 		if (fieldIndex < 0 || fieldIndex >= Manager.instance.playfields.length)
 		{
 			if (PlayState.instance != null)
-				PlayState.instance.addTextToDebug(context + ': invalid playfield index: ' + fieldIndex, 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_invalid_playfield_index_value', "{1}: invalid playfield index: {2}", [context, fieldIndex]), 0xFFFF0000);
 			return null;
 		}
 
 		final playfield = Manager.instance.playfields[fieldIndex];
 		if (playfield == null && PlayState.instance != null)
-			PlayState.instance.addTextToDebug(context + ': removed playfield index: ' + fieldIndex, 0xFFFF0000);
+			PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_removed_playfield_index_value', "{1}: removed playfield index: {2}", [context, fieldIndex]), 0xFFFF0000);
 		return playfield;
 	}
 
@@ -1355,7 +1355,7 @@ class ModchartFunctions
 			final fields = Reflect.fields(bindings);
 			if (fields == null || fields.length <= 0)
 			{
-				PlayState.instance.addTextToDebug(context + ': expected a table/object with left/down/up/right bindings', 0xFFFFAA00);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_expected_a_table_object_with_left_down_up_right_bindings', "{1}: expected a table/object with left/down/up/right bindings", [context]), 0xFFFFAA00);
 				return;
 			}
 
@@ -1364,7 +1364,7 @@ class ModchartFunctions
 				final controlName = normalizeGameplayControlName(fieldName);
 				if (controlName == null)
 				{
-					PlayState.instance.addTextToDebug(context + ': invalid control "' + fieldName + '"', 0xFFFF0000);
+					PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_invalid_control_value', "{1}: invalid control \"{2}\"", [context, fieldName]), 0xFFFF0000);
 					continue;
 				}
 
@@ -1381,7 +1381,7 @@ class ModchartFunctions
 		catch (e:Dynamic)
 		{
 			if (PlayState.instance != null)
-				PlayState.instance.addTextToDebug(context + ': failed to apply controls: ' + Std.string(e), 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_failed_to_apply_controls_value', "{1}: failed to apply controls: {2}", [context, Std.string(e)]), 0xFFFF0000);
 		}
 	}
 
@@ -1395,7 +1395,7 @@ class ModchartFunctions
 		catch (e:Dynamic)
 		{
 			if (PlayState.instance != null)
-				PlayState.instance.addTextToDebug('restoreGameplayControls: failed to restore controls: ' + Std.string(e), 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.restoregameplaycontrols_failed_to_restore_controls_value', "restoreGameplayControls: failed to restore controls: {1}", [Std.string(e)]), 0xFFFF0000);
 		}
 	}
 
@@ -1443,7 +1443,7 @@ class ModchartFunctions
 			if (!isValidLuaKeyNameText(text))
 			{
 				if (PlayState.instance != null)
-					PlayState.instance.addTextToDebug(context + ': ignored corrupt key value for ' + fieldName, 0xFFFFAA00);
+					PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_ignored_corrupt_key_value_for_value', "{1}: ignored corrupt key value for {2}", [context, fieldName]), 0xFFFFAA00);
 				return null;
 			}
 
@@ -1455,14 +1455,14 @@ class ModchartFunctions
 			catch (e:Dynamic)
 			{
 				if (PlayState.instance != null)
-					PlayState.instance.addTextToDebug(context + ': invalid key "' + text + '" for ' + fieldName + ' (' + Std.string(e) + ')', 0xFFFF0000);
+					PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_invalid_key_value_for_value_value', "{1}: invalid key \"{2}\" for {3} ({4})", [context, text, fieldName, Std.string(e)]), 0xFFFF0000);
 				return null;
 			}
 
 			if (key == NONE)
 			{
 				if (PlayState.instance != null)
-					PlayState.instance.addTextToDebug(context + ': invalid key "' + text + '" for ' + fieldName, 0xFFFF0000);
+					PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_invalid_key_value_for_value', "{1}: invalid key \"{2}\" for {3}", [context, text, fieldName]), 0xFFFF0000);
 				return null;
 			}
 

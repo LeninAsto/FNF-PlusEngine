@@ -16,6 +16,7 @@ enum OptionType
 	PERCENT;
 	STRING;
 	KEYBIND;
+	ACTION;
 }
 
 class Option
@@ -88,6 +89,8 @@ class Option
 				defaultValue = '';
 				defaultKeys = {gamepad: 'NONE', keyboard: 'NONE'};
 				keys = {gamepad: 'NONE', keyboard: 'NONE'};
+			case ACTION:
+				defaultValue = null;
 		}
 
 		try
@@ -124,6 +127,8 @@ class Option
 
 	dynamic public function getValue():Dynamic
 	{
+		if (type == ACTION)
+			return '';
 		var value = Reflect.getProperty(ClientPrefs.data, variable);
 		if (type == KEYBIND)
 			return !Controls.instance.controllerMode ? value.keyboard : value.gamepad;
@@ -132,6 +137,8 @@ class Option
 
 	dynamic public function setValue(value:Dynamic)
 	{
+		if (type == ACTION)
+			return value;
 		if (type == KEYBIND)
 		{
 			var keys = Reflect.getProperty(ClientPrefs.data, variable);

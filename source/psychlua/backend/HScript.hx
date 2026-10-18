@@ -258,7 +258,7 @@ class HScript extends Iris
 				// Show warning in debug text
 				if (PlayState.instance != null)
 				{
-					PlayState.instance.addTextToDebug('WARNING: $e', FlxColor.YELLOW);
+					PlayState.instance.addTextToDebug(Language.getPhrase('errors.scripting.hscript.warning', 'WARNING: {1}', [e]), FlxColor.YELLOW);
 				}
 				// Re-throw the exception so PlayState can handle it correctly
 				throw e;
@@ -812,7 +812,7 @@ class HScript extends Iris
 		{
 			if (PlayState.instance.luaTouchPad == null)
 			{
-				FunkinLua.luaTrace('addTouchPadCamera: TPAD does not exist.');
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_hscript.addtouchpadcamera_tpad_does_not_exist', "addTouchPadCamera: TPAD does not exist."));
 				return;
 			}
 			PlayState.instance.addLuaTouchPadCamera();
@@ -1864,10 +1864,11 @@ class CustomInterp extends crowplexus.hscript.Interp
 				return MusicBeatState.getVideoHandlers().get(field);
 			}
 			// Mostrar warning en lugar de error
-			var warnMsg = 'Null reference: trying to access "$field" on null object';
+			var warnMsg = Language.getPhrase('errors.scripting.hscript.null_field', 'Null reference: trying to access "{1}" on null object', [field]);
 			if (PlayState.instance != null)
-				PlayState.instance.addTextToDebug('WARNING ($scriptName): $warnMsg', FlxColor.YELLOW);
-			trace('WARNING ($scriptName): $warnMsg');
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.scripting.hscript.script_warning',
+					'WARNING ({1}): {2}', [scriptName, warnMsg]), FlxColor.YELLOW);
+			trace(Language.getPhrase('errors.scripting.hscript.script_warning', 'WARNING ({1}): {2}', [scriptName, warnMsg]));
 			return null;
 		}
 
@@ -2184,17 +2185,20 @@ class HScript
 		funk.addLocalCallback("runHaxeCode",
 			function(codeToRun:String, ?varsToBring:Any = null, ?funcToRun:String = null, ?funcArgs:Array<Dynamic> = null):Dynamic
 			{
-				PlayState.instance.addTextToDebug('HScript is not supported on this platform!', FlxColor.RED);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.scripting.hscript.unsupported',
+					'HScript is not supported on this platform!'), FlxColor.RED);
 				return null;
 			});
 		funk.addLocalCallback("runHaxeFunction", function(funcToRun:String, ?funcArgs:Array<Dynamic> = null)
 		{
-			PlayState.instance.addTextToDebug('HScript is not supported on this platform!', FlxColor.RED);
+			PlayState.instance.addTextToDebug(Language.getPhrase('errors.scripting.hscript.unsupported',
+				'HScript is not supported on this platform!'), FlxColor.RED);
 			return null;
 		});
 		funk.addLocalCallback("addHaxeLibrary", function(libName:String, ?libPackage:String = '')
 		{
-			PlayState.instance.addTextToDebug('HScript is not supported on this platform!', FlxColor.RED);
+			PlayState.instance.addTextToDebug(Language.getPhrase('errors.scripting.hscript.unsupported',
+				'HScript is not supported on this platform!'), FlxColor.RED);
 			return null;
 		});
 	}

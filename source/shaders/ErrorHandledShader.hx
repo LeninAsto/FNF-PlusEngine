@@ -45,7 +45,7 @@ class ErrorHandledShader extends FlxShader implements IErrorHandler
 		if (shaderName == null)
 			shaderName = 'unnamed';
 		brokenShaders.set(shaderName, true);
-		var alertTitle:String = 'Error on Shader: "$shaderName"';
+		var alertTitle:String = Language.getPhrase('errors.shader.title', 'Error on Shader: "{1}"', [shaderName]);
 
 		trace(error);
 
@@ -57,11 +57,11 @@ class ErrorHandledShader extends FlxShader implements IErrorHandler
 
 			var crashLogPath:String = './logs/shader_${shaderName}_${dateNow}.txt';
 			File.saveContent(crashLogPath, Std.string(error));
-			trace('$alertTitle - error log saved at: $crashLogPath');
+			trace(Language.getPhrase('errors.shader.log_saved', '{1} - error log saved at: {2}', [alertTitle, crashLogPath]));
 		}
 		catch (logError:Dynamic)
 		{
-			trace('$alertTitle - failed to save shader error log: $logError');
+			trace(Language.getPhrase('errors.shader.log_save_failed', '{1} - failed to save shader error log: {2}', [alertTitle, logError]));
 		}
 
 		onError(error);
