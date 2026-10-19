@@ -20,6 +20,11 @@ class HealthIconHud
 				lerpScale(elapsed, rate, p2, true);
 				lerpScale(elapsed, rate, gf, true);
 
+			case 'Codename':
+				codenameScale(elapsed, rate, p1);
+				codenameScale(elapsed, rate, p2);
+				codenameScale(elapsed, rate, gf);
+
 			default:
 				lerpScale(elapsed, rate, p1, false);
 				lerpScale(elapsed, rate, p2, false);
@@ -82,6 +87,17 @@ class HealthIconHud
 
 		final t:Float = nf ? FlxMath.bound((1 - (elapsed * 9 * rate)) / 1.1, 0, 1) : Math.exp(-elapsed * 9 * rate);
 		final value:Float = FlxMath.lerp(1, icon.scale.x, t);
+		icon.scale.set(value, value);
+	}
+
+	static inline final CODENAME_LERP:Float = 0.33;
+	static function codenameScale(elapsed:Float, rate:Float, icon:HealthIcon):Void
+	{
+		if (icon == null || !icon.visible) return;
+
+		final base:Float = icon.baseScale > 0 ? icon.baseScale : 1.0;
+		final t:Float = 1.0 - Math.pow(1.0 - CODENAME_LERP, elapsed * 60.0 * rate);
+		final value:Float = FlxMath.lerp(base, icon.scale.x, t);
 		icon.scale.set(value, value);
 	}
 

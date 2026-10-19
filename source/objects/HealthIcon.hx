@@ -17,6 +17,8 @@ class HealthIcon extends FlxSprite
 	public var isAnimated:Bool = false;
 	public var animFPS:Int = 24;
 
+	public var baseScale:Float = 1.0;
+
 	public function new(char:String = 'face', isPlayer:Bool = false, ?allowGPU:Bool = true, ?animFPS:Int = 24)
 	{
 		super();
@@ -135,6 +137,7 @@ class HealthIcon extends FlxSprite
 
 				updateHitbox();
 				this.char = char;
+				computeBaseScale();
 				iconTrace('loaded "$requestedChar" as "$name" size=${width}x${height}');
 
 				if (char.endsWith('-pixel'))
@@ -154,6 +157,7 @@ class HealthIcon extends FlxSprite
 						loadStaticIcon(defaultName, allowGPU);
 						updateHitbox();
 						this.char = char;
+						computeBaseScale();
 					}
 					catch (e2:Dynamic)
 					{
@@ -168,6 +172,11 @@ class HealthIcon extends FlxSprite
 	{
 		if (verboseIconLoading)
 			trace('[HealthIcon] ' + message);
+	}
+
+	private function computeBaseScale():Void
+	{
+		baseScale = frameWidth > 0 ? 150 / frameWidth : 1.0;
 	}
 
 	private function recalculateOffsetsForAnim(animName:String):Void

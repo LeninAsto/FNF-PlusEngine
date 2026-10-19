@@ -4994,6 +4994,9 @@ class PlayState extends MusicBeatState
 			case 'D&B':
 				bumpIconsDnb();
 
+			case 'Codename':
+                bumpIconsCodename();
+
 			default:
 				iconP1.scale.set(1.2, 1.2);
 				iconP2.scale.set(1.2, 1.2);
@@ -5051,6 +5054,18 @@ class PlayState extends MusicBeatState
 				ease: FlxEase.circOut,
 				onComplete: function(twn:FlxTween) icon.updateHitbox()
 			});
+		}
+	}
+
+	static inline final CODENAME_BOP_SCALE:Float = 1.2;
+	function bumpIconsCodename():Void
+	{
+		for (icon in [iconP1, iconP2, iconGF])
+		{
+			if (icon == null) continue;
+			final s:Float = icon.baseScale * CODENAME_BOP_SCALE;
+			icon.scale.set(s, s);
+			icon.updateHitbox();
 		}
 	}
 

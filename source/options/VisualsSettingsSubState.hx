@@ -125,7 +125,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Icon Bounce Type', "Changes the way the health icons bounce.", 'iconBounceType', STRING,
-			['Old', 'D&B', 'NF', 'Default']);
+			['Old', 'D&B', 'NF', 'Codename', 'Default']);
 		addOption(option);
 
 		var option:Option = new Option('Time Text Bump', 'If unchecked, disables the time text bump animation on beat.', 'timeBump', BOOL);
