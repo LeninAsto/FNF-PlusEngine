@@ -689,6 +689,12 @@ class PlayState extends MusicBeatState
 		iconP2.alpha = ClientPrefs.data.healthBarAlpha;
 		uiGroup.add(iconP2);
 
+		if (playOpponent)
+		{
+			iconP1.flipX = true;
+			iconP2.flipX = true;
+		}
+
 		if(eventsPushed.contains('Add Secondary Icon'))
 		{
 			iconGF = new HealthIcon(gf != null ? gf.healthIcon : 'gf', true, false, gf != null ? gf.iconFps : 24);
@@ -1093,11 +1099,15 @@ class PlayState extends MusicBeatState
 	public function reloadHealthBarColors() {
 		var dadColor:FlxColor = FlxColor.fromRGB(dad.healthColorArray[0], dad.healthColorArray[1], dad.healthColorArray[2]);
 		var bfColor:FlxColor = FlxColor.fromRGB(boyfriend.healthColorArray[0], boyfriend.healthColorArray[1], boyfriend.healthColorArray[2]);
-		healthBar.setColors(dadColor, bfColor);
+
+		var leftColor:FlxColor = playOpponent ? bfColor : dadColor;
+		var rightColor:FlxColor = playOpponent ? dadColor : bfColor;
+		healthBar.setColors(leftColor, rightColor);
+
 		if(timeBar != null)
 		{
 			if(ClientPrefs.data.shadedTimeBar)
-				timeBar.setGradientColors(bfColor, dadColor);
+				timeBar.setGradientColors(rightColor, leftColor);
 			else
 				timeBar.setColors(FlxColor.WHITE, FlxColor.BLACK);
 		}
@@ -1112,7 +1122,7 @@ class PlayState extends MusicBeatState
 		{
 			var dadColor:FlxColor = FlxColor.fromRGB(dad.healthColorArray[0], dad.healthColorArray[1], dad.healthColorArray[2]);
 			var bfColor:FlxColor = FlxColor.fromRGB(boyfriend.healthColorArray[0], boyfriend.healthColorArray[1], boyfriend.healthColorArray[2]);
-			timeBar.setGradientColors(bfColor, dadColor);
+			timeBar.setGradientColors(playOpponent ? dadColor : bfColor, playOpponent ? bfColor : dadColor);
 		}
 	}
 
@@ -1888,6 +1898,7 @@ class PlayState extends MusicBeatState
 	private function generateSong():Void
 	{
 		var generateStarted:Float = haxe.Timer.stamp();
+		var watchedOpponentIsChartPlayer:Bool = playOpponent;
 		// FlxG.log.add(ChartParser.parse());
 		songSpeed = PlayState.SONG.speed;
 		songSpeedType = ClientPrefs.getGameplaySetting('scrolltype');
@@ -2032,32 +2043,32 @@ class PlayState extends MusicBeatState
 							oldNote.resizeByRatio(curStepCrochet / Conductor.stepCrochet);
 						}
 
+						var susIsWatchedOpponent:Bool = watchedOpponentIsChartPlayer ? gottaHitNote : !gottaHitNote;
+
 						if (sustainNote.mustPress)
 						{
 							sustainNote.x += HudSafeZone.x();
 							sustainNote.x += HudSafeZone.width() / 2;
 						}
-						else if(ClientPrefs.data.middleScroll)
+						if (ClientPrefs.data.middleScroll && susIsWatchedOpponent)
 						{
 							sustainNote.x += 310;
-							if(noteColumn > 1) //Up and Right
-								sustainNote.x += FlxG.width / 2 + 25;
+							if(noteColumn > 1) sustainNote.x += FlxG.width / 2 + 25;
 						}
 					}
 				}
 
-				if (swagNote.mustPress)
+				var isWatchedOpponent:Bool = watchedOpponentIsChartPlayer ? gottaHitNote : !gottaHitNote;
+
+				if (mustPress)
 				{
 					swagNote.x += HudSafeZone.x();
 					swagNote.x += HudSafeZone.width() / 2;
 				}
-				else if(ClientPrefs.data.middleScroll)
+				if (ClientPrefs.data.middleScroll && isWatchedOpponent)
 				{
 					swagNote.x += 310;
-					if(noteColumn > 1) //Up and Right
-					{
-						swagNote.x += FlxG.width / 2 + 25;
-					}
+					if(noteColumn > 1) swagNote.x += FlxG.width / 2 + 25;
 				}
 				if(!noteTypes.contains(swagNote.noteType))
 					noteTypes.push(swagNote.noteType);
@@ -2170,13 +2181,14 @@ class PlayState extends MusicBeatState
 	public var skipArrowStartTween:Bool = false; //for lua
 	private function generateStaticArrows(player:Int):Void
 	{
-		var strumLineX:Float = ClientPrefs.data.middleScroll ? STRUM_X_MIDDLESCROLL : STRUM_X;
+		var strumLineX:Float = STRUM_X;
 		var strumLineY:Float = HudSafeZone.y() + (ClientPrefs.data.downScroll ? (HudSafeZone.height() - 150) : 50);
+		var isWatchedOpponentStrum:Bool = playOpponent ? (player == 1) : (player == 0);
+
 		for (i in 0...4)
 		{
-			// FlxG.log.add(i);
 			var targetAlpha:Float = 1;
-			if (player < 1)
+			if (isWatchedOpponentStrum)
 			{
 				if(!ClientPrefs.data.opponentStrums) targetAlpha = 0;
 				else if(ClientPrefs.data.middleScroll) targetAlpha = 0.35;
@@ -2186,28 +2198,25 @@ class PlayState extends MusicBeatState
 			babyArrow.downScroll = ClientPrefs.data.downScroll;
 			if (!isStoryMode && !skipArrowStartTween)
 			{
-				//babyArrow.y -= 10;
 				babyArrow.alpha = 0;
-				FlxTween.tween(babyArrow, {/*y: babyArrow.y + 10,*/ alpha: targetAlpha}, 1, {ease: FlxEase.circOut, startDelay: 0.5 + (0.2 * i)});
+				FlxTween.tween(babyArrow, {alpha: targetAlpha}, 1, {ease: FlxEase.circOut, startDelay: 0.5 + (0.2 * i)});
 			}
 			else babyArrow.alpha = targetAlpha;
 
 			if (modes.playerStrum(player))
 				playerStrums.add(babyArrow);
 			else
-			{
-				if(ClientPrefs.data.middleScroll)
-				{
-					babyArrow.x += 310;
-					if(i > 1) { //Up and Right
-						babyArrow.x += FlxG.width / 2 + 25;
-					}
-				}
 				opponentStrums.add(babyArrow);
-			}
 
 			strumLineNotes.add(babyArrow);
 			babyArrow.playerPosition();
+			if (ClientPrefs.data.middleScroll)
+			{
+				if (isWatchedOpponentStrum)
+					babyArrow.x = STRUM_X_MIDDLESCROLL + 310 + (i > 1 ? FlxG.width / 2 + 25 : 0);
+				else
+					babyArrow.x = STRUM_X_MIDDLESCROLL;
+			}
 		}
 	}
 
@@ -2817,9 +2826,9 @@ class PlayState extends MusicBeatState
 					opponentVocals.stop();
 					FlxG.sound.music.stop();
 					#if HSCRIPT_ALLOWED
-					openSubState(backend.ScriptableSubstate.tryCreate('GameOverSubstate', new GameOverSubstate(boyfriend)));
+					openSubState(backend.ScriptableSubstate.tryCreate('GameOverSubstate', new GameOverSubstate(playerChar())));
 					#else
-					openSubState(new GameOverSubstate(boyfriend));
+					openSubState(new GameOverSubstate(playerChar()));
 					#end
 				}
 
@@ -3292,10 +3301,7 @@ class PlayState extends MusicBeatState
 			if (songName == 'tutorial' && cameraTwn == null && FlxG.camera.zoom != 1)
 			{
 				cameraTwn = FlxTween.tween(FlxG.camera, {zoom: 1}, (Conductor.stepCrochet * 4 / 1000), {ease: FlxEase.elasticInOut, onComplete:
-					function (twn:FlxTween)
-					{
-						cameraTwn = null;
-					}
+					function (twn:FlxTween) { cameraTwn = null; }
 				});
 			}
 		}
@@ -5292,13 +5298,7 @@ class PlayState extends MusicBeatState
 	}
 
 	function strumPlayAnim(isDad:Bool, id:Int, time:Float) {
-		var spr:StrumNote = null;
-		if(isDad) {
-			spr = opponentStrums.members[id];
-		} else {
-			spr = playerStrums.members[id];
-		}
-
+		var spr:StrumNote = (isDad ? opponentStrums : playerStrums).members[id];
 		if(spr != null) {
 			spr.playAnim('confirm', true);
 			spr.resetAnim = time;
