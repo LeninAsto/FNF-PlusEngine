@@ -4,7 +4,7 @@
   "unsaved": "Hay progreso no guardado,\n¿Estás seguro de que quieres salir?",
   "actions": {
     "exit": "Salida",
-    "ok": "DE ACUERDO",
+    "ok": "Aceptar",
     "cancel": "Cancelar"
   }
 }

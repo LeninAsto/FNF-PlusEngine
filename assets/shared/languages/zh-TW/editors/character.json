@@ -1,0 +1,53 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.character",
+  "ui": {
+    "add_update": "新增/更新",
+    "advanced_animation_indices": "進步 - 動畫指數:",
+    "animated_icon": "動畫影象",
+    "animation_name": "動畫名稱:",
+    "animation_symbol_name_tag": "動畫符號名稱/標籤:",
+    "animations": "動畫:",
+    "camera_x_y": "攝影機 X/Y:",
+    "character": "角色：",
+    "character_x_y": "自己的性格 X/Y:",
+    "flip_x": "翻轉X",
+    "framerate": "截圖時間:",
+    "get_icon_color": "請獲得圖示顏色",
+    "health_bar_r_g_b": "衛生棒 R/G/B:",
+    "health_icon_name": "健康圖示名稱:",
+    "highlight_ghost": "顯示幽靈",
+    "image_file_name": "圖片檔案名稱:",
+    "load_template": "負載模板",
+    "make_ghost": "成為幽靈",
+    "no_antialiasing": "關閉抗鋸齒",
+    "playable_character": "可玩的角色",
+    "reload_char": "重新載入角色",
+    "reload_image": "轉載圖片",
+    "remove": "移除",
+    "save_character": "儲存角色",
+    "scale": "規模:",
+    "should_it_loop": "迴圈播放",
+    "sing_animation_length": "播放時間:",
+    "vocals_file_postfix": "聲稱檔案後修改:",
+    "zoom_1x": "放大速度: 1x"
+  },
+  "presence": {
+    "title": "角色編輯器",
+    "character": "這樣的角色: {1}"
+  },
+  "help": {
+    "open": "請按一下 {1} 求助",
+    "mobile": "鏡頭\nX/Y - 放大/縮小鏡頭\nG + 方向按鈕 - 移動鏡頭\nZ - 重置鏡頭縮放\n\n角色\nA - 重置當前偏移\nV/D - 上一個/下一個動畫\n方向按鈕 - 移動偏移\n\n其他\nS - 切換剪影\n按住 C - 偏移移動速度變為 10 倍，鏡頭速度變為 4 倍",
+    "desktop": "鏡頭\nE/Q - 放大/縮小鏡頭\nJ/K/L/I - 移動鏡頭\nR - 重置鏡頭縮放\n\n角色\nCtrl + R - 重置當前偏移\nCtrl + C - 複製當前偏移\nCtrl + V - 將複製的偏移貼上到當前動畫\nCtrl + Z - 撤銷上次貼上或重置\nW/S - 上一個/下一個動畫\nSpace - 重播動畫\n方向鍵 - 移動偏移\nA/D - 逐幀後退/前進\n\n其他\nF12 - 切換剪影\n按住 Shift - 偏移速度變為 10 倍，鏡頭速度變為 4 倍\n按住 Control - 鏡頭速度降為 1/4"
+  },
+  "messages": {
+    "no_animation": "錯誤:沒有找到動畫"
+  },
+  "tabs": {
+    "animations": "動畫",
+    "character": "自己的性格",
+    "ghost": "沒有人知道.",
+    "settings": "設定"
+  }
+}

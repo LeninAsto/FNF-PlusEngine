@@ -5,7 +5,7 @@
     "background_asset": "Background Asset:",
     "characters": "Characters:",
     "copy_color": "Copy Color",
-    "default_difficulties_are_easy_normal_hard_without_quotes": "Default difficulties are \"Easy, Normal, Hard\"\nwithout quotes.",
+    "default_difficulties_help": "Default difficulties are \"Easy, Normal, Hard\"\nwithout quotes.",
     "difficulties": "Difficulties:",
     "display_name": "Display Name:",
     "freeplay": "Freeplay",
@@ -20,7 +20,7 @@
     "songs": "Songs:",
     "story_mode": "Story Mode",
     "week_file": "Week File:",
-    "week_file_name_of_the_week_you_have_to_finish_for_unlocking": "Week File name of the Week you have\nto finish for Unlocking:",
+    "unlock_week_file": "Week File name of the Week you have\nto finish for Unlocking:",
     "week_name_for_reset_score_menu": "Week Name (for Reset Score Menu):",
     "week_starts_locked": "Week starts Locked"
   },

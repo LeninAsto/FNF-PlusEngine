@@ -4,22 +4,22 @@
   "ui": {
     "0_0": "[0, 0]",
     "antialiasing": "Antialiasing",
-    "arrow_keys_change_offset_hold_shift_for_10x_speed_space_play_start_pre": "Teclas de Seta - Mudar de Posição (Hold shift para velocidade de 10x)\n\t\t\t\nEspaço - Reproduzir animação de \"Start Press\" (Tipo de Caracteres do namorado)",
+    "controls_help": "Setas - Alterar deslocamento (segure Shift para velocidade x10)\n\t\t\t\nEspaço - Reproduzir a animação \"Start Press\" (tipo de personagem Boyfriend)",
     "flip_x": "Inverter X",
-    "idle_animation_on_the_xml": "Animação ociosa no.XML:",
+    "idle_animation_on_the_xml": "Animação idle no arquivo .XML:",
     "image_file_name": "Arquivo de imagem:",
-    "load_character": "Carregar o Caracter",
-    "reload_char": "Recarregar o Caracter",
-    "save_character": "Gravar o Caracter",
+    "load_character": "Carregar personagem",
+    "reload_char": "Recarregar personagem",
+    "save_character": "Salvar personagem",
     "scale": "Escala:",
-    "start_press_animation_on_the_xml": "Iniciar Prima a animação no.XML:"
+    "start_press_animation_on_the_xml": "Animação Start Press no arquivo .XML:"
   },
   "presence": {
-    "title": "Editor de Caracteres de Menu",
+    "title": "Editor de personagens do menu",
     "editing": "Edição: {1}"
   },
   "tabs": {
-    "character": "Caracter",
-    "character_type": "Tipo de Caracter"
+    "character": "Personagem",
+    "character_type": "Tipo de Personagem"
   }
 }

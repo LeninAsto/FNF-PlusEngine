@@ -1,0 +1,10 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.prompt",
+  "unsaved": "안전하지 않은 진전이 있습니다.\n정말 나가고 싶다고?",
+  "actions": {
+    "exit": "출구",
+    "ok": "괜찮아요",
+    "cancel": "취소"
+  }
+}

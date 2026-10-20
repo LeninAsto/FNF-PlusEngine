@@ -5,10 +5,10 @@
     "add_update": "Agregar/Actualizar",
     "animation_name": "Nombre de la animación:",
     "animations": "Animaciones:",
-    "idle_finished_name_on_xml_file": "Nombre inactivo/finalizado en el archivo.XML:",
+    "idle_finished_name_on_xml_file": "Animación idle/finished en el archivo .XML:",
     "image_file_name": "Archivo de imagen:",
-    "load_character": "Cargar carácter",
-    "loop_name_on_xml_file": "Nombre del bucle en el archivo.XML:",
+    "load_character": "Cargar personaje",
+    "loop_name_on_xml_file": "Animación de bucle en el archivo .XML:",
     "no_antialiasing": "Sin suavizado",
     "position_offset": "Offset de posición:",
     "reload_image": "Recargar imagen",
@@ -21,7 +21,7 @@
     "editing": "Edición: {1}"
   },
   "tabs": {
-    "animations": "animaciones",
+    "animations": "Animaciones",
     "character": "Personaje",
     "character_type": "Tipo de personaje"
   }

@@ -334,7 +334,7 @@ class ClassResolver
 
 		#if LUA_ALLOWED
 		if (FunkinLua.getBool('luaDebugMode') && FunkinLua.getBool('luaDeprecatedWarnings'))
-			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_classresolver.legacy_compatibility_value_redirects_to_value_use_the_exact_psych_1_0_api_path_or_this_mod', "Legacy compatibility: \"{1}\" redirects to \"{2}\". Use the exact Psych 1.0+ API/path or this mod may fail on vanilla Psych.", [oldApi, newApi]),
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_classresolver.legacy_redirect', "Legacy compatibility: \"{1}\" redirects to \"{2}\". Use the exact Psych 1.0+ API/path or this mod may fail on vanilla Psych.", [oldApi, newApi]),
 				false,
 				true, flixel.util.FlxColor.YELLOW);
 		#elseif debug

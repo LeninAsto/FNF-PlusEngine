@@ -1,0 +1,493 @@
+{
+  "$schema": 1,
+  "$namespace": "options.settings",
+  "abbreviate_score": {
+    "name": "縮寫分數",
+    "description": "如果已啟用,分數將會縮短 (例如10.00K,1.00M)."
+  },
+  "accent_color": {
+    "name": "主題強調色：",
+    "description": "選擇預設主題強調色，或開啟自訂顏色選擇器。",
+    "values": {
+      "purple": "紫色",
+      "teal": "藍綠色",
+      "rose": "玫瑰色",
+      "amber": "琥珀色",
+      "indigo": "靛藍色",
+      "green": "綠色",
+      "red": "紅色",
+      "black": "黑色",
+      "custom": "自訂"
+    }
+  },
+  "align_receptors_to_hitbox": {
+    "name": "判定箭頭對齊觸控區",
+    "description": "如果檢查,它將移動接收器連線到搜尋框路線."
+  },
+  "allow_phone_screensaver": {
+    "name": "允許手機休眠",
+    "description": "如果檢查, 手機會休息幾秒.\n(時間取決於您的電話選擇)"
+  },
+  "anti_aliasing": {
+    "name": "反鋸齒",
+    "description": "關閉後不再平滑影象邊緣，以提升效能。"
+  },
+  "auto_pause": {
+    "name": "自動暫停",
+    "description": "遊戲視窗失去焦點時自動暫停。"
+  },
+  "bad_shit_combo_break": {
+    "name": "Bad 和 Shit 中斷連擊",
+    "description": "獲得 Bad 或 Shit 判定時中斷連擊，並計入連擊中斷次數。"
+  },
+  "bad_hit_window": {
+    "name": "Bad 判定範圍",
+    "description": "調整獲得「Bad」判定的時間範圍，單位為毫秒。"
+  },
+  "break_timer": {
+    "name": "音符間隔計時器",
+    "description": "如果檢查, 在接下來的音符還是很遠時會出現時機."
+  },
+  "camera_zooms": {
+    "name": "鏡頭縮放",
+    "description": "關閉後鏡頭不再隨節拍縮放。"
+  },
+  "window_border_on_hit": {
+    "name": "命中時變更視窗邊框顏色",
+    "description": "命中音符時變更視窗邊框顏色。僅支援 Windows 11。"
+  },
+  "check_for_updates": {
+    "name": "檢查更新",
+    "description": "正式版本啟動時檢查更新。"
+  },
+  "color_accessibility": {
+    "name": "色覺輔助",
+    "description": "依需要選擇色覺輔助濾鏡。",
+    "values": {
+      "none": "無",
+      "protanopia": "Protanopia",
+      "protanomaly": "Protanomaly",
+      "deuteranopia": "Deuteranopia",
+      "deuteranomaly": "Deuteranomaly",
+      "tritanopia": "Tritanopia",
+      "tritanomaly": "Tritanomaly",
+      "achromatopsia": "Achromatopsia",
+      "achromatomaly": "Achromatomaly"
+    }
+  },
+  "combo_and_rating_in_camgame": {
+    "name": "在 camGame 顯示連擊和判定",
+    "description": "如果已啟用, camGame 而不是一層 camHUD."
+  },
+  "combo_stacking": {
+    "name": "疊加連擊與判定",
+    "description": "關閉後，新連擊和判定會取代舊顯示，方便閱讀並減少記憶體使用。"
+  },
+  "disable_reset_button": {
+    "name": "停用重設按鍵",
+    "description": "如果檢查, 再啟動不會做什麼."
+  },
+  "discord_rich_presence": {
+    "name": "Discord 活動狀態",
+    "description": "關閉後不在 Discord 活動狀態中顯示遊戲。"
+  },
+  "downscroll": {
+    "name": "音符向下捲動",
+    "description": "音符由上往下捲動。"
+  },
+  "drag_character": {
+    "name": "拖曳角色",
+    "description": "像 Codename Engine 一樣，使用滑鼠或觸控螢幕拖曳角色。"
+  },
+  "drag_stage_camera": {
+    "name": "拖曳場景鏡頭",
+    "description": "如果沒有檢查, 舞臺攝影機不能用滑鼠/觸控屏畫面拖拉.\n如果您更喜歡舊款, Psych 這種方式."
+  },
+  "dynamic_combo_digits": {
+    "name": "動態連擊位數",
+    "description": "如果檢查, 組合將顯示在第一個組閤中有兩個數字,\n當它達到100的組合時, 它將變成三位數."
+  },
+  "dynamic_controls_color": {
+    "name": "動態控制按鈕顏色",
+    "description": "如果您檢查, 移動控制器的顏色會被設定在您的設定中的記錄顏色上.\n(僅在遊戲中有效)"
+  },
+  "enable_3d_cameras": {
+    "name": "啟用 3D 鏡頭",
+    "description": "啟動或禁用3D相機功能.\n這可能會改善3D變化的效能."
+  },
+  "end_countdown_seconds": {
+    "name": "結束倒數計時秒數",
+    "description": "在歌曲結束幾秒前,會出現倒數 (10-30)."
+  },
+  "extra_controls": {
+    "name": "額外按鈕",
+    "description": "選擇額外按鈕的數量。\n可透過 LUA 或 HScript 為這些按鈕編寫機制。",
+    "values": {
+      "none": "沒有任何",
+      "single": "單身",
+      "double": "兩次"
+    }
+  },
+  "flashing_lights": {
+    "name": "閃光效果",
+    "description": "若對閃光敏感，請關閉此選項。"
+  },
+  "flawless_hit_window": {
+    "name": "Flawless!! 判定範圍",
+    "description": "調整獲得「Flawless!!」判定的時間範圍，單位為毫秒。"
+  },
+  "fps_counter_mode": {
+    "name": "幀率顯示模式",
+    "description": "選擇左上方的表達資訊.",
+    "values": {
+      "hidden": "隱藏",
+      "visible_no_background": "沒有背景",
+      "visible_with_background": "背景可見",
+      "basic_debug": "基本檢查",
+      "extended_debug": "延伸的變更"
+    }
+  },
+  "framerate": {
+    "name": "幀率",
+    "description": "很明顯,不是嗎?"
+  },
+  "framerate_mode": {
+    "name": "幀率模式",
+    "description": "選擇發動機如何處理更新/繪製時間.\nPsych 這種動作與經典的引擎動作相匹配.",
+    "values": {
+      "psych": "Psych",
+      "fixed": "固定式",
+      "interpolated": "插曲式"
+    }
+  },
+  "fullscreen_mode": {
+    "name": "全螢幕模式",
+    "description": "Borderless Fix使用原生顯示器解析度.",
+    "values": {
+      "borderless": "無邊框",
+      "borderless_fix": "沒有邊界的解決方案",
+      "exclusive": "獨佔全螢幕"
+    }
+  },
+  "game_over_vibration": {
+    "name": "失敗時震動",
+    "description": "如果檢查, 你的裝置會在遊戲中振動."
+  },
+  "ghost_tapping": {
+    "name": "空按不計失誤",
+    "description": "沒有可命中的音符時，空按不會計為失誤。"
+  },
+  "good_hit_window": {
+    "name": "Good 判定範圍",
+    "description": "調整獲得「Good」判定的時間範圍，單位為毫秒。"
+  },
+  "gradient_time_bar": {
+    "name": "時間條漸層",
+    "description": "根據角色圖示的顏色為時間條新增漸變。"
+  },
+  "hardware_acceleration": {
+    "name": "硬體加速",
+    "description": "將相容的影象直接存入 GPU，減少 RAM 佔用並改善渲染穩定性，尤其適用於 Android。\n推薦大多數裝置啟用。"
+  },
+  "health_bar_opacity": {
+    "name": "生命條不透明度",
+    "description": "調整生命條和角色圖示的不透明度。"
+  },
+  "hey_intro": {
+    "name": "開場 Hey! 動畫",
+    "description": "如果檢查, BF 及其他 GF 在倒數時自動進行 Hey! 動畫."
+  },
+  "hide_hud": {
+    "name": "隱藏 HUD",
+    "description": "隱藏大部分 HUD 元素。"
+  },
+  "hide_sustain_splash": {
+    "name": "隱藏長按音符特效",
+    "description": "如果檢查, 隱藏Sustain Splash"
+  },
+  "hitbox_design": {
+    "name": "觸控區樣式",
+    "description": "選取您的搜尋盒應該是怎樣的.",
+    "values": {
+      "no_gradient": "沒有分數",
+      "no_gradient_old": "沒有變數 (舊)",
+      "gradient": "漸進性",
+      "hidden": "隱藏"
+    }
+  },
+  "hitbox_position": {
+    "name": "觸控區位置",
+    "description": "如果檢查, 查詢框會放在螢幕底部,"
+  },
+  "icon_bounce_type": {
+    "name": "圖示跳動樣式",
+    "description": "選擇生命圖示隨節拍跳動的方式。",
+    "values": {
+      "old": "舊版",
+      "d_b": "D&B",
+      "nf": "NF",
+      "default": "預設",
+      "codename": "Codename"
+    }
+  },
+  "infinity_display": {
+    "name": "適配超長螢幕",
+    "description": "如果檢查, 將視角垂直延伸至更高的螢幕,"
+  },
+  "instant_window_close": {
+    "name": "立即關閉視窗",
+    "description": "如果檢查, 關閉遊戲即時就會消失,"
+  },
+  "key_viewer_color": {
+    "name": "按鍵顯示顏色：",
+    "description": "選擇按鍵顯示器中按鈕的顏色。",
+    "values": {
+      "gray": "灰色",
+      "red": "紅色",
+      "blue": "藍色",
+      "green": "綠色",
+      "purple": "紫色",
+      "orange": "橙色",
+      "pink": "粉紅色",
+      "cyan": "青色",
+      "white": "白色",
+      "black": "黑色"
+    }
+  },
+  "launcher_auto_start": {
+    "name": "啟動器自動開始",
+    "description": "如果檢查, Android 發射機在3秒後自動啟動引擎."
+  },
+  "lighter_hit_path": {
+    "name": "輕量命中效果",
+    "description": "如果沒有檢查, 完全的視覺路徑會執行,\n這可能會導致 LAG 的表現."
+  },
+  "low_quality": {
+    "name": "低畫質",
+    "description": "如果檢查, 禁用一些背景資料,\n降低載入時間,提高效能."
+  },
+  "middlescroll": {
+    "name": "音符置中",
+    "description": "將玩家音符放在螢幕中央。"
+  },
+  "mobile_controls_opacity": {
+    "name": "行動裝置按鈕不透明度",
+    "description": "調整移動端按鈕的不透明度。請勿設為 0，以免看不到按鈕。"
+  },
+  "mobile_trace_button": {
+    "name": "行動裝置偵錯按鈕",
+    "description": "在移動端顯示觸控除錯按鈕。"
+  },
+  "mod_security": {
+    "name": "模組安全",
+    "description": "如果檢查, 掃描模式 Lua/HScript 並從不值得信賴的敏感API中跳過編碼."
+  },
+  "modchart_debug_overlay": {
+    "name": "Modchart 偵錯資訊",
+    "description": "顯示 Modchart 渲染統計資訊。\n會影響效能，因此預設關閉。"
+  },
+  "mods_storage_location": {
+    "name": "模組儲存位置",
+    "description": "選擇哪裡 Android 這種模式和儲存檔案應該活著.\n內部使用應用程式儲存, 外部使用公共儲存.",
+    "values": {
+      "internal": "內部",
+      "external": "外部"
+    }
+  },
+  "nf_rating_style": {
+    "name": "NF 判定樣式",
+    "description": "判定和連擊數字在原位隨節拍跳動，而不是飛出並淡化。"
+  },
+  "note_skins": {
+    "name": "音符外觀：",
+    "description": "選擇喜歡的音符外觀。"
+  },
+  "note_splash_opacity": {
+    "name": "命中特效不透明度",
+    "description": "調整音符命中特效的不透明度。"
+  },
+  "note_splashes": {
+    "name": "音符命中特效：",
+    "description": "選擇音符命中特效。"
+  },
+  "opponent_notes": {
+    "name": "對手音符",
+    "description": "關閉後隱藏對手音符。"
+  },
+  "optimize_hold_rendering": {
+    "name": "最佳化長按音符繪製",
+    "description": "最佳化長按音符渲染以提高效能。\n複雜的 Modchart 可能顯示異常，不建議啟用。"
+  },
+  "options_menu_style": {
+    "name": "設定選單樣式",
+    "description": "在+卡和+卡之間更改選項選單 Psych 這是一種經典.",
+    "values": {
+      "plus": "此外,",
+      "psych": "Psych"
+    }
+  },
+  "over_accuracy": {
+    "name": "允許準確率超過 100%",
+    "description": "如果檢查完整的演奏,"
+  },
+  "pause_countdown": {
+    "name": "繼續時倒數計時",
+    "description": "從暫停繼續時顯示倒數計時。"
+  },
+  "pause_music": {
+    "name": "暫停音樂：",
+    "description": "選擇暫停畫面的音樂。",
+    "values": {
+      "none": "無",
+      "tea_time": "Tea Time",
+      "breakfast": "Breakfast",
+      "breakfast_(pico)": "Breakfast (Pico)"
+    }
+  },
+  "pop_up_score": {
+    "name": "分數彈出效果",
+    "description": "如果沒有檢查, 列印筆記不會顯示評分和複合爆表."
+  },
+  "rating_offset": {
+    "name": "判定時間偏移",
+    "description": "調整獲得 \"flawless!!\" 判定的輸入時機。\n數值越大，需要按得越晚。"
+  },
+  "results_state_at_end": {
+    "name": "結束後顯示結果",
+    "description": "如果沒有檢查, endSong 不會過渡到 ResultsState 在 Freeplay故事模式."
+  },
+  "rgb_notes": {
+    "name": "RGB 音符",
+    "description": "如果沒有檢查,使用Classic Psych 這項指令的使用方式:"
+  },
+  "safe_frames": {
+    "name": "輸入容錯影格數",
+    "description": "改變你有多少架子\n很快或很晚就寫了一封信."
+  },
+  "score_text_grow_on_hit": {
+    "name": "命中時放大分數",
+    "description": "如果沒有檢查,\n每次你打到一則留言."
+  },
+  "script_deprecation_warnings": {
+    "name": "過時 API 警告",
+    "description": "如果已檢查,已退行 Lua/HScript 顯示顯示器將列印預警訊息."
+  },
+  "shaders": {
+    "name": "著色器",
+    "description": "如果沒有檢查,它會禁用遮光器. CPU 在較弱的裝置上."
+  },
+  "show_android_launcher": {
+    "name": "顯示 Android 啟動器",
+    "description": "如果檢查, Android 在發動機前開啟發射機.\n如果您從發射機中禁用,"
+  },
+  "show_combo_numbers": {
+    "name": "顯示連擊數字",
+    "description": "如果沒有檢查,"
+  },
+  "show_combo_sprite": {
+    "name": "顯示 COMBO 影象",
+    "description": "如果沒有檢查,"
+  },
+  "show_early_late": {
+    "name": "顯示 Early/Late",
+    "description": "依按鍵提前或延後顯示 Early 或 Late。"
+  },
+  "show_end_countdown": {
+    "name": "顯示結束倒數計時",
+    "description": "如果檢查,則顯示歌曲最後幾秒的倒數."
+  },
+  "show_hit_ms": {
+    "name": "顯示命中時間偏差",
+    "description": "在判定旁顯示按鍵時間偏差，單位為毫秒。"
+  },
+  "show_key_viewer": {
+    "name": "顯示按鍵狀態",
+    "description": "顯示目前按下的按鍵。"
+  },
+  "show_rating_sprite": {
+    "name": "顯示判定影象",
+    "description": "如果沒有檢查,"
+  },
+  "gameplay_version": {
+    "name": "遊玩時顯示版本",
+    "description": "在遊戲中顯示版本文字."
+  },
+  "show_watermark": {
+    "name": "顯示浮水印",
+    "description": "如果檢查, 在螢幕上顯示水印."
+  },
+  "sick_hit_window": {
+    "name": "Sick! 判定範圍",
+    "description": "調整獲得「Sick!」判定的時間範圍，單位為毫秒。"
+  },
+  "smooth_health_bar": {
+    "name": "平滑生命條",
+    "description": "生命條平滑變化，而非立即跳轉。"
+  },
+  "sustains_as_one_note": {
+    "name": "長按音符計為單個音符",
+    "description": "如果您錯過,\n數量為單位擊中/小姐.\n如果您更喜歡舊的輸入系統,"
+  },
+  "system_score_multiplier": {
+    "name": "計分系統",
+    "description": "選取分數系統",
+    "values": {
+      "psych": "Psych",
+      "codename": "Codename"
+    }
+  },
+  "time_bar": {
+    "name": "時間條：",
+    "description": "選擇時間條顯示的內容。",
+    "values": {
+      "time_left": "剩餘時間",
+      "time_elapsed": "經過時間",
+      "song_name": "歌曲名稱",
+      "disabled": "已停用"
+    }
+  },
+  "time_text_bump": {
+    "name": "時間文字隨節拍跳動",
+    "description": "如果沒有檢查,"
+  },
+  "title_intro_video": {
+    "name": "標題開場影片",
+    "description": "如果已檢查, 每次發布會在標題介紹前播放介紹影片."
+  },
+  "touch_pointer": {
+    "name": "觸控位置指示",
+    "description": "如果檢查,會顯示觸控指標對接器和拖拉器的覆蓋."
+  },
+  "uncap_fps": {
+    "name": "解除幀率限制",
+    "description": "在保持邏輯更新受控的同時，儘可能提高渲染幀率。\n適用於高重新整理率螢幕，但可能增加耗電和 GPU 使用量。"
+  },
+  "use_flawless_rating": {
+    "name": "啟用 Flawless 判定",
+    "description": "如果檢查, 在 Sick 上加上更嚴格的\"無錯!!\""
+  },
+  "use_psych_freeplay": {
+    "name": "使用 Psych 自由模式",
+    "description": "如果檢查,使用經典 Psych Engine Freeplay 國家而不是國家 PlusEngine Freeplay."
+  },
+  "use_psych_score_text": {
+    "name": "使用 Psych 分數格式",
+    "description": "如果檢查,則保留原始檔案. Psych Engine 在遊戲過程中得分文字格式."
+  },
+  "vanilla_transition": {
+    "name": "經典 Psych 轉場效果",
+    "description": "使用原版 Psych Engine 的過渡效果。"
+  },
+  "vsync": {
+    "name": "VSync",
+    "description": "如果已檢查, VSync固定螢幕撕裂,以收納成本 FPS 顯示器的更新速度.\n請重新啟動遊戲,"
+  },
+  "windows_gdi_effects": {
+    "name": "Windows GDI 效果",
+    "description": "允許使用 Windows 除非你明顯希望 mods使用它們."
+  },
+  "z_axis_scale": {
+    "name": "Z 軸縮放",
+    "description": "測量Z軸值,以控制感知深度.\n較高的值增加了深度,"
+  }
+}

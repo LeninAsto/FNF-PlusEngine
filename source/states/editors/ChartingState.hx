@@ -3354,7 +3354,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 					showOutput(chartPhrase('messages.note_selected_must_be_an_event', 'Note selected must be an Event!'), true);
 			}
 			else
-				showOutput(chartPhrase('messages.you_must_select_a_single_event_to_press_this_button', 'You must select a single event to press this button.'), true);
+				showOutput(chartPhrase('messages.select_one_event', 'You must select a single event to press this button.'), true);
 		}
 
 		var objX2 = 140;
@@ -3841,7 +3841,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				{
 					if (Math.floor(note.songData[1] / GRID_COLUMNS_PER_PLAYER) != side)
 					{
-						showOutput(chartPhrase('messages.you_cannot_press_this_button_with_notes_on_more_than_one_side', 'You cannot press this button with notes on more than one side.'));
+						showOutput(chartPhrase('messages.select_one_side', 'You cannot press this button with notes on more than one side.'));
 						return;
 					}
 				}
@@ -4113,7 +4113,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			}
 			if (loadedChart == null || !Reflect.hasField(loadedChart, 'song')) // Check if chart is ACTUALLY a chart and valid
 			{
-				showOutput(chartPhrase('messages.error_file_loaded_is_not_a_psych_engine_fnf_0_2_x_x_chart', 'Error: File loaded is not a Psych Engine/FNF 0.2.x.x chart.'), true);
+				showOutput(chartPhrase('messages.invalid_psych_chart', 'Error: File loaded is not a Psych Engine/FNF 0.2.x.x chart.'), true);
 				return;
 			}
 
@@ -4716,7 +4716,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 					var loadedChart:SwagSong = Song.parseJSON(fileDialog.data, filePath.substr(filePath.lastIndexOf('/')));
 					if (loadedChart == null || !Reflect.hasField(loadedChart, 'song')) // Check if chart is ACTUALLY a chart and valid
 					{
-						showOutput(chartPhrase('messages.error_file_loaded_is_not_a_psych_engine_fnf_0_2_x_x_chart', 'Error: File loaded is not a Psych Engine/FNF 0.2.x.x chart.'), true);
+						showOutput(chartPhrase('messages.invalid_psych_chart', 'Error: File loaded is not a Psych Engine/FNF 0.2.x.x chart.'), true);
 						return;
 					}
 
@@ -4799,7 +4799,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 							var loadedChart:SwagSong = Song.parseJSON(File.getContent(path), autosaveName, null);
 							if (loadedChart == null || !Reflect.hasField(loadedChart, '__original_path'))
 							{
-								showOutput(chartPhrase('messages.error_file_loaded_is_not_a_valid_psych_engine_autosave', 'Error: File loaded is not a valid Psych Engine autosave.'), true);
+								showOutput(chartPhrase('messages.invalid_autosave', 'Error: File loaded is not a valid Psych Engine autosave.'), true);
 								return;
 							}
 
@@ -4827,7 +4827,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 						}
 					}
 					else
-						showOutput(chartPhrase('messages.error_autosave_file_selected_could_not_be_found_huh', 'Error! Autosave file selected could not be found, huh??'), true);
+						showOutput(chartPhrase('messages.autosave_missing', 'Error! Autosave file selected could not be found, huh??'), true);
 				});
 				btn.cameras = state.cameras;
 				btn.screenCenter(X);
@@ -4856,7 +4856,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 						var eventsFile:SwagSong = Song.parseJSON(fileDialog.data, filePath.substr(filePath.lastIndexOf('/')));
 						if (eventsFile == null || Reflect.hasField(eventsFile, 'scrollSpeed') || eventsFile.events == null)
 						{
-							showOutput(chartPhrase('messages.error_file_loaded_is_not_a_psych_engine_chart_events_file', 'Error: File loaded is not a Psych Engine chart/events file.'), true);
+							showOutput(chartPhrase('messages.invalid_chart_events', 'Error: File loaded is not a Psych Engine chart/events file.'), true);
 							return;
 						}
 
@@ -5121,7 +5121,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				var loadedChart:SwagSong = Song.parseJSON(fileDialog.data, filePath.substr(filePath.lastIndexOf('/')));
 				if (loadedChart == null || !Reflect.hasField(loadedChart, 'song')) // Check if chart is ACTUALLY a chart and valid
 				{
-					showOutput(chartPhrase('messages.error_file_loaded_is_not_a_psych_engine_0_x_x_fnf_0_2_x_x_chart', 'Error: File loaded is not a Psych Engine 0.x.x/FNF 0.2.x.x chart.'), true);
+					showOutput(chartPhrase('messages.invalid_legacy_chart', 'Error: File loaded is not a Psych Engine 0.x.x/FNF 0.2.x.x chart.'), true);
 					return;
 				}
 
@@ -5290,7 +5290,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				var chart:VSliceChart = cast Json.parse(fileDialog.data);
 				if (chart == null || chart.version == null || chart.notes == null || chart.scrollSpeed == null)
 				{
-					showOutput(chartPhrase('messages.error_file_loaded_is_not_a_valid_fnf_v_slice_chart', 'Error: File loaded is not a valid FNF V-Slice chart.'), true);
+					showOutput(chartPhrase('messages.invalid_vslice_chart', 'Error: File loaded is not a valid FNF V-Slice chart.'), true);
 					return;
 				}
 
@@ -5305,7 +5305,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 						|| metadata.timeChanges == null
 						|| metadata.timeChanges.length < 1)
 					{
-						showOutput(chartPhrase('messages.error_file_loaded_is_not_a_valid_fnf_v_slice_metadata', 'Error: File loaded is not a valid FNF V-Slice metadata.'), true);
+						showOutput(chartPhrase('messages.invalid_vslice_metadata', 'Error: File loaded is not a valid FNF V-Slice metadata.'), true);
 						return;
 					}
 
@@ -5388,7 +5388,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 					var loadedChart:SwagSong = Song.parseJSON(fileDialog.data, filePath, '');
 					if (loadedChart == null || !Reflect.hasField(loadedChart, 'song')) // Check if chart is ACTUALLY a chart and valid
 					{
-						showOutput(chartPhrase('messages.error_file_loaded_is_not_a_psych_engine_0_x_x_fnf_0_2_x_x_chart', 'Error: File loaded is not a Psych Engine 0.x.x/FNF 0.2.x.x chart.'), true);
+						showOutput(chartPhrase('messages.invalid_legacy_chart', 'Error: File loaded is not a Psych Engine 0.x.x/FNF 0.2.x.x chart.'), true);
 						return;
 					}
 

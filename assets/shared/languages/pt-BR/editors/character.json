@@ -8,45 +8,45 @@
     "animation_name": "Nome da animação:",
     "animation_symbol_name_tag": "Nome/Etiqueta do Símbolo de Animação:",
     "animations": "Animações:",
-    "camera_x_y": "Câmara X/Y:",
-    "character": "Caractere:",
-    "character_x_y": "Caracter X/Y:",
+    "camera_x_y": "Câmera X/Y:",
+    "character": "Personagem:",
+    "character_x_y": "Personagem X/Y:",
     "flip_x": "Inverter X",
     "framerate": "Taxa de quadros:",
     "get_icon_color": "Obter a Cor do Ícone",
     "health_bar_r_g_b": "Barra de Saúde R/G/B:",
     "health_icon_name": "Nome do ícone de saúde:",
-    "highlight_ghost": "Realçar o Fantasma",
+    "highlight_ghost": "Destacar silhueta",
     "image_file_name": "Arquivo de imagem:",
     "load_template": "Carregar Modelo",
-    "make_ghost": "Fazer o Fantasma",
+    "make_ghost": "Criar silhueta",
     "no_antialiasing": "Sem Antialiasing",
-    "playable_character": "Caracter jogável",
-    "reload_char": "Recarregar o Caracter",
+    "playable_character": "Personagem jogável",
+    "reload_char": "Recarregar personagem",
     "reload_image": "Recarregar imagem",
     "remove": "Remover",
-    "save_character": "Gravar o Caracter",
+    "save_character": "Salvar personagem",
     "scale": "Escala:",
     "should_it_loop": "Repetir?",
     "sing_animation_length": "Comprimento da animação de canto:",
-    "vocals_file_postfix": "Arquivo Vocal Postfix:",
+    "vocals_file_postfix": "Sufixo do arquivo de vozes:",
     "zoom_1x": "Ampliação: 1x"
   },
   "presence": {
-    "title": "Editor de Caracteres",
-    "character": "Caracter: {1}"
+    "title": "Editor de personagens",
+    "character": "Personagem: {1}"
   },
   "help": {
     "open": "Pressione {1} para obter ajuda",
     "mobile": "CÂMARA\nX/Y - Ampliação/Saída da Câmera\nBotões G + Seta - Mover Câmera\nZ - Reiniciar zoom da câmera\n\nCARACTER\nA - Reiniciar a Disposição Atual\nV/D - Animação Anterior/Próxima\nBotões de Seta - Mover Deslocamento\n\nOUTRAS\nAlternar Silhuetas\nSegure C - Mover Offsets 10x mais rápido e Câmera 4x mais rápido",
-    "desktop": "CÂMARA\nE/Q - Ampliação/Saída da Câmera\nJ/K/L/I - Mover câmera\nR - Restaurar o Zoom da Câmara\n\nCARACTER\nCtrl + R - Restaurar a Posição Atual\nCtrl + C - Copiar a Posição Atual\nCtrl + V - Colar a Partida Copiada na Animação Atual\nCtrl + Z - Desfazer a Última Colagem ou Reiniciar\nW/S - Animação Anterior/Próxima\nEspaço - Replay Animation\nTeclas de Setas - Mover a Posição\nA/D - Avançar na Moldura (Voltar/Avançar)\n\nOUTRAS\nF12 - Alternar Silhuetas\nSegure Shift - Mover Offsets 10x mais rápido e Câmera 4x mais rápido\nControle de espera - Mover câmera 4x mais lento"
+    "desktop": "CÂMARA\nE/Q - Ampliação/Saída da Câmera\nJ/K/L/I - Mover câmera\nR - Restaurar o Zoom da Câmera\n\nCARACTER\nCtrl + R - Restaurar a Posição Atual\nCtrl + C - Copiar a Posição Atual\nCtrl + V - Colar a Partida Copiada na Animação Atual\nCtrl + Z - Desfazer a Última Colagem ou Reiniciar\nW/S - Animação Anterior/Próxima\nEspaço - Replay Animation\nTeclas de Setas - Mover a Posição\nA/D - Avançar na Moldura (Voltar/Avançar)\n\nOUTRAS\nF12 - Alternar Silhuetas\nSegure Shift - Mover Offsets 10x mais rápido e Câmera 4x mais rápido\nControle de espera - Mover câmera 4x mais lento"
   },
   "messages": {
     "no_animation": "ERRO: Nenhuma Animação Encontrada"
   },
   "tabs": {
     "animations": "Animações",
-    "character": "Caracter",
+    "character": "Personagem",
     "ghost": "Fantasma",
     "settings": "Configurações"
   }

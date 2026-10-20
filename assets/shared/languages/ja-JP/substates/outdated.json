@@ -1,0 +1,17 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.outdated",
+  "title": "更新可能!",
+  "version": "現在のバージョン: {1} => 新しいバージョン: {2}",
+  "loading_changelog": "チェンジログを載せ...",
+  "controls": "押す ENTER 最新バージョンに更新する\nエスケープを押すと,正しいエンジンのバージョンで\nオプションメニューでこの警告を無効化できます",
+  "controls_mobile": "A を押して最新のバージョンに更新します\nエンジンのバージョンが正しいならBを押す\nオプションメニューでこの警告を無効化できます",
+  "no_changelog": "変更記録はありません",
+  "changelog_error": "読み込み変更ログのエラー: {1}",
+  "changelog_title": "ニュースは?\n{1}",
+  "network": {
+    "checking": "チェンジログのチェック",
+    "retrieved": "取得",
+    "no_connection": "繋がりがない"
+  }
+}

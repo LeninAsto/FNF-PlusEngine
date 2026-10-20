@@ -1,0 +1,25 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.menu_character",
+  "ui": {
+    "0_0": "[0, 0]",
+    "antialiasing": "Penghalusan Tepi",
+    "controls_help": "Tombol Panah - Ubah Offset (Tahan shift untuk kecepatan 10x)\n\t\t\t\nSpasi - Mainkan animasi \"Mulai Tekan\" (Jenis Karakter Boyfriend)",
+    "flip_x": "Balik X",
+    "idle_animation_on_the_xml": "Animasi menganggur di .XML:",
+    "image_file_name": "Nama file gambar:",
+    "load_character": "Muat Karakter",
+    "reload_char": "Muat Ulang Karakter",
+    "save_character": "Simpan Karakter",
+    "scale": "Skala:",
+    "start_press_animation_on_the_xml": "Mulai Tekan animasi pada .XML:"
+  },
+  "presence": {
+    "title": "Editor Karakter Menu",
+    "editing": "Pengeditan: {1}"
+  },
+  "tabs": {
+    "character": "Karakter",
+    "character_type": "Tipe Karakter"
+  }
+}

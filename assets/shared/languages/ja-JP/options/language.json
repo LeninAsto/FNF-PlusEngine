@@ -1,0 +1,19 @@
+{
+  "$schema": 1,
+  "$namespace": "options.language",
+  "hint": "ACCEPTは選択された言語を適用します.",
+  "applied_badge": "アクティブ",
+  "selector": {
+    "name": "言語",
+    "description": "{1}の言語パックを適用します。",
+    "active": "{1}（使用中）"
+  },
+  "sync": {
+    "name": "言語をダウンロード・更新",
+    "description": "公式カタログをチェックし,新しい言語パックまたは更新された言語パックを安全にインストールします.",
+    "success_title": "言語を更新しました",
+    "error_title": "言語の更新に失敗しました",
+    "success": "インストール: {1}。更新不要: {2}。",
+    "error": "言語パックを更新できませんでした:\n{1}"
+  }
+}

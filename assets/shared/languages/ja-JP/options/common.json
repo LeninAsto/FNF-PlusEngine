@@ -1,0 +1,110 @@
+{
+  "$schema": 1,
+  "$namespace": "options",
+  "common": {
+    "title": "設定",
+    "presence": "オプションメニュー"
+  },
+  "mobile_controls_tip": "{1} を押してモバイル コントロール メニューに移動します",
+  "controls": {
+    "keyboard_short": "CTRL",
+    "rebinding": "補強 {1}",
+    "rebinding_help": "待って {1} キャンセルする\n待って {2} 削除する"
+  },
+  "categories": {
+    "note_colors": {
+      "name": "音符の色",
+      "description": "音符の色を変え,音符の色をスプラッシュする"
+    },
+    "controls": {
+      "name": "コントロール",
+      "description": "キーボードとゲームパッドの結合を変更する."
+    },
+    "adjust_delay_and_combo": {
+      "name": "ディレイとコンボを調整する",
+      "description": "ノートディレイ、レーティングオフセット、コンボの配置を調整します。"
+    },
+    "graphics": {
+      "name": "グラフィック設定",
+      "description": "性能とレンダリング設定を変更する."
+    },
+    "visuals": {
+      "name": "視覚設定",
+      "description": "変化 HUDカメラと視覚的な好み"
+    },
+    "gameplay": {
+      "name": "ゲームプレイ設定",
+      "description": "ゲームモードやヘルパーを変更する"
+    },
+    "legacy": {
+      "name": "遺産設定",
+      "description": "高齢者の互換性設定を変更する Psych/ 行動も"
+    },
+    "mod_security": {
+      "name": "モッドセキュリティチェック",
+      "description": "モッドをロードする際に使ったチェックを変更する."
+    },
+    "modchart": {
+      "name": "Modchart 設定",
+      "description": "Modchartの行動と互換性を変更する"
+    },
+    "language": {
+      "name": "言語",
+      "description": "活発な言語を変えましょう."
+    },
+    "mobile": {
+      "name": "モバイル設定",
+      "description": "モバイル制御とレイアウト設定を変更する"
+    }
+  },
+  "menus": {
+    "modchart": {
+      "title": "Modchart 設定",
+      "presence": "Modchart オプションメニュー"
+    },
+    "legacy": {
+      "title": "遺産設定",
+      "presence": "遺産設定メニュー"
+    },
+    "mod_security": {
+      "title": "モッドセキュリティチェック",
+      "presence": "モッドセキュリティチェック"
+    },
+    "gameplay": {
+      "title": "ゲームプレイ設定",
+      "presence": "ゲーム設定メニュー"
+    },
+    "graphics": {
+      "title": "グラフィック設定",
+      "presence": "グラフィック設定メニュー"
+    },
+    "visuals": {
+      "title": "ビジュアル設定",
+      "presence": "視覚設定メニュー"
+    },
+    "language": {
+      "title": "言語",
+      "presence": "言語メニュー"
+    },
+    "controls": {
+      "presence": "コントロールメニュー"
+    },
+    "note_colors": {
+      "presence": "注記色 メニュー"
+    },
+    "classic_note_colors": {
+      "presence": "クラシックノートカラーメニュー",
+      "channels": "染色飽和 輝き"
+    },
+    "offset": {
+      "presence": "遅延/コンボオフセットメニュー"
+    },
+    "mobile": {
+      "title": "モバイル設定",
+      "presence": "モバイル設定メニュー"
+    },
+    "mod_settings": {
+      "presence": "モード設定 ({1})"
+    }
+  }
+}

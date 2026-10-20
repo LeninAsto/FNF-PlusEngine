@@ -1,0 +1,26 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.song_checker",
+  "title": "노래 검사자",
+  "prefix": {
+    "error": "[실실]",
+    "warning": "[주의]",
+    "fix": "[정치]"
+  },
+  "more": "... 그리고 {1} 더 많이요",
+  "issues": {
+    "missing_chart": "이 어려움에 대한 채보는 발견되지 않았습니다.",
+    "invalid_chart": "채보는 존재하지만 분석할 수 없었습니다.",
+    "repaired_song_name": "사라진 노래 이름은 폴더에서 복원되었습니다.",
+    "missing_notes": "채보에는 노트 배열이 없습니다.",
+    "repaired_events": "실종 사건 배열은 빈 배열으로 대체되었습니다.",
+    "invalid_bpm": "BPM 0보다 크어야 합니다.",
+    "repaired_speed": "유효하지 않은 스크롤 속도는 1으로 복원되었습니다.",
+    "repaired_gf": "실종된 여자친구 캐릭터는 \"GF\"로 복원되었습니다.",
+    "missing_inst": "악기 오디오가 없어졌습니다.",
+    "missing_voices": "목소리가 활성화되어 있지만 기본 또는 분할된 음성 파일은 발견되지 않았습니다.",
+    "invalid_section": "부문 {1} 노트 리스트가 없습니다.",
+    "invalid_note": "부문에서 잘못된 표기 {1}, 지수 {2}.",
+    "invalid_note_values": "부문의 비수적 노트 데이터는 {1}, 지수 {2}."
+  }
+}

@@ -3,9 +3,9 @@
   "$namespace": "options.note_colors",
   "reset_tip": "Pressione {1} para Reiniciar a parte selecionada da nota.",
   "full_reset_tip": "Segure {1} + Pressione a tecla RESET para reiniciar totalmente a nota selecionada.",
-  "shift": "Deslocar",
-  "press": "IMPRESSO",
-  "ctrl": "CTRL",
+  "shift": "Shift",
+  "press": "PRESSIONE",
+  "ctrl": "Ctrl",
   "left_shoulder": "Botão esquerdo do ombro",
   "mode": "Modo de Cor: {1}",
   "modes": {

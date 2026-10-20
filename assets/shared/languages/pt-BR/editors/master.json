@@ -6,11 +6,11 @@
   "no_mod_directory": "< Não Carregado Mod Directory >",
   "loaded_mod_directory": "< Carregado Mod Directory: {1} >",
   "items": {
-    "chart_editor": "Editor de Gráficos",
-    "character_editor": "Editor de Caracteres",
+    "chart_editor": "Editor de charts",
+    "character_editor": "Editor de personagens",
     "stage_editor": "Editor de Estágio",
     "week_editor": "Editor Semanal",
-    "menu_character_editor": "Editor de Caracteres de Menu",
+    "menu_character_editor": "Editor de personagens do menu",
     "dialogue_editor": "Editor de diálogos",
     "dialogue_portrait_editor": "Editor de Retmouse de Diálogos",
     "note_splash_editor": "Editor de Splash de Nota"

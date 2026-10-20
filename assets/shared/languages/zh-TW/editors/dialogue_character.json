@@ -1,0 +1,28 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.dialogue_character",
+  "ui": {
+    "add_update": "新增/更新",
+    "animation_name": "動畫名稱:",
+    "animations": "動畫:",
+    "idle_finished_name_on_xml_file": "在 .XML 檔案中無效/已完成的名稱:",
+    "image_file_name": "圖片檔案名稱:",
+    "load_character": "載入角色",
+    "loop_name_on_xml_file": "在 .XML 檔案中的迴圈名稱:",
+    "no_antialiasing": "關閉抗鋸齒",
+    "position_offset": "位置抵消:",
+    "reload_image": "轉載圖片",
+    "remove": "移除",
+    "save_character": "儲存角色",
+    "scale": "規模:"
+  },
+  "presence": {
+    "title": "對話角色編輯器",
+    "editing": "編輯: {1}"
+  },
+  "tabs": {
+    "animations": "動畫",
+    "character": "自己的性格",
+    "character_type": "字元型別"
+  }
+}

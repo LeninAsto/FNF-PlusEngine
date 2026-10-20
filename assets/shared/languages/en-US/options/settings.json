@@ -36,7 +36,7 @@
     "name": "Auto Pause",
     "description": "If checked, the game automatically pauses if the screen isn't on focus."
   },
-  "bad_and_shit_break_combo": {
+  "bad_shit_combo_break": {
     "name": "Bad and Shit Break Combo",
     "description": "If checked, hitting Bad or Shit notes will break your combo\nand count as Combo Breaks instead of just Misses."
   },
@@ -52,7 +52,7 @@
     "name": "Camera Zooms",
     "description": "If unchecked, the camera won't zoom in on a beat hit."
   },
-  "change_window_border_color_with_note_hit": {
+  "window_border_on_hit": {
     "name": "Change Window Border Color With Note Hit",
     "description": "Can change the color of the window border when you hit a note.\\n(Only for Windows 11, sry)"
   },
@@ -226,7 +226,8 @@
       "old": "Old",
       "d_b": "D&B",
       "nf": "NF",
-      "default": "Default"
+      "default": "Default",
+      "codename": "Codename"
     }
   },
   "infinity_display": {
@@ -387,7 +388,7 @@
     "name": "Show Combo Sprite",
     "description": "If unchecked, hides the COMBO sprite popup when hitting notes."
   },
-  "show_early/late_sprites": {
+  "show_early_late": {
     "name": "Show Early/Late Sprites",
     "description": "Shows Early or Late tags on the top corners of the rating sprite depending on hit timing."
   },
@@ -407,7 +408,7 @@
     "name": "Show Rating Sprite",
     "description": "If unchecked, hides the rating sprite popup when hitting notes."
   },
-  "show_version_text_on_gameplay": {
+  "gameplay_version": {
     "name": "Show Version Text on Gameplay",
     "description": "If checked, shows the version text during gameplay."
   },

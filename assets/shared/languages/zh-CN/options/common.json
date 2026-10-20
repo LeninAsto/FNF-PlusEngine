@@ -1,0 +1,110 @@
+{
+  "$schema": 1,
+  "$namespace": "options",
+  "common": {
+    "title": "设置",
+    "presence": "选项菜单"
+  },
+  "mobile_controls_tip": "打压 {1} 进入移动控制菜单",
+  "controls": {
+    "keyboard_short": "CTRL",
+    "rebinding": "复制性 {1}",
+    "rebinding_help": "停下来 {1} 取消\n停下来 {2} 删除"
+  },
+  "categories": {
+    "note_colors": {
+      "name": "注意 颜色",
+      "description": "改变笔记的颜色和笔记的闪光颜色."
+    },
+    "controls": {
+      "name": "控制",
+      "description": "改变键盘和游戏板的绑定."
+    },
+    "adjust_delay_and_combo": {
+      "name": "调整延迟和组合",
+      "description": "调整笔记延迟,评级抵消和组合位置."
+    },
+    "graphics": {
+      "name": "图形设置",
+      "description": "调整性能与渲染设置。"
+    },
+    "visuals": {
+      "name": "视觉设置",
+      "description": "改变 HUD摄像头和视觉偏好."
+    },
+    "gameplay": {
+      "name": "游戏设置",
+      "description": "改变游戏调整器和辅助器."
+    },
+    "legacy": {
+      "name": "遗产设置",
+      "description": "改变老年人兼容性设置 Psych/加上行为."
+    },
+    "mod_security": {
+      "name": "模特安全检查",
+      "description": "在装载模特时使用的检查更改."
+    },
+    "modchart": {
+      "name": "Modchart 设置",
+      "description": "改变modchart行为和兼容性."
+    },
+    "language": {
+      "name": "语言",
+      "description": "改变活动语言."
+    },
+    "mobile": {
+      "name": "移动设置",
+      "description": "改变移动控制和布局设置."
+    }
+  },
+  "menus": {
+    "modchart": {
+      "title": "Modchart 设置",
+      "presence": "Modchart 选项菜单"
+    },
+    "legacy": {
+      "title": "遗产设置",
+      "presence": "遗留设置菜单"
+    },
+    "mod_security": {
+      "title": "模特安全检查",
+      "presence": "模特安全检查"
+    },
+    "gameplay": {
+      "title": "游戏设置",
+      "presence": "游戏设置菜单"
+    },
+    "graphics": {
+      "title": "图形设置",
+      "presence": "图形设置菜单"
+    },
+    "visuals": {
+      "title": "视觉设置",
+      "presence": "视觉设置菜单"
+    },
+    "language": {
+      "title": "语言",
+      "presence": "语言菜单"
+    },
+    "controls": {
+      "presence": "控制菜单"
+    },
+    "note_colors": {
+      "presence": "注释颜色菜单"
+    },
+    "classic_note_colors": {
+      "presence": "经典笔记颜色菜单",
+      "channels": "色相        饱和度        亮度"
+    },
+    "offset": {
+      "presence": "延迟/组合抵消菜单"
+    },
+    "mobile": {
+      "title": "移动设置",
+      "presence": "移动设置菜单"
+    },
+    "mod_settings": {
+      "presence": "模式设置 ({1})"
+    }
+  }
+}

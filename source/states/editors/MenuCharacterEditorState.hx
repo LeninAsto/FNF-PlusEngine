@@ -52,7 +52,7 @@ class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHan
 		txtOffsets.alpha = 0.7;
 		add(txtOffsets);
 
-		var tipText:FlxText = new FlxText(0, 540, FlxG.width, Language.getPhrase('editors.menu_character.ui.arrow_keys_change_offset_hold_shift_for_10x_speed_space_play_start_pre', "Arrow Keys - Change Offset (Hold shift for 10x speed)
+		var tipText:FlxText = new FlxText(0, 540, FlxG.width, Language.getPhrase('editors.menu_character.ui.controls_help', "Arrow Keys - Change Offset (Hold shift for 10x speed)
 			\nSpace - Play \"Start Press\" animation (Boyfriend Character Type)"), 16);
 		tipText.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, CENTER);
 		tipText.scrollFactor.set();

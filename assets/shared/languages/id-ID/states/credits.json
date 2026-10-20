@@ -1,0 +1,42 @@
+{
+  "$schema": 1,
+  "$namespace": "states.credits",
+  "presence": "Di Menu",
+  "sections": {
+    "plus_engine": "Tim Plus Engine",
+    "mobile": "Tim Porting Seluler",
+    "psych_engine": "Tim Psych Engine",
+    "contributors": "Kontributor Mesin",
+    "funkin": "Kru Funkin",
+    "psych_discord": "Psych Engine Discord"
+  },
+  "roles": {
+    "lenin_asto": "Pemrogram Plus Engine",
+    "sirthegamercoder": "Terjemahan Bahasa Indonesia dan Helper coder Plus Engine",
+    "andres": "Pencipta dan pemilik beberapa kode yang digunakan berdasarkan Slushi Engine",
+    "theodev": "Pemilik, pembuat kode utama Funkin Modchart",
+    "autistic_lulu": "Perbaikan dan pemeliharaan Psych Engine 1.0.x",
+    "homuhomu833": "Kepala Porter Psych Engine dan Penulis linc_luajit-rewriten",
+    "karim_akra": "Porter Kedua Psych Engine",
+    "moxie": "Pembantu Ponsel Psych Engine",
+    "shadow_mario": "Pemrogram Utama dan Kepala Psych Engine",
+    "riveren": "Artis Utama/Animator Psych Engine",
+    "bb_panzu": "Mantan Programmer Psych Engine",
+    "crowplexus": "Dukungan Linux, Iris HScript, Sistem Input v3, dan PR Lainnya",
+    "kamizeta": "Pencipta Pessy, maskot Psych Engine.",
+    "maxneton": "Memuat Layar Artis/Animator Telur Paskah.",
+    "keoiki": "not Animasi Splash dan Alfabet Latin",
+    "sqirrarng": "Crash Handler dan kode dasar untuk\nBentuk Gelombang Editor chart",
+    "elitemastereric": "Dukungan Runtime Shaders dan PR Lainnya",
+    "majigsaw77": ".Perpustakaan Pemuat Video MP4 (hxvlc)",
+    "iflicky": "Komposer Psync dan Tea Time\nDan beberapa efek suara",
+    "kadedev": "Memperbaiki beberapa masalah pada Editor chart dan PR Lainnya",
+    "superpowers04": "Garpu LUA JIT",
+    "cheems_and_friends": "Pencipta FlxAnimate",
+    "ninjamuffin99": "Pemrogram Friday Night Funkin '",
+    "phantom_arcade": "Animator Friday Night Funkin '",
+    "evilsk8r": "Artis Friday Night Funkin '",
+    "kawaisprite": "Komposer Friday Night Funkin'"
+  },
+  "psych_discord_join": "Bergabunglah dengan Lingkungan Psych!"
+}

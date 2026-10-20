@@ -9,10 +9,10 @@
     "none": "Aún no hay puntuación"
   },
   "errors": {
-    "no_weeks": "NO HAY SEMANAS AÑADIDAS PARA JUGAR GRATIS\n\nPresione {1} para ir al menú del editor de semana.\nPresione {2} para regresar al Menú principal.",
-    "chart_load_exception": "Error inesperado al cargar el gráfico: {1}",
-    "no_chart": "¡No hay ningún gráfico disponible para esta dificultad!",
-    "invalid_bpm": "Este gráfico tiene un BPM no válido, por lo que no se puede reproducir."
+    "no_weeks": "NO HAY SEMANAS PARA EL MODO LIBRE\n\nPulsa {1} para abrir el editor de semanas.\nPulsa {2} para volver al menú principal.",
+    "chart_load_exception": "Error inesperado al cargar el chart: {1}",
+    "no_chart": "¡No hay ningún chart disponible para esta dificultad!",
+    "invalid_bpm": "Este chart tiene un BPM no válido, por lo que no se puede reproducir."
   },
   "search": {
     "placeholder": "Buscar...",
@@ -22,15 +22,15 @@
   "desktop_mod_tip": "/ F5 recarga mods / suelta una carpeta de mod para importarlo.",
   "song_info": {
     "loading": "Cargando...",
-    "scores": "Diferencias y puntuaciones:\n{1}",
-    "time": "Hora: {1}",
+    "scores": "Dificultades y puntuaciones:\n{1}",
+    "time": "Duración: {1}",
     "bpm": "BPM: {1}",
     "author": "Por: {1}"
   },
   "licenses": {
     "no-licenses": "Sin licencia",
-    "creative-commons": "Bienes comunes creativos",
-    "cc-by": "CC POR",
+    "creative-commons": "Creative Commons",
+    "cc-by": "CC BY",
     "cc-by-sa": "CC BY-SA",
     "cc-by-nd": "CC BY-ND",
     "cc-by-nc": "CC BY-NC",

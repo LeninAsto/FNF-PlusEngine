@@ -3,6 +3,35 @@ package backend;
 class Language
 {
 	public static var defaultLangName:String = 'English (US)'; // en-US
+
+	/** Font for glyphs outside the sprite alphabet, even in the language selector. */
+	public static function getFontForText(text:String, fallback:String = 'NotoSans-Medium.ttf'):String
+	{
+		// Native names must remain readable when a different language is active.
+		if (text.indexOf('简体中文') != -1)
+			return Paths.font('NotoSansSC-Medium.ttf');
+		if (text.indexOf('繁體中文') != -1)
+			return Paths.font('NotoSansTC-Medium.ttf');
+		if (text.indexOf('日本語') != -1)
+			return Paths.font('NotoSansJP-Medium.ttf');
+		var font:String = fallback;
+		for (i in 0...text.length)
+		{
+			var code:Int = text.charCodeAt(i);
+			if (code >= 0xAC00 && code <= 0xD7AF || code >= 0x1100 && code <= 0x11FF)
+				return Paths.font('NotoSansKR-Medium.ttf');
+			if (code >= 0x3040 && code <= 0x30FF)
+				return Paths.font('NotoSansJP-Medium.ttf');
+			if (code >= 0x3400 && code <= 0x9FFF)
+				font = switch (ClientPrefs.data.language)
+				{
+					case 'ja-JP': 'NotoSansJP-Medium.ttf';
+					case 'zh-TW': 'NotoSansTC-Medium.ttf';
+					default: 'NotoSansSC-Medium.ttf';
+				};
+		}
+		return Paths.font(font);
+	}
 	#if TRANSLATIONS_ALLOWED
 	private static inline var DEFAULT_LANGUAGE_CODE:String = 'en-US';
 	private static inline var JSON_LANGUAGE_ROOT:String = 'languages';
@@ -318,7 +347,9 @@ class Language
 
 	inline static private function formatKey(key:String)
 	{
-		return hideCharsRegex.replace(key.replace(' ', '_'), '').toLowerCase().trim();
+		var normalized:String = hideCharsRegex.replace(key.replace(' ', '_'), '').toLowerCase().trim();
+		var alias:String = TranslationKeys.aliases.get(normalized);
+		return alias != null ? alias : normalized;
 	}
 
 

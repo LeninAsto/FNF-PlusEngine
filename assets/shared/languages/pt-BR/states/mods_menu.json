@@ -2,16 +2,16 @@
   "$schema": 1,
   "$namespace": "states.mods_menu",
   "presence": "No Navegador Mod",
-  "title": "MODELOS",
-  "filter": "{1}",
+  "title": "MODS",
+  "filter": "FILTRO: {1}",
   "filters": {
     "all": "TODOS",
     "enabled": "ATIVADOS",
-    "disabled": "DEFICIÊNCIA",
-    "launchable": "LUNCHÁVEL"
+    "disabled": "DESATIVADOS",
+    "launchable": "COM INÍCIO PRÓPRIO"
   },
-  "search": "PROCURA",
-  "search_query": "{1}{2}",
+  "search": "BUSCAR",
+  "search_query": "BUSCA: {1}{2}",
   "sections": {
     "description": "DESCRIÇÃO",
     "features": "CARACTERÍSTICAS",
@@ -19,26 +19,26 @@
   },
   "restart_notice": "* Movendo/Alternando este mod irá reiniciar o jogo.",
   "buttons": {
-    "launch": "LANÇAMENTO",
-    "enable": "ENQUANTO",
-    "enabled": "ATIVAR",
-    "disable": "DÁVEIS",
-    "settings": "CONSTITUIÇÕES",
-    "reload": "RELOADE"
+    "launch": "INICIAR",
+    "enable": "ATIVAR",
+    "enabled": "ATIVADO",
+    "disable": "DESATIVAR",
+    "settings": "CONFIGURAÇÕES",
+    "reload": "RECARREGAR"
   },
-  "hint": "UP/DOWN Selecione L/R Reordenar espaço de lançamento Liga/Desligar (SHIFT=All) Configurações TAB Y Filtro de segurança F / Search ESC Exit",
-  "empty": "NENHUM MODELOS INSTALADOS\nIMPRENSA DE VOLTAR À EXISTÊNCIA OU INSTLAR UM MODELO",
+  "hint": "CIMA/BAIXO Selecionar  L/R Reordenar  ENTER Iniciar  ESPAÇO Ativar/Desativar (SHIFT=Todos)  TAB Configurações  Y Segurança  F Filtro  / Buscar  ESC Sair",
+  "empty": "NENHUM MOD INSTALADO\nPRESSIONE VOLTAR PARA SAIR OU INSTALE UM MOD",
   "unknown_mod": "Mod Desconhecido",
   "no_description": "Nenhuma descrição fornecida.",
   "status": {
-    "disabled": "Desactivado - activar o lançamento",
-    "launch": "> Pressione ENTER para lançar",
-    "no_launchable_states": "Sem estados lançáveis",
+    "disabled": "Desativado: ative para iniciar",
+    "launch": "> Pressione ENTER para iniciar",
+    "no_launchable_states": "Sem telas de início próprias",
     "base_game_global": "O jogo base é sempre carregado globalmente",
-    "sensitive_scripts": "Scripts sensíveis detectados - escolha Confiar para ativar",
+    "sensitive_scripts": "APIs sensíveis detectadas: escolha CONFIAR para ativar",
     "activation_denied": "Ativação negada - o mod ficou desativado",
-    "trusted": "Confiado - o mod habilitado",
-    "security_disabled": "Mod Security está desativada (ative-o em Opções)"
+    "trusted": "Mod confiável: ativado",
+    "security_disabled": "Segurança de mods desativada (ative em Opções)"
   },
   "settings_error": {
     "title": "Nome do mod: {1}",

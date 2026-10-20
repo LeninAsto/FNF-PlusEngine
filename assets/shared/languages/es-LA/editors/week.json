@@ -2,17 +2,17 @@
   "$schema": 1,
   "$namespace": "editors.week",
   "ui": {
-    "background_asset": "Activo de fondo:",
+    "background_asset": "Recurso de fondo:",
     "characters": "Personajes:",
     "copy_color": "Copiar color",
-    "default_difficulties_are_easy_normal_hard_without_quotes": "Las dificultades predeterminadas son \"Fácil, Normal, Difícil\".\nsin comillas.",
+    "default_difficulties_help": "Las dificultades predeterminadas son Easy, Normal, Hard, sin comillas.",
     "difficulties": "Dificultades:",
     "display_name": "Nombre para mostrar:",
-    "freeplay": "Freeplay",
+    "freeplay": "Juego libre",
     "hidden_until_unlocked": "Oculto hasta que se desbloquea",
     "hide_week_from_freeplay": "¿Ocultar la semana de Freeplay?",
     "hide_week_from_story_mode": "¿Ocultar semana del modo Historia?",
-    "load_week": "Semana de carga",
+    "load_week": "Cargar semana",
     "paste_color": "Pegar color",
     "save_week": "Guardar semana",
     "selected_background_color_r_g_b": "Color de fondo seleccionado R/G/B:",
@@ -20,7 +20,7 @@
     "songs": "Canciones:",
     "story_mode": "Modo historia",
     "week_file": "Archivo:",
-    "week_file_name_of_the_week_you_have_to_finish_for_unlocking": "Semana Nombre del archivo de la semana que tienes\npara terminar de desbloquear:",
+    "unlock_week_file": "Archivo de la semana que debes completar para desbloquear:",
     "week_name_for_reset_score_menu": "Semana (menú de puntaje):",
     "week_starts_locked": "La semana comienza bloqueada"
   },
@@ -29,7 +29,7 @@
     "editing": "Edición: {1}"
   },
   "tabs": {
-    "freeplay": "Freeplay",
+    "freeplay": "Juego libre",
     "other": "Otro",
     "week": "Semana"
   }

@@ -1,0 +1,63 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.crash_handler",
+  "titles": {
+    "error": "错误!",
+    "critical_error": "严重的错误!"
+  },
+  "kinds": {
+    "hardcoded": "硬码错误",
+    "critical_hardcoded": "严重的硬码错误"
+  },
+  "format": {
+    "error_kind": "错误: {1}",
+    "message": "信息:",
+    "trace": "痕迹:",
+    "tips": "建议:",
+    "need_help": "需要帮助吗?"
+  },
+  "stack": {
+    "non_haxe_function": "非 Haxe（C）函数",
+    "module": "模块 {1}",
+    "source_line": "{1}.{2}() [行] {3}]",
+    "file_line": "{1} [行] {2}]",
+    "local_function": "地方功能 {1}",
+    "method": "{1} - {2}"
+  },
+  "tips": {
+    "hardcoded_origin": "崩溃发生在 hxscript 之外，可能来自引擎源码或已编译的库。",
+    "first_source_line": "检查调用栈中引擎循环之前的第一行源码，通常能找到问题所在。",
+    "rebuild_assets": "如果仅在编辑脚本/类之后发生这种情况,请重建并确保出口的资产没有过时.",
+    "native_crash": "这是原生代码或严重错误导致的崩溃，应用无法正常恢复。",
+    "close_running_build": "如果这在构建测试中出现,关闭所有运行 PlusEngine在重建之前.",
+    "disable_mod_scripts": "如果启用了模组，请尝试禁用脚本后重试，以区分引擎问题和模组问题。"
+  },
+  "null_messages": {
+    "0": "代码神们不满意...",
+    "1": "休斯顿,我们没有问题!",
+    "2": "错误404: 没有找到对象 (它只是无效)",
+    "3": "恭喜你发现了这个空白!",
+    "4": "对象决定休假 (零)",
+    "5": "#悲伤的血栓# null发生了",
+    "6": "没有!",
+    "7": "这个物体去买烟,从来没有回来 (零)",
+    "8": "实现解锁:找到一个无效的引用!",
+    "9": "在球中存储了零引用",
+    "10": "Bruh 时刻:检测到零引用",
+    "11": "技能问题:你试图使用零对象",
+    "12": "标题说\"八,即发\" (零)",
+    "13": "错误: object.exe 停止运行 (无效)",
+    "14": "恭喜你,你打破了它!",
+    "15": "对象在未定义 (零) 的日期上",
+    "16": "在我的发动机中?比你想象的更有可能",
+    "17": "没有发现的物体. 你在沙发下查看了吗?"
+  },
+  "null_error_message": "错误消息为空（有点讽刺，对吧？）",
+  "original_error": "{1}\n\n原始错误: {2}",
+  "unknown_error": "未知错误",
+  "unknown_critical_error": "不知名的关键错误",
+  "help_inline": "如果您想得到帮助,请访问: {1}",
+  "recursive_handler": "崩溃处理程序在处理错误时再次被调用。",
+  "android_dispatch_failed": "Android 事故活动发射失败: {1}",
+  "save_failed": "无法保存错误消息.{1})"
+}

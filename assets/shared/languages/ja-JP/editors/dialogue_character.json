@@ -1,0 +1,28 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.dialogue_character",
+  "ui": {
+    "add_update": "追加・更新",
+    "animation_name": "アニメ名：",
+    "animations": "アニメーション:",
+    "idle_finished_name_on_xml_file": ".XML ファイルのアイドル名/終了名:",
+    "image_file_name": "画像ファイル名：",
+    "load_character": "キャラクターを読み込み",
+    "loop_name_on_xml_file": ".XML ファイルのループ名:",
+    "no_antialiasing": "アンチエイリアスなし",
+    "position_offset": "位置オフセット:",
+    "reload_image": "画像のリロード",
+    "remove": "削除",
+    "save_character": "キャラクターを保存",
+    "scale": "規模："
+  },
+  "presence": {
+    "title": "会話キャラクターエディター",
+    "editing": "編集: {1}"
+  },
+  "tabs": {
+    "animations": "アニメーション",
+    "character": "キャラクター",
+    "character_type": "文字の種類"
+  }
+}

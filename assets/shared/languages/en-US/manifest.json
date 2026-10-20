@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "code": "en-US",
   "name": "English (US)",
-  "version": 1,
+  "version": 2,
   "fallback": [],
   "bundles": [
     "global.json",

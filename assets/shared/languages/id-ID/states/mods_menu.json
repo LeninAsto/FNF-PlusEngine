@@ -1,0 +1,47 @@
+{
+  "$schema": 1,
+  "$namespace": "states.mods_menu",
+  "presence": "Di Peramban Mod",
+  "title": "MOD",
+  "filter": "FILTER: {1}",
+  "filters": {
+    "all": "SEMUA",
+    "enabled": "DIAKTIFKAN",
+    "disabled": "DENGAN DISABILITAS",
+    "launchable": "DAPAT DILUNCURKAN"
+  },
+  "search": "MENCARI",
+  "search_query": "CARI: {1} {2}",
+  "sections": {
+    "description": "KETERANGAN",
+    "features": "FITUR",
+    "changelog": "PERUBAHANLOG"
+  },
+  "restart_notice": "* Memindahkan/Mengalihkan mod ini akan memulai ulang game.",
+  "buttons": {
+    "launch": "MELUNCURKAN",
+    "enable": "MEMUNGKINKAN",
+    "enabled": "DIAKTIFKAN",
+    "disable": "CACAT",
+    "settings": "PENGATURAN",
+    "reload": "MUAT ULANG"
+  },
+  "hint": "ATAS/BAWAH Pilih L/R Susun Ulang ENTER Luncurkan SPASI Nyala/Mati (SHIFT=Semua) Pengaturan TAB Y Keamanan F Filter / Pencarian ESC Keluar",
+  "empty": "TIDAK ADA MOD YANG DIINSTAL\nTEKAN KEMBALI UNTUK KELUAR ATAU MENGINSTAL MOD",
+  "unknown_mod": "Modus Tidak Diketahui",
+  "no_description": "Tidak ada deskripsi yang diberikan.",
+  "status": {
+    "disabled": "Dinonaktifkan - aktifkan untuk diluncurkan",
+    "launch": "> Tekan ENTER untuk Meluncurkan",
+    "no_launchable_states": "Tidak ada negara bagian yang dapat diluncurkan",
+    "base_game_global": "Game dasar selalu dimuat secara global",
+    "sensitive_scripts": "Skrip sensitif terdeteksi - pilih TRUST untuk mengaktifkan",
+    "activation_denied": "Aktivasi ditolak - mod tetap dinonaktifkan",
+    "trusted": "Tepercaya - mod diaktifkan",
+    "security_disabled": "Keamanan Mod dinonaktifkan (aktifkan di Opsi)"
+  },
+  "settings_error": {
+    "title": "Nama mod: {1}",
+    "message": "Terjadi kesalahan: {1}"
+  }
+}

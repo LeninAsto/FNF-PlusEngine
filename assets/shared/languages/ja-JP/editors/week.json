@@ -1,0 +1,36 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.week",
+  "ui": {
+    "background_asset": "背景アセット:",
+    "characters": "キャラクター:",
+    "copy_color": "コピーカラー",
+    "default_difficulties_help": "デフォルトの難易度は「イージー、ノーマル、ハード」です。\n引用符なしで。",
+    "difficulties": "難点:",
+    "display_name": "表示名：",
+    "freeplay": "Freeplay",
+    "hidden_until_unlocked": "ロックが解除されるまで非表示",
+    "hide_week_from_freeplay": "Freeplay から週を非表示にしますか?",
+    "hide_week_from_story_mode": "ストーリーモードから週を非表示にしますか?",
+    "load_week": "週を読み込み",
+    "paste_color": "カラーのペースト",
+    "save_week": "週を保存",
+    "selected_background_color_r_g_b": "選択した背景色 R/G/B :",
+    "selected_icon": "選択されたアイコン:",
+    "songs": "曲:",
+    "story_mode": "ストーリーモード",
+    "week_file": "週ファイル:",
+    "unlock_week_file": "週 所有している週のファイル名\nロック解除を完了するには:",
+    "week_name_for_reset_score_menu": "週名 (スコアリセットメニュー用):",
+    "week_starts_locked": "週の始まりはロックされています"
+  },
+  "presence": {
+    "title": "週編集者",
+    "editing": "編集: {1}"
+  },
+  "tabs": {
+    "freeplay": "Freeplay",
+    "other": "他の",
+    "week": "週"
+  }
+}

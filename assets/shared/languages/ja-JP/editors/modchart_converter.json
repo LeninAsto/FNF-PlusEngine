@@ -1,0 +1,21 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.modchart_converter",
+  "presence": "Modchartコンバーター",
+  "title": "Modchartコンバーター",
+  "intro": "NVME Lua modchart をクリップボードにコピーし、「クリップボードの変換」をクリックします。",
+  "help": "このツールは、実用的なファーストパス変換を実行します。\nステップを再割り当てし、NVMe ラジアン ヘルパーを削除します。fieldYaw が Plus 側の名前であることを思い出してください。",
+  "preview_truncated": "...プレビューが切り詰められています ...",
+  "no_clipboard_text": "クリップボードにテキストが見つかりませんでした。",
+  "actions": {
+    "convert_clipboard": "クリップボードを変換",
+    "copy_starter": "コピースターター",
+    "back": "戻る"
+  },
+  "status": {
+    "starter_copied": "初期テンプレートがクリップボードにコピーされました。",
+    "ready": "終わり。 Modchart をクリップボードからインポートするか、最初のテンプレートをコピーします。",
+    "clipboard_empty": "クリップボードが空です。まず、NVMe スクリプトをコピーします。",
+    "converted": "{1} 文字を {2} に変換し、結果をクリップボードにコピーしました。"
+  }
+}

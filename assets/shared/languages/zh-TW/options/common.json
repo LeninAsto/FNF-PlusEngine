@@ -1,0 +1,110 @@
+{
+  "$schema": 1,
+  "$namespace": "options",
+  "common": {
+    "title": "設定",
+    "presence": "選項選單"
+  },
+  "mobile_controls_tip": "請按一下 {1} 進入移動控制選單",
+  "controls": {
+    "keyboard_short": "CTRL",
+    "rebinding": "恢復使用 {1}",
+    "rebinding_help": "預覽 {1} 取消\n預覽 {2} 刪除"
+  },
+  "categories": {
+    "note_colors": {
+      "name": "備註 顏色",
+      "description": "改變音符的顏色和音符的噴霧顏色."
+    },
+    "controls": {
+      "name": "控制方式",
+      "description": "改變鍵盤和遊戲板的連結."
+    },
+    "adjust_delay_and_combo": {
+      "name": "調整延遲和組合",
+      "description": "調整筆記延遲,評估抵消和組合位置."
+    },
+    "graphics": {
+      "name": "顯示器設定",
+      "description": "調整效能與渲染設定。"
+    },
+    "visuals": {
+      "name": "視覺設定",
+      "description": "改變 HUD攝影機和視覺偏好."
+    },
+    "gameplay": {
+      "name": "遊戲設定",
+      "description": "改變遊戲修改器和助手."
+    },
+    "legacy": {
+      "name": "遺產設定",
+      "description": "改變老年人相容性設定 Psych還有行為."
+    },
+    "mod_security": {
+      "name": "調節安全檢查",
+      "description": "在裝修模式時使用的檢查更改."
+    },
+    "modchart": {
+      "name": "Modchart 設定",
+      "description": "改變模式譜面的行為和相容性."
+    },
+    "language": {
+      "name": "語言",
+      "description": "改變活動語言."
+    },
+    "mobile": {
+      "name": "移動設定",
+      "description": "改變移動控制和佈局設定."
+    }
+  },
+  "menus": {
+    "modchart": {
+      "title": "Modchart 設定",
+      "presence": "Modchart 選項選單"
+    },
+    "legacy": {
+      "title": "遺產設定",
+      "presence": "傳承設定選單"
+    },
+    "mod_security": {
+      "title": "調節安全檢查",
+      "presence": "調節安全檢查"
+    },
+    "gameplay": {
+      "title": "遊戲設定",
+      "presence": "遊戲設定選單"
+    },
+    "graphics": {
+      "title": "顯示器設定",
+      "presence": "圖形設定選單"
+    },
+    "visuals": {
+      "title": "視覺設定",
+      "presence": "視覺設定選單"
+    },
+    "language": {
+      "title": "語言",
+      "presence": "語言選單"
+    },
+    "controls": {
+      "presence": "控制選單"
+    },
+    "note_colors": {
+      "presence": "備註 顏色選單"
+    },
+    "classic_note_colors": {
+      "presence": "經典筆記色彩選單",
+      "channels": "色相        飽和度        亮度"
+    },
+    "offset": {
+      "presence": "延遲/複合開關選單"
+    },
+    "mobile": {
+      "title": "移動設定",
+      "presence": "移動設定選單"
+    },
+    "mod_settings": {
+      "presence": "模式設定 ({1})"
+    }
+  }
+}

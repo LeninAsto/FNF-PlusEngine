@@ -1,13 +1,13 @@
 {
   "$schema": 1,
   "$namespace": "options.theme_accent",
-  "presence": "Escolhidor de Accent Tema",
-  "title": "Cor do Accent do Tema",
-  "hint": "Visualize widgets MD3 reais enquanto você arrasta o seletor. O ENTER confirma, o Back cancela.",
+  "presence": "Seletor de cor de destaque",
+  "title": "Cor de destaque do tema",
+  "hint": "Veja os controles enquanto ajusta a cor. ENTER confirma e Voltar cancela.",
   "picker_hint": "Roda + tira de luminância + paleta, sem se transformar em sopa visual.",
   "live_preview": "Visualização ao vivo habilitada",
-  "use_custom": "Usar acento personalizado",
-  "mini_hint": "O lado direito mostra widgets de motor de estoque pintados com seu sotaque. Se parece amaldiçoado aqui, pareceria amaldiçoado em menus também.",
+  "use_custom": "Usar cor personalizada",
+  "mini_hint": "? direita est?o os controles do motor com a cor escolhida. Eles ter?o essa apar?ncia nos menus.",
   "hex_label": "HEX {1}",
   "boxes": {
     "preview": "Antevisão do Tema",
@@ -15,20 +15,20 @@
     "components": "Antevisão dos Componentes MD3"
   },
   "preview": {
-    "title": "AMOSTRA LIBERDADE",
-    "meta": "Visualização personalizada do sotaque"
+    "title": "PR?VIA",
+    "meta": "Prévia da cor de destaque"
   },
   "chips": {
-    "active": "Accent ativo",
-    "custom": "Token personalizado",
-    "preset_safe": "Predefinido- seguro",
+    "active": "Destaque ativo",
+    "custom": "Cor personalizada",
+    "preset_safe": "Cor predefinida",
     "selected": "Selecionado",
-    "hex": "HEX token"
+    "hex": "Valor HEX"
   },
   "sections": {
     "standard": "Progresso Padrão",
     "wavy": "Progresso ondulado",
-    "widgets": "Outros Elementos do Motor"
+    "widgets": "Outros controles do motor"
   },
   "actions": {
     "copy_hex": "Copiar HEX",

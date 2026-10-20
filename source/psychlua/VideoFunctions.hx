@@ -463,7 +463,7 @@ class VideoFunctions
 					video.resume();
 					pulseLuaVideoVolume(tag, video);
 				}
-				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_videofunctions.setluavideovolume_value_muted_for_safest_silence_use_playluavideosprite_value_videoname_x_', "setLuaVideoVolume: \"{1}\" muted. For safest silence, use playLuaVideoSprite(\"{2}\", \"videoName\", x, y, 0) so VLC loads without audio.", [tag, tag]),
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_videofunctions.setluavideovolume_muted', "setLuaVideoVolume: \"{1}\" muted. For safest silence, use playLuaVideoSprite(\"{2}\", \"videoName\", x, y, 0) so VLC loads without audio.", [tag, tag]),
 					false, false, FlxColor.YELLOW);
 			}
 		}

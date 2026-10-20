@@ -4,18 +4,18 @@
   "deaths": "Bola azul: {1}",
   "author": "Por: {1}",
   "practice_mode": "Modo de práctica",
-  "charting_mode": "Modo de gráficos",
+  "charting_mode": "Modo de edición de charts",
   "time": "{1} / {2}",
   "menu": {
-    "resume": "Reanudar",
+    "resume": "Continuar",
     "restart_song": "Reiniciar canción",
-    "chart_editor": "Editor de gráficos",
+    "chart_editor": "Editor de charts",
     "change_difficulty": "Cambiar dificultad",
     "options": "Opciones",
     "exit_to_menu": "Salir al menú",
-    "leave_charting_mode": "Salir del modo de gráficos",
-    "skip_time": "Saltar tiempo",
-    "end_song": "Canción final",
+    "leave_charting_mode": "Salir del modo de edición",
+    "skip_time": "Saltar a otro momento",
+    "end_song": "Terminar canción",
     "toggle_practice_mode": "Alternar modo de práctica",
     "toggle_botplay": "Alternar juego de bots",
     "skip_video": "Saltar vídeo",
@@ -23,6 +23,6 @@
   },
   "errors": {
     "missing_file": "Archivo faltante: {1}",
-    "chart": "ERROR AL CARGAR EL TABLA:\n{1}"
+    "chart": "ERROR AL CARGAR EL CHART:\n{1}"
   }
 }

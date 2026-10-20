@@ -11,7 +11,7 @@
   "loadstring": "Lua\nPermite a execução arbitrária\nCódigo Lua compilado a partir de um\nstring em tempo de execução.",
   "dofile": "Lua\nPode ser usado para carregar e executar\narquivos Lua arbitrários em tempo de execução.",
   "loadfile": "Lua\nPode ser usado para carregar arbitrário\nArquivos Lua como blocos executáveis.",
-  "windows_gdi_effects": "Janelas/GDI\nPode iniciar GDI de nível desktop\nefeitos de distorção do ecrã através\ninitGDIThread/prepareGDIEffect.",
+  "windows_gdi_effects": "Janelas/GDI\nPode iniciar GDI de nível desktop\nefeitos de distorção do tela através\ninitGDIThread/prepareGDIEffect.",
   "windows_desktop_control": "Janelas/GDI\nPode ocultar ou mover ícones da área de trabalho,\nocultar a barra de tarefas ou alterar a transparência da área de trabalho/bar de tarefas.",
   "windows_wallpaper_control": "Janelas/GDI\nPode alterar, salvar ou restaurar\nO papel de parede do usuário no Windows.",
   "windows_shellwindow_control": "Janelas/GDI\nPode capturar capturas de tela, mostrar\nNotificações do Windows, ou alterar\nOpacidade/fronteiras da janela.",

@@ -6,7 +6,7 @@
   "switch": "(Presione {1} para cambiar)",
   "modes": {
     "note_delay": "Retardo de nota/tiempo",
-    "combo": "Compensación combinada",
+    "combo": "Posición del combo",
     "keyviewer": "Offset del visor",
     "hit_ms": "Presione MS Offset"
   },

@@ -97,7 +97,7 @@ class HealthIconHud
 
 		final base:Float = icon.baseScale > 0 ? icon.baseScale : 1.0;
 		final t:Float = 1.0 - Math.pow(1.0 - CODENAME_LERP, elapsed * 60.0 * rate);
-		final value:Float = FlxMath.lerp(base, icon.scale.x, t);
+		final value:Float = FlxMath.lerp(icon.scale.x, base, t);
 		icon.scale.set(value, value);
 	}
 

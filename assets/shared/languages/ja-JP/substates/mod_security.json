@@ -1,0 +1,53 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.mod_security",
+  "title": {
+    "warning": "敏感なAPI警告",
+    "clean": "Modのセキュリティ"
+  },
+  "detected_calls": "検出された呼び出し (UP/DoWNまたはスクロールするホイール):",
+  "actions": {
+    "trust": "信頼",
+    "block": "ブロック"
+  },
+  "hint": "左/右の選択-- Enter 確認する",
+  "counter": "モッド {1} / {2}",
+  "body": {
+    "clean": "このモッドのスクリプトでは敏感なAPIが検出されていません\n\n",
+    "clean_activation": "TRUST = モードを有効にする.\nBLOCK = モッドを無効にしておく",
+    "clean_review": "TRUST = スクリプトは正常に実行されます.\nBLOCK = モッドは有効に,スクリプトはスキップされます.",
+    "warning": "このモッドのスクリプトは 害のために悪用できる API を使用します\n",
+    "warning_activation": "モードを有効にしてスクリプトを実行する.BLOCK = モードを無効にする.\n",
+    "warning_review": "STRUST = スクリプトは正常に実行されます. BLOCK = MODは有効で,スクリプトはスキップされます.\n",
+    "capabilities": "\nこのモッドは:"
+  },
+  "categories": {
+    "tamper": "[!!] モードセキュリティシステム自体を操作する試み",
+    "exec": "[!] パソコンで外部プログラム/コマンドを実行する",
+    "gdi_effects": "[!] 始めることができます Windows ゲームの外のGDIスクリーン効果",
+    "desktop_control": "[!] デスクトップアイコン,タスクバー,透明性または壁紙を変更できます",
+    "window_control": "[*] スクリーンショットを撮れる,通知できる Windows またはゲームウィンドウを変更する",
+    "fs_write": "[!] パソコン上のファイルを書き換える,修正する,削除する",
+    "haxe_eval": "[!] 任意のハクセを処刑するLua 実行時にコード",
+    "fs_read": "[*] パソコンからファイルを読む",
+    "reflect": "[*] リフレクション/ダイナミッククラス検索を使用する",
+    "exit": "[*] ゲームプロセスを強制的に終了できる",
+    "recon": "[*] 環境変数/システム情報を読み取る",
+    "other": "\n  [*] その他の敏感なAPI (下記のリストを参照)",
+    "common_only": "\n  (一般的なAPIのみが見つかりました - 下記のリストをご覧ください)"
+  },
+  "no_findings": "  (敏感なAPIが検出されていない)",
+  "list_range": "{1}-{2} について {3}",
+  "item": "{1} 項目",
+  "items": "{1} 項目",
+  "details": {
+    "windows_gdi_effects": "責任者: initGDIThread/prepareGDIEffect/enableGDIEffect; デスクトップレベルのGDIビジュアルエフェクトを実行できます",
+    "windows_gdi_internals": "責任者: SlushiWinGDI/WinGDIThread; GDI効果スレッドまたはレジストリに直接アクセスできます",
+    "windows_desktop_control": "責任者: hideDesktopIcons/hideTaskBar/moveDesktopElements;デスクトップUIを隠したり移動したり,透明性を変更したりできます",
+    "windows_wallpaper_control": "責任者: changeWindowsWallpaper/setDesktopWallpaper変更または復元することができます. Windows 壁紙",
+    "windows_shellwindow_control": "責任者: captureScreenshot/showNotification/setWindowOpacity画面をキャプチャできる,通知できる Windows,または窓の画像を変更する",
+    "windowsapi": "責任者: スルシッティングス.ウィンドウズWindowsAPI届くことができる Plus Engine Windows 原住民の助手",
+    "windowscpp": "責任者: スルシッティングス.ウィンドウズWindowsCPP低レベルの電話ができます Windows ネイティブ機能",
+    "import_windows_native_apis": "責任者: 輸入 slushithings.windows*; 解鎖できる Windows/GDIヘルパーアクセス HScript"
+  }
+}

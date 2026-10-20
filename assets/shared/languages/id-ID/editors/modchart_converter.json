@@ -1,0 +1,21 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.modchart_converter",
+  "presence": "Konverter Modchart",
+  "title": "Konverter Modchart",
+  "intro": "Salin modchart NVME Lua ke clipboard, lalu klik \"Convert Clipboard\".",
+  "help": "Alat ini melakukan konversi lintasan pertama yang praktis.\nTetapkan ulang langkah-langkahnya, hapus pembantu radian NVMe, dan ingat bahwa fieldYaw adalah nama sisi Plus.",
+  "preview_truncated": "... pratinjau terpotong ...",
+  "no_clipboard_text": "Tidak ada teks yang ditemukan di papan klip.",
+  "actions": {
+    "convert_clipboard": "Konversi Papan Klip",
+    "copy_starter": "Salin Pemula",
+    "back": "Kembali"
+  },
+  "status": {
+    "starter_copied": "Templat awal telah disalin ke clipboard.",
+    "ready": "Selesai. Impor modchart dari clipboard atau salin template awal.",
+    "clipboard_empty": "Papan klipnya kosong. Pertama, salin skrip NVMe.",
+    "converted": "Mengonversi karakter {1} menjadi {2} dan menyalin hasilnya ke clipboard."
+  }
+}

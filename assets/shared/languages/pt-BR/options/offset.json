@@ -6,7 +6,7 @@
   "switch": "(Pressione {1} para mudar)",
   "modes": {
     "note_delay": "Nota/Atraso de Beat",
-    "combo": "Deslocamento de combinação",
+    "combo": "Posição do combo",
     "keyviewer": "Deslocamento do KeyViewer",
     "hit_ms": "Carregar em MS Offset"
   },

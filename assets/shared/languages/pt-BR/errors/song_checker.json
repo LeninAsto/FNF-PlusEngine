@@ -9,10 +9,10 @@
   },
   "more": "...e {1} mais.",
   "issues": {
-    "missing_chart": "Gráfico não encontrado para essa dificuldade.",
-    "invalid_chart": "O gráfico existe mas não pôde ser analisado.",
+    "missing_chart": "Chart não encontrado para essa dificuldade.",
+    "invalid_chart": "O chart existe mas não pôde ser analisado.",
     "repaired_song_name": "O nome da canção em falta foi restaurado de sua pasta.",
-    "missing_notes": "O gráfico não tem nenhum array de notas.",
+    "missing_notes": "O chart não tem nenhum array de notas.",
     "repaired_events": "O array de eventos em falta foi substituído por um vazio.",
     "invalid_bpm": "BPM deve ser maior que zero.",
     "repaired_speed": "A velocidade de rolagem inválida foi restaurada para 1.",

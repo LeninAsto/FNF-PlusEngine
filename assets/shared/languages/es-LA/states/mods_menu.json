@@ -2,13 +2,13 @@
   "$schema": 1,
   "$namespace": "states.mods_menu",
   "presence": "En el navegador de mods",
-  "title": "MODOS",
+  "title": "MODS",
   "filter": "FILTRO: {1}",
   "filters": {
-    "all": "TODO",
-    "enabled": "ACTIVADO",
-    "disabled": "DESACTIVADO",
-    "launchable": "LANZABLE"
+    "all": "TODOS",
+    "enabled": "ACTIVADOS",
+    "disabled": "DESACTIVADOS",
+    "launchable": "CON INICIO PROPIO"
   },
   "search": "BUSCAR",
   "search_query": "BÚSQUEDA: {1}{2}",
@@ -19,26 +19,26 @@
   },
   "restart_notice": "* Al mover/alternar este mod se reiniciará el juego.",
   "buttons": {
-    "launch": "LANZAMIENTO",
-    "enable": "PERMITIR",
+    "launch": "INICIAR",
+    "enable": "ACTIVAR",
     "enabled": "ACTIVADO",
     "disable": "DESACTIVAR",
     "settings": "AJUSTES",
     "reload": "RECARGAR"
   },
-  "hint": "ARRIBA/ABAJO Seleccionar L/R Reordenar ENTER Iniciar ESPACIO Activar/Desactivar (SHIFT=Todo) TAB Configuración Y Seguridad F Filtro / Buscar ESC Salir",
+  "hint": "ARRIBA/ABAJO Seleccionar  L/R Reordenar  ENTER Iniciar  ESPACIO Activar/Desactivar (SHIFT=Todos)  TAB Ajustes  Y Seguridad  F Filtro  / Buscar  ESC Salir",
   "empty": "NO HAY MODS INSTALADOS\nPULSA ATRÁS PARA SALIR O INSTALAR UN MOD",
   "unknown_mod": "Mod desconocido",
   "no_description": "No se proporciona descripción.",
   "status": {
-    "disabled": "Deshabilitado: habilitar para iniciar",
-    "launch": "> Presione ENTER para iniciar",
-    "no_launchable_states": "No hay estados lanzables",
+    "disabled": "Desactivado: actívalo para iniciar",
+    "launch": "> Pulsa ENTER para iniciar",
+    "no_launchable_states": "Sin pantallas de inicio propias",
     "base_game_global": "El juego base siempre se carga globalmente",
-    "sensitive_scripts": "Scripts confidenciales detectados: elija CONFIANZA para habilitarlos",
+    "sensitive_scripts": "Se detectaron API sensibles: elige CONFIAR para activar",
     "activation_denied": "Activación denegada: el mod permaneció deshabilitado",
-    "trusted": "Confiable: mod habilitado",
-    "security_disabled": "Mod Security está deshabilitado (habilítelo en Opciones)"
+    "trusted": "Mod de confianza: activado",
+    "security_disabled": "Seguridad de mods desactivada (actívala en Opciones)"
   },
   "settings_error": {
     "title": "Nombre del mod: {1}",

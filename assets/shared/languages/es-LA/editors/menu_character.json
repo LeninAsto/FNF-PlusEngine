@@ -4,18 +4,18 @@
   "ui": {
     "0_0": "[0, 0]",
     "antialiasing": "Antialiasing",
-    "arrow_keys_change_offset_hold_shift_for_10x_speed_space_play_start_pre": "Teclas de flecha: cambiar compensación (mantenga presionada la tecla Mayús para una velocidad de 10x)\n\t\t\t\nEspacio: reproduce la animación \"Iniciar prensa\" (tipo de personaje novio)",
+    "controls_help": "Flechas - Cambiar desplazamiento (mantén Shift para velocidad x10)\n\t\t\t\nEspacio - Reproducir la animación \"Start Press\" (tipo de personaje Boyfriend)",
     "flip_x": "Voltear X",
-    "idle_animation_on_the_xml": "Animación inactiva en.XML:",
+    "idle_animation_on_the_xml": "Animación idle en el archivo .XML:",
     "image_file_name": "Archivo de imagen:",
-    "load_character": "Cargar carácter",
-    "reload_char": "Recargar carbón",
+    "load_character": "Cargar personaje",
+    "reload_char": "Recargar personaje",
     "save_character": "Guardar personaje",
     "scale": "Escala:",
-    "start_press_animation_on_the_xml": "Iniciar animación de prensa en el.XML:"
+    "start_press_animation_on_the_xml": "Animación Start Press en el archivo .XML:"
   },
   "presence": {
-    "title": "Editor de caracteres de menú",
+    "title": "Editor de personajes del menú",
     "editing": "Edición: {1}"
   },
   "tabs": {

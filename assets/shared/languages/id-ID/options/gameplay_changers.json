@@ -1,0 +1,64 @@
+{
+  "$schema": 1,
+  "$namespace": "options.gameplay_changers",
+  "scrolltype": {
+    "name": "Jenis Gulir",
+    "values": {
+      "multiplicative": "Perkalian",
+      "constant": "Konstan"
+    }
+  },
+  "scrollspeed": {
+    "name": "Kecepatan Gulir"
+  },
+  "songspeed": {
+    "name": "Tingkat Pemutaran"
+  },
+  "preservepitch": {
+    "name": "Pertahankan Nada Suara"
+  },
+  "healthgain": {
+    "name": "Pengganda Keuntungan Kesehatan"
+  },
+  "healthloss": {
+    "name": "Pengganda Kerugian Kesehatan"
+  },
+  "instakill": {
+    "name": "Instal pada Nona"
+  },
+  "practice": {
+    "name": "Mode Latihan"
+  },
+  "perfect": {
+    "name": "Mode Sempurna"
+  },
+  "opponentplay": {
+    "name": "Mode Lawan"
+  },
+  "opponentdrain": {
+    "name": "Tiriskan Lawan"
+  },
+  "nodroppenalty": {
+    "name": "Tidak Ada Penalti Jatuh"
+  },
+  "botplay": {
+    "name": "Botplay"
+  },
+  "botplaytype": {
+    "name": "Tipe Botplay",
+    "values": {
+      "normal": "Normal",
+      "cpu": "CPU"
+    }
+  },
+  "botplaycpuprofile": {
+    "name": "Profil CPU",
+    "values": {
+      "perfect": "Sempurna",
+      "skilled": "Terampil",
+      "balanced": "Seimbang",
+      "casual": "Kasual",
+      "chaotic": "Kacau"
+    }
+  }
+}

@@ -1,0 +1,24 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.scripting",
+  "lua": {
+    "load_error_title": "Lua スクリプトでエラーが発生しました!",
+    "load_error_message": "{1}\n\n{2}",
+    "non_function_callback": "エラー ( {1} ): {2} 値を呼び出そうとしています",
+    "callback_error": "エラー ( {1} ): {2}",
+    "playstate_only": "{1} は PlayState 専用であり、{2} Lua ホストからは実行できません。"
+  },
+  "hscript": {
+    "warning": "警告: {1}",
+    "null_field": "Null 参照: Null オブジェクトの「 {1} 」にアクセスしようとしています",
+    "script_warning": "警告 ( {1} ): {2}",
+    "unsupported": "HScript はこのプラットフォームではサポートされていません。"
+  },
+  "mod_settings": {
+    "title": "MOD名: {1}",
+    "parse_error": "エラーが発生しました: {1}",
+    "file_missing": "getModSetting : {1} が見つかりませんでした。",
+    "setting_missing": "getModSetting : {2} の設定内に「 {1} 」が見つかりませんでした。"
+  },
+  "raw_error_with_source": "{1}\n{2}"
+}

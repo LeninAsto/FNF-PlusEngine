@@ -1,0 +1,7 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.shader",
+  "title": "Shader 에 오류: \"{1}\"",
+  "log_saved": "{1} - 에러 로그: {2}",
+  "log_save_failed": "{1} - shader 오류 로그를 저장하지 못했습니다: {2}"
+}

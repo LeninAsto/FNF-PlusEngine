@@ -1,0 +1,64 @@
+{
+  "$schema": 1,
+  "$namespace": "options.gameplay_changers",
+  "scrolltype": {
+    "name": "스크롤 타입",
+    "values": {
+      "multiplicative": "곱셈",
+      "constant": "일정한"
+    }
+  },
+  "scrollspeed": {
+    "name": "스크롤 속도"
+  },
+  "songspeed": {
+    "name": "재생율"
+  },
+  "preservepitch": {
+    "name": "목소리 음향 을 유지 하라"
+  },
+  "healthgain": {
+    "name": "건강 이득 증식"
+  },
+  "healthloss": {
+    "name": "건강 손실 이 증가 하는 이유"
+  },
+  "instakill": {
+    "name": "인스타킬 미스"
+  },
+  "practice": {
+    "name": "연습 모드"
+  },
+  "perfect": {
+    "name": "퍼펙트 모드"
+  },
+  "opponentplay": {
+    "name": "상대 모드"
+  },
+  "opponentdrain": {
+    "name": "반대자 배수"
+  },
+  "nodroppenalty": {
+    "name": "상속 징벌이 없습니다"
+  },
+  "botplay": {
+    "name": "Botplay"
+  },
+  "botplaytype": {
+    "name": "Botplay 유형",
+    "values": {
+      "normal": "정상",
+      "cpu": "CPU"
+    }
+  },
+  "botplaycpuprofile": {
+    "name": "CPU 프로파일",
+    "values": {
+      "perfect": "완벽해",
+      "skilled": "숙련된 사람",
+      "balanced": "균형 잡힌",
+      "casual": "우연히",
+      "chaotic": "혼란스럽다"
+    }
+  }
+}

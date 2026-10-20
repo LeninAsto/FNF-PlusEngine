@@ -2209,13 +2209,13 @@ class PlayState extends MusicBeatState
 				opponentStrums.add(babyArrow);
 
 			strumLineNotes.add(babyArrow);
-			babyArrow.playerPosition();
+			babyArrow.playerPosition(ClientPrefs.data.middleScroll ? 0 : player);
 			if (ClientPrefs.data.middleScroll)
 			{
 				if (isWatchedOpponentStrum)
-					babyArrow.x = STRUM_X_MIDDLESCROLL + 310 + (i > 1 ? FlxG.width / 2 + 25 : 0);
+					babyArrow.x += STRUM_X_MIDDLESCROLL - STRUM_X + 310 + (i > 1 ? FlxG.width / 2 + 25 : 0);
 				else
-					babyArrow.x = STRUM_X_MIDDLESCROLL;
+					babyArrow.x += STRUM_X_MIDDLESCROLL - STRUM_X + HudSafeZone.width() / 2;
 			}
 		}
 	}

@@ -4,18 +4,43 @@
     {
       "code": "en-US",
       "name": "English (US)",
-      "version": 1
+      "version": 2
     },
     {
       "code": "es-LA",
       "name": "Español (Latinoamérica)",
-      "version": 1
+      "version": 2
     },
     {
       "code": "pt-BR",
       "name": "Português (Brasil)",
+      "version": 2
+    },
+    {
+      "code": "id-ID",
+      "name": "Bahasa Indonesia",
+      "version": 1
+    },
+    {
+      "code": "ja-JP",
+      "name": "日本語",
+      "version": 1
+    },
+    {
+      "code": "zh-CN",
+      "name": "简体中文",
+      "version": 1
+    },
+    {
+      "code": "zh-TW",
+      "name": "繁體中文",
+      "version": 1
+    },
+    {
+      "code": "ko-KR",
+      "name": "한국어",
       "version": 1
     }
   ],
-  "catalogVersion": 2
+  "catalogVersion": 3
 }

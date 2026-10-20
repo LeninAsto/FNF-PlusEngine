@@ -1,0 +1,42 @@
+{
+  "$schema": 1,
+  "$namespace": "states.credits",
+  "presence": "메뉴에서",
+  "sections": {
+    "plus_engine": "Plus Engine 팀",
+    "mobile": "모바일 포팅 팀",
+    "psych_engine": "Psych Engine 팀",
+    "contributors": "엔진 공헌자",
+    "funkin": "펑킨 크루",
+    "psych_discord": "Psych Engine Discord"
+  },
+  "roles": {
+    "lenin_asto": "프로그램 제작자 Plus Engine",
+    "sirthegamercoder": "인도네시아어 번역 및 Plus Engine",
+    "andres": "이 코드에 기초하여 사용된 여러 코드의 제작자 및 소유자 Slushi Engine",
+    "theodev": "소유자, 리드 코더 Funkin Modchart",
+    "autistic_lulu": "Psych Engine 1.0.x 수정 및 유지보수",
+    "homuhomu833": "포터 회장 Psych Engine 그리고 저자 linc_luajit-rewriten",
+    "karim_akra": "두 번째 포터 Psych Engine",
+    "moxie": "지원자 Psych Engine 모바일",
+    "shadow_mario": "주요 프로그래머 및 관리자 Psych Engine",
+    "riveren": "주요 아티스트/애니메이터 Psych Engine",
+    "bb_panzu": "전직 프로그래머 Psych Engine",
+    "crowplexus": "Linux 지원 HScript IRIS, 입력 시스템 v3 및 기타 PR",
+    "kamizeta": "페시의 창조자, Psych Engine마스코트입니다",
+    "maxneton": "로딩 스크린 부활절 계란 아티스트/애니메이터",
+    "keoiki": "참고: 스플래시 애니메이션과 라틴 알파벳",
+    "sqirrarng": "크래시 핸들러 및 기본 코드\n채보 편집자의 파형 형태",
+    "elitemastereric": "런타임 샤더 지원 및 기타 PR",
+    "majigsaw77": ".MP4 비디오 로더 라이브러리 (hxvlc)",
+    "iflicky": "Psync 및 Tea Time\n음향 효과도 있어요",
+    "kadedev": "채보 편집자 및 기타 PR에 몇 가지 문제가 해결되었습니다",
+    "superpowers04": "LUA JIT 포크",
+    "cheems_and_friends": "창조자 FlxAnimate",
+    "ninjamuffin99": "프로그램 제작자 Friday Night Funkin'",
+    "phantom_arcade": "애니메이터 Friday Night Funkin'",
+    "evilsk8r": "미술가 Friday Night Funkin'",
+    "kawaisprite": "작곡자 Friday Night Funkin'"
+  },
+  "psych_discord_join": "참여 Psych 워드!"
+}

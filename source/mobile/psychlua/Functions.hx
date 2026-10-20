@@ -181,7 +181,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchjustpressedobject_value_does_not_exist', "touchJustPressedObject: {1} does not exist.", [object]));
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchjustpressedobject_missing_object', "touchJustPressedObject: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlaps(obj, cam) && TouchUtil.justPressed;
@@ -193,7 +193,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchjustreleasedobject_value_does_not_exist', "touchJustReleasedObject: {1} does not exist.", [object]));
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchjustreleasedobject_missing_object', "touchJustReleasedObject: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlaps(obj, cam) && TouchUtil.justReleased;
@@ -217,7 +217,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchpressedobjectcomplex_value_does_not_exist', "touchPressedObjectComplex: {1} does not exist.", [object]));
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchpressedobjectcomplex_missing_object', "touchPressedObjectComplex: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlapsComplex(obj, cam) && TouchUtil.pressed;
@@ -229,7 +229,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchjustpressedobjectcomplex_value_does_not_exist', "touchJustPressedObjectComplex: {1} does not exist.", [object]));
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchjustpressedobjectcomplex_missing_object', "touchJustPressedObjectComplex: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlapsComplex(obj, cam) && TouchUtil.justPressed;
@@ -241,7 +241,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchjustreleasedobjectcomplex_value_does_not_exist', "touchJustReleasedObjectComplex: {1} does not exist.", [object]));
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchjustreleasedobjectcomplex_missing_object', "touchJustReleasedObjectComplex: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlapsComplex(obj, cam) && TouchUtil.justReleased;
@@ -253,7 +253,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchreleasedobjectcomplex_value_does_not_exist', "touchReleasedObjectComplex: {1} does not exist.", [object]));
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchreleasedobjectcomplex_missing_object', "touchReleasedObjectComplex: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlapsComplex(obj, cam) && TouchUtil.released;
@@ -277,7 +277,7 @@ class MobileFunctions
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
 			if (obj == null)
 			{
-				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchoverlapsobjectcomplex_value_does_not_exist', "touchOverlapsObjectComplex: {1} does not exist.", [object]));
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.mobile_psychlua_functions.touchoverlapsobjectcomplex_missing_object', "touchOverlapsObjectComplex: {1} does not exist.", [object]));
 				return false;
 			}
 			return TouchUtil.overlapsComplex(obj, cam);

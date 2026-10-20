@@ -1,0 +1,493 @@
+{
+  "$schema": 1,
+  "$namespace": "options.settings",
+  "abbreviate_score": {
+    "name": "缩写分数",
+    "description": "如果已启用,该分数将缩短 (例如10.00K,1.00M)."
+  },
+  "accent_color": {
+    "name": "主题强调色：",
+    "description": "选择预设主题强调色，或打开自定义颜色选择器。",
+    "values": {
+      "purple": "紫色",
+      "teal": "青绿色",
+      "rose": "玫瑰色",
+      "amber": "琥珀色",
+      "indigo": "靛蓝色",
+      "green": "绿色",
+      "red": "红色",
+      "black": "黑色",
+      "custom": "自定义"
+    }
+  },
+  "align_receptors_to_hitbox": {
+    "name": "判定箭头对齐触控区",
+    "description": "如果检查,它将移动接收器与击中框路线进行排列."
+  },
+  "allow_phone_screensaver": {
+    "name": "允许手机休眠",
+    "description": "如果检查,手机会在几秒钟的停机后睡觉.\n(时间取决于你的手机的选项)"
+  },
+  "anti_aliasing": {
+    "name": "抗锯齿",
+    "description": "关闭后不再平滑图像边缘，以提高性能。"
+  },
+  "auto_pause": {
+    "name": "自动暂停",
+    "description": "游戏窗口失去焦点时自动暂停。"
+  },
+  "bad_shit_combo_break": {
+    "name": "Bad 和 Shit 中断连击",
+    "description": "获得 Bad 或 Shit 判定时中断连击，并计入连击中断次数。"
+  },
+  "bad_hit_window": {
+    "name": "Bad 判定范围",
+    "description": "调整获得“Bad”判定的时间范围，单位为毫秒。"
+  },
+  "break_timer": {
+    "name": "音符间隔计时器",
+    "description": "如果检查,当接下来的笔记还很远时,会出现计时器."
+  },
+  "camera_zooms": {
+    "name": "镜头缩放",
+    "description": "关闭后镜头不再随节拍缩放。"
+  },
+  "window_border_on_hit": {
+    "name": "命中时改变窗口边框颜色",
+    "description": "命中音符时改变窗口边框颜色。仅支持 Windows 11。"
+  },
+  "check_for_updates": {
+    "name": "检查更新",
+    "description": "在正式版本启动时检查更新。"
+  },
+  "color_accessibility": {
+    "name": "色觉辅助",
+    "description": "根据需要选择色觉辅助滤镜。",
+    "values": {
+      "none": "无",
+      "protanopia": "Protanopia",
+      "protanomaly": "Protanomaly",
+      "deuteranopia": "Deuteranopia",
+      "deuteranomaly": "Deuteranomaly",
+      "tritanopia": "Tritanopia",
+      "tritanomaly": "Tritanomaly",
+      "achromatopsia": "Achromatopsia",
+      "achromatomaly": "Achromatomaly"
+    }
+  },
+  "combo_and_rating_in_camgame": {
+    "name": "在 camGame 显示连击和判定",
+    "description": "如果已启用,组合和评级将在 camGame 而不是一个层 camHUD."
+  },
+  "combo_stacking": {
+    "name": "叠加连击与判定",
+    "description": "关闭后，新连击和判定会替换旧显示，便于阅读并减少内存使用。"
+  },
+  "disable_reset_button": {
+    "name": "禁用重置按键",
+    "description": "如果检查,重置将不会做任何事情."
+  },
+  "discord_rich_presence": {
+    "name": "Discord 活动状态",
+    "description": "关闭后不在 Discord 活动状态中显示游戏。"
+  },
+  "downscroll": {
+    "name": "音符向下滚动",
+    "description": "音符从上往下滚动。"
+  },
+  "drag_character": {
+    "name": "拖动角色",
+    "description": "像 Codename Engine 一样，使用鼠标或触屏拖动角色。"
+  },
+  "drag_stage_camera": {
+    "name": "拖动场景镜头",
+    "description": "如果没有检查,则不能用鼠标/触摸屏拖动舞台摄像头.\n如果您更喜欢老 Psych 这种风格."
+  },
+  "dynamic_combo_digits": {
+    "name": "动态连击位数",
+    "description": "如果检查,组合将显示在第一个组合中的两个数字,\n当它达到100组合时,它将成为3位数."
+  },
+  "dynamic_controls_color": {
+    "name": "动态控制按钮颜色",
+    "description": "如果检查,移动控制的颜色将被设置为您的设置中的笔记颜色.\n(仅在游戏过程中有效)"
+  },
+  "enable_3d_cameras": {
+    "name": "启用 3D 镜头",
+    "description": "启用或禁用3D相机功能.\n通过跳过3D转型,将其禁用可以提高性能."
+  },
+  "end_countdown_seconds": {
+    "name": "结束倒计时秒数",
+    "description": "在歌曲结束之前的几秒钟,倒计数显示 (10-30)."
+  },
+  "extra_controls": {
+    "name": "额外按钮",
+    "description": "选择额外按钮的数量。\n可通过 LUA 或 HScript 为这些按钮编写机制。",
+    "values": {
+      "none": "没有一个",
+      "single": "单身",
+      "double": "两次"
+    }
+  },
+  "flashing_lights": {
+    "name": "闪光效果",
+    "description": "如果对闪光敏感，请关闭此选项。"
+  },
+  "flawless_hit_window": {
+    "name": "Flawless!! 判定范围",
+    "description": "调整获得“Flawless!!”判定的时间范围，单位为毫秒。"
+  },
+  "fps_counter_mode": {
+    "name": "帧率显示模式",
+    "description": "选择左上层显示的性能信息.",
+    "values": {
+      "hidden": "隐藏",
+      "visible_no_background": "无背景可见",
+      "visible_with_background": "背景可见",
+      "basic_debug": "基本调试",
+      "extended_debug": "扩展的调试"
+    }
+  },
+  "framerate": {
+    "name": "帧率",
+    "description": "相当自我解释,不是吗?"
+  },
+  "framerate_mode": {
+    "name": "帧率模式",
+    "description": "选择发动机如何处理更新/绘制时间.\nPsych 与经典的发动机行为相匹配.",
+    "values": {
+      "psych": "Psych",
+      "fixed": "固定",
+      "interpolated": "插入"
+    }
+  },
+  "fullscreen_mode": {
+    "name": "全屏模式",
+    "description": "对于更好的阴影性能,Borderless是限于1080p.Borderless Fix使用原生显示器分辨率.",
+    "values": {
+      "borderless": "无边框",
+      "borderless_fix": "无边界解决方案",
+      "exclusive": "独占全屏"
+    }
+  },
+  "game_over_vibration": {
+    "name": "失败时振动",
+    "description": "如果检查,你的设备会在游戏结束时振动."
+  },
+  "ghost_tapping": {
+    "name": "空按不计失误",
+    "description": "没有可命中的音符时，空按不会计为失误。"
+  },
+  "good_hit_window": {
+    "name": "Good 判定范围",
+    "description": "调整获得“Good”判定的时间范围，单位为毫秒。"
+  },
+  "gradient_time_bar": {
+    "name": "时间条渐变",
+    "description": "根据角色图标的颜色为时间条添加渐变。"
+  },
+  "hardware_acceleration": {
+    "name": "硬件加速",
+    "description": "将兼容的图像直接存入 GPU，减少 RAM 占用并改善渲染稳定性，尤其适用于 Android。\n推荐大多数设备启用。"
+  },
+  "health_bar_opacity": {
+    "name": "生命条不透明度",
+    "description": "调整生命条和角色图标的不透明度。"
+  },
+  "hey_intro": {
+    "name": "开场 Hey! 动画",
+    "description": "如果检查, BF 和 GF 当倒计时说去的时候,自动动动画!"
+  },
+  "hide_hud": {
+    "name": "隐藏 HUD",
+    "description": "隐藏大部分 HUD 元素。"
+  },
+  "hide_sustain_splash": {
+    "name": "隐藏长按音符特效",
+    "description": "如果检查,可隐藏Sustain Splash"
+  },
+  "hitbox_design": {
+    "name": "触控区样式",
+    "description": "选择你的搜索箱应该是什么样子.",
+    "values": {
+      "no_gradient": "没有分数",
+      "no_gradient_old": "没有渐变 (旧)",
+      "gradient": "渐进式",
+      "hidden": "隐藏"
+    }
+  },
+  "hitbox_position": {
+    "name": "触控区位置",
+    "description": "如果检查, 查询框将放在屏幕底部,否则将留在顶部."
+  },
+  "icon_bounce_type": {
+    "name": "图标跳动样式",
+    "description": "选择生命图标随节拍跳动的方式。",
+    "values": {
+      "old": "旧版",
+      "d_b": "D&B",
+      "nf": "NF",
+      "default": "默认",
+      "codename": "Codename"
+    }
+  },
+  "infinity_display": {
+    "name": "适配超长屏幕",
+    "description": "如果检查,将视窗垂直扩展到更高的屏幕,同时保持经典的16:9游戏区."
+  },
+  "instant_window_close": {
+    "name": "立即关闭窗口",
+    "description": "如果检查, 关闭游戏即时退出, 而不是抹去窗户."
+  },
+  "key_viewer_color": {
+    "name": "按键显示颜色：",
+    "description": "选择按键显示器中按钮的颜色。",
+    "values": {
+      "gray": "灰色",
+      "red": "红色",
+      "blue": "蓝色",
+      "green": "绿色",
+      "purple": "紫色",
+      "orange": "橙色",
+      "pink": "粉色",
+      "cyan": "青色",
+      "white": "白色",
+      "black": "黑色"
+    }
+  },
+  "launcher_auto_start": {
+    "name": "启动器自动开始",
+    "description": "如果检查, Android 发射器自动启动发动机3秒后."
+  },
+  "lighter_hit_path": {
+    "name": "轻量命中效果",
+    "description": "如果不检查,整个视觉路径将运行,而不是光视觉路径.\n如果没有检查,这可能会导致LAG的表现."
+  },
+  "low_quality": {
+    "name": "低画质",
+    "description": "如果检查,将一些背景细节禁用,\n降低加载时间并提高性能."
+  },
+  "middlescroll": {
+    "name": "音符居中",
+    "description": "将玩家音符放在屏幕中央。"
+  },
+  "mobile_controls_opacity": {
+    "name": "移动端按钮不透明度",
+    "description": "调整移动端按钮的不透明度。请勿设为 0，以免看不到按钮。"
+  },
+  "mobile_trace_button": {
+    "name": "移动端调试按钮",
+    "description": "在移动端显示触控调试按钮。"
+  },
+  "mod_security": {
+    "name": "模组安全",
+    "description": "如果检查,扫描模式 Lua/HScript 通过不值得信赖的敏感API来跳过模块的脚本."
+  },
+  "modchart_debug_overlay": {
+    "name": "Modchart 调试信息",
+    "description": "显示 Modchart 渲染统计信息。\n会影响性能，因此默认关闭。"
+  },
+  "mods_storage_location": {
+    "name": "模组存储位置",
+    "description": "选择哪里 Android 修改和保存文件应该活跃.\n内部使用应用程序存储,外部使用公共存储.",
+    "values": {
+      "internal": "内部",
+      "external": "外部"
+    }
+  },
+  "nf_rating_style": {
+    "name": "NF 判定样式",
+    "description": "判定和连击数字在原位随节拍跳动，而不是飞出并淡化。"
+  },
+  "note_skins": {
+    "name": "音符皮肤：",
+    "description": "选择喜欢的音符皮肤。"
+  },
+  "note_splash_opacity": {
+    "name": "命中特效不透明度",
+    "description": "调整音符命中特效的不透明度。"
+  },
+  "note_splashes": {
+    "name": "音符命中特效：",
+    "description": "选择音符命中特效。"
+  },
+  "opponent_notes": {
+    "name": "对手音符",
+    "description": "关闭后隐藏对手音符。"
+  },
+  "optimize_hold_rendering": {
+    "name": "优化长按音符渲染",
+    "description": "优化长按音符渲染以提高性能。\n复杂的 Modchart 可能显示异常，不建议启用。"
+  },
+  "options_menu_style": {
+    "name": "设置菜单样式",
+    "description": "在+卡和+卡之间改变选项菜单 Psych 一个经典的.",
+    "values": {
+      "plus": "再加上",
+      "psych": "Psych"
+    }
+  },
+  "over_accuracy": {
+    "name": "允许准确率超过 100%",
+    "description": "如果检查,完美的播放可以推出准确度超过100%, 到歌曲结束时达到200%."
+  },
+  "pause_countdown": {
+    "name": "恢复时倒计时",
+    "description": "从暂停恢复时显示倒计时。"
+  },
+  "pause_music": {
+    "name": "暂停音乐：",
+    "description": "选择暂停界面的音乐。",
+    "values": {
+      "none": "无",
+      "tea_time": "Tea Time",
+      "breakfast": "Breakfast",
+      "breakfast_(pico)": "Breakfast (Pico)"
+    }
+  },
+  "pop_up_score": {
+    "name": "分数弹出效果",
+    "description": "如果没有检查,打注将不会显示评级和组合弹出."
+  },
+  "rating_offset": {
+    "name": "判定时间偏移",
+    "description": "调整获得 \"flawless!!\" 判定的输入时机。\n数值越大，需要按得越晚。"
+  },
+  "results_state_at_end": {
+    "name": "结束后显示结果",
+    "description": "如果没有检查, endSong 没有过渡到 ResultsState 在 Freeplay故事模式."
+  },
+  "rgb_notes": {
+    "name": "RGB 音符",
+    "description": "如果未检查,使用Classic Psych 0.6.3型笔记颜色和根笔记资产."
+  },
+  "safe_frames": {
+    "name": "输入容错帧数",
+    "description": "改变你有多少框架\n一个提前或晚的笔记."
+  },
+  "score_text_grow_on_hit": {
+    "name": "命中时放大分数",
+    "description": "如果未检查,则禁用Score文本增长\n每当你打一个笔记时."
+  },
+  "script_deprecation_warnings": {
+    "name": "过时 API 警告",
+    "description": "如果检查,已过期 Lua/HScript 兼容性API将打印警告到调试控制台."
+  },
+  "shaders": {
+    "name": "着色器",
+    "description": "如果没有检查,则会禁用遮光器. CPU 在较弱的设备上."
+  },
+  "show_android_launcher": {
+    "name": "显示 Android 启动器",
+    "description": "如果检查, Android 发射机在发动机之前打开.\n如果从发射器中禁用了,请把它重新启动."
+  },
+  "show_combo_numbers": {
+    "name": "显示连击数字",
+    "description": "如果没有检查,在打笔记时隐藏组合号码弹出."
+  },
+  "show_combo_sprite": {
+    "name": "显示 COMBO 图像",
+    "description": "如果没有检查,在打笔记时隐藏了COMBO精液弹出."
+  },
+  "show_early_late": {
+    "name": "显示 Early/Late",
+    "description": "根据按键提前或延后显示 Early 或 Late。"
+  },
+  "show_end_countdown": {
+    "name": "显示结束倒计时",
+    "description": "如果检查,则显示了歌曲最后几秒钟的倒计数."
+  },
+  "show_hit_ms": {
+    "name": "显示命中时间偏差",
+    "description": "在判定旁显示按键时间偏差，单位为毫秒。"
+  },
+  "show_key_viewer": {
+    "name": "显示按键状态",
+    "description": "显示当前按下的按键。"
+  },
+  "show_rating_sprite": {
+    "name": "显示判定图像",
+    "description": "如果没有检查,在打笔记时隐藏了评级精英弹出."
+  },
+  "gameplay_version": {
+    "name": "游玩时显示版本",
+    "description": "如果检查,在游戏中显示版本文本."
+  },
+  "show_watermark": {
+    "name": "显示水印",
+    "description": "如果检查,显示屏幕上的水印."
+  },
+  "sick_hit_window": {
+    "name": "Sick! 判定范围",
+    "description": "调整获得“Sick!”判定的时间范围，单位为毫秒。"
+  },
+  "smooth_health_bar": {
+    "name": "平滑生命条",
+    "description": "生命条平滑变化，而不是立即跳转。"
+  },
+  "sustains_as_one_note": {
+    "name": "长按音符计为单个音符",
+    "description": "如果检查了,如果错过,就不能按住笔记.\n作为一个单一的成功/小姐.\n如果您更喜欢旧输入系统,请不检查."
+  },
+  "system_score_multiplier": {
+    "name": "计分系统",
+    "description": "选择记号击中的分数系统",
+    "values": {
+      "psych": "Psych",
+      "codename": "Codename"
+    }
+  },
+  "time_bar": {
+    "name": "时间条：",
+    "description": "选择时间条显示的内容。",
+    "values": {
+      "time_left": "剩余时间",
+      "time_elapsed": "已用时间",
+      "song_name": "歌曲名称",
+      "disabled": "已禁用"
+    }
+  },
+  "time_text_bump": {
+    "name": "时间文字随节拍跳动",
+    "description": "如果没有检查,将时间短信弹动画在节奏中禁用."
+  },
+  "title_intro_video": {
+    "name": "标题开场视频",
+    "description": "如果检查,在每次发射中播放标题介绍之前的介绍视频."
+  },
+  "touch_pointer": {
+    "name": "触摸位置指示",
+    "description": "如果检查,则显示触摸指针对龙头和拖拉机的覆盖."
+  },
+  "uncap_fps": {
+    "name": "解除帧率限制",
+    "description": "在保持逻辑更新受控的同时，尽可能提高渲染帧率。\n适用于高刷新率屏幕，但可能增加耗电和 GPU 使用量。"
+  },
+  "use_flawless_rating": {
+    "name": "启用 Flawless 判定",
+    "description": "如果检查, 增加一个更严格的\"无缺陷!\""
+  },
+  "use_psych_freeplay": {
+    "name": "使用 Psych 自由模式",
+    "description": "如果检查,使用经典 Psych Engine Freeplay 州而不是 PlusEngine Freeplay."
+  },
+  "use_psych_score_text": {
+    "name": "使用 Psych 分数格式",
+    "description": "如果检查,保留原始 Psych Engine 在游戏过程中得分文本格式."
+  },
+  "vanilla_transition": {
+    "name": "经典 Psych 过渡效果",
+    "description": "使用原版 Psych Engine 的过渡效果。"
+  },
+  "vsync": {
+    "name": "VSync",
+    "description": "如果检查,可以 VSync固定屏幕撕裂成本 FPS 显示器的刷新速度.\n重新启动游戏,以充分应用它."
+  },
+  "windows_gdi_effects": {
+    "name": "Windows GDI 效果",
+    "description": "允许 Windows 保持禁用,除非你明确希望 mods使用它们."
+  },
+  "z_axis_scale": {
+    "name": "Z 轴缩放",
+    "description": "测量Z轴值以控制感知深度.\n较高的值增加了深度,较低的值平坦了."
+  }
+}

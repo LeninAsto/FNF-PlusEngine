@@ -65,7 +65,7 @@ class LuaUtils
 		if(instance == null)
 		{
 			#if LUA_ALLOWED
-			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_luautils.setproperty_cannot_set_value_because_its_parent_object_is_null', "setProperty: Cannot set \"{1}\" because its parent object is null", [variable]), false, false, FlxColor.RED);
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_luautils.setproperty_null_parent', "setProperty: Cannot set \"{1}\" because its parent object is null", [variable]), false, false, FlxColor.RED);
 			#end
 			return null;
 		}

@@ -17,7 +17,7 @@
       "description": "Mude as cores das notas e as cores das notas."
     },
     "controls": {
-      "name": "Controlos",
+      "name": "Controles",
       "description": "Alterar teclado e Gamepad liga."
     },
     "adjust_delay_and_combo": {

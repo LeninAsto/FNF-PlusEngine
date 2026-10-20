@@ -1,0 +1,9 @@
+{
+  "$schema": 1,
+  "$namespace": "states.achievements",
+  "discord": "取得的成就選單",
+  "progress": "{1} / {2}",
+  "reset": {
+    "title": "預算時間:"
+  }
+}

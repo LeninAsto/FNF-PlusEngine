@@ -3,9 +3,9 @@
   "$namespace": "editors.dialogue",
   "ui": {
     "angry_textbox": "Caixa de texto irritada",
-    "character": "Caractere:",
+    "character": "Personagem:",
     "interval_speed_ms": "Intervalo/velocidade (ms):",
-    "load_dialogue": "Janela de Carregar",
+    "load_dialogue": "Carregar diálogo",
     "sound_file_name": "Nome do arquivo de som:",
     "text": "Texto:"
   },

@@ -225,9 +225,9 @@ class WeekEditorState extends MusicBeatState implements PsychUIEventHandler.Psyc
 		weekBeforeInputText = new PsychUIInputText(10, hiddenUntilUnlockCheckbox.y + 55, 100, '', 8);
 		difficultiesInputText = new PsychUIInputText(10, weekBeforeInputText.y + 60, 200, '', 8);
 
-		tab_group.add(new FlxText(weekBeforeInputText.x, weekBeforeInputText.y - 28, 0, Language.getPhrase('editors.week.ui.week_file_name_of_the_week_you_have_to_finish_for_unlocking', 'Week File name of the Week you have\nto finish for Unlocking:')));
+		tab_group.add(new FlxText(weekBeforeInputText.x, weekBeforeInputText.y - 28, 0, Language.getPhrase('editors.week.ui.unlock_week_file', 'Week File name of the Week you have\nto finish for Unlocking:')));
 		tab_group.add(new FlxText(difficultiesInputText.x, difficultiesInputText.y - 20, 0, Language.getPhrase('editors.week.ui.difficulties', 'Difficulties:')));
-		tab_group.add(new FlxText(difficultiesInputText.x, difficultiesInputText.y + 20, 0, Language.getPhrase('editors.week.ui.default_difficulties_are_easy_normal_hard_without_quotes', 'Default difficulties are "Easy, Normal, Hard"\nwithout quotes.')));
+		tab_group.add(new FlxText(difficultiesInputText.x, difficultiesInputText.y + 20, 0, Language.getPhrase('editors.week.ui.default_difficulties_help', 'Default difficulties are "Easy, Normal, Hard"\nwithout quotes.')));
 		tab_group.add(weekBeforeInputText);
 		tab_group.add(difficultiesInputText);
 		tab_group.add(hiddenUntilUnlockCheckbox);

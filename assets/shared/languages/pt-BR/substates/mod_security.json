@@ -2,23 +2,23 @@
   "$schema": 1,
   "$namespace": "substates.mod_security",
   "title": {
-    "warning": "Aviso sensível da API",
-    "clean": "Segurança Mod"
+    "warning": "Aviso de APIs sensíveis",
+    "clean": "Segurança de mods"
   },
   "detected_calls": "Chamadas detectadas (UP/DOWN ou roda para rolar):",
   "actions": {
-    "trust": "CONFIANÇA",
-    "block": "BLOCO"
+    "trust": "CONFIAR",
+    "block": "BLOQUEAR"
   },
-  "hint": "Esquerda/direita para escolher -- Digite para confirmar",
+  "hint": "Esquerda/Direita para escolher - ENTER para confirmar",
   "counter": "Mod {1} / {2}",
   "body": {
     "clean": "Nenhuma API sensível foi detectada nos scripts deste mod.\n\n",
-    "clean_activation": "CONFIANÇA = habilitar o mod.\nBLOCK = manter o mod desativado.",
-    "clean_review": "CONFIANÇA = os scripts são executados normalmente.\nBLOCK = mod fica habilitado, scripts ignorados.",
-    "warning": "Os scripts deste mod usam APIs que podem ser abusadas por danos.\n",
-    "warning_activation": "Confiar = habilitar os scripts mod e executar. BLOCK = manter o mod desativado.\n",
-    "warning_review": "CONFIANÇA = os scripts são executados normalmente. BLOCK = mod fica habilitado, scripts ignorados.\n",
+    "clean_activation": "CONFIAR = ativar o mod.\nBLOQUEAR = manter o mod desativado.",
+    "clean_review": "CONFIAR = executar os scripts normalmente.\nBLOQUEAR = manter o mod ativado, ignorando os scripts.",
+    "warning": "Os scripts deste mod usam APIs que podem causar danos se usadas de forma maliciosa.\n",
+    "warning_activation": "CONFIAR = ativar o mod e executar os scripts. BLOQUEAR = mantê-lo desativado.\n",
+    "warning_review": "CONFIAR = executar os scripts normalmente. BLOQUEAR = manter o mod ativado, ignorando os scripts.\n",
     "capabilities": "\nEste mod pode:"
   },
   "categories": {
@@ -31,23 +31,23 @@
     "haxe_eval": "[!] Executa código Haxe/Lua arbitrário em tempo de execução",
     "fs_read": "[*] Lê arquivos do seu PC",
     "reflect": "[*] Utiliza a pesquisa de reflexão / classe dinâmica",
-    "exit": "[*] Pode forçar o processo de jogo",
+    "exit": "[*] Pode forçar o fechamento do jogo",
     "recon": "[*] Lê variáveis de ambiente / informações do sistema",
-    "other": "\n[*] Outras APIs sensíveis (ver lista abaixo)",
-    "common_only": "\n(apenas APIs comuns encontradas -- reveja a lista abaixo)"
+    "other": "\n[*] Outras APIs sensíveis (veja a lista abaixo)",
+    "common_only": "\n(apenas APIs comuns encontradas; veja a lista abaixo)"
   },
   "no_findings": "(sem APIs sensíveis detectadas)",
   "list_range": "{1}-{2} do {3}",
-  "item": "Item {1}",
-  "items": "Itens {1}",
+  "item": "{1} item",
+  "items": "{1} itens",
   "details": {
     "windows_gdi_effects": "responsável: initGDIThread/prepareGDIEffect/enableGDIEffect; pode executar efeitos visuais GDI de nível desktop",
     "windows_gdi_internals": "responsável: SlushiWinGDI/WinGDIThread; pode acessar o fio de efeito GDI ou registro diretamente",
     "windows_desktop_control": "responsável: hideDesktopIcons/hideTaskBar/moveDesktopElements; pode ocultar/mover interface de secretária ou alterar transparência",
-    "windows_wallpaper_control": "responsável: changeWindows Wallpaper/setDesktop Wallpaper; pode alterar ou restaurar o papel de parede do Windows",
-    "windows_shellwindow_control": "responsável: captureScreenshot/showNotificação/setWindowOpacidade; pode capturar tela, notificar Windows ou alterar visuais da janela",
-    "windowsapi": "responsável: slushithings.janelas. WindowsAPI; pode alcançar os ajudantes nativos do Windows Plus Engine",
-    "windowscpp": "responsável: slushithings.janelas. O WindowsCPP; pode chamar funções nativas de baixo nível do Windows",
-    "import_windows_native_apis": "responsável: importar slushithings.windows.*; pode desbloquear o acesso ao auxiliar Windows/GDI do HScript"
+    "windows_wallpaper_control": "responsável: changeWindowsWallpaper/setDesktopWallpaper; pode alterar ou restaurar o papel de parede do Windows",
+    "windows_shellwindow_control": "responsável: captureScreenshot/showNotification/setWindowOpacity; pode capturar tela, notificar Windows ou alterar visuais da janela",
+    "windowsapi": "responsável: slushithings.windows.WindowsAPI; pode alcançar os ajudantes nativos do Windows Plus Engine",
+    "windowscpp": "responsável: slushithings.windows.WindowsCPP; pode chamar funções nativas de baixo nível do Windows",
+    "import_windows_native_apis": "responsável: import slushithings.windows.*; pode desbloquear o acesso ao auxiliar Windows/GDI do HScript"
   }
 }

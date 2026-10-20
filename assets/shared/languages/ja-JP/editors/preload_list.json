@@ -1,0 +1,14 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.preload_list",
+  "ui": {
+    "high_qual": "高品質",
+    "load_file": "ファイルのロード",
+    "load_folder": "フォルダーのロード",
+    "low_qual": "低品質",
+    "preload_list": "先読みリスト",
+    "save": "保存",
+    "story_mode": "ストーリーモード",
+    "x": "X"
+  }
+}

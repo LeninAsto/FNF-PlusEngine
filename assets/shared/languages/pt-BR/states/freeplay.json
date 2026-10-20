@@ -9,10 +9,10 @@
     "none": "Sem pontuação ainda"
   },
   "errors": {
-    "no_weeks": "SEM SEMANAS DE LIBERDADE\n\nPressione {1} para ir para o menu Editor Semana.\nPressione {2} para retornar ao Menu Principal.",
-    "chart_load_exception": "Erro inesperado ao carregar o gráfico: {1}",
-    "no_chart": "Nenhum gráfico está disponível para esta dificuldade!",
-    "invalid_bpm": "Este gráfico tem um BPM inválido, por isso não pode ser reproduzido."
+    "no_weeks": "NÃO HÁ SEMANAS NO MODO LIVRE\n\nPressione {1} para abrir o editor de semanas.\nPressione {2} para voltar ao menu principal.",
+    "chart_load_exception": "Erro inesperado ao carregar o chart: {1}",
+    "no_chart": "Nenhum chart está disponível para esta dificuldade!",
+    "invalid_bpm": "Este chart tem um BPM inválido, por isso não pode ser reproduzido."
   },
   "search": {
     "placeholder": "Procurar...",
@@ -22,8 +22,8 @@
   "desktop_mod_tip": "/ F5 recarrega mods / solta uma pasta mod para importá-la.",
   "song_info": {
     "loading": "Carregando...",
-    "scores": "Diferenças e Pontuações:\n{1}",
-    "time": "Tempo: {1}",
+    "scores": "Dificuldades e pontuações:\n{1}",
+    "time": "Duração: {1}",
     "bpm": "BPM: {1}",
     "author": "Por: {1}"
   },

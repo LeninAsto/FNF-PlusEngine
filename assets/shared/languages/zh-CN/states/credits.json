@@ -1,0 +1,42 @@
+{
+  "$schema": 1,
+  "$namespace": "states.credits",
+  "presence": "在菜单中",
+  "sections": {
+    "plus_engine": "Plus Engine 团队",
+    "mobile": "移动运输团队",
+    "psych_engine": "Psych Engine 团队",
+    "contributors": "发动机贡献者",
+    "funkin": "飞行员",
+    "psych_discord": "Psych Engine Discord"
+  },
+  "roles": {
+    "lenin_asto": "编程人员 Plus Engine",
+    "sirthegamercoder": "印尼语翻译和 Plus Engine",
+    "andres": "基于该技术的几个代码的创作者和拥有者 Slushi Engine",
+    "theodev": "首席编码者 Funkin Modchart",
+    "autistic_lulu": "Psych Engine 1.0.x修复和维护",
+    "homuhomu833": "负责人: Psych Engine 作者: linc_luajit-rewriten",
+    "karim_akra": "第二个波特 Psych Engine",
+    "moxie": "助手 Psych Engine 移动",
+    "shadow_mario": "主编程序员和负责人 Psych Engine",
+    "riveren": "主要艺术家/动画家 Psych Engine",
+    "bb_panzu": "前编程员 Psych Engine",
+    "crowplexus": "Linux 支持 HScript IRIS,输入系统v3和其他公关",
+    "kamizeta": "创始人Pessy, Psych Engine这是吉祥物.",
+    "maxneton": "装载屏幕复活节蛋艺术家/动画师.",
+    "keoiki": "标签: 闪光动画和拉丁字母",
+    "sqirrarng": "崩溃处理程序及\n谱面编辑器波形功能的基础代码",
+    "elitemastereric": "运行时间遮光器支持和其他公关",
+    "majigsaw77": ".MP4视频加载器图书馆 (hxvlc)",
+    "iflicky": "组合Psync和 Tea Time\n还有一些音效.",
+    "kadedev": "在谱面编辑器和其他公关上解决了一些问题",
+    "superpowers04": "LuaJIT 分支",
+    "cheems_and_friends": "创造者 FlxAnimate",
+    "ninjamuffin99": "编程人员 Friday Night Funkin'",
+    "phantom_arcade": "编辑器 Friday Night Funkin'",
+    "evilsk8r": "艺术家 Friday Night Funkin'",
+    "kawaisprite": "编曲者 Friday Night Funkin'"
+  },
+  "psych_discord_join": "加入 Psych 沃德!"
+}

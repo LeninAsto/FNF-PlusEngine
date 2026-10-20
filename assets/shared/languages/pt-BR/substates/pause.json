@@ -4,18 +4,18 @@
   "deaths": "Derrotas: {1}",
   "author": "Por: {1}",
   "practice_mode": "Modo de prática",
-  "charting_mode": "Modo de Gráfico",
+  "charting_mode": "Modo de edição de charts",
   "time": "{1} / {2}",
   "menu": {
     "resume": "Continuar",
     "restart_song": "Reiniciar música",
-    "chart_editor": "Editor de Gráficos",
-    "change_difficulty": "Mudar a Dificuldade",
+    "chart_editor": "Editor de charts",
+    "change_difficulty": "Mudar dificuldade",
     "options": "Opções",
     "exit_to_menu": "Sair para o menu",
-    "leave_charting_mode": "Deixar o Modo de Gráfico",
-    "skip_time": "Saltar o Tempo",
-    "end_song": "Fim da Canção",
+    "leave_charting_mode": "Sair do modo de edição",
+    "skip_time": "Avançar no tempo",
+    "end_song": "Encerrar música",
     "toggle_practice_mode": "Alternar o Modo de Prática",
     "toggle_botplay": "Alternar Botplay",
     "skip_video": "Ignorar o Vídeo",
@@ -23,6 +23,6 @@
   },
   "errors": {
     "missing_file": "Arquivo em falta: {1}",
-    "chart": "ERRO ENCARREGADO:\n{1}"
+    "chart": "ERRO AO CARREGAR O CHART:\n{1}"
   }
 }

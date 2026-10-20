@@ -2,20 +2,20 @@
   "$schema": 1,
   "$namespace": "options.gameplay_changers",
   "scrolltype": {
-    "name": "Tipo de Rolo",
+    "name": "Tipo de rolagem",
     "values": {
       "multiplicative": "Multiplicativo",
       "constant": "Constante"
     }
   },
   "scrollspeed": {
-    "name": "Velocidade de Rolagem"
+    "name": "Velocidade das notas"
   },
   "songspeed": {
     "name": "Taxa de reprodução"
   },
   "preservepitch": {
-    "name": "Preservar o Pitch de Voz"
+    "name": "Preservar tom da voz"
   },
   "healthgain": {
     "name": "Multiplicador de ganho de saúde"
@@ -24,7 +24,7 @@
     "name": "Multiplicador de Perda de Saúde"
   },
   "instakill": {
-    "name": "Instakill na Miss"
+    "name": "Perder ao errar"
   },
   "practice": {
     "name": "Modo de prática"
@@ -33,13 +33,13 @@
     "name": "Modo Perfeito"
   },
   "opponentplay": {
-    "name": "Modo oposto"
+    "name": "Modo oponente"
   },
   "opponentdrain": {
-    "name": "Dreno oposto"
+    "name": "Oponente drena vida"
   },
   "nodroppenalty": {
-    "name": "Sem Pena de Queda"
+    "name": "Sem penalidade ao soltar notas"
   },
   "botplay": {
     "name": "Botplay"
@@ -54,9 +54,9 @@
   "botplaycpuprofile": {
     "name": "Perfil da CPU",
     "values": {
-      "perfect": "Perfeito.",
-      "skilled": "Habilidade",
-      "balanced": "Saldo",
+      "perfect": "Perfeito",
+      "skilled": "Habilidoso",
+      "balanced": "Equilibrado",
       "casual": "Casual",
       "chaotic": "Caótico"
     }

@@ -1,0 +1,19 @@
+{
+  "$schema": 1,
+  "$namespace": "options.language",
+  "hint": "选择的语言应使用ACCEPT.",
+  "applied_badge": "活动",
+  "selector": {
+    "name": "语言",
+    "description": "应用 {1} 语言包。",
+    "active": "{1}（已启用）"
+  },
+  "sync": {
+    "name": "下载或更新语言",
+    "description": "检查官方目录并安全安装新的或更新的语言包.",
+    "success_title": "语言已更新",
+    "error_title": "语言更新失败",
+    "success": "已安装：{1}。已是最新：{2}。",
+    "error": "无法更新语言包：\n{1}"
+  }
+}

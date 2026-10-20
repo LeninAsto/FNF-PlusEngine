@@ -2,24 +2,24 @@
   "$schema": 1,
   "$namespace": "substates.mod_security",
   "title": {
-    "warning": "Advertencia de API sensible",
+    "warning": "Advertencia de API sensibles",
     "clean": "Seguridad de mods"
   },
   "detected_calls": "Llamadas detectadas (ARRIBA/ABAJO o rueda para desplazarse):",
   "actions": {
-    "trust": "CONFIANZA",
+    "trust": "CONFIAR",
     "block": "BLOQUEAR"
   },
-  "hint": "Izquierda/Derecha para elegir - Ingresar para confirmar",
+  "hint": "Izquierda/Derecha para elegir - ENTER para confirmar",
   "counter": "Mod {1} / {2}",
   "body": {
-    "clean": "No se detectaron API confidenciales en los scripts de este mod.",
-    "clean_activation": "CONFIANZA = habilitar el mod.\nBLOQUEAR = mantener el mod desactivado.",
-    "clean_review": "CONFIANZA = los scripts se ejecutan normalmente.\nBLOQUEO = el mod permanece habilitado, los scripts se omiten.",
-    "warning": "Los scripts de este mod utilizan API de las que se puede abusar y provocar daños.",
-    "warning_activation": "CONFIANZA = habilita el mod y ejecuta scripts.   BLOQUEAR = mantener el mod desactivado.",
-    "warning_review": "CONFIANZA = los scripts se ejecutan normalmente.   BLOQUEO = el mod permanece habilitado, los scripts se omiten.",
-    "capabilities": "Este mod puede:"
+    "clean": "No se detectaron API sensibles en los scripts de este mod.\n\n",
+    "clean_activation": "CONFIAR = activar el mod.\nBLOQUEAR = mantener el mod desactivado.",
+    "clean_review": "CONFIAR = ejecutar los scripts normalmente.\nBLOQUEAR = mantener el mod activado, omitiendo sus scripts.",
+    "warning": "Los scripts de este mod usan API que pueden causar daños si se usan de forma maliciosa.\n",
+    "warning_activation": "CONFIAR = activar el mod y ejecutar sus scripts. BLOQUEAR = mantenerlo desactivado.\n",
+    "warning_review": "CONFIAR = ejecutar los scripts normalmente. BLOQUEAR = mantener el mod activado, omitiendo sus scripts.\n",
+    "capabilities": "\nEste mod puede:"
   },
   "categories": {
     "tamper": "[!!] Intentos de alterar el sistema de seguridad del mod.",
@@ -31,23 +31,23 @@
     "haxe_eval": "[!] Ejecuta código Haxe/Lua arbitrario en tiempo de ejecución",
     "fs_read": "[*] Lee archivos desde tu PC",
     "reflect": "[*] Utiliza reflexión/búsqueda de clases dinámica",
-    "exit": "[*] Puede forzar el cierre del proceso del juego.",
+    "exit": "[*] Puede forzar el cierre del juego",
     "recon": "[*] Lee variables de entorno/información del sistema",
-    "other": "[*] Otras API confidenciales (consulte la lista a continuación)",
-    "common_only": "(solo se encontraron API comunes; revise la lista a continuación)"
+    "other": "\n[*] Otras API sensibles (revisa la lista de abajo)",
+    "common_only": "\n(solo se encontraron API comunes; revisa la lista de abajo)"
   },
   "no_findings": "(no se detectaron API sensibles)",
   "list_range": "{1}-{2} de {3}",
-  "item": "{1} artículo",
-  "items": "Artículos {1}",
+  "item": "{1} elemento",
+  "items": "{1} elementos",
   "details": {
-    "windows_gdi_effects": "responsable: initGDIThread/prepareGDIEFfect/enableGDIEFfect; puede ejecutar efectos visuales GDI a nivel de escritorio",
+    "windows_gdi_effects": "responsable: initGDIThread/prepareGDIEffect/enableGDIEffect; puede ejecutar efectos visuales GDI a nivel de escritorio",
     "windows_gdi_internals": "responsable: SlushiWinGDI/WinGDIThread; puede acceder al hilo o registro del efecto GDI directamente",
     "windows_desktop_control": "responsable: hideDesktopIcons/hideTaskBar/moveDesktopElements; puede ocultar/mover la interfaz de usuario del escritorio o cambiar la transparencia",
-    "windows_wallpaper_control": "responsable: cambiarWindowsWallpaper/setDesktopWallpaper; puede cambiar o restaurar el fondo de pantalla de Windows",
+    "windows_wallpaper_control": "responsable: changeWindowsWallpaper/setDesktopWallpaper; puede cambiar o restaurar el fondo de pantalla de Windows",
     "windows_shellwindow_control": "responsable: captureScreenshot/showNotification/setWindowOpacity; puede capturar la pantalla, notificar a Windows o alterar las imágenes de la ventana",
     "windowsapi": "responsable: slushithings.windows.WindowsAPI; puede acceder a los ayudantes nativos de Plus Engine Windows",
     "windowscpp": "responsable: slushithings.windows.WindowsCPP; puede llamar a funciones nativas de Windows de bajo nivel",
-    "import_windows_native_apis": "responsable: importar slushithings.windows.*; puede desbloquear el acceso al asistente de Windows/GDI desde HScript"
+    "import_windows_native_apis": "responsable: import slushithings.windows.*; puede desbloquear el acceso al asistente de Windows/GDI desde HScript"
   }
 }

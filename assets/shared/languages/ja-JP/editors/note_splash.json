@@ -1,0 +1,40 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.note_splash",
+  "ui": {
+    "add_update": "追加・更新",
+    "animation_name": "アニメーション名:",
+    "animation_prefix": "アニメーションの接頭辞:",
+    "animations": "アニメーション:",
+    "blue": "青：",
+    "color_to_replace": "置換する色:",
+    "convert_txt": "TXTを変換する",
+    "do_not_replace": "交換しないでください",
+    "green": "緑：",
+    "image": "画像：",
+    "indices_optional": "インデックス (オプション):",
+    "maximum_fps": "最大 FPS :",
+    "minimum_fps": "最小 FPS :",
+    "note_data": "メモデータ:",
+    "red": "赤：",
+    "reload_image": "画像のリロード",
+    "remove": "削除",
+    "replacing_color": "色の置換:",
+    "save": "保存",
+    "scale": "規模：",
+    "template": "テンプレート"
+  },
+  "presence": {
+    "title": "ノートスプラッシュエディター"
+  },
+  "help": {
+    "open": "ヘルプについては、{1} を押してください",
+    "mobile": "ストラムにタッチする\nスプラッシュを生成するには\n\n矢印キー - オフセットを移動\nZ を押し続ける - オフセットを 10 倍の速さで移動します\n\n\nC - 現在のオフセットをコピー\nV - コピーしたオフセットを現在のスプラッシュに貼り付け\n後続の 4 つのノートデータごとに\nアニメーションの追加セットが追加されます",
+    "desktop": "ストラムをクリックするか、スペースを押してください\nスプラッシュを生成するには\n\n矢印キー - オフセットを移動\nShift を押し続ける - オフセットを 10 倍速く移動します\n\n\nCtrl + C - 現在のオフセットをコピー\nCtrl + V - コピーしたオフセットを現在のスプラッシュに貼り付け\nCtrl + R - 現在のオフセットをリセット\n後続の 4 つのノートデータごとに\nアニメーションの追加セットが追加されます"
+  },
+  "tabs": {
+    "animation": "アニメーション",
+    "properties": "プロパティ",
+    "shader": "シェーダ"
+  }
+}

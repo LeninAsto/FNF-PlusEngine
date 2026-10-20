@@ -630,7 +630,7 @@ class ModchartFunctions
 			}
 			if (!Std.isOfType(mod, PathModifier))
 			{
-				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.setmodifierpath_modifier_is_not_a_pathmodifier_value', "setModifierPath: modifier is not a PathModifier: {1}", [modName]), 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.setmodifierpath_invalid_modifier', "setModifierPath: modifier is not a PathModifier: {1}", [modName]), 0xFFFF0000);
 				return;
 			}
 
@@ -673,7 +673,7 @@ class ModchartFunctions
 			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
 			if (mod == null || !Std.isOfType(mod, PathModifier))
 			{
-				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.setmodifierpathoffset_pathmodifier_not_found_value', "setModifierPathOffset: PathModifier not found: {1}", [modName]), 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.setmodifierpathoffset_missing_modifier', "setModifierPathOffset: PathModifier not found: {1}", [modName]), 0xFFFF0000);
 				return;
 			}
 
@@ -707,7 +707,7 @@ class ModchartFunctions
 			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
 			if (mod == null || !Std.isOfType(mod, PathModifier))
 			{
-				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.setmodifierpathbound_pathmodifier_not_found_value', "setModifierPathBound: PathModifier not found: {1}", [modName]), 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.setmodifierpathbound_missing_modifier', "setModifierPathBound: PathModifier not found: {1}", [modName]), 0xFFFF0000);
 				return;
 			}
 
@@ -1355,7 +1355,7 @@ class ModchartFunctions
 			final fields = Reflect.fields(bindings);
 			if (fields == null || fields.length <= 0)
 			{
-				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_expected_a_table_object_with_left_down_up_right_bindings', "{1}: expected a table/object with left/down/up/right bindings", [context]), 0xFFFFAA00);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_invalid_bindings', "{1}: expected a table/object with left/down/up/right bindings", [context]), 0xFFFFAA00);
 				return;
 			}
 
@@ -1395,7 +1395,7 @@ class ModchartFunctions
 		catch (e:Dynamic)
 		{
 			if (PlayState.instance != null)
-				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.restoregameplaycontrols_failed_to_restore_controls_value', "restoreGameplayControls: failed to restore controls: {1}", [Std.string(e)]), 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.restoregameplaycontrols_restore_failed', "restoreGameplayControls: failed to restore controls: {1}", [Std.string(e)]), 0xFFFF0000);
 		}
 	}
 

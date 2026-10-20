@@ -827,6 +827,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 		if (!isPlusStyle())
 		{
+			descText.font = Language.getFontForText(optionsArray[curSelected].description, 'vcr.ttf');
 			descText.text = optionsArray[curSelected].description;
 			descText.screenCenter(Y);
 			descText.y += 270;
@@ -969,6 +970,8 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 	public function rebuildOptionsVisuals():Void
 	{
+		// The language screen can rebuild in place after changing the font pack.
+		descText.font = Paths.font('vcr.ttf');
 		if (optionsArray == null)
 			optionsArray = [];
 
@@ -1086,12 +1089,12 @@ private class PlusOptionRow extends FlxSpriteGroup
 		add(bg);
 
 		title = new FlxText(TITLE_X, 8, ROW_W - 250, option.name, 22);
-		title.setFormat(Paths.font("vcr.ttf"), 22, FlxColor.WHITE, LEFT);
+		title.setFormat(Language.getFontForText(option.name, 'vcr.ttf'), 22, FlxColor.WHITE, LEFT);
 		title.antialiasing = ClientPrefs.data.antialiasing;
 		add(title);
 
 		desc = new FlxText(TITLE_X, 38, ROW_W - 250, compactDescription(option.description), 15);
-		desc.setFormat(Paths.font("vcr.ttf"), 15, FlxColor.WHITE, LEFT);
+		desc.setFormat(Language.getFontForText(option.description, 'vcr.ttf'), 15, FlxColor.WHITE, LEFT);
 		desc.antialiasing = ClientPrefs.data.antialiasing;
 		add(desc);
 

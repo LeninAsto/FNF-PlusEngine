@@ -1,0 +1,64 @@
+{
+  "$schema": 1,
+  "$namespace": "options.gameplay_changers",
+  "scrolltype": {
+    "name": "滚动类型",
+    "values": {
+      "multiplicative": "乘法",
+      "constant": "持续"
+    }
+  },
+  "scrollspeed": {
+    "name": "滚动速度"
+  },
+  "songspeed": {
+    "name": "播放率"
+  },
+  "preservepitch": {
+    "name": "保持声音音调"
+  },
+  "healthgain": {
+    "name": "健康增长倍数"
+  },
+  "healthloss": {
+    "name": "健康损失的倍数"
+  },
+  "instakill": {
+    "name": "在小姐身上."
+  },
+  "practice": {
+    "name": "练习模式"
+  },
+  "perfect": {
+    "name": "完美模式"
+  },
+  "opponentplay": {
+    "name": "对手模式"
+  },
+  "opponentdrain": {
+    "name": "反对者排水"
+  },
+  "nodroppenalty": {
+    "name": "没有罚款"
+  },
+  "botplay": {
+    "name": "Botplay"
+  },
+  "botplaytype": {
+    "name": "Botplay 类型",
+    "values": {
+      "normal": "正常的",
+      "cpu": "CPU"
+    }
+  },
+  "botplaycpuprofile": {
+    "name": "CPU 个人资料",
+    "values": {
+      "perfect": "完美.",
+      "skilled": "熟练",
+      "balanced": "均衡",
+      "casual": "随机",
+      "chaotic": "混沌"
+    }
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.modchart_converter",
+  "presence": "Modchart 转换器",
+  "title": "Modchart 转换器",
+  "intro": "复制 NVME Lua 然后点击\"转换剪辑板\".",
+  "help": "这种工具执行了实际的第一通转换.\n重新分配步骤,删除NVMe射线辅助器,并记住 fieldYaw 这就是+面的名字.",
+  "preview_truncated": "预览时间缩短了.",
+  "no_clipboard_text": "在剪辑板上没有找到任何短信.",
+  "actions": {
+    "convert_clipboard": "转换剪辑板",
+    "copy_starter": "复制启动器",
+    "back": "返回"
+  },
+  "status": {
+    "starter_copied": "最初的模板已被复制到剪辑板上.",
+    "ready": "完成.从剪辑板中导入模图或复制初始模板.",
+    "clipboard_empty": "剪辑板是空的.首先,复制一个NVMe脚本.",
+    "converted": "转换 {1} 字符进入 {2} 然后把结果复制到剪辑板上."
+  }
+}

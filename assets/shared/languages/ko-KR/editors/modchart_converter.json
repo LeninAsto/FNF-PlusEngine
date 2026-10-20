@@ -1,0 +1,21 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.modchart_converter",
+  "presence": "Modchart 변환기",
+  "title": "Modchart 변환기",
+  "intro": "NVME를 복사 Lua modchart를 클립보드에 넣고 \"클립보드를 변환하십시오\"를 클릭합니다.",
+  "help": "이 도구는 실용적인 첫 번째 통과 변환을 수행합니다.\n단계를 재배치하고 NVMe 방사선 보조기를 제거하고 fieldYaw 플러스 측의 이름입니다.",
+  "preview_truncated": "... 미리보기 단축 ...",
+  "no_clipboard_text": "클립보드에는 문자도 발견되지 않았습니다.",
+  "actions": {
+    "convert_clipboard": "클립보드 변환",
+    "copy_starter": "복사 시작",
+    "back": "뒤로"
+  },
+  "status": {
+    "starter_copied": "초기 템플릿은 클립보드에 복사되었습니다.",
+    "ready": "완료. 클립보드에서 모드채보를 가져오거나 초기 템플릿을 복사합니다.",
+    "clipboard_empty": "클립보드는 빈데 먼저 NVMe 스크립트를 복사해",
+    "converted": "전환 {1} 문자로 {2} 그리고 그 결과를 클립보드에 복사했습니다."
+  }
+}

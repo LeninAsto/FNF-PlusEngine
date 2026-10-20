@@ -292,7 +292,7 @@ class FunkinLua
 			if (game != null)
 				game.setOnHScript(varName, arg, exclusions);
 			else
-				luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.setonhscript_is_only_available_in_playstate_for_lua_scripts_right_now', "setOnHScript is only available in PlayState for Lua scripts right now."), false, false, FlxColor.YELLOW);
+				luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.setonhscript_requires_playstate', "setOnHScript is only available in PlayState for Lua scripts right now."), false, false, FlxColor.YELLOW);
 		});
 		addLocalCallback("setOnLuas", function(varName:String, arg:Dynamic, ?ignoreSelf:Bool = false, ?exclusions:Array<String> = null)
 		{
@@ -340,7 +340,7 @@ class FunkinLua
 					excludeScripts.push(scriptName);
 				if (game != null)
 					return game.callOnHScript(funcName, args, ignoreStops, excludeScripts, excludeValues);
-				luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.callonhscript_is_only_available_in_playstate_for_lua_scripts_right_now', "callOnHScript is only available in PlayState for Lua scripts right now."), false, false, FlxColor.YELLOW);
+				luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.callonhscript_requires_playstate', "callOnHScript is only available in PlayState for Lua scripts right now."), false, false, FlxColor.YELLOW);
 				return LuaUtils.Function_Continue;
 			});
 
@@ -509,7 +509,7 @@ class FunkinLua
 			}
 			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.addhscript_script_doesn_t_exist', "addHScript: Script doesn't exist!"), false, false, FlxColor.RED);
 			#else
-			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.addhscript_hscript_is_not_supported_on_this_platform', "addHScript: HScript is not supported on this platform!"), false, false, FlxColor.RED);
+			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.addhscript_unsupported', "addHScript: HScript is not supported on this platform!"), false, false, FlxColor.RED);
 			#end
 		});
 		Lua_helper.add_callback(lua, "removeLuaScript", function(luaFile:String)
@@ -557,7 +557,7 @@ class FunkinLua
 			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.removehscript_script_value_isn_t_running', "removeHScript: Script {1} isn't running!", [scriptFile]), false, false, FlxColor.RED);
 			return false;
 			#else
-			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.removehscript_hscript_is_not_supported_on_this_platform', "removeHScript: HScript is not supported on this platform!"), false, false, FlxColor.RED);
+			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.removehscript_unsupported', "removeHScript: HScript is not supported on this platform!"), false, false, FlxColor.RED);
 			#end
 		});
 
@@ -1697,7 +1697,7 @@ class FunkinLua
 					return true;
 				}
 				else
-					luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.startdialogue_your_dialogue_file_is_badly_formatted', "startDialogue: Your dialogue file is badly formatted!"), false, false, FlxColor.RED);
+					luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.startdialogue_invalid_dialogue', "startDialogue: Your dialogue file is badly formatted!"), false, false, FlxColor.RED);
 			}
 		else
 		{
@@ -1930,7 +1930,7 @@ class FunkinLua
 			var snd:FlxSound = MusicBeatState.getVariables().get(tag);
 			return snd != null ? snd.pitch : 1;
 			#else
-			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.getsoundpitch_sound_pitch_is_not_supported_on_this_platform', "getSoundPitch: Sound Pitch is not supported on this platform!"), false, false, FlxColor.RED);
+			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.getsoundpitch_unsupported', "getSoundPitch: Sound Pitch is not supported on this platform!"), false, false, FlxColor.RED);
 			return 1;
 			#end
 		});
@@ -1962,7 +1962,7 @@ class FunkinLua
 					snd.play();
 			}
 			#else
-			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.setsoundpitch_sound_pitch_is_not_supported_on_this_platform', "setSoundPitch: Sound Pitch is not supported on this platform!"), false, false, FlxColor.RED);
+			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.setsoundpitch_unsupported', "setSoundPitch: Sound Pitch is not supported on this platform!"), false, false, FlxColor.RED);
 			#end
 		});
 
@@ -1974,7 +1974,7 @@ class FunkinLua
 			{
 				if (this.modFolder == null)
 				{
-					FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.getmodsetting_argument_2_is_null_and_script_is_not_inside_a_packed_mod_folder', "getModSetting: Argument #2 is null and script is not inside a packed Mod folder!"), false, false, FlxColor.RED);
+					FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.getmodsetting_missing_mod_folder', "getModSetting: Argument #2 is null and script is not inside a packed Mod folder!"), false, false, FlxColor.RED);
 					return null;
 				}
 				modName = this.modFolder;

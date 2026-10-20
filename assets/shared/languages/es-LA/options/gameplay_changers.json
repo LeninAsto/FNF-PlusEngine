@@ -2,20 +2,20 @@
   "$schema": 1,
   "$namespace": "options.gameplay_changers",
   "scrolltype": {
-    "name": "Tipo de scroll",
+    "name": "Tipo de desplazamiento",
     "values": {
       "multiplicative": "multiplicativo",
       "constant": "Constante"
     }
   },
   "scrollspeed": {
-    "name": "Velocidad de scroll"
+    "name": "Velocidad de notas"
   },
   "songspeed": {
     "name": "Velocidad"
   },
   "preservepitch": {
-    "name": "Preservar el tono de la voz"
+    "name": "Conservar tono de voz"
   },
   "healthgain": {
     "name": "Multiplicador de ganancia de salud"
@@ -24,7 +24,7 @@
     "name": "Multiplicador de pérdida de salud"
   },
   "instakill": {
-    "name": "Instakill en Miss"
+    "name": "Perder al fallar"
   },
   "practice": {
     "name": "Modo de práctica"
@@ -36,19 +36,19 @@
     "name": "Modo oponente"
   },
   "opponentdrain": {
-    "name": "Drenaje del oponente"
+    "name": "El oponente drena vida"
   },
   "nodroppenalty": {
-    "name": "Sin penalización por drop"
+    "name": "Sin penalización al soltar notas"
   },
   "botplay": {
     "name": "Botplay"
   },
   "botplaytype": {
-    "name": "Tipo de juego de bots",
+    "name": "Tipo de Botplay",
     "values": {
       "normal": "Normal",
-      "cpu": "UPC"
+      "cpu": "CPU"
     }
   },
   "botplaycpuprofile": {

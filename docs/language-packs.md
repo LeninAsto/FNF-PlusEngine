@@ -12,7 +12,7 @@
 {
   "schemaVersion": 1,
   "code": "pt-BR",
-  "name": "Portugu?s (Brasil)",
+  "name": "Português (Brasil)",
   "version": 1,
   "fallback": ["en-US"],
   "bundles": ["global.json", "assets.json", "options/common.json"]
@@ -24,7 +24,7 @@
 ```json
 {
   "code": "pt-BR",
-  "name": "Portugu?s (Brasil)",
+  "name": "Português (Brasil)",
   "version": 1
 }
 ```
@@ -88,4 +88,31 @@ The language screen discovers installed manifests and displays each installed la
 - Preserve placeholders, newlines, file paths, callback names, and engine terminology.
 - Keep short labels close to the English length so they fit buttons and editor controls.
 - Verify that the selected font contains every required glyph.
-- Test at 1280?720, especially Options, Chart Editor, popups, debug messages, and error dialogs.
+- Test at 1280×720, especially Options, Chart Editor, popups, debug messages, and error dialogs.
+
+## Bundled languages and review status
+
+The catalog contains English (`en-US`), Latin American Spanish (`es-LA`), Brazilian Portuguese (`pt-BR`), Indonesian (`id-ID`), Japanese (`ja-JP`), Simplified Chinese (`zh-CN`), Traditional Chinese (`zh-TW`), and Korean (`ko-KR`). Each pack contains the complete canonical bundle/key set.
+
+Spanish and Portuguese received contextual corrections for game judgments, combos, note effects, editor actions, mod controls, credits, and technical API names. The five new packs use machine-assisted translations with a reviewed interface glossary. They still need native-speaker review, particularly long editor help and diagnostic messages; complete key coverage does not imply linguistic certification. Unknown model glyphs were removed during review and the affected texts were translated manually.
+
+Asian packs redirect `vcr.ttf`, `pixel-latin.ttf`, `aller.ttf`, and `NotoSans-Medium.ttf` to their matching bundled Noto Sans font. Material Icons remain unchanged. `Alphabet` rasterizes glyphs missing from its sprite atlas, so native language names also appear while another language is active. No translation service or model is required at runtime.
+
+## Compact keys and compatibility
+
+Use short semantic IDs such as `editors.charting.messages.invalid_autosave`, rather than a normalized copy of the whole English sentence. Keep save preference names and string option values unchanged; translate their display labels instead.
+
+`source/backend/TranslationKeys.hx` maps previous phrase IDs to the compact IDs. `Language` applies these aliases consistently when loading bundles, reading phrases, and setting/removing runtime overrides. Old Lua/mod phrase references remain usable on the updated engine. New source code should use the compact IDs directly. Pack version 2 accompanies this runtime migration; older engine executables do not acquire the alias resolver through a language-pack download alone.
+
+## Validate changes
+
+From the repository root, run:
+
+```sh
+python setup/localization/validate.py
+python setup/localization/check_hud_regressions.py
+python setup/localization/check_fonts.py
+haxelib run lime build windows -debug
+```
+
+The offline Python validator checks catalog/manifests, all bundle/key sets, duplicate and normalized keys, placeholders, script API identifiers, font paths, alias targets, and literal Haxe references. The headless HUD checks exercise the production icon interpolation and receptor layout methods at multiple frame rates and in normal/opponent modes. A native build verifies Haxe and C++ integration. Neither check replaces visual testing of menu layouts and font rendering.

@@ -1,0 +1,17 @@
+{
+  "$schema": 1,
+  "$namespace": "states.title",
+  "intro": {
+    "psych_engine_by": "Psych Engine 通过",
+    "psych_continued_by": "Psych 继续",
+    "plus_engine_by": "Plus Engine 通过",
+    "not_associated": "无关联",
+    "with": "与",
+    "newgrounds": "newgrounds",
+    "friday": "Friday",
+    "night": "Night",
+    "funkin": "Funkin",
+    "fallback_first": "Psych Engine",
+    "fallback_second": "Plus Engine"
+  }
+}

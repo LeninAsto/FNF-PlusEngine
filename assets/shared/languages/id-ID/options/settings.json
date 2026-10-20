@@ -1,0 +1,493 @@
+{
+  "$schema": 1,
+  "$namespace": "options.settings",
+  "abbreviate_score": {
+    "name": "Singkat Skor",
+    "description": "Jika diaktifkan, skor akan disingkat (misalnya 10.00K, 1.00M)."
+  },
+  "accent_color": {
+    "name": "Warna Aksen:",
+    "description": "Pilih warna aksen bawaan atau buka pemilih warna kustom.",
+    "values": {
+      "purple": "Ungu",
+      "teal": "Hijau Kebiruan",
+      "rose": "Merah Muda",
+      "amber": "Kuning Amber",
+      "indigo": "Nila",
+      "green": "Hijau",
+      "red": "Merah",
+      "black": "Hitam",
+      "custom": "Kustom"
+    }
+  },
+  "align_receptors_to_hitbox": {
+    "name": "Sejajarkan Reseptor ke Hitbox",
+    "description": "Jika dicentang, sejajarkan reseptor seluler dengan jalur hitbox. Berguna untuk beberapa tata letak, tetapi dapat merusak skrip."
+  },
+  "allow_phone_screensaver": {
+    "name": "Izinkan Ponsel Tidur",
+    "description": "Jika dicentang, ponsel akan tertidur setelah tidak aktif selama beberapa detik.\n(Waktunya tergantung pada pilihan ponsel Anda)"
+  },
+  "anti_aliasing": {
+    "name": "Penghalusan Tepi",
+    "description": "Jika dinonaktifkan, tepi gambar tidak dihaluskan agar kinerja meningkat."
+  },
+  "auto_pause": {
+    "name": "Jeda Otomatis",
+    "description": "Jeda otomatis saat jendela game tidak aktif."
+  },
+  "bad_shit_combo_break": {
+    "name": "Bad dan Shit Memutus Kombo",
+    "description": "Penilaian Bad atau Shit memutus kombo dan dihitung sebagai Combo Break."
+  },
+  "bad_hit_window": {
+    "name": "Toleransi Waktu Bad",
+    "description": "Atur toleransi waktu untuk penilaian \"Bad\" dalam milidetik."
+  },
+  "break_timer": {
+    "name": "Timer Jeda Not",
+    "description": "Jika dicentang, pengatur waktu akan muncul ketika not berikutnya masih jauh."
+  },
+  "camera_zooms": {
+    "name": "Zoom Kamera",
+    "description": "Jika dinonaktifkan, kamera tidak mengikuti ketukan dengan efek zoom."
+  },
+  "window_border_on_hit": {
+    "name": "Warna Bingkai Saat Mengenai Not",
+    "description": "Ubah warna bingkai jendela saat mengenai not. Hanya Windows 11."
+  },
+  "check_for_updates": {
+    "name": "Periksa Pembaruan",
+    "description": "Periksa pembaruan saat game dimulai pada versi rilis."
+  },
+  "color_accessibility": {
+    "name": "Aksesibilitas Warna",
+    "description": "Pilih filter warna yang sesuai dengan kebutuhan penglihatan warna Anda.",
+    "values": {
+      "none": "Tidak Ada",
+      "protanopia": "Protanopia",
+      "protanomaly": "Protanomaly",
+      "deuteranopia": "Deuteranopia",
+      "deuteranomaly": "Deuteranomaly",
+      "tritanopia": "Tritanopia",
+      "tritanomaly": "Tritanomaly",
+      "achromatopsia": "Achromatopsia",
+      "achromatomaly": "Achromatomaly"
+    }
+  },
+  "combo_and_rating_in_camgame": {
+    "name": "Kombo dan Penilaian di camGame",
+    "description": "Jika diaktifkan, Combo dan Ratings akan dirender di lapisan camGame, bukan camHUD ."
+  },
+  "combo_stacking": {
+    "name": "Tumpuk Kombo dan Penilaian",
+    "description": "Jika dinonaktifkan, popup kombo dan penilaian lama diganti agar lebih mudah dibaca dan hemat memori."
+  },
+  "disable_reset_button": {
+    "name": "Nonaktifkan Tombol Reset",
+    "description": "Jika dicentang, menekan Reset tidak akan menghasilkan apa pun."
+  },
+  "discord_rich_presence": {
+    "name": "Aktivitas Discord",
+    "description": "Nonaktifkan untuk menyembunyikan aktivitas game dari Discord."
+  },
+  "downscroll": {
+    "name": "Not Turun",
+    "description": "Not bergerak ke bawah, bukan ke atas."
+  },
+  "drag_character": {
+    "name": "Seret Karakter",
+    "description": "Seret karakter dengan mouse atau layar sentuh untuk memindahkannya, seperti di Codename Engine."
+  },
+  "drag_stage_camera": {
+    "name": "Seret Kamera Latar",
+    "description": "Jika tidak dicentang, kamera panggung tidak dapat diseret dengan mouse/layar sentuh.\nHapus centang ini jika Anda lebih suka gaya Psych yang lama."
+  },
+  "dynamic_combo_digits": {
+    "name": "Digit Kombo Dinamis",
+    "description": "Jika dicentang, akan muncul kombo dengan dua digit pada kombo pertama, dan hanya\nketika mencapai 100 kombo akan menjadi tiga digit."
+  },
+  "dynamic_controls_color": {
+    "name": "Warna Kontrol Dinamis",
+    "description": "Jika dicentang, warna kontrol seluler akan diatur ke warna not di pengaturan Anda.\n(memiliki efek selama bermain game saja)"
+  },
+  "enable_3d_cameras": {
+    "name": "Aktifkan Kamera 3D",
+    "description": "Mengaktifkan atau menonaktifkan fungsi kamera 3D.\nMenonaktifkan ini dapat meningkatkan kinerja dengan melewatkan transformasi 3D."
+  },
+  "end_countdown_seconds": {
+    "name": "Detik Hitung Mundur Akhir",
+    "description": "Berapa detik sebelum lagu berakhir muncul hitungan mundur (10-30)."
+  },
+  "extra_controls": {
+    "name": "Tombol Tambahan",
+    "description": "Pilih berapa banyak tombol tambahan yang ingin Anda miliki?\nMereka dapat digunakan untuk mekanik dengan LUA atau HScript .",
+    "values": {
+      "none": "TIDAK ADA",
+      "single": "LAJANG",
+      "double": "DOBEL"
+    }
+  },
+  "flashing_lights": {
+    "name": "Cahaya Berkedip",
+    "description": "Nonaktifkan jika Anda sensitif terhadap cahaya berkedip."
+  },
+  "flawless_hit_window": {
+    "name": "Toleransi Waktu Flawless!!",
+    "description": "Atur toleransi waktu untuk penilaian \"Flawless!!\" dalam milidetik."
+  },
+  "fps_counter_mode": {
+    "name": "Mode Penghitung FPS",
+    "description": "Pilih berapa banyak informasi kinerja yang ditampilkan di hamparan kiri atas.",
+    "values": {
+      "hidden": "Tersembunyi",
+      "visible_no_background": "Tidak Terlihat Latar Belakang",
+      "visible_with_background": "Terlihat dengan Latar Belakang",
+      "basic_debug": "Debug Dasar",
+      "extended_debug": "Debug yang Diperluas"
+    }
+  },
+  "framerate": {
+    "name": "Laju Frame",
+    "description": "Cukup jelas, bukan?"
+  },
+  "framerate_mode": {
+    "name": "Mode Laju Frame",
+    "description": "Pilih bagaimana mesin menangani waktu pembaruan/penggambaran.\nPsych cocok dengan perilaku mesin klasik.",
+    "values": {
+      "psych": "Psych",
+      "fixed": "Tetap",
+      "interpolated": "Diinterpolasi"
+    }
+  },
+  "fullscreen_mode": {
+    "name": "Mode Layar Penuh",
+    "description": "Tanpa batas dibatasi hingga 1080p untuk kinerja shader yang lebih baik. Perbaikan Tanpa Batas menggunakan resolusi monitor asli.",
+    "values": {
+      "borderless": "Tanpa Bingkai",
+      "borderless_fix": "Perbaikan Tanpa Batas",
+      "exclusive": "Eksklusif"
+    }
+  },
+  "game_over_vibration": {
+    "name": "Getar Saat Kalah",
+    "description": "Jika dicentang, perangkat Anda akan bergetar saat permainan berakhir."
+  },
+  "ghost_tapping": {
+    "name": "Tekanan Kosong Tanpa Penalti",
+    "description": "Menekan tombol saat tidak ada not yang bisa dipukul tidak dihitung sebagai miss."
+  },
+  "good_hit_window": {
+    "name": "Toleransi Waktu Good",
+    "description": "Atur toleransi waktu untuk penilaian \"Good\" dalam milidetik."
+  },
+  "gradient_time_bar": {
+    "name": "Gradien Bilah Waktu",
+    "description": "Jika dicentang, bilah waktu akan diberi warna sesuai dengan warna ikon karakter."
+  },
+  "hardware_acceleration": {
+    "name": "Akselerasi Perangkat Keras",
+    "description": "Jika diaktifkan, simpan gambar yang kompatibel secara langsung di GPU untuk mengurangi penggunaan RAM dan meningkatkan stabilitas rendering, terutama di Android .\nDirekomendasikan untuk sebagian besar perangkat."
+  },
+  "health_bar_opacity": {
+    "name": "Opasitas Bilah Nyawa",
+    "description": "Atur opasitas bilah nyawa dan ikon karakter."
+  },
+  "hey_intro": {
+    "name": "Animasi Hey! Saat Mulai",
+    "description": "Jika dicentang, BF dan GF otomatis melakukan perintah Hey! animasi ketika hitungan mundur mengatakan Go!"
+  },
+  "hide_hud": {
+    "name": "Sembunyikan HUD",
+    "description": "Sembunyikan sebagian besar elemen HUD."
+  },
+  "hide_sustain_splash": {
+    "name": "Sembunyikan Efek Not Tahan",
+    "description": "Jika dicentang, sembunyikan Sustain Splash"
+  },
+  "hitbox_design": {
+    "name": "Desain Hitbox",
+    "description": "Pilih tampilan kotak hit Anda.",
+    "values": {
+      "no_gradient": "Tidak Ada Gradien",
+      "no_gradient_old": "Tanpa Gradien (Lama)",
+      "gradient": "Gradien",
+      "hidden": "Tersembunyi"
+    }
+  },
+  "hitbox_position": {
+    "name": "Posisi Hitbox",
+    "description": "Jika dicentang, hitbox akan diletakkan di bagian bawah layar, jika tidak maka akan tetap di atas."
+  },
+  "icon_bounce_type": {
+    "name": "Gaya Pantulan Ikon",
+    "description": "Pilih gaya pantulan ikon nyawa mengikuti ketukan.",
+    "values": {
+      "old": "Lama",
+      "d_b": "D&B",
+      "nf": "NF",
+      "default": "Bawaan",
+      "codename": "Codename"
+    }
+  },
+  "infinity_display": {
+    "name": "Tampilan Layar Tinggi",
+    "description": "Jika dicentang, perluas area pandang secara vertikal untuk layar yang lebih tinggi sambil mempertahankan area permainan klasik 16:9."
+  },
+  "instant_window_close": {
+    "name": "Tutup Jendela Langsung",
+    "description": "Jika dicentang, menutup permainan akan langsung keluar alih-alih menghilangkan jendela."
+  },
+  "key_viewer_color": {
+    "name": "Warna Penampil Tombol:",
+    "description": "Pilih warna untuk tombol penampil utama.",
+    "values": {
+      "gray": "Abu-abu",
+      "red": "Merah",
+      "blue": "Biru",
+      "green": "Hijau",
+      "purple": "Ungu",
+      "orange": "Jingga",
+      "pink": "Merah Muda",
+      "cyan": "Sian",
+      "white": "Putih",
+      "black": "Hitam"
+    }
+  },
+  "launcher_auto_start": {
+    "name": "Mulai Otomatis dari Launcher",
+    "description": "Jika dicentang, peluncur Android secara otomatis menghidupkan mesin setelah 3 detik."
+  },
+  "lighter_hit_path": {
+    "name": "Efek Not Ringan",
+    "description": "Jika tidak dicentang, jalur visual lengkap akan berjalan, bukan jalur visual ringan.\nJika tidak dicentang, hal ini dapat menyebabkan kinerja LAG."
+  },
+  "low_quality": {
+    "name": "Kualitas Rendah",
+    "description": "Jika dicentang, nonaktifkan beberapa detail latar belakang,\nmengurangi waktu pemuatan dan meningkatkan kinerja."
+  },
+  "middlescroll": {
+    "name": "Not di Tengah",
+    "description": "Tempatkan not pemain di tengah layar."
+  },
+  "mobile_controls_opacity": {
+    "name": "Opasitas Tombol Seluler",
+    "description": "Memilih opacity untuk tombol seluler (berhati-hatilah agar tidak menempatkannya pada 0 dan kehilangan jejak tombol Anda)."
+  },
+  "mobile_trace_button": {
+    "name": "Tombol Debug Seluler",
+    "description": "Jika dicentang, akan menampilkan tombol sentuh jejak pada versi seluler."
+  },
+  "mod_security": {
+    "name": "Keamanan Mod",
+    "description": "Jika dicentang, pindai mod Lua / HScript dan lewati skrip dari mod dengan API sensitif yang tidak tepercaya."
+  },
+  "modchart_debug_overlay": {
+    "name": "Panel Debug Modchart",
+    "description": "Menampilkan statistik penyaji modchart.\nDinonaktifkan secara default karena memiliki biaya kinerja."
+  },
+  "mods_storage_location": {
+    "name": "Lokasi Penyimpanan Mod",
+    "description": "Pilih di mana mod Android dan file yang disimpan akan disimpan.\nINTERNAL menggunakan penyimpanan aplikasi terbatas, EKSTERNAL menggunakan penyimpanan publik.",
+    "values": {
+      "internal": "INTERN",
+      "external": "LUAR"
+    }
+  },
+  "nf_rating_style": {
+    "name": "Gaya Penilaian NF",
+    "description": "Jika dicentang, peringkat dan nomor kombo akan muncul di tempatnya alih-alih terbang/memudar."
+  },
+  "note_skins": {
+    "name": "Tampilan Not:",
+    "description": "Pilih tampilan not yang Anda inginkan."
+  },
+  "note_splash_opacity": {
+    "name": "Opasitas Percikan Not",
+    "description": "Atur opasitas efek percikan not."
+  },
+  "note_splashes": {
+    "name": "Efek Percikan Not:",
+    "description": "Pilih variasi efek percikan saat mengenai not."
+  },
+  "opponent_notes": {
+    "name": "Not Lawan",
+    "description": "Jika dinonaktifkan, not lawan disembunyikan."
+  },
+  "optimize_hold_rendering": {
+    "name": "Optimalkan Not Tahan",
+    "description": "Mengoptimalkan rendering panah tahan untuk kinerja yang lebih baik.\nTIDAK direkomendasikan untuk modchart yang rumit karena penangguhan mungkin terlihat salah."
+  },
+  "options_menu_style": {
+    "name": "Gaya Menu Pengaturan",
+    "description": "Mengubah menu Opsi antara kartu Plus dan Psych klasik.",
+    "values": {
+      "plus": "Plus",
+      "psych": "Psych"
+    }
+  },
+  "over_accuracy": {
+    "name": "Akurasi di Atas 100%",
+    "description": "Jika dicentang, pemutaran sempurna dapat meningkatkan akurasi melewati 100%, hingga 200% di akhir lagu."
+  },
+  "pause_countdown": {
+    "name": "Hitung Mundur Saat Lanjut",
+    "description": "Tampilkan hitung mundur sebelum melanjutkan permainan dari jeda."
+  },
+  "pause_music": {
+    "name": "Musik Jeda:",
+    "description": "Pilih musik untuk menu jeda.",
+    "values": {
+      "none": "Tidak Ada",
+      "tea_time": "Tea Time",
+      "breakfast": "Breakfast",
+      "breakfast_(pico)": "Breakfast (Pico)"
+    }
+  },
+  "pop_up_score": {
+    "name": "Popup Skor",
+    "description": "Jika tidak dicentang, memukul nada tidak akan menampilkan popup rating dan kombo. Berguna pada perangkat kelas bawah."
+  },
+  "rating_offset": {
+    "name": "Offset Penilaian",
+    "description": "Mengubah seberapa terlambat/awal Anda harus melakukan pukulan \"sempurna!!\"\nNilai yang lebih tinggi berarti Anda harus mencapainya nanti."
+  },
+  "results_state_at_end": {
+    "name": "Hasil di Akhir Lagu",
+    "description": "Jika tidak dicentang, endSong tidak akan beralih ke ResultsState di Freeplay /Story Mode."
+  },
+  "rgb_notes": {
+    "name": "Not RGB",
+    "description": "Jika tidak dicentang, gunakan warna nada gaya Psych Klasik 0.6.3 dan aset nada dasar."
+  },
+  "safe_frames": {
+    "name": "Frame Toleransi",
+    "description": "Mengubah berapa banyak frame yang Anda miliki\nmemukul nada lebih awal atau terlambat."
+  },
+  "score_text_grow_on_hit": {
+    "name": "Perbesar Skor Saat Mengenai Not",
+    "description": "Jika tidak dicentang, nonaktifkan teks Skor bertambah\nsetiap kali Anda menekan nada."
+  },
+  "script_deprecation_warnings": {
+    "name": "Peringatan API Usang",
+    "description": "Jika dicentang, API kompatibilitas Lua / HScript yang tidak digunakan lagi akan mencetak peringatan ke konsol debug. Nonaktifkan untuk membungkam mod yang berisik."
+  },
+  "shaders": {
+    "name": "Shader",
+    "description": "Jika tidak dicentang, nonaktifkan shader. Mereka digunakan untuk efek visual dan dapat menjadi intensif CPU pada perangkat yang lebih lemah."
+  },
+  "show_android_launcher": {
+    "name": "Tampilkan Launcher Android",
+    "description": "Jika dicentang, peluncur Android terbuka sebelum mesin.\nAktifkan kembali di sini jika Anda menonaktifkannya dari peluncur."
+  },
+  "show_combo_numbers": {
+    "name": "Tampilkan Angka Kombo",
+    "description": "Jika tidak dicentang, sembunyikan popup nomor kombo saat memukul nada."
+  },
+  "show_combo_sprite": {
+    "name": "Tampilkan Gambar COMBO",
+    "description": "Jika tidak dicentang, sembunyikan popup sprite COMBO saat memukul not."
+  },
+  "show_early_late": {
+    "name": "Tampilkan Early/Late",
+    "description": "Tampilkan Early atau Late untuk menandai tekanan terlalu cepat atau terlambat."
+  },
+  "show_end_countdown": {
+    "name": "Tampilkan Hitung Mundur Akhir",
+    "description": "Jika dicentang, akan menampilkan hitungan mundur di detik-detik terakhir lagu."
+  },
+  "show_hit_ms": {
+    "name": "Tampilkan Selisih Waktu",
+    "description": "Tampilkan selisih waktu tekanan dalam milidetik di samping penilaian."
+  },
+  "show_key_viewer": {
+    "name": "Tampilkan Penampil Tombol",
+    "description": "Tampilkan tombol yang sedang ditekan."
+  },
+  "show_rating_sprite": {
+    "name": "Tampilkan Penilaian",
+    "description": "Jika tidak dicentang, sembunyikan popup sprite rating saat memukul nada."
+  },
+  "gameplay_version": {
+    "name": "Tampilkan Versi Saat Bermain",
+    "description": "Jika dicentang, akan menampilkan teks versi selama bermain game."
+  },
+  "show_watermark": {
+    "name": "Tampilkan Tanda Air",
+    "description": "Jika dicentang, akan menampilkan tanda air di layar."
+  },
+  "sick_hit_window": {
+    "name": "Toleransi Waktu Sick!",
+    "description": "Atur toleransi waktu untuk penilaian \"Sick!\" dalam milidetik."
+  },
+  "smooth_health_bar": {
+    "name": "Bilah Nyawa Halus",
+    "description": "Gerakkan bilah nyawa secara halus, bukan langsung berpindah."
+  },
+  "sustains_as_one_note": {
+    "name": "Not Tahan Dihitung Satu Not",
+    "description": "Jika dicentang, Hold Notes tidak bisa ditekan jika meleset,\ndan dihitung sebagai satu Hit/Miss.\nHapus centang ini jika Anda lebih suka Sistem Input yang lama."
+  },
+  "system_score_multiplier": {
+    "name": "Sistem Penghitungan Skor",
+    "description": "Pilih sistem penilaian untuk not yang dipukul",
+    "values": {
+      "psych": "Psych",
+      "codename": "Codename"
+    }
+  },
+  "time_bar": {
+    "name": "Bilah Waktu:",
+    "description": "Apa yang seharusnya ditampilkan pada Time Bar?",
+    "values": {
+      "time_left": "Sisa Waktu",
+      "time_elapsed": "Waktu Berlalu",
+      "song_name": "Nama Lagu",
+      "disabled": "Nonaktif"
+    }
+  },
+  "time_text_bump": {
+    "name": "Animasi Teks Waktu",
+    "description": "Jika tidak dicentang, nonaktifkan animasi benjolan teks waktu saat ketukan."
+  },
+  "title_intro_video": {
+    "name": "Video Pembuka",
+    "description": "Jika dicentang, putar video intro sebelum intro judul satu kali setiap peluncuran."
+  },
+  "touch_pointer": {
+    "name": "Penunjuk Sentuhan",
+    "description": "Jika dicentang, akan menampilkan hamparan penunjuk sentuh untuk mengetuk dan menyeret."
+  },
+  "uncap_fps": {
+    "name": "Tanpa Batas FPS",
+    "description": "Jika dicentang, biarkan perender berjalan secepat mungkin sambil membatasi pembaruan.\nBerguna untuk tampilan dengan refresh tinggi, tetapi dapat meningkatkan penggunaan baterai/ GPU."
+  },
+  "use_flawless_rating": {
+    "name": "Gunakan Penilaian Flawless",
+    "description": "Jika dicentang, tambahkan kalimat \"Flawless!!\" penghakiman di atas Sakit."
+  },
+  "use_psych_freeplay": {
+    "name": "Gunakan Freeplay Psych",
+    "description": "Jika dicentang, gunakan status Psych Engine Freeplay klasik, bukan PlusEngine Freeplay ."
+  },
+  "use_psych_score_text": {
+    "name": "Gunakan Teks Skor Psych",
+    "description": "Jika dicentang, pertahankan format teks skor Psych Engine asli selama bermain game."
+  },
+  "vanilla_transition": {
+    "name": "Transisi Klasik Psych",
+    "description": "Jika dicentang, gunakan transisi vanilla Psych Engine dan bukan transisi khusus."
+  },
+  "vsync": {
+    "name": "VSync",
+    "description": "Jika dicentang, aktifkan VSync , memperbaiki robekan layar dengan membatasi FPS ke kecepatan penyegaran monitor.\nMulai ulang game untuk menerapkannya sepenuhnya."
+  },
+  "windows_gdi_effects": {
+    "name": "Efek GDI Windows",
+    "description": "Mengizinkan efek GDI desktop Windows. Tetap dinonaktifkan kecuali Anda secara eksplisit ingin mod menggunakannya."
+  },
+  "z_axis_scale": {
+    "name": "Skala Sumbu Z",
+    "description": "Menskalakan nilai sumbu Z untuk mengontrol kedalaman yang dirasakan.\nNilai yang lebih tinggi meningkatkan kedalaman, nilai yang lebih rendah meratakannya."
+  }
+}

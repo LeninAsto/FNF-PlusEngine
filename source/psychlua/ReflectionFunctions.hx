@@ -160,7 +160,7 @@ class ReflectionFunctions
 								result = LuaUtils.getGroupStuff(leArray, variable, allowMaps);
 							return result;
 						}
-						FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_reflectionfunctions.getpropertyfromgroup_object_value_from_group_value_doesn_t_exist', "getPropertyFromGroup: Object #{1} from group: {2} doesn't exist!", [index, group]), false, false, FlxColor.RED);
+						FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_reflectionfunctions.getpropertyfromgroup_missing_object', "getPropertyFromGroup: Object #{1} from group: {2} doesn't exist!", [index, group]), false, false, FlxColor.RED);
 
 					default: //Is Group
 						var member:Dynamic = realObject.members[index];
@@ -183,7 +183,7 @@ class ReflectionFunctions
 						return result;
 				}
 			}
-			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_reflectionfunctions.getpropertyfromgroup_group_array_value_doesn_t_exist', "getPropertyFromGroup: Group/Array {1} doesn't exist!", [group]), false, false, FlxColor.RED);
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_reflectionfunctions.getpropertyfromgroup_missing_group', "getPropertyFromGroup: Group/Array {1} doesn't exist!", [group]), false, false, FlxColor.RED);
 			return null;
 		});
 		Lua_helper.add_callback(lua, "setPropertyFromGroup", function(group:String, index:Int, variable:Dynamic, value:Dynamic, ?allowMaps:Bool = false, ?allowInstances:Bool = false) {
@@ -214,7 +214,7 @@ class ReflectionFunctions
 						LuaUtils.setGroupStuff(realObject.members[index], variable, allowInstances ? parseInstances(value) : value, allowMaps);
 				}
 			}
-			else FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_reflectionfunctions.setpropertyfromgroup_group_array_value_doesn_t_exist', "setPropertyFromGroup: Group/Array {1} doesn't exist!", [group]), false, false, FlxColor.RED);
+			else FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_reflectionfunctions.setpropertyfromgroup_missing_group', "setPropertyFromGroup: Group/Array {1} doesn't exist!", [group]), false, false, FlxColor.RED);
 			return value;
 		});
 		Lua_helper.add_callback(lua, "addToGroup", function(group:String, tag:String, ?index:Int = -1) {
@@ -330,11 +330,11 @@ class ReflectionFunctions
 				if(obj != null)
 					MusicBeatState.getVariables().set(variableToSave, obj);
 				else
-					FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_reflectionfunctions.createinstance_failed_to_create_value_arguments_are_possibly_wrong', "createInstance: Failed to create {1}, arguments are possibly wrong.", [variableToSave]), false, false, FlxColor.RED);
+					FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_reflectionfunctions.createinstance_create_failed', "createInstance: Failed to create {1}, arguments are possibly wrong.", [variableToSave]), false, false, FlxColor.RED);
 
 				return (obj != null);
 			}
-			else FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_reflectionfunctions.createinstance_variable_value_is_already_being_used_and_cannot_be_replaced', "createInstance: Variable {1} is already being used and cannot be replaced!", [variableToSave]), false, false, FlxColor.RED);
+			else FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_reflectionfunctions.createinstance_variable_in_use', "createInstance: Variable {1} is already being used and cannot be replaced!", [variableToSave]), false, false, FlxColor.RED);
 			return false;
 		});
 		Lua_helper.add_callback(lua, "addInstance", function(objectName:String, ?inFront:Bool = false) {

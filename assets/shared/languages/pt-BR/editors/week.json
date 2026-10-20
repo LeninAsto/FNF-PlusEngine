@@ -2,25 +2,25 @@
   "$schema": 1,
   "$namespace": "editors.week",
   "ui": {
-    "background_asset": "Activo de Fundo:",
-    "characters": "Caracteres:",
+    "background_asset": "Recurso de fundo:",
+    "characters": "Personagens:",
     "copy_color": "Copiar cor",
-    "default_difficulties_are_easy_normal_hard_without_quotes": "Dificuldades padrão são \"Fácil, Normal, Difícil\"\nsem citações.",
+    "default_difficulties_help": "As dificuldades padrão são Easy, Normal, Hard, sem aspas.",
     "difficulties": "Dificuldades:",
     "display_name": "Nome da exibição:",
-    "freeplay": "Freeplay",
+    "freeplay": "Jogo livre",
     "hidden_until_unlocked": "Escondido até Desbloqueado",
     "hide_week_from_freeplay": "Esconder a Semana do Freeplay?",
     "hide_week_from_story_mode": "Esconder a Semana do Modo História?",
-    "load_week": "Semana de Carregar",
+    "load_week": "Carregar semana",
     "paste_color": "Colar a Cor",
-    "save_week": "Gravar a Semana",
+    "save_week": "Salvar semana",
     "selected_background_color_r_g_b": "Cor de fundo selecionada R/G/B:",
     "selected_icon": "Ícone selecionado:",
     "songs": "Canções:",
-    "story_mode": "Modo de História",
+    "story_mode": "Modo história",
     "week_file": "Arquivo da Semana:",
-    "week_file_name_of_the_week_you_have_to_finish_for_unlocking": "Nome do Arquivo da Semana que tem\npara terminar para Desbloquear:",
+    "unlock_week_file": "Arquivo da semana que deve ser concluída para desbloquear:",
     "week_name_for_reset_score_menu": "Nome da semana (para o menu Restaurar a Pontuação):",
     "week_starts_locked": "Início da semana bloqueado"
   },
@@ -29,7 +29,7 @@
     "editing": "Edição: {1}"
   },
   "tabs": {
-    "freeplay": "Freeplay",
+    "freeplay": "Jogo livre",
     "other": "Outros",
     "week": "Semana"
   }

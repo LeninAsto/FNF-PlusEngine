@@ -1,0 +1,64 @@
+{
+  "$schema": 1,
+  "$namespace": "options.gameplay_changers",
+  "scrolltype": {
+    "name": "卷卷型別",
+    "values": {
+      "multiplicative": "乘法",
+      "constant": "沒有變化"
+    }
+  },
+  "scrollspeed": {
+    "name": "滾動速度"
+  },
+  "songspeed": {
+    "name": "播放率"
+  },
+  "preservepitch": {
+    "name": "保持自己的聲音"
+  },
+  "healthgain": {
+    "name": "增加健康效益的倍率"
+  },
+  "healthloss": {
+    "name": "造成健康損失的倍數"
+  },
+  "instakill": {
+    "name": "請您繼續閱讀更多來自"
+  },
+  "practice": {
+    "name": "練習模式"
+  },
+  "perfect": {
+    "name": "完美模式"
+  },
+  "opponentplay": {
+    "name": "對手模式"
+  },
+  "opponentdrain": {
+    "name": "反對者排水"
+  },
+  "nodroppenalty": {
+    "name": "沒有降水罰"
+  },
+  "botplay": {
+    "name": "Botplay"
+  },
+  "botplaytype": {
+    "name": "Botplay 型別",
+    "values": {
+      "normal": "常見的情況",
+      "cpu": "CPU"
+    }
+  },
+  "botplaycpuprofile": {
+    "name": "CPU 公告表",
+    "values": {
+      "perfect": "這是一件好事.",
+      "skilled": "熟練的人",
+      "balanced": "均衡的情況",
+      "casual": "隨便的情況",
+      "chaotic": "混亂的情況"
+    }
+  }
+}

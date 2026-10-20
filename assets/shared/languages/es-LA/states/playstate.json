@@ -3,9 +3,9 @@
   "$namespace": "playstate",
   "presence": {
     "story": "Modo Historia: {1}",
-    "freeplay": "Freeplay",
+    "freeplay": "Juego libre",
     "paused": "En pausa - {1}",
-    "chart_editor": "Editor de gráficos",
+    "chart_editor": "Editor de charts",
     "game_over": "Juego terminado - {1}"
   },
   "hud": {
@@ -18,7 +18,7 @@
       "psych": "Puntuación: {1} | Fallos: {2} | Clasificación: {3}",
       "psych_instakill": "Puntuación: {1} | Clasificación: {2}",
       "plus": "Puntuación: {1} | Fallos: {2} | Combinado: {3} | TPS: {4} | Clasificación: {5}",
-      "plus_instakill": "Puntuación: {1} | Combinado: {2} | TPS: {3} | Clasificación: {4}"
+      "plus_instakill": "Puntos: {1} | Combo: {2} | TPS: {3} | Calificación: {4}"
     }
   },
   "modes": {

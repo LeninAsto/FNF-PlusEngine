@@ -1,13 +1,13 @@
 {
   "$schema": 1,
   "$namespace": "options.theme_accent",
-  "presence": "Selector de acento temático",
+  "presence": "Selector de color de acento",
   "title": "Color de acento del tema",
-  "hint": "Obtenga una vista previa de los widgets MD3 reales mientras arrastra el selector. ENTER confirma, BACK cancela.",
+  "hint": "Vista previa de los controles mientras ajustas el color. ENTER confirma y Atr?s cancela.",
   "picker_hint": "Rueda + tira luminosa + paleta, sin convertirse en sopa visual.",
   "live_preview": "Vista previa en vivo habilitada",
-  "use_custom": "Usar acento personalizado",
-  "mini_hint": "El lado derecho muestra los widgets del motor original teñidos con tu acento. Si parece maldito aquí, también parecerá maldito en los menús.",
+  "use_custom": "Usar color personalizado",
+  "mini_hint": "A la derecha se muestran los controles del motor con el color elegido. As? se ver?n tambi?n en los men?s.",
   "hex_label": "HEXAGONAL {1}",
   "boxes": {
     "preview": "Vista previa del tema",
@@ -15,20 +15,20 @@
     "components": "Vista previa de los componentes MD3"
   },
   "preview": {
-    "title": "MUESTRA DE JUEGO GRATIS",
-    "meta": "Vista previa de acento personalizado"
+    "title": "VISTA PREVIA",
+    "meta": "Vista previa del color de acento"
   },
   "chips": {
     "active": "Acento activo",
-    "custom": "Ficha personalizada",
-    "preset_safe": "Preestablecido seguro",
+    "custom": "Color personalizado",
+    "preset_safe": "Color predefinido",
     "selected": "Seleccionado",
-    "hex": "ficha hexagonal"
+    "hex": "Valor HEX"
   },
   "sections": {
     "standard": "Progreso estándar",
     "wavy": "Progreso ondulado",
-    "widgets": "Otros widgets del motor"
+    "widgets": "Otros controles del motor"
   },
   "actions": {
     "copy_hex": "Copiar hexadecimal",

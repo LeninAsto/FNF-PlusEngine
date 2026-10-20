@@ -1,0 +1,64 @@
+{
+  "$schema": 1,
+  "$namespace": "options.gameplay_changers",
+  "scrolltype": {
+    "name": "スロールタイプ",
+    "values": {
+      "multiplicative": "倍数",
+      "constant": "恒久性"
+    }
+  },
+  "scrollspeed": {
+    "name": "スローリングスピード"
+  },
+  "songspeed": {
+    "name": "再生速率"
+  },
+  "preservepitch": {
+    "name": "音量 を 維持 する"
+  },
+  "healthgain": {
+    "name": "健康 益 の 倍数"
+  },
+  "healthloss": {
+    "name": "健康 喪失 の 倍数"
+  },
+  "instakill": {
+    "name": "ミスにインスタクリル"
+  },
+  "practice": {
+    "name": "練習モード"
+  },
+  "perfect": {
+    "name": "パーフェクトモード"
+  },
+  "opponentplay": {
+    "name": "相手側でプレイ"
+  },
+  "opponentdrain": {
+    "name": "反対者の排水"
+  },
+  "nodroppenalty": {
+    "name": "罰金なし"
+  },
+  "botplay": {
+    "name": "Botplay"
+  },
+  "botplaytype": {
+    "name": "Botplay タイプ",
+    "values": {
+      "normal": "普通のこと",
+      "cpu": "CPU"
+    }
+  },
+  "botplaycpuprofile": {
+    "name": "CPU プロフィール",
+    "values": {
+      "perfect": "完璧だ",
+      "skilled": "熟練した",
+      "balanced": "バランス",
+      "casual": "偶然",
+      "chaotic": "混沌"
+    }
+  }
+}

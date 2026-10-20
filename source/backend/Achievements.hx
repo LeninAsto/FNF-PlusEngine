@@ -296,7 +296,7 @@ class Achievements
 		{
 			if (!achievements.exists(name))
 			{
-				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.getachievementscore_couldnt_find_achievement_value', "getAchievementScore: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.getachievementscore_missing_achievement', "getAchievementScore: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
 				return -1;
 			}
 			return getScore(name);
@@ -305,7 +305,7 @@ class Achievements
 		{
 			if (!achievements.exists(name))
 			{
-				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.setachievementscore_couldnt_find_achievement_value', "setAchievementScore: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.setachievementscore_missing_achievement', "setAchievementScore: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
 				return -1;
 			}
 			return setScore(name, value, saveIfNotUnlocked);
@@ -314,7 +314,7 @@ class Achievements
 		{
 			if (!achievements.exists(name))
 			{
-				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.addachievementscore_couldnt_find_achievement_value', "addAchievementScore: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.addachievementscore_missing_achievement', "addAchievementScore: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
 				return -1;
 			}
 			return addScore(name, value, saveIfNotUnlocked);
@@ -323,7 +323,7 @@ class Achievements
 		{
 			if (!achievements.exists(name))
 			{
-				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.unlockachievement_couldnt_find_achievement_value', "unlockAchievement: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.unlockachievement_missing_achievement', "unlockAchievement: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
 				return null;
 			}
 			return unlock(name);
@@ -332,7 +332,7 @@ class Achievements
 		{
 			if (!achievements.exists(name))
 			{
-				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.isachievementunlocked_couldnt_find_achievement_value', "isAchievementUnlocked: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.isachievementunlocked_missing_achievement', "isAchievementUnlocked: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
 				return null;
 			}
 			return isUnlocked(name);

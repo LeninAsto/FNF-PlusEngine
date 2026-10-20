@@ -2,7 +2,7 @@
   "schemaVersion": 1,
   "code": "pt-BR",
   "name": "Português (Brasil)",
-  "version": 1,
+  "version": 2,
   "fallback": [
     "en-US"
   ],

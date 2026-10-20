@@ -1,0 +1,19 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.dialogue",
+  "ui": {
+    "angry_textbox": "愤怒的文本框",
+    "character": "角色：",
+    "interval_speed_ms": "间隔/速度 (ms):",
+    "load_dialogue": "加载对话",
+    "sound_file_name": "音频文件名称:",
+    "text": "文本:"
+  },
+  "presence": {
+    "title": "对话编辑器",
+    "empty": "(空)"
+  },
+  "tabs": {
+    "dialogue_line": "对话线"
+  }
+}
