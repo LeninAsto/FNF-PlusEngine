@@ -96,6 +96,7 @@
 	</section>
 
 	<assets path='art/readme.txt' rename='do NOT readme.txt' unless="mobile" />
+	<assets path='art/PsychEngine.exe' rename='PsychEngine.exe' if="windows" />
 
 	<!-- OpenAL config -->
 	<section if="desktop">
