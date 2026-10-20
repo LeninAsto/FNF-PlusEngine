@@ -37,6 +37,8 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 	var _indicesBySubs:Array<openfl.Vector<Int>> = [];
 	final _segmentA:HoldSegmentOutput = new HoldSegmentOutput();
 	final _segmentB:HoldSegmentOutput = new HoldSegmentOutput();
+	final _rawSegmentA:HoldSegmentOutput = new HoldSegmentOutput();
+	final _rawSegmentB:HoldSegmentOutput = new HoldSegmentOutput();
 	final _directionPos:Vector3 = new Vector3();
 	final _directionVisuals:VisualParameters = {};
 	final _directionOutput:ModifierOutput;
@@ -105,6 +107,18 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		return pos;
 	}
 
+	/** Screen-space length between the centers of two hold cross-sections. */
+	@:noCompletion
+	inline private function getSegmentScreenLength(first:HoldSegmentOutput, second:HoldSegmentOutput):Float {
+		final startX = (first.left.x + first.right.x) * 0.5;
+		final startY = (first.left.y + first.right.y) * 0.5;
+		final endX = (second.left.x + second.right.x) * 0.5;
+		final endY = (second.left.y + second.right.y) * 0.5;
+		final deltaX = endX - startX;
+		final deltaY = endY - startY;
+		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+	}
+
 	/**
 	 * Returns the normal points along the hold path at specific hitTime using.
 	 *
@@ -115,7 +129,6 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 	@:noCompletion
 	inline private function getHoldSegmentInto(hold:FlxSprite, basePos:Vector3, params:ArrowData, dest:HoldSegmentOutput, doClip:Bool = true):HoldSegmentOutput {
 		@:privateAccess
-		final holdIsEnd = Adapter.instance.isHoldEnd(hold);
 		var holdTime = params.hitTime;
 		var parentTime = Adapter.instance.getHoldParentTime(hold);
 		var clipped = false;
@@ -359,7 +372,10 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		// Match FunkinModchart's fixed subdivision flow. Reducing a hold to one
 		// adaptive quad changes modifier curves and creates blocky alpha patterns.
 		final HOLD_SUBDIVISIONS = REQUESTED_SUBDIVISIONS;
-		final holdTimeScale = holdIsEnd ? 0.5 * Config.HOLD_END_SCALE : 1.0;
+		// Preserve the authored cap aspect ratio. Many note skins are not square
+		// (the default hold end is 54x22), so using item.width stretches the tail.
+		final holdHeight:Float = item.frame.frame.height * Math.abs(item.scale.y) * Config.HOLD_END_SCALE;
+		final holdTimeScale = holdIsEnd ? Config.HOLD_END_SCALE : 1.0;
 		final fullHoldTime:Float = Adapter.instance.getHoldLength(item) * holdTimeScale;
 
 		if (HOLD_SUBDIVISIONS != __lastHoldSubs)
@@ -370,6 +386,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		var tID = 0;
 		var vertPointer = 0;
 		final holdTimeInterval:Float = fullHoldTime / HOLD_SUBDIVISIONS;
+		var timeScale:Float = 1;
 		var firstIteration:Bool = true;
 
 		var hasC = false;
@@ -378,7 +395,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		var spareSegment = _segmentB;
 
 		for (subIndex in 0...HOLD_SUBDIVISIONS) {
-			var holdTimeProgress = holdTimeInterval * subIndex;
+			var holdTimeProgress = holdTimeInterval * subIndex * timeScale;
 
 			var out1:HoldSegmentOutput;
 			var out2:HoldSegmentOutput;
@@ -386,10 +403,32 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 			out1 = firstIteration ? getHoldSegmentInto(item, basePos,
 				lastData != null ? lastData : getArrowParams(item, holdTimeProgress), nextSegment) : lastSegment;
 			out2 = getHoldSegmentInto(item, basePos,
-				(lastData = getArrowParams(item, holdTimeProgress + holdTimeInterval)), spareSegment);
+				(lastData = getArrowParams(item, holdTimeProgress + holdTimeInterval * timeScale)), spareSegment);
 
-			if (firstIteration)
+			if (firstIteration) {
 				item._z = out1.depth;
+
+				if (holdIsEnd) {
+					var segmentLength = getSegmentScreenLength(out1, out2);
+
+					// Clipping collapses the rendered endpoint onto the receptor. Measure
+					// the unclipped cap so pressing a hold cannot inflate its tail.
+					if (out1.clipped || out2.clipped) {
+						final rawStart = getHoldSegmentInto(item, basePos, getArrowParams(item, holdTimeProgress), _rawSegmentA, false);
+						final rawEnd = getHoldSegmentInto(item, basePos,
+							getArrowParams(item, holdTimeProgress + holdTimeInterval), _rawSegmentB, false);
+						segmentLength = getSegmentScreenLength(rawStart, rawEnd);
+					}
+
+					if (segmentLength > 0.000001) {
+						final targetSegmentLength = holdHeight / HOLD_SUBDIVISIONS;
+						// Compress the cap to its authored size, but never enlarge it.
+						timeScale = Math.min(targetSegmentLength / segmentLength, 1.0);
+						out2 = getHoldSegmentInto(item, basePos,
+							(lastData = getArrowParams(item, holdTimeInterval * timeScale)), spareSegment);
+					}
+				}
+			}
 
 			__lastPlayer = player;
 			lastSegment = out2;

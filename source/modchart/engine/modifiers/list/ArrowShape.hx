@@ -30,7 +30,6 @@ class ArrowShape extends PathModifier {
 		if (perc == 0)
 			return pos;
 
-		pathOffset.z = pos.z;
-		return computePath(pos, params, perc);
+		return computePathAt(pos, params.lane, params.distance, perc, false, pos.z - pathOffset.z);
 	}
 }

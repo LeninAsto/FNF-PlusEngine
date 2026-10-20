@@ -116,6 +116,12 @@ class Psych implements IAdapter {
 
 			if (castedNote.isSustainEnd)
 				return true;
+			// Old/runtime-created notes may not have the explicit flag. The active
+			// animation is a safer fallback than relying only on chart order.
+			if (castedNote.isSustainNote && castedNote.animation != null
+				&& castedNote.animation.curAnim != null
+				&& castedNote.animation.curAnim.name.endsWith('holdend'))
+				return true;
 			if (castedNote.nextNote != null)
 				return !castedNote.nextNote.isSustainNote;
 		}

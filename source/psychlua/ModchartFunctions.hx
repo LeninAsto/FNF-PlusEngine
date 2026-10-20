@@ -714,6 +714,35 @@ class ModchartFunctions
 			cast(mod, PathModifier).setPathBound(bound);
 		});
 
+		// Removes lane-specific overrides so the global path becomes authoritative
+		// again. Useful when a chart switches from independent rails to one path.
+		Lua_helper.add_callback(lua, "clearModifierLanePaths", function(modName:String, ?field:Dynamic = -1)
+		{
+			if (Manager.instance == null)
+				return;
+
+			final fieldIndex = resolveFieldIndex(field, -1);
+			if (fieldIndex == -1)
+			{
+				for (pf in Manager.instance.playfields)
+				{
+					if (pf == null)
+						continue;
+					final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
+					if (mod != null && Std.isOfType(mod, PathModifier))
+						cast(mod, PathModifier).clearLanePaths();
+				}
+				return;
+			}
+
+			final pf = resolvePlayfield(fieldIndex, 0, 'clearModifierLanePaths');
+			if (pf == null)
+				return;
+			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
+			if (mod != null && Std.isOfType(mod, PathModifier))
+				cast(mod, PathModifier).clearLanePaths();
+		});
+
 		Lua_helper.add_callback(lua, "changeControls", function(bindings:Dynamic)
 		{
 			applyGameplayControlsSafe(bindings, 'changeControls');
