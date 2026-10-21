@@ -15,8 +15,10 @@ import sys.io.File;
 /** Versioned on-disk cache for already normalized Psych charts. */
 class CompiledChartCache
 {
-	static inline var VERSION:Int = 1;
+	static inline var VERSION:Int = 2;
+	static inline var MAX_SOURCE_BYTES:Int = 2 * 1024 * 1024;
 	public static var lastHit(default, null):Bool = false;
+	static var pendingSaves:Array<Dynamic> = [];
 
 	public static inline function resetHit():Void
 		lastHit = false;
@@ -25,6 +27,8 @@ class CompiledChartCache
 	{
 		lastHit = false;
 		#if sys
+		if (!isCacheableSource(sourcePath))
+			return null;
 		var signature:String = sourceSignature(sourcePath);
 		if (signature == null)
 			return null;
@@ -51,7 +55,7 @@ class CompiledChartCache
 	public static function save(sourcePath:String, song:SwagSong):Void
 	{
 		#if sys
-		if (song == null)
+		if (song == null || !isCacheableSource(sourcePath))
 			return;
 		var signature:String = sourceSignature(sourcePath);
 		if (signature == null)
@@ -71,6 +75,33 @@ class CompiledChartCache
 		#end
 	}
 
+	public static function queueSave(sourcePath:String, song:SwagSong):Void
+	{
+		if (sourcePath == null || song == null)
+			return;
+		#if sys
+		if (!isCacheableSource(sourcePath))
+			return;
+		#end
+		for (entry in pendingSaves)
+			if (entry.sourcePath == sourcePath)
+			{
+				entry.song = song;
+				return;
+			}
+		pendingSaves.push({sourcePath: sourcePath, song: song});
+		while (pendingSaves.length > 2)
+			pendingSaves.shift();
+	}
+
+	public static function flushPending():Void
+	{
+		var saves:Array<Dynamic> = pendingSaves;
+		pendingSaves = [];
+		for (entry in saves)
+			save(entry.sourcePath, entry.song);
+	}
+
 	public static function sourceVersion(sourcePath:String):String
 	{
 		#if sys
@@ -82,6 +113,12 @@ class CompiledChartCache
 	}
 
 	#if sys
+	static function isCacheableSource(sourcePath:String):Bool
+	{
+		return sourcePath != null && FileSystem.exists(sourcePath) && !FileSystem.isDirectory(sourcePath)
+			&& FileSystem.stat(sourcePath).size <= MAX_SOURCE_BYTES;
+	}
+
 	static function sourceSignature(sourcePath:String):Null<String>
 	{
 		if (sourcePath == null || !FileSystem.exists(sourcePath) || FileSystem.isDirectory(sourcePath))

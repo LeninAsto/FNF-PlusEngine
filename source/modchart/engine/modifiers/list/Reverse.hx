@@ -18,8 +18,12 @@ class Reverse extends Modifier {
 	var _unboundedReverseID:Int;
 	var _centeredID:Int;
 	var _xmodID:Int;
+	var _cmodID:Int;
+	var _mmodID:Int;
 	var _randomSpeedID:Int;
 	var _xmodIDs:Array<Int>;
+	var _cmodIDs:Array<Int>;
+	var _mmodIDs:Array<Int>;
 	var _scrollAngleXID:Int;
 	var _scrollAngleYID:Int;
 	var _scrollAngleZID:Int;
@@ -31,15 +35,41 @@ class Reverse extends Modifier {
 	var _curvedScrollYID:Int;
 	var _curvedScrollZID:Int;
 	var _spawnTimeID:Int;
+	var _boomerangID:Int;
+	var _boomerangHeightID:Int;
+	var _expandID:Int;
+	var _expandSpeedID:Int;
+	var _expandPeriodID:Int;
+	var _expandOffsetID:Int;
+	var _expandMinID:Int;
+	var _expandMaxID:Int;
+	var _tanExpandID:Int;
+	var _tanExpandSpeedID:Int;
+	var _tanExpandPeriodID:Int;
+	var _tanExpandOffsetID:Int;
+	var _tanExpandMinID:Int;
+	var _tanExpandMaxID:Int;
 	var _curvedScrollXIDs:Array<Int>;
 	var _curvedScrollYIDs:Array<Int>;
 	var _curvedScrollZIDs:Array<Int>;
+	var _boomerangIDs:Array<Int>;
+	var _expandIDs:Array<Int>;
+	var _tanExpandIDs:Array<Int>;
 	final _scrollRotation:Vector3 = new Vector3();
 
 	public function new(pf) {
 		super(pf);
 
 		setPercent('xmod', 1, -1);
+		setPercent('cmod', -1, -1);
+		setPercent('mmod', -1, -1);
+		setPercent('boomerangHeight', 1, -1);
+		setPercent('expandPeriod', 3, -1);
+		setPercent('expandMin', 0.75, -1);
+		setPercent('expandMax', 1.75, -1);
+		setPercent('tanExpandPeriod', 3, -1);
+		setPercent('tanExpandMin', 0.75, -1);
+		setPercent('tanExpandMax', 1.75, -1);
 
 		final maxKeys = 16;
 		_splitID = findID('split');
@@ -49,6 +79,8 @@ class Reverse extends Modifier {
 		_unboundedReverseID = findID('unboundedReverse');
 		_centeredID = findID('centered');
 		_xmodID = findID('xmod');
+		_cmodID = findID('cmod');
+		_mmodID = findID('mmod');
 		_randomSpeedID = findID('randomspeed');
 		_scrollAngleXID = findID('scrollAngleX');
 		_scrollAngleYID = findID('scrollAngleY');
@@ -58,15 +90,38 @@ class Reverse extends Modifier {
 		_curvedScrollYID = findID('curvedScrollY');
 		_curvedScrollZID = findID('curvedScrollZ');
 		_spawnTimeID = findID('spawnTime');
+		_boomerangID = findID('boomerang');
+		_boomerangHeightID = findID('boomerangHeight');
+		_expandID = findID('expand');
+		_expandSpeedID = findID('expandSpeed');
+		_expandPeriodID = findID('expandPeriod');
+		_expandOffsetID = findID('expandOffset');
+		_expandMinID = findID('expandMin');
+		_expandMaxID = findID('expandMax');
+		_tanExpandID = findID('tanExpand');
+		_tanExpandSpeedID = findID('tanExpandSpeed');
+		_tanExpandPeriodID = findID('tanExpandPeriod');
+		_tanExpandOffsetID = findID('tanExpandOffset');
+		_tanExpandMinID = findID('tanExpandMin');
+		_tanExpandMaxID = findID('tanExpandMax');
 
 		_reverseIDs = [for (i in 0...maxKeys) findID('reverse' + i)];
 		_xmodIDs = [for (i in 0...maxKeys) findID('xmod' + i)];
+		_cmodIDs = [for (i in 0...maxKeys) findID('cmod' + i)];
+		_mmodIDs = [for (i in 0...maxKeys) findID('mmod' + i)];
+		for (id in _cmodIDs)
+			setUnsafe(id, -1, -1);
+		for (id in _mmodIDs)
+			setUnsafe(id, -1, -1);
 		_scrollAngleXIDs = [for (i in 0...maxKeys) findID('scrollAngleX' + i)];
 		_scrollAngleYIDs = [for (i in 0...maxKeys) findID('scrollAngleY' + i)];
 		_scrollAngleZIDs = [for (i in 0...maxKeys) findID('scrollAngleZ' + i)];
 		_curvedScrollXIDs = [for (i in 0...maxKeys) findID('curvedScrollX' + i)];
 		_curvedScrollYIDs = [for (i in 0...maxKeys) findID('curvedScrollY' + i)];
 		_curvedScrollZIDs = [for (i in 0...maxKeys) findID('curvedScrollZ' + i)];
+		_boomerangIDs = [for (i in 0...maxKeys) findID('boomerang' + i)];
+		_expandIDs = [for (i in 0...maxKeys) findID('expand' + i)];
+		_tanExpandIDs = [for (i in 0...maxKeys) findID('tanExpand' + i)];
 	}
 
 	public inline function getSpawnTime(player:Int = 0):Float {
@@ -118,7 +173,42 @@ class Reverse extends Modifier {
 		if (spawnTime > 0)
 			distance = distance < 0 ? Math.max(distance, -spawnTime) : Math.min(distance, spawnTime);
 
-		distance *= Adapter.instance.getCurrentScrollSpeed();
+		final lane = getLaneSlot(params.lane, _cmodIDs.length);
+		var scrollSpeed = getUnsafe(_cmodIDs[lane], player);
+		if (scrollSpeed < 0)
+			scrollSpeed = getUnsafe(_cmodID, player);
+		if (scrollSpeed < 0)
+			scrollSpeed = Adapter.instance.getCurrentScrollSpeed();
+		var maxSpeed = getUnsafe(_mmodIDs[lane], player);
+		if (maxSpeed < 0)
+			maxSpeed = getUnsafe(_mmodID, player);
+		if (maxSpeed >= 0)
+			scrollSpeed = Math.min(scrollSpeed, maxSpeed);
+		distance *= scrollSpeed;
+
+		final boomerang = getUnsafeLaneAdd(_boomerangID, _boomerangIDs[lane], player);
+		if (boomerang != 0) {
+			final height = Math.max(0.01, getUnsafe(_boomerangHeightID, player));
+			final curved = (-distance * distance / (HEIGHT * height)) + (1.5 * distance);
+			distance = FlxMath.lerp(distance, curved, boomerang);
+		}
+
+		final expand = getUnsafeLaneAdd(_expandID, _expandIDs[lane], player);
+		if (expand != 0) {
+			final frequency = Math.max(0, getUnsafe(_expandPeriodID, player)) * (1 + getUnsafe(_expandSpeedID, player));
+			final wave = (cos(params.songTime * 0.001 * frequency + getUnsafe(_expandOffsetID, player)) + 1) * 0.5;
+			final multiplier = FlxMath.lerp(getUnsafe(_expandMinID, player), getUnsafe(_expandMaxID, player), wave);
+			distance *= FlxMath.lerp(1, multiplier, expand);
+		}
+
+		final tanExpand = getUnsafeLaneAdd(_tanExpandID, _tanExpandIDs[lane], player);
+		if (tanExpand != 0) {
+			final frequency = Math.max(0, getUnsafe(_tanExpandPeriodID, player)) * (1 + getUnsafe(_tanExpandSpeedID, player));
+			final tangent = ModchartUtil.clamp(tan(params.songTime * 0.001 * frequency + getUnsafe(_tanExpandOffsetID, player)), -4, 4);
+			final wave = (tangent + 4) * 0.125;
+			final multiplier = FlxMath.lerp(getUnsafe(_tanExpandMinID, player), getUnsafe(_tanExpandMaxID, player), wave);
+			distance *= FlxMath.lerp(1, multiplier, tanExpand);
+		}
 
 		// Reuse curPos as a scroll accumulator to avoid allocating a new Vector3.
 		// Save original x/z, then use them as the scroll start (0,lerped,0).

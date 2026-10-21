@@ -3,7 +3,8 @@ package modchart.engine.modifiers.list;
 import modchart.backend.core.ModifierParameters;
 
 class Digital extends Modifier {
-	static final SERIES = ['digital', 'digitalz', 'tandigital', 'tandigitalz'];
+	static final SERIES = ['digital', 'digitaly', 'digitalz', 'tandigital', 'tandigitaly', 'tandigitalz'];
+	static final AXIS = [0, 1, 2, 0, 1, 2];
 
 	var amountIDs:Array<Int>;
 	var stepsIDs:Array<Int>;
@@ -33,7 +34,7 @@ class Digital extends Modifier {
 		final offset = getUnsafe(offsetIDs[seriesIdx], player);
 		final steps = Math.max(1, Std.int(Math.round(8 * Math.max(0.125, getUnsafe(stepsIDs[seriesIdx], player)))));
 		final angle = ((params.distance / (ARROW_SIZE * period)) + offset) * Math.PI;
-		var wave = seriesIdx >= 2 ? tan(angle) : sin(angle);
+		var wave = seriesIdx >= 3 ? tan(angle) : sin(angle);
 
 		if (!Math.isFinite(wave))
 			wave = 0;
@@ -43,11 +44,12 @@ class Digital extends Modifier {
 	}
 
 	override public function render(curPos:Vector3, params:ModifierParameters) {
-		final xShift = computeWave(0, params) + computeWave(2, params);
-		final zShift = computeWave(1, params) + computeWave(3, params);
-
-		curPos.x += xShift;
-		curPos.z += zShift;
+		for (series in 0...SERIES.length) {
+			final shift = computeWave(series, params);
+			if (AXIS[series] == 0) curPos.x += shift;
+			else if (AXIS[series] == 1) curPos.y += shift;
+			else curPos.z += shift;
+		}
 
 		return curPos;
 	}

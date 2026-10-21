@@ -188,10 +188,13 @@ class PlayState extends MusicBeatState
 	public var unspawnNotes:Array<Note> = [];
 	private var denseChartQueue:Bool = false;
 	private var unspawnNoteCursor:Int = 0;
+	private var denseLoadPlan:SongLoadPlan = null;
 	private var denseHitVisualsThisFrame:Int = 0;
 	private var denseRatingPending:Bool = false;
 	private var denseRatingHadMiss:Bool = false;
-	private static inline final DENSE_QUEUE_COMPACT_AT:Int = 2048;
+	#if DENSE_CHART_TEST
+	private var denseTestWritten:Bool = false;
+	#end
 	public var eventNotes:Array<EventNote> = [];
 
 	public var camFollow:FlxObject;
@@ -746,15 +749,17 @@ class PlayState extends MusicBeatState
 		startingSong = true;
 
 		#if LUA_ALLOWED
-		for (notetype in noteTypes)
-			startLuasNamed('custom_notetypes/' + notetype + '.lua');
+		if (!skipDenseBotplayNoteScripts())
+			for (notetype in noteTypes)
+				startLuasNamed('custom_notetypes/' + notetype + '.lua');
 		for (event in eventsPushed)
 			startLuasNamed('custom_events/' + event + '.lua');
 		#end
 
 		#if HSCRIPT_ALLOWED
-		for (notetype in noteTypes)
-			startHScriptsNamed('custom_notetypes/' + notetype + '.hx');
+		if (!skipDenseBotplayNoteScripts())
+			for (notetype in noteTypes)
+				startHScriptsNamed('custom_notetypes/' + notetype + '.hx');
 		for (event in eventsPushed)
 			startHScriptsNamed('custom_events/' + event + '.hx');
 		#end
@@ -1591,10 +1596,10 @@ class PlayState extends MusicBeatState
 				queued.active = queued.visible = false;
 				queued.ignoreNote = true;
 				queued.destroy();
+				unspawnNotes[unspawnNoteCursor] = null;
 				unspawnNoteCursor++;
 				queued = nextUnspawnNote();
 			}
-			compactDenseUnspawnQueue(true);
 		}
 		else
 		{
@@ -1967,6 +1972,7 @@ class PlayState extends MusicBeatState
 		var loadPlan:SongLoadPlan = SongLoadPlan.get(songData);
 		denseChartQueue = loadPlan.denseChart;
 		unspawnNoteCursor = 0;
+		denseLoadPlan = denseChartQueue ? loadPlan : null;
 
 		for (chartNote in loadPlan.notes)
 		{
@@ -2087,7 +2093,9 @@ class PlayState extends MusicBeatState
 			if(note != null && !note.isSustainNote && note.mustPress)
 				totalNotes += noteDensityCount(note);
 		if (denseChartQueue)
-			trace('[DENSE CHART]: packed ${loadPlan.sourceNoteCount} chart taps into ${unspawnNotes.length} runtime notes at 120 Hz.');
+			trace('[DENSE CHART]: ${loadPlan.sourceNoteCount} entries, ${loadPlan.notes.length} compact entries; ${unspawnNotes.length} runtime notes prepared.');
+		if (loadPlan.denseChart)
+			loadPlan.releaseSourceNotes(songData);
 		generatedMusic = true;
 		var generateFinished:Float = haxe.Timer.stamp();
 		SongLoadMetrics.recordGeneration((generateFinished - generateStarted) * 1000, (audioFinished - generateStarted) * 1000,
@@ -2364,18 +2372,14 @@ class PlayState extends MusicBeatState
 	private inline function nextUnspawnNote():Note
 		return denseChartQueue ? (unspawnNoteCursor < unspawnNotes.length ? unspawnNotes[unspawnNoteCursor] : null) : unspawnNotes[0];
 
-	private function compactDenseUnspawnQueue(?force:Bool = false):Void
-	{
-		if (!denseChartQueue || unspawnNoteCursor <= 0)
-			return;
-		if (!force && unspawnNoteCursor < DENSE_QUEUE_COMPACT_AT)
-			return;
-		unspawnNotes.splice(0, unspawnNoteCursor);
-		unspawnNoteCursor = 0;
-	}
-
 	private static inline function noteDensityCount(note:Note):Int
 		return note == null ? 1 : Std.int(Math.max(1, Math.round(note.noteDensity)));
+
+	private inline function skipDenseBotplayNoteScripts():Bool
+		return denseChartQueue && cpuControlled;
+
+	private inline function skipUltraDenseBotplayScripts():Bool
+		return cpuControlled && denseLoadPlan != null && denseLoadPlan.ultraDenseChart;
 
 	private inline function requestRatingRecalculation(badHit:Bool):Void
 	{
@@ -2400,6 +2404,19 @@ class PlayState extends MusicBeatState
 
 	override public function update(elapsed:Float)
 	{
+		#if DENSE_CHART_TEST
+		if (!denseTestWritten && Conductor.songPosition >= 172000)
+		{
+			denseTestWritten = true;
+			if (Manager.instance != null)
+				Manager.instance.rendererStats.collectDebugStats = true;
+			var alive:Int = 0;
+			for (note in notes.members)
+				if (note != null && note.exists && note.alive)
+					alive++;
+			sys.io.File.saveContent('dense-test.txt', 'time=${Conductor.songPosition}\nalive=$alive\nunspawnCursor=$unspawnNoteCursor\nunspawnTotal=${unspawnNotes.length}\nprepared=${denseLoadPlan == null ? 0 : denseLoadPlan.notes.length}\nrenderArrows=${Manager.instance == null ? -1 : Manager.instance.rendererStats.dbgArrows}\ndrawCmds=${Manager.instance == null ? -1 : Manager.instance.rendererStats.dbgDrawCmds}\n');
+		}
+		#end
 		denseHitVisualsThisFrame = 0;
 		if(!inCutscene && !paused && !freezeCamera) {
 			FlxG.camera.followLerp = 0.04 * cameraSpeed * playbackRate;
@@ -2415,7 +2432,8 @@ class PlayState extends MusicBeatState
 			}
 		}
 		else FlxG.camera.followLerp = 0;
-		callOnScripts('onUpdate', [elapsed]);
+		if (!skipUltraDenseBotplayScripts())
+			callOnScripts('onUpdate', [elapsed]);
 		if (languageRevision != Language.revision)
 			refreshLocalizedHud();
 
@@ -2548,15 +2566,20 @@ class PlayState extends MusicBeatState
 					notes.insert(0, dunceNote);
 				dunceNote.spawned = true;
 
-				callOnLuas('onSpawnNote', [notes.members.indexOf(dunceNote), dunceNote.noteData, dunceNote.noteType, dunceNote.isSustainNote, dunceNote.strumTime]);
-				callOnHScript('onSpawnNote', [dunceNote]);
+				if (!skipDenseBotplayNoteScripts())
+				{
+					callOnLuas('onSpawnNote', [notes.members.indexOf(dunceNote), dunceNote.noteData, dunceNote.noteType, dunceNote.isSustainNote, dunceNote.strumTime]);
+					callOnHScript('onSpawnNote', [dunceNote]);
+				}
 
 				if (denseChartQueue)
+				{
+					unspawnNotes[unspawnNoteCursor] = null;
 					unspawnNoteCursor++;
+				}
 				else
 					unspawnNotes.splice(0, 1);
 			}
-			compactDenseUnspawnQueue();
 		}
 
 		if (generatedMusic)
@@ -2665,7 +2688,8 @@ class PlayState extends MusicBeatState
 
 		setOnScripts('botPlay', cpuControlled);
 		setOnScripts('botPlayCPUProfile', isBotplayCPU() ? botplayCPUProfile() : '');
-		callOnScripts('onUpdatePost', [elapsed]);
+		if (!skipUltraDenseBotplayScripts())
+			callOnScripts('onUpdatePost', [elapsed]);
 	}
 
 	override function onAudioDeviceReopened():Void
@@ -2741,6 +2765,12 @@ class PlayState extends MusicBeatState
 		canResync = false;
 		FlxG.camera.followLerp = 0;
 		persistentUpdate = false;
+		if (denseLoadPlan != null && denseLoadPlan.sourceNotesReleased)
+		{
+			var songName:String = Paths.formatToSongPath(SONG.song);
+			Song.loadFromJson(Highscore.formatSong(songName, storyDifficulty), songName);
+			SongLoadPlan.clear();
+		}
 		chartingMode = true;
 		paused = true;
 
@@ -3397,7 +3427,6 @@ class PlayState extends MusicBeatState
 				if(daNote != null && daNote.strumTime < songLength - Conductor.safeZoneOffset)
 					health -= 0.05 * healthLoss * noteDensityCount(daNote);
 			}
-
 			if(doDeathCheck()) {
 				return false;
 			}
@@ -3651,6 +3680,7 @@ class PlayState extends MusicBeatState
 		notes.clear();
 		unspawnNotes = [];
 		unspawnNoteCursor = 0;
+		denseLoadPlan = null;
 		eventNotes = [];
 	}
 
@@ -3663,6 +3693,7 @@ class PlayState extends MusicBeatState
 
 	// Stores Ratings and Combo Sprites in a group
 	public var comboGroup:FlxSpriteGroup;
+	var comboSpritePool:Array<FlxSprite> = [];
 	#if android
 	var androidComboSpritePool:Array<FlxSprite> = [];
 	var androidComboSpriteLife:Array<Float> = [];
@@ -3671,6 +3702,7 @@ class PlayState extends MusicBeatState
 	var androidNumGraphics:Array<FlxGraphic> = [];
 	var androidMinusGraphic:FlxGraphic;
 	var androidComboKGraphic:FlxGraphic;
+	var androidComboMGraphic:FlxGraphic;
 	var androidComboDotGraphic:FlxGraphic;
 	#end
 	var breakTimerHud:BreakTimerHud = null;
@@ -3686,6 +3718,7 @@ class PlayState extends MusicBeatState
 		for (i in 0...10)
 			Paths.image(uiAsset('num' + i));
 		Paths.image(uiAsset('k'));
+		Paths.image(uiAsset('m'));
 		Paths.image(uiAsset('dot'));
 		Paths.image(uiAsset('combo'));
 		Paths.image(uiAsset('miss'));
@@ -3701,6 +3734,7 @@ class PlayState extends MusicBeatState
 		androidRatingGraphics.set('miss', Paths.image(uiAsset('miss')));
 		androidMinusGraphic = Paths.image(popupMinusAsset());
 		androidComboKGraphic = Paths.image(uiAsset('k'));
+		androidComboMGraphic = Paths.image(uiAsset('m'));
 		androidComboDotGraphic = Paths.image(uiAsset('dot'));
 		for (i in 0...10)
 			androidNumGraphics[i] = Paths.image(uiAsset('num' + i));
@@ -3835,6 +3869,7 @@ class PlayState extends MusicBeatState
 				case '-': androidMinusGraphic;
 				case '.': androidComboDotGraphic;
 				case 'k': androidComboKGraphic;
+				case 'M': androidComboMGraphic;
 				default: digit != null && digit >= 0 && digit <= 9 ? androidNumGraphics[digit] : null;
 			};
 			if (graphic == null)
@@ -3856,6 +3891,11 @@ class PlayState extends MusicBeatState
 	{
 		if (value < 10000)
 			return Std.string(value);
+		if (value >= 1000000)
+		{
+			var tenths:Int = Math.floor(value / 100000);
+			return '${Std.int(tenths / 10)}.${tenths % 10}M';
+		}
 		var tenths:Int = Math.floor(value / 100);
 		return '${Std.int(tenths / 10)}.${tenths % 10}k';
 	}
@@ -3865,8 +3905,52 @@ class PlayState extends MusicBeatState
 		{
 			case '.': uiAsset('dot');
 			case 'k': uiAsset('k');
+			case 'M': uiAsset('m');
 			default: uiAsset('num' + character);
 		};
+
+	function getComboSprite():FlxSprite
+	{
+		for (spr in comboSpritePool)
+		{
+			if (spr != null && !spr.exists)
+			{
+				spr.revive();
+				resetComboSprite(spr);
+				return spr;
+			}
+		}
+
+		var spr = new FlxSprite();
+		comboSpritePool.push(spr);
+		comboGroup.add(spr);
+		resetComboSprite(spr);
+		return spr;
+	}
+
+	inline function resetComboSprite(spr:FlxSprite):Void
+	{
+		FlxTween.cancelTweensOf(spr);
+		FlxTween.cancelTweensOf(spr.scale);
+		spr.alpha = 1;
+		spr.angle = 0;
+		spr.color = FlxColor.WHITE;
+		spr.visible = true;
+		spr.active = true;
+		spr.velocity.set();
+		spr.acceleration.set();
+		spr.scale.set(1, 1);
+	}
+
+	inline function releaseComboSprite(spr:FlxSprite):Void
+	{
+		if (spr == null)
+			return;
+		FlxTween.cancelTweensOf(spr);
+		FlxTween.cancelTweensOf(spr.scale);
+		spr.kill();
+		spr.alpha = 1;
+	}
 
 	function popupMinusAsset():String
 	{
@@ -3881,7 +3965,37 @@ class PlayState extends MusicBeatState
 
 		breakTimerHud = new BreakTimerHud(camHUD);
 		breakTimerHud.addTo(this);
-		breakTimerHud.cacheNotes(unspawnNotes);
+		if (denseChartQueue && denseLoadPlan != null)
+			breakTimerHud.cacheNoteTimes(denseBreakTimerTimes());
+		else
+			breakTimerHud.cacheNotes(unspawnNotes);
+	}
+
+	private function denseBreakTimerTimes():Array<Float>
+	{
+		var times:Array<Float> = [];
+		var last:Float = -1;
+		var lastStored:Float = -1;
+		for (prepared in denseLoadPlan.notes)
+		{
+			if (!modes.chartHit(prepared.gottaHit))
+				continue;
+			var time:Float = prepared.strumTime + ClientPrefs.data.noteOffset;
+			if (last < 0)
+			{
+				times.push(time);
+				lastStored = time;
+			}
+			else if (time - last >= 2000)
+			{
+				if (last != lastStored)
+					times.push(last);
+				times.push(time);
+				lastStored = time;
+			}
+			last = time;
+		}
+		return times;
 	}
 
 	function refreshBreakTimerVisualStyle():Void
@@ -3973,7 +4087,7 @@ class PlayState extends MusicBeatState
 
 		if (showTag)
 		{
-			var tag:FlxSprite = new FlxSprite().loadGraphic(Paths.image(uiAsset(early ? 'early' : 'late')));
+			var tag:FlxSprite = getComboSprite().loadGraphic(Paths.image(uiAsset(early ? 'early' : 'late')));
 			tag.setGraphicSize(Std.int(Math.max(1, rating.width * 0.48)));
 			tag.updateHitbox();
 			tag.x = early ? rating.x - tag.width * 0.18 : rating.x + rating.width - tag.width * 0.82;
@@ -3982,10 +4096,9 @@ class PlayState extends MusicBeatState
 			tag.antialiasing = antialias;
 			tag.velocity.set(rating.velocity.x, rating.velocity.y);
 			tag.acceleration.set(rating.acceleration.x, rating.acceleration.y);
-			comboGroup.add(tag);
 			FlxTween.tween(tag, {alpha: 0}, 0.2 / playbackRate, {
 				startDelay: Conductor.crochet * 0.001 / playbackRate,
-				onComplete: function(twn:FlxTween) tag.destroy()
+				onComplete: function(twn:FlxTween) releaseComboSprite(tag)
 			});
 		}
 
@@ -4034,29 +4147,23 @@ class PlayState extends MusicBeatState
 		if (comboGroup == null || comboGroup.members.length == 0)
 			return;
 
-		while (comboGroup.members.length > 0)
+		if (msTxt != null && comboGroup.members.indexOf(msTxt) >= 0)
 		{
-			var spr:FlxSprite = comboGroup.members[0];
-			if (spr == null)
+			if (msTween != null)
 			{
-				comboGroup.members.shift();
-				continue;
+				msTween.cancel();
+				msTween = null;
 			}
+			comboGroup.remove(msTxt, true);
+			msTxt.visible = false;
+			msTxt.alpha = 0;
+		}
 
-			if (spr == msTxt)
-			{
-				if (msTween != null)
-				{
-					msTween.cancel();
-					msTween = null;
-				}
-				comboGroup.remove(spr, true);
-				spr.visible = false;
-				spr.alpha = 0;
+		for (spr in comboGroup.members)
+		{
+			if (spr == null || spr == msTxt || !spr.exists)
 				continue;
-			}
 
-			comboGroup.remove(spr, true);
 			FlxTween.cancelTweensOf(spr);
 			if (spr.scale != null) FlxTween.cancelTweensOf(spr.scale);
 			#if android
@@ -4066,7 +4173,7 @@ class PlayState extends MusicBeatState
 				continue;
 			}
 			#end
-			spr.destroy();
+			releaseComboSprite(spr);
 		}
 	}
 
@@ -4074,7 +4181,7 @@ class PlayState extends MusicBeatState
 	{
 		if (!isMiss && note == null) return;
 		var density:Int = noteDensityCount(note);
-		var suppressDenseVisuals:Bool = denseChartQueue && !isMiss && denseHitVisualsThisFrame >= 4;
+		var suppressDenseVisuals:Bool = denseChartQueue && !isMiss && denseHitVisualsThisFrame >= 1;
 		if (denseChartQueue && !isMiss)
 			denseHitVisualsThisFrame++;
 		var hitDiff:Float = isMiss ? 0 : (note.strumTime - Conductor.songPosition + ClientPrefs.data.ratingOffset) / playbackRate;
@@ -4086,7 +4193,8 @@ class PlayState extends MusicBeatState
 		var lightHitVisuals:Bool = false;
 		#end
 
-		if (!suppressDenseVisuals && !lightHitVisuals && (!ClientPrefs.data.comboStacking || ClientPrefs.data.nfRatingStyle))
+		if (!suppressDenseVisuals && !lightHitVisuals
+			&& (skipDenseBotplayNoteScripts() || !ClientPrefs.data.comboStacking || ClientPrefs.data.nfRatingStyle))
 			clearComboPopups();
 
 		var placement:Float = FlxG.width * 0.35;
@@ -4138,8 +4246,6 @@ class PlayState extends MusicBeatState
 			#end
 			return;
 		}
-		var rating:FlxSprite = new FlxSprite();
-
 		var antialias:Bool = ClientPrefs.data.antialiasing;
 		if (stageUI != "normal")
 		{
@@ -4148,6 +4254,7 @@ class PlayState extends MusicBeatState
 
 		if (ClientPrefs.data.popUpRating || ClientPrefs.data.showTimingTags || ClientPrefs.data.showHitMs)
 		{
+			var rating:FlxSprite = getComboSprite();
 			rating.loadGraphic(Paths.image(uiAsset(isMiss ? 'miss' : daRating.image)));
 			rating.screenCenter();
 			rating.x = placement - 40;
@@ -4165,7 +4272,7 @@ class PlayState extends MusicBeatState
 			rating.y -= ClientPrefs.data.comboOffset[1];
 			rating.antialiasing = antialias;
 
-			var comboSpr:FlxSprite = new FlxSprite().loadGraphic(Paths.image(uiAsset('combo')));
+			var comboSpr:FlxSprite = getComboSprite().loadGraphic(Paths.image(uiAsset('combo')));
 			comboSpr.screenCenter();
 			comboSpr.x = placement;
 			comboSpr.acceleration.y = FlxG.random.int(200, 300) * playbackRate * playbackRate;
@@ -4181,8 +4288,6 @@ class PlayState extends MusicBeatState
 			comboSpr.antialiasing = antialias;
 			comboSpr.y += 60;
 			comboSpr.velocity.x += FlxG.random.int(1, 10) * playbackRate;
-			comboGroup.add(rating);
-
 			if (!PlayState.isPixelStage)
 			{
 				rating.setGraphicSize(Std.int(rating.width * 0.7));
@@ -4199,9 +4304,6 @@ class PlayState extends MusicBeatState
 
 			var daLoop:Int = 0;
 			var xThing:Float = 0;
-			if (!isMiss && ClientPrefs.data.popUpRating && showCombo)
-				comboGroup.add(comboSpr);
-
 			var popupCount:Int = isMiss ? songMisses : combo;
 			var comboStr:String = !isMiss && popupCount >= 10000 ? formatComboCount(popupCount)
 				: (ClientPrefs.data.dynamicCombo ? Std.string(popupCount) : Std.string(popupCount).lpad('0', 3));
@@ -4209,7 +4311,7 @@ class PlayState extends MusicBeatState
 			{
 				var isMinus:Bool = i == comboStr.length;
 				var numberAsset:String = isMinus ? popupMinusAsset() : comboCharacterAsset(comboStr.charAt(i));
-				var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(numberAsset));
+				var numScore:FlxSprite = getComboSprite().loadGraphic(Paths.image(numberAsset));
 				if (isMiss) numScore.color = 0xFFB060FF;
 				numScore.screenCenter();
 				numScore.x = placement + (43 * daLoop) - 90 + ClientPrefs.data.comboOffset[2];
@@ -4229,12 +4331,9 @@ class PlayState extends MusicBeatState
 					numScore.velocity.set(0, 0);
 					numScore.acceleration.set(0, 0);
 				}
-				numScore.visible = ClientPrefs.data.popUpRating && !ClientPrefs.data.hideHud && showComboNum;
+				numScore.visible = ClientPrefs.data.popUpRating && !ClientPrefs.data.hideHud && showComboNum
+					&& (isMiss || combo >= 10 || combo == 0);
 				numScore.antialiasing = antialias;
-
-				if (isMiss || combo >= 10 || combo == 0)
-					if (ClientPrefs.data.popUpRating && showComboNum)
-						comboGroup.add(numScore);
 
 				if (ClientPrefs.data.nfRatingStyle)
 					FlxTween.tween(numScore.scale, {x: numScore.scale.x * 0.88, y: numScore.scale.y * 0.88}, 0.12 / playbackRate, {ease: FlxEase.quadOut});
@@ -4242,7 +4341,7 @@ class PlayState extends MusicBeatState
 				FlxTween.tween(numScore, {alpha: 0}, 0.2 / playbackRate, {
 					onComplete: function(tween:FlxTween)
 					{
-						numScore.destroy();
+						releaseComboSprite(numScore);
 					},
 					startDelay: Conductor.crochet * (ClientPrefs.data.nfRatingStyle ? 0.0016 : 0.002) / playbackRate
 				});
@@ -4268,8 +4367,8 @@ class PlayState extends MusicBeatState
 			FlxTween.tween(comboSpr, {alpha: 0}, 0.2 / playbackRate, {
 				onComplete: function(tween:FlxTween)
 				{
-					comboSpr.destroy();
-					rating.destroy();
+					releaseComboSprite(comboSpr);
+					releaseComboSprite(rating);
 				},
 				startDelay: Conductor.crochet * (ClientPrefs.data.nfRatingStyle ? 0.0016 : 0.002) / playbackRate
 			});
@@ -4541,8 +4640,11 @@ class PlayState extends MusicBeatState
 
 		noteMissCommon(daNote.noteData, daNote);
 		stagesFunc(function(stage:BaseStage) stage.noteMiss(daNote));
-		var result:Dynamic = callOnLuas('noteMiss', [notes.members.indexOf(daNote), daNote.noteData, daNote.noteType, daNote.isSustainNote]);
-		if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) callOnHScript('noteMiss', [daNote]);
+		if (!skipDenseBotplayNoteScripts())
+		{
+			var result:Dynamic = callOnLuas('noteMiss', [notes.members.indexOf(daNote), daNote.noteData, daNote.noteType, daNote.isSustainNote]);
+			if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) callOnHScript('noteMiss', [daNote]);
+		}
 	}
 
 	function noteMissPress(direction:Int = 1):Void //You pressed a key when there was no notes to press for this key
@@ -4641,8 +4743,12 @@ class PlayState extends MusicBeatState
 
 	function opponentNoteHit(note:Note):Void
 	{
-		var result:Dynamic = callOnLuas('opponentNoteHitPre', [notes.members.indexOf(note), Math.abs(note.noteData), note.noteType, note.isSustainNote]);
-		if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) result = callOnHScript('opponentNoteHitPre', [note]);
+		var result:Dynamic = LuaUtils.Function_Continue;
+		if (!skipDenseBotplayNoteScripts())
+		{
+			result = callOnLuas('opponentNoteHitPre', [notes.members.indexOf(note), Math.abs(note.noteData), note.noteType, note.isSustainNote]);
+			if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) result = callOnHScript('opponentNoteHitPre', [note]);
+		}
 
 		if(result == LuaUtils.Function_Stop) return;
 
@@ -4683,8 +4789,11 @@ class PlayState extends MusicBeatState
 			health = Math.max(PlayModes.DRAIN_FLOOR, health - note.hitHealth * healthLoss * noteDensityCount(note));
 
 		stagesFunc(function(stage:BaseStage) stage.opponentNoteHit(note));
-		var result:Dynamic = callOnLuas('opponentNoteHit', [notes.members.indexOf(note), Math.abs(note.noteData), note.noteType, note.isSustainNote]);
-		if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) callOnHScript('opponentNoteHit', [note]);
+		if (!skipDenseBotplayNoteScripts())
+		{
+			var result:Dynamic = callOnLuas('opponentNoteHit', [notes.members.indexOf(note), Math.abs(note.noteData), note.noteType, note.isSustainNote]);
+			if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) callOnHScript('opponentNoteHit', [note]);
+		}
 
 		if (!note.isSustainNote) invalidateNote(note);
 	}
@@ -4703,8 +4812,12 @@ class PlayState extends MusicBeatState
 		var leData:Int = Math.round(Math.abs(note.noteData));
 		var leType:String = note.noteType;
 
-		var result:Dynamic = callOnLuas('goodNoteHitPre', [notes.members.indexOf(note), leData, leType, isSus]);
-		if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) result = callOnHScript('goodNoteHitPre', [note]);
+		var result:Dynamic = LuaUtils.Function_Continue;
+		if (!skipDenseBotplayNoteScripts())
+		{
+			result = callOnLuas('goodNoteHitPre', [notes.members.indexOf(note), leData, leType, isSus]);
+			if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) result = callOnHScript('goodNoteHitPre', [note]);
+		}
 
 		if(result == LuaUtils.Function_Stop) return;
 
@@ -4768,15 +4881,18 @@ class PlayState extends MusicBeatState
 				if(combo > maxCombo) maxCombo = combo;
 				popUpScore(note);
 
-				if(!lightHitVisuals && !ClientPrefs.data.hideSustainSplash && !ClientPrefs.data.lowQuality && !note.noteSplashData.disabled && note.tail.length > 1)
+				if (!skipDenseBotplayNoteScripts())
 				{
-					var strum = playerStrums.members[note.noteData];
-					if(strum != null)
+					if(!lightHitVisuals && !ClientPrefs.data.hideSustainSplash && !ClientPrefs.data.lowQuality && !note.noteSplashData.disabled && note.tail.length > 1)
 					{
-						var end = note.tail[note.tail.length - 1];
-						var sus = grpHoldSplashes.recycle(SustainSplash);
-						sus.setupSusSplash(strum, note, playbackRate);
-						grpHoldSplashes.add(end.noteHoldSplash = sus);
+						var strum = playerStrums.members[note.noteData];
+						if(strum != null)
+						{
+							var end = note.tail[note.tail.length - 1];
+							var sus = grpHoldSplashes.recycle(SustainSplash);
+							sus.setupSusSplash(strum, note, playbackRate);
+							grpHoldSplashes.add(end.noteHoldSplash = sus);
+						}
 					}
 				}
 			}
@@ -4805,8 +4921,11 @@ class PlayState extends MusicBeatState
 		}
 
 		stagesFunc(function(stage:BaseStage) stage.goodNoteHit(note));
-		var result:Dynamic = callOnLuas('goodNoteHit', [notes.members.indexOf(note), leData, leType, isSus]);
-		if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) callOnHScript('goodNoteHit', [note]);
+		if (!skipDenseBotplayNoteScripts())
+		{
+			var result:Dynamic = callOnLuas('goodNoteHit', [notes.members.indexOf(note), leData, leType, isSus]);
+			if(result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll) callOnHScript('goodNoteHit', [note]);
+		}
 		if(!note.isSustainNote) invalidateNote(note);
 	}
 

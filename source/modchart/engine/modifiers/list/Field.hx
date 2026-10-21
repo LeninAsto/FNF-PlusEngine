@@ -1,8 +1,8 @@
 package modchart.engine.modifiers.list;
 
-import flixel.FlxG;
 import modchart.backend.core.ModifierParameters;
 import modchart.backend.core.TransformMode;
+import modchart.backend.core.VisualParameters;
 import modchart.backend.util.ModchartUtil;
 
 class Field extends Modifier {
@@ -55,10 +55,8 @@ class Field extends Modifier {
 
 		if (fieldPitch != 0 || fieldYaw != 0 || fieldRoll != 0) {
 			final origin = getFieldOrigin(params);
-			final zScale = FlxG.height;
-			_rotation.setTo(curPos.x - origin.x, curPos.y - origin.y, (curPos.z - origin.z) * zScale);
+			_rotation.setTo(curPos.x - origin.x, curPos.y - origin.y, curPos.z - origin.z);
 			final out = ModchartUtil.rotate3DVectorInto(_rotation, fieldPitch, fieldYaw, fieldRoll, _rotation);
-			out.z /= zScale;
 
 			origin.addToOutput(out, curPos);
 		}
@@ -68,6 +66,14 @@ class Field extends Modifier {
 		curPos.z += fieldZ;
 
 		return curPos;
+	}
+
+	override public function visuals(data:VisualParameters, params:ModifierParameters):VisualParameters {
+		final player = params.player;
+		data.fieldAngleX += getUnsafe(fieldPitchID, player) + getUnsafe(fieldRotateXID, player);
+		data.fieldAngleY += getUnsafe(fieldYawID, player) + getUnsafe(fieldRotateYID, player);
+		data.fieldAngleZ += getUnsafe(fieldRollID, player) + getUnsafe(fieldRotateZID, player);
+		return data;
 	}
 
 	inline function getFieldOrigin(params:ModifierParameters):Vector3 {

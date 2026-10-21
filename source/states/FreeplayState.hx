@@ -917,11 +917,12 @@ class FreeplayState extends MusicBeatState
 
 		try
 		{
-			var songKey:String = Paths.formatToSongPath(selectedSong.songName);
-			var chartName:String = Highscore.formatSong(songKey, curDifficulty);
-			var chart:SwagSong = Song.getChart(chartName, songKey);
-			if (chart != null && chart.bpm > 0)
-				resolvedBpm = chart.bpm;
+			var diffName:String = Difficulty.list != null && curDifficulty >= 0 && curDifficulty < Difficulty.list.length
+				? Difficulty.list[curDifficulty] : Difficulty.getDefault();
+			var chartPath:String = resolveSongChartPath(selectedSong, curDifficulty, diffName);
+			var chartBpm:Float = readChartHeaderBpm(chartPath);
+			if (chartBpm > 0)
+				resolvedBpm = chartBpm;
 		}
 		catch (e:Dynamic)
 		{
@@ -1463,37 +1464,13 @@ class FreeplayState extends MusicBeatState
 				var songLowercase:String = Paths.formatToSongPath(songs[curSelected].songName);
 				var poop:String = Highscore.formatSong(songLowercase, difficultySelector.curSelected);
 
-				try
-				{
-					Song.loadFromJson(poop, songLowercase);
-					var chartError:String = getChartPlayError(PlayState.SONG);
-					if (chartError != null)
-						throw chartError;
-				}
-				catch (e:Dynamic)
-				{
-					trace('ERROR! $e');
-
-					var errorStr:String = Std.string(e);
-					if (errorStr.contains('There is no TEXT asset with an ID of')
-						|| errorStr.contains('Invalid difficulty index')
-						|| errorStr.contains('chart file not found')
-						|| errorStr.contains('Chart failed to load'))
-						errorStr = Language.getPhrase('freeplay.errors.no_chart', 'No chart is available for this difficulty!');
-
-					showMissingCard(errorStr);
-					FlxG.sound.play(Paths.sound('cancelMenu'));
-
-					updateTexts(elapsed);
-					return;
-				}
+				LoadingState.setPendingSongChart(poop, songLowercase);
 				@:privateAccess
 				if (PlayState._lastLoadedModDirectory != Mods.currentModDirectory)
 				{
 					trace('CHANGED MOD DIRECTORY, RELOADING STUFF');
 					Paths.freeGraphicsFromMemory();
 				}
-				LoadingState.prepareToSong();
 				LoadingState.returnState = FreeplayStateSelector.create(); // Establecer estado de retorno
 				LoadingState.loadAndSwitchState(new PlayState());
 				#if !SHOW_LOADING_SCREEN FlxG.sound.music.stop(); #end
@@ -2018,6 +1995,7 @@ class FreeplayState extends MusicBeatState
 
 			var diffNames:Array<String> = getSongDifficultyNames(song);
 			var bpmSnapshot:Float = currentBPM;
+			var diffIndexSnapshot:Int = curDifficulty;
 
 			#if (target.threaded && sys)
 			_songCardMutex.acquire();
@@ -2028,7 +2006,7 @@ class FreeplayState extends MusicBeatState
 			{
 				try
 				{
-					var cardData:FreeplaySongCardData = buildSongInfoCardData(song, diffNames, bpmSnapshot);
+					var cardData:FreeplaySongCardData = buildSongInfoCardData(song, diffNames, bpmSnapshot, diffIndexSnapshot);
 					_songCardMutex.acquire();
 					if (requestToken == songInfoCardLoadToken)
 					{
@@ -2066,7 +2044,7 @@ class FreeplayState extends MusicBeatState
 				}
 			});
 			#else
-			applySongInfoCardData(buildSongInfoCardData(song, diffNames, bpmSnapshot));
+			applySongInfoCardData(buildSongInfoCardData(song, diffNames, bpmSnapshot, diffIndexSnapshot));
 			#end
 		});
 	}
@@ -2605,9 +2583,8 @@ class FreeplayState extends MusicBeatState
 		return [Difficulty.getDefault()];
 	}
 
-	function buildSongInfoCardData(song:SongMetadata, diffNames:Array<String>, capturedBpm:Float):FreeplaySongCardData
+	function buildSongInfoCardData(song:SongMetadata, diffNames:Array<String>, capturedBpm:Float, diffIndex:Int):FreeplaySongCardData
 	{
-		var totalNotes:Int = 0;
 		var longestDuration:Float = 0;
 		var songKey:String = Paths.formatToSongPath(song.songName);
 
@@ -2618,23 +2595,10 @@ class FreeplayState extends MusicBeatState
 		if (metaDurationMs > 0)
 			longestDuration = metaDurationMs;
 
-		if (diffNames != null)
+		if (capturedBpm <= 0 && diffNames != null && diffNames.length > 0)
 		{
-			for (i in 0...diffNames.length)
-			{
-				var diffName:String = diffNames[i];
-				var chartPath:String = resolveSongChartPath(song, i, diffName);
-				var rawChart:String = AssetLoader.loadText(chartPath);
-				if (rawChart == null || rawChart.length == 0)
-					continue;
-
-				var summary:FreeplayChartSummary = summarizeChart(rawChart);
-				totalNotes += summary.noteCount;
-				if (metaDurationMs <= 0 && summary.durationMs > longestDuration)
-					longestDuration = summary.durationMs;
-				if (capturedBpm <= 0 && summary.bpm > 0)
-					capturedBpm = summary.bpm;
-			}
+			diffIndex = Std.int(FlxMath.bound(diffIndex, 0, diffNames.length - 1));
+			capturedBpm = readChartHeaderBpm(resolveSongChartPath(song, diffIndex, diffNames[diffIndex]));
 		}
 
 		return {
@@ -2649,7 +2613,7 @@ class FreeplayState extends MusicBeatState
 			licenseText: meta != null ? meta.licenseText : null,
 			bpm: capturedBpm > 0 ? capturedBpm : 102,
 			durationMs: longestDuration,
-			noteCount: totalNotes,
+			noteCount: 0,
 			difficultyNames: diffNames != null ? diffNames.copy() : []
 		};
 	}
@@ -2842,100 +2806,50 @@ class FreeplayState extends MusicBeatState
 		return chartPath;
 	}
 
-	function summarizeChart(rawChart:String):FreeplayChartSummary
+	function readChartHeaderBpm(chartPath:String):Float
 	{
-		var summary:FreeplayChartSummary = {bpm: 0, noteCount: 0, durationMs: 0};
-		if (rawChart == null || rawChart.length == 0)
-			return summary;
-
+		if (chartPath == null || chartPath.length == 0)
+			return 0;
+		var header:String = null;
 		try
 		{
-			var parsed:Dynamic = haxe.Json.parse(rawChart);
-			if (Reflect.hasField(parsed, 'song'))
+			#if sys
+			if (FileSystem.exists(chartPath) && !FileSystem.isDirectory(chartPath))
 			{
-				var subSong:Dynamic = Reflect.field(parsed, 'song');
-				if (subSong != null)
-					parsed = subSong;
+				var input = File.read(chartPath, false);
+				var count:Int = Std.int(Math.min(65536, FileSystem.stat(chartPath).size));
+				header = input.readString(count);
+				input.close();
 			}
-
-			if (parsed == null)
-				return summary;
-
-			var fmt:Dynamic = Reflect.field(parsed, 'format');
-			var formatStr:String = fmt != null ? Std.string(fmt) : '';
-			var bpmField:Dynamic = Reflect.field(parsed, 'bpm');
-			if (bpmField != null)
-				summary.bpm = getDynamicFloat(parsed, 'bpm');
-
-			if (formatStr != null && formatStr.indexOf('psych_v2') == 0)
-			{
-				var notesV2:Array<Dynamic> = cast Reflect.field(parsed, 'notes');
-				if (notesV2 != null)
-				{
-					for (note in notesV2)
-					{
-						if (note == null)
-							continue;
-						var t:Float = getDynamicFloat(note, 't');
-						var l:Float = getDynamicFloat(note, 'l');
-						summary.noteCount++;
-						if (t + l > summary.durationMs)
-							summary.durationMs = t + l;
-					}
-				}
-			}
-			else
-			{
-				var sections:Array<Dynamic> = cast Reflect.field(parsed, 'notes');
-				if (sections != null)
-				{
-					for (section in sections)
-					{
-						if (section == null)
-							continue;
-						var sectionNotes:Array<Dynamic> = cast Reflect.field(section, 'sectionNotes');
-						if (sectionNotes == null)
-							continue;
-
-						for (note in sectionNotes)
-						{
-							if (note == null)
-								continue;
-
-							var noteArray:Array<Dynamic> = cast note;
-							if (noteArray != null && noteArray.length > 0)
-							{
-								var t:Float = Std.parseFloat(Std.string(noteArray[0]));
-								if (Math.isNaN(t))
-									t = 0;
-								var sustain:Float = noteArray.length > 2
-									&& noteArray[2] != null ? Std.parseFloat(Std.string(noteArray[2])) : 0;
-								if (Math.isNaN(sustain))
-									sustain = 0;
-								summary.noteCount++;
-								if (t + sustain > summary.durationMs)
-									summary.durationMs = t + sustain;
-							}
-						}
-					}
-				}
-			}
+			#end
+			if (header == null)
+				header = AssetLoader.loadText(chartPath);
 		}
 		catch (e:Dynamic)
 		{
-			trace('[FreePlay] Chart summary failed: $e');
-		}
-
-		return summary;
-	}
-
-	inline function getDynamicFloat(value:Dynamic, field:String):Float
-	{
-		var raw:Dynamic = Reflect.field(value, field);
-		if (raw == null)
 			return 0;
-		var parsed:Float = Std.parseFloat(Std.string(raw));
-		return Math.isNaN(parsed) ? 0 : parsed;
+		}
+		if (header == null)
+			return 0;
+
+		var key:Int = header.indexOf('"bpm"');
+		if (key < 0)
+			return 0;
+		var start:Int = header.indexOf(':', key + 5) + 1;
+		if (start <= 0)
+			return 0;
+		while (start < header.length && header.charCodeAt(start) <= 32)
+			start++;
+		var end:Int = start;
+		while (end < header.length)
+		{
+			var code:Int = header.charCodeAt(end);
+			if (!((code >= 48 && code <= 57) || code == 43 || code == 45 || code == 46 || code == 69 || code == 101))
+				break;
+			end++;
+		}
+		var bpm:Float = Std.parseFloat(header.substring(start, end));
+		return Math.isNaN(bpm) ? 0 : bpm;
 	}
 
 	inline function formatFloat(value:Float):String
@@ -3447,13 +3361,6 @@ class SongMetadata
 		if (this.folder == null)
 			this.folder = '';
 	}
-}
-
-typedef FreeplayChartSummary =
-{
-	var bpm:Float;
-	var noteCount:Int;
-	var durationMs:Float;
 }
 
 typedef FreeplaySongCardData =

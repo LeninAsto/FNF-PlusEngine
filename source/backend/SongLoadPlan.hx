@@ -35,11 +35,14 @@ class PreparedChartNote
 /** Pure chart data prepared off the render thread before PlayState starts. */
 class SongLoadPlan
 {
-	public static inline final DENSE_CHART_THRESHOLD:Int = 50000;
-	public static inline final DENSE_TAP_BUCKET_MS:Float = 1000 / 120;
+	public static inline final DENSE_CHART_THRESHOLD:Int = 20000;
+	public static inline final EXTREME_CHART_THRESHOLD:Int = 250000;
+	public static inline final ULTRA_DENSE_CHART_THRESHOLD:Int = 1000000;
+	static inline final MAX_CACHED_PLANS:Int = 3;
 
 	public static var current(default, null):SongLoadPlan;
 	static var plans:Map<String, SongLoadPlan> = [];
+	static var planOrder:Array<String> = [];
 
 	public final source:SwagSong;
 	public final cacheKey:String;
@@ -49,6 +52,8 @@ class SongLoadPlan
 	public var compileMs(default, null):Float = 0;
 	public var cacheHit(default, null):Bool = false;
 	public var denseChart(default, null):Bool = false;
+	public var ultraDenseChart(default, null):Bool = false;
+	public var sourceNotesReleased(default, null):Bool = false;
 	public var sourceNoteCount(default, null):Int = 0;
 
 	public function new(song:SwagSong, cacheKey:String, ?columns:Int = 4)
@@ -64,6 +69,8 @@ class SongLoadPlan
 			if (section != null && section.sectionNotes != null)
 				sourceNoteCount += section.sectionNotes.length;
 		denseChart = sourceNoteCount >= DENSE_CHART_THRESHOLD;
+		ultraDenseChart = sourceNoteCount >= ULTRA_DENSE_CHART_THRESHOLD;
+		var tapBucketMs:Float = 1000 / (ultraDenseChart ? 30 : (sourceNoteCount >= EXTREME_CHART_THRESHOLD ? 60 : 120));
 		var denseTaps:Map<Int, Array<PreparedChartNote>> = denseChart ? [] : null;
 
 		for (section in song.notes)
@@ -89,14 +96,16 @@ class SongLoadPlan
 				var type:String = Std.isOfType(raw[3], String) ? raw[3] : Note.defaultNoteTypes[raw[3]];
 				if (type == null)
 					type = '';
-				var gottaHit:Bool = rawColumn < columns;
+				var gottaHit:Bool = section.mustHitSection == true;
+				if (rawColumn >= columns)
+					gottaHit = !gottaHit;
 				var gf:Bool = section.gfSection == true && gottaHit == section.mustHitSection;
 				var alt:Bool = section.altAnim == true && !gottaHit;
 				if (denseChart && sustain <= 0)
 				{
 					// Several taps in this window occupy the same screen pixel/input frame.
 					// Keep one sprite and retain their gameplay weight in density.
-					var bucket:Int = Math.floor(strumTime / DENSE_TAP_BUCKET_MS);
+					var bucket:Int = Math.floor(strumTime / tapBucketMs);
 					var bucketNotes:Array<PreparedChartNote> = denseTaps.get(bucket);
 					if (bucketNotes == null)
 					{
@@ -126,16 +135,30 @@ class SongLoadPlan
 				sustainCount += Std.int(Math.max(0, Math.round(sustain / stepCrochet)));
 			}
 		}
+		notes.sort(function(a:PreparedChartNote, b:PreparedChartNote):Int
+			return a.strumTime < b.strumTime ? -1 : (a.strumTime > b.strumTime ? 1 : 0));
 		compileMs = (Timer.stamp() - started) * 1000;
 	}
 
 	public static function prepare(song:SwagSong):SongLoadPlan
 	{
+		if (current != null && current.source == song)
+		{
+			current.cacheHit = true;
+			SongLoadMetrics.recordPlan(current);
+			return current;
+		}
+		if (current != null && current.ultraDenseChart)
+		{
+			plans.remove(current.cacheKey);
+			planOrder.remove(current.cacheKey);
+		}
 		var key:String = makeCacheKey(song);
 		var cached:SongLoadPlan = plans.get(key);
 		if (cached != null)
 		{
 			cached.cacheHit = true;
+			touch(key);
 			current = cached;
 			SongLoadMetrics.recordPlan(current);
 			return current;
@@ -143,12 +166,17 @@ class SongLoadPlan
 
 		current = new SongLoadPlan(song, key);
 		plans.set(key, current);
+		touch(key);
+		while (planOrder.length > MAX_CACHED_PLANS)
+			plans.remove(planOrder.shift());
 		SongLoadMetrics.recordPlan(current);
 		return current;
 	}
 
 	public static function get(song:SwagSong):SongLoadPlan
 	{
+		if (current != null && current.source == song)
+			return current;
 		if (current == null || current.cacheKey != makeCacheKey(song))
 			return prepare(song);
 		return current;
@@ -158,6 +186,24 @@ class SongLoadPlan
 	{
 		current = null;
 		plans.clear();
+		planOrder.resize(0);
+	}
+
+	public function releaseSourceNotes(?song:SwagSong):Void
+	{
+		var target:SwagSong = song != null ? song : source;
+		if (target == null || target.notes == null)
+			return;
+		for (section in target.notes)
+			if (section != null && section.sectionNotes != null)
+				section.sectionNotes.resize(0);
+		sourceNotesReleased = true;
+	}
+
+	static function touch(key:String):Void
+	{
+		planOrder.remove(key);
+		planOrder.push(key);
 	}
 
 	static function makeCacheKey(song:SwagSong):String

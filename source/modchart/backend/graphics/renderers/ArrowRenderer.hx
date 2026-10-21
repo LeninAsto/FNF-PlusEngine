@@ -28,6 +28,7 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 	};
 	final _orientInput:Vector3 = new Vector3();
 	final _rotated:Vector3 = new Vector3();
+	final _fieldRotated:Vector3 = new Vector3();
 	final _viewInput:Vector3 = new Vector3();
 	final _outputPos:Vector3 = new Vector3();
 	final _outputVisuals:VisualParameters = {};
@@ -186,6 +187,9 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 			}
 			rotation.x = rotation.x * output.visuals.scaleX;
 			rotation.y = rotation.y * output.visuals.scaleY;
+			if (output.visuals.fieldAngleX != 0 || output.visuals.fieldAngleY != 0 || output.visuals.fieldAngleZ != 0)
+				rotation = ModchartUtil.rotate3DVectorInto(rotation, output.visuals.fieldAngleX, output.visuals.fieldAngleY,
+					output.visuals.fieldAngleZ, _fieldRotated);
 
 			_viewInput.setTo(rotation.x + arrowPosition.x, rotation.y + arrowPosition.y,
 				(rotation.z * 0.001 * Config.Z_SCALE) + arrowPosition.z);

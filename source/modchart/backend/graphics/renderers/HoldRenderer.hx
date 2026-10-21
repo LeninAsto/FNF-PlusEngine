@@ -43,6 +43,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 	final _directionVisuals:VisualParameters = {};
 	final _directionOutput:ModifierOutput;
 	final _rotationScratch:Vector3 = new Vector3();
+	final _fieldRotationScratch:Vector3 = new Vector3();
 	final _viewScratch:Vector3 = new Vector3();
 	final _tailScratch:Vector3 = new Vector3();
 	final _basePos:Vector3 = new Vector3();
@@ -198,6 +199,9 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 			}
 			rotation.x = rotation.x * visuals.scaleX;
 			rotation.y = rotation.y * visuals.scaleY;
+			if (visuals.fieldAngleX != 0 || visuals.fieldAngleY != 0 || visuals.fieldAngleZ != 0)
+				rotation = ModchartUtil.rotate3DVectorInto(rotation, visuals.fieldAngleX, visuals.fieldAngleY,
+					visuals.fieldAngleZ, _fieldRotationScratch);
 
 			_viewScratch.setTo(rotation.x + worldX, rotation.y + worldY, worldZ + (rotation.z * 0.001 * Config.Z_SCALE));
 			__rotateTailInto(_viewScratch);

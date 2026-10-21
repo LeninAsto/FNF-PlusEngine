@@ -69,6 +69,9 @@ final class PlayfieldState
 			angleX: visuals.angleX,
 			angleY: visuals.angleY,
 			angleZ: visuals.angleZ,
+			fieldAngleX: visuals.fieldAngleX,
+			fieldAngleY: visuals.fieldAngleY,
+			fieldAngleZ: visuals.fieldAngleZ,
 			skewX: visuals.skewX,
 			skewY: visuals.skewY
 		};

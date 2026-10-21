@@ -185,6 +185,9 @@ class LuaModifier extends Modifier {
 		target.angleX = data.angleX;
 		target.angleY = data.angleY;
 		target.angleZ = data.angleZ;
+		target.fieldAngleX = data.fieldAngleX;
+		target.fieldAngleY = data.fieldAngleY;
+		target.fieldAngleZ = data.fieldAngleZ;
 		target.skewX = data.skewX;
 		target.skewY = data.skewY;
 	}
@@ -220,7 +223,8 @@ class LuaModifier extends Modifier {
 		if (value == null)
 			return fallback;
 
-		final fields = ['scaleX', 'scaleY', 'alpha', 'glow', 'glowR', 'glowG', 'glowB', 'angleX', 'angleY', 'angleZ', 'skewX', 'skewY'];
+		final fields = ['scaleX', 'scaleY', 'alpha', 'glow', 'glowR', 'glowG', 'glowB', 'angleX', 'angleY', 'angleZ',
+			'fieldAngleX', 'fieldAngleY', 'fieldAngleZ', 'skewX', 'skewY'];
 		var copied = false;
 		for (field in fields) {
 			if (!Reflect.hasField(value, field))

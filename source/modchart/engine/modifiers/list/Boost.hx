@@ -17,6 +17,7 @@ class Boost extends Modifier {
 		super(pf);
 
 		setPercent('waveMult', 1, -1);
+		pf.modifiers.addAlias('waveMult', 'wavePeriod');
 
 		final maxKeys = 16;
 		_boostID = findID('boost');

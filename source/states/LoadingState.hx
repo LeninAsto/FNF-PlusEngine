@@ -14,6 +14,7 @@ import backend.StageData;
 import backend.Rating;
 import backend.SongLoadPlan;
 import backend.SongLoadMetrics;
+import backend.CompiledChartCache;
 import sys.thread.Mutex;
 import objects.GlobalLoadingOverlay;
 import objects.Note;
@@ -266,6 +267,13 @@ class LoadingState extends MusicBeatState
 				finishCancellation();
 			return;
 		}
+		if (songLoadError != null && initialThreadCompleted && !hasPendingTasks())
+		{
+			timeoutWarning.text = songLoadError;
+			timeoutWarning.visible = true;
+			cancelLoading();
+			return;
+		}
 
 		// Timeout system - incrementar el temporizador
 		if (!transitioning && !finishedLoading)
@@ -496,6 +504,9 @@ class LoadingState extends MusicBeatState
 		loadMax = 0;
 		initialThreadCompleted = true;
 		isIntrusive = false;
+		pendingChartName = null;
+		pendingChartFolder = null;
+		songLoadError = null;
 
 		FlxTransitionableState.skipNextTransIn = true;
 		if (threadPool != null)
@@ -619,13 +630,18 @@ class LoadingState extends MusicBeatState
 
 	static function getNextState(target:FlxState, stopMusic = false, intrusive:Bool = true):FlxState
 	{
+		var hasPendingChart:Bool = pendingChartName != null && PlayState.SONG == null;
 		#if !SHOW_LOADING_SCREEN
-		intrusive = false;
+		if (!hasPendingChart)
+			intrusive = false;
 		#end
 
 		LoadingState.isIntrusive = intrusive;
-		_startPool();
 		loadNextDirectory();
+		if (hasPendingChart)
+			prepareToSong();
+		else
+			_startPool();
 
 		if (intrusive)
 			return new LoadingState(target, stopMusic);
@@ -684,6 +700,17 @@ class LoadingState extends MusicBeatState
 
 	static var initialThreadCompleted:Bool = true;
 	static var dontPreloadDefaultVoices:Bool = false;
+	static var pendingChartName:String = null;
+	static var pendingChartFolder:String = null;
+	static var songLoadError:String = null;
+
+	public static function setPendingSongChart(chartName:String, folder:String):Void
+	{
+		pendingChartName = chartName;
+		pendingChartFolder = folder;
+		songLoadError = null;
+		PlayState.SONG = null;
+	}
 
 	static function _startPool()
 	{
@@ -755,7 +782,7 @@ class LoadingState extends MusicBeatState
 		if (threadPool != null)
 			_loaded();
 		setLoadPhrase('states.loading.items.preparing_song', 'Preparing song data');
-		if (PlayState.SONG == null)
+		if (PlayState.SONG == null && pendingChartName == null)
 		{
 			SongLoadMetrics.cancel();
 			imagesToPrepare = [];
@@ -769,7 +796,8 @@ class LoadingState extends MusicBeatState
 			isIntrusive = false;
 			return;
 		}
-		SongLoadMetrics.markLoading();
+		if (PlayState.SONG != null)
+			SongLoadMetrics.markLoading();
 
 		_startPool();
 		imagesToPrepare = [];
@@ -780,13 +808,27 @@ class LoadingState extends MusicBeatState
 
 		initialThreadCompleted = false;
 		var song:SwagSong = PlayState.SONG;
-		var folder:String = Paths.formatToSongPath(Song.loadedSongName);
+		var folder:String = song != null ? Paths.formatToSongPath(Song.loadedSongName) : Paths.formatToSongPath(pendingChartFolder);
+		var chartName:String = pendingChartName;
+		var chartFolder:String = pendingChartFolder;
+		pendingChartName = null;
+		pendingChartFolder = null;
 		threadPool.run(() ->
 		{
 			try
 			{
+				if (song == null)
+				{
+					setLoadPhrase('states.loading.items.parsing_chart', 'Reading chart data');
+					song = Song.loadFromJson(chartName, chartFolder);
+					if (song == null)
+						throw 'Chart failed to load';
+					folder = Paths.formatToSongPath(Song.loadedSongName);
+					SongLoadMetrics.markLoading();
+				}
 				setLoadPhrase('states.loading.items.compiling_chart', 'Compiling chart data');
 				SongLoadPlan.prepare(song);
+				CompiledChartCache.flushPending();
 
 				if (song.stage == null || song.stage.length < 1)
 					song.stage = StageData.vanillaSongStage(folder);
@@ -939,6 +981,7 @@ class LoadingState extends MusicBeatState
 			catch (err:Dynamic)
 			{
 				trace('ERROR! while preparing song: $err');
+				songLoadError = Std.string(err);
 			}
 			if (!threadPool.isCancelled())
 			{

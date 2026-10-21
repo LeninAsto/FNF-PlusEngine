@@ -28,6 +28,17 @@ class InitialState extends MusicBeatState
 		Language.reloadPhrases();
 		MobileData.init();
 
+		#if DENSE_CHART_TEST
+		Mods.currentModDirectory = 'NewFall Tracks with chart';
+		Mods.pushGlobalMods();
+		states.PlayState.SONG = backend.Song.loadFromJson('floccinaucinihilipilificatiophobia-part6', 'floccinaucinihilipilificatiophobia');
+		states.PlayState.isStoryMode = false;
+		states.PlayState.startOnTime = 170500;
+		states.LoadingState.prepareToSong();
+		states.LoadingState.loadAndSwitchState(new states.PlayState());
+		return;
+		#end
+
 		// Apply preferences-dependent runtime settings.
 		#if !html5
 		FlxG.autoPause = ClientPrefs.data.autoPause;

@@ -154,6 +154,9 @@ final class ModifierGroup {
 		visuals.angleX = 0;
 		visuals.angleY = 0;
 		visuals.angleZ = 0;
+		visuals.fieldAngleX = 0;
+		visuals.fieldAngleY = 0;
+		visuals.fieldAngleZ = 0;
 		visuals.skewX = 0;
 		visuals.skewY = 0;
 
@@ -286,6 +289,25 @@ final class ModifierGroup {
 		final lowerName = name.toLowerCase();
 		return switch (lowerName) {
 			case 'fieldrotate': 'field';
+			case 'notex' | 'notey' | 'notez' | 'noteanglex' | 'noteangley' | 'noteanglez'
+				| 'notescale' | 'notescalex' | 'notescaley'
+				| 'holdx' | 'holdy' | 'holdz' | 'holdanglex' | 'holdangley' | 'holdanglez'
+				| 'holdscale' | 'holdscalex' | 'holdscaley'
+				| 'receptorx' | 'receptory' | 'receptorz' | 'receptoranglex' | 'receptorangley' | 'receptoranglez'
+				| 'receptorscale' | 'receptorscalex' | 'receptorscaley': 'objecttransform';
+			case 'swayx' | 'swayy' | 'swayz': 'sway';
+			case 'distancescalex' | 'distancescaley': 'distancescale';
+			case 'shrinktomult' | 'shrinktolinear': 'shrink';
+			case 'pulseinner' | 'pulseouter': 'pulse';
+			case 'tanexpand': 'expand';
+			case 'digitaly' | 'digitalz' | 'tandigital' | 'tandigitaly' | 'tandigitalz': 'digital';
+			case 'vibratex' | 'vibratey' | 'vibratez': 'vibrate';
+			case 'cosecant': 'tangent';
+			case 'snapx' | 'snapy' | 'snapz': 'snap';
+			case 'spiralx' | 'spiraly' | 'spiralz': 'spiralaxis';
+			case 'columnrotater' | 'columnrotatex' | 'columnrotatey' | 'columnrotatez': 'columnrotate';
+			case 'incoming' | 'space' | 'hallway' | 'distant' | 'tilt' | 'perspectiveskew': 'perspective';
+			case 'drunktan' | 'tipsytan' | 'bumpytan': 'tangent';
 			default: lowerName;
 		}
 	}
@@ -466,8 +488,47 @@ final class ModifierGroup {
 
 	function __getDefaultPercent(name:String):Float {
 		return switch (name) {
-			case 'xmod' | 'scale' | 'scalex' | 'scaley' | 'alpha' | 'wavemult':
+			case 'xmod' | 'scale' | 'scalex' | 'scaley' | 'alpha' | 'notealpha' | 'receptoralpha' | 'holdalpha' | 'wavemult'
+				| 'notescale' | 'notescalex' | 'notescaley' | 'holdscale' | 'holdscalex' | 'holdscaley'
+				| 'receptorscale' | 'receptorscalex' | 'receptorscaley' | 'perspectivestrength'
+				| 'swayspeed' | 'vibratespeed':
 				1;
+			case 'cmod' | 'mmod':
+				-1;
+			case 'blinkspeed':
+				10;
+			case 'blinkduty':
+				0.5;
+			case 'randomvanishstart':
+				80;
+			case 'randomvanishend':
+				160;
+			case 'expandperiod' | 'tanexpandperiod':
+				3;
+			case 'expandmin' | 'tanexpandmin' | 'pulsemin':
+				0.75;
+			case 'expandmax' | 'tanexpandmax':
+				1.75;
+			case 'pulsemax':
+				1.25;
+			case 'pulsespeed':
+				1;
+			case 'swayperiod' | 'tangentlimit' | 'distancescalemax':
+				4;
+			case 'distancescalerange':
+				640;
+			case 'distancescalemin':
+				0.05;
+			case 'shrinktomin':
+				0.01;
+			case 'shrinktomax':
+				8;
+			case 'vibratefrequency':
+				30;
+			case 'boomerangheight':
+				1;
+			case 'snapxinterval' | 'snapyinterval' | 'snapzinterval':
+				64;
 			case 'beatspeed' | 'beatxspeed' | 'beatyspeed' | 'beatzspeed':
 				1;
 			case 'bumpymult' | 'bumpyxmult' | 'bumpyymult' | 'bumpyzmult'
@@ -484,8 +545,9 @@ final class ModifierGroup {
 			case 'carouselstart' | 'carouselend':
 				Math.NaN;
 			default:
-				if (__isXmodLane(name) || __isScaleLane(name) || __isAlphaLane(name) || __isBumpyMultLane(name))
-					1;
+				if (__isXmodLane(name) || __isScaleLane(name) || __isAlphaLane(name) || __isDirectAlphaLane(name)
+					|| __isNegativeSpeedLane(name) || __isBumpyMultLane(name))
+					__isNegativeSpeedLane(name) ? -1 : 1;
 				else
 					0;
 		}
@@ -493,6 +555,9 @@ final class ModifierGroup {
 
 	inline function __isXmodLane(name:String):Bool
 		return name.length > 4 && name.indexOf('xmod') == 0 && __isUnsignedInt(name.substr(4));
+
+	inline function __isNegativeSpeedLane(name:String):Bool
+		return name.length > 4 && (name.indexOf('cmod') == 0 || name.indexOf('mmod') == 0) && __isUnsignedInt(name.substr(4));
 
 	function __isScaleLane(name:String):Bool {
 		if (name.indexOf('scale') != 0)
@@ -508,6 +573,13 @@ final class ModifierGroup {
 
 	inline function __isAlphaLane(name:String):Bool
 		return name.length > 5 && name.indexOf('alpha') == 0 && __isUnsignedInt(name.substr(5));
+
+	function __isDirectAlphaLane(name:String):Bool {
+		for (prefix in ['notealpha', 'receptoralpha', 'holdalpha'])
+			if (name.length > prefix.length && name.indexOf(prefix) == 0 && __isUnsignedInt(name.substr(prefix.length)))
+				return true;
+		return false;
+	}
 
 	function __isBumpyMultLane(name:String):Bool {
 		if (name.indexOf('bumpy') != 0 || name.length <= 9)

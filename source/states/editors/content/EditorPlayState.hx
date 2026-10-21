@@ -654,6 +654,7 @@ class EditorPlayState extends MusicBeatSubstate
 				{
 					case '.': 'dot';
 					case 'k': 'k';
+					case 'M': 'm';
 					default: 'num' + character;
 				};
 				var numScore:FlxSprite = new FlxSprite().loadGraphic(Paths.image(uiFolder + characterAsset + PlayState.uiPostfix));

@@ -13,6 +13,9 @@ final class VisualParameters {
 	var angleX:Float = 0;
 	var angleY:Float = 0;
 	var angleZ:Float = 0;
+	var fieldAngleX:Float = 0;
+	var fieldAngleY:Float = 0;
+	var fieldAngleZ:Float = 0;
 	var skewX:Float = 0;
 	var skewY:Float = 0;
 }
