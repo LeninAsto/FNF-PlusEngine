@@ -68,9 +68,14 @@ class ModchartEditorState extends MusicBeatState
 	var playheadHandle:FlxSprite;
 	var scrollTrack:FlxSprite;
 	var scrollThumb:FlxSprite;
+	var rowScrollTrack:FlxSprite;
+	var rowScrollThumb:FlxSprite;
 	var panning:Bool = false;
 	var panOffset:Float = 0;
+	var rowPanning:Bool = false;
+	var rowPanOffset:Float = 0;
 	var seekInput:PsychUIInputText;
+	var zoomText:FlxText;
 	var status:FlxText;
 	var clock:FlxText;
 	var songInput:PsychUIInputText;
@@ -96,6 +101,9 @@ class ModchartEditorState extends MusicBeatState
 	static inline var VISIBLE_ROWS:Int = 4;
 	static inline var GRID_H:Int = 24 + VISIBLE_ROWS * ROW_H;
 	static inline var SCROLL_Y:Int = GRID_Y + GRID_H + 5;
+	static inline var ROW_SCROLL_X:Int = GRID_X + GRID_W + 6;
+	static inline var ROW_SCROLL_Y:Int = GRID_Y + 24;
+	static inline var ROW_SCROLL_H:Int = VISIBLE_ROWS * ROW_H;
 
 	override function create():Void
 	{
@@ -129,6 +137,8 @@ class ModchartEditorState extends MusicBeatState
 		playheadHandle = new FlxSprite(GRID_X - 5, GRID_Y - 1).makeGraphic(12, 12, 0xFFFFD166); add(playheadHandle);
 		scrollTrack = new FlxSprite(GRID_X, SCROLL_Y).makeGraphic(GRID_W, 16, 0xFF293449); add(scrollTrack);
 		scrollThumb = new FlxSprite(GRID_X, SCROLL_Y + 2).makeGraphic(1, 12, 0xFF7AA2F7); add(scrollThumb);
+		rowScrollTrack = new FlxSprite(ROW_SCROLL_X, ROW_SCROLL_Y).makeGraphic(14, ROW_SCROLL_H, 0xFF293449); add(rowScrollTrack);
+		rowScrollThumb = new FlxSprite(ROW_SCROLL_X + 2, ROW_SCROLL_Y).makeGraphic(10, 1, 0xFF7AA2F7); add(rowScrollThumb);
 		FlxG.mouse.visible = true;
 		if (FlxG.sound.music != null) FlxG.sound.music.stop();
 		super.create();
@@ -168,7 +178,10 @@ class ModchartEditorState extends MusicBeatState
 		button(906, 12, tr('import_lua', "Import Lua"), importLua, 112);
 		button(1028, 12, tr('export_lua', "Export Lua"), exportLua, 112);
 		button(1150, 12, tr('exit', "Exit"), leave, 95);
-		clock = label(16, 39, '', 15, 790);
+		clock = label(16, 39, '', 15, 285);
+		var experimentalWarning = label(310, 42,
+			tr('experimental_warning', 'EXPERIMENTAL: subject to changes and bugs; not classified as stable or unstable yet.'), 11, 930);
+		experimentalWarning.color = 0xFFFFC857;
 		songInput = input(840, 62, tr('song', "Song (current chart by default)"), '', 300);
 		button(1150, 82, tr('load', "Load"), loadSongByName, 90);
 		modInput = input(840, 116, tr('modifier', "Modifier"), 'drunk');
@@ -195,7 +208,12 @@ class ModchartEditorState extends MusicBeatState
 		button(1023, 481, tr('back', '<< Back'), () -> stepTime(-4), 100);
 		button(1133, 481, tr('forward', 'Forward >>'), () -> stepTime(4), 110);
 		label(16, 514, tr('timeline', "TIMELINE"), 17, 140);
-		label(160, 514, tr('help', "Space: play | Arrows: seek | Shift: 4 beats | Wheel: pan | Ctrl+wheel: zoom | Drag: move event"), 12, 1100);
+		label(160, 514, tr('help', "Space: play | Arrows: seek | Shift: 4 beats | Wheel: pan | Ctrl+wheel: zoom | Drag: move event"), 12, 760);
+		button(930, 513, tr('zoom_out', "Zoom -"), () -> zoomTimeline(1 / 1.2), 72);
+		zoomText = label(1007, 516, '', 12, 68);
+		zoomText.alignment = CENTER;
+		button(1080, 513, tr('zoom_in', "Zoom +"), () -> zoomTimeline(1.2), 72);
+		button(1157, 513, tr('zoom_reset', "Reset"), () -> setTimelineZoom(36), 88);
 		label(16, 699, tr('footer', "Drag playhead: seek | Scrollbar: pan | Right click: add | Alt+wheel: rows | Ctrl+S: save | Esc: exit"), 12, 1240);
 	}
 
@@ -319,6 +337,17 @@ class ModchartEditorState extends MusicBeatState
 	}
 	function clampView():Void
 		viewBeat = FlxMath.bound(viewBeat, minBeat(), Math.max(minBeat(), endBeat() - GRID_W / pixelsPerBeat));
+	function setTimelineZoom(value:Float, anchorX:Float = -1):Void
+	{
+		if (anchorX < GRID_X || anchorX > GRID_X + GRID_W) anchorX = GRID_X + GRID_W / 2;
+		var localX = anchorX - GRID_X;
+		var anchorBeat = viewBeat + localX / pixelsPerBeat;
+		pixelsPerBeat = FlxMath.bound(value, 8, 180);
+		viewBeat = anchorBeat - localX / pixelsPerBeat;
+		drawTimeline();
+	}
+	inline function zoomTimeline(factor:Float, anchorX:Float = -1):Void
+		setTimelineZoom(pixelsPerBeat * factor, anchorX);
 	function updateScrollBar():Void
 	{
 		var total = Math.max(1, endBeat() - minBeat());
@@ -326,6 +355,15 @@ class ModchartEditorState extends MusicBeatState
 		scrollThumb.scale.x = width; scrollThumb.updateHitbox();
 		var range = Math.max(1, endBeat() - GRID_W / pixelsPerBeat - minBeat());
 		scrollThumb.x = GRID_X + (viewBeat - minBeat()) / range * (GRID_W - width);
+	}
+	function updateRowScrollBar():Void
+	{
+		var maxOffset = Math.max(0, rows.length - VISIBLE_ROWS);
+		var height = maxOffset == 0 ? ROW_SCROLL_H : FlxMath.bound(ROW_SCROLL_H * VISIBLE_ROWS / rows.length, 18, ROW_SCROLL_H);
+		rowScrollThumb.scale.y = height;
+		rowScrollThumb.updateHitbox();
+		rowScrollThumb.y = ROW_SCROLL_Y + (maxOffset == 0 ? 0 : rowOffset / maxOffset * (ROW_SCROLL_H - height));
+		rowScrollThumb.alpha = maxOffset == 0 ? 0.35 : 1;
 	}
 	function seekBeat(beat:Float):Void
 	{
@@ -384,7 +422,9 @@ class ModchartEditorState extends MusicBeatState
 		if (manager != null) { remove(manager, true); manager.destroy(); }
 		manager = new Manager();
 		timeline.install(manager);
-		insert(members.indexOf(countdown), manager);
+		// Draw the modchart renderer before the native arrow groups. It suppresses
+		// their regular Flixel draw, preventing receptors/notes from appearing twice.
+		insert(members.indexOf(receptors), manager);
 	}
 	function seek(time:Float, rebuild:Bool = true):Void
 	{
@@ -547,6 +587,8 @@ class ModchartEditorState extends MusicBeatState
 			if (width > 36) text(x + 3, GRID_Y + 27 + row * ROW_H, width - 3, event.kind + ' ' + event.value, 11);
 		}
 		if (scrollThumb != null) updateScrollBar();
+		if (rowScrollThumb != null) updateRowScrollBar();
+		if (zoomText != null) zoomText.text = Std.int(Math.round(pixelsPerBeat / 36 * 100)) + '%';
 	}
 
 	function importText(text:String):Void
@@ -630,6 +672,8 @@ class ModchartEditorState extends MusicBeatState
 			if (song != null && (FlxG.keys.justPressed.LEFT || FlxG.keys.justPressed.RIGHT))
 				stepTime((FlxG.keys.justPressed.LEFT ? -1 : 1) * (FlxG.keys.pressed.SHIFT ? 4 : 0.25));
 			if (FlxG.keys.justPressed.HOME) seekBeat(-5);
+			if (FlxG.keys.justPressed.MINUS) zoomTimeline(1 / 1.2);
+			if (FlxG.keys.justPressed.PLUS) zoomTimeline(1.2);
 		}
 		var mouse = FlxG.mouse.getWorldPosition(uiCamera);
 		if (FlxG.mouse.justPressed && mouse.y >= SCROLL_Y && mouse.y <= SCROLL_Y + 16 && mouse.x >= GRID_X && mouse.x <= GRID_X + GRID_W)
@@ -642,15 +686,37 @@ class ModchartEditorState extends MusicBeatState
 			var fraction = FlxMath.bound((mouse.x - GRID_X - panOffset) / Math.max(1, GRID_W - scrollThumb.width), 0, 1);
 			viewBeat = minBeat() + fraction * Math.max(0, endBeat() - GRID_W / pixelsPerBeat - minBeat()); drawTimeline();
 		}
+		if (FlxG.mouse.justPressed && mouse.x >= ROW_SCROLL_X && mouse.x <= ROW_SCROLL_X + 14
+			&& mouse.y >= ROW_SCROLL_Y && mouse.y <= ROW_SCROLL_Y + ROW_SCROLL_H)
+		{
+			PsychUIInputText.focusOn = null;
+			rowPanning = rows.length > VISIBLE_ROWS;
+			rowPanOffset = mouse.y >= rowScrollThumb.y && mouse.y <= rowScrollThumb.y + rowScrollThumb.height
+				? mouse.y - rowScrollThumb.y : rowScrollThumb.height / 2;
+		}
+		if (rowPanning && FlxG.mouse.pressed)
+		{
+			var maxOffset = Math.max(0, rows.length - VISIBLE_ROWS);
+			var fraction = FlxMath.bound((mouse.y - ROW_SCROLL_Y - rowPanOffset)
+				/ Math.max(1, ROW_SCROLL_H - rowScrollThumb.height), 0, 1);
+			rowOffset = Math.round(fraction * maxOffset);
+			drawTimeline();
+		}
+		if (FlxG.mouse.wheel != 0 && mouse.x >= 16 && mouse.x < GRID_X
+			&& mouse.y >= ROW_SCROLL_Y && mouse.y <= ROW_SCROLL_Y + ROW_SCROLL_H)
+		{
+			rowOffset -= FlxG.mouse.wheel;
+			drawTimeline();
+		}
 		if (mouse.y >= GRID_Y && mouse.y < GRID_Y + GRID_H && mouse.x >= GRID_X && mouse.x <= GRID_X + GRID_W)
 		{
 			var beat = viewBeat + (mouse.x - GRID_X) / pixelsPerBeat;
 			if (FlxG.mouse.wheel != 0)
 			{
-				if (FlxG.keys.pressed.CONTROL) pixelsPerBeat = FlxMath.bound(pixelsPerBeat * (FlxG.mouse.wheel > 0 ? 1.2 : 1 / 1.2), 8, 180);
+				if (FlxG.keys.pressed.CONTROL) zoomTimeline(FlxG.mouse.wheel > 0 ? 1.2 : 1 / 1.2, mouse.x);
 				else if (FlxG.keys.pressed.ALT) rowOffset -= FlxG.mouse.wheel;
 				else viewBeat -= FlxG.mouse.wheel * 2;
-				drawTimeline();
+				if (!FlxG.keys.pressed.CONTROL) drawTimeline();
 			}
 			if (FlxG.mouse.justPressed)
 			{
@@ -679,7 +745,7 @@ class ModchartEditorState extends MusicBeatState
 			dragging.beat = Math.round((dragBeat + (mouse.x - dragStart) / pixelsPerBeat) * 4) / 4;
 			beatInput.text = Std.string(dragging.beat); drawTimeline();
 		}
-		if (FlxG.mouse.justReleased) { if (dragging != null && dragging.beat != dragBeat) changed(); dragging = null; scrubbing = false; panning = false; }
+		if (FlxG.mouse.justReleased) { if (dragging != null && dragging.beat != dragBeat) changed(); dragging = null; scrubbing = false; panning = false; rowPanning = false; }
 		mouse.put();
 		super.update(elapsed);
 	}

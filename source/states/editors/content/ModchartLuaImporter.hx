@@ -34,8 +34,12 @@ class ModchartLuaImporter
 			result.validate(event);
 			result.events.push(event);
 		});
-		Lua_helper.add_callback(lua, 'addModifier', function(name:String, ?field:Int = -1) {
-			if (field != -1) throw tr('modifier_field', 'Field-specific modifier declarations cannot be imported');
+		Lua_helper.add_callback(lua, 'addModifier', function(name:String, ?field:Dynamic = -1) {
+			if (field != null && field != -1)
+			{
+				var warning = tr('modifier_field_warning', 'Field-specific modifier declaration loaded globally: ') + name;
+				if (!result.warnings.contains(warning)) result.warnings.push(warning);
+			}
 			if (!result.modifiers.contains(name)) result.modifiers.push(name);
 		});
 		Lua_helper.add_callback(lua, '__editorField', function() {
@@ -62,29 +66,52 @@ if jit then jit.off() end
 io=nil; os=nil; package=nil; require=nil; dofile=nil; loadfile=nil; debug=nil; jit=nil; ffi=nil
 function set(name, beat, value, player, field)
   if type(name)=="table" then for n,v in pairs(name) do set(n,beat,v,value,player) end; return end
+  if type(field)=="string" then __editorWarning("Named playfield event ignored in preview: "..field); return end
   __editorEvent("set",name,beat,0,value,"linear",player or -1,field or -1)
 end
 function ease(name, beat, length, value, easing, player, field)
   if type(name)=="table" then for n,v in pairs(name) do ease(n,beat,length,v,value,easing,player) end; return end
+  if type(field)=="string" then __editorWarning("Named playfield event ignored in preview: "..field); return end
   __editorEvent("ease",name,beat,length,value or 1,easing or "linear",player or -1,field or -1)
 end
 function add(name, beat, length, value, easing, player, field)
   if type(name)=="table" then for n,v in pairs(name) do add(n,beat,length,v,value,easing,player) end; return end
+  if type(field)=="string" then __editorWarning("Named playfield event ignored in preview: "..field); return end
   __editorEvent("add",name,beat,length,value or 1,easing or "linear",player or -1,field or -1)
 end
 function setPercent(name,value,player,field) set(name,-5,value,player,field) end
+function getPercent() return 0 end
+function setRawValue(name,value,player,field)
+ __editorWarning("Raw modifier values are previewed as timeline values")
+ set(name,-5,value,player,field)
+end
+setValue=setRawValue
+function getRawValue() return 0 end
+getValue=getRawValue
 function setNow(name,value,player,field)
  if type(name)=="table" then for n,v in pairs(name) do set(n,-5,v,value,player) end
  else set(name,-5,value,player,field) end
 end
 function easeNow(name,length,value,easing,player,field) ease(name,-5,length,value,easing,player,field) end
+function addNow(name,length,value,easing,player,field) add(name,-5,length,value,easing,player,field) end
 function queueSet(beat,name,value,player,field) set(name,beat,value,player,field) end
-function queueEase(beat,last,name,value,easing,player,field) ease(name,beat,last-beat,value,easing,player,field) end
+function queueEase(beat,last,name,value,easing,player,startValue,field)
+ if startValue~=nil then set(name,beat,startValue,player,field) end
+ ease(name,beat,last-beat,value,easing,player,field)
+end
 queueSetP=queueSet; queueEaseP=queueEase
 function addPlayfield(name,beat)
- if name~=nil or beat~=nil then error("Only immediate numeric playfields can be imported") end
+ if name~=nil or beat~=nil then __editorWarning("Named or scheduled playfield ignored in preview: "..tostring(name)); return end
  __editorField()
 end
+function createModifier(name,options)
+ __editorWarning("Custom modifier ignored in preview: "..tostring(name))
+end
+function callback(beat,name,field)
+ __editorWarning("Lua callback ignored in preview: "..tostring(name))
+end
+function queueFuncOnce(beat,name,field) callback(beat,name,field) end
+function queueFunc(beat,last,name,field) callback(beat,name,field) end
 manager={}
 local function method(fn)
  return function(first,...)
@@ -94,10 +121,12 @@ local function method(fn)
 end
 manager.set=method(set); manager.ease=method(ease); manager.add=method(add)
 manager.addModifier=method(addModifier); manager.setPercent=method(setPercent)
+manager.getPercent=method(getPercent); manager.setRawValue=method(setRawValue); manager.getRawValue=method(getRawValue)
+manager.setValue=method(setValue); manager.getValue=method(getValue)
 manager.queueSet=method(queueSet); manager.queueEase=method(queueEase)
 manager.addPlayfield=method(addPlayfield)
-manager.setNow=method(setNow); manager.easeNow=method(easeNow)
-Manager=manager
+manager.setNow=method(setNow); manager.easeNow=method(easeNow); manager.addNow=method(addNow)
+Manager=manager; modchart=manager
 local phase="create"
 function __editorSetPhase(value) phase=value end
 local function scene(kind,tag,...) __editorScene(kind,phase,tag,...) end
@@ -117,8 +146,23 @@ function setObjectCamera(tag,camera) scene("setObjectCamera",tag,camera) end
 function setObjectOrder(tag,order) scene("setObjectOrder",tag,order) end
 function addLuaSprite(tag,front) scene("addLuaSprite",tag,front or false) end
 function removeLuaSprite(tag) scene("removeLuaSprite",tag) end
-function setProperty(path,value) scene("setProperty",path,value) end
+local editorProperties={downscroll=false,middlescroll=false}
+local editorLengths={
+ ["strumLineNotes.length"]=8,["playerStrums.length"]=4,["opponentStrums.length"]=4,
+ ["notes.length"]=0,["unspawnNotes.length"]=0
+}
+function setProperty(path,value) editorProperties[path]=value; scene("setProperty",path,value) end
+function getProperty(path)
+ if editorProperties[path]~=nil then return editorProperties[path] end
+ if editorLengths[path]~=nil then return editorLengths[path] end
+ __editorWarning("getProperty previewed with default 0: "..tostring(path))
+ return 0
+end
 function setPropertyFromGroup(group,index,key,value) scene("setPropertyFromGroup",group,index,key,value) end
+function getPropertyFromGroup(group,index,key)
+ __editorWarning("getPropertyFromGroup previewed with default 0: "..tostring(group).."."..tostring(key))
+ return 0
+end
 function setBlendMode(tag,mode) scene("setBlendMode",tag,mode) end
 function addAnimationByPrefix(tag,name,prefix,fps,loop) scene("addAnimationByPrefix",tag,name,prefix,fps or 24,loop or false) end
 function addAnimationByIndices(tag,name,prefix,indices,fps,loop) scene("addAnimationByIndices",tag,name,prefix,indices,fps or 24,loop or false) end
@@ -135,7 +179,13 @@ function setModAutor() end
 setModAuthor=setModAutor
 function playLuaVideoSprite() __editorWarning("Videos are not loaded in the editor preview") end
 function setLuaVideoVolume() end
-screenWidth=1280; screenHeight=720
+function getPlayerCount() return 2 end
+function getKeyCount() return 4 end
+function getCurrentBeat() return -5 end
+function getCurrentStep() return -20 end
+function getSongPosition() return 0 end
+function getBPM() return 120 end
+screenWidth=1280; screenHeight=720; curBeat=-5; curStep=-20; songPosition=0; crochet=500; stepCrochet=125; bpm=120
 for name,fn in pairs(math) do if _G[name]==nil then _G[name]=fn end end
 ';
 		prelude = prelude.replace('"Lua instruction limit exceeded"', haxe.Json.stringify(tr('instruction_limit', 'Lua instruction limit exceeded')))
@@ -151,7 +201,12 @@ for name,fn in pairs(math) do if _G[name]==nil then _G[name]=fn end end
 				}
 			}
 			execute(prelude);
-			execute(source);
+			var normalizedSource = source;
+			// LuaJIT 5.1 treats a UTF-8 BOM as source code and may report the next
+			// valid statement (often a `for`) as the syntax error.
+			if (normalizedSource.length > 0 && normalizedSource.charCodeAt(0) == 0xFEFF)
+				normalizedSource = normalizedSource.substr(1);
+			execute(normalizedSource);
 			var hooks = '
 if onCreate then onCreate() end
 if onCreatePost then onCreatePost() end
@@ -159,12 +214,10 @@ if onInitModchart then onInitModchart() end
 __editorSetPhase("start")
 if onSongStart then onSongStart() end
 if onUpdate or onUpdatePost or onStepHit or onBeatHit then
- if onInitModchart then __editorWarning("Dynamic update/beat/step callbacks are not executed in the preview")
- else error("Dynamic callbacks need an onInitModchart schedule to import") end
+ __editorWarning("Dynamic update/beat/step callbacks are not executed in the preview")
 end
 ';
 			hooks = hooks.replace("\"Dynamic update/beat/step callbacks are not executed in the preview\"", haxe.Json.stringify(tr('dynamic_warning', "Dynamic update/beat/step callbacks are not executed in the preview")));
-			hooks = hooks.replace("\"Dynamic callbacks need an onInitModchart schedule to import\"", haxe.Json.stringify(tr('dynamic_error', "Dynamic callbacks need an onInitModchart schedule to import")));
 			execute(hooks);
 			dispose();
 		}

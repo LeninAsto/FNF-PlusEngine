@@ -48,6 +48,17 @@ class ModchartEditorChecks
 			+ 'addModifier("drunk")\nfor i=0,7 do queueSet(i*4,"drunk",i/10) end\n'
 			+ 'manager:ease("drunk",32,4,1,"linear",1)\nManager.set("drunk",40,0)\nend');
 		check(model.events.length == 10 && model.events[7].beat == 28, 'Lua loops or Manager method parsing failed');
+		report = 'complex Lua loops';
+		var loops = ModchartLuaImporter.parse('\uFEFFlocal names={"drunk","tipsy"}\nfunction onInitModchart()\n'
+			+ 'for index,name in ipairs(names) do for i=3,0,-1 do manager:queueSet(i*2,name..i,index/10) end end\n'
+			+ 'Manager:queueEase(8,12,"reverse",1,"linear",1,0,0)\nend');
+		check(loops.events.length == 10 && loops.events[8].field == 0 && loops.events[8].value == 0,
+			'Nested/ipairs loops, BOM, or queueEase startValue import failed');
+		report = 'advanced Lua fallback';
+		var advanced = ModchartLuaImporter.parse('function onInitModchart() addModifier("drunk","ghost"); '
+			+ 'addPlayfield("ghost"); set("drunk",1,1,-1,"ghost"); set("tipsy",2,1) end');
+		check(advanced.events.length == 1 && advanced.modifiers.contains('drunk') && advanced.warnings.length >= 2,
+			'Advanced playfield calls blocked compatible modifiers/events');
 		report = 'Lua roundtrip';
 		var roundtrip = ModchartLuaImporter.parse(model.toLua());
 		check(roundtrip.toJson() == model.toJson(), 'Lua export/import changed schedule');
@@ -75,6 +86,7 @@ class ModchartEditorChecks
 		report = 'localization';
 		check(Language.getPhraseForLanguage('en-US', 'editors.modchart.save', '') == 'Save', 'Missing English editor bundle');
 		check(Language.getPhraseForLanguage('es-LA', 'editors.modchart.save', '') == 'Guardar', 'Missing Spanish editor bundle');
+		var anomalySummary = '';
 		#if sys
 		var anomaly = Sys.getEnv('PLUS_MODCHART_TEST_MOD');
 		if (anomaly != null && sys.FileSystem.exists(anomaly))
@@ -90,15 +102,11 @@ class ModchartEditorChecks
 					if (!name.endsWith('.lua')) continue;
 					var text = sys.io.File.getContent(path);
 					if (text.indexOf('function onInitModchart') < 0) continue;
-					if (text.indexOf('createModifier(') != -1)
-					{
-						var rejected = false; try ModchartLuaImporter.parse(text) catch (_:Dynamic) rejected = true;
-						check(rejected, 'Custom modifier import must be explicit about unsupported code');
-						details.push(name + ': custom modifier explicitly rejected'); continue;
-					}
 					report = 'Anomaly import: ' + path;
 					var parsed = ModchartLuaImporter.parse(text);
 					check(parsed.events.length > 0, 'Anomaly script produced an empty timeline: ' + path);
+					if (text.indexOf('createModifier(') != -1)
+						check(parsed.warnings.length > 0, 'Custom modifier was not reported as ignored: ' + path);
 					report = 'Anomaly roundtrip: ' + path;
 					var exported = ModchartLuaImporter.parse(parsed.toLua());
 					check(exported.events.length == parsed.events.length && exported.scene.length == parsed.scene.length, 'Anomaly roundtrip lost content: ' + path);
@@ -106,19 +114,31 @@ class ModchartEditorChecks
 				}
 			}
 			walk(anomaly); check(imported >= 9, 'Expected at least nine supported Anomaly scripts');
-			report = '\nAnomaly: ' + imported + ' schedules imported.\n' + details.join('\n');
+			anomalySummary = '\nAnomaly: ' + imported + ' schedules imported.\n' + details.join('\n');
 		}
 		#end
+		var dynamicModel = ModchartLuaImporter.parse('function onUpdate() end');
+		check(dynamicModel.warnings.length > 0, 'Ignored dynamic callback was not reported');
 		var refused = false;
-		try ModchartLuaImporter.parse('function onUpdate() end') catch (_:Dynamic) refused = true;
-		check(refused, 'Dynamic callbacks silently accepted');
-		refused = false;
 		try ModchartLuaImporter.parse('while true do end') catch (_:Dynamic) refused = true;
 		check(refused, 'Lua instruction limit failed');
 
 		ModchartEditorPreviewContext.active = {currentBeat: 0, songPosition: 0, scrollSpeed: 0.45, camera: FlxG.camera,
 			strumLineNotes: new FlxTypedGroup<objects.StrumNote>(), opponentStrums: new FlxTypedGroup<objects.StrumNote>(),
 			playerStrums: new FlxTypedGroup<objects.StrumNote>(), notes: new FlxTypedGroup<objects.Note>(), noteSplashes: new FlxTypedGroup<objects.NoteSplash>()};
+		report = 'submodifier parent install';
+		var submods = ModchartLuaImporter.parse('set("beatMult",0,2); set("drunkSpeed",0,3); set("bumpyY",0,1); set("x0",0,100); '
+			+ 'set("shrinkToMin",0,0.5); set("noteSkewX",0,0.2); set("mini0",0,0.1); set("schmovinArrowShapeOffset",0,24)');
+		var parentManager = new Manager();
+		submods.install(parentManager);
+		var parentMods = parentManager.playfields[0].modifiers.modifiers;
+		check(parentMods.exists('beat') && parentMods.exists('drunk') && parentMods.exists('bumpy') && parentMods.exists('transform')
+			&& parentMods.exists('shrink') && parentMods.exists('skew') && parentMods.exists('scale')
+			&& parentMods.exists('schmovinarrowshape'),
+			'Submodifier did not auto-install its compiled parent');
+		parentManager.setPercent('pulseSpeed', 2);
+		check(parentMods.exists('pulse'), 'Immediate submodifier did not auto-install its compiled parent');
+		parentManager.destroy();
 		var schedule = ModchartLuaImporter.parse('set("drunk",4,0.5); ease("drunk",8,4,1,"linear")');
 		function sample(beat:Float):Float
 		{
@@ -132,6 +152,7 @@ class ModchartEditorChecks
 		check(Math.abs(sample(2)) < 0.0001, 'Rewind did not restore defaults');
 		check(Math.abs(sample(10) - 0.75) < 0.0001, 'Seek result depends on previous position');
 		ModchartEditorPreviewContext.active = null;
+		report = '\nSubmodifier parent auto-install: PASS' + anomalySummary;
 	}
 }
 #end

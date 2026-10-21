@@ -2,6 +2,7 @@
   "$schema": 1,
   "$namespace": "editors.modchart",
   "title": "MODCHART EDITOR",
+  "experimental_warning": "EXPERIMENTAL: subject to changes and bugs; not classified as stable or unstable yet.",
   "play_pause": "Play / Pause",
   "start": "|< Start",
   "open_chart": "Open chart",
