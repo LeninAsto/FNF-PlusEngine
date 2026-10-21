@@ -70,7 +70,11 @@ class Config
 	public static var RENDER_ARROW_PATHS(get, never):Bool;
 
 	private static inline function get_RENDER_ARROW_PATHS():Bool
-		return ClientPrefs.data.arrowPaths;
+	{
+		var preview = modchart.backend.standalone.adapters.psych.ModchartEditorPreviewContext.active;
+		return preview != null && preview.renderer != null && Reflect.hasField(preview.renderer, 'renderArrowPaths')
+			? preview.renderer.renderArrowPaths : ClientPrefs.data.arrowPaths;
+	}
 
 	/**
 	 * Extra configurations for the Arrow Paths.
@@ -80,14 +84,18 @@ class Config
 
 	private static function get_ARROW_PATHS_CONFIG():ArrowPathConfig
 	{
+		var preview = modchart.backend.standalone.adapters.psych.ModchartEditorPreviewContext.active;
+		var renderer:Dynamic = preview == null ? null : preview.renderer;
+		var styled:Bool = renderer != null && Reflect.hasField(renderer, 'styledArrowPaths') ? renderer.styledArrowPaths : ClientPrefs.data.styledPaths;
+		var boundary:Float = renderer != null && Reflect.hasField(renderer, 'arrowPathBoundary') ? renderer.arrowPathBoundary : ClientPrefs.data.pathBounds;
 		return {
-			APPLY_COLOR: ClientPrefs.data.styledPaths,
-			APPLY_ALPHA: ClientPrefs.data.styledPaths,
+			APPLY_COLOR: styled,
+			APPLY_ALPHA: styled,
 			APPLY_DEPTH: true,
-			APPLY_SCALE: ClientPrefs.data.styledPaths,
+			APPLY_SCALE: styled,
 			RESOLUTION: 1.0,
 			BASE_DIVISIONS: 60,
-			LENGTH: ClientPrefs.data.pathBounds
+			LENGTH: Std.int(boundary)
 		};
 	}
 

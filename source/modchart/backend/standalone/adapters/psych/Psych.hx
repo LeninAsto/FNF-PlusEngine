@@ -36,6 +36,13 @@ class Psych implements IAdapter {
 		if (__cachedFrame == frameId)
 			return;
 		__cachedFrame = frameId;
+		if (ModchartEditorPreviewContext.active != null) {
+			final preview = ModchartEditorPreviewContext.active;
+			__cachedScrollSpeed = preview.scrollSpeed;
+			cacheReceptors(preview.opponentStrums, 0);
+			cacheReceptors(preview.playerStrums, 1);
+			return;
+		}
 		if (PlayState.instance == null)
 			return;
 
@@ -86,10 +93,8 @@ class Psych implements IAdapter {
 		var editorState = getEditorState();
 		if (editorState != null)
 			return editorState.getModchartCurrentBeat();
-		/*
 		if (ModchartEditorPreviewContext.active != null)
 			return ModchartEditorPreviewContext.active.currentBeat;
-		 */
 		if (PlayState.instance != null) {
 			@:privateAccess
 			return PlayState.instance.curDecBeat;
@@ -98,6 +103,8 @@ class Psych implements IAdapter {
 	}
 
 	public function getCurrentCrochet():Float {
+		if (ModchartEditorPreviewContext.active != null)
+			return Conductor.getCrotchetAtTime(ModchartEditorPreviewContext.active.songPosition);
 		return Conductor.crochet;
 	}
 
@@ -161,14 +168,12 @@ class Psych implements IAdapter {
 		if (strum == null)
 			return 0;
 
-		/*
 		if (ModchartEditorPreviewContext.active != null) {
 			if (groupContainsStrum(ModchartEditorPreviewContext.active.opponentStrums, strum))
 				return 0;
 			if (groupContainsStrum(ModchartEditorPreviewContext.active.playerStrums, strum))
 				return 1;
 		}
-					 */
 
 		if (PlayState.instance != null) {
 			if (groupContainsStrum(PlayState.instance.opponentStrums, strum))
@@ -246,6 +251,8 @@ class Psych implements IAdapter {
 	}
 
 	public function getDownscroll():Bool {
+		var preview = ModchartEditorPreviewContext.active;
+		if (preview != null && preview.downScroll != null) return preview.downScroll;
 		return ClientPrefs.data.downScroll;
 	}
 
@@ -254,7 +261,6 @@ class Psych implements IAdapter {
 		if (editorState != null)
 			return editorState.getModchartStrumFromInfo(lane, player);
 
-		/*
 		if (ModchartEditorPreviewContext.active != null)
 		{
 			var previewGroup = player == 0 ? ModchartEditorPreviewContext.active.opponentStrums : ModchartEditorPreviewContext.active.playerStrums;
@@ -266,7 +272,6 @@ class Psych implements IAdapter {
 			});
 			return previewStrum;
 		}
-			*/
 
 		var group = player == 0 ? PlayState.instance.opponentStrums : PlayState.instance.playerStrums;
 		var strum = null;
@@ -297,11 +302,11 @@ class Psych implements IAdapter {
 			var camHeight = (cameras != null && cameras.length > 0 && cameras[0] != null) ? cameras[0].height : FlxG.height;
 			return getDownscroll() ? camHeight - strum.y - Note.swagWidth : strum.y;
 		}
-		//if (ModchartEditorPreviewContext.active != null)
-		//{
-		//	var camHeight = ModchartEditorPreviewContext.active.camera.height;
-		//	return getDownscroll() ? camHeight - strum.y - Note.swagWidth : strum.y;
-		//}
+		if (ModchartEditorPreviewContext.active != null)
+		{
+			var camHeight = ModchartEditorPreviewContext.active.camera.height;
+			return getDownscroll() ? camHeight - strum.y - Note.swagWidth : strum.y;
+		}
 		return getDownscroll() ? FlxG.height - strum.y - Note.swagWidth : strum.y;
 	}
 
@@ -310,8 +315,8 @@ class Psych implements IAdapter {
 		var editorState = getEditorState();
 		if (editorState != null)
 			return editorState.getModchartArrowCamera();
-		//if (ModchartEditorPreviewContext.active != null)
-		//	return [ModchartEditorPreviewContext.active.camera];
+		if (ModchartEditorPreviewContext.active != null)
+			return [ModchartEditorPreviewContext.active.camera];
 		return [PlayState.instance.camHUD];
 	}
 
@@ -319,8 +324,8 @@ class Psych implements IAdapter {
 		var editorState = getEditorState();
 		if (editorState != null)
 			return editorState.getModchartScrollSpeed();
-		//if (ModchartEditorPreviewContext.active != null)
-		//	return ModchartEditorPreviewContext.active.scrollSpeed;
+		if (ModchartEditorPreviewContext.active != null)
+			return ModchartEditorPreviewContext.active.scrollSpeed;
 		return __cachedFrame >= 0 ? __cachedScrollSpeed : PlayState.instance.songSpeed * .45;
 	}
 
@@ -332,7 +337,6 @@ class Psych implements IAdapter {
 		if (editorState != null)
 			return editorState.getModchartArrowItems();
 
-		/*
 		if (ModchartEditorPreviewContext.active != null)
 		{
 			var preview:Array<Array<Array<FlxSprite>>> = [[[], [], [], []], [[], [], [], []]];
@@ -368,7 +372,6 @@ class Psych implements IAdapter {
 
 			return preview;
 		}
-	     */
 
 		var pspr = arrowItemsByPlayer;
 		for (playerItems in pspr)

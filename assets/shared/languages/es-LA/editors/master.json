@@ -13,6 +13,7 @@
     "menu_character_editor": "Editor de personajes del menú",
     "dialogue_editor": "Editor de diálogos",
     "dialogue_portrait_editor": "Editor de retratos de diálogo",
-    "note_splash_editor": "Editor de Note Splash"
+    "note_splash_editor": "Editor de Note Splash",
+    "modchart_editor": "Editor de modcharts"
   }
 }

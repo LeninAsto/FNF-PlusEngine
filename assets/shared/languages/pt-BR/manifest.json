@@ -30,7 +30,6 @@
     "options/language.json",
     "editors/master.json",
     "editors/prompt.json",
-    "editors/modchart_converter.json",
     "editors/charting.json",
     "editors/character.json",
     "editors/dialogue_character.json",

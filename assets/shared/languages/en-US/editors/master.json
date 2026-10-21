@@ -13,6 +13,7 @@
     "menu_character_editor": "Menu Character Editor",
     "dialogue_editor": "Dialogue Editor",
     "dialogue_portrait_editor": "Dialogue Portrait Editor",
-    "note_splash_editor": "Note Splash Editor"
+    "note_splash_editor": "Note Splash Editor",
+    "modchart_editor": "Modchart Editor"
   }
 }

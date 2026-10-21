@@ -53,7 +53,6 @@ class SongLoadPlan
 	public var cacheHit(default, null):Bool = false;
 	public var denseChart(default, null):Bool = false;
 	public var ultraDenseChart(default, null):Bool = false;
-	public var sourceNotesReleased(default, null):Bool = false;
 	public var sourceNoteCount(default, null):Int = 0;
 
 	public function new(song:SwagSong, cacheKey:String, ?columns:Int = 4)
@@ -61,7 +60,7 @@ class SongLoadPlan
 		source = song;
 		this.cacheKey = cacheKey;
 		var started:Float = Timer.stamp();
-		var bpm:Float = song.bpm;
+		var bpm:Float = Math.isFinite(song.bpm) && song.bpm > 0 ? song.bpm : 100;
 		if (song.notes == null)
 			return;
 
@@ -89,9 +88,10 @@ class SongLoadPlan
 					continue;
 				var strumTime:Float = raw[0];
 				var rawColumn:Int = Std.int(raw[1]);
+				if (rawColumn < 0 || !Math.isFinite(strumTime)) continue;
 				var column:Int = Std.int(rawColumn % columns);
 				var sustain:Float = raw[2];
-				if (Math.isNaN(sustain))
+				if (!Math.isFinite(sustain) || sustain < 0)
 					sustain = 0;
 				var type:String = Std.isOfType(raw[3], String) ? raw[3] : Note.defaultNoteTypes[raw[3]];
 				if (type == null)
@@ -155,7 +155,7 @@ class SongLoadPlan
 		}
 		var key:String = makeCacheKey(song);
 		var cached:SongLoadPlan = plans.get(key);
-		if (cached != null)
+		if (cached != null && cached.source == song)
 		{
 			cached.cacheHit = true;
 			touch(key);
@@ -177,7 +177,7 @@ class SongLoadPlan
 	{
 		if (current != null && current.source == song)
 			return current;
-		if (current == null || current.cacheKey != makeCacheKey(song))
+		if (current == null || current.source != song)
 			return prepare(song);
 		return current;
 	}
@@ -189,16 +189,6 @@ class SongLoadPlan
 		planOrder.resize(0);
 	}
 
-	public function releaseSourceNotes(?song:SwagSong):Void
-	{
-		var target:SwagSong = song != null ? song : source;
-		if (target == null || target.notes == null)
-			return;
-		for (section in target.notes)
-			if (section != null && section.sectionNotes != null)
-				section.sectionNotes.resize(0);
-		sourceNotesReleased = true;
-	}
 
 	static function touch(key:String):Void
 	{

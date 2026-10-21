@@ -2094,8 +2094,7 @@ class PlayState extends MusicBeatState
 				totalNotes += noteDensityCount(note);
 		if (denseChartQueue)
 			trace('[DENSE CHART]: ${loadPlan.sourceNoteCount} entries, ${loadPlan.notes.length} compact entries; ${unspawnNotes.length} runtime notes prepared.');
-		if (loadPlan.denseChart)
-			loadPlan.releaseSourceNotes(songData);
+		// Keep the editable chart intact: plans and queued cache saves share this source.
 		generatedMusic = true;
 		var generateFinished:Float = haxe.Timer.stamp();
 		SongLoadMetrics.recordGeneration((generateFinished - generateStarted) * 1000, (audioFinished - generateStarted) * 1000,
@@ -2765,12 +2764,7 @@ class PlayState extends MusicBeatState
 		canResync = false;
 		FlxG.camera.followLerp = 0;
 		persistentUpdate = false;
-		if (denseLoadPlan != null && denseLoadPlan.sourceNotesReleased)
-		{
-			var songName:String = Paths.formatToSongPath(SONG.song);
-			Song.loadFromJson(Highscore.formatSong(songName, storyDifficulty), songName);
-			SongLoadPlan.clear();
-		}
+		SongLoadPlan.clear();
 		chartingMode = true;
 		paused = true;
 

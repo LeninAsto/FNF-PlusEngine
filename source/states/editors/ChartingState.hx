@@ -311,6 +311,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 	override function create()
 	{
+		backend.SongLoadPlan.clear();
 		if (Difficulty.list.length < 1)
 			Difficulty.resetList();
 		_keysPressedBuffer.resize(keysArray.length);
@@ -6251,6 +6252,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		setSongPlaying(false);
 		updateChartData();
 		StageData.loadDirectory(PlayState.SONG);
+		backend.SongLoadPlan.clear();
 		LoadingState.loadAndSwitchState(new PlayState());
 		ClientPrefs.toggleVolumeKeys(true);
 	}

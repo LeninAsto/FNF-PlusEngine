@@ -16,6 +16,8 @@ typedef ModchartEditorPreviewData = {
 	var playerStrums:FlxTypedGroup<StrumNote>;
 	var notes:FlxTypedGroup<Note>;
 	var noteSplashes:FlxTypedGroup<NoteSplash>;
+	@:optional var renderer:Dynamic;
+	@:optional var downScroll:Bool;
 }
 
 class ModchartEditorPreviewContext

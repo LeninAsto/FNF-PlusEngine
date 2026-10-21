@@ -232,7 +232,7 @@
     "redo_action": "Redo #{1}: {2}"
   },
   "info": {
-    "playback": "Section: {1} | Beat: {2} | Step: {3} | Time: {4} / {5}"
+    "playback": "Section: {1}\nBeat: {2}\nStep: {3}\nTime: {4} / {5}"
   },
   "event_panel": {
     "selected_event": "Selected Event: {1} / {2}",

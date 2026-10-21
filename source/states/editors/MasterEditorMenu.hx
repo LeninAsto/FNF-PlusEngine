@@ -19,8 +19,8 @@ class MasterEditorMenu extends MusicBeatState
 		'menu_character_editor',
 		'dialogue_editor',
 		'dialogue_portrait_editor',
-		'note_splash_editor' // ,
-		// 'modchart_converter'
+		'note_splash_editor',
+		'modchart_editor'
 	];
 	private var grpTexts:FlxTypedGroup<Alphabet>;
 	private var directories:Array<String> = [null];
@@ -106,8 +106,8 @@ class MasterEditorMenu extends MusicBeatState
 			Language.getPhrase('editors.master.items.menu_character_editor', Language.getPhrase('menu_character_editor', 'Menu Character Editor')),
 			Language.getPhrase('editors.master.items.dialogue_editor', Language.getPhrase('dialogue_editor', 'Dialogue Editor')),
 			Language.getPhrase('editors.master.items.dialogue_portrait_editor', Language.getPhrase('dialogue_portrait_editor', 'Dialogue Portrait Editor')),
-			Language.getPhrase('editors.master.items.note_splash_editor', Language.getPhrase('note_splash_editor', 'Note Splash Editor')) // ,
-				// Language.getPhrase('modchart_converter', 'Modchart Converter')
+			Language.getPhrase('editors.master.items.note_splash_editor', Language.getPhrase('note_splash_editor', 'Note Splash Editor')),
+			Language.getPhrase('editors.master.items.modchart_editor', 'Modchart Editor')
 		];
 	}
 
@@ -165,8 +165,8 @@ class MasterEditorMenu extends MusicBeatState
 					LoadingState.loadAndSwitchState(new DialogueCharacterEditorState(), false);
 				case 7: // Note Splash Editor
 					MusicBeatState.switchState(new NoteSplashEditorState());
-				case 8: // Modchart Converter
-					MusicBeatState.switchState(new ModchartConverterState());
+				case 8: // Modchart Editor
+					MusicBeatState.switchState(new ModchartEditorState());
 			}
 			FlxG.sound.music.volume = 0;
 			FreeplayState.destroyFreeplayVocals();

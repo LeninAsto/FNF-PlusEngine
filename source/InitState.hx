@@ -27,6 +27,19 @@ class InitialState extends MusicBeatState
 		Highscore.load();
 		Language.reloadPhrases();
 		MobileData.init();
+		#if (debug && sys)
+		if (Sys.args().indexOf('--modchart-self-test') != -1)
+		{
+			try { tests.ModchartEditorChecks.run(); sys.io.File.saveContent('modchart-checks.txt', 'PASS: chart plans, 21001 dense notes, Lua/scene roundtrips, negative beats, localization, instruction limit, Manager forward/backward seek.' + tests.ModchartEditorChecks.report); Sys.exit(0); }
+			catch (error:Dynamic) { sys.io.File.saveContent('modchart-checks.txt', 'FAIL at ' + tests.ModchartEditorChecks.report + ': ' + error + '\n' + haxe.CallStack.toString(haxe.CallStack.exceptionStack())); Sys.exit(1); }
+			return;
+		}
+		if (Sys.args().indexOf('--modchart-editor') != -1)
+		{
+			MusicBeatState.switchState(new states.editors.ModchartEditorState());
+			return;
+		}
+		#end
 
 		#if DENSE_CHART_TEST
 		Mods.currentModDirectory = 'NewFall Tracks with chart';
