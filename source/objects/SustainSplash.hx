@@ -1,6 +1,7 @@
 package objects;
 
 import backend.ClientPrefs;
+import shaders.ColorSwap;
 
 class SustainSplash extends FlxSprite
 {
@@ -11,14 +12,31 @@ class SustainSplash extends FlxSprite
 	public var strumNote:StrumNote;
 
 	var timer:FlxTimer;
+	var colorSwap:ColorSwap;
+	var loadedPath:String;
+	var loadedLane:Int = -1;
 
 	public function new():Void
 	{
 		super();
 
 		x = -50000;
+		colorSwap = new ColorSwap();
+		loadHoldCover(0);
+	}
 
-		var atlasPath = getHoldCoverPath();
+	function loadHoldCover(noteData:Int):Bool
+	{
+		final lane:Int = Note.normalizeNoteData(noteData);
+		final atlasPath:String = getHoldCoverPath();
+		if (loadedPath == atlasPath && loadedLane == lane && frames != null)
+			return animation.exists('holdStart') && animation.exists('hold') && animation.exists('holdEnd');
+
+		loadedPath = atlasPath;
+		loadedLane = lane;
+		frames = null;
+		@:privateAccess animation.clearAnimations();
+
 		if (Paths.fileExists('images/$atlasPath.png', IMAGE) && Paths.fileExists('images/$atlasPath.xml', TEXT))
 		{
 			var cacheKey:String = 'images/$atlasPath';
@@ -30,16 +48,33 @@ class SustainSplash extends FlxSprite
 				if (frames != null)
 					atlasCache.set(cacheKey, frames);
 			}
-			animation.addByPrefix('hold', 'holdCover0', 24, true);
-			animation.addByPrefix('end', 'holdCoverEnd0', 24, false);
-			if (!animation.getNameList().contains("hold"))
-				trace("Hold splash is missing 'hold' anim!");
+			scale.set(1, 1);
+			updateHitbox();
+			if (PlayState.isPixelStage)
+			{
+				setGraphicSize(Std.int(width * PlayState.daPixelZoom));
+				updateHitbox();
+			}
+			antialiasing = ClientPrefs.data.antialiasing && !PlayState.isPixelStage;
+
+			final suffix:String = getAnimationColor(lane);
+			// The shader atlas has no color suffix. `holdCover` alone would also
+			// swallow holdCoverStart/holdCoverEnd and replay the whole atlas as a GIF.
+			final holdPrefix:String = suffix.length > 0 ? 'holdCover$suffix' : 'holdCover0';
+			animation.addByPrefix('holdStart', 'holdCoverStart$suffix', 24, false);
+			animation.addByPrefix('hold', holdPrefix, 24, true);
+			animation.addByPrefix('holdEnd', 'holdCoverEnd$suffix', 24, false);
+			if (!animation.exists('holdStart') || !animation.exists('hold') || !animation.exists('holdEnd'))
+			{
+				trace('Hold splash atlas is missing animations for lane $lane: $atlasPath');
+				return false;
+			}
+			return true;
 		}
-		else
-		{
-			trace('Hold splash atlas not found: $atlasPath');
-			makeGraphic(1, 1, 0x00000000);
-		}
+
+		trace('Hold splash atlas not found: $atlasPath');
+		makeGraphic(1, 1, 0x00000000);
+		return false;
 	}
 
 	public static function warmupHoldCover():Void
@@ -50,7 +85,18 @@ class SustainSplash extends FlxSprite
 
 	function getHoldCoverPath():String
 	{
-		return 'holdCovers/holdCover-Vanilla';
+		final pixelPrefix:String = PlayState.isPixelStage ? 'pixelUI/' : '';
+		return pixelPrefix + (Note.usesClassicColors() ? 'holdCover-vanilla' : 'holdCovers/holdCover-Vanilla');
+	}
+
+	function getAnimationColor(lane:Int):String
+	{
+		// The pixel RGB atlas uses blue as its recolorable source; desktop RGB is neutral.
+		if (!Note.usesClassicColors())
+			return PlayState.isPixelStage ? 'Blue' : '';
+
+		final color:String = Note.colArray[lane];
+		return color.charAt(0).toUpperCase() + color.substr(1);
 	}
 
 	override function update(elapsed)
@@ -68,21 +114,58 @@ class SustainSplash extends FlxSprite
 			}
 			else
 			{
-				visible = strumNote.visible;
-				alpha = 1;
+				// Modchart rendering temporarily hides the native strum after it has
+				// emitted its geometry. `_fmVisible` is its real requested visibility.
+				visible = strumNote._fmVisible != false;
+				alpha = strumNote.alpha;
 			}
 
-			if (animation.curAnim?.name == "hold" && strumNote.animation.curAnim?.name == "static")
-			{
-				x = -50000;
-				kill();
-			}
 		}
+	}
+
+	function playHoldLoop():Void
+	{
+		if (!alive || animation.curAnim?.name == 'holdEnd')
+			return;
+
+		animation.finishCallback = null;
+		animation.play('hold', true, false, 0);
+		if (animation.curAnim != null)
+		{
+			animation.curAnim.frameRate = frameRate;
+			animation.curAnim.looped = true;
+		}
+	}
+
+	public function finishHold():Void
+	{
+		if (!alive || animation.curAnim?.name == 'holdEnd')
+			return;
+
+		if (timer != null)
+		{
+			timer.cancel();
+			timer = null;
+		}
+
+		clipRect = null;
+		animation.finishCallback = null;
+		animation.play('holdEnd', true, false, 0);
+		if (animation.curAnim != null)
+		{
+			animation.curAnim.looped = false;
+			animation.curAnim.frameRate = 24;
+		}
+		animation.finishCallback = (_:Dynamic) ->
+		{
+			x = -50000;
+			kill();
+		};
 	}
 
 	public function setupSusSplash(strum:StrumNote, daNote:Note, ?playbackRate:Float = 1):Void
 	{
-		if (ClientPrefs.data.hideSustainSplash)
+		if (ClientPrefs.data.hideSustainSplash || strum == null || daNote == null || !loadHoldCover(daNote.noteData))
 		{
 			visible = false;
 			alpha = 0;
@@ -90,21 +173,35 @@ class SustainSplash extends FlxSprite
 			return;
 		}
 
-		final lengthToGet:Int = !daNote.isSustainNote ? daNote.tail.length : daNote.parent.tail.length;
-		final timeToGet:Float = !daNote.isSustainNote ? daNote.strumTime : daNote.parent.strumTime;
-		final timeThingy:Float = (startCrochet * lengthToGet + (timeToGet - Conductor.songPosition + ClientPrefs.data.ratingOffset)) / playbackRate * .001;
+		final root:Note = daNote.isSustainNote ? daNote.parent : daNote;
+		final safeRate:Float = playbackRate > 0 ? playbackRate : 1;
+		final endTime:Float = root.strumTime + Math.max(0, root.sustainLength);
+		final timeThingy:Float = Math.max(0.01, (endTime - Conductor.songPosition + ClientPrefs.data.ratingOffset) / safeRate * .001);
+		final splashDisabled:Bool = root.noteSplashData.disabled;
 
-		var tailEnd:Note = !daNote.isSustainNote ? daNote.tail[daNote.tail.length - 1] : daNote.parent.tail[daNote.parent.tail.length - 1];
-
-		animation.play('hold', true, false, 0);
+		strumNote = strum;
+		visible = true;
+		active = true;
+		animation.finishCallback = null;
+		animation.play('holdStart', true, false, 0);
 		if (animation.curAnim != null)
 		{
-			animation.curAnim.frameRate = frameRate;
-			animation.curAnim.looped = true;
+			animation.curAnim.frameRate = 24;
+			animation.curAnim.looped = false;
 		}
+		animation.finishCallback = (name:Dynamic) ->
+		{
+			if (name == 'holdStart')
+				playHoldLoop();
+		};
 		clipRect = new flixel.math.FlxRect(0, !PlayState.isPixelStage ? 0 : -210, frameWidth, frameHeight);
 
-		if (daNote.rgbShader != null && daNote.rgbShader.enabled && daNote.shader != null)
+		if (Note.usesClassicColors())
+		{
+			shader = colorSwap.shader;
+			Note.applyHSVToColorSwap(colorSwap, daNote.noteData);
+		}
+		else if (daNote.rgbShader != null && daNote.rgbShader.enabled && daNote.shader != null)
 		{
 			shader = new objects.NoteSplash.PixelSplashShaderRef().shader;
 			shader.data.r.value = daNote.shader.data.r.value;
@@ -115,30 +212,19 @@ class SustainSplash extends FlxSprite
 		else
 			shader = null;
 
-		strumNote = strum;
-		alpha = 1;
+		alpha = strum.alpha;
 		offset.set(PlayState.isPixelStage ? 112.5 : 106.25, 100);
 
 		if (timer != null)
 			timer.cancel();
 
-		if (!daNote.hitByOpponent && alpha != 0 && !ClientPrefs.data.hideSustainSplash)
-			timer = new FlxTimer().start(timeThingy, (idk:FlxTimer) ->
+		timer = new FlxTimer().start(timeThingy, (idk:FlxTimer) ->
 			{
-				if (!(daNote.isSustainNote ? daNote.parent.noteSplashData.disabled : daNote.noteSplashData.disabled) && animation != null)
+				timer = null;
+				if (!splashDisabled && animation != null && !ClientPrefs.data.hideSustainSplash)
 				{
-					alpha = 1;
-					animation.play('end', true, false, 0);
-					if (animation.curAnim != null)
-					{
-						animation.curAnim.looped = false;
-						animation.curAnim.frameRate = 24;
-					}
-					clipRect = null;
-					animation.finishCallback = (idkEither:Dynamic) ->
-					{
-						kill();
-					}
+					alpha = strumNote != null ? strumNote.alpha : 1;
+					finishHold();
 					return;
 				}
 				kill();

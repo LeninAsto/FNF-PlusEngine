@@ -6,10 +6,6 @@ class Highscore
 	public static var songScores:Map<String, Int> = new Map<String, Int>();
 	public static var songRating:Map<String, Float> = new Map<String, Float>();
 
-	// Opponent Mode - Separate scores
-	public static var songScoresOpponent:Map<String, Int> = new Map<String, Int>();
-	public static var songRatingOpponent:Map<String, Float> = new Map<String, Float>();
-
 	public static function resetSong(song:String, diff:Int = 0):Void
 	{
 		var daSong:String = formatSong(song, diff);
@@ -23,36 +19,33 @@ class Highscore
 		setWeekScore(daWeek, 0);
 	}
 
-	public static function saveScore(song:String, score:Int = 0, ?diff:Int = 0, ?rating:Float = -1, ?isOpponentMode:Bool = false):Void
+	public static function saveScore(song:String, score:Int = 0, ?diff:Int = 0, ?rating:Float = -1):Void
 	{
 		if (song == null)
 			return;
 		var daSong:String = formatSong(song, diff);
 
-		// Select the correct map based on the mode
-		var scoreMap:Map<String, Int> = isOpponentMode ? songScoresOpponent : songScores;
-
-		if (scoreMap.exists(daSong))
+		if (songScores.exists(daSong))
 		{
-			if (scoreMap.get(daSong) < score)
+			if (songScores.get(daSong) < score)
 			{
-				setScore(daSong, score, isOpponentMode);
+				setScore(daSong, score);
 				if (rating != -1)
-					setRating(daSong, rating, isOpponentMode);
+					setRating(daSong, rating);
 			}
 			// If the score is the same but the rating is better, update only the rating
-			else if (scoreMap.get(daSong) == score && rating != -1)
+			else if (songScores.get(daSong) == score && rating != -1)
 			{
-				var currentRating:Float = getRating(song, diff, isOpponentMode);
+				var currentRating:Float = getRating(song, diff);
 				if (rating > currentRating)
-					setRating(daSong, rating, isOpponentMode);
+					setRating(daSong, rating);
 			}
 		}
 		else
 		{
-			setScore(daSong, score, isOpponentMode);
+			setScore(daSong, score);
 			if (rating != -1)
-				setRating(daSong, rating, isOpponentMode);
+				setRating(daSong, rating);
 		}
 	}
 
@@ -72,19 +65,11 @@ class Highscore
 	/**
 	 * YOU SHOULD FORMAT SONG WITH formatSong() BEFORE TOSSING IN SONG VARIABLE
 	 */
-	static function setScore(song:String, score:Int, isOpponentMode:Bool = false):Void
+	static function setScore(song:String, score:Int):Void
 	{
 		// Reminder that I don't need to format this song, it should come formatted!
-		if (isOpponentMode)
-		{
-			songScoresOpponent.set(song, score);
-			FlxG.save.data.songScoresOpponent = songScoresOpponent;
-		}
-		else
-		{
-			songScores.set(song, score);
-			FlxG.save.data.songScores = songScores;
-		}
+		songScores.set(song, score);
+		FlxG.save.data.songScores = songScores;
 		FlxG.save.flush();
 	}
 
@@ -96,19 +81,11 @@ class Highscore
 		FlxG.save.flush();
 	}
 
-	static function setRating(song:String, rating:Float, isOpponentMode:Bool = false):Void
+	static function setRating(song:String, rating:Float):Void
 	{
 		// Reminder that I don't need to format this song, it should come formatted!
-		if (isOpponentMode)
-		{
-			songRatingOpponent.set(song, rating);
-			FlxG.save.data.songRatingOpponent = songRatingOpponent;
-		}
-		else
-		{
-			songRating.set(song, rating);
-			FlxG.save.data.songRating = songRating;
-		}
+		songRating.set(song, rating);
+		FlxG.save.data.songRating = songRating;
 		FlxG.save.flush();
 	}
 
@@ -117,18 +94,16 @@ class Highscore
 		return Paths.formatToSongPath(song) + Difficulty.getFilePath(diff);
 	}
 
-	public static function getScore(song:String, diff:Int, isOpponentMode:Bool = false):Int
+	public static function getScore(song:String, diff:Int):Int
 	{
 		var daSong:String = formatSong(song, diff);
-		var scoreMap:Map<String, Int> = isOpponentMode ? songScoresOpponent : songScores;
-		return scoreMap.exists(daSong) ? scoreMap.get(daSong) : 0;
+		return songScores.exists(daSong) ? songScores.get(daSong) : 0;
 	}
 
-	public static function getRating(song:String, diff:Int, isOpponentMode:Bool = false):Float
+	public static function getRating(song:String, diff:Int):Float
 	{
 		var daSong:String = formatSong(song, diff);
-		var ratingMap:Map<String, Float> = isOpponentMode ? songRatingOpponent : songRating;
-		return ratingMap.exists(daSong) ? ratingMap.get(daSong) : 0;
+		return songRating.exists(daSong) ? songRating.get(daSong) : 0;
 	}
 
 	public static function getWeekScore(week:String, diff:Int):Int
@@ -147,14 +122,6 @@ class Highscore
 
 		if (FlxG.save.data.songRating != null)
 			songRating = FlxG.save.data.songRating;
-
-		// Load Opponent Mode scores
-		if (FlxG.save.data.songScoresOpponent != null)
-			songScoresOpponent = FlxG.save.data.songScoresOpponent;
-
-		if (FlxG.save.data.songRatingOpponent != null)
-			songRatingOpponent = FlxG.save.data.songRatingOpponent;
-
 	}
 }
 

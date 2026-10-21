@@ -258,10 +258,7 @@ class KeyViewer extends FlxSpriteGroup
 	{
 		if (playState == null)
 			return "free";
-		return [
-			Std.string(isPlayStateFlagEnabled("cpuControlled")),
-			Std.string(isPlayStateFlagEnabled("playOpponent"))
-		].join(":");
+		return Std.string(isPlayStateFlagEnabled("cpuControlled"));
 	}
 
 	function releaseAllKeys():Void

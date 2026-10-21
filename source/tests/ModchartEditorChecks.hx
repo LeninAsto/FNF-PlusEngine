@@ -29,6 +29,14 @@ class ModchartEditorChecks
 		report = 'chart plans';
 		var original = fixture();
 		var first = SongLoadPlan.prepare(original);
+		var sides:SwagSong = {song: 'sides', notes: [
+			{sectionNotes: [[100, 0, 0, ''], [200, 4, 0, '']], sectionBeats: 4, mustHitSection: false},
+			{sectionNotes: [[300, 0, 0, ''], [400, 4, 0, '']], sectionBeats: 4, mustHitSection: true}
+		], events: [], bpm: 120, speed: 1, needsVoices: false, offset: 0, player1: 'bf', player2: 'dad', gfVersion: 'gf', stage: 'stage',
+			format: 'psych_v1'};
+		var sidePlan = SongLoadPlan.prepare(sides);
+		check(sidePlan.notes[0].gottaHit && !sidePlan.notes[1].gottaHit && sidePlan.notes[2].gottaHit && !sidePlan.notes[3].gottaHit,
+			'psych_v1 absolute player/opponent columns were reinterpreted through mustHitSection');
 		var edited = fixture(900);
 		var second = SongLoadPlan.get(edited);
 		check(second != first && second.source == edited && second.notes[0].strumTime == 900, 'Stale plan reused for edited chart');

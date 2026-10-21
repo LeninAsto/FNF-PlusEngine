@@ -593,6 +593,12 @@ final class Manager extends FlxBasic
 		if (!__primary || Adapter.instance == null)
 			return;
 
+		// The renderer suppresses native sprites after emitting their triangle
+		// commands. Restore them before gameplay objects update so dependent
+		// objects (hold covers, splashes, etc.) never copy that temporary false.
+		if (renderer != null)
+			renderer.restoreSuppressedVisibility();
+
 		if (!__hasRuntimeWork())
 			return;
 

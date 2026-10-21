@@ -89,7 +89,6 @@ import mobile.backend.PsychJNI;
 		'botplayType' => 'Normal',
 		'botplayCPUProfile' => 'Skilled',
 		'opponentdrain' => false, // JS Engine-style: opponent note hits drain player health
-		'opponentplay' => false,
 		'perfect' => false, // Perfect Mode - insta-kill on any judgement below Sick
 		'nodroppenalty' => false // Hold drops don't cause misses
 	];
@@ -110,7 +109,7 @@ import mobile.backend.PsychJNI;
 	public var timeBump:Bool = false;
 	public var psychScoreText:Bool = true;
 	public var abbreviateScore:Bool = true;
-	public var hideSustainSplash:Bool = true;
+	public var hideSustainSplash:Bool = false;
 	public var showKeyViewer:Bool = false;
 	public var iconBounceType:String = 'Default';
 	public var showRating:Bool = true;
@@ -432,6 +431,16 @@ class ClientPrefs
 			data.cacheOnGPU = true;
 			Reflect.setField(FlxG.save.data, 'cacheOnGPU', true);
 			Reflect.setField(FlxG.save.data, 'hardwareAccelerationDefaulted', true);
+			FlxG.save.flush();
+		}
+
+		// Sustain splashes used to ship disabled while their renderer/atlas support was incomplete.
+		// Enable the finished implementation once; the option remains user-controllable afterwards.
+		if (!Reflect.hasField(FlxG.save.data, 'sustainSplashDefaulted'))
+		{
+			data.hideSustainSplash = false;
+			Reflect.setField(FlxG.save.data, 'hideSustainSplash', false);
+			Reflect.setField(FlxG.save.data, 'sustainSplashDefaulted', true);
 			FlxG.save.flush();
 		}
 

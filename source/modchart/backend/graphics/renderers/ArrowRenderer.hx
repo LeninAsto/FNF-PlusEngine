@@ -96,6 +96,8 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 			return null;
 
 		final arrowPosition = helperVector;
+		final isTap = Adapter.instance.isTapNote(arrow);
+		final isSplash = Adapter.instance.isSplash(arrow);
 
 		final player = Adapter.instance.getPlayerFromArrow(arrow);
 		final sourceTime = Adapter.instance.getTimeFromArrow(arrow);
@@ -111,7 +113,7 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		final orient = canUseLast ? __lastOrient : (__lastOrient = parent.getPercent('orient', player));
 
 		// apply centered 2 (aka centered path)
-		if (Adapter.instance.isTapNote(arrow)) {
+		if (isTap) {
 			arrowDiff += FlxG.height * 0.25 * centered2;
 		} else {
 			arrowTime = songPos + (FlxG.height * 0.25 * centered2);
@@ -123,13 +125,17 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		arrowData.sourceTime = sourceTime;
 		arrowData.lane = Adapter.instance.getLaneFromArrow(arrow);
 		arrowData.player = player;
-		arrowData.isTapArrow = Adapter.instance.isTapNote(arrow);
+		arrowData.isTapArrow = isTap;
 		arrowData.isHoldBody = false;
 
 		arrowPosition.setTo(Adapter.instance.getDefaultReceptorX(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2,
 			Adapter.instance.getDefaultReceptorY(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2, 0);
 
-		final output = parent.getNotePathInto(arrowPosition, arrowData, _output, _outputPos, _outputVisuals);
+		final output = isSplash
+			? parent.getSplashPathInto(arrowPosition, arrowData, _output, _outputPos, _outputVisuals)
+			: (isTap
+				? parent.getNotePathInto(arrowPosition, arrowData, _output, _outputPos, _outputVisuals)
+				: parent.getReceptorPathInto(arrowPosition, arrowData, _output, _outputPos, _outputVisuals));
 		arrowPosition.setTo(output.rawX, output.rawY, output.rawZ);
 		var visualAngleZ = output.visuals.angleZ;
 
@@ -137,7 +143,11 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		if (orient != 0) {
 			_orientInput.setTo(Adapter.instance.getDefaultReceptorX(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2,
 				Adapter.instance.getDefaultReceptorY(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2, 0);
-			final nextOutput = parent.getNotePathInto(_orientInput, arrowData, _orientOutput, _orientPos, _orientVisuals, 1, false, true);
+			final nextOutput = isSplash
+				? parent.getSplashPathInto(_orientInput, arrowData, _orientOutput, _orientPos, _orientVisuals, 1, false, true)
+				: (isTap
+					? parent.getNotePathInto(_orientInput, arrowData, _orientOutput, _orientPos, _orientVisuals, 1, false, true)
+					: parent.getReceptorPathInto(_orientInput, arrowData, _orientOutput, _orientPos, _orientVisuals, 1, false, true));
 			final thisPos = output.pos;
 			final nextPos = nextOutput.pos;
 

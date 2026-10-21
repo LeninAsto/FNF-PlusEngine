@@ -21,6 +21,7 @@ interface IAdapter {
 	public function getDefaultReceptorY(lane:Int, player:Int):Float; // Get default strum y position
 	public function getTimeFromArrow(arrow:FlxSprite):Float; // Get strum time for arrow
 	public function isTapNote(sprite:FlxSprite):Bool; // If the sprite is an arrow, return true, if it is an lane/strum, return false
+	public function isSplash(sprite:FlxSprite):Bool; // Note and sustain splashes use their own modifier transform mode
 	public function isHoldEnd(sprite:FlxSprite):Bool; // If its the hold end
 	public function arrowHit(sprite:FlxSprite):Bool; // If the arrow was hitted
 	public function getHoldParentTime(sprite:FlxSprite):Float;

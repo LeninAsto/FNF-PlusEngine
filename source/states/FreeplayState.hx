@@ -142,7 +142,6 @@ class FreeplayState extends MusicBeatState
 	public var freeplayText:FlxText;
 	public var lastThemeSignature:String = "";
 
-	// Opponent Mode toggle
 	// Variables para el zoom del bg
 	public var bgZoom:Float = 1;
 	public var defaultBgZoom:Float = 1;
@@ -642,7 +641,6 @@ class FreeplayState extends MusicBeatState
 		add(searchField);
 		createSongInfoCard();
 
-		// Opponent Mode indicator
 		missingTextCardY = Math.max(90, (FlxG.height * 0.5) - 120);
 		missingTextBG = new FlxSprite(missingTextHiddenX, missingTextCardY);
 		MD3ShapeTools.fillAndStrokeRoundRect(missingTextBG, 430, 220, 24, 3, OptionsMenuTheme.cardFill(false), OptionsMenuTheme.cardStroke(true));

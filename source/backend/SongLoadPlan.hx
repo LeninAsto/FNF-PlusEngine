@@ -96,9 +96,10 @@ class SongLoadPlan
 				var type:String = Std.isOfType(raw[3], String) ? raw[3] : Note.defaultNoteTypes[raw[3]];
 				if (type == null)
 					type = '';
-				var gottaHit:Bool = section.mustHitSection == true;
-				if (rawColumn >= columns)
-					gottaHit = !gottaHit;
+				// psych_v1 stores an absolute side after Song.convert():
+				// 0...columns = player, columns...columns * 2 = opponent.
+				// Applying mustHitSection again here would invert converted charts twice.
+				var gottaHit:Bool = rawColumn < columns;
 				var gf:Bool = section.gfSection == true && gottaHit == section.mustHitSection;
 				var alt:Bool = section.altAnim == true && !gottaHit;
 				if (denseChart && sustain <= 0)

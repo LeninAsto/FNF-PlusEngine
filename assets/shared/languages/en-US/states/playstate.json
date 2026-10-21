@@ -23,7 +23,6 @@
   },
   "modes": {
     "perfect": "Perfect Mode",
-    "opponent": "Opponent Mode",
     "practice": "Practice Mode"
   }
 }

@@ -5,6 +5,7 @@ import backend.Conductor;
 //import funkin.ui.debug.modcharting.ModchartEditorState;
 import objects.Note;
 import objects.NoteSplash;
+import objects.SustainSplash;
 import objects.StrumNote as Strum;
 import states.PlayState;
 import flixel.FlxCamera;
@@ -79,6 +80,10 @@ class Psych implements IAdapter {
 		return sprite is Note;
 	}
 
+	public function isSplash(sprite:FlxSprite) {
+		return sprite is NoteSplash || sprite is SustainSplash;
+	}
+
 	// Song related
 	public function getSongPosition():Float {
 		var editorState = getEditorState();
@@ -142,6 +147,8 @@ class Psych implements IAdapter {
 			return cast(arrow, Strum).noteData;
 		if (arrow is NoteSplash) @:privateAccess
 			return cast(arrow, NoteSplash).babyArrow.noteData;
+		if (arrow is SustainSplash) @:privateAccess
+			return cast(arrow, SustainSplash).strumNote.noteData;
 
 		return 0;
 	}
@@ -153,6 +160,8 @@ class Psych implements IAdapter {
 			return resolveStrumPlayer(cast arrow);
 		if (arrow is NoteSplash)
 			return resolveSplashPlayer(cast arrow);
+		if (arrow is SustainSplash)
+			return resolveStrumPlayer(cast(arrow, SustainSplash).strumNote);
 		return 0;
 	}
 
@@ -227,6 +236,8 @@ class Psych implements IAdapter {
 	public function getTimeFromArrow(arrow:FlxSprite) {
 		if (arrow is Note)
 			return cast(arrow, Note).strumTime;
+		if (isSplash(arrow))
+			return getSongPosition();
 
 		return 0;
 	}
@@ -405,6 +416,14 @@ class Psych implements IAdapter {
 			@:privateAccess if (splash == null || !splash.exists || !splash.alive || splash.babyArrow == null || !splash.active)
 				continue;
 			final player = resolveSplashPlayer(splash);
+			ensurePlayerItems(pspr, player)[3].push(splash);
+		}
+		final holdSplashes = PlayState.instance.grpHoldSplashes.members;
+		for (i in 0...holdSplashes.length) {
+			final splash = holdSplashes[i];
+			@:privateAccess if (splash == null || !splash.exists || !splash.alive || splash.strumNote == null || !splash.active)
+				continue;
+			final player = resolveStrumPlayer(splash.strumNote);
 			ensurePlayerItems(pspr, player)[3].push(splash);
 		}
 

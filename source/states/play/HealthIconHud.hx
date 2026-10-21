@@ -60,14 +60,14 @@ class HealthIconHud
 		}
 	}
 
-	public static function frames(bar:Bar, opponentMode:Bool, side:String, p1:HealthIcon, p2:HealthIcon, gf:HealthIcon):Void
+	public static function frames(bar:Bar, side:String, p1:HealthIcon, p2:HealthIcon, gf:HealthIcon):Void
 	{
 		if (bar == null || !bar.enabled)
 			return;
 
 		final pct:Float = FlxMath.bound(bar.percent / 100, 0, 1);
-		final bf:Float = opponentMode ? 1 - pct : pct;
-		final dad:Float = opponentMode ? pct : 1 - pct;
+		final bf:Float = pct;
+		final dad:Float = 1 - pct;
 		setFrame(p1, bf);
 		setFrame(p2, dad);
 		if (gf != null && gf.visible)
