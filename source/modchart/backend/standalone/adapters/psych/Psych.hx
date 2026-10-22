@@ -48,13 +48,14 @@ class Psych implements IAdapter {
 			return;
 
 		__cachedScrollSpeed = PlayState.instance.songSpeed * .45;
-		cacheReceptors(PlayState.instance.opponentStrums, 0);
-		cacheReceptors(PlayState.instance.playerStrums, 1);
+		for (line in PlayState.instance.strumLines)
+			cacheReceptors(line.receptors, line.index);
 	}
 
 	private function cacheReceptors(group:Dynamic, player:Int):Void {
 		if (group == null || group.members == null)
 			return;
+		while (__receptorX.length <= player) { __receptorX.push([]); __receptorY.push([]); }
 		final xs = __receptorX[player];
 		final ys = __receptorY[player];
 		final members:Array<Dynamic> = group.members;
@@ -67,7 +68,7 @@ class Psych implements IAdapter {
 				continue;
 			while (xs.length <= lane) { xs.push(0); ys.push(0); }
 			xs[lane] = strum.x;
-			ys[lane] = getDownscroll() ? FlxG.height - strum.y - Note.swagWidth : strum.y;
+			ys[lane] = getDownscroll() ? FlxG.height - strum.y - strum.height : strum.y;
 		}
 	}
 
@@ -155,7 +156,10 @@ class Psych implements IAdapter {
 
 	public function getPlayerFromArrow(arrow:FlxSprite) {
 		if (arrow is Note)
-			return cast(arrow, Note).mustPress ? 1 : 0;
+		{
+			var note:Note = cast arrow;
+			return note.strumLineIndex >= 0 ? note.strumLineIndex : (note.mustPress ? 1 : 0);
+		}
 		if (arrow is Strum)
 			return resolveStrumPlayer(cast arrow);
 		if (arrow is NoteSplash)
@@ -191,7 +195,7 @@ class Psych implements IAdapter {
 				return 1;
 		}
 
-		@:privateAccess return strum.player;
+		return strum.strumLineIndex;
 	}
 
 	private inline function resolveSplashPlayer(splash:NoteSplash):Int {
@@ -206,7 +210,7 @@ class Psych implements IAdapter {
 	}
 
 	public function getPlayerCount():Int {
-		return 2;
+		return PlayState.instance != null && PlayState.instance.strumLines != null ? PlayState.instance.strumLines.length : 2;
 	}
 
 	private function ensurePlayerItems(items:Array<Array<Array<FlxSprite>>>, player:Int):Array<Array<FlxSprite>> {
@@ -284,7 +288,9 @@ class Psych implements IAdapter {
 			return previewStrum;
 		}
 
-		var group = player == 0 ? PlayState.instance.opponentStrums : PlayState.instance.playerStrums;
+		var group = player >= 0 && player < PlayState.instance.strumLines.length
+			? PlayState.instance.strumLines[player].receptors : null;
+		if (group == null) return null;
 		var strum = null;
 		group.forEach(str -> {
 			@:privateAccess
@@ -311,14 +317,14 @@ class Psych implements IAdapter {
 		{
 			var cameras = editorState.getModchartArrowCamera();
 			var camHeight = (cameras != null && cameras.length > 0 && cameras[0] != null) ? cameras[0].height : FlxG.height;
-			return getDownscroll() ? camHeight - strum.y - Note.swagWidth : strum.y;
+			return getDownscroll() ? camHeight - strum.y - strum.height : strum.y;
 		}
 		if (ModchartEditorPreviewContext.active != null)
 		{
 			var camHeight = ModchartEditorPreviewContext.active.camera.height;
-			return getDownscroll() ? camHeight - strum.y - Note.swagWidth : strum.y;
+			return getDownscroll() ? camHeight - strum.y - strum.height : strum.y;
 		}
-		return getDownscroll() ? FlxG.height - strum.y - Note.swagWidth : strum.y;
+		return getDownscroll() ? FlxG.height - strum.y - strum.height : strum.y;
 	}
 
 	public function getArrowCamera():Array<FlxCamera>
@@ -407,7 +413,7 @@ class Psych implements IAdapter {
 			final note = notes[i];
 			if (note == null || !note.exists || !note.alive || note.frame == null || note.graphic == null)
 				continue;
-			final player = note.mustPress ? 1 : 0;
+			final player = getPlayerFromArrow(note);
 			ensurePlayerItems(pspr, player)[note.isSustainNote ? 2 : 1].push(note);
 		}
 		final splashes = PlayState.instance.grpNoteSplashes.members;

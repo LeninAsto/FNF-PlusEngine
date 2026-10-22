@@ -60,6 +60,8 @@ class Note extends FlxSprite
 
 	public var strumTime:Float = 0;
 	public var noteData:Int = 0;
+	/** Logical StrumLine owner: 0 opponent, 1 player, 2+ additional CPU lines. */
+	public var strumLineIndex:Int = -1;
 
 	public var mustPress:Bool = false;
 	public var canBeHit:Bool = false;
@@ -741,7 +743,7 @@ class Note extends FlxSprite
 
 	public function clipToStrumNote(myStrum:StrumNote)
 	{
-		var center:Float = myStrum.y + offsetY + Note.swagWidth / 2;
+		var center:Float = myStrum.y + offsetY + myStrum.height / 2;
 		if ((mustPress || !ignoreNote) && (wasGoodHit || (prevNote.wasGoodHit && !canBeHit)))
 		{
 			var swagRect:FlxRect = clipRect;

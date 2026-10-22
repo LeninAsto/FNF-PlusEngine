@@ -14,11 +14,12 @@ class PreparedChartNote
 	public final gfNote:Bool;
 	public final altAnim:Bool;
 	public final stepCrochet:Float;
+	public final strumLineIndex:Int;
 	/** Number of sub-frame taps represented by this runtime note. */
 	public var density:Int;
 
 	public function new(strumTime:Float, column:Int, sustainLength:Float, noteType:String, gottaHit:Bool, gfNote:Bool, altAnim:Bool,
-		stepCrochet:Float, ?density:Int = 1)
+		stepCrochet:Float, ?density:Int = 1, ?strumLineIndex:Int = -1)
 	{
 		this.strumTime = strumTime;
 		this.column = column;
@@ -28,6 +29,7 @@ class PreparedChartNote
 		this.gfNote = gfNote;
 		this.altAnim = altAnim;
 		this.stepCrochet = stepCrochet;
+		this.strumLineIndex = strumLineIndex;
 		this.density = density;
 	}
 }
@@ -67,6 +69,10 @@ class SongLoadPlan
 		for (section in song.notes)
 			if (section != null && section.sectionNotes != null)
 				sourceNoteCount += section.sectionNotes.length;
+		if (song.extraStrumLines != null)
+			for (line in song.extraStrumLines)
+				if (line != null && line.notes != null)
+					sourceNoteCount += line.notes.length;
 		denseChart = sourceNoteCount >= DENSE_CHART_THRESHOLD;
 		ultraDenseChart = sourceNoteCount >= ULTRA_DENSE_CHART_THRESHOLD;
 		var tapBucketMs:Float = 1000 / (ultraDenseChart ? 30 : (sourceNoteCount >= EXTREME_CHART_THRESHOLD ? 60 : 120));
@@ -100,6 +106,7 @@ class SongLoadPlan
 				// 0...columns = player, columns...columns * 2 = opponent.
 				// Applying mustHitSection again here would invert converted charts twice.
 				var gottaHit:Bool = rawColumn < columns;
+				var lineIndex:Int = gottaHit ? 1 : 0;
 				var gf:Bool = section.gfSection == true && gottaHit == section.mustHitSection;
 				var alt:Bool = section.altAnim == true && !gottaHit;
 				if (denseChart && sustain <= 0)
@@ -116,14 +123,14 @@ class SongLoadPlan
 					var packed:PreparedChartNote = null;
 					for (candidate in bucketNotes)
 						if (candidate.column == column && candidate.gottaHit == gottaHit && candidate.gfNote == gf && candidate.altAnim == alt
-							&& candidate.noteType == type)
+							&& candidate.noteType == type && candidate.strumLineIndex == lineIndex)
 						{
 							packed = candidate;
 							break;
 						}
 					if (packed == null)
 					{
-						packed = new PreparedChartNote(strumTime, column, sustain, type, gottaHit, gf, alt, stepCrochet);
+						packed = new PreparedChartNote(strumTime, column, sustain, type, gottaHit, gf, alt, stepCrochet, 1, lineIndex);
 						bucketNotes.push(packed);
 						notes.push(packed);
 					}
@@ -131,10 +138,80 @@ class SongLoadPlan
 						packed.density++;
 				}
 				else
-					notes.push(new PreparedChartNote(strumTime, column, sustain, type, gottaHit, gf, alt, stepCrochet));
+					notes.push(new PreparedChartNote(strumTime, column, sustain, type, gottaHit, gf, alt, stepCrochet, 1, lineIndex));
 				tapCount++;
 				sustainCount += Std.int(Math.max(0, Math.round(sustain / stepCrochet)));
 			}
+		}
+
+		if (song.extraStrumLines != null)
+		{
+			var timing:Array<{start:Float, step:Float}> = [];
+			var timingTime:Float = 0;
+			var timingBpm:Float = Math.isFinite(song.bpm) && song.bpm > 0 ? song.bpm : 100;
+			for (section in song.notes)
+			{
+				if (section.changeBPM == true && section.bpm != null && section.bpm > 0) timingBpm = section.bpm;
+				var step = 60 / timingBpm * 1000 / 4;
+				timing.push({start: timingTime, step: step});
+				timingTime += step * 4 * (section.sectionBeats > 0 ? section.sectionBeats : 4);
+			}
+			var seen:Map<String, Bool> = [];
+			var extraCount:Int = 0;
+			var skippedLines:Int = 0;
+			var skippedNotes:Int = 0;
+			for (line in song.extraStrumLines)
+			{
+				if (line == null || extraCount >= 5) { skippedLines++; continue; }
+				var id = line.id == null ? '' : line.id.trim().toLowerCase();
+				if (id.length == 0 || seen.exists(id)) { skippedLines++; continue; }
+				seen.set(id, true);
+				var lineIndex = 2 + extraCount++;
+				if (line.notes == null) continue;
+				for (raw in line.notes)
+				{
+					if (raw == null || raw.length < 3) { skippedNotes++; continue; }
+					var time:Float = raw[0];
+					var lane:Int = Std.int(raw[1]);
+					if (!Math.isFinite(time) || lane < 0 || lane >= columns) { skippedNotes++; continue; }
+					var sustain:Float = raw[2];
+					if (!Math.isFinite(sustain) || sustain < 0) sustain = 0;
+					var type:String = Std.isOfType(raw[3], String) ? raw[3] : Note.defaultNoteTypes[raw[3]];
+					if (type == null) type = '';
+					var step:Float = 60 / (song.bpm > 0 ? song.bpm : 100) * 1000 / 4;
+					for (timingIndex in 0...timing.length)
+						if (timing[timingIndex].start <= time) step = timing[timingIndex].step; else break;
+					if (denseChart && sustain <= 0)
+					{
+						var bucket:Int = Math.floor(time / tapBucketMs);
+						var bucketNotes = denseTaps.get(bucket);
+						if (bucketNotes == null)
+						{
+							bucketNotes = [];
+							denseTaps.set(bucket, bucketNotes);
+						}
+						var packed:PreparedChartNote = null;
+						for (candidate in bucketNotes)
+							if (candidate.column == lane && candidate.noteType == type && candidate.strumLineIndex == lineIndex)
+							{
+								packed = candidate;
+								break;
+							}
+						if (packed == null)
+						{
+							packed = new PreparedChartNote(time, lane, sustain, type, false, false, false, step, 1, lineIndex);
+							bucketNotes.push(packed);
+							notes.push(packed);
+						}
+						else packed.density++;
+					}
+					else notes.push(new PreparedChartNote(time, lane, sustain, type, false, false, false, step, 1, lineIndex));
+					tapCount++;
+					sustainCount += Std.int(Math.max(0, Math.round(sustain / step)));
+				}
+			}
+			if (skippedLines > 0 || skippedNotes > 0)
+				trace('[SongLoadPlan] Ignored $skippedLines invalid/duplicate extra StrumLines and $skippedNotes invalid extra notes.');
 		}
 		notes.sort(function(a:PreparedChartNote, b:PreparedChartNote):Int
 			return a.strumTime < b.strumTime ? -1 : (a.strumTime > b.strumTime ? 1 : 0));
@@ -210,6 +287,15 @@ class SongLoadPlan
 			for (section in song.notes)
 				if (section != null && section.sectionNotes != null)
 					entries += section.sectionNotes.length;
-		return '$path|${song.song}|${song.bpm}|$sections|$entries';
+		var extraLines:Int = 0;
+		var extraEntries:Int = 0;
+		if (song.extraStrumLines != null)
+			for (line in song.extraStrumLines)
+				if (line != null)
+				{
+					extraLines++;
+					if (line.notes != null) extraEntries += line.notes.length;
+				}
+		return '$path|${song.song}|${song.bpm}|$sections|$entries|$extraLines|$extraEntries';
 	}
 }

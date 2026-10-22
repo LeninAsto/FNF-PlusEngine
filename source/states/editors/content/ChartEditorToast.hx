@@ -9,7 +9,7 @@ import flixel.text.FlxText;
 import flixel.tweens.FlxEase;
 import flixel.tweens.FlxTween;
 import flixel.util.FlxColor;
-import flixel.util.FlxSpriteUtil;
+import backend.ui.md3.MD3ShapeTools;
 
 class ChartEditorToast extends FlxSpriteGroup
 {
@@ -17,6 +17,7 @@ class ChartEditorToast extends FlxSpriteGroup
 	static inline var SIDE_MARGIN:Int = 80;
 	static inline var BOTTOM_MARGIN:Int = 44;
 	static inline var HIDE_DELAY:Float = 3;
+	static inline var MAX_WIDTH:Int = 560;
 
 	var background:FlxSprite;
 	var label:FlxText;
@@ -48,7 +49,8 @@ class ChartEditorToast extends FlxSpriteGroup
 		FlxTween.cancelTweensOf(background);
 		FlxTween.cancelTweensOf(label);
 
-		var toastWidth:Int = Std.int(FlxMath.bound(Math.max(MIN_WIDTH, message.length * 9), MIN_WIDTH, FlxG.width - SIDE_MARGIN));
+		// Stable width keeps repeated editor messages on the same BitmapData.
+		var toastWidth:Int = Std.int(FlxMath.bound(MAX_WIDTH, MIN_WIDTH, FlxG.width - SIDE_MARGIN));
 		label.text = message;
 		label.fieldWidth = toastWidth - 36;
 		label.color = FlxColor.WHITE;
@@ -58,8 +60,7 @@ class ChartEditorToast extends FlxSpriteGroup
 		var toastX:Float = (FlxG.width - toastWidth) * 0.5;
 		var toastY:Float = FlxG.height - toastHeight - BOTTOM_MARGIN;
 
-		background.makeGraphic(toastWidth, toastHeight, FlxColor.TRANSPARENT, true);
-		FlxSpriteUtil.drawRoundRect(background, 0, 0, toastWidth, toastHeight, 18, 18, isError ? 0xFFE84D4F : 0xEE202124);
+		MD3ShapeTools.fillRoundRect(background, toastWidth, toastHeight, 9, isError ? 0xFFE84D4F : 0xEE202124);
 		background.setPosition(toastX, toastY + 12);
 		label.setPosition(toastX + 18, toastY + ((toastHeight - label.height) * 0.5) + 12);
 		background.alpha = label.alpha = 0;

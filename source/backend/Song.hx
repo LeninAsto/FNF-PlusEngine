@@ -38,6 +38,19 @@ typedef SwagSong =
 	@:optional var isAnimated:Bool;
 	@:optional var useModcharts:Bool;
 	@:optional var extendedEventValues:Bool;
+	@:optional var extraStrumLines:Array<ExtraStrumLineData>;
+}
+
+typedef ExtraStrumLineData =
+{
+	var id:String;
+	var notes:Array<Dynamic>;
+	@:optional var character:String;
+	@:optional var visible:Bool;
+	@:optional var x:Float;
+	@:optional var y:Float;
+	@:optional var scale:Float;
+	@:optional var spacing:Float;
 }
 
 typedef SwagSection =
@@ -49,6 +62,8 @@ typedef SwagSection =
 	@:optional var gfSection:Bool;
 	@:optional var bpm:Float;
 	@:optional var changeBPM:Bool;
+	/** Activates the next declared Extra StrumLine when this section begins. */
+	@:optional var addStrumLine:Bool;
 }
 
 // ── psych_v2 typedefs ────────────────────────────────────────────────────────

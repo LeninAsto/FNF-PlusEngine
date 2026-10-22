@@ -54,6 +54,7 @@ import shaders.ErrorHandledShader;
 import objects.VideoSprite;
 import objects.Note.EventNote;
 import objects.*;
+import objects.StrumLine.StrumLineType;
 import states.stages.*;
 import states.stages.objects.*;
 
@@ -203,6 +204,11 @@ class PlayState extends MusicBeatState
 	public var strumLineNotes:FlxTypedGroup<StrumNote> = new FlxTypedGroup<StrumNote>();
 	public var opponentStrums:FlxTypedGroup<StrumNote> = new FlxTypedGroup<StrumNote>();
 	public var playerStrums:FlxTypedGroup<StrumNote> = new FlxTypedGroup<StrumNote>();
+	/** Flat compatibility group for Lua. It is indexed, but never added to the state. */
+	public var extraStrums:FlxTypedGroup<StrumNote> = new FlxTypedGroup<StrumNote>();
+	public var strumLines:Array<StrumLine> = [];
+	var progressiveExtraStrums:Bool = false;
+	var activeExtraStrumLines:Int = 0;
 	public var grpNoteSplashes:FlxTypedGroup<NoteSplash> = new FlxTypedGroup<NoteSplash>();
 	public var grpHoldSplashes:FlxTypedGroup<SustainSplash> = new FlxTypedGroup<SustainSplash>();
 
@@ -624,6 +630,7 @@ class PlayState extends MusicBeatState
 		uiGroup.add(timeTxt);
 
 		noteGroup.add(strumLineNotes);
+		initStrumLines();
 
 		if(ClientPrefs.data.timeBarType == 'Song Name')
 		{
@@ -1383,6 +1390,12 @@ class PlayState extends MusicBeatState
 			canPause = true;
 			generateStaticArrows(0);
 			generateStaticArrows(1);
+			for (i in 2...strumLines.length)
+				generateStaticArrows(i);
+			if (strumLines.length > 2)
+				layoutStrumLines();
+			captureDefaultStrumPositions();
+			configureProgressiveStrumLines();
 			for (i in 0...playerStrums.length) {
 				setOnScripts('defaultPlayerStrumX' + i, playerStrums.members[i].x);
 				setOnScripts('defaultPlayerStrumY' + i, playerStrums.members[i].y);
@@ -1391,6 +1404,14 @@ class PlayState extends MusicBeatState
 				setOnScripts('defaultOpponentStrumX' + i, opponentStrums.members[i].x);
 				setOnScripts('defaultOpponentStrumY' + i, opponentStrums.members[i].y);
 				//if(ClientPrefs.data.middleScroll) opponentStrums.members[i].visible = false;
+			}
+			for (i in 0...extraStrums.length) {
+				setOnScripts('defaultExtraStrumX' + i, extraStrums.members[i].x);
+				setOnScripts('defaultExtraStrumY' + i, extraStrums.members[i].y);
+			}
+			for (i in 0...strumLineNotes.length) {
+				setOnScripts('defaultStrumX' + i, strumLineNotes.members[i].x);
+				setOnScripts('defaultStrumY' + i, strumLineNotes.members[i].y);
 			}
 
 			startedCountdown = true;
@@ -1846,6 +1867,9 @@ class PlayState extends MusicBeatState
 		}
 
 		stagesFunc(function(stage:BaseStage) stage.startSong());
+		// Section 0 does not emit sectionHit in the classic beat-state flow.
+		// Sync it here so a chart can introduce its first extra line at song start.
+		syncProgressiveStrumLines(0);
 
 		// Song duration in a float, useful for the time left feature
 		songLength = FlxG.sound.music.length;
@@ -1971,9 +1995,10 @@ class PlayState extends MusicBeatState
 				var noteType:String = chartNote.noteType;
 				var gottaHitNote:Bool = chartNote.gottaHit;
 				var mustPress:Bool = gottaHitNote;
+				var strumLineIndex:Int = chartNote.strumLineIndex >= 0 ? chartNote.strumLineIndex : (mustPress ? 1 : 0);
 
 				// A map avoids rescanning every generated note for each chart entry.
-				var chartNoteKey:String = '$spawnTime|$noteColumn|$mustPress|$noteType';
+				var chartNoteKey:String = '$spawnTime|$noteColumn|$strumLineIndex|$noteType';
 				var evilNote:Note = chartNotes.get(chartNoteKey);
 				if (evilNote != null)
 				{
@@ -1993,6 +2018,7 @@ class PlayState extends MusicBeatState
 				swagNote.gfNote = chartNote.gfNote;
 				swagNote.animSuffix = chartNote.altAnim ? "-alt" : "";
 				swagNote.mustPress = mustPress;
+				swagNote.strumLineIndex = strumLineIndex;
 				swagNote.sustainLength = holdLength;
 				swagNote.noteType = noteType;
 				swagNote.noteDensity = chartNote.density;
@@ -2013,6 +2039,7 @@ class PlayState extends MusicBeatState
 						sustainNote.isSustainEnd = (susNote == roundSus - 1);
 						sustainNote.animSuffix = swagNote.animSuffix;
 						sustainNote.mustPress = swagNote.mustPress;
+						sustainNote.strumLineIndex = swagNote.strumLineIndex;
 						sustainNote.gfNote = swagNote.gfNote;
 						sustainNote.noteType = swagNote.noteType;
 						sustainNote.scrollFactor.set();
@@ -2172,8 +2199,268 @@ class PlayState extends MusicBeatState
 	}
 
 	public var skipArrowStartTween:Bool = false; //for lua
+
+	function initStrumLines():Void
+	{
+		strumLines.resize(0);
+		extraStrums.clear();
+		strumLines.push(new StrumLine('opponent', 0, StrumLineType.OPPONENT, opponentStrums, 'dad'));
+		strumLines.push(new StrumLine('player', 1, StrumLineType.PLAYER, playerStrums, 'boyfriend'));
+		if (SONG == null || SONG.extraStrumLines == null) return;
+
+		var used:Map<String, Bool> = ['opponent' => true, 'player' => true];
+		for (data in SONG.extraStrumLines)
+		{
+			if (data == null || strumLines.length >= 7) break;
+			var id = data.id == null ? '' : data.id.trim().toLowerCase();
+			if (id.length == 0 || used.exists(id))
+			{
+				FlxG.log.warn('Ignored invalid or duplicate Extra StrumLine id: "${data.id}"');
+				continue;
+			}
+			used.set(id, true);
+			var group = new FlxTypedGroup<StrumNote>();
+			var line = new StrumLine(id, strumLines.length, StrumLineType.ADDITIONAL, group,
+				data.character == null ? 'gf' : data.character, data.visible != false);
+			line.x = data.x;
+			line.y = data.y;
+			line.scale = data.scale;
+			line.spacing = data.spacing;
+			strumLines.push(line);
+		}
+	}
+
+	public function getStrumLine(id:String):Null<StrumLine>
+	{
+		if (id == null) return null;
+		var key = id.trim().toLowerCase();
+		for (line in strumLines) if (line.id == key) return line;
+		return null;
+	}
+
+	public inline function getStrumLineForNote(note:Note):Null<StrumLine>
+	{
+		if (note == null) return null;
+		var idx = note.strumLineIndex >= 0 ? note.strumLineIndex : (note.mustPress ? 1 : 0);
+		return idx >= 0 && idx < strumLines.length ? strumLines[idx] : null;
+	}
+
+	public function getStrumForNote(note:Note):Null<StrumNote>
+	{
+		var line = getStrumLineForNote(note);
+		return line == null ? null : line.receptor(Note.normalizeNoteData(note.noteData));
+	}
+
+	public function setStrumLinePosition(id:String, x:Float, y:Float):Bool
+	{
+		var line = getStrumLine(id);
+		if (line == null || line.receptors.length == 0) return false;
+		var first = line.receptors.members[0];
+		if (first == null) return false;
+		var dx = x - first.x;
+		var dy = y - first.y;
+		for (strum in line.receptors.members) if (strum != null) { strum.x += dx; strum.y += dy; }
+		return true;
+	}
+
+	public function setStrumLineScale(id:String, value:Float):Bool
+	{
+		var line = getStrumLine(id);
+		if (line == null || !Math.isFinite(value) || value <= 0) return false;
+		var ratio = value / Math.max(0.0001, line.effectiveScale);
+		line.effectiveScale = value;
+		for (strum in line.receptors.members) if (strum != null) { strum.scale.scale(ratio); strum.updateHitbox(); }
+		for (note in unspawnNotes) if (note != null && !note.spawned && getStrumLineForNote(note) == line)
+		{
+			note.scale.x *= ratio;
+			if (!note.isSustainNote) note.scale.y *= ratio;
+			note.updateHitbox();
+		}
+		if (notes != null) for (note in notes) if (note != null && getStrumLineForNote(note) == line)
+		{
+			note.scale.x *= ratio;
+			if (!note.isSustainNote) note.scale.y *= ratio;
+			note.updateHitbox();
+		}
+		return true;
+	}
+
+	public function setStrumLineSpacing(id:String, value:Float):Bool
+	{
+		var line = getStrumLine(id);
+		if (line == null || !Math.isFinite(value) || value <= 0 || line.receptors.length == 0) return false;
+		line.effectiveSpacing = value;
+		var first = line.receptors.members[0];
+		if (first == null) return false;
+		for (lane in 1...line.receptors.length)
+		{
+			var strum = line.receptors.members[lane];
+			if (strum != null) strum.x = first.x + lane * Note.swagWidth * line.effectiveScale * value;
+		}
+		return true;
+	}
+
+	public function setStrumLineVisible(id:String, value:Bool):Bool
+	{
+		var line = getStrumLine(id);
+		if (line == null) return false;
+		line.visible = value;
+		var runtimeVisible = value && line.active;
+		for (strum in line.receptors.members) if (strum != null) strum.visible = runtimeVisible;
+		for (note in unspawnNotes) if (note != null && !note.spawned && getStrumLineForNote(note) == line) note.visible = runtimeVisible;
+		if (notes != null) for (note in notes) if (note != null && getStrumLineForNote(note) == line) note.visible = runtimeVisible;
+		return true;
+	}
+
+	function configureProgressiveStrumLines():Void
+	{
+		progressiveExtraStrums = false;
+		activeExtraStrumLines = 0;
+		if (SONG != null && SONG.notes != null)
+			for (section in SONG.notes)
+				if (section != null && section.addStrumLine == true)
+				{
+					progressiveExtraStrums = true;
+					break;
+				}
+
+		for (i in 2...strumLines.length)
+		{
+			var line = strumLines[i];
+			line.active = !progressiveExtraStrums;
+			if (!line.active)
+			{
+				for (strum in line.receptors.members) if (strum != null) { FlxTween.cancelTweensOf(strum); strum.visible = false; strum.alpha = 0; }
+				for (note in unspawnNotes) if (note != null && getStrumLineForNote(note) == line) note.visible = false;
+			}
+			else activeExtraStrumLines++;
+		}
+	}
+
+	function syncProgressiveStrumLines(sectionIndex:Int, animate:Bool = true):Void
+	{
+		if (!progressiveExtraStrums || SONG == null || SONG.notes == null) return;
+		var wanted:Int = 0;
+		for (i in 0...Std.int(Math.min(sectionIndex + 1, SONG.notes.length)))
+			if (SONG.notes[i] != null && SONG.notes[i].addStrumLine == true) wanted++;
+		wanted = Std.int(Math.min(wanted, strumLines.length - 2));
+		while (activeExtraStrumLines < wanted)
+			activateExtraStrumLine(2 + activeExtraStrumLines++, animate);
+	}
+
+	function activateExtraStrumLine(index:Int, animate:Bool):Void
+	{
+		if (index < 2 || index >= strumLines.length) return;
+		var line = strumLines[index];
+		if (line.active) return;
+		line.active = true;
+		for (lane in 0...line.receptors.length)
+		{
+			var strum = line.receptors.members[lane];
+			if (strum == null) continue;
+			FlxTween.cancelTweensOf(strum);
+			strum.visible = line.visible;
+			if (line.visible && animate)
+			{
+				var targetY = strum.y;
+				strum.y += ClientPrefs.data.downScroll ? -18 : 18;
+				strum.alpha = 0;
+				FlxTween.tween(strum, {alpha: 1, y: targetY}, 0.35, {ease: FlxEase.backOut, startDelay: lane * 0.045});
+			}
+			else strum.alpha = line.visible ? 1 : 0;
+		}
+		for (note in unspawnNotes) if (note != null && !note.spawned && getStrumLineForNote(note) == line) note.visible = line.visible;
+		if (notes != null) for (note in notes) if (note != null && getStrumLineForNote(note) == line) note.visible = line.visible;
+		callOnScripts('onStrumLineAdded', [line.id, line.index]);
+	}
+
+	function captureDefaultStrumPositions():Void
+	{
+		for (line in strumLines)
+		{
+			line.defaultX.resize(0);
+			line.defaultY.resize(0);
+			for (strum in line.receptors.members)
+				if (strum != null)
+				{
+					line.defaultX.push(strum.x);
+					line.defaultY.push(strum.y);
+				}
+		}
+	}
+
+	function layoutStrumLines():Void
+	{
+		var visible:Array<StrumLine> = [];
+		for (line in strumLines) if (line.visible) visible.push(line);
+		if (visible.length == 0) return;
+
+		var gap:Float = 10;
+		var available:Float = Math.max(1, HudSafeZone.width() - 24);
+		var autoScale:Float = Math.min(1, (available - gap * (visible.length - 1)) / (visible.length * Note.swagWidth * 4));
+		autoScale = Math.max(0.25, autoScale);
+		var ordered:Array<StrumLine> = [];
+		if (ClientPrefs.data.middleScroll)
+		{
+			var cpu:Array<StrumLine> = [for (line in visible) if (line.index != 1) line];
+			var split = Math.ceil(cpu.length / 2);
+			for (i in 0...split) ordered.push(cpu[i]);
+			var player = strumLines[1];
+			if (player.visible) ordered.push(player);
+			for (i in split...cpu.length) ordered.push(cpu[i]);
+		}
+		else
+		{
+			if (strumLines[0].visible) ordered.push(strumLines[0]);
+			for (i in 2...strumLines.length) if (strumLines[i].visible) ordered.push(strumLines[i]);
+			if (strumLines[1].visible) ordered.push(strumLines[1]);
+		}
+
+		var totalWidth:Float = 0;
+		for (line in ordered)
+		{
+			line.effectiveScale = line.scale == null ? autoScale : Math.max(0.1, line.scale);
+			line.effectiveSpacing = line.spacing == null ? 1 : Math.max(0.1, line.spacing);
+			totalWidth += Note.swagWidth * line.effectiveScale * (3 * line.effectiveSpacing + 1);
+		}
+		totalWidth += gap * (ordered.length - 1);
+		var cursor:Float = HudSafeZone.x() + (HudSafeZone.width() - totalWidth) * 0.5;
+		var baseY:Float = HudSafeZone.y() + (ClientPrefs.data.downScroll ? HudSafeZone.height() - 150 : 50);
+		for (line in ordered)
+		{
+			var left = line.x == null ? cursor : line.x;
+			var y = line.y == null ? baseY : line.y;
+			for (lane in 0...line.receptors.length)
+			{
+				var strum = line.receptors.members[lane];
+				if (strum == null) continue;
+				var baseScaleX = strum.scale.x;
+				var baseScaleY = strum.scale.y;
+				strum.scale.set(baseScaleX * line.effectiveScale, baseScaleY * line.effectiveScale);
+				strum.updateHitbox();
+				strum.setPosition(left + lane * Note.swagWidth * line.effectiveScale * line.effectiveSpacing, y);
+				strum.visible = line.visible;
+			}
+			cursor += Note.swagWidth * line.effectiveScale * (3 * line.effectiveSpacing + 1) + gap;
+		}
+
+		for (note in unspawnNotes)
+			if (note != null)
+			{
+				var line = getStrumLineForNote(note);
+				if (line != null)
+				{
+					note.scale.x *= line.effectiveScale;
+					if (!note.isSustainNote) note.scale.y *= line.effectiveScale;
+					note.updateHitbox();
+				}
+			}
+	}
+
 	private function generateStaticArrows(player:Int):Void
 	{
+		if (player < 0 || player >= strumLines.length) return;
+		var line = strumLines[player];
 		var strumLineX:Float = ClientPrefs.data.middleScroll ? STRUM_X_MIDDLESCROLL : STRUM_X;
 		var strumLineY:Float = HudSafeZone.y() + (ClientPrefs.data.downScroll ? (HudSafeZone.height() - 150) : 50);
 
@@ -2197,7 +2484,7 @@ class PlayState extends MusicBeatState
 
 			if (player == 1)
 				playerStrums.add(babyArrow);
-			else
+			else if (player == 0)
 			{
 				if (ClientPrefs.data.middleScroll)
 				{
@@ -2207,9 +2494,16 @@ class PlayState extends MusicBeatState
 				}
 				opponentStrums.add(babyArrow);
 			}
+			else
+			{
+				line.receptors.add(babyArrow);
+				extraStrums.add(babyArrow);
+				babyArrow.visible = line.visible;
+			}
 
 			strumLineNotes.add(babyArrow);
-			babyArrow.playerPosition();
+			if (player < 2) babyArrow.playerPosition();
+			else babyArrow.x += Note.swagWidth * i;
 		}
 	}
 
@@ -2533,7 +2827,7 @@ class PlayState extends MusicBeatState
 			var time:Float = spawnTime;
 			#if MODCHART_ALLOWED
 			if (Manager.instance != null)
-				time = Manager.instance.getNoteSpawnTime(queuedNote.mustPress ? 1 : 0, time);
+				time = Manager.instance.getNoteSpawnTime(queuedNote.strumLineIndex >= 0 ? queuedNote.strumLineIndex : (queuedNote.mustPress ? 1 : 0), time);
 			#end
 			// Chart time advances playbackRate times faster than real time. Scale the
 			// final Manager/fallback window so notes still enter from off-screen.
@@ -2549,6 +2843,8 @@ class PlayState extends MusicBeatState
 				else
 					notes.insert(0, dunceNote);
 				dunceNote.spawned = true;
+				var ownerLine = getStrumLineForNote(dunceNote);
+				if (ownerLine != null) dunceNote.visible = ownerLine.visible && ownerLine.active;
 
 				if (!skipDenseBotplayNoteScripts())
 				{
@@ -2590,13 +2886,26 @@ class PlayState extends MusicBeatState
 								continue;
 							}
 
-							var strumGroup:FlxTypedGroup<StrumNote> = playerStrums;
-							if(!daNote.mustPress) strumGroup = opponentStrums;
-
-							var strum:StrumNote = strumGroup.members[daNote.noteData];
+							var strum:StrumNote = getStrumForNote(daNote);
+							if (strum == null)
+							{
+								i++;
+								continue;
+							}
 							daNote.followStrumNote(strum, fakeCrochet, songSpeed / playbackRate);
 
-							if(daNote.mustPress)
+							if(daNote.strumLineIndex >= 2)
+							{
+								var extraLine = getStrumLineForNote(daNote);
+								if (extraLine != null && extraLine.active && daNote.wasGoodHit && !daNote.hitByOpponent && !daNote.ignoreNote)
+									extraNoteHit(daNote);
+								else if (extraLine != null && !extraLine.active && daNote.wasGoodHit)
+								{
+									daNote.hitByOpponent = true;
+									if (!daNote.isSustainNote) invalidateNote(daNote);
+								}
+							}
+							else if(daNote.mustPress)
 							{
 								if(cpuControlled && !daNote.blockHit && daNote.canBeHit && (daNote.isSustainNote || daNote.strumTime <= Conductor.songPosition))
 								{
@@ -2895,6 +3204,17 @@ class PlayState extends MusicBeatState
 		if(Math.isNaN(flValue4)) flValue4 = null;
 
 		switch(eventName) {
+			case 'Set Strum Line':
+				var lineId = value1 == null ? '' : value1.trim();
+				var property = value2 == null ? '' : value2.trim().toLowerCase();
+				switch (property)
+				{
+					case 'visible': setStrumLineVisible(lineId, value3 == '1' || value3.toLowerCase() == 'true');
+					case 'x': if (flValue3 != null) { var line = getStrumLine(lineId); if (line != null && line.receptor(0) != null) setStrumLinePosition(lineId, flValue3, line.receptor(0).y); }
+					case 'y': if (flValue3 != null) { var line = getStrumLine(lineId); if (line != null && line.receptor(0) != null) setStrumLinePosition(lineId, line.receptor(0).x, flValue3); }
+					case 'scale': if (flValue3 != null) setStrumLineScale(lineId, flValue3);
+					case 'spacing': if (flValue3 != null) setStrumLineSpacing(lineId, flValue3);
+				}
 			case 'Hey!':
 				var value:Int = 2;
 				switch(value1.toLowerCase().trim()) {
@@ -4793,6 +5113,48 @@ class PlayState extends MusicBeatState
 		if (!note.isSustainNote) invalidateNote(note);
 	}
 
+	function extraNoteHit(note:Note):Void
+	{
+		var line = getStrumLineForNote(note);
+		if (line == null || line.index < 2) return;
+		var noteIndex = notes.members.indexOf(note);
+		var result:Dynamic = callOnLuas('extraNoteHitPre', [noteIndex, note.noteData, note.noteType, note.isSustainNote, line.id]);
+		if (result != LuaUtils.Function_Stop && result != LuaUtils.Function_StopHScript && result != LuaUtils.Function_StopAll)
+			result = callOnHScript('extraNoteHitPre', [note, line.id]);
+		if (result == LuaUtils.Function_Stop) return;
+
+		if (!note.noAnimation && line.character != 'none')
+		{
+			var char:Character = switch (line.character)
+			{
+				case 'dad', 'opponent': opponentChar();
+				case 'boyfriend', 'bf', 'player': playerChar();
+				case 'gf', 'girlfriend': gf;
+				default: gf;
+			}
+			if (char != null)
+			{
+				var anim = singAnimations[Note.normalizeNoteData(note.noteData)] + note.animSuffix;
+				if (note.isSustainNote && char.animation.exists(anim + '-hold')) anim += '-hold';
+				if (!note.isSustainNote || char.getAnimationName() != anim) char.playAnim(anim, true);
+				char.holdTimer = 0;
+			}
+		}
+
+		var strum = line.receptor(Note.normalizeNoteData(note.noteData));
+		if (strum != null)
+		{
+			strum.playAnim('confirm', true);
+			strum.resetAnim = Conductor.stepCrochet * 1.25 / 1000 / playbackRate;
+		}
+		note.hitByOpponent = true;
+		if (!note.isSustainNote && !note.noteSplashData.disabled) spawnNoteSplashOnNote(note);
+		spawnHoldSplashOnNote(note);
+		callOnLuas('extraNoteHit', [noteIndex, note.noteData, note.noteType, note.isSustainNote, line.id]);
+		callOnHScript('extraNoteHit', [note, line.id]);
+		if (!note.isSustainNote) invalidateNote(note);
+	}
+
 	public function goodNoteHit(note:Note):Void
 	{
 		if(note.wasGoodHit) return;
@@ -4916,9 +5278,7 @@ class PlayState extends MusicBeatState
 			|| note.noteSplashData.disabled || note.tail == null || note.tail.length == 0)
 			return;
 
-		var strums = note.mustPress ? playerStrums : opponentStrums;
-		var lane:Int = Note.normalizeNoteData(note.noteData);
-		var strum:StrumNote = strums.members[lane];
+		var strum:StrumNote = getStrumForNote(note);
 		if (strum == null)
 			return;
 
@@ -5214,6 +5574,7 @@ class PlayState extends MusicBeatState
 	{
 		if (SONG.notes[curSection] != null)
 		{
+			syncProgressiveStrumLines(curSection);
 			if (generatedMusic && !endingSong && !isCameraOnForcedPos)
 				moveCameraSection();
 

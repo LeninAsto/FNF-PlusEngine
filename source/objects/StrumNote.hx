@@ -20,6 +20,7 @@ class StrumNote extends FlxSprite
 	public var sustainReduce:Bool = true;
 
 	private var player:Int;
+	public var strumLineIndex(default, null):Int;
 
 	public var texture(default, set):String = null;
 
@@ -43,6 +44,7 @@ class StrumNote extends FlxSprite
 
 		noteData = leData;
 		this.player = player;
+		this.strumLineIndex = player;
 		this.noteData = leData;
 		this.ID = noteData;
 		super(x, y);

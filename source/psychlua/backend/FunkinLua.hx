@@ -218,6 +218,16 @@ class FunkinLua
 				set('defaultOpponentStrumX' + i, 0);
 				set('defaultOpponentStrumY' + i, 0);
 			}
+			for (i in 0...20)
+			{
+				set('defaultExtraStrumX' + i, 0);
+				set('defaultExtraStrumY' + i, 0);
+			}
+			for (i in 0...28)
+			{
+				set('defaultStrumX' + i, 0);
+				set('defaultStrumY' + i, 0);
+			}
 
 			// Default character data
 			set('defaultBoyfriendX', game.BF_X);
@@ -860,6 +870,78 @@ class FunkinLua
 		{
 			return noteTweenFunction(tag, note, {direction: value}, duration, ease);
 		});
+
+		Lua_helper.add_callback(lua, "getStrumLineCount", function():Int
+			return PlayState.instance == null ? 0 : PlayState.instance.strumLines.length);
+		Lua_helper.add_callback(lua, "getExtraStrumLineCount", function():Int
+			return PlayState.instance == null ? 0 : Std.int(Math.max(0, PlayState.instance.strumLines.length - 2)));
+		Lua_helper.add_callback(lua, "getStrumLineIndex", function(id:String):Int
+		{
+			var line = PlayState.instance == null ? null : PlayState.instance.getStrumLine(id);
+			return line == null ? -1 : line.index;
+		});
+		Lua_helper.add_callback(lua, "getStrumLineStrumIndex", function(id:String, lane:Int):Int
+		{
+			var line = PlayState.instance == null ? null : PlayState.instance.getStrumLine(id);
+			return line == null || lane < 0 || lane >= 4 ? -1 : line.index * 4 + lane;
+		});
+		Lua_helper.add_callback(lua, "getDefaultStrumLineX", function(id:String, lane:Int):Float
+		{
+			var line = PlayState.instance == null ? null : PlayState.instance.getStrumLine(id);
+			return line == null || lane < 0 || lane >= line.defaultX.length ? 0 : line.defaultX[lane];
+		});
+		Lua_helper.add_callback(lua, "getDefaultStrumLineY", function(id:String, lane:Int):Float
+		{
+			var line = PlayState.instance == null ? null : PlayState.instance.getStrumLine(id);
+			return line == null || lane < 0 || lane >= line.defaultY.length ? 0 : line.defaultY[lane];
+		});
+		Lua_helper.add_callback(lua, "getStrumLineX", function(id:String, lane:Int):Float
+		{
+			var line = PlayState.instance == null ? null : PlayState.instance.getStrumLine(id);
+			var strum = line == null ? null : line.receptor(lane);
+			return strum == null ? 0 : strum.x;
+		});
+		Lua_helper.add_callback(lua, "getStrumLineY", function(id:String, lane:Int):Float
+		{
+			var line = PlayState.instance == null ? null : PlayState.instance.getStrumLine(id);
+			var strum = line == null ? null : line.receptor(lane);
+			return strum == null ? 0 : strum.y;
+		});
+		Lua_helper.add_callback(lua, "setStrumLinePosition", function(id:String, x:Float, y:Float):Bool
+			return PlayState.instance != null && PlayState.instance.setStrumLinePosition(id, x, y));
+		Lua_helper.add_callback(lua, "setStrumLineScale", function(id:String, scale:Float):Bool
+			return PlayState.instance != null && PlayState.instance.setStrumLineScale(id, scale));
+		Lua_helper.add_callback(lua, "setStrumLineSpacing", function(id:String, spacing:Float):Bool
+			return PlayState.instance != null && PlayState.instance.setStrumLineSpacing(id, spacing));
+		Lua_helper.add_callback(lua, "setStrumLineVisible", function(id:String, visible:Bool):Bool
+			return PlayState.instance != null && PlayState.instance.setStrumLineVisible(id, visible));
+		Lua_helper.add_callback(lua, "setStrumLineStrumX", function(id:String, lane:Int, value:Float):Bool
+		{
+			var line = PlayState.instance == null ? null : PlayState.instance.getStrumLine(id);
+			var strum = line == null ? null : line.receptor(lane);
+			if (strum == null) return false;
+			strum.x = value;
+			return true;
+		});
+		Lua_helper.add_callback(lua, "setStrumLineStrumY", function(id:String, lane:Int, value:Float):Bool
+		{
+			var line = PlayState.instance == null ? null : PlayState.instance.getStrumLine(id);
+			var strum = line == null ? null : line.receptor(lane);
+			if (strum == null) return false;
+			strum.y = value;
+			return true;
+		});
+
+		Lua_helper.add_callback(lua, "strumLineTweenX", function(tag:String, id:String, lane:Int, value:Dynamic, duration:Float, ?ease:String = 'linear')
+			return strumLineTweenFunction(tag, id, lane, {x: value}, duration, ease));
+		Lua_helper.add_callback(lua, "strumLineTweenY", function(tag:String, id:String, lane:Int, value:Dynamic, duration:Float, ?ease:String = 'linear')
+			return strumLineTweenFunction(tag, id, lane, {y: value}, duration, ease));
+		Lua_helper.add_callback(lua, "strumLineTweenAngle", function(tag:String, id:String, lane:Int, value:Dynamic, duration:Float, ?ease:String = 'linear')
+			return strumLineTweenFunction(tag, id, lane, {angle: value}, duration, ease));
+		Lua_helper.add_callback(lua, "strumLineTweenAlpha", function(tag:String, id:String, lane:Int, value:Dynamic, duration:Float, ?ease:String = 'linear')
+			return strumLineTweenFunction(tag, id, lane, {alpha: value}, duration, ease));
+		Lua_helper.add_callback(lua, "strumLineTweenDirection", function(tag:String, id:String, lane:Int, value:Dynamic, duration:Float, ?ease:String = 'linear')
+			return strumLineTweenFunction(tag, id, lane, {direction: value}, duration, ease));
 		Lua_helper.add_callback(lua, "mouseClicked", function(?button:String = 'left')
 		{
 			var click:Bool = FlxG.mouse.justPressed;
@@ -2487,6 +2569,14 @@ class FunkinLua
 		else
 			FlxTween.tween(strumNote, data, duration, {ease: LuaUtils.getTweenEaseByString(ease)});
 		return null;
+	}
+
+	function strumLineTweenFunction(tag:String, id:String, lane:Int, data:Dynamic, duration:Float, ease:String)
+	{
+		if (PlayState.instance == null) return null;
+		var line = PlayState.instance.getStrumLine(id);
+		if (line == null || lane < 0 || lane >= 4) return null;
+		return noteTweenFunction(tag, line.index * 4 + lane, data, duration, ease);
 	}
 
 	public static function luaTrace(text:String, ignoreCheck:Bool = false, deprecated:Bool = false, color:FlxColor = FlxColor.WHITE)

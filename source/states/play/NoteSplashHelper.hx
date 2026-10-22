@@ -32,7 +32,7 @@ class NoteSplashHelper
 		if (state == null || note == null)
 			return;
 
-		var strum:StrumNote = state.playerStrums.members[note.noteData];
+		var strum:StrumNote = state.getStrumForNote(note);
 		if (strum != null)
 			spawn(state, strum.x, strum.y, note.noteData, note, strum);
 	}

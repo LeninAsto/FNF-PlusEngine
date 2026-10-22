@@ -250,6 +250,17 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 	var autoSaveIcon:FlxSprite;
 	var outputToast:ChartEditorToast;
+	var extraLineDropDown:PsychUIDropDownMenu;
+	var extraLineIdInput:PsychUIInputText;
+	var extraLineCharacterDropDown:PsychUIDropDownMenu;
+	var extraLineVisibleCheck:PsychUICheckBox;
+	var extraLineXInput:PsychUIInputText;
+	var extraLineYInput:PsychUIInputText;
+	var extraLineScaleInput:PsychUIInputText;
+	var extraLineSpacingInput:PsychUIInputText;
+	var extraAddButton:PsychUIButton;
+	var extraRemoveButton:PsychUIButton;
+	var selectedExtraLine:Int = 0;
 
 	var selectionStart:FlxPoint = FlxPoint.get();
 	var selectionBox:FlxSprite;
@@ -364,6 +375,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 		changeTheme(chartEditorSave.data.theme != null ? chartEditorSave.data.theme : DEFAULT, false);
 
+		refreshStrumGridMetrics();
 		createGrids();
 
 		waveformSprite = new FlxSprite(gridBg.x + (SHOW_EVENT_COLUMN ? GRID_SIZE : 0), 0).makeGraphic(1, 1, 0x00FFFFFF);
@@ -507,7 +519,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		selectedEventPanelText.scrollFactor.set();
 		selectedEventBox.getTab('Events').menu.add(selectedEventPanelText);
 
-		mainBox = new PsychUIBox(mainBoxPosition.x, mainBoxPosition.y, 340, 280, ['Charting', 'Data', 'Events', 'Note', 'Section', 'Song', 'Meta']);
+		mainBox = new PsychUIBox(mainBoxPosition.x, mainBoxPosition.y, 340, 280, ['Charting', 'Data', 'Events', 'Note', 'Section', 'Song', 'Strums', 'Meta']);
 		localizeTabs(mainBox, 'main');
 		mainBox.selectedName = 'Song';
 		mainBox.scrollFactor.set();
@@ -582,6 +594,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		addNoteTab();
 		addSectionTab();
 		addSongTab();
+		addStrumsTab();
 		addMetaTab();
 
 		////// for upper box
@@ -2387,6 +2400,15 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		return stacked;
 	}
 
+	function refreshStrumGridMetrics():Void
+	{
+		var extras = PlayState.SONG != null && PlayState.SONG.extraStrumLines != null
+			? Std.int(Math.min(5, PlayState.SONG.extraStrumLines.length)) : 0;
+		GRID_PLAYERS = 2 + extras;
+		var columns = GRID_PLAYERS * GRID_COLUMNS_PER_PLAYER + (SHOW_EVENT_COLUMN ? 1 : 0);
+		GRID_SIZE = Std.int(FlxMath.bound(Math.floor((FlxG.width - 260) / Math.max(1, columns)), 24, 40));
+	}
+
 	function createGrids()
 	{
 		var destroyed:Bool = false;
@@ -2653,6 +2675,27 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				if (note != null)
 					notes.push(createNote(note, secNum));
 
+		if (PlayState.SONG.extraStrumLines != null)
+		{
+			var count = Std.int(Math.min(5, PlayState.SONG.extraStrumLines.length));
+			for (extraIndex in 0...count)
+			{
+				var line = PlayState.SONG.extraStrumLines[extraIndex];
+				if (line == null || line.notes == null) continue;
+				for (raw in line.notes)
+				{
+					if (raw == null || raw.length < 3) continue;
+					var lane = Std.int(raw[1]);
+					if (lane < 0 || lane >= GRID_COLUMNS_PER_PLAYER) continue;
+					var editorData:Array<Dynamic> = cast(raw, Array<Dynamic>).copy();
+					editorData[1] = (2 + extraIndex) * GRID_COLUMNS_PER_PLAYER + lane;
+					var meta = createNote(editorData, sectionIndexForTime(editorData[0]));
+					meta.strumLineIndex = 2 + extraIndex;
+					notes.push(meta);
+				}
+			}
+		}
+
 		for (eventNum => event in PlayState.SONG.events)
 			if (event != null
 				&& (cachedSectionTimes.length < 1
@@ -2679,6 +2722,8 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 		var swagNote:MetaNote = new MetaNote(daStrumTime, daNoteData, note);
 		swagNote.mustPress = gottaHitNote;
+		var bank:Int = Math.floor(note[1] / GRID_COLUMNS_PER_PLAYER);
+		swagNote.strumLineIndex = bank == 0 ? 1 : (bank == 1 ? 0 : bank);
 		swagNote.setSustainLength(note[2], cachedSectionCrochets[secNum] / 4, curZoom);
 		swagNote.gfNote = (section.gfSection && gottaHitNote == section.mustHitSection);
 		swagNote.noteType = note[3];
@@ -2893,6 +2938,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			mustHitCheckBox.checked = sec.mustHitSection;
 			gfSectionCheckBox.checked = sec.gfSection;
 			altAnimSectionCheckBox.checked = sec.altAnim;
+			addStrumLineSectionCheckBox.checked = sec.addStrumLine == true;
 			changeBpmCheckBox.checked = sec.changeBPM;
 			changeBpmStepper.value = Conductor.bpm;
 			beatsPerSecStepper.value = sec.sectionBeats;
@@ -3038,7 +3084,19 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		for (i in 1...GRID_PLAYERS + 1)
 		{
 			// trace('adding iconP$i');
-			var data:CharacterFile = loadCharacterFile(Reflect.field(PlayState.SONG, 'player$i'));
+			var character:String = Reflect.field(PlayState.SONG, 'player$i');
+			if (i > 2 && PlayState.SONG.extraStrumLines != null && i - 3 < PlayState.SONG.extraStrumLines.length)
+			{
+				var target = PlayState.SONG.extraStrumLines[i - 3].character;
+				character = switch (target == null ? 'gf' : target.toLowerCase())
+				{
+					case 'dad', 'opponent': PlayState.SONG.player2;
+					case 'boyfriend', 'bf', 'player': PlayState.SONG.player1;
+					case 'none': null;
+					default: PlayState.SONG.gfVersion;
+				}
+			}
+			var data:CharacterFile = loadCharacterFile(character);
 			Reflect.setField(characterData, 'iconP$i', data != null && data.healthicon != null ? data.healthicon : 'face');
 			Reflect.setField(characterData, 'vocalsP$i', data != null && data.vocals_file != null ? data.vocals_file : '');
 		}
@@ -3622,6 +3680,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	var mustHitCheckBox:PsychUICheckBox;
 	var gfSectionCheckBox:PsychUICheckBox;
 	var altAnimSectionCheckBox:PsychUICheckBox;
+	var addStrumLineSectionCheckBox:PsychUICheckBox;
 
 	var changeBpmCheckBox:PsychUICheckBox;
 	var changeBpmStepper:PsychUINumericStepper;
@@ -3723,8 +3782,13 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			if (sec != null)
 				sec.altAnim = altAnimSectionCheckBox.checked;
 		});
+		addStrumLineSectionCheckBox = new PsychUICheckBox(objX, objY + 22, 'Add StrumLine', 110, function()
+		{
+			var sec = getCurChartSection();
+			if (sec != null) sec.addStrumLine = addStrumLineSectionCheckBox.checked;
+		});
 
-		objY += 40;
+		objY += 55;
 		changeBpmCheckBox = new PsychUICheckBox(objX, objY, chartPhrase('ui.change_bpm', 'Change BPM'), 80, function()
 		{
 			var sec = getCurChartSection();
@@ -3891,6 +3955,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		tab_group.add(mustHitCheckBox);
 		tab_group.add(gfSectionCheckBox);
 		tab_group.add(altAnimSectionCheckBox);
+		tab_group.add(addStrumLineSectionCheckBox);
 
 		tab_group.add(new FlxText(beatsPerSecStepper.x, beatsPerSecStepper.y - 15, 100, chartPhrase('ui.beats_per_section', 'Beats per Section:')));
 		tab_group.add(changeBpmCheckBox);
@@ -4224,6 +4289,152 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		tab_group.add(girlfriendDropDown);
 		tab_group.add(opponentDropDown);
 		tab_group.add(playerDropDown);
+	}
+
+	function addStrumsTab()
+	{
+		var tab = mainBox.getTab('Strums').menu;
+		var ids:Array<String> = extraStrumLineIds();
+		extraLineDropDown = new PsychUIDropDownMenu(10, 30, ids.length > 0 ? ids : ['(none)'], function(index:Int, _:String)
+		{
+			selectedExtraLine = index;
+			loadExtraStrumInputs();
+		}, 150, 6);
+
+		extraLineIdInput = new PsychUIInputText(10, 78, 140, '', 8);
+		extraLineIdInput.onChange = function(_:String, value:String)
+		{
+			var line = selectedExtraStrumData();
+			if (line != null && value.trim().length > 0) line.id = value.trim();
+		};
+		extraLineCharacterDropDown = new PsychUIDropDownMenu(170, 78, ['gf', 'dad', 'boyfriend', 'none'], function(_:Int, value:String)
+		{
+			var line = selectedExtraStrumData();
+			if (line != null) line.character = value;
+		}, 140);
+		extraLineVisibleCheck = new PsychUICheckBox(10, 112, 'Visible', 80, function()
+		{
+			var line = selectedExtraStrumData();
+			if (line != null) line.visible = extraLineVisibleCheck.checked;
+		});
+
+		extraLineXInput = extraLayoutInput(10, 155, 'x');
+		extraLineYInput = extraLayoutInput(90, 155, 'y');
+		extraLineScaleInput = extraLayoutInput(170, 155, 'scale');
+		extraLineSpacingInput = extraLayoutInput(250, 155, 'spacing');
+
+		extraAddButton = new PsychUIButton(10, 205, 'Add', function()
+		{
+			updateChartData();
+			if (PlayState.SONG.extraStrumLines == null) PlayState.SONG.extraStrumLines = [];
+			if (PlayState.SONG.extraStrumLines.length >= 3)
+			{
+				showOutput('StrumLines: maximum is 5 total (Opponent, Player and 3 extras).', true);
+				return;
+			}
+			var id = 'extra${PlayState.SONG.extraStrumLines.length + 1}';
+			PlayState.SONG.extraStrumLines.push({id: id, notes: [], character: 'gf', visible: true});
+			FlxG.resetState();
+		}, 65);
+		extraRemoveButton = new PsychUIButton(80, 205, 'Remove', function()
+		{
+			updateChartData();
+			if (PlayState.SONG.extraStrumLines != null && selectedExtraLine >= 0 && selectedExtraLine < PlayState.SONG.extraStrumLines.length)
+			{
+				PlayState.SONG.extraStrumLines.splice(selectedExtraLine, 1);
+				FlxG.resetState();
+			}
+		}, 70);
+		var upButton = new PsychUIButton(160, 205, 'Up', function() reorderExtraStrum(-1), 55);
+		var downButton = new PsychUIButton(220, 205, 'Down', function() reorderExtraStrum(1), 65);
+
+		tab.add(new FlxText(10, 15, 160, 'Extra StrumLine:'));
+		tab.add(new FlxText(10, 63, 100, 'ID:'));
+		tab.add(new FlxText(170, 63, 120, 'Character:'));
+		tab.add(new FlxText(10, 140, 315, 'Layout (blank = automatic):'));
+		tab.add(extraLineDropDown);
+		tab.add(extraLineIdInput);
+		tab.add(extraLineCharacterDropDown);
+		tab.add(extraLineVisibleCheck);
+		tab.add(extraLineXInput); tab.add(extraLineYInput); tab.add(extraLineScaleInput); tab.add(extraLineSpacingInput);
+		tab.add(extraAddButton); tab.add(extraRemoveButton); tab.add(upButton); tab.add(downButton);
+		loadExtraStrumInputs();
+		updateExtraStrumButtons();
+	}
+
+	function extraLayoutInput(x:Float, y:Float, field:String):PsychUIInputText
+	{
+		var input = new PsychUIInputText(x, y, 70, '', 8);
+		input.onChange = function(_:String, value:String)
+		{
+			var line = selectedExtraStrumData();
+			if (line == null) return;
+			var trimmed = value.trim();
+			if (trimmed.length == 0) Reflect.deleteField(line, field);
+			else
+			{
+				var number = Std.parseFloat(trimmed);
+				if (!Math.isNaN(number)) Reflect.setField(line, field, number);
+			}
+		};
+		return input;
+	}
+
+	function extraStrumLineIds():Array<String>
+	{
+		if (PlayState.SONG == null || PlayState.SONG.extraStrumLines == null) return [];
+		return [for (line in PlayState.SONG.extraStrumLines) line == null ? '(invalid)' : line.id];
+	}
+
+	function selectedExtraStrumData():Dynamic
+	{
+		if (PlayState.SONG == null || PlayState.SONG.extraStrumLines == null || selectedExtraLine < 0
+			|| selectedExtraLine >= PlayState.SONG.extraStrumLines.length) return null;
+		return PlayState.SONG.extraStrumLines[selectedExtraLine];
+	}
+
+	function loadExtraStrumInputs():Void
+	{
+		var line = selectedExtraStrumData();
+		if (extraLineIdInput == null) return;
+		extraLineIdInput.text = line == null ? '' : line.id;
+		if (extraLineCharacterDropDown != null) extraLineCharacterDropDown.selectedLabel = line == null || line.character == null ? 'gf' : line.character;
+		if (extraLineVisibleCheck != null) extraLineVisibleCheck.checked = line != null && line.visible != false;
+		if (extraLineXInput != null) extraLineXInput.text = line == null || !Reflect.hasField(line, 'x') ? '' : Std.string(line.x);
+		if (extraLineYInput != null) extraLineYInput.text = line == null || !Reflect.hasField(line, 'y') ? '' : Std.string(line.y);
+		if (extraLineScaleInput != null) extraLineScaleInput.text = line == null || !Reflect.hasField(line, 'scale') ? '' : Std.string(line.scale);
+		if (extraLineSpacingInput != null) extraLineSpacingInput.text = line == null || !Reflect.hasField(line, 'spacing') ? '' : Std.string(line.spacing);
+		updateExtraStrumButtons();
+	}
+
+	function updateExtraStrumButtons():Void
+	{
+		var count = PlayState.SONG == null || PlayState.SONG.extraStrumLines == null ? 0 : PlayState.SONG.extraStrumLines.length;
+		setExtraStrumButtonState(extraAddButton, count < 3);
+		// Opponent + Player always remain; Remove sleeps when only those two exist.
+		setExtraStrumButtonState(extraRemoveButton, count > 0);
+	}
+
+	function setExtraStrumButtonState(button:PsychUIButton, enabled:Bool):Void
+	{
+		if (button == null) return;
+		button.active = enabled;
+		button.alpha = enabled ? 1 : 0.32;
+		button.forceCheckNext = enabled;
+	}
+
+	function reorderExtraStrum(direction:Int):Void
+	{
+		updateChartData();
+		var lines = PlayState.SONG.extraStrumLines;
+		if (lines == null) return;
+		var target = selectedExtraLine + direction;
+		if (selectedExtraLine < 0 || selectedExtraLine >= lines.length || target < 0 || target >= lines.length) return;
+		var value = lines[selectedExtraLine];
+		lines[selectedExtraLine] = lines[target];
+		lines[target] = value;
+		selectedExtraLine = target;
+		FlxG.resetState();
 	}
 
 	function addMetaTab()
@@ -5982,6 +6193,9 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 		for (secNum => section in PlayState.SONG.notes)
 			PlayState.SONG.notes[secNum].sectionNotes = [];
+		if (PlayState.SONG.extraStrumLines != null)
+			for (line in PlayState.SONG.extraStrumLines)
+				if (line != null) line.notes = [];
 
 		notes.sort(PlayState.sortByTime);
 		for (num => note in notes)
@@ -5989,10 +6203,22 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			if (note == null)
 				continue;
 
-			var noteSec:Int = sectionIndexForTime(note.strumTime);
-			var arr:Array<Dynamic> = PlayState.SONG.notes[noteSec].sectionNotes;
-			// trace('Added note with time ${note.songData[0]} at section $noteSec');
-			arr.push(note.songData);
+			if (note.strumLineIndex >= 2 && PlayState.SONG.extraStrumLines != null)
+			{
+				var extra = note.strumLineIndex - 2;
+				if (extra >= 0 && extra < PlayState.SONG.extraStrumLines.length)
+				{
+					var copy = note.songData.copy();
+					copy[0] = note.strumTime;
+					copy[1] = note.noteData;
+					PlayState.SONG.extraStrumLines[extra].notes.push(copy);
+				}
+			}
+			else
+			{
+				var noteSec:Int = sectionIndexForTime(note.strumTime);
+				PlayState.SONG.notes[noteSec].sectionNotes.push(note.songData);
+			}
 		}
 
 		events.sort(PlayState.sortByTime);
