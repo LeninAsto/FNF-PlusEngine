@@ -114,9 +114,9 @@ class SustainSplash extends FlxSprite
 			}
 			else
 			{
-				// Modchart rendering temporarily hides the native strum after it has
-				// emitted its geometry. `_fmVisible` is its real requested visibility.
-				visible = strumNote._fmVisible != false;
+				// Manager restores renderer-suppressed sprites before this update.
+				// Reading the normal property also keeps the native/no-manager path valid.
+				visible = strumNote.visible;
 				alpha = strumNote.alpha;
 			}
 
