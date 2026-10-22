@@ -12,23 +12,23 @@ REM ============================================================================
 REM Core build stack - required by the engine and every target.
 REM ============================================================================
 echo [Core] hxcpp
-haxelib git hxcpp https://github.com/Psych-Plus-Team/hxcpp
+haxelib git hxcpp https://github.com/Psych-Plus-Haxelib/hxcpp
 
 echo [Core] lime
-haxelib git lime https://github.com/Psych-Plus-Team/lime.git
+haxelib git lime https://github.com/Psych-Plus-Haxelib/lime.git
 call setup\windows-openal.bat || exit /b 1
 
 echo [Core] openfl git
-haxelib git openfl https://github.com/Psych-Plus-Team/openfl.git --quiet
+haxelib git openfl https://github.com/Psych-Plus-Haxelib/openfl.git --quiet
 
 REM ============================================================================
 REM HaxeFlixel stack - required by Plus/Psych.
 REM ============================================================================
 echo [Flixel] flixel
-haxelib git flixel https://github.com/Psych-Plus-Team/flixel
+haxelib git flixel https://github.com/Psych-Plus-Haxelib/flixel
 
 echo [Flixel] flixel-addons git
-haxelib git flixel-addons https://github.com/Psych-Plus-Team/flixel-addons.git --quiet
+haxelib git flixel-addons https://github.com/Psych-Plus-Haxelib/flixel-addons.git --quiet
 
 echo [Flixel] flixel-tools 1.5.1
 haxelib install flixel-tools 1.5.1 --quiet
@@ -41,13 +41,13 @@ REM Plus/Psych runtime - classic engine systems and classic mods.
 REM flxanimate is the Psych/Plus animation package: imports are flxanimate.*.
 REM ============================================================================
 echo [Plus/Psych] hscript-iris
-haxelib git hscript-iris https://github.com/Psych-Plus-Team/hscript-iris.git
+haxelib git hscript-iris https://github.com/Psych-Plus-Haxelib/hscript-iris.git
 
 echo [Plus/Psych] hxscript
-haxelib git hxscript https://github.com/Psych-Plus-Team/hxscript.git
+haxelib git hxscript https://github.com/Psych-Plus-Haxelib/hxscript.git
 
 echo [Plus/Psych] linc_luajit
-haxelib git linc_luajit https://github.com/Psych-Plus-Team/linc_luajit
+haxelib git linc_luajit https://github.com/Psych-Plus-Haxelib/linc_luajit
 
 echo [Plus/Psych] flxanimate 4.0.0
 haxelib install flxanimate 4.0.0 --quiet
