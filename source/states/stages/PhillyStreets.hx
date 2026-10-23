@@ -53,13 +53,18 @@ class PhillyStreets extends BaseStage
 		if (!ClientPrefs.data.lowQuality)
 		{
 			var skyImage = Paths.image('phillyStreets/phillySkybox');
-			scrollingSky = new FlxTiledSprite(skyImage, skyImage.width + 400, skyImage.height, true, false);
-			scrollingSky.antialiasing = ClientPrefs.data.antialiasing;
-			scrollingSky.setPosition(-650, -375);
-			scrollingSky.scrollFactor.set(0.1, 0.1);
-			scrollingSky.scale.set(0.65, 0.65);
-			add(scrollingSky);
-			darkenable.push(scrollingSky);
+			if (skyImage != null)
+			{
+				scrollingSky = new FlxTiledSprite(skyImage, skyImage.width + 400, skyImage.height, true, false);
+				scrollingSky.antialiasing = ClientPrefs.data.antialiasing;
+				scrollingSky.setPosition(-650, -375);
+				scrollingSky.scrollFactor.set(0.1, 0.1);
+				scrollingSky.scale.set(0.65, 0.65);
+				add(scrollingSky);
+				darkenable.push(scrollingSky);
+			}
+			else
+				FlxG.log.warn('PhillyStreets: missing optional phillySkybox graphic; continuing without tiled sky.');
 
 			var phillySkyline:BGSprite = new BGSprite('phillyStreets/phillySkyline', -545, -273, 0.2, 0.2);
 			add(phillySkyline);

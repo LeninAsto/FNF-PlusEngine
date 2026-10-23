@@ -62,8 +62,6 @@ typedef SwagSection =
 	@:optional var gfSection:Bool;
 	@:optional var bpm:Float;
 	@:optional var changeBPM:Bool;
-	/** Activates the next declared Extra StrumLine when this section begins. */
-	@:optional var addStrumLine:Bool;
 }
 
 // ── psych_v2 typedefs ────────────────────────────────────────────────────────
@@ -419,6 +417,25 @@ class Song
 		chartCacheOrder.resize(0);
 	}
 
+	/** Invalidates every cached representation of a chart after it is saved. */
+	public static function invalidateChartCache(path:String):Void
+	{
+		if (path == null || path.length == 0)
+			return;
+
+		var normalized:String = path.replace('\\', '/').toLowerCase();
+		var matches:Array<String> = [];
+		for (key in chartCache.keys())
+			if (key != null && key.replace('\\', '/').toLowerCase() == normalized)
+				matches.push(key);
+		for (key in matches)
+		{
+			chartCache.remove(key);
+			while (chartCacheOrder.remove(key)) {}
+		}
+		CompiledChartCache.invalidate(path);
+	}
+
 	static function getCachedChart(path:String):String
 	{
 		var data:String = chartCache.get(path);
@@ -537,6 +554,7 @@ class Song
 			var prettyJson:String = formatJson(obj, 0);
 
 			sys.io.File.saveContent(filePath, prettyJson);
+			invalidateChartCache(filePath);
 			trace('Chart saved: $filePath');
 		}
 		catch (e:Dynamic)

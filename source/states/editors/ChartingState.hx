@@ -2409,6 +2409,112 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		GRID_SIZE = Std.int(FlxMath.bound(Math.floor((FlxG.width - 260) / Math.max(1, columns)), 24, 40));
 	}
 
+	function strumGridStripes():Array<Int>
+	{
+		var columns:Int = SHOW_EVENT_COLUMN ? 1 : 0;
+		var result:Array<Int> = [];
+		for (i in 0...GRID_PLAYERS)
+		{
+			if (columns > 0) result.push(columns);
+			columns += GRID_COLUMNS_PER_PLAYER;
+		}
+		return result;
+	}
+
+	function configureStrumGrid(grid:ChartingGridSprite, current:Bool):Void
+	{
+		if (grid == null) return;
+		var columns = GRID_PLAYERS * GRID_COLUMNS_PER_PLAYER + (SHOW_EVENT_COLUMN ? 1 : 0);
+		var colors = current ? gridColors : gridColorsOther;
+		grid.setColumnCount(columns, colors[0], colors[1]);
+		grid.stripes = strumGridStripes();
+		grid.screenCenter(X);
+	}
+
+	inline function chartGridX():Float
+	{
+		var columns = GRID_PLAYERS * GRID_COLUMNS_PER_PLAYER + (SHOW_EVENT_COLUMN ? 1 : 0);
+		return (FlxG.width - columns * GRID_SIZE) * 0.5;
+	}
+
+	function addEditorStrumPreview(lineIndex:Int):Void
+	{
+		var startX = gridBg.x + (SHOW_EVENT_COLUMN ? GRID_SIZE : 0);
+		var startY = FlxG.height / 2;
+		for (lane in 0...GRID_COLUMNS_PER_PLAYER)
+		{
+			var note = new StrumNote(startX + GRID_SIZE * (lineIndex * GRID_COLUMNS_PER_PLAYER + lane), startY, lane, 0);
+			note.scrollFactor.set();
+			note.playAnim('static');
+			note.alpha = 0.4;
+			note.updateHitbox();
+			if (note.width > note.height)
+				note.setGraphicSize(GRID_SIZE);
+			else
+				note.setGraphicSize(0, GRID_SIZE);
+			note.updateHitbox();
+			note.x += GRID_SIZE / 2 - note.width / 2;
+			note.y += GRID_SIZE / 2 - note.height / 2;
+			strumLineNotes.add(note);
+		}
+	}
+
+	function addEditorStrumIcon(lineIndex:Int):Void
+	{
+		var icon = new HealthIcon();
+		icon.autoAdjustOffset = false;
+		icon.y = 50;
+		icon.alpha = 0.6;
+		icon.scrollFactor.set();
+		icon.scale.set(0.3, 0.3);
+		icon.updateHitbox();
+		icon.ID = lineIndex + 1;
+		add(icon);
+		icons.push(icon);
+	}
+
+	function ensureEditorStrumHeaders():Void
+	{
+		while (strumLineNotes.length < GRID_PLAYERS * GRID_COLUMNS_PER_PLAYER)
+			addEditorStrumPreview(Std.int(strumLineNotes.length / GRID_COLUMNS_PER_PLAYER));
+		while (icons.length < GRID_PLAYERS)
+			addEditorStrumIcon(icons.length);
+	}
+
+	function positionEditorStrumHeaders():Void
+	{
+		var startX = gridBg.x + (SHOW_EVENT_COLUMN ? GRID_SIZE : 0);
+		for (i in 0...strumLineNotes.length)
+		{
+			var note = strumLineNotes.members[i];
+			if (note != null)
+				note.x = startX + GRID_SIZE * i + (GRID_SIZE - note.width) * 0.5;
+		}
+
+		for (i in 0...icons.length)
+		{
+			var icon = icons[i];
+			icon.x = startX + GRID_SIZE * (i * GRID_COLUMNS_PER_PLAYER + GRID_COLUMNS_PER_PLAYER * 0.5) - icon.width * 0.5;
+		}
+
+		if (eventIcon != null)
+			eventIcon.x = gridBg.x + GRID_SIZE * 0.5 - eventIcon.width * 0.5;
+		if (timeLine != null)
+			timeLine.x = gridBg.x;
+		if (eventLockOverlay != null)
+			eventLockOverlay.x = gridBg.x;
+		updateVortexIndicatorPosition();
+	}
+
+	function refreshStrumLayoutInEditor():Void
+	{
+		refreshStrumGridMetrics();
+		ensureEditorStrumHeaders();
+		updateJsonData();
+		_lastSec = -1;
+		loadSection();
+	}
+
 	function createGrids()
 	{
 		var destroyed:Bool = false;
@@ -2760,12 +2866,11 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			}
 		}
 
-		swagEvent.x = gridBg.x;
-		swagEvent.eventText.x = swagEvent.x - swagEvent.eventText.width - 10;
 		swagEvent.scrollFactor.x = 0;
 		swagEvent.active = false;
 
 		var secNum:Int = sectionIndexForTime(daStrumTime);
+		positionEventX(swagEvent);
 		positionNoteYOnTime(swagEvent, secNum);
 		return swagEvent;
 	}
@@ -2896,6 +3001,20 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			curSec = sec;
 		curSec = Std.int(FlxMath.bound(curSec, 0, PlayState.SONG.notes.length - 1));
 		Conductor.bpm = cachedSectionBPMs[curSec];
+		configureStrumGrid(gridBg, true);
+		configureStrumGrid(prevGridBg, false);
+		configureStrumGrid(nextGridBg, false);
+		if (timeLine != null)
+		{
+			timeLine.x = gridBg.x;
+			timeLine.setGraphicSize(Std.int(gridBg.width), 4);
+			timeLine.updateHitbox();
+		}
+		positionEditorStrumHeaders();
+		for (note in notes)
+			if (note != null) positionNoteXByData(note);
+		for (event in events)
+			if (event != null) positionEventX(event);
 
 		var hei:Float = 0;
 		if (curSec > 0)
@@ -2938,7 +3057,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			mustHitCheckBox.checked = sec.mustHitSection;
 			gfSectionCheckBox.checked = sec.gfSection;
 			altAnimSectionCheckBox.checked = sec.altAnim;
-			addStrumLineSectionCheckBox.checked = sec.addStrumLine == true;
 			changeBpmCheckBox.checked = sec.changeBPM;
 			changeBpmStepper.value = Conductor.bpm;
 			beatsPerSecStepper.value = sec.sectionBeats;
@@ -3057,13 +3175,19 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		if (data == null)
 			data = note.songData[1];
 
-		var noteX:Float = gridBg.x + (GRID_SIZE - note.width) / 2;
+		var noteX:Float = chartGridX() + (GRID_SIZE - note.width) / 2;
 		if (SHOW_EVENT_COLUMN)
 			noteX += GRID_SIZE;
 
 		noteX += GRID_SIZE * data;
 		note.x = noteX;
 		// trace(gridBg.x, noteX);
+	}
+
+	function positionEventX(event:EventMetaNote):Void
+	{
+		event.x = chartGridX();
+		event.eventText.x = event.x - event.eventText.width - 10;
 	}
 
 	function positionNoteYOnTime(note:MetaNote, section:Int)
@@ -3112,12 +3236,20 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		if (_lastGfSection == isGfSection && _lastSec == curSec && !ignoreCheck)
 			return; // optimization
 
-		for (i in 0...GRID_PLAYERS)
+		var activePlayers = GRID_PLAYERS;
+		for (i in 0...icons.length)
 		{
 			var icon:HealthIcon = icons[i];
+			icon.visible = i < activePlayers;
+			if (!icon.visible) continue;
 			// trace('changing iconP${icon.ID}');
 			var iconName:String = Reflect.field(characterData, 'iconP${icon.ID}');
 			icon.changeIcon(iconName);
+		}
+		for (i in 0...strumLineNotes.length)
+		{
+			var strum = strumLineNotes.members[i];
+			if (strum != null) strum.visible = vortexEnabled && Math.floor(i / GRID_COLUMNS_PER_PLAYER) < activePlayers;
 		}
 
 		if (icons.length > 1)
@@ -3680,7 +3812,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	var mustHitCheckBox:PsychUICheckBox;
 	var gfSectionCheckBox:PsychUICheckBox;
 	var altAnimSectionCheckBox:PsychUICheckBox;
-	var addStrumLineSectionCheckBox:PsychUICheckBox;
 
 	var changeBpmCheckBox:PsychUICheckBox;
 	var changeBpmStepper:PsychUINumericStepper;
@@ -3782,13 +3913,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			if (sec != null)
 				sec.altAnim = altAnimSectionCheckBox.checked;
 		});
-		addStrumLineSectionCheckBox = new PsychUICheckBox(objX, objY + 22, 'Add StrumLine', 110, function()
-		{
-			var sec = getCurChartSection();
-			if (sec != null) sec.addStrumLine = addStrumLineSectionCheckBox.checked;
-		});
-
-		objY += 55;
+		objY += 30;
 		changeBpmCheckBox = new PsychUICheckBox(objX, objY, chartPhrase('ui.change_bpm', 'Change BPM'), 80, function()
 		{
 			var sec = getCurChartSection();
@@ -3955,7 +4080,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		tab_group.add(mustHitCheckBox);
 		tab_group.add(gfSectionCheckBox);
 		tab_group.add(altAnimSectionCheckBox);
-		tab_group.add(addStrumLineSectionCheckBox);
 
 		tab_group.add(new FlxText(beatsPerSecStepper.x, beatsPerSecStepper.y - 15, 100, chartPhrase('ui.beats_per_section', 'Beats per Section:')));
 		tab_group.add(changeBpmCheckBox);
@@ -5874,6 +5998,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			vortexEnabled = !vortexEnabled;
 			chartEditorSave.data.vortex = vortexEnabled;
 			vortexIndicator.visible = strumLineNotes.visible = strumLineNotes.active = vortexEnabled;
+			updateHeads(true);
 			updateVortexIndicatorPosition();
 			vortexEditorButton.text.text = chartPhrase(vortexEnabled ? 'ui.vortex_editor_on' : 'ui.vortex_editor_off',
 				vortexEnabled ? '  Vortex Editor ON' : '  Vortex Editor OFF');
@@ -6192,7 +6317,12 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			_cacheSections();
 
 		for (secNum => section in PlayState.SONG.notes)
+		{
 			PlayState.SONG.notes[secNum].sectionNotes = [];
+			// Extra strum lines are song-wide. Remove obsolete per-section markers
+			// when an older chart is saved in the editor.
+			Reflect.deleteField(section, 'addStrumLine');
+		}
 		if (PlayState.SONG.extraStrumLines != null)
 			for (line in PlayState.SONG.extraStrumLines)
 				if (line != null) line.notes = [];
@@ -6237,6 +6367,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			try
 			{
 				File.saveContent(Song.chartPath, chartData);
+				Song.invalidateChartCache(Song.chartPath);
 				saveSongMetaForEditor();
 				showOutput(chartPhrase('messages.chart_saved_to', 'Chart saved successfully to: {1}', [Song.chartPath]));
 			}
@@ -6254,7 +6385,10 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			{
 				var newPath:String = fileDialog.path;
 				if (newPath != null && !newPath.startsWith('/document/'))
+				{
 					Song.chartPath = newPath.replace('\\', '/');
+					Song.invalidateChartCache(Song.chartPath);
+				}
 				saveSongMetaForEditor();
 				reloadNotesDropdowns();
 				showOutput(chartPhrase('messages.chart_saved_to', 'Chart saved successfully to: {1}', [newPath]));
@@ -7019,6 +7153,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		}
 
 		waveformSprite.visible = true;
+		waveformSprite.x = gridBg.x + (SHOW_EVENT_COLUMN ? GRID_SIZE : 0);
 		waveformSprite.y = gridBg.y;
 		var width:Int = Std.int(GRID_SIZE * GRID_COLUMNS_PER_PLAYER * GRID_PLAYERS);
 		var displayHeight:Int = Std.int(gridBg.height);

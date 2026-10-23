@@ -139,7 +139,8 @@ class Tank extends BaseStage
 			tankWatchtower.dance();
 		foregroundSprites.forEach(function(spr:BGSprite)
 		{
-			spr.dance();
+			if (spr != null)
+				spr.dance();
 		});
 	}
 
@@ -271,7 +272,8 @@ class Tank extends BaseStage
 
 		tankman.anim.addBySymbol('tightBars', 'TANK TALK 2', 24, false);
 		tankman.anim.play('tightBars', true);
-		boyfriend.animation.curAnim.finish();
+		if (boyfriend.animation.curAnim != null)
+			boyfriend.animation.curAnim.finish();
 
 		cutsceneHandler.onStart = function()
 		{
@@ -305,7 +307,8 @@ class Tank extends BaseStage
 		FlxTween.tween(FlxG.camera, {zoom: 0.9 * 1.2}, 1, {ease: FlxEase.quadInOut});
 		foregroundSprites.forEach(function(spr:BGSprite)
 		{
-			spr.y += 100;
+			if (spr != null)
+				spr.y += 100;
 		});
 		Paths.sound('stressCutscene');
 
@@ -336,7 +339,8 @@ class Tank extends BaseStage
 						if (name != 'idle')
 						{
 							boyfriend.playAnim('idle', true);
-							boyfriend.animation.curAnim.finish(); // Instantly goes to last frame
+							if (boyfriend.animation.curAnim != null)
+								boyfriend.animation.curAnim.finish(); // Instantly goes to last frame
 						}
 					};
 				case "picoAppears", "Pico Saves them sequence":
@@ -355,7 +359,8 @@ class Tank extends BaseStage
 		boyfriendCutscene.frames = Paths.getSparrowAtlas('characters/BOYFRIEND');
 		boyfriendCutscene.animation.addByPrefix('idle', 'BF idle dance', 24, false);
 		boyfriendCutscene.animation.play('idle', true);
-		boyfriendCutscene.animation.curAnim.finish();
+		if (boyfriendCutscene.animation.curAnim != null)
+			boyfriendCutscene.animation.curAnim.finish();
 		addBehindBF(boyfriendCutscene);
 		cutsceneHandler.push(boyfriendCutscene);
 
@@ -402,7 +407,8 @@ class Tank extends BaseStage
 				if (name == 'singUPmiss')
 				{
 					boyfriend.playAnim('idle', true);
-					boyfriend.animation.curAnim.finish(); // Instantly goes to last frame
+					if (boyfriend.animation.curAnim != null)
+						boyfriend.animation.curAnim.finish(); // Instantly goes to last frame
 				}
 			};
 
@@ -431,7 +437,8 @@ class Tank extends BaseStage
 		{
 			foregroundSprites.forEach(function(spr:BGSprite)
 			{
-				spr.y -= 100;
+				if (spr != null)
+					spr.y -= 100;
 			});
 		}
 	}

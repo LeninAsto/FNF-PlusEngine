@@ -94,6 +94,31 @@ class CompiledChartCache
 			pendingSaves.shift();
 	}
 
+	/** Drops both queued and on-disk data after the source chart is edited. */
+	public static function invalidate(sourcePath:String):Void
+	{
+		if (sourcePath == null || sourcePath.length == 0)
+			return;
+
+		var normalized:String = sourcePath.replace('\\', '/').toLowerCase();
+		pendingSaves = pendingSaves.filter(function(entry:Dynamic)
+		{
+			return entry == null || entry.sourcePath == null
+				|| Std.string(entry.sourcePath).replace('\\', '/').toLowerCase() != normalized;
+		});
+
+		#if sys
+		var path:String = cachePath(sourcePath);
+		try
+		{
+			if (FileSystem.exists(path) && !FileSystem.isDirectory(path))
+				FileSystem.deleteFile(path);
+		}
+		catch (e:Dynamic)
+			trace('Could not invalidate compiled chart cache: $e');
+		#end
+	}
+
 	public static function flushPending():Void
 	{
 		var saves:Array<Dynamic> = pendingSaves;

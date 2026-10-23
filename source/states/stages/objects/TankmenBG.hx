@@ -24,7 +24,8 @@ class TankmenBG extends FlxSprite
 		animation.addByPrefix('run', 'tankman running', 24, true);
 		animation.addByPrefix('shot', 'John Shot ' + FlxG.random.int(1, 2), 24, false);
 		animation.play('run');
-		animation.curAnim.curFrame = FlxG.random.int(0, animation.curAnim.frames.length - 1);
+		if (animation.curAnim != null && animation.curAnim.frames.length > 0)
+			animation.curAnim.curFrame = FlxG.random.int(0, animation.curAnim.frames.length - 1);
 		antialiasing = ClientPrefs.data.antialiasing;
 
 		scale.set(0.8, 0.8);
@@ -46,6 +47,9 @@ class TankmenBG extends FlxSprite
 		super.update(elapsed);
 
 		visible = (x > -0.5 * FlxG.width && x < 1.2 * FlxG.width);
+
+		if (animation.curAnim == null)
+			return;
 
 		if (animation.curAnim.name == "run")
 		{

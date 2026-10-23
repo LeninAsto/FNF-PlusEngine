@@ -94,7 +94,7 @@ class Limo extends BaseStage
 		{
 			grpLimoParticles.forEach(function(spr:BGSprite)
 			{
-				if (spr.animation.curAnim.finished)
+				if (spr != null && spr.animation != null && spr.animation.curAnim != null && spr.animation.curAnim.finished)
 				{
 					spr.kill();
 					grpLimoParticles.remove(spr, true);
@@ -113,7 +113,8 @@ class Limo extends BaseStage
 					var dancers:Array<BackgroundDancer> = grpLimoDancers.members;
 					for (i in 0...dancers.length)
 					{
-						if (dancers[i].x < FlxG.width * 1.5 && limoLight.x > (370 * i) + 170)
+						var dancer = dancers[i];
+						if (dancer != null && dancer.x < FlxG.width * 1.5 && limoLight.x > (370 * i) + 170)
 						{
 							switch (i)
 							{
@@ -122,17 +123,17 @@ class Limo extends BaseStage
 										FlxG.sound.play(Paths.sound('dancerdeath'), 0.5);
 
 									var diffStr:String = i == 3 ? ' 2 ' : ' ';
-									var particle:BGSprite = new BGSprite('gore/noooooo', dancers[i].x + 200, dancers[i].y, 0.4, 0.4,
+									var particle:BGSprite = new BGSprite('gore/noooooo', dancer.x + 200, dancer.y, 0.4, 0.4,
 										['hench leg spin' + diffStr + 'PINK'], false);
 									grpLimoParticles.add(particle);
-									var particle:BGSprite = new BGSprite('gore/noooooo', dancers[i].x + 160, dancers[i].y + 200, 0.4, 0.4,
+									var particle:BGSprite = new BGSprite('gore/noooooo', dancer.x + 160, dancer.y + 200, 0.4, 0.4,
 										['hench arm spin' + diffStr + 'PINK'], false);
 									grpLimoParticles.add(particle);
-									var particle:BGSprite = new BGSprite('gore/noooooo', dancers[i].x, dancers[i].y + 50, 0.4, 0.4,
+									var particle:BGSprite = new BGSprite('gore/noooooo', dancer.x, dancer.y + 50, 0.4, 0.4,
 										['hench head spin' + diffStr + 'PINK'], false);
 									grpLimoParticles.add(particle);
 
-									var particle:BGSprite = new BGSprite('gore/stupidBlood', dancers[i].x - 110, dancers[i].y + 20, 0.4, 0.4, ['blood'], false);
+									var particle:BGSprite = new BGSprite('gore/stupidBlood', dancer.x - 110, dancer.y + 20, 0.4, 0.4, ['blood'], false);
 									particle.flipX = true;
 									particle.angle = -57.5;
 									grpLimoParticles.add(particle);
@@ -141,7 +142,7 @@ class Limo extends BaseStage
 								case 2:
 									limoCorpseTwo.visible = true;
 							} // Note: Nobody cares about the fifth dancer because he is mostly hidden offscreen :(
-							dancers[i].x += FlxG.width * 2;
+							dancer.x += FlxG.width * 2;
 						}
 					}
 
@@ -194,7 +195,8 @@ class Limo extends BaseStage
 		{
 			grpLimoDancers.forEach(function(dancer:BackgroundDancer)
 			{
-				dancer.dance();
+				if (dancer != null)
+					dancer.dance();
 			});
 		}
 
@@ -235,7 +237,8 @@ class Limo extends BaseStage
 		var dancers:Array<BackgroundDancer> = grpLimoDancers.members;
 		for (i in 0...dancers.length)
 		{
-			dancers[i].x = (370 * i) + dancersDiff + bgLimo.x;
+			if (dancers[i] != null)
+				dancers[i].x = (370 * i) + dancersDiff + bgLimo.x;
 		}
 	}
 

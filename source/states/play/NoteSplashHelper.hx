@@ -24,6 +24,7 @@ class NoteSplashHelper
 			var sus = new SustainSplash();
 			sus.alpha = 0.000001;
 			state.grpHoldSplashes.add(sus);
+			sus.kill();
 		}
 	}
 

@@ -7,7 +7,6 @@ class SustainSplash extends FlxSprite
 {
 	public static var startCrochet:Float;
 	public static var frameRate:Int;
-	static var atlasCache:Map<String, Dynamic> = new Map();
 
 	public var strumNote:StrumNote;
 
@@ -32,22 +31,18 @@ class SustainSplash extends FlxSprite
 		if (loadedPath == atlasPath && loadedLane == lane && frames != null)
 			return animation.exists('holdStart') && animation.exists('hold') && animation.exists('holdEnd');
 
-		loadedPath = atlasPath;
-		loadedLane = lane;
+		loadedPath = null;
+		loadedLane = -1;
 		frames = null;
 		@:privateAccess animation.clearAnimations();
 
 		if (Paths.fileExists('images/$atlasPath.png', IMAGE) && Paths.fileExists('images/$atlasPath.xml', TEXT))
 		{
-			var cacheKey:String = 'images/$atlasPath';
-			if (atlasCache.exists(cacheKey))
-				frames = atlasCache.get(cacheKey);
-			else
-			{
-				frames = Paths.getSparrowAtlas(atlasPath);
-				if (frames != null)
-					atlasCache.set(cacheKey, frames);
-			}
+			// Paths owns the graphic cache. Keeping FlxAtlasFrames in another static
+			// cache leaves them pointing at destroyed graphics after changing songs/mods.
+			frames = Paths.getSparrowAtlas(atlasPath);
+			if (frames == null)
+				return false;
 			scale.set(1, 1);
 			updateHitbox();
 			if (PlayState.isPixelStage)
@@ -69,6 +64,8 @@ class SustainSplash extends FlxSprite
 				trace('Hold splash atlas is missing animations for lane $lane: $atlasPath');
 				return false;
 			}
+			loadedPath = atlasPath;
+			loadedLane = lane;
 			return true;
 		}
 
@@ -86,13 +83,13 @@ class SustainSplash extends FlxSprite
 	function getHoldCoverPath():String
 	{
 		final pixelPrefix:String = PlayState.isPixelStage ? 'pixelUI/' : '';
-		return pixelPrefix + (Note.usesClassicColors() ? 'holdCover-vanilla' : 'holdCovers/holdCover-Vanilla');
+		return pixelPrefix + (Note.usesRGBShader() ? 'holdCovers/holdCover-Vanilla' : 'holdCover-vanilla');
 	}
 
 	function getAnimationColor(lane:Int):String
 	{
 		// The pixel RGB atlas uses blue as its recolorable source; desktop RGB is neutral.
-		if (!Note.usesClassicColors())
+		if (Note.usesRGBShader())
 			return PlayState.isPixelStage ? 'Blue' : '';
 
 		final color:String = Note.colArray[lane];
@@ -196,7 +193,7 @@ class SustainSplash extends FlxSprite
 		};
 		clipRect = new flixel.math.FlxRect(0, !PlayState.isPixelStage ? 0 : -210, frameWidth, frameHeight);
 
-		if (Note.usesClassicColors())
+		if (!Note.usesRGBShader())
 		{
 			shader = colorSwap.shader;
 			Note.applyHSVToColorSwap(colorSwap, daNote.noteData);

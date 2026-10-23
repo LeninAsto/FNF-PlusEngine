@@ -50,6 +50,15 @@ class ChartingGridSprite extends FlxSprite
 		recalcHeight();
 	}
 
+	public function setColumnCount(value:Int, color1:FlxColor, color2:FlxColor):Void
+	{
+		value = Std.int(Math.max(1, value));
+		if (columns == value)
+			return;
+		columns = value;
+		loadGrid(color1, color2);
+	}
+
 	override function draw()
 	{
 		if (!visible || alpha == 0 || y - camera.scroll.y >= FlxG.height)

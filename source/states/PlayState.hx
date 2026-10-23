@@ -207,8 +207,6 @@ class PlayState extends MusicBeatState
 	/** Flat compatibility group for Lua. It is indexed, but never added to the state. */
 	public var extraStrums:FlxTypedGroup<StrumNote> = new FlxTypedGroup<StrumNote>();
 	public var strumLines:Array<StrumLine> = [];
-	var progressiveExtraStrums:Bool = false;
-	var activeExtraStrumLines:Int = 0;
 	public var grpNoteSplashes:FlxTypedGroup<NoteSplash> = new FlxTypedGroup<NoteSplash>();
 	public var grpHoldSplashes:FlxTypedGroup<SustainSplash> = new FlxTypedGroup<SustainSplash>();
 
@@ -1395,7 +1393,6 @@ class PlayState extends MusicBeatState
 			if (strumLines.length > 2)
 				layoutStrumLines();
 			captureDefaultStrumPositions();
-			configureProgressiveStrumLines();
 			for (i in 0...playerStrums.length) {
 				setOnScripts('defaultPlayerStrumX' + i, playerStrums.members[i].x);
 				setOnScripts('defaultPlayerStrumY' + i, playerStrums.members[i].y);
@@ -1867,9 +1864,6 @@ class PlayState extends MusicBeatState
 		}
 
 		stagesFunc(function(stage:BaseStage) stage.startSong());
-		// Section 0 does not emit sectionHit in the classic beat-state flow.
-		// Sync it here so a chart can introduce its first extra line at song start.
-		syncProgressiveStrumLines(0);
 
 		// Song duration in a float, useful for the time left feature
 		songLength = FlxG.sound.music.length;
@@ -2310,68 +2304,6 @@ class PlayState extends MusicBeatState
 		for (note in unspawnNotes) if (note != null && !note.spawned && getStrumLineForNote(note) == line) note.visible = runtimeVisible;
 		if (notes != null) for (note in notes) if (note != null && getStrumLineForNote(note) == line) note.visible = runtimeVisible;
 		return true;
-	}
-
-	function configureProgressiveStrumLines():Void
-	{
-		progressiveExtraStrums = false;
-		activeExtraStrumLines = 0;
-		if (SONG != null && SONG.notes != null)
-			for (section in SONG.notes)
-				if (section != null && section.addStrumLine == true)
-				{
-					progressiveExtraStrums = true;
-					break;
-				}
-
-		for (i in 2...strumLines.length)
-		{
-			var line = strumLines[i];
-			line.active = !progressiveExtraStrums;
-			if (!line.active)
-			{
-				for (strum in line.receptors.members) if (strum != null) { FlxTween.cancelTweensOf(strum); strum.visible = false; strum.alpha = 0; }
-				for (note in unspawnNotes) if (note != null && getStrumLineForNote(note) == line) note.visible = false;
-			}
-			else activeExtraStrumLines++;
-		}
-	}
-
-	function syncProgressiveStrumLines(sectionIndex:Int, animate:Bool = true):Void
-	{
-		if (!progressiveExtraStrums || SONG == null || SONG.notes == null) return;
-		var wanted:Int = 0;
-		for (i in 0...Std.int(Math.min(sectionIndex + 1, SONG.notes.length)))
-			if (SONG.notes[i] != null && SONG.notes[i].addStrumLine == true) wanted++;
-		wanted = Std.int(Math.min(wanted, strumLines.length - 2));
-		while (activeExtraStrumLines < wanted)
-			activateExtraStrumLine(2 + activeExtraStrumLines++, animate);
-	}
-
-	function activateExtraStrumLine(index:Int, animate:Bool):Void
-	{
-		if (index < 2 || index >= strumLines.length) return;
-		var line = strumLines[index];
-		if (line.active) return;
-		line.active = true;
-		for (lane in 0...line.receptors.length)
-		{
-			var strum = line.receptors.members[lane];
-			if (strum == null) continue;
-			FlxTween.cancelTweensOf(strum);
-			strum.visible = line.visible;
-			if (line.visible && animate)
-			{
-				var targetY = strum.y;
-				strum.y += ClientPrefs.data.downScroll ? -18 : 18;
-				strum.alpha = 0;
-				FlxTween.tween(strum, {alpha: 1, y: targetY}, 0.35, {ease: FlxEase.backOut, startDelay: lane * 0.045});
-			}
-			else strum.alpha = line.visible ? 1 : 0;
-		}
-		for (note in unspawnNotes) if (note != null && !note.spawned && getStrumLineForNote(note) == line) note.visible = line.visible;
-		if (notes != null) for (note in notes) if (note != null && getStrumLineForNote(note) == line) note.visible = line.visible;
-		callOnScripts('onStrumLineAdded', [line.id, line.index]);
 	}
 
 	function captureDefaultStrumPositions():Void
@@ -5574,7 +5506,6 @@ class PlayState extends MusicBeatState
 	{
 		if (SONG.notes[curSection] != null)
 		{
-			syncProgressiveStrumLines(curSection);
 			if (generatedMusic && !endingSong && !isCameraOnForcedPos)
 				moveCameraSection();
 
