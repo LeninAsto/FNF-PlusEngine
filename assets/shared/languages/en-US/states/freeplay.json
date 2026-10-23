@@ -20,6 +20,14 @@
   },
   "tip": "Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.",
   "desktop_mod_tip": " / F5 reloads mods / drop a mod folder to import it.",
+  "mod_import": {
+    "title": "Importing mod",
+    "scanning": "Scanning files...",
+    "copying": "Copying {1} of {2} files",
+    "complete": "Import complete. Refreshing mods...",
+    "failed": "The mod could not be imported",
+    "dismiss": "Press ACCEPT or BACK to close"
+  },
   "song_info": {
     "loading": "Loading...",
     "scores": "Diff and Scores:\n{1}",

@@ -2263,20 +2263,34 @@ class PlayState extends MusicBeatState
 		if (line == null || !Math.isFinite(value) || value <= 0) return false;
 		var ratio = value / Math.max(0.0001, line.effectiveScale);
 		line.effectiveScale = value;
-		for (strum in line.receptors.members) if (strum != null) { strum.scale.scale(ratio); strum.updateHitbox(); }
+		for (strum in line.receptors.members) if (strum != null)
+		{
+			strum.layoutScale = value;
+			strum.scale.scale(ratio);
+			strum.updateHitbox();
+		}
 		for (note in unspawnNotes) if (note != null && !note.spawned && getStrumLineForNote(note) == line)
-		{
-			note.scale.x *= ratio;
-			if (!note.isSustainNote) note.scale.y *= ratio;
-			note.updateHitbox();
-		}
+			scaleNoteForStrumLine(note, ratio);
 		if (notes != null) for (note in notes) if (note != null && getStrumLineForNote(note) == line)
-		{
-			note.scale.x *= ratio;
-			if (!note.isSustainNote) note.scale.y *= ratio;
-			note.updateHitbox();
-		}
+			scaleNoteForStrumLine(note, ratio);
 		return true;
+	}
+
+	inline function scaleNoteForStrumLine(note:Note, ratio:Float):Void
+	{
+		note.scale.x *= ratio;
+		if (note.isSustainNote)
+		{
+			// Sustain offsets are calculated before the StrumLine layout exists.
+			// Keep their centre and head connection proportional to the receptor.
+			if (note.isSustainEnd)
+				note.scale.y *= ratio;
+			note.offsetX *= ratio;
+			note.correctionOffset *= ratio;
+		}
+		else
+			note.scale.y *= ratio;
+		note.updateHitbox();
 	}
 
 	public function setStrumLineSpacing(id:String, value:Float):Bool
@@ -2368,6 +2382,7 @@ class PlayState extends MusicBeatState
 				if (strum == null) continue;
 				var baseScaleX = strum.scale.x;
 				var baseScaleY = strum.scale.y;
+				strum.layoutScale = line.effectiveScale;
 				strum.scale.set(baseScaleX * line.effectiveScale, baseScaleY * line.effectiveScale);
 				strum.updateHitbox();
 				strum.setPosition(left + lane * Note.swagWidth * line.effectiveScale * line.effectiveSpacing, y);
@@ -2381,11 +2396,7 @@ class PlayState extends MusicBeatState
 			{
 				var line = getStrumLineForNote(note);
 				if (line != null)
-				{
-					note.scale.x *= line.effectiveScale;
-					if (!note.isSustainNote) note.scale.y *= line.effectiveScale;
-					note.updateHitbox();
-				}
+					scaleNoteForStrumLine(note, line.effectiveScale);
 			}
 	}
 
@@ -2648,6 +2659,13 @@ class PlayState extends MusicBeatState
 			refreshLocalizedHud();
 
 		super.update(elapsed);
+		#if MODCHART_ALLOWED
+		// Psych note tweens update the receptors during super.update(). Refresh
+		// their cached origins afterwards so notes and holds use that same pose
+		// even when a Lua modchart jumps in a fraction of a frame.
+		if (Manager.instance != null)
+			Manager.instance.refreshFrameState();
+		#end
 		if (audioRecoveryPending && startedCountdown && !startingSong && !endingSong && !paused && FlxG.sound.music != null)
 		{
 			audioRecoveryPending = false;

@@ -286,7 +286,11 @@ class NoteSplash extends FlxSprite
 			setPosition(x, y);
 
 		if (babyArrow != null)
-			setPosition(babyArrow.x - Note.swagWidth * 0.95, babyArrow.y - Note.swagWidth); // To prevent it from being misplaced for one game tick
+		{
+			var lineScale:Float = getStrumLayoutScale();
+			setPosition(babyArrow.x - Note.swagWidth * 0.95 * lineScale,
+				babyArrow.y - Note.swagWidth * lineScale); // Prevent a one-tick jump on compact StrumLines.
+		}
 
 		if (note != null)
 			noteData = note.noteData;
@@ -302,6 +306,7 @@ class NoteSplash extends FlxSprite
 			spawned = false;
 			return;
 		}
+		syncToStrumLayout();
 
 		var tempShader:RGBPalette = null;
 		var colorIndex:Int = Note.normalizeNoteData(noteData);
@@ -473,6 +478,33 @@ class NoteSplash extends FlxSprite
 
 	static var buggedKillTime:Float = 0.5; // automatically kills note splashes if they break to prevent it from flooding your HUD
 
+	inline function getStrumLayoutScale():Float
+	{
+		if (babyArrow == null || !Math.isFinite(babyArrow.layoutScale) || babyArrow.layoutScale <= 0)
+			return 1;
+		return babyArrow.layoutScale;
+	}
+
+	function syncToStrumLayout():Void
+	{
+		if (babyArrow == null)
+			return;
+
+		var lineScale:Float = getStrumLayoutScale();
+		var configScale:Float = config != null && Math.isFinite(config.scale) ? config.scale : 1;
+		var targetScale:Float = configScale * lineScale;
+		if (Math.abs(scale.x - targetScale) > 0.0001 || Math.abs(scale.y - targetScale) > 0.0001)
+		{
+			scale.set(targetScale, targetScale);
+			updateHitbox();
+		}
+
+		if (copyX)
+			x = babyArrow.x - Note.swagWidth * 0.95 * lineScale;
+		if (copyY)
+			y = babyArrow.y - Note.swagWidth * lineScale;
+	}
+
 	override function update(elapsed:Float)
 	{
 		if (spawned)
@@ -485,14 +517,7 @@ class NoteSplash extends FlxSprite
 			}
 		}
 
-		if (babyArrow != null)
-		{
-			if (copyX)
-				x = babyArrow.x - Note.swagWidth * 0.95;
-
-			if (copyY)
-				y = babyArrow.y - Note.swagWidth;
-		}
+		syncToStrumLayout();
 		super.update(elapsed);
 	}
 

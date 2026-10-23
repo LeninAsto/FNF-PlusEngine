@@ -18,6 +18,8 @@ class StrumNote extends FlxSprite
 	public var direction:Float = 90;
 	public var downScroll:Bool = false;
 	public var sustainReduce:Bool = true;
+	/** Scale applied by the song-wide StrumLine layout. */
+	public var layoutScale:Float = 1;
 
 	private var player:Int;
 	public var strumLineIndex(default, null):Int;

@@ -21,6 +21,9 @@ import sys.FileSystem;
 import sys.io.File;
 import haxe.io.Path;
 #end
+#if (MODS_ALLOWED && sys && !mobile)
+import objects.ModImportOverlay;
+#end
 import haxe.Json;
 
 class FreeplayState_Psych extends MusicBeatState
@@ -61,6 +64,9 @@ class FreeplayState_Psych extends MusicBeatState
 
 	var player:MusicPlayerPsych;
 	var freeplayTouchInputBlockTime:Float = 0;
+	#if (MODS_ALLOWED && sys && !mobile)
+	var modImportOverlay:ModImportOverlay = null;
+	#end
 
 	override function create()
 	{
@@ -264,6 +270,14 @@ class FreeplayState_Psych extends MusicBeatState
 
 	override function update(elapsed:Float)
 	{
+		#if (MODS_ALLOWED && sys && !mobile)
+		if (modImportOverlay != null)
+		{
+			super.update(elapsed);
+			updateModImport();
+			return;
+		}
+		#end
 		if (freeplayTouchInputBlockTime > 0)
 			freeplayTouchInputBlockTime -= elapsed;
 
@@ -694,43 +708,42 @@ class FreeplayState_Psych extends MusicBeatState
 		MusicBeatState.switchState(FreeplayStateSelector.create());
 	}
 
-	function copyModFolderRecursive(source:String, target:String):Void
+	function updateModImport():Void
 	{
-		if (!FileSystem.exists(target))
-			FileSystem.createDirectory(target);
-
-		for (entry in FileSystem.readDirectory(source))
+		if (!modImportOverlay.finished)
+			return;
+		if (modImportOverlay.succeeded)
 		{
-			var srcPath:String = Path.join([source, entry]);
-			var dstPath:String = Path.join([target, entry]);
-			if (FileSystem.isDirectory(srcPath))
-				copyModFolderRecursive(srcPath, dstPath);
-			else
-			{
-				var parentDir:String = Path.directory(dstPath);
-				if (parentDir != null && parentDir.length > 0 && !FileSystem.exists(parentDir))
-					FileSystem.createDirectory(parentDir);
-				File.copy(srcPath, dstPath);
-			}
+			modImportOverlay = null;
+			reloadModsFromFreeplay();
+			return;
+		}
+		if (controls.ACCEPT || controls.BACK)
+		{
+			remove(modImportOverlay, true);
+			modImportOverlay.destroy();
+			modImportOverlay = null;
 		}
 	}
 
 	function importDroppedModFolder(path:String):Void
 	{
-		if (path == null || path.length < 1 || !FileSystem.exists(path) || !FileSystem.isDirectory(path))
+		if (modImportOverlay != null || path == null || path.length < 1 || !FileSystem.exists(path) || !FileSystem.isDirectory(path))
 			return;
 
+		while (path.length > 1 && (path.endsWith('/') || path.endsWith('\\')))
+			path = path.substr(0, path.length - 1);
 		var folderName:String = Path.withoutDirectory(path);
 		if (folderName == null || folderName.length < 1)
 			return;
 
-		copyModFolderRecursive(path, Paths.mods(folderName));
-		reloadModsFromFreeplay();
+		modImportOverlay = new ModImportOverlay(path, Paths.mods(folderName), folderName);
+		add(modImportOverlay);
 	}
 
 	function onDropFile(path:String):Void
 	{
-		if (player != null && player.playingMusic)
+		if (modImportOverlay != null || (player != null && player.playingMusic))
 			return;
 		importDroppedModFolder(path);
 	}

@@ -20,6 +20,14 @@
   },
   "tip": "Presione {1} para escuchar la canción / Presione {2} para abrir el menú de cambios de juego / Presione {3} para restablecer su puntuación y precisión.",
   "desktop_mod_tip": "/ F5 recarga mods / suelta una carpeta de mod para importarlo.",
+  "mod_import": {
+    "title": "Importando mod",
+    "scanning": "Analizando archivos...",
+    "copying": "Copiando {1} de {2} archivos",
+    "complete": "Importación completada. Actualizando mods...",
+    "failed": "No se pudo importar el mod",
+    "dismiss": "Presiona ACEPTAR o ATRÁS para cerrar"
+  },
   "song_info": {
     "loading": "Cargando...",
     "scores": "Dificultades y puntuaciones:\n{1}",

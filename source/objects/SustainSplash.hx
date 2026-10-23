@@ -14,6 +14,8 @@ class SustainSplash extends FlxSprite
 	var colorSwap:ColorSwap;
 	var loadedPath:String;
 	var loadedLane:Int = -1;
+	var atlasScaleX:Float = 1;
+	var atlasScaleY:Float = 1;
 
 	public function new():Void
 	{
@@ -50,6 +52,8 @@ class SustainSplash extends FlxSprite
 				setGraphicSize(Std.int(width * PlayState.daPixelZoom));
 				updateHitbox();
 			}
+			atlasScaleX = scale.x;
+			atlasScaleY = scale.y;
 			antialiasing = ClientPrefs.data.antialiasing && !PlayState.isPixelStage;
 
 			final suffix:String = getAnimationColor(lane);
@@ -102,7 +106,7 @@ class SustainSplash extends FlxSprite
 
 		if (strumNote != null)
 		{
-			setPosition(strumNote.x, strumNote.y);
+			syncToStrumLayout();
 
 			if (ClientPrefs.data.hideSustainSplash)
 			{
@@ -118,6 +122,24 @@ class SustainSplash extends FlxSprite
 			}
 
 		}
+	}
+
+	function syncToStrumLayout():Void
+	{
+		if (strumNote == null)
+			return;
+
+		var lineScale:Float = strumNote.layoutScale;
+		if (!Math.isFinite(lineScale) || lineScale <= 0)
+			lineScale = 1;
+		var targetScaleX:Float = atlasScaleX * lineScale;
+		var targetScaleY:Float = atlasScaleY * lineScale;
+		if (Math.abs(scale.x - targetScaleX) > 0.0001 || Math.abs(scale.y - targetScaleY) > 0.0001)
+		{
+			scale.set(targetScaleX, targetScaleY);
+			updateHitbox();
+		}
+		setPosition(strumNote.x, strumNote.y);
 	}
 
 	function playHoldLoop():Void
@@ -177,6 +199,7 @@ class SustainSplash extends FlxSprite
 		final splashDisabled:Bool = root.noteSplashData.disabled;
 
 		strumNote = strum;
+		syncToStrumLayout();
 		visible = true;
 		active = true;
 		animation.finishCallback = null;
