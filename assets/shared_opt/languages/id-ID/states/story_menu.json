@@ -1,0 +1,10 @@
+{
+  "$schema": 1,
+  "$namespace": "states.story_menu",
+  "presence": "Di Menu",
+  "score": "SKOR MINGGU: {1}",
+  "errors": {
+    "no_weeks": "TIDAK ADA MINGGU YANG DITAMBAHKAN UNTUK MODE CERITA\n\nTekan {1} untuk membuka Menu Editor Minggu.\nTekan {2} untuk kembali ke Menu Utama.",
+    "no_visible_weeks": "TIDAK ADA MINGGU YANG TERLIHAT TERSEDIA UNTUK STORY MODE\n\nTekan {1} untuk kembali ke Menu Utama."
+  }
+}

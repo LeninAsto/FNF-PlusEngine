@@ -1,0 +1,42 @@
+{
+  "$schema": 1,
+  "$namespace": "states.credits",
+  "presence": "メニュー",
+  "sections": {
+    "plus_engine": "Plus Engine チーム",
+    "mobile": "モバイルポートチーム",
+    "psych_engine": "Psych Engine チーム",
+    "contributors": "エンジンの貢献者",
+    "funkin": "ファンキン・クルー",
+    "psych_discord": "Psych Engine Discord"
+  },
+  "roles": {
+    "lenin_asto": "プログラマー Plus Engine",
+    "sirthegamercoder": "インドネシア語翻訳とHelp coder Plus Engine",
+    "andres": "作成者および使用されたいくつかのコードの所有者 Slushi Engine",
+    "theodev": "主人公,主要コーダー Funkin Modchart",
+    "autistic_lulu": "Psych Engine 1.0.x 修理とメンテナンス",
+    "homuhomu833": "ポーター首長 Psych Engine そして著者 linc_luajit-rewriten",
+    "karim_akra": "2 番目のポーター Psych Engine",
+    "moxie": "助手 Psych Engine モバイル",
+    "shadow_mario": "主なプログラマーと事務局長 Psych Engine",
+    "riveren": "主要アーティスト/アニメーター Psych Engine",
+    "bb_panzu": "前プログラマー Psych Engine",
+    "crowplexus": "Linux 支援 HScript アイリス,インプットシステム v3 その他のPR",
+    "kamizeta": "ペッシーの創造者 Psych Engineマスコットだ",
+    "maxneton": "パース Egg アーティスト/アニメーター",
+    "keoiki": "注: スプラッシュアニメーションとラテン文字",
+    "sqirrarng": "クラッシュハンドラーとベースコード\nグラフ編集者の波形",
+    "elitemastereric": "ランタイムシェッダーサポートおよびその他のPR",
+    "majigsaw77": ".MP4ビデオローダーライブラリ (hxvlc)",
+    "iflicky": "Psyncと Tea Time\n音響効果も",
+    "kadedev": "グラフ編集と他のPRでいくつかの問題が修正されました",
+    "superpowers04": "LUAJITフォーク",
+    "cheems_and_friends": "作成者 FlxAnimate",
+    "ninjamuffin99": "プログラマー Friday Night Funkin'",
+    "phantom_arcade": "アニメーター Friday Night Funkin'",
+    "evilsk8r": "芸術家 Friday Night Funkin'",
+    "kawaisprite": "構成者 Friday Night Funkin'"
+  },
+  "psych_discord_join": "加入する Psych ウォード!"
+}

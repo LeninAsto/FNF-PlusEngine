@@ -1,0 +1,47 @@
+{
+  "$schema": 1,
+  "$namespace": "states.mods_menu",
+  "presence": "在Mod浏览器中",
+  "title": "调控方式",
+  "filter": "筛选：{1}",
+  "filters": {
+    "all": "所有",
+    "enabled": "启动",
+    "disabled": "残疾人",
+    "launchable": "启动性"
+  },
+  "search": "搜索",
+  "search_query": "搜索: {1}{2}",
+  "sections": {
+    "description": "描述",
+    "features": "功能",
+    "changelog": "变态"
+  },
+  "restart_notice": "* 移动/关闭这个模式将重新启动游戏.",
+  "buttons": {
+    "launch": "发射",
+    "enable": "能使用",
+    "enabled": "启动",
+    "disable": "残疾人",
+    "settings": "设置",
+    "reload": "转载"
+  },
+  "hint": "上/下 选择   L/R 排序   ENTER 启动   SPACE 启用/禁用（SHIFT=全部）   TAB 设置   Y 安全   F 筛选   / 搜索   ESC 退出",
+  "empty": "没有安装模式\n报纸 BACK 退出或安装一个模式",
+  "unknown_mod": "不知名的模特",
+  "no_description": "没有提供描述.",
+  "status": {
+    "disabled": "禁用 - 启动",
+    "launch": "> 打压 ENTER 发射",
+    "no_launchable_states": "没有可发射状态",
+    "base_game_global": "基本游戏总是全球上载",
+    "sensitive_scripts": "检测到敏感脚本 - 选择TRUST才能启用",
+    "activation_denied": "启动被拒绝 - 移动保持残疾",
+    "trusted": "可靠 - 启用",
+    "security_disabled": "禁用Mod安全 (在选项中启用)"
+  },
+  "settings_error": {
+    "title": "模特名称: {1}",
+    "message": "发生错误: {1}"
+  }
+}

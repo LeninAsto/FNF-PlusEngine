@@ -1,0 +1,18 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.popups",
+  "common": {
+    "none": "なし"
+  },
+  "mod_settings": {
+    "title": "MOD名: {1}",
+    "parse_error": "エラーが発生しました: {1}"
+  },
+  "achievements": {
+    "mod_title": "MOD名: {1}",
+    "invalid_entry": "実績 # {1} は無効です。",
+    "entry_title": "実績に関するエラー: {1}",
+    "missing_save": "有効な「保存」値がありません。",
+    "load_error": "achievements.json の読み込みエラー: {1}"
+  }
+}

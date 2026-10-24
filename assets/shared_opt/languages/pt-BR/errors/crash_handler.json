@@ -1,0 +1,63 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.crash_handler",
+  "titles": {
+    "error": "Erro!",
+    "critical_error": "Erro crítico!"
+  },
+  "kinds": {
+    "hardcoded": "Erro Codificado",
+    "critical_hardcoded": "Erro Crítico Codificado"
+  },
+  "format": {
+    "error_kind": "ERRO: {1}",
+    "message": "Mensagem:",
+    "trace": "Rastreio:",
+    "tips": "Dicas:",
+    "need_help": "Precisa de ajuda? Visita:"
+  },
+  "stack": {
+    "non_haxe_function": "Função Não- Haxe (C)",
+    "module": "Módulo {1}",
+    "source_line": "{1}.{2} () [linha {3}]",
+    "file_line": "{1} [linha {2}]",
+    "local_function": "Função local {1}",
+    "method": "{1} - {2}"
+  },
+  "tips": {
+    "hardcoded_origin": "Isso caiu fora do hxscript, então é provavelmente o código motor/fonte ou um caminho de biblioteca compilado.",
+    "first_source_line": "Verifique a primeira linha de origem na pilha antes do loop do motor; que é geralmente o culpado útil.",
+    "rebuild_assets": "Se isso só acontecer após editar scripts/classes, reconstrua e certifique-se de que os ativos exportados não estejam obsoletos.",
+    "native_crash": "Este é um caminho de falha nativo/crítico, de modo que o aplicativo não pôde recuperar de forma limpa.",
+    "close_running_build": "Se isso aparecer durante o teste de compilação, feche cada PlusEngine em execução. exe antes de reconstruir.",
+    "disable_mod_scripts": "Se mods estiverem habilitados, tente novamente com scripts desativados para separar falhas de motor de falhas de lado mod."
+  },
+  "null_messages": {
+    "0": "Oops! Os deuses do código não estão satisfeitos. Referência nula encontrada!",
+    "1": "Houston, temos um problema nulo!",
+    "2": "Erro 404: Objeto não encontrado (é apenas nulo)",
+    "3": "Parabéns! Descobriste o vazio! (null)",
+    "4": "O objeto decidiu tirar férias (null)",
+    "5": "*Trombone triste* nulo aconteceu",
+    "6": "Null? Mais como... não é legal!",
+    "7": "O objeto foi comprar cigarros e nunca mais voltou (null)",
+    "8": "Realização Desbloqueada: Encontre uma referência nula!",
+    "9": "Referências nulas são armazenadas nas bolas",
+    "10": "Momento Bruh: referência nula detectada",
+    "11": "Problema de habilidade: você tentou usar um objeto nulo",
+    "12": "O objeto disse 'aight imma head out' (null)",
+    "13": "Erro: object.exe parou de funcionar (null)",
+    "14": "Parabéns, partiste-o! (referência nula)",
+    "15": "O objeto está em uma data indefinida (null)",
+    "16": "Referência nula? No meu motor? É mais provável do que pensas.",
+    "17": "Objeto não encontrado. Você verificou debaixo do sofá? (null)"
+  },
+  "null_error_message": "Mensagem de erro nula (irônica, não é?)",
+  "original_error": "{1}\n\nErro original: {2}",
+  "unknown_error": "Erro desconhecido",
+  "unknown_critical_error": "Erro crítico desconhecido",
+  "help_inline": "Para obter ajuda, visite: {1}",
+  "recursive_handler": "O manipulador de crash foi invocado novamente enquanto lidava com um erro.",
+  "android_dispatch_failed": "Falha no envio da atividade de falha do Android: {1}",
+  "save_failed": "Não foi possível salvar a mensagem de erro. ({1})"
+}

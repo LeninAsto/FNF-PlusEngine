@@ -1,0 +1,67 @@
+{
+  "$schema": 1,
+  "$namespace": "freeplay",
+  "presence": "En los menús",
+  "title": "FREEPLAY",
+  "score": {
+    "personal_best": "MEJOR PERSONAL: {1} ({2})",
+    "details": "Puntuación: {1}\nPrecisión: {2}",
+    "none": "Aún no hay puntuación"
+  },
+  "errors": {
+    "no_weeks": "NO HAY SEMANAS PARA EL MODO LIBRE\n\nPulsa {1} para abrir el editor de semanas.\nPulsa {2} para volver al menú principal.",
+    "chart_load_exception": "Error inesperado al cargar el chart: {1}",
+    "no_chart": "¡No hay ningún chart disponible para esta dificultad!",
+    "invalid_bpm": "Este chart tiene un BPM no válido, por lo que no se puede reproducir."
+  },
+  "search": {
+    "placeholder": "Buscar...",
+    "helper": "Presione B para enfocar, ESC para salir"
+  },
+  "tip": "Presione {1} para escuchar la canción / Presione {2} para abrir el menú de cambios de juego / Presione {3} para restablecer su puntuación y precisión.",
+  "desktop_mod_tip": "/ F5 recarga mods / suelta una carpeta de mod para importarlo.",
+  "mod_import": {
+    "title": "Importando mod",
+    "scanning": "Analizando archivos...",
+    "copying": "Copiando {1} de {2} archivos",
+    "complete": "Importación completada. Actualizando mods...",
+    "failed": "No se pudo importar el mod",
+    "dismiss": "Presiona ACEPTAR o ATRÁS para cerrar"
+  },
+  "song_info": {
+    "loading": "Cargando...",
+    "scores": "Dificultades y puntuaciones:\n{1}",
+    "time": "Duración: {1}",
+    "bpm": "BPM: {1}",
+    "author": "Por: {1}"
+  },
+  "licenses": {
+    "no-licenses": "Sin licencia",
+    "creative-commons": "Creative Commons",
+    "cc-by": "CC BY",
+    "cc-by-sa": "CC BY-SA",
+    "cc-by-nd": "CC BY-ND",
+    "cc-by-nc": "CC BY-NC",
+    "cc-by-nc-sa": "CC BY-NC-SA",
+    "cc-by-nc-nd": "CC BY-NC-ND",
+    "public-domain": "Dominio público",
+    "royalty-free": "Libre de derechos",
+    "copyright": "Derechos de autor",
+    "permission-required": "Permiso requerido",
+    "comercial-use": "Uso comercial",
+    "no-comercial": "No comercial",
+    "no-derivatives": "Sin derivados",
+    "share-alike": "Compartir por igual",
+    "atribution-required": "Atribución requerida",
+    "redistribution-allow": "Redistribución permitida",
+    "modify-allow": "Modificación permitida",
+    "streaming-allow": "Transmisión permitida",
+    "public-access": "Acceso público",
+    "public-execution": "Actuación pública",
+    "sync": "Sincronizar"
+  },
+  "psych": {
+    "tip": "Presione {1} para escuchar la canción / Presione {2} para abrir el menú de cambios de juego / Presione {3} para restablecer su puntuación y precisión.",
+    "desktop_mod_tip": "/ F5 recarga mods / suelta una carpeta de mod para importarlo."
+  }
+}

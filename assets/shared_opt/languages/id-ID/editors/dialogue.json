@@ -1,0 +1,19 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.dialogue",
+  "ui": {
+    "angry_textbox": "Kotak Teks Marah",
+    "character": "Karakter:",
+    "interval_speed_ms": "Interval/Kecepatan (ms):",
+    "load_dialogue": "Muat Dialog",
+    "sound_file_name": "Nama file suara:",
+    "text": "Teks:"
+  },
+  "presence": {
+    "title": "Editor Dialog",
+    "empty": "(Kosong)"
+  },
+  "tabs": {
+    "dialogue_line": "Jalur Dialog"
+  }
+}

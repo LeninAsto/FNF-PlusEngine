@@ -1,0 +1,18 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.popups",
+  "common": {
+    "none": "None"
+  },
+  "mod_settings": {
+    "title": "Mod name: {1}",
+    "parse_error": "An error occurred: {1}"
+  },
+  "achievements": {
+    "mod_title": "Mod name: {1}",
+    "invalid_entry": "Achievement #{1} is invalid.",
+    "entry_title": "Error on Achievement: {1}",
+    "missing_save": "Missing valid \"save\" value.",
+    "load_error": "Error loading achievements.json: {1}"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.character",
+  "ui": {
+    "add_update": "Add/Update",
+    "advanced_animation_indices": "ADVANCED - Animation Indices:",
+    "animated_icon": "Animated Icon",
+    "animation_name": "Animation name:",
+    "animation_symbol_name_tag": "Animation Symbol Name/Tag:",
+    "animations": "Animations:",
+    "camera_x_y": "Camera X/Y:",
+    "character": "Character:",
+    "character_x_y": "Character X/Y:",
+    "flip_x": "Flip X",
+    "framerate": "Framerate:",
+    "get_icon_color": "Get Icon Color",
+    "health_bar_r_g_b": "Health Bar R/G/B:",
+    "health_icon_name": "Health icon name:",
+    "highlight_ghost": "Highlight Ghost",
+    "image_file_name": "Image file name:",
+    "load_template": "Load Template",
+    "make_ghost": "Make Ghost",
+    "no_antialiasing": "No Antialiasing",
+    "playable_character": "Playable Character",
+    "reload_char": "Reload Char",
+    "reload_image": "Reload Image",
+    "remove": "Remove",
+    "save_character": "Save Character",
+    "scale": "Scale:",
+    "should_it_loop": "Should it Loop?",
+    "sing_animation_length": "Sing Animation length:",
+    "vocals_file_postfix": "Vocals File Postfix:",
+    "zoom_1x": "Zoom: 1x"
+  },
+  "presence": {
+    "title": "Character Editor",
+    "character": "Character: {1}"
+  },
+  "help": {
+    "open": "Press {1} for Help",
+    "mobile": "CAMERA\nX/Y - Camera Zoom In/Out\nG + Arrow Buttons - Move Camera\nZ - Reset Camera Zoom\n\nCHARACTER\nA - Reset Current Offset\nV/D - Previous/Next Animation\nArrow Buttons - Move Offset\n\nOTHER\nS - Toggle Silhouettes\nHold C - Move Offsets 10x faster and Camera 4x faster",
+    "desktop": "CAMERA\nE/Q - Camera Zoom In/Out\nJ/K/L/I - Move Camera\nR - Reset Camera Zoom\n\nCHARACTER\nCtrl + R - Reset Current Offset\nCtrl + C - Copy Current Offset\nCtrl + V - Paste Copied Offset on Current Animation\nCtrl + Z - Undo Last Paste or Reset\nW/S - Previous/Next Animation\nSpace - Replay Animation\nArrow Keys - Move Offset\nA/D - Frame Advance (Back/Forward)\n\nOTHER\nF12 - Toggle Silhouettes\nHold Shift - Move Offsets 10x faster and Camera 4x faster\nHold Control - Move camera 4x slower"
+  },
+  "messages": {
+    "no_animation": "ERROR: No Animation Found"
+  },
+  "tabs": {
+    "animations": "Animations",
+    "character": "Character",
+    "ghost": "Ghost",
+    "settings": "Settings"
+  }
+}

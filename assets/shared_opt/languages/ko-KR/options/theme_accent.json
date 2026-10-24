@@ -1,0 +1,41 @@
+{
+  "$schema": 1,
+  "$namespace": "options.theme_accent",
+  "presence": "테마 억양 픽커",
+  "title": "주제 주력 색상",
+  "hint": "진짜 MD3 위젯을 미리 보시면 픽처를 끌어요. ENTER 확인하고, BACK 취소합니다.",
+  "picker_hint": "바퀴 + 밝기 스트립 + 팔레트, 시각 수프로 변하지 않고.",
+  "live_preview": "라이브 미리보기 활성화",
+  "use_custom": "사용자 정의 억양을 사용",
+  "mini_hint": "오른쪽에는 주식 엔진 위젯이 당신의 억양으로 염색되어 있습니다. 여기 저주받은 것처럼 보이면 메뉴에서도 저주받은 것처럼 보일 것입니다.",
+  "hex_label": "HEX {1}",
+  "boxes": {
+    "preview": "주제 미리보기",
+    "picker": "억양 픽커",
+    "components": "MD3 컴포넌트 미리보기"
+  },
+  "preview": {
+    "title": "프리플라이 샘플",
+    "meta": "사용자 지정 억양 미리보기"
+  },
+  "chips": {
+    "active": "억양 활동",
+    "custom": "사용자 정의 토큰",
+    "preset_safe": "미리 설정된 안전",
+    "selected": "선택",
+    "hex": "HEX 토큰"
+  },
+  "sections": {
+    "standard": "표준 발전",
+    "wavy": "급격 한 발전",
+    "widgets": "다른 엔진 위젯"
+  },
+  "actions": {
+    "copy_hex": "HEX 복사본",
+    "paste_hex": "패스트 HEX",
+    "apply": "적용",
+    "cancel": "취소",
+    "preview": "미리보기",
+    "accent": "억양"
+  }
+}

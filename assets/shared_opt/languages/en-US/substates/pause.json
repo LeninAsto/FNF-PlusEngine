@@ -1,0 +1,28 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.pause",
+  "deaths": "Blueballed: {1}",
+  "author": "By: {1}",
+  "practice_mode": "Practice Mode",
+  "charting_mode": "Charting Mode",
+  "time": "{1} / {2}",
+  "menu": {
+    "resume": "Resume",
+    "restart_song": "Restart Song",
+    "chart_editor": "Chart Editor",
+    "change_difficulty": "Change Difficulty",
+    "options": "Options",
+    "exit_to_menu": "Exit to menu",
+    "leave_charting_mode": "Leave Charting Mode",
+    "skip_time": "Skip Time",
+    "end_song": "End Song",
+    "toggle_practice_mode": "Toggle Practice Mode",
+    "toggle_botplay": "Toggle Botplay",
+    "skip_video": "Skip Video",
+    "back": "BACK"
+  },
+  "errors": {
+    "missing_file": "Missing file: {1}",
+    "chart": "ERROR WHILE LOADING CHART:\n{1}"
+  }
+}

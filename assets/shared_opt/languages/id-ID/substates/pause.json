@@ -1,0 +1,28 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.pause",
+  "deaths": "Kalah: {1}",
+  "author": "Oleh: {1}",
+  "practice_mode": "Mode Latihan",
+  "charting_mode": "Mode Editor Chart",
+  "time": "{1} / {2}",
+  "menu": {
+    "resume": "Lanjutkan",
+    "restart_song": "Ulangi Lagu",
+    "chart_editor": "Editor Chart",
+    "change_difficulty": "Ubah Kesulitan",
+    "options": "Pengaturan",
+    "exit_to_menu": "Kembali ke Menu",
+    "leave_charting_mode": "Keluar dari Mode Editor",
+    "skip_time": "Lewati Waktu",
+    "end_song": "Akhiri Lagu",
+    "toggle_practice_mode": "Alihkan Mode Latihan",
+    "toggle_botplay": "Alihkan Botplay",
+    "skip_video": "Lewati Video",
+    "back": "KEMBALI"
+  },
+  "errors": {
+    "missing_file": "Berkas hilang: {1}",
+    "chart": "GAGAL MEMUAT CHART:\n{1}"
+  }
+}

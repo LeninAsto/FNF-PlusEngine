@@ -1,0 +1,110 @@
+{
+  "$schema": 1,
+  "$namespace": "options",
+  "common": {
+    "title": "Pengaturan",
+    "presence": "Menu Pilihan"
+  },
+  "mobile_controls_tip": "Tekan {1} untuk Menu Kontrol Go Mobile",
+  "controls": {
+    "keyboard_short": "CTRL",
+    "rebinding": "Mengikat kembali {1}",
+    "rebinding_help": "Tahan {1} untuk Membatalkan\nTahan {2} untuk Menghapus"
+  },
+  "categories": {
+    "note_colors": {
+      "name": "not Warna",
+      "description": "Ubah warna nada dan warna percikan nada."
+    },
+    "controls": {
+      "name": "Kontrol",
+      "description": "Ubah ikatan keyboard dan gamepad."
+    },
+    "adjust_delay_and_combo": {
+      "name": "Sesuaikan Delay dan Combo",
+      "description": "Sesuaikan penundaan nada, offset peringkat, dan penempatan kombo."
+    },
+    "graphics": {
+      "name": "Pengaturan Grafik",
+      "description": "Ubah pengaturan kinerja dan rendering."
+    },
+    "visuals": {
+      "name": "Pengaturan Visual",
+      "description": "Ubah HUD, kamera, dan preferensi visual."
+    },
+    "gameplay": {
+      "name": "Pengaturan Permainan",
+      "description": "Ubah pengubah dan pembantu gameplay."
+    },
+    "legacy": {
+      "name": "Pengaturan Warisan",
+      "description": "Ubah pengaturan kompatibilitas untuk perilaku Psych /Plus yang lebih lama."
+    },
+    "mod_security": {
+      "name": "Pemeriksaan Keamanan Mod",
+      "description": "Ubah pemeriksaan yang digunakan saat memuat mod."
+    },
+    "modchart": {
+      "name": "Pengaturan Modchart",
+      "description": "Ubah perilaku dan kompatibilitas modchart."
+    },
+    "language": {
+      "name": "Bahasa",
+      "description": "Ubah bahasa aktif."
+    },
+    "mobile": {
+      "name": "Pengaturan Seluler",
+      "description": "Ubah kontrol seluler dan pengaturan tata letak."
+    }
+  },
+  "menus": {
+    "modchart": {
+      "title": "Pengaturan Modchart",
+      "presence": "Menu Opsi Modchart"
+    },
+    "legacy": {
+      "title": "Pengaturan Warisan",
+      "presence": "Menu Pengaturan Lama"
+    },
+    "mod_security": {
+      "title": "Pemeriksaan Keamanan Mod",
+      "presence": "Pemeriksaan Keamanan Mod"
+    },
+    "gameplay": {
+      "title": "Pengaturan Permainan",
+      "presence": "Menu Pengaturan Permainan"
+    },
+    "graphics": {
+      "title": "Pengaturan Grafik",
+      "presence": "Menu Pengaturan Grafis"
+    },
+    "visuals": {
+      "title": "Pengaturan Visual",
+      "presence": "Menu Pengaturan Visual"
+    },
+    "language": {
+      "title": "Bahasa",
+      "presence": "Menu Bahasa"
+    },
+    "controls": {
+      "presence": "Menu Kontrol"
+    },
+    "note_colors": {
+      "presence": "not Menu Warna"
+    },
+    "classic_note_colors": {
+      "presence": "Menu Warna not Klasik",
+      "channels": "Kecerahan Saturasi Warna"
+    },
+    "offset": {
+      "presence": "Menu Penundaan/Kombo Offset"
+    },
+    "mobile": {
+      "title": "Pengaturan Seluler",
+      "presence": "Menu Pengaturan Seluler"
+    },
+    "mod_settings": {
+      "presence": "Pengaturan Mod ( {1} )"
+    }
+  }
+}

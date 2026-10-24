@@ -1,0 +1,18 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.popups",
+  "common": {
+    "none": "없음"
+  },
+  "mod_settings": {
+    "title": "모드 이름: {1}",
+    "parse_error": "오류가 발생했습니다. {1}"
+  },
+  "achievements": {
+    "mod_title": "모드 이름: {1}",
+    "invalid_entry": "성취 #{1} 유효하지 않습니다.",
+    "entry_title": "성과 오류: {1}",
+    "missing_save": "유효한 \"보존\" 값이 없어졌습니다.",
+    "load_error": "오류 로딩 achievements.json: {1}"
+  }
+}

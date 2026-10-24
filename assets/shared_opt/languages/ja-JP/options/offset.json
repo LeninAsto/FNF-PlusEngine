@@ -1,0 +1,24 @@
+{
+  "$schema": 1,
+  "$namespace": "options.offset",
+  "beat_hit": "撃たれ!",
+  "current_offset": "現在のオフセット: {1} Ms",
+  "switch": "(プレス) {1} スイッチに)",
+  "modes": {
+    "note_delay": "ノート/ビート遅延",
+    "combo": "コンボオフセット",
+    "keyviewer": "KeyViewer 補償金",
+    "hit_ms": "MSオフセットを押す"
+  },
+  "combo": {
+    "rating_offset": "評価オフセット:",
+    "numbers_offset": "数字のオフセット:"
+  },
+  "keyviewer": {
+    "position_offset": "KeyViewer 位置:",
+    "color": "KeyViewer カラー:"
+  },
+  "hit_ms": {
+    "preview": "プレビュー:"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.playtest",
+  "ui": {
+    "section_0": "Bagian: 0"
+  },
+  "presence": {
+    "title": "Uji coba di Chart Editor"
+  }
+}

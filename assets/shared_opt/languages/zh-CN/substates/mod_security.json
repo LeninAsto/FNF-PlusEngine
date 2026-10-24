@@ -1,0 +1,53 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.mod_security",
+  "title": {
+    "warning": "敏感的API警告",
+    "clean": "模组安全"
+  },
+  "detected_calls": "检测到的呼叫 (上/下或滚动轮):",
+  "actions": {
+    "trust": "信心",
+    "block": "区块"
+  },
+  "hint": "选择左/右-- Enter 确认",
+  "counter": "调整器 {1} / {2}",
+  "body": {
+    "clean": "没有任何敏感的API被检测到在这个模式的脚本.\n\n",
+    "clean_activation": "值得注意的是,\n封锁 = 保持调节器禁用.",
+    "clean_review": "值得信赖的脚本正常运行\n区块 = 模块仍然启用,脚本被跳过.",
+    "warning": "这种模式的脚本使用了可以滥用的API.\n",
+    "warning_activation": "关键字: 关键字: 关键字: 关键字: 关键字\n",
+    "warning_review": "转载程序:TUST=脚本正常运行.BLOCK=mod仍然启用,脚本跳过.\n",
+    "capabilities": "\n这种模式可以:"
+  },
+  "categories": {
+    "tamper": "[!!] 尝试篡改模组安全系统本身",
+    "exec": "[!] 在PC上运行外部程序/命令",
+    "gdi_effects": "[!] 可以开始 Windows 游戏之外的GDI屏幕效果",
+    "desktop_control": "[!] 可以更改桌面图标、任务栏、透明度或壁纸",
+    "window_control": "[*] 可以拍摄屏幕截图,通知 Windows 或改变游戏窗口",
+    "fs_write": "[!] 编写,修改或删除您的PC上的文件",
+    "haxe_eval": "[!] 执行任意的Haxe/Lua 运行时代码",
+    "fs_read": "[*] 从你的电脑上读取文件",
+    "reflect": "[*] 使用反射/动态类搜索",
+    "exit": "[*] 可以强制停止游戏过程",
+    "recon": "[*] 阅读环境变量 /系统信息",
+    "other": "\n  [*] 其他敏感API (见下列列表)",
+    "common_only": "\n  (只发现常见的API - - 查看下面的列表)"
+  },
+  "no_findings": "  (没有检测到敏感的API)",
+  "list_range": "{1}-{2} 的 {3}",
+  "item": "{1} 项目",
+  "items": "{1} 项目",
+  "details": {
+    "windows_gdi_effects": "负责: initGDIThread/prepareGDIEffect/enableGDIEffect;可运行桌面级GDI视觉效果",
+    "windows_gdi_internals": "负责: SlushiWinGDI/WinGDIThread;可以直接访问GDI效果线程或注册表",
+    "windows_desktop_control": "负责: hideDesktopIcons/hideTaskBar/moveDesktopElements;可以隐藏/移动桌面UI或改变透明度",
+    "windows_wallpaper_control": "负责: changeWindowsWallpaper/setDesktopWallpaper;可以更改或恢复 Windows 壁纸",
+    "windows_shellwindow_control": "负责: captureScreenshot/showNotification/setWindowOpacity;可以捕捉屏幕,通知 Windows,或改变窗口视图",
+    "windowsapi": "负责人:Slushithings.windows.WindowsAPI能达到 Plus Engine Windows 原住民助手",
+    "windowscpp": "负责人:Slushithings.windows.WindowsCPP;可以调低级别 Windows 原产函数",
+    "import_windows_native_apis": "负责:进口 slushithings.windows.*;可以解锁 Windows/GDI助手从 HScript"
+  }
+}

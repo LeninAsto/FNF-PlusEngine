@@ -1,0 +1,15 @@
+{
+  "$schema": 1,
+  "$namespace": "options.note_colors",
+  "reset_tip": "請按一下 {1} 在選定的註冊部分中重新設定.",
+  "full_reset_tip": "預覽 {1} + 按一下 RESET 按鍵將選定的註冊完全重置.",
+  "shift": "Shift",
+  "press": "按下",
+  "ctrl": "Ctrl",
+  "left_shoulder": "左肩鍵",
+  "mode": "顏色模式: {1}",
+  "modes": {
+    "classic": "經典 H/S/B",
+    "rgb": "RGB"
+  }
+}

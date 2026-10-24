@@ -1,0 +1,5 @@
+{
+  "$schema": 1,
+  "$namespace": "states.flashing",
+  "warning": "请注意！\n\n此模组包含闪光效果！\n\n是否关闭这些效果？"
+}

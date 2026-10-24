@@ -1,0 +1,17 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.outdated",
+  "title": "更新時間可用!",
+  "version": "目前版本: {1} => 新版本: {2}",
+  "loading_changelog": "接收變更記錄...",
+  "controls": "請按一下 ENTER 更新至最新版本\n如果您使用正確的引擎版本,\n在選項選單中可禁用此警告",
+  "controls_mobile": "按A,更新至最新版本\n如果您使用正確的引擎版本, 按B\n在選項選單中可禁用此警告",
+  "no_changelog": "沒有變更記錄",
+  "changelog_error": "錯誤載入變更記錄: {1}",
+  "changelog_title": "什麼是新的:\n{1}",
+  "network": {
+    "checking": "檢查變更記錄",
+    "retrieved": "檢查結果",
+    "no_connection": "沒有聯絡"
+  }
+}

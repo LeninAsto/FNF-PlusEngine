@@ -1,0 +1,41 @@
+{
+  "$schema": 1,
+  "$namespace": "options.theme_accent",
+  "presence": "標題的口音挑選器",
+  "title": "主題突出顏色",
+  "hint": "當你拖著挑選器時, 預覽真正的MD3外掛. ENTER 確認, BACK 取消了活動.",
+  "picker_hint": "透過色輪、亮度條和調色盤選擇顏色。",
+  "live_preview": "啟用直播預覽",
+  "use_custom": "使用自訂的口音",
+  "mini_hint": "如果它在這邊看起來是詛咒的,",
+  "hex_label": "沒有任何相關資訊 {1}",
+  "boxes": {
+    "preview": "主題預覽",
+    "picker": "強調色選擇器",
+    "components": "MD3 元件預覽"
+  },
+  "preview": {
+    "title": "免費玩法樣本",
+    "meta": "預覽 專屬的口音"
+  },
+  "chips": {
+    "active": "當前強調色",
+    "custom": "定製令牌",
+    "preset_safe": "預設安全",
+    "selected": "選擇",
+    "hex": "HEX 代號"
+  },
+  "sections": {
+    "standard": "標準進步",
+    "wavy": "隨著波浪而進步",
+    "widgets": "其他引擎工具"
+  },
+  "actions": {
+    "copy_hex": "複製 HEX",
+    "paste_hex": "貼上HEX",
+    "apply": "適用",
+    "cancel": "取消",
+    "preview": "預覽",
+    "accent": "強調色"
+  }
+}

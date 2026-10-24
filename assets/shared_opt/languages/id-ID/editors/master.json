@@ -1,0 +1,18 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.master",
+  "presence": "Menu Utama Editor",
+  "note_rgb_disabled": "not RGB dinonaktifkan!!!",
+  "no_mod_directory": "< Tidak Ada Direktori Mod yang Dimuat >",
+  "loaded_mod_directory": "< Direktori Mod yang Dimuat: {1} >",
+  "items": {
+    "chart_editor": "Editor Chart",
+    "character_editor": "Editor Karakter",
+    "stage_editor": "Editor Panggung",
+    "week_editor": "Editor Minggu",
+    "menu_character_editor": "Editor Karakter Menu",
+    "dialogue_editor": "Editor Dialog",
+    "dialogue_portrait_editor": "Editor Potret Dialog",
+    "note_splash_editor": "not Editor Percikan"
+  }
+}

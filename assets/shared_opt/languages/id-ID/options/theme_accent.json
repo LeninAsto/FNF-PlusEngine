@@ -1,0 +1,41 @@
+{
+  "$schema": 1,
+  "$namespace": "options.theme_accent",
+  "presence": "Pemilih Aksen Tema",
+  "title": "Warna Aksen Tema",
+  "hint": "Pratinjau widget MD3 nyata saat Anda menyeret pemilih. ENTER konfirmasi, BACK membatalkan.",
+  "picker_hint": "Roda + strip pencahayaan + palet, tanpa berubah menjadi sup visual.",
+  "live_preview": "Pratinjau langsung diaktifkan",
+  "use_custom": "Gunakan aksen khusus",
+  "mini_hint": "Sisi kanan menunjukkan widget mesin stok yang diwarnai dengan aksen Anda. Jika terlihat terkutuk di sini, menu juga akan terlihat terkutuk.",
+  "hex_label": "HEX {1}",
+  "boxes": {
+    "preview": "Pratinjau Tema",
+    "picker": "Pemilih Aksen",
+    "components": "Pratinjau Komponen MD3"
+  },
+  "preview": {
+    "title": "CONTOH MAIN GRATIS",
+    "meta": "Pratinjau Aksen Kustom"
+  },
+  "chips": {
+    "active": "Aksen aktif",
+    "custom": "Token khusus",
+    "preset_safe": "Aman untuk preset",
+    "selected": "Terpilih",
+    "hex": "token HEX"
+  },
+  "sections": {
+    "standard": "Kemajuan Standar",
+    "wavy": "Kemajuan Bergelombang",
+    "widgets": "Widget Mesin Lainnya"
+  },
+  "actions": {
+    "copy_hex": "Salin HEX",
+    "paste_hex": "Tempel HEX",
+    "apply": "Menerapkan",
+    "cancel": "Batal",
+    "preview": "Pratinjau",
+    "accent": "Aksen"
+  }
+}

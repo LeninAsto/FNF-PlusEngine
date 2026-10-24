@@ -1,0 +1,18 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.popups",
+  "common": {
+    "none": "Nenhum"
+  },
+  "mod_settings": {
+    "title": "Nome do mod: {1}",
+    "parse_error": "Ocorreu um erro: {1}"
+  },
+  "achievements": {
+    "mod_title": "Nome do mod: {1}",
+    "invalid_entry": "A conquista #{1} é inválida.",
+    "entry_title": "Erro na obtenção: {1}",
+    "missing_save": "Falta o valor \"salvar\" válido.",
+    "load_error": "Erro ao carregar as realizações.json: {1}"
+  }
+}

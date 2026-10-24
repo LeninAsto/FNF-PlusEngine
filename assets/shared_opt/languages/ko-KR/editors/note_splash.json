@@ -1,0 +1,40 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.note_splash",
+  "ui": {
+    "add_update": "추가/업데이트",
+    "animation_name": "애니메이션 이름:",
+    "animation_prefix": "애니메이션 프리픽스:",
+    "animations": "애니메이션",
+    "blue": "파란색:",
+    "color_to_replace": "대체할 색상:",
+    "convert_txt": "TXT를 변환",
+    "do_not_replace": "교체하지 마십시오.",
+    "green": "녹색:",
+    "image": "사진:",
+    "indices_optional": "지표 (선택):",
+    "maximum_fps": "최대 FPS:",
+    "minimum_fps": "최소 FPS:",
+    "note_data": "참고 자료:",
+    "red": "빨간색:",
+    "reload_image": "이미지 재충전",
+    "remove": "제거",
+    "replacing_color": "대체 색상:",
+    "save": "저장",
+    "scale": "규모:",
+    "template": "템플릿"
+  },
+  "presence": {
+    "title": "참고 스플래시 편집자"
+  },
+  "help": {
+    "open": "압력 {1} 도움",
+    "mobile": "스트럼 을 만질 것\n스플래쉬를 낳기 위해서\n\n화살표 키 - 오프셋 이동\nZ를 붙잡아 10x 더 빨리 이동한다\n\n\nC - 전류의 복제\nV - 현재 스플래시에서 복사된 오프셋을 붙여넣어\n다음 4개의 노트 데이터마다\n추가적인 애니메이션이 추가됩니다.",
+    "desktop": "스트럼 또는 프레스에 클릭 Space\n스플래쉬를 낳기 위해서\n\n화살표 키 - 오프셋 이동\n잠깐만요 Shift - 오프셋을 10배 더 빨리 움직여\n\n\nCtrl + C - 코피 전류 오프셋\nCtrl + V - 현재 스플래시에서 복사된 오프셋을 붙여\nCtrl + R - 리셋 전류 오프셋\n다음 4개의 노트 데이터마다\n추가적인 애니메이션이 추가됩니다."
+  },
+  "tabs": {
+    "animation": "애니메이션",
+    "properties": "재산",
+    "shader": "쉐이더"
+  }
+}

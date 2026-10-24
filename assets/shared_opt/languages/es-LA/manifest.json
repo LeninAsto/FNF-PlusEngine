@@ -1,0 +1,190 @@
+{
+  "schemaVersion": 1,
+  "code": "es-LA",
+  "name": "Español (Latinoamérica)",
+  "version": 2,
+  "fallback": [
+    "en-US"
+  ],
+  "bundles": [
+    "global.json",
+    "assets.json",
+    "errors/crash_handler.json",
+    "errors/scripting.json",
+    "errors/script_debug.json",
+    "errors/shader.json",
+    "errors/song_checker.json",
+    "errors/popups.json",
+    "substates/language.json",
+    "substates/reset_score.json",
+    "substates/outdated.json",
+    "substates/pause.json",
+    "substates/mod_security.json",
+    "options/common.json",
+    "options/gameplay_changers.json",
+    "options/settings.json",
+    "options/theme_accent.json",
+    "options/note_colors.json",
+    "options/offset.json",
+    "options/mod_security_checks.json",
+    "options/language.json",
+    "editors/master.json",
+    "editors/modchart.json",
+    "editors/prompt.json",
+    "editors/charting.json",
+    "editors/character.json",
+    "editors/dialogue_character.json",
+    "editors/dialogue.json",
+    "editors/menu_character.json",
+    "editors/note_splash.json",
+    "editors/stage.json",
+    "editors/week.json",
+    "editors/playtest.json",
+    "editors/preload_list.json",
+    "states/flashing.json",
+    "states/achievements.json",
+    "states/credits.json",
+    "states/main_menu.json",
+    "states/story_menu.json",
+    "states/freeplay.json",
+    "states/title.json",
+    "states/results.json",
+    "states/mods_menu.json",
+    "states/loading.json",
+    "states/playstate.json"
+  ],
+  "assets": [
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/bad.png",
+      "target": "images/es-LA/bad.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/combo.png",
+      "target": "images/es-LA/combo.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/comboBroken.png",
+      "target": "images/es-LA/comboBroken.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/go.png",
+      "target": "images/es-LA/go.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/good.png",
+      "target": "images/es-LA/good.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/Menu_Tracks.png",
+      "target": "images/es-LA/Menu_Tracks.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/menudifficulties/easy.png",
+      "target": "images/es-LA/menudifficulties/easy.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/menudifficulties/hard.png",
+      "target": "images/es-LA/menudifficulties/hard.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/menudifficulties/normal.png",
+      "target": "images/es-LA/menudifficulties/normal.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/miss.png",
+      "target": "images/es-LA/miss.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/pixelUI/bad-pixel.png",
+      "target": "images/es-LA/pixelUI/bad-pixel.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/pixelUI/comboBroken-pixel.png",
+      "target": "images/es-LA/pixelUI/comboBroken-pixel.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/pixelUI/date-pixel.png",
+      "target": "images/es-LA/pixelUI/date-pixel.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/pixelUI/epic-pixel.png",
+      "target": "images/es-LA/pixelUI/epic-pixel.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/pixelUI/good-pixel.png",
+      "target": "images/es-LA/pixelUI/good-pixel.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/pixelUI/miss-pixel.png",
+      "target": "images/es-LA/pixelUI/miss-pixel.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/pixelUI/ready-pixel.png",
+      "target": "images/es-LA/pixelUI/ready-pixel.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/pixelUI/set-pixel.png",
+      "target": "images/es-LA/pixelUI/set-pixel.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/pixelUI/shit-pixel.png",
+      "target": "images/es-LA/pixelUI/shit-pixel.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/pixelUI/sick-pixel.png",
+      "target": "images/es-LA/pixelUI/sick-pixel.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/ready.png",
+      "target": "images/es-LA/ready.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/set.png",
+      "target": "images/es-LA/set.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/shit.png",
+      "target": "images/es-LA/shit.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/sick.png",
+      "target": "images/es-LA/sick.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/storymenu/tutorial.png",
+      "target": "images/es-LA/storymenu/tutorial.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/storymenu/week1.png",
+      "target": "images/es-LA/storymenu/week1.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/storymenu/week2.png",
+      "target": "images/es-LA/storymenu/week2.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/storymenu/week3.png",
+      "target": "images/es-LA/storymenu/week3.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/storymenu/week4.png",
+      "target": "images/es-LA/storymenu/week4.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/storymenu/week5.png",
+      "target": "images/es-LA/storymenu/week5.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/storymenu/week6.png",
+      "target": "images/es-LA/storymenu/week6.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/storymenu/week7.png",
+      "target": "images/es-LA/storymenu/week7.png"
+    },
+    {
+      "source": "https://raw.githubusercontent.com/Psych-Plus-Team/FNF-PlusEngine/main/assets/translations/shared/images/es-LA/storymenu/weekend1.png",
+      "target": "images/es-LA/storymenu/weekend1.png"
+    }
+  ]
+}

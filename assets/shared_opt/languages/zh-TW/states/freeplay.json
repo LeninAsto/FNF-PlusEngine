@@ -1,0 +1,59 @@
+{
+  "$schema": 1,
+  "$namespace": "freeplay",
+  "presence": "在選單中",
+  "title": "免費播放",
+  "score": {
+    "personal_best": "沒有任何問題. {1} ({2})",
+    "details": "數值: {1}\n準確度: {2}",
+    "none": "目前沒有得分"
+  },
+  "errors": {
+    "no_weeks": "沒有加上自由遊戲的禮拜\n\n請按一下 {1} 進入週編輯選單.\n請按一下 {2} 返回主選單.",
+    "chart_load_exception": "在載入譜面時發生意外錯誤: {1}",
+    "no_chart": "此難度沒有可用譜面。",
+    "invalid_bpm": "譜面的 BPM 無效，無法遊玩。"
+  },
+  "search": {
+    "placeholder": "搜尋他們.",
+    "helper": "請按B以集中, ESC 退出"
+  },
+  "tip": "請按一下 {1} 來聽歌曲 / 媒體 {2} 開啟遊戲變更選單 / 按一下 {3} 請重新設定您的分數和準確度.",
+  "desktop_mod_tip": " / F5 重新載入模組 / 拖入模組資料夾以匯入。",
+  "song_info": {
+    "loading": "收納...",
+    "scores": "難度與分數：\n{1}",
+    "time": "時長：{1}",
+    "bpm": "BPM: {1}",
+    "author": "透過: {1}"
+  },
+  "licenses": {
+    "no-licenses": "沒有許可證",
+    "creative-commons": "Creative Commons",
+    "cc-by": "CC BY",
+    "cc-by-sa": "CC BY-SA",
+    "cc-by-nd": "CC BY-ND",
+    "cc-by-nc": "CC BY-NC",
+    "cc-by-nc-sa": "CC BY-NC-SA",
+    "cc-by-nc-nd": "CC BY-NC-ND",
+    "public-domain": "公共領域",
+    "royalty-free": "免費使用",
+    "copyright": "版權所有",
+    "permission-required": "需要許可",
+    "comercial-use": "商業用途",
+    "no-comercial": "沒有商業用途",
+    "no-derivatives": "沒有衍生品",
+    "share-alike": "共同分享",
+    "atribution-required": "必須歸類",
+    "redistribution-allow": "允許重新分配",
+    "modify-allow": "允許修改",
+    "streaming-allow": "已允許播放",
+    "public-access": "公眾使用",
+    "public-execution": "公眾表演",
+    "sync": "進行同步"
+  },
+  "psych": {
+    "tip": "請按一下 {1} 來聽歌曲 / 媒體 {2} 開啟遊戲變更選單 / 按一下 {3} 請重新設定您的分數和準確度.",
+    "desktop_mod_tip": " / F5 重新載入模組 / 拖入模組資料夾以匯入。"
+  }
+}

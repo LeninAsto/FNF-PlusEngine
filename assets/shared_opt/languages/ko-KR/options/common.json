@@ -1,0 +1,110 @@
+{
+  "$schema": 1,
+  "$namespace": "options",
+  "common": {
+    "title": "설정",
+    "presence": "옵션 메뉴"
+  },
+  "mobile_controls_tip": "압력 {1} 이동통신 제어 메뉴로 이동",
+  "controls": {
+    "keyboard_short": "CTRL",
+    "rebinding": "재구성 {1}",
+    "rebinding_help": "잠깐만요 {1} 취소\n잠깐만요 {2} 삭제"
+  },
+  "categories": {
+    "note_colors": {
+      "name": "참고 색상",
+      "description": "노트 색을 변경하고 노트 스플래시 색을 변경하십시오."
+    },
+    "controls": {
+      "name": "제어",
+      "description": "키보드와 게임패드 연결을 변경하십시오."
+    },
+    "adjust_delay_and_combo": {
+      "name": "지연 및 콤보를 조정",
+      "description": "노트 지연, 평정 오프셋, 컴보 배치 등을 조정한다."
+    },
+    "graphics": {
+      "name": "그래픽 설정",
+      "description": "성능 및 렌더링 설정을 변경합니다."
+    },
+    "visuals": {
+      "name": "시각 설정",
+      "description": "변화 HUD카메라와 시각적 선호도"
+    },
+    "gameplay": {
+      "name": "게임 플레이 설정",
+      "description": "게임 조작자 및 보조자를 변경하십시오."
+    },
+    "legacy": {
+      "name": "상속 설정",
+      "description": "노년층의 호환성 설정을 변경 Psych+ 행동"
+    },
+    "mod_security": {
+      "name": "모드 보안 검사",
+      "description": "모드를 로드할 때 사용되는 체크를 변경합니다."
+    },
+    "modchart": {
+      "name": "Modchart 설정",
+      "description": "모드채보 행동과 호환성을 변경합니다."
+    },
+    "language": {
+      "name": "언어",
+      "description": "적극적인 언어를 바꾸세요."
+    },
+    "mobile": {
+      "name": "모바일 설정",
+      "description": "모바일 컨트롤 및 레이아웃 설정을 변경합니다."
+    }
+  },
+  "menus": {
+    "modchart": {
+      "title": "Modchart 설정",
+      "presence": "Modchart 옵션 메뉴"
+    },
+    "legacy": {
+      "title": "상속 설정",
+      "presence": "레거시 설정 메뉴"
+    },
+    "mod_security": {
+      "title": "모드 보안 검사",
+      "presence": "모드 보안 검사"
+    },
+    "gameplay": {
+      "title": "게임 플레이 설정",
+      "presence": "게임 설정 메뉴"
+    },
+    "graphics": {
+      "title": "그래픽 설정",
+      "presence": "그래픽 설정 메뉴"
+    },
+    "visuals": {
+      "title": "시각 설정",
+      "presence": "시각 설정 메뉴"
+    },
+    "language": {
+      "title": "언어",
+      "presence": "언어 메뉴"
+    },
+    "controls": {
+      "presence": "제어 메뉴"
+    },
+    "note_colors": {
+      "presence": "참고 색상 메뉴"
+    },
+    "classic_note_colors": {
+      "presence": "클래식 노트 컬러 메뉴",
+      "channels": "색채 포화 밝기"
+    },
+    "offset": {
+      "presence": "지연/컴보 오프셋 메뉴"
+    },
+    "mobile": {
+      "title": "모바일 설정",
+      "presence": "모바일 설정 메뉴"
+    },
+    "mod_settings": {
+      "presence": "모드 설정 ({1})"
+    }
+  }
+}

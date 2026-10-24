@@ -1,0 +1,53 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.mod_security",
+  "title": {
+    "warning": "Peringatan API Sensitif",
+    "clean": "Keamanan Mod"
+  },
+  "detected_calls": "Panggilan terdeteksi (ATAS/BAWAH atau roda untuk menggulir):",
+  "actions": {
+    "trust": "MEMERCAYAI",
+    "block": "MEMBLOKIR"
+  },
+  "hint": "Kiri/Kanan untuk memilih -- Masuk untuk mengonfirmasi",
+  "counter": "Mod {1} / {2}",
+  "body": {
+    "clean": "Tidak ada API sensitif yang terdeteksi dalam skrip mod ini.\n\n",
+    "clean_activation": "TRUST = aktifkan modnya.\nBLOCK = biarkan mod dinonaktifkan.",
+    "clean_review": "TRUST = skrip berjalan normal.\nBLOCK = mod tetap diaktifkan, skrip dilewati.",
+    "warning": "Skrip mod ini menggunakan API yang dapat disalahgunakan untuk tujuan yang merugikan.\n",
+    "warning_activation": "TRUST = aktifkan mod dan jalankan skrip.   BLOCK = biarkan mod dinonaktifkan.\n",
+    "warning_review": "TRUST = skrip berjalan normal.   BLOCK = mod tetap diaktifkan, skrip dilewati.\n",
+    "capabilities": "\nMod ini dapat:"
+  },
+  "categories": {
+    "tamper": "[!!] Mencoba mengutak-atik sistem keamanan mod itu sendiri",
+    "exec": "[!] Menjalankan program/perintah eksternal di PC Anda",
+    "gdi_effects": "[!] Dapat memulai efek layar Windows GDI di luar game",
+    "desktop_control": "[!] Dapat mengubah ikon desktop, taskbar, transparansi atau wallpaper",
+    "window_control": "[*] Dapat mengambil tangkapan layar, memberi tahu Windows, atau mengubah jendela permainan",
+    "fs_write": "[!] Menulis, mengubah atau menghapus file di PC Anda",
+    "haxe_eval": "[!] Mengeksekusi kode Haxe/ Lua secara arbitrer saat runtime",
+    "fs_read": "[*] Membaca file dari PC Anda",
+    "reflect": "[*] Menggunakan refleksi/pencarian kelas dinamis",
+    "exit": "[*] Dapat menghentikan proses permainan secara paksa",
+    "recon": "[*] Membaca variabel lingkungan/info sistem",
+    "other": "\n[*] API sensitif lainnya (lihat daftar di bawah)",
+    "common_only": "\n(hanya API umum yang ditemukan -- tinjau daftar di bawah)"
+  },
+  "no_findings": "(tidak ada API sensitif yang terdeteksi)",
+  "list_range": "{1} - {2} dari {3}",
+  "item": "Barang {1}",
+  "items": "Barang {1}",
+  "details": {
+    "windows_gdi_effects": "bertanggung jawab: initGDIThread / prepareGDIEffect / enableGDIEffect ; dapat menjalankan efek visual GDI tingkat desktop",
+    "windows_gdi_internals": "bertanggung jawab: SlushiWinGDI/WinGDITread; dapat mengakses thread efek GDI atau registri secara langsung",
+    "windows_desktop_control": "bertanggung jawab: hideDesktopIcons / hideTaskBar / moveDesktopElements ; dapat menyembunyikan/memindahkan UI desktop atau mengubah transparansi",
+    "windows_wallpaper_control": "bertanggung jawab: changeWindowsWallpaper / setDesktopWallpaper ; dapat mengubah atau memulihkan wallpaper Windows",
+    "windows_shellwindow_control": "bertanggung jawab: captureScreenshot / showNotification / setWindowOpacity ; dapat menangkap layar, memberi tahu Windows, atau mengubah visual jendela",
+    "windowsapi": "bertanggung jawab: slushthings.windows.WindowsAPI; dapat menjangkau pembantu asli Plus Engine Windows",
+    "windowscpp": "bertanggung jawab: slushthings.windows.WindowsCPP; dapat memanggil fungsi asli Windows tingkat rendah",
+    "import_windows_native_apis": "bertanggung jawab: import slushthings.windows.*; dapat membuka kunci akses pembantu Windows / GDI dari HScript"
+  }
+}

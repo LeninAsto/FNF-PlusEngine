@@ -1,0 +1,24 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.scripting",
+  "lua": {
+    "load_error_title": "Erro no script Lua!",
+    "load_error_message": "{1}\n\n{2}",
+    "non_function_callback": "ERRO ({1}): tentar chamar um valor {2}",
+    "callback_error": "ERRO ({1}): {2}",
+    "playstate_only": "{1} é apenas para PlayState e não pode ser executado a partir de um host {2} Lua."
+  },
+  "hscript": {
+    "warning": "AVISO: {1}",
+    "null_field": "Referência nula: tentando acessar \"{1}\" no objeto nulo",
+    "script_warning": "AVISO ({1}): {2}",
+    "unsupported": "O HScript não é suportado nesta plataforma!"
+  },
+  "mod_settings": {
+    "title": "Nome do mod: {1}",
+    "parse_error": "Ocorreu um erro: {1}",
+    "file_missing": "getModSetting: Não foi possível encontrar o {1}!",
+    "setting_missing": "getModSetting: \"{1}\" não foi encontrado dentro das configurações do {2}!"
+  },
+  "raw_error_with_source": "{1}\n{2}"
+}

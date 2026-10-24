@@ -1,0 +1,53 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.character",
+  "ui": {
+    "add_update": "添加/更新",
+    "advanced_animation_indices": "先进 - 动画指数:",
+    "animated_icon": "动画图标",
+    "animation_name": "动画名称:",
+    "animation_symbol_name_tag": "动画符号名称/标签:",
+    "animations": "动画:",
+    "camera_x_y": "摄像头 X/Y:",
+    "character": "角色：",
+    "character_x_y": "性格 X/Y:",
+    "flip_x": "翻转X",
+    "framerate": "时间:",
+    "get_icon_color": "获取图标颜色",
+    "health_bar_r_g_b": "卫生行 R/G/B:",
+    "health_icon_name": "健康图标名称:",
+    "highlight_ghost": "突出幽灵",
+    "image_file_name": "图片文件名称:",
+    "load_template": "装载模板",
+    "make_ghost": "做一个鬼",
+    "no_antialiasing": "关闭抗锯齿",
+    "playable_character": "可玩的人物",
+    "reload_char": "重新加载角色",
+    "reload_image": "重载图像",
+    "remove": "移除",
+    "save_character": "保存角色",
+    "scale": "规模:",
+    "should_it_loop": "循环播放",
+    "sing_animation_length": "播放 动画长度:",
+    "vocals_file_postfix": "语音文件后修复:",
+    "zoom_1x": "放大速度:1x"
+  },
+  "presence": {
+    "title": "角色编辑器",
+    "character": "性格: {1}"
+  },
+  "help": {
+    "open": "打压 {1} 寻求帮助",
+    "mobile": "镜头\nX/Y - 放大/缩小镜头\nG + 方向按钮 - 移动镜头\nZ - 重置镜头缩放\n\n角色\nA - 重置当前偏移\nV/D - 上一个/下一个动画\n方向按钮 - 移动偏移\n\n其他\nS - 切换剪影\n按住 C - 偏移移动速度变为 10 倍，镜头速度变为 4 倍",
+    "desktop": "镜头\nE/Q - 放大/缩小镜头\nJ/K/L/I - 移动镜头\nR - 重置镜头缩放\n\n角色\nCtrl + R - 重置当前偏移\nCtrl + C - 复制当前偏移\nCtrl + V - 将复制的偏移粘贴到当前动画\nCtrl + Z - 撤销上次粘贴或重置\nW/S - 上一个/下一个动画\nSpace - 重播动画\n方向键 - 移动偏移\nA/D - 逐帧后退/前进\n\n其他\nF12 - 切换剪影\n按住 Shift - 偏移速度变为 10 倍，镜头速度变为 4 倍\n按住 Control - 镜头速度降为 1/4"
+  },
+  "messages": {
+    "no_animation": "错误:没有找到动画"
+  },
+  "tabs": {
+    "animations": "动画",
+    "character": "性格",
+    "ghost": "鬼魂",
+    "settings": "设置"
+  }
+}

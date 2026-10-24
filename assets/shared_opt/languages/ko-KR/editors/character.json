@@ -1,0 +1,53 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.character",
+  "ui": {
+    "add_update": "추가/업데이트",
+    "advanced_animation_indices": "고급 - 애니메이션 인덱스:",
+    "animated_icon": "애니메이션 아이콘",
+    "animation_name": "애니메이션 이름:",
+    "animation_symbol_name_tag": "애니메이션 기호 이름/태그:",
+    "animations": "애니메이션",
+    "camera_x_y": "카메라 X/Y:",
+    "character": "캐릭터:",
+    "character_x_y": "성격 X/Y:",
+    "flip_x": "좌우 반전",
+    "framerate": "프레임레이트:",
+    "get_icon_color": "아이콘 컬러",
+    "health_bar_r_g_b": "건강 바 R/G/B:",
+    "health_icon_name": "건강 아이콘 이름:",
+    "highlight_ghost": "귀신을 강조하라",
+    "image_file_name": "이미지 파일 이름:",
+    "load_template": "로드 템플릿",
+    "make_ghost": "귀신을 만들어라",
+    "no_antialiasing": "안티알라이징이 없습니다",
+    "playable_character": "놀 수 있는 캐릭터",
+    "reload_char": "캐릭터 다시 불러오기",
+    "reload_image": "이미지 재충전",
+    "remove": "제거",
+    "save_character": "캐릭터 저장",
+    "scale": "규모:",
+    "should_it_loop": "루프 해야 할까요?",
+    "sing_animation_length": "노래 애니메이션 길이는:",
+    "vocals_file_postfix": "보컬 파일 포스트픽스:",
+    "zoom_1x": "확대: 1x"
+  },
+  "presence": {
+    "title": "캐릭터 편집기",
+    "character": "성격: {1}"
+  },
+  "help": {
+    "open": "압력 {1} 도움",
+    "mobile": "카메라\nX/Y - 카메라 줌\nG + 화살표 버튼 - 이동 카메라\nZ - 리셋 카메라 줌\n\n성격\nA - 리셋 전류 오프셋\nV/D - 이전 / 다음 애니메이션\n화살표 버튼 - 오프셋 이동\n\n다른 것\nS - 타글 실루엣\nHold C - Move Offsets 10x 더 빨리 카메라 4x 더 빨리",
+    "desktop": "카메라\nE/Q - 카메라 줌\nJ/K/L/I - 이동 카메라\nR - 리셋 카메라 줌\n\n성격\nCtrl + R - 리셋 전류 오프셋\nCtrl + C - 코피 전류 오프셋\nCtrl + V - 현재 애니메이션에서 복사된 오프셋을 붙여\nCtrl + Z - 마지막 페이스트를 취소하거나 재설정\nW/S - 이전 / 다음 애니메이션\nSpace - 재생 애니메이션\n화살표 키 - 오프셋 이동\nA/D - 프레임 어드밴스 ( 뒤로 / 앞으로)\n\n다른 것\nF12 - 실루엣을 바꾼다\n잠깐만요 Shift - 오프셋을 10배 더 빨리 움직이고 카메라를 4배 더 빨리 움직인다\n잠깐만요 Control - 카메라를 4x 더 느리게 움직여"
+  },
+  "messages": {
+    "no_animation": "오류: 애니메이션이 발견되지 않았다"
+  },
+  "tabs": {
+    "animations": "애니메이션",
+    "character": "성격",
+    "ghost": "귀신",
+    "settings": "설정"
+  }
+}

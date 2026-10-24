@@ -1,0 +1,28 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.dialogue_character",
+  "ui": {
+    "add_update": "Tambah/Perbarui",
+    "animation_name": "Nama animasi:",
+    "animations": "Animasi:",
+    "idle_finished_name_on_xml_file": "Nama menganggur/selesai pada file .XML:",
+    "image_file_name": "Nama file gambar:",
+    "load_character": "Muat Karakter",
+    "loop_name_on_xml_file": "Nama loop pada file .XML:",
+    "no_antialiasing": "Tidak ada Antialiasing",
+    "position_offset": "Pengimbangan Posisi:",
+    "reload_image": "Muat Ulang Gambar",
+    "remove": "Hapus",
+    "save_character": "Simpan Karakter",
+    "scale": "Skala:"
+  },
+  "presence": {
+    "title": "Editor Karakter Dialog",
+    "editing": "Pengeditan: {1}"
+  },
+  "tabs": {
+    "animations": "Animasi",
+    "character": "Karakter",
+    "character_type": "Tipe Karakter"
+  }
+}

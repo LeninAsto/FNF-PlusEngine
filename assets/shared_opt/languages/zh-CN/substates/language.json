@@ -1,0 +1,6 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.language",
+  "hint": "选择的语言应使用ACCEPT.",
+  "applied_badge": "活动"
+}

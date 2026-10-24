@@ -1,0 +1,9 @@
+{
+  "$schema": 1,
+  "$namespace": "states.achievements",
+  "discord": "Menu Prestasi",
+  "progress": "{1} / {2}",
+  "reset": {
+    "title": "Atur Ulang Prestasi:"
+  }
+}
