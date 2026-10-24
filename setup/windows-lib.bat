@@ -33,8 +33,8 @@ haxelib git flixel-addons https://github.com/Psych-Plus-Haxelib/flixel-addons.gi
 echo [Flixel] flixel-tools 1.5.1
 haxelib install flixel-tools 1.5.1 --quiet
 
-echo [Flixel] flixel-ui 2.6.2
-haxelib install flixel-ui 2.6.2 --quiet
+echo [Flixel] flixel-ui 2.6.5
+haxelib install flixel-ui 2.6.5 --quiet
 
 REM ============================================================================
 REM Plus/Psych runtime - classic engine systems and classic mods.
@@ -52,8 +52,8 @@ haxelib git linc_luajit https://github.com/Psych-Plus-Haxelib/linc_luajit
 echo [Plus/Psych] flxanimate 4.0.0
 haxelib install flxanimate 4.0.0 --quiet
 
-echo [Plus/Psych] moonchart 0.5.0
-haxelib install moonchart 0.5.0 --quiet
+echo [Plus/Psych] moonchart 0.5.1
+haxelib install moonchart 0.5.1 --quiet
 
 echo [Plus/Psych] tjson 1.4.0
 haxelib install tjson 1.4.0 --quiet
@@ -64,8 +64,8 @@ REM ============================================================================
 echo [Optional] hxdiscord_rpc 1.3.0
 haxelib install hxdiscord_rpc 1.3.0 --quiet --skip-dependencies
 
-echo [Optional] hxvlc 2.2.6
-haxelib install hxvlc 2.2.6 --quiet --skip-dependencies
+echo [Optional] hxvlc 2.3.1
+haxelib install hxvlc 2.3.1 --quiet --skip-dependencies
 
 REM ============================================================================
 REM Lightweight audio visualization used by Plus/Psych UI helpers.
