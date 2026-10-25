@@ -18,6 +18,7 @@ const categories = vm.runInNewContext(
   { timeout: 1000, contextCodeGeneration: { strings: false, wasm: false } }
 );
 const pageMeta = JSON.parse(await readFile(resolve(root, 'docs/data/psych-pages.json'), 'utf8')).categories;
+const specialPages = JSON.parse((await readFile(resolve(root, 'docs/data/special-pages.json'), 'utf8')).replace(/^\uFEFF/, ''));
 const overrides = JSON.parse(await readFile(resolve(root, 'src/data/audit-overrides.json'), 'utf8'));
 const expected = new Map();
 
@@ -77,6 +78,16 @@ function json(value) {
   return `${JSON.stringify(value, null, 2)}\n`;
 }
 
+function repairText(value) {
+  if (typeof value !== 'string' || !/[ÃÂâ]/.test(value)) return value;
+  const repaired = Buffer.from(value, 'latin1').toString('utf8');
+  return repaired.includes('�') ? value : repaired;
+}
+
+function slug(value) {
+  return value.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+}
+
 function englishPage(category, meta) {
   return `---
 title: ${JSON.stringify(meta.en.title)}
@@ -132,6 +143,98 @@ for (const category of categories) {
   expected.set(`src/content/docs/es-LA/api/psych/${category.id}.mdx`, spanishPage(category, meta));
 }
 
+const variableSections = specialPages.variables.sections.map((section) => ({
+  id: slug(section.title.en),
+  items: section.items.map((item) => ({ id: item.name, name: item.name, status: 'needs-review' }))
+}));
+const variableData = {
+  kind: 'variables',
+  category: 'variables',
+  sourceCommit: upstreamCommit,
+  sections: variableSections
+};
+for (const locale of ['en', 'es-LA']) {
+  const langKey = locale === 'es-LA' ? 'es' : 'en';
+  const copy = {
+    sections: specialPages.variables.sections.map((section) => ({
+      title: repairText(section.title[langKey]),
+      descriptions: Object.fromEntries(section.items.map((item) => [item.name, repairText(item.description[langKey])]))
+    }))
+  };
+  const depth = locale === 'es-LA' ? '../../../../../' : '../../../../';
+  const page = `---
+title: ${JSON.stringify(locale === 'es-LA' ? 'Variables de scripting Lua' : 'Lua scripting variables')}
+description: ${JSON.stringify(locale === 'es-LA' ? 'Variables y valores expuestos a scripts Lua, pendientes de verificación en Plus Engine.' : 'Variables and values exposed to Lua scripts, pending verification in Plus Engine.')}
+---
+
+import VariableEntry from '${depth}components/VariableEntry.astro';
+import data from '${depth}data/api/psych/variables.json';
+import copy from '${depth}data/translations/${locale}/psych/variables.json';
+
+:::caution[${locale === 'es-LA' ? 'Compatibilidad en revisión' : 'Compatibility audit in progress'}]
+${locale === 'es-LA' ? 'La lista fue migrada de la referencia anterior. La disponibilidad por versión y plataforma todavía debe comprobarse contra Plus.' : 'This list was migrated from the legacy reference. Version and platform availability still needs to be checked against Plus.'}
+:::
+
+{data.sections.map((section, sectionIndex) => (
+  <section aria-labelledby={section.id}>
+    <h2 id={section.id}>{copy.sections[sectionIndex].title}</h2>
+    {section.items.map((entry) => (
+      <VariableEntry {...entry} description={copy.sections[sectionIndex].descriptions[entry.id]} locale="${locale}" />
+    ))}
+  </section>
+))}
+`;
+  expected.set(`src/data/translations/${locale}/psych/variables.json`, json(copy));
+  expected.set(`src/content/docs/${locale === 'es-LA' ? 'es-LA/' : ''}api/psych/variables.mdx`, page);
+}
+expected.set('src/data/api/psych/variables.json', json(variableData));
+
+const snippetData = {
+  kind: 'links',
+  category: 'snippets',
+  sourceCommit: upstreamCommit,
+  groups: specialPages.snippets.groups.map((group) => ({
+    id: slug(group.title.en),
+    links: group.links.map((link) => ({ href: link.href }))
+  }))
+};
+for (const locale of ['en', 'es-LA']) {
+  const langKey = locale === 'es-LA' ? 'es' : 'en';
+  const copy = {
+    groups: specialPages.snippets.groups.map((group) => ({
+      title: repairText(group.title[langKey]),
+      labels: group.links.map((link) => repairText(link.label[langKey]))
+    }))
+  };
+  const depth = locale === 'es-LA' ? '../../../../../' : '../../../../';
+  const page = `---
+title: ${JSON.stringify(locale === 'es-LA' ? 'Ejemplos y snippets' : 'Examples and snippets')}
+description: ${JSON.stringify(locale === 'es-LA' ? 'Recursos externos conservados de la documentación anterior.' : 'External resources preserved from the legacy documentation.')}
+---
+
+import data from '${depth}data/api/psych/snippets.json';
+import copy from '${depth}data/translations/${locale}/psych/snippets.json';
+
+:::caution[${locale === 'es-LA' ? 'Enlaces heredados' : 'Legacy links'}]
+${locale === 'es-LA' ? 'Estos recursos externos se conservan para evitar pérdida de contenido. Su disponibilidad y exactitud todavía no se han verificado.' : 'These external resources are preserved to avoid losing content. Their availability and accuracy have not yet been verified.'}
+:::
+
+{data.groups.map((group, groupIndex) => (
+  <section aria-labelledby={group.id}>
+    <h2 id={group.id}>{copy.groups[groupIndex].title}</h2>
+    <ul>
+      {group.links.map((link, linkIndex) => (
+        <li><a href={link.href}>{copy.groups[groupIndex].labels[linkIndex]}</a></li>
+      ))}
+    </ul>
+  </section>
+))}
+`;
+  expected.set(`src/data/translations/${locale}/psych/snippets.json`, json(copy));
+  expected.set(`src/content/docs/${locale === 'es-LA' ? 'es-LA/' : ''}api/psych/snippets.mdx`, page);
+}
+expected.set('src/data/api/psych/snippets.json', json(snippetData));
+
 const changed = [];
 for (const [relativePath, content] of expected) {
   const path = resolve(root, relativePath);
@@ -148,4 +251,4 @@ if (check && changed.length) {
 }
 
 const functionCount = categories.reduce((count, category) => count + category.functions.length, 0);
-console.log(`${check ? 'Checked' : 'Generated'} ${categories.length} Psych categories and ${functionCount} API entries.`);
+console.log(`${check ? 'Checked' : 'Generated'} ${categories.length + 2} Psych categories, ${functionCount} API entries, ${variableSections.reduce((count, section) => count + section.items.length, 0)} variables, and ${snippetData.groups.reduce((count, group) => count + group.links.length, 0)} snippet links.`);

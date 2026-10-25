@@ -1,0 +1,21 @@
+---
+title: "Lua scripting variables"
+description: "Variables and values exposed to Lua scripts, pending verification in Plus Engine."
+---
+
+import VariableEntry from '../../../../components/VariableEntry.astro';
+import data from '../../../../data/api/psych/variables.json';
+import copy from '../../../../data/translations/en/psych/variables.json';
+
+:::caution[Compatibility audit in progress]
+This list was migrated from the legacy reference. Version and platform availability still needs to be checked against Plus.
+:::
+
+{data.sections.map((section, sectionIndex) => (
+  <section aria-labelledby={section.id}>
+    <h2 id={section.id}>{copy.sections[sectionIndex].title}</h2>
+    {section.items.map((entry) => (
+      <VariableEntry {...entry} description={copy.sections[sectionIndex].descriptions[entry.id]} locale="en" />
+    ))}
+  </section>
+))}

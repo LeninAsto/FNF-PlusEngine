@@ -1,0 +1,353 @@
+{
+  "winTweenSize": {
+    "description": "Tweens the game window size.",
+    "parameters": {
+      "width": "Parameter used by this callback.",
+      "height": "Parameter used by this callback.",
+      "duration": "Parameter used by this callback. Default: 1.",
+      "ease": "Parameter used by this callback. Default: \"linear\"."
+    },
+    "examples": []
+  },
+  "winTweenX": {
+    "description": "Tweens the window X position.",
+    "parameters": {
+      "tag": "Parameter used by this callback.",
+      "targetX": "Parameter used by this callback.",
+      "duration": "Parameter used by this callback. Default: 1.",
+      "ease": "Parameter used by this callback. Default: \"linear\"."
+    },
+    "examples": []
+  },
+  "winTweenY": {
+    "description": "Tweens the window Y position.",
+    "parameters": {
+      "tag": "Parameter used by this callback.",
+      "targetY": "Parameter used by this callback.",
+      "duration": "Parameter used by this callback. Default: 1.",
+      "ease": "Parameter used by this callback. Default: \"linear\"."
+    },
+    "examples": []
+  },
+  "setWindowX": {
+    "description": "Sets the window X position.",
+    "parameters": {
+      "x": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "setWindowY": {
+    "description": "Sets the window Y position.",
+    "parameters": {
+      "y": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "setWindowSize": {
+    "description": "Sets the window width and height.",
+    "parameters": {
+      "width": "Parameter used by this callback.",
+      "height": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "getWindowX": {
+    "description": "Returns the window X position.",
+    "parameters": {},
+    "examples": []
+  },
+  "getWindowY": {
+    "description": "Returns the window Y position.",
+    "parameters": {},
+    "examples": []
+  },
+  "getWindowWidth": {
+    "description": "Returns the current window width.",
+    "parameters": {},
+    "examples": []
+  },
+  "getWindowHeight": {
+    "description": "Returns the current window height.",
+    "parameters": {},
+    "examples": []
+  },
+  "centerWindow": {
+    "description": "Centers the game window on screen.",
+    "parameters": {},
+    "examples": []
+  },
+  "setWindowTitle": {
+    "description": "Changes the game window title.",
+    "parameters": {
+      "title": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "getWindowTitle": {
+    "description": "Returns the current window title.",
+    "parameters": {},
+    "examples": []
+  },
+  "setWindowIcon": {
+    "description": "Changes the game window icon.",
+    "parameters": {
+      "iconPath": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "setWindowResizable": {
+    "description": "Enables or disables resizing the window.",
+    "parameters": {
+      "enable": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "randomizeWindowPosition": {
+    "description": "Moves the window to a random position within bounds.",
+    "parameters": {
+      "minX": "Parameter used by this callback. Default: 0.",
+      "maxX": "Parameter used by this callback. Default: -1.",
+      "minY": "Parameter used by this callback. Default: 0.",
+      "maxY": "Parameter used by this callback. Default: -1."
+    },
+    "examples": []
+  },
+  "getScreenWidth": {
+    "description": "Returns the primary screen width.",
+    "parameters": {},
+    "examples": []
+  },
+  "getScreenHeight": {
+    "description": "Returns the primary screen height.",
+    "parameters": {},
+    "examples": []
+  },
+  "getScreenResolution": {
+    "description": "Returns screen resolution data.",
+    "parameters": {},
+    "examples": []
+  },
+  "setWindowFullscreen": {
+    "description": "Toggles fullscreen mode.",
+    "parameters": {
+      "enable": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "isWindowFullscreen": {
+    "description": "Returns whether the window is fullscreen.",
+    "parameters": {},
+    "examples": []
+  },
+  "saveWindowState": {
+    "description": "Saves current window state as data.",
+    "parameters": {},
+    "examples": []
+  },
+  "loadWindowState": {
+    "description": "Restores a saved window state.",
+    "parameters": {
+      "stateJson": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "getWindowState": {
+    "description": "Returns current window state data.",
+    "parameters": {},
+    "examples": []
+  },
+  "setDesktopWallpaper": {
+    "description": "Changes the desktop wallpaper.",
+    "parameters": {
+      "path": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "hideDesktopIcons": {
+    "description": "Shows or hides desktop icons.",
+    "parameters": {
+      "hide": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "hideTaskBar": {
+    "description": "Shows or hides the Windows taskbar.",
+    "parameters": {
+      "hide": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "moveDesktopElements": {
+    "description": "Moves desktop elements by coordinates.",
+    "parameters": {
+      "x": "Parameter used by this callback.",
+      "y": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "setDesktopTransparency": {
+    "description": "Changes desktop element opacity.",
+    "parameters": {
+      "alpha": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "setTaskBarTransparency": {
+    "description": "Changes taskbar opacity.",
+    "parameters": {
+      "alpha": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "showNotification": {
+    "description": "Displays a Windows notification.",
+    "parameters": {
+      "title": "Parameter used by this callback.",
+      "message": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "resetSystemChanges": {
+    "description": "Attempts to restore desktop/taskbar changes made by the script.",
+    "parameters": {},
+    "examples": []
+  },
+  "getDesktopWindowsXPos": {
+    "description": "Returns desktop/window X information.",
+    "parameters": {},
+    "examples": []
+  },
+  "getDesktopWindowsYPos": {
+    "description": "Returns desktop/window Y information.",
+    "parameters": {},
+    "examples": []
+  },
+  "setWindowBorderColor": {
+    "description": "Changes the window border color.",
+    "parameters": {
+      "r": "Parameter used by this callback.",
+      "g": "Parameter used by this callback.",
+      "b": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "setWindowOpacity": {
+    "description": "Changes game window opacity.",
+    "parameters": {
+      "alpha": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "getWindowOpacity": {
+    "description": "Returns game window opacity.",
+    "parameters": {},
+    "examples": []
+  },
+  "changeWindowsWallpaper": {
+    "description": "Compatibility alias for changing wallpaper.",
+    "parameters": {
+      "path": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "saveCurrentWallpaper": {
+    "description": "Stores the current wallpaper for later restore.",
+    "parameters": {},
+    "examples": []
+  },
+  "restoreOldWallpaper": {
+    "description": "Restores the previously saved wallpaper.",
+    "parameters": {},
+    "examples": []
+  },
+  "captureScreenshot": {
+    "description": "Captures a screenshot to a path.",
+    "parameters": {
+      "path": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "getWindowsVersion": {
+    "description": "Returns Windows version information.",
+    "parameters": {},
+    "examples": []
+  },
+  "tweenWindowBorderColor": {
+    "description": "Tweens the window border color.",
+    "parameters": {
+      "fromR": "Parameter used by this callback.",
+      "fromG": "Parameter used by this callback.",
+      "fromB": "Parameter used by this callback.",
+      "toR": "Parameter used by this callback.",
+      "toG": "Parameter used by this callback.",
+      "toB": "Parameter used by this callback.",
+      "duration": "Parameter used by this callback. Default: 1.",
+      "ease": "Parameter used by this callback. Default: \"linear\"."
+    },
+    "examples": []
+  },
+  "tweenWindowOpacity": {
+    "description": "Tweens the window opacity.",
+    "parameters": {
+      "fromAlpha": "Parameter used by this callback.",
+      "toAlpha": "Parameter used by this callback.",
+      "duration": "Parameter used by this callback. Default: 1.",
+      "ease": "Parameter used by this callback. Default: \"linear\"."
+    },
+    "examples": []
+  },
+  "tweenDesktopX": {
+    "description": "Tweens desktop element X position.",
+    "parameters": {
+      "toX": "Parameter used by this callback.",
+      "duration": "Parameter used by this callback. Default: 1.",
+      "ease": "Parameter used by this callback. Default: \"linear\"."
+    },
+    "examples": []
+  },
+  "tweenDesktopY": {
+    "description": "Tweens desktop element Y position.",
+    "parameters": {
+      "toY": "Parameter used by this callback.",
+      "duration": "Parameter used by this callback. Default: 1.",
+      "ease": "Parameter used by this callback. Default: \"linear\"."
+    },
+    "examples": []
+  },
+  "tweenDesktopAlpha": {
+    "description": "Tweens desktop element opacity.",
+    "parameters": {
+      "fromAlpha": "Parameter used by this callback.",
+      "toAlpha": "Parameter used by this callback.",
+      "duration": "Parameter used by this callback. Default: 1.",
+      "ease": "Parameter used by this callback. Default: \"linear\"."
+    },
+    "examples": []
+  },
+  "tweenTaskBarAlpha": {
+    "description": "Tweens taskbar opacity.",
+    "parameters": {
+      "fromAlpha": "Parameter used by this callback.",
+      "toAlpha": "Parameter used by this callback.",
+      "duration": "Parameter used by this callback. Default: 1.",
+      "ease": "Parameter used by this callback. Default: \"linear\"."
+    },
+    "examples": []
+  },
+  "hideWindowBorder": {
+    "description": "Shows or hides the window border.",
+    "parameters": {
+      "enable": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "setWinRCenter": {
+    "description": "Centers/resizes the window using the helper routine.",
+    "parameters": {
+      "width": "Parameter used by this callback.",
+      "height": "Parameter used by this callback.",
+      "skip": "Parameter used by this callback. Default: false."
+    },
+    "examples": []
+  }
+}

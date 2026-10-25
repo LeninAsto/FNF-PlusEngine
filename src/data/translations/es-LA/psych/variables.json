@@ -1,0 +1,180 @@
+{
+  "sections": [
+    {
+      "title": "Variables de scripting Lua",
+      "descriptions": {
+        "luaDebugMode": "Activa mostrar errores de scripts. Valor por defecto: false.",
+        "luaDeprecatedWarnings": "Muestra avisos de funciones que deberian reemplazarse. Requiere luaDebugMode.",
+        "scriptName": "Ubicacion del script Lua que se esta ejecutando.",
+        "modFolder": "Carpeta del mod donde se ejecuta el script Lua.",
+        "currentModDirectory": "Carpeta del mod de la week custom activa; vacia en weeks base."
+      }
+    },
+    {
+      "title": "Variables de informacion de Psych Engine",
+      "descriptions": {
+        "version": "Texto de version de Psych Engine.",
+        "buildTarget": "Target de compilacion, como windows, windows_x86 o linux."
+      }
+    },
+    {
+      "title": "Variables de retorno de funciones",
+      "descriptions": {
+        "Function_StopLua": "Detiene el callback solo para los siguientes scripts Lua.",
+        "Function_StopHScript": "Detiene el callback solo para los siguientes scripts HScript.",
+        "Function_StopAll": "Detiene el callback para los siguientes scripts Lua y HScripts.",
+        "Function_Stop": "Cancela callbacks como startCountdown o endSong; se usa mucho en cutscenes.",
+        "Function_Continue": "Permite que el engine continue normal despues de ejecutar el script."
+      }
+    },
+    {
+      "title": "Variables de flixel.FlxG",
+      "descriptions": {
+        "screenWidth": "Ancho actual de pantalla de FlxG.",
+        "screenHeight": "Alto actual de pantalla de FlxG."
+      }
+    },
+    {
+      "title": "Variables de cancion",
+      "descriptions": {
+        "songName": "Nombre del instrumental como aparece en pausa.",
+        "songPath": "songName formateado en minusculas y con espacios reemplazados por guiones.",
+        "loadedSongName": "Nombre de la cancion seleccionada desde Freeplay o Story Menu.",
+        "loadedSongPath": "loadedSongName formateado en minusculas y con guiones.",
+        "bpm": "BPM inicial de la cancion.",
+        "songLength": "Duracion de la cancion en milisegundos.",
+        "startedCountdown": "Indica si el conteo ya empezo; inicia en false.",
+        "seenCutscene": "False en el primer intento; true al reiniciar o morir, util para revisar cutscenes.",
+        "inGameOver": "Indica si el juego esta en la pantalla de Game Over."
+      }
+    },
+    {
+      "title": "Variables de chart",
+      "descriptions": {
+        "chartPath": "Ruta del chart, incluyendo la extension del archivo.",
+        "curStage": "Stage actual de la cancion como aparece en Chart Editor.",
+        "scrollSpeed": "Velocidad inicial del scroll.",
+        "hasVocals": "Indica si la cancion tiene voces activadas."
+      }
+    },
+    {
+      "title": "Variables de dificultad",
+      "descriptions": {
+        "difficulty": "ID de la dificultad.",
+        "difficultyName": "Nombre original de la dificultad.",
+        "difficultyPath": "Dificultad formateada como sufijo en minusculas; vacia en Normal.",
+        "difficultyNameTranslation": "Nombre traducido de la dificultad."
+      }
+    },
+    {
+      "title": "Variables de Story Mode y Week",
+      "descriptions": {
+        "isStoryMode": "Valor booleano del modo de juego actual.",
+        "weekRaw": "ID de la week actual.",
+        "week": "Nombre de la week como se encuentra en la carpeta weeks."
+      }
+    },
+    {
+      "title": "Variables de seccion",
+      "descriptions": {
+        "curBpm": "BPM de la seccion actual.",
+        "curSection": "ID de la seccion actual.",
+        "curBeat": "ID del beat actual.",
+        "curStep": "ID del step actual.",
+        "curDecBeat": "Beat actual con progreso decimal hacia el siguiente beat.",
+        "curDecStep": "Step actual con progreso decimal hacia el siguiente step.",
+        "crochet": "Milisegundos por beat en la seccion actual.",
+        "stepCrochet": "Milisegundos por step en la seccion actual.",
+        "mustHitSection": "Indica si la seccion actual pertenece al jugador.",
+        "altAnim": "Indica si la seccion actual tiene alt animation activado.",
+        "gfSection": "Indica si la seccion actual pertenece a Girlfriend."
+      }
+    },
+    {
+      "title": "Variables de puntuacion",
+      "descriptions": {
+        "score": "Puntaje actual.",
+        "misses": "Notas falladas actuales.",
+        "hits": "Notas acertadas actuales.",
+        "combo": "Combo actual de notas; inicia en 0.",
+        "deaths": "Cantidad de veces que el jugador ha muerto hasta ahora.",
+        "rating": "Porcentaje de rating de 0 a 1.",
+        "ratingName": "Etiqueta actual del rating, como Sick o Good.",
+        "ratingFC": "Estado de full combo, como Clear, SDBC, FC, GFC o SFC.",
+        "totalPlayed": "Fallos mas aciertos; usado para calcular el rating.",
+        "totalNotesHit": "Puntaje acumulado de aciertos usado para calcular el rating."
+      }
+    },
+    {
+      "title": "Variables de modificadores de gameplay",
+      "descriptions": {
+        "playbackRate": "Multiplicador de reproduccion de la cancion. Valor por defecto: 1.",
+        "healthGainMult": "Multiplicador de ganancia de vida. Valor por defecto: 1.",
+        "healthLossMult": "Multiplicador de perdida de vida. Valor por defecto: 1.",
+        "instakillOnMiss": "Indica si fallar mata al jugador al instante. Valor por defecto: false.",
+        "practice": "Indica si practice mode esta activado. Valor por defecto: false.",
+        "botPlay": "Indica si botplay esta activado. Valor por defecto: false."
+      }
+    },
+    {
+      "title": "Variables de strum notes",
+      "descriptions": {
+        "defaultPlayerStrumX0": "X por defecto de la nota izquierda del jugador: 732.",
+        "defaultPlayerStrumY0": "Y por defecto de la nota izquierda del jugador: 50 upscroll, 570 downscroll.",
+        "defaultPlayerStrumX1": "X por defecto de la nota abajo del jugador: 844.",
+        "defaultPlayerStrumY1": "Y por defecto de la nota abajo del jugador: 50 upscroll, 570 downscroll.",
+        "defaultPlayerStrumX2": "X por defecto de la nota arriba del jugador: 956.",
+        "defaultPlayerStrumY2": "Y por defecto de la nota arriba del jugador: 50 upscroll, 570 downscroll.",
+        "defaultPlayerStrumX3": "X por defecto de la nota derecha del jugador: 1068.",
+        "defaultPlayerStrumY3": "Y por defecto de la nota derecha del jugador: 50 upscroll, 570 downscroll.",
+        "defaultOpponentStrumX0": "X por defecto de la nota izquierda del oponente: 92.",
+        "defaultOpponentStrumY0": "Y por defecto de la nota izquierda del oponente: 50 upscroll, 570 downscroll.",
+        "defaultOpponentStrumX1": "X por defecto de la nota abajo del oponente: 204.",
+        "defaultOpponentStrumY1": "Y por defecto de la nota abajo del oponente: 50 upscroll, 570 downscroll.",
+        "defaultOpponentStrumX2": "X por defecto de la nota arriba del oponente: 316.",
+        "defaultOpponentStrumY2": "Y por defecto de la nota arriba del oponente: 50 upscroll, 570 downscroll.",
+        "defaultOpponentStrumX3": "X por defecto de la nota derecha del oponente: 428.",
+        "defaultOpponentStrumY3": "Y por defecto de la nota derecha del oponente: 50 upscroll, 570 downscroll."
+      }
+    },
+    {
+      "title": "Variables de personajes",
+      "descriptions": {
+        "defaultBoyfriendX": "X del grupo del jugador segun el JSON del stage.",
+        "defaultBoyfriendY": "Y del grupo del jugador segun el JSON del stage.",
+        "defaultOpponentX": "X del grupo del oponente segun el JSON del stage.",
+        "defaultOpponentY": "Y del grupo del oponente segun el JSON del stage.",
+        "defaultGirlfriendX": "X del grupo de Girlfriend segun el JSON del stage.",
+        "defaultGirlfriendY": "Y del grupo de Girlfriend segun el JSON del stage.",
+        "boyfriendName": "Nombre JSON del personaje jugador actual sin extension.",
+        "dadName": "Nombre JSON del oponente actual sin extension.",
+        "gfName": "Nombre JSON de Girlfriend actual sin extension."
+      }
+    },
+    {
+      "title": "Variables de backend.ClientPrefs",
+      "descriptions": {
+        "downscroll": "Preferencia de downscroll. Valor por defecto: false.",
+        "middlescroll": "Preferencia de middlescroll. Valor por defecto: false.",
+        "framerate": "Framerate configurado. Valor por defecto: 60.",
+        "ghostTapping": "Permite presionar sin nota sin penalizacion. Valor por defecto: true.",
+        "hideHud": "Oculta elementos del HUD. Valor por defecto: false.",
+        "timeBarType": "Modo seleccionado de la barra de tiempo. Valor por defecto: Time Left.",
+        "scoreZoom": "Activa el zoom del texto de score al acertar. Valor por defecto: true.",
+        "cameraZoomOnBeat": "Activa pulsos de zoom de camara por beat. Valor por defecto: true.",
+        "flashingLights": "Activa efectos de luces parpadeantes. Valor por defecto: true.",
+        "noteOffset": "Offset de notas para input/audio. Valor por defecto: 0.",
+        "healthBarAlpha": "Opacidad de la barra de vida. Valor por defecto: 1.0.",
+        "noResetButton": "Desactiva el comportamiento del boton reset. Valor por defecto: false.",
+        "lowQuality": "Preferencia de baja calidad. Valor por defecto: false.",
+        "shadersEnabled": "Indica si los shaders estan activados. Valor por defecto: true.",
+        "guitarHeroSustains": "Usa sustains estilo Guitar Hero. Valor por defecto: true.",
+        "noteSkin": "Note skin seleccionada. Valor por defecto: Default.",
+        "splashSkin": "Note splash skin seleccionada. Valor por defecto: Psych.",
+        "splashAlpha": "Opacidad del note splash. Valor por defecto: 0.6.",
+        "noteSkinPostfix": "Postfijo de ruta del noteskin, como -future, -chip o vacio.",
+        "splashSkinPostfix": "Postfijo de ruta de note splashes, como -diamond, -vanilla o vacio."
+      }
+    }
+  ]
+}

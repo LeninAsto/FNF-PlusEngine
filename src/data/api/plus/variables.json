@@ -1,0 +1,80 @@
+{
+  "kind": "glossary",
+  "category": "variables",
+  "sourceCommit": "ac6374135b68a78e167cd8557d3a1babf51f9c24",
+  "groups": [
+    {
+      "id": "video",
+      "items": [
+        "tag",
+        "path",
+        "x",
+        "y",
+        "volume",
+        "front",
+        "duration",
+        "time",
+        "activeVideos",
+        "allowDestroy",
+        "isDestroyed"
+      ]
+    },
+    {
+      "id": "modchart-targeting",
+      "items": [
+        "name",
+        "value",
+        "player",
+        "field",
+        "lane",
+        "beat",
+        "length",
+        "easeName",
+        "startValue"
+      ]
+    },
+    {
+      "id": "modchart-geometry",
+      "items": [
+        "ARROW_SIZE",
+        "ARROW_SIZEDIV2",
+        "holdSize",
+        "holdSizeDiv2",
+        "baseX",
+        "baseY",
+        "visPos",
+        "songPosition",
+        "strumTime",
+        "songSpeed"
+      ]
+    },
+    {
+      "id": "window-system",
+      "items": [
+        "x",
+        "y",
+        "width",
+        "height",
+        "title",
+        "iconPath",
+        "alpha",
+        "fullscreen",
+        "screenWidth",
+        "screenHeight",
+        "windowState",
+        "wallpaperPath"
+      ]
+    },
+    {
+      "id": "gdi",
+      "items": [
+        "effect",
+        "enabled",
+        "wait",
+        "elapsed",
+        "pause",
+        "running"
+      ]
+    }
+  ]
+}

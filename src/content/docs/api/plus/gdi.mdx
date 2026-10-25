@@ -1,0 +1,18 @@
+---
+title: "Windows GDI Functions"
+description: "Experimental Windows-only GDI effect thread callbacks."
+---
+
+import ApiEntry from '../../../../components/ApiEntry.astro';
+import api from '../../../../data/api/plus/gdi.json';
+import copy from '../../../../data/translations/en/plus/gdi.json';
+
+:::caution[Compatibility audit in progress]
+These entries were linked to development source, but do not yet have recorded tests by version and platform.
+:::
+
+:::danger[Platform warning]
+Strong warning: GDI effects can be disruptive, flashing, confusing, or unsafe for sensitive users. Do not enable them silently.
+:::
+
+{api.functions.map((entry) => <ApiEntry {...entry} copy={copy[entry.id]} locale="en" />)}

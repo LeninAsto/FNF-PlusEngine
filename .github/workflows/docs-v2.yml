@@ -1,0 +1,40 @@
+name: Docs v2
+
+on:
+  push:
+    branches: [web-page-v2]
+  pull_request:
+    paths:
+      - '.github/workflows/docs-v2.yml'
+      - 'astro.config.mjs'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'playwright.config.ts'
+      - 'public/**'
+      - 'scripts/**'
+      - 'src/**'
+      - 'tests/**'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - run: npm run test:e2e
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: docs-v2-site
+          path: dist
+          if-no-files-found: error

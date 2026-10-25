@@ -1,0 +1,31 @@
+---
+import { Badge } from '@astrojs/starlight/components';
+
+interface Props {
+  id: string;
+  name: string;
+  description: string;
+  locale?: 'en' | 'es-LA';
+}
+
+const { id, name, description, locale = 'en' } = Astro.props;
+---
+
+<article class="variable" aria-labelledby={id}>
+  <h3 id={id}><code>{name}</code></h3>
+  <Badge text={locale === 'es-LA' ? 'Necesita revisión' : 'Needs review'} variant="caution" />
+  <p>{description}</p>
+</article>
+
+<style>
+  .variable {
+    border-inline-start: 3px solid var(--sl-color-gray-5);
+    margin-block: 1rem;
+    padding-inline-start: 1rem;
+  }
+
+  h3 {
+    display: inline-block;
+    margin-inline-end: 0.5rem;
+  }
+</style>

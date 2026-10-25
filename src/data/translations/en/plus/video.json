@@ -1,0 +1,97 @@
+{
+  "precacheLuaVideoSprite": {
+    "description": "Loads a tagged video sprite ahead of time so it can start faster later.",
+    "parameters": {
+      "tag": "Unique video identifier. Later calls use the same tag.",
+      "path": "Video asset path resolved by the engine helper.",
+      "x": "Initial X position.",
+      "y": "Initial Y position.",
+      "volumeOrFront": "Volume when numeric; compatibility front flag when boolean.",
+      "front": "Places the video above gameplay layers when true."
+    },
+    "examples": []
+  },
+  "playLuaVideoSprite": {
+    "description": "Creates or reuses a tagged video sprite and starts playback.",
+    "parameters": {
+      "tag": "Video identifier to create or reuse.",
+      "path": "Optional video path. If omitted, the cached/preloaded tag is reused.",
+      "x": "Playback X position.",
+      "y": "Playback Y position.",
+      "volumeOrFront": "Volume or compatibility front flag.",
+      "front": "Draws in front of gameplay when true."
+    },
+    "examples": []
+  },
+  "pauseLuaVideo": {
+    "description": "Pauses the active video assigned to the tag.",
+    "parameters": {
+      "tag": "Video tag to pause."
+    },
+    "examples": []
+  },
+  "resumeLuaVideo": {
+    "description": "Resumes the active tagged video.",
+    "parameters": {
+      "tag": "Video tag to resume."
+    },
+    "examples": []
+  },
+  "removeLuaVideo": {
+    "description": "Requests safe removal of the tagged video sprite.",
+    "parameters": {
+      "tag": "Video tag to remove safely."
+    },
+    "examples": []
+  },
+  "forceRemoveLuaVideo": {
+    "description": "Removes the tagged video immediately, bypassing the delayed guard.",
+    "parameters": {
+      "tag": "Video tag to remove immediately."
+    },
+    "examples": []
+  },
+  "luaVideoExists": {
+    "description": "Returns whether the tagged video exists.",
+    "parameters": {
+      "tag": "Video tag to check."
+    },
+    "examples": []
+  },
+  "isLuaVideoPlaying": {
+    "description": "Returns whether the tagged video is currently playing.",
+    "parameters": {
+      "tag": "Video tag to inspect."
+    },
+    "examples": []
+  },
+  "setLuaVideoVolume": {
+    "description": "Sets the volume of a tagged video.",
+    "parameters": {
+      "tag": "Video tag to update.",
+      "volume": "Target volume."
+    },
+    "examples": []
+  },
+  "getLuaVideoVolume": {
+    "description": "Returns the current volume of the tagged video.",
+    "parameters": {
+      "tag": "Video tag to read."
+    },
+    "examples": []
+  },
+  "getLuaVideoDuration": {
+    "description": "Returns full duration in seconds.",
+    "parameters": {
+      "tag": "Video tag to read."
+    },
+    "examples": []
+  },
+  "getLuaVideoTime": {
+    "description": "Returns current playback time in seconds.",
+    "parameters": {
+      "tag": "Video tag to read."
+    },
+    "examples": []
+  }
+}

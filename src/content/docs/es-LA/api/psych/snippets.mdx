@@ -1,0 +1,22 @@
+---
+title: "Ejemplos y snippets"
+description: "Recursos externos conservados de la documentación anterior."
+---
+
+import data from '../../../../../data/api/psych/snippets.json';
+import copy from '../../../../../data/translations/es-LA/psych/snippets.json';
+
+:::caution[Enlaces heredados]
+Estos recursos externos se conservan para evitar pérdida de contenido. Su disponibilidad y exactitud todavía no se han verificado.
+:::
+
+{data.groups.map((group, groupIndex) => (
+  <section aria-labelledby={group.id}>
+    <h2 id={group.id}>{copy.groups[groupIndex].title}</h2>
+    <ul>
+      {group.links.map((link, linkIndex) => (
+        <li><a href={link.href}>{copy.groups[groupIndex].labels[linkIndex]}</a></li>
+      ))}
+    </ul>
+  </section>
+))}

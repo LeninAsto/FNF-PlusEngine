@@ -70,6 +70,16 @@ routes.sort((a, b) => a.source.localeCompare(b.source));
 const assetFiles = files.filter((file) => !file.endsWith('.html'));
 const videoFiles = assetFiles.filter((file) => /\.(mp4|webm)$/i.test(file));
 const dataFiles = assetFiles.filter((file) => file.endsWith('.json'));
+const videoMigrations = await Promise.all(videoFiles.map(async (file) => {
+  const source = `/${relative(legacyRoot, file).split(sep).join('/')}`;
+  const target = `/videos/${file.split(sep).at(-1)}`;
+  try {
+    await readFile(resolve(root, 'public', target.slice(1)));
+    return { source, target, implemented: true };
+  } catch {
+    return { source, target, implemented: false };
+  }
+}));
 
 const lines = [
   '# Legacy documentation migration map',
@@ -88,9 +98,13 @@ const lines = [
     return `| \`${source}\` | ${target ? `\`${target}\`` : '—'} | ${status} | ${anchorList} |`;
   }),
   '',
-  '## Assets requiring a migration decision',
+  '## Video asset migration',
   '',
-  ...videoFiles.map((file) => `- \`/${relative(legacyRoot, file).split(sep).join('/')}\``),
+  '| Legacy asset | V2 asset | Status |',
+  '|---|---|---|',
+  ...videoMigrations.map(({ source, target, implemented }) =>
+    `| \`${source}\` | \`${target}\` | ${implemented ? 'Implemented' : 'Pending content'} |`
+  ),
   '',
   'Redirects are added to `public/_redirects` only after their destination exists. This prevents replacing a working legacy URL with a v2 404.',
   ''

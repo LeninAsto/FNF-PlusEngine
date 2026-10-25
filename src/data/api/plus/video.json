@@ -1,0 +1,399 @@
+{
+  "kind": "functions",
+  "category": "video",
+  "language": "lua",
+  "sourceCommit": "ac6374135b68a78e167cd8557d3a1babf51f9c24",
+  "functions": [
+    {
+      "id": "precacheLuaVideoSprite",
+      "signature": "precacheLuaVideoSprite(tag:String, path:String, ?x:Float = 0, ?y:Float = 0, ?volumeOrFront:Dynamic = 1.0, ?front:Bool = false)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/VideoFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "path",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "x",
+          "type": "Float",
+          "optional": true
+        },
+        {
+          "name": "y",
+          "type": "Float",
+          "optional": true
+        },
+        {
+          "name": "volumeOrFront",
+          "type": "Dynamic",
+          "optional": true
+        },
+        {
+          "name": "front",
+          "type": "Bool",
+          "optional": true
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "playLuaVideoSprite",
+      "signature": "playLuaVideoSprite(tag:String, ?path:String = null, ?x:Float = 0, ?y:Float = 0, ?volumeOrFront:Dynamic = 1.0, ?front:Bool = false)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/VideoFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "path",
+          "type": "String",
+          "optional": true
+        },
+        {
+          "name": "x",
+          "type": "Float",
+          "optional": true
+        },
+        {
+          "name": "y",
+          "type": "Float",
+          "optional": true
+        },
+        {
+          "name": "volumeOrFront",
+          "type": "Dynamic",
+          "optional": true
+        },
+        {
+          "name": "front",
+          "type": "Bool",
+          "optional": true
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "pauseLuaVideo",
+      "signature": "pauseLuaVideo(tag:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/VideoFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "resumeLuaVideo",
+      "signature": "resumeLuaVideo(tag:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/VideoFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "removeLuaVideo",
+      "signature": "removeLuaVideo(tag:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/VideoFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "forceRemoveLuaVideo",
+      "signature": "forceRemoveLuaVideo(tag:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/VideoFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "luaVideoExists",
+      "signature": "luaVideoExists(tag:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/VideoFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "isLuaVideoPlaying",
+      "signature": "isLuaVideoPlaying(tag:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/VideoFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "setLuaVideoVolume",
+      "signature": "setLuaVideoVolume(tag:String, volume:Float)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/VideoFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "volume",
+          "type": "Float",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "getLuaVideoVolume",
+      "signature": "getLuaVideoVolume(tag:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/VideoFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "getLuaVideoDuration",
+      "signature": "getLuaVideoDuration(tag:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/VideoFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "getLuaVideoTime",
+      "signature": "getLuaVideoTime(tag:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/VideoFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    }
+  ]
+}

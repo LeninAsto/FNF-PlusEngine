@@ -1,0 +1,180 @@
+{
+  "sections": [
+    {
+      "title": "Lua Scripting Variables",
+      "descriptions": {
+        "luaDebugMode": "Toggles showing script errors. Default value: false.",
+        "luaDeprecatedWarnings": "Shows warnings for functions that should be replaced. Requires luaDebugMode.",
+        "scriptName": "Location of the Lua script currently running.",
+        "modFolder": "Mod folder where the Lua script is running.",
+        "currentModDirectory": "Custom week mod folder currently active; empty on base-game weeks."
+      }
+    },
+    {
+      "title": "Psych Engine Information Variables",
+      "descriptions": {
+        "version": "Psych Engine version string.",
+        "buildTarget": "Build target, such as windows, windows_x86, or linux."
+      }
+    },
+    {
+      "title": "Function Return Variables",
+      "descriptions": {
+        "Function_StopLua": "Stops the callback only for the next Lua scripts.",
+        "Function_StopHScript": "Stops the callback only for the next HScript scripts.",
+        "Function_StopAll": "Stops the callback for the next Lua scripts and HScripts.",
+        "Function_Stop": "Cancels callbacks such as startCountdown or endSong; commonly used for cutscenes.",
+        "Function_Continue": "Lets the engine continue normally after the script runs."
+      }
+    },
+    {
+      "title": "flixel.FlxG Variables",
+      "descriptions": {
+        "screenWidth": "Current FlxG screen width.",
+        "screenHeight": "Current FlxG screen height."
+      }
+    },
+    {
+      "title": "Song Variables",
+      "descriptions": {
+        "songName": "Instrumental name as seen in the pause screen.",
+        "songPath": "Formatted songName in lowercase with spaces replaced by hyphens.",
+        "loadedSongName": "Song name selected from Freeplay or Story Menu.",
+        "loadedSongPath": "Formatted loadedSongName in lowercase with hyphens.",
+        "bpm": "Starting BPM of the song.",
+        "songLength": "Song duration in milliseconds.",
+        "startedCountdown": "Whether the countdown already started; starts as false.",
+        "seenCutscene": "False on the first try; true after restart or death, useful for cutscene checks.",
+        "inGameOver": "Whether the game is currently in the Game Over screen."
+      }
+    },
+    {
+      "title": "Chart Variables",
+      "descriptions": {
+        "chartPath": "Directory of the chart, including the file extension.",
+        "curStage": "Current song stage as seen in the Chart Editor.",
+        "scrollSpeed": "Starting scroll speed.",
+        "hasVocals": "Whether the song has vocals enabled."
+      }
+    },
+    {
+      "title": "Difficulty Variables",
+      "descriptions": {
+        "difficulty": "Difficulty ID.",
+        "difficultyName": "Original difficulty name.",
+        "difficultyPath": "Difficulty formatted as a lowercase suffix; empty on Normal.",
+        "difficultyNameTranslation": "Translated difficulty name."
+      }
+    },
+    {
+      "title": "Story Mode/Week Variables",
+      "descriptions": {
+        "isStoryMode": "Boolean value for the current game mode.",
+        "weekRaw": "Current week ID.",
+        "week": "Week name as found in the weeks folder."
+      }
+    },
+    {
+      "title": "Section Variables",
+      "descriptions": {
+        "curBpm": "BPM at the current section.",
+        "curSection": "Current section ID.",
+        "curBeat": "Current beat ID.",
+        "curStep": "Current step ID.",
+        "curDecBeat": "Current beat with decimal progress toward the next beat.",
+        "curDecStep": "Current step with decimal progress toward the next step.",
+        "crochet": "Milliseconds per beat in the current section.",
+        "stepCrochet": "Milliseconds per step in the current section.",
+        "mustHitSection": "Whether the current section targets the player.",
+        "altAnim": "Whether the current section has alt animation enabled.",
+        "gfSection": "Whether the current section targets Girlfriend."
+      }
+    },
+    {
+      "title": "Score Variables",
+      "descriptions": {
+        "score": "Current score.",
+        "misses": "Current missed notes.",
+        "hits": "Current hit notes.",
+        "combo": "Current note combo; starts at 0.",
+        "deaths": "How many times the player has died so far.",
+        "rating": "Rating percentage from 0 to 1.",
+        "ratingName": "Current rating label, such as Sick or Good.",
+        "ratingFC": "Full-combo state, such as Clear, SDBC, FC, GFC, or SFC.",
+        "totalPlayed": "Misses plus hits; used for rating calculation.",
+        "totalNotesHit": "Accumulated hit score used for rating calculation."
+      }
+    },
+    {
+      "title": "Gameplay Modifiers Variables",
+      "descriptions": {
+        "playbackRate": "Song playback multiplier. Default value: 1.",
+        "healthGainMult": "Health gain multiplier. Default value: 1.",
+        "healthLossMult": "Health loss multiplier. Default value: 1.",
+        "instakillOnMiss": "Whether missing instantly kills the player. Default value: false.",
+        "practice": "Whether practice mode is enabled. Default value: false.",
+        "botPlay": "Whether botplay is enabled. Default value: false."
+      }
+    },
+    {
+      "title": "Strum Notes Variables",
+      "descriptions": {
+        "defaultPlayerStrumX0": "Player left note default X: 732.",
+        "defaultPlayerStrumY0": "Player left note default Y: 50 upscroll, 570 downscroll.",
+        "defaultPlayerStrumX1": "Player down note default X: 844.",
+        "defaultPlayerStrumY1": "Player down note default Y: 50 upscroll, 570 downscroll.",
+        "defaultPlayerStrumX2": "Player up note default X: 956.",
+        "defaultPlayerStrumY2": "Player up note default Y: 50 upscroll, 570 downscroll.",
+        "defaultPlayerStrumX3": "Player right note default X: 1068.",
+        "defaultPlayerStrumY3": "Player right note default Y: 50 upscroll, 570 downscroll.",
+        "defaultOpponentStrumX0": "Opponent left note default X: 92.",
+        "defaultOpponentStrumY0": "Opponent left note default Y: 50 upscroll, 570 downscroll.",
+        "defaultOpponentStrumX1": "Opponent down note default X: 204.",
+        "defaultOpponentStrumY1": "Opponent down note default Y: 50 upscroll, 570 downscroll.",
+        "defaultOpponentStrumX2": "Opponent up note default X: 316.",
+        "defaultOpponentStrumY2": "Opponent up note default Y: 50 upscroll, 570 downscroll.",
+        "defaultOpponentStrumX3": "Opponent right note default X: 428.",
+        "defaultOpponentStrumY3": "Opponent right note default Y: 50 upscroll, 570 downscroll."
+      }
+    },
+    {
+      "title": "Character Variables",
+      "descriptions": {
+        "defaultBoyfriendX": "Player group X from the stage JSON.",
+        "defaultBoyfriendY": "Player group Y from the stage JSON.",
+        "defaultOpponentX": "Opponent group X from the stage JSON.",
+        "defaultOpponentY": "Opponent group Y from the stage JSON.",
+        "defaultGirlfriendX": "Girlfriend group X from the stage JSON.",
+        "defaultGirlfriendY": "Girlfriend group Y from the stage JSON.",
+        "boyfriendName": "Current player character JSON name without extension.",
+        "dadName": "Current opponent character JSON name without extension.",
+        "gfName": "Current Girlfriend character JSON name without extension."
+      }
+    },
+    {
+      "title": "backend.ClientPrefs Variables",
+      "descriptions": {
+        "downscroll": "Downscroll preference. Default value: false.",
+        "middlescroll": "Middlescroll preference. Default value: false.",
+        "framerate": "Configured framerate. Default value: 60.",
+        "ghostTapping": "Allows pressing with no note penalty. Default value: true.",
+        "hideHud": "Hides HUD elements. Default value: false.",
+        "timeBarType": "Selected time bar mode. Default value: Time Left.",
+        "scoreZoom": "Enables score text zoom on hit. Default value: true.",
+        "cameraZoomOnBeat": "Enables camera zoom pulses on beat. Default value: true.",
+        "flashingLights": "Enables flashing light effects. Default value: true.",
+        "noteOffset": "Input/audio note offset. Default value: 0.",
+        "healthBarAlpha": "Health bar opacity. Default value: 1.0.",
+        "noResetButton": "Disables reset button behavior. Default value: false.",
+        "lowQuality": "Low quality preference. Default value: false.",
+        "shadersEnabled": "Whether shaders are enabled. Default value: true.",
+        "guitarHeroSustains": "Uses Guitar Hero style sustains. Default value: true.",
+        "noteSkin": "Selected note skin. Default value: Default.",
+        "splashSkin": "Selected note splash skin. Default value: Psych.",
+        "splashAlpha": "Note splash opacity. Default value: 0.6.",
+        "noteSkinPostfix": "Noteskin file path postfix, such as -future, -chip, or empty.",
+        "splashSkinPostfix": "Note splash file path postfix, such as -diamond, -vanilla, or empty."
+      }
+    }
+  ]
+}

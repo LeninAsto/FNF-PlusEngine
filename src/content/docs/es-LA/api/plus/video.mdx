@@ -1,0 +1,14 @@
+---
+title: "Funciones Lua de video"
+description: "Callbacks de VideoSprite con hxvlc para compatibilidad estilo Psych 0.6.3/0.7.3."
+---
+
+import ApiEntry from '../../../../../components/ApiEntry.astro';
+import api from '../../../../../data/api/plus/video.json';
+import copy from '../../../../../data/translations/es-LA/plus/video.json';
+
+:::caution[Compatibilidad en revisión]
+Estas entradas se compararon con el código de desarrollo, pero todavía no tienen pruebas registradas por versión y plataforma.
+:::
+
+{api.functions.map((entry) => <ApiEntry {...entry} copy={copy[entry.id]} locale="es-LA" />)}

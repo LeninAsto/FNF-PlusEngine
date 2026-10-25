@@ -1,0 +1,1489 @@
+{
+  "kind": "functions",
+  "category": "windows",
+  "language": "lua",
+  "sourceCommit": "ac6374135b68a78e167cd8557d3a1babf51f9c24",
+  "functions": [
+    {
+      "id": "winTweenSize",
+      "signature": "winTweenSize(width:Int, height:Int, duration:Float = 1, ease:String = \"linear\")",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "width",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "height",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "ease",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "winTweenX",
+      "signature": "winTweenX(tag:String, targetX:Int, duration:Float = 1, ease:String = \"linear\")",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "targetX",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "ease",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "winTweenY",
+      "signature": "winTweenY(tag:String, targetY:Int, duration:Float = 1, ease:String = \"linear\")",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "targetY",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "ease",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "setWindowX",
+      "signature": "setWindowX(x:Int)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "x",
+          "type": "Int",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "setWindowY",
+      "signature": "setWindowY(y:Int)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "y",
+          "type": "Int",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "setWindowSize",
+      "signature": "setWindowSize(width:Int, height:Int)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "width",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "height",
+          "type": "Int",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "getWindowX",
+      "signature": "getWindowX()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "getWindowY",
+      "signature": "getWindowY()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "getWindowWidth",
+      "signature": "getWindowWidth()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "getWindowHeight",
+      "signature": "getWindowHeight()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "centerWindow",
+      "signature": "centerWindow()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "setWindowTitle",
+      "signature": "setWindowTitle(title:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "title",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "getWindowTitle",
+      "signature": "getWindowTitle()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "setWindowIcon",
+      "signature": "setWindowIcon(iconPath:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "iconPath",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "setWindowResizable",
+      "signature": "setWindowResizable(enable:Bool)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "enable",
+          "type": "Bool",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "randomizeWindowPosition",
+      "signature": "randomizeWindowPosition(?minX:Int = 0, ?maxX:Int = -1, ?minY:Int = 0, ?maxY:Int = -1)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "minX",
+          "type": "Int",
+          "optional": true
+        },
+        {
+          "name": "maxX",
+          "type": "Int",
+          "optional": true
+        },
+        {
+          "name": "minY",
+          "type": "Int",
+          "optional": true
+        },
+        {
+          "name": "maxY",
+          "type": "Int",
+          "optional": true
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "getScreenWidth",
+      "signature": "getScreenWidth()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "getScreenHeight",
+      "signature": "getScreenHeight()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "getScreenResolution",
+      "signature": "getScreenResolution()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "setWindowFullscreen",
+      "signature": "setWindowFullscreen(enable:Bool)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "enable",
+          "type": "Bool",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "isWindowFullscreen",
+      "signature": "isWindowFullscreen()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "saveWindowState",
+      "signature": "saveWindowState()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "loadWindowState",
+      "signature": "loadWindowState(stateJson:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "stateJson",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "getWindowState",
+      "signature": "getWindowState()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "setDesktopWallpaper",
+      "signature": "setDesktopWallpaper(path:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "hideDesktopIcons",
+      "signature": "hideDesktopIcons(hide:Bool)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "hide",
+          "type": "Bool",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "hideTaskBar",
+      "signature": "hideTaskBar(hide:Bool)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "hide",
+          "type": "Bool",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "moveDesktopElements",
+      "signature": "moveDesktopElements(x:Int, y:Int)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "x",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "y",
+          "type": "Int",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "setDesktopTransparency",
+      "signature": "setDesktopTransparency(alpha:Float)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "alpha",
+          "type": "Float",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "setTaskBarTransparency",
+      "signature": "setTaskBarTransparency(alpha:Float)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "alpha",
+          "type": "Float",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "showNotification",
+      "signature": "showNotification(title:String, message:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "title",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "message",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "resetSystemChanges",
+      "signature": "resetSystemChanges()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "getDesktopWindowsXPos",
+      "signature": "getDesktopWindowsXPos()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "getDesktopWindowsYPos",
+      "signature": "getDesktopWindowsYPos()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "setWindowBorderColor",
+      "signature": "setWindowBorderColor(r:Int, g:Int, b:Int)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "r",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "g",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "b",
+          "type": "Int",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "setWindowOpacity",
+      "signature": "setWindowOpacity(alpha:Float)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "alpha",
+          "type": "Float",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "getWindowOpacity",
+      "signature": "getWindowOpacity()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "changeWindowsWallpaper",
+      "signature": "changeWindowsWallpaper(path:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "saveCurrentWallpaper",
+      "signature": "saveCurrentWallpaper()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "restoreOldWallpaper",
+      "signature": "restoreOldWallpaper()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "captureScreenshot",
+      "signature": "captureScreenshot(path:String)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "path",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "getWindowsVersion",
+      "signature": "getWindowsVersion()",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "tweenWindowBorderColor",
+      "signature": "tweenWindowBorderColor(fromR:Int, fromG:Int, fromB:Int, toR:Int, toG:Int, toB:Int, duration:Float = 1, ease:String = \"linear\")",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "fromR",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "fromG",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "fromB",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "toR",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "toG",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "toB",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "ease",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "tweenWindowOpacity",
+      "signature": "tweenWindowOpacity(fromAlpha:Float, toAlpha:Float, duration:Float = 1, ease:String = \"linear\")",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "fromAlpha",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "toAlpha",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "ease",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "tweenDesktopX",
+      "signature": "tweenDesktopX(toX:Int, duration:Float = 1, ease:String = \"linear\")",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "toX",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "ease",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "tweenDesktopY",
+      "signature": "tweenDesktopY(toY:Int, duration:Float = 1, ease:String = \"linear\")",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "toY",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "ease",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "tweenDesktopAlpha",
+      "signature": "tweenDesktopAlpha(fromAlpha:Float, toAlpha:Float, duration:Float = 1, ease:String = \"linear\")",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "fromAlpha",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "toAlpha",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "ease",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "tweenTaskBarAlpha",
+      "signature": "tweenTaskBarAlpha(fromAlpha:Float, toAlpha:Float, duration:Float = 1, ease:String = \"linear\")",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "fromAlpha",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "toAlpha",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "ease",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "hideWindowBorder",
+      "signature": "hideWindowBorder(enable:Bool)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "enable",
+          "type": "Bool",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "setWinRCenter",
+      "signature": "setWinRCenter(width:Int, height:Int, ?skip:Bool = false)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus development source",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/WindowsFunctions.hx"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/data/plus-api.json"
+        }
+      ],
+      "testedAtCommit": null,
+      "group": null,
+      "parameters": [
+        {
+          "name": "width",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "height",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "skip",
+          "type": "Bool",
+          "optional": true
+        }
+      ],
+      "examples": []
+    }
+  ]
+}

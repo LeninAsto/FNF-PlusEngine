@@ -1,0 +1,10 @@
+{
+  "intro": "Esta página expande la lista vieja que solo tenía video. Agrupa valores como Psych para ubicar lo que pertenece a video, modchart, Windows o GDI.",
+  "groups": [
+    "Video",
+    "Destino de modchart",
+    "Geometría de modchart",
+    "Ventana/sistema",
+    "GDI"
+  ]
+}

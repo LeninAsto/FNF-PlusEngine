@@ -1,0 +1,14 @@
+---
+title: "Lua Modchart Functions"
+description: "Beat-scheduled modifier events, playfields, aliases, scripted modifiers, and helper values."
+---
+
+import ApiEntry from '../../../../components/ApiEntry.astro';
+import api from '../../../../data/api/plus/modchart.json';
+import copy from '../../../../data/translations/en/plus/modchart.json';
+
+:::caution[Compatibility audit in progress]
+These entries were linked to development source, but do not yet have recorded tests by version and platform.
+:::
+
+{api.functions.map((entry) => <ApiEntry {...entry} copy={copy[entry.id]} locale="en" />)}

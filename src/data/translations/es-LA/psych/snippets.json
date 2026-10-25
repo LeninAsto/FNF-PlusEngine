@@ -1,0 +1,34 @@
+{
+  "groups": [
+    {
+      "title": "Archivos iniciales",
+      "labels": [
+        "Ejemplo de carpeta de mod",
+        "Script de ejemplo con callbacks"
+      ]
+    },
+    {
+      "title": "Scripts de cinemáticas",
+      "labels": [
+        "Ejemplo de video/diálogo en Bopeebo",
+        "Script de diálogo arrastrar y soltar"
+      ]
+    },
+    {
+      "title": "Tipos de nota y eventos",
+      "labels": [
+        "Ejemplo de evento custom - Opponent Fade",
+        "Ejemplo TXT de custom note type"
+      ]
+    },
+    {
+      "title": "Stages y gameplay",
+      "labels": [
+        "Stages de Week 1-6 recreados en Lua",
+        "Ejemplo de tween - Boyfriend crece",
+        "Ejemplo de sprite animado",
+        "Ejemplo de setPropertyFromClass"
+      ]
+    }
+  ]
+}

@@ -1,3 +1,138 @@
 {
-  "addModifier": "Registra un modifier por nombre para todos los playfields por defecto, o para el campo seleccionado cuando se proporciona uno. La implementación actual de dev admite playfields con nombre."
+  "reverse": {
+    "description": "Mueve receptores/notas hacia comportamiento de reverse scroll.",
+    "videoNote": "Funcion usada: addModifier(\"reverse\"), luego set/ease reverse al valor 1."
+  },
+  "drunk": {
+    "description": "Aplica movimiento horizontal sinusoidal según distancia/beat.",
+    "videoNote": "Funcion usada: addModifier(\"drunk\"), luego set/ease drunk al valor 1."
+  },
+  "tipsy": {
+    "description": "Aplica movimiento vertical sinusoidal a los lanes.",
+    "videoNote": "Funcion usada: addModifier(\"tipsy\"), luego set/ease tipsy al valor 1."
+  },
+  "beat": {
+    "description": "Hace pulsar el movimiento de notas según el beat.",
+    "videoNote": "Funcion usada: addModifier(\"beat\"), luego set/ease beat al valor 1."
+  },
+  "bumpy": {
+    "description": "Desplaza notas en Z para ondas de pseudo-profundidad.",
+    "videoNote": null
+  },
+  "boost": {
+    "description": "Cambia la curva de distancia para acelerar notas cerca de receptores.",
+    "videoNote": null
+  },
+  "bounce": {
+    "description": "Agrega movimiento de rebote a las rutas de notas.",
+    "videoNote": null
+  },
+  "confusion": {
+    "description": "Rota los ángulos de notas/receptores.",
+    "videoNote": null
+  },
+  "stealth": {
+    "description": "Controla visibilidad de notas/receptores y efectos tipo alpha.",
+    "videoNote": null
+  },
+  "x": {
+    "description": "Mueve notas/receptores en espacio X, Y y Z.",
+    "videoNote": null
+  },
+  "scale": {
+    "description": "Cambia escala y estiramiento de notas/receptores.",
+    "videoNote": null
+  },
+  "invert": {
+    "description": "Intercambia posiciones de lanes alrededor del centro.",
+    "videoNote": null
+  },
+  "opponentSwap": {
+    "description": "Intercambia campos de lanes entre jugador y oponente.",
+    "videoNote": null
+  },
+  "flip": {
+    "description": "Comportamiento de volteo de lanes expuesto mediante transforms relacionados.",
+    "videoNote": null
+  },
+  "receptorScroll": {
+    "description": "Mueve receptores en la dirección de scroll/path.",
+    "videoNote": null
+  },
+  "rotate": {
+    "description": "Rota el campo o coordenadas de flechas.",
+    "videoNote": null
+  },
+  "localrotate": {
+    "description": "Rota lanes alrededor de su origen local.",
+    "videoNote": null
+  },
+  "centerrotate": {
+    "description": "Rota alrededor de un origen centrado del campo.",
+    "videoNote": null
+  },
+  "field": {
+    "description": "Aplica transforms y rotaciones al campo completo.",
+    "videoNote": null
+  },
+  "orient": {
+    "description": "Orienta notas hacia la dirección de su path.",
+    "videoNote": null
+  },
+  "skew": {
+    "description": "Inclina visualmente notas/receptores.",
+    "videoNote": null
+  },
+  "zoom": {
+    "description": "Aplica escala tipo zoom al campo de modchart.",
+    "videoNote": null
+  },
+  "zigzag": {
+    "description": "Crea movimiento alternado en zig-zag.",
+    "videoNote": null
+  },
+  "tornado": {
+    "description": "Deforma lanes con curva tipo tornado.",
+    "videoNote": null
+  },
+  "schmovinDrunk": {
+    "description": "Variante estilo Schmovin del movimiento drunk.",
+    "videoNote": null
+  },
+  "schmovinTipsy": {
+    "description": "Variante estilo Schmovin del movimiento tipsy.",
+    "videoNote": null
+  },
+  "schmovinTornado": {
+    "description": "Variante Schmovin de tornado.",
+    "videoNote": null
+  },
+  "arrowshape": {
+    "description": "Usa una forma/path CSV custom para colocar flechas.",
+    "videoNote": null
+  },
+  "eyeshape": {
+    "description": "Modifier de path con forma de ojo de False Paradise.",
+    "videoNote": null
+  },
+  "spiral": {
+    "description": "Movimiento de path en espiral de False Paradise.",
+    "videoNote": null
+  },
+  "vibrate": {
+    "description": "Agrega movimiento rápido tipo vibración.",
+    "videoNote": null
+  },
+  "wiggle": {
+    "description": "Agrega movimiento ondulante a lanes/path.",
+    "videoNote": null
+  },
+  "noteTweenAngle": {
+    "description": "Modifier de compatibilidad para noteTweenAngle estilo Psych.",
+    "videoNote": null
+  },
+  "noteTweenDirection": {
+    "description": "Modifier de compatibilidad para noteTweenDirection estilo Psych.",
+    "videoNote": null
+  }
 }

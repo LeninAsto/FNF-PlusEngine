@@ -3,3 +3,6 @@ dist/
 .astro/
 .DS_Store
 npm-debug.log*
+playwright-report/
+test-results/
+blob-report/

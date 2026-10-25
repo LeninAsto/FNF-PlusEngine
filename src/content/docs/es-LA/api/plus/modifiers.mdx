@@ -1,22 +1,14 @@
 ---
-title: API de modifiers de Plus
-description: Registra y programa modifiers en modcharts de Plus Engine.
+title: "Modifiers de modchart"
+description: "Lista compilada de modifiers usada por el renderer de modchart inspirado en NotITG."
 ---
 
-import ApiEntry from '../../../../../components/ApiEntry.astro';
-import api from '../../../../../data/api/plus/modifiers.json';
+import ModifierEntry from '../../../../../components/ModifierEntry.astro';
+import data from '../../../../../data/api/plus/modifiers.json';
 import copy from '../../../../../data/translations/es-LA/plus/modifiers.json';
 
-:::caution[Código de desarrollo]
-Esta primera entrada se comparó con la implementación de `dev`. Todavía no representa una garantía para una versión estable.
+:::caution[Compatibilidad en revisión]
+La lista proviene del catálogo anterior y del árbol de código de desarrollo. Cada modifier permanece sin verificar hasta completar las pruebas visuales y de plataforma.
 :::
 
-{api.functions.map((entry) => <ApiEntry {...entry} copy={copy[entry.id]} locale="es-LA" />)}
-
-```lua title="modchart.lua"
-function onInitModchart()
-    addModifier('drunk')
-    set('drunk', -5, 0)
-    ease('drunk', 4, 4, 1, 'sineInOut', 1)
-end
-```
+{data.items.map((entry) => <ModifierEntry {...entry} {...copy[entry.id]} locale="es-LA" />)}

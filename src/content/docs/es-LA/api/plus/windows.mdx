@@ -1,0 +1,18 @@
+---
+title: "Funciones de Windows"
+description: "Callbacks Lua solo para Windows: movimiento de ventana, opacidad, wallpaper, taskbar, iconos del escritorio y notificaciones."
+---
+
+import ApiEntry from '../../../../../components/ApiEntry.astro';
+import api from '../../../../../data/api/plus/windows.json';
+import copy from '../../../../../data/translations/es-LA/plus/windows.json';
+
+:::caution[Compatibilidad en revisión]
+Estas entradas se compararon con el código de desarrollo, pero todavía no tienen pruebas registradas por versión y plataforma.
+:::
+
+:::danger[Advertencia de plataforma]
+Advertencia: estos callbacks pueden ocultar taskbar/iconos, cambiar wallpaper, mover ventanas, capturar screenshots o alterar opacidad. Déjalos siempre opt-in.
+:::
+
+{api.functions.map((entry) => <ApiEntry {...entry} copy={copy[entry.id]} locale="es-LA" />)}

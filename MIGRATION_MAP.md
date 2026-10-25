@@ -24,7 +24,7 @@ Local videos: **4**
 | `/es/pages/score/` | `/es-LA/api/psych/score/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/pages/script/` | `/es-LA/api/psych/script/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/pages/shaders/` | `/es-LA/api/psych/shaders/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/snippets/` | `/es-LA/api/psych/snippets/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/snippets/` | `/es-LA/api/psych/snippets/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/pages/sound/` | `/es-LA/api/psych/sound/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/pages/spritesheet/` | `/es-LA/api/psych/spritesheet/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/pages/substate/` | `/es-LA/api/psych/substate/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
@@ -33,14 +33,14 @@ Local videos: **4**
 | `/es/pages/translations/` | `/es-LA/api/psych/translations/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/pages/tween/` | `/es-LA/api/psych/tween/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/pages/uncategorized/` | `/es-LA/api/psych/uncategorized/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/variables/` | `/es-LA/api/psych/variables/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/variables/` | `/es-LA/api/psych/variables/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/plus/` | `/es-LA/api/plus/` | Implemented | `themeToggle` |
-| `/es/plus/pages/gdi/` | `/es-LA/api/plus/gdi/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/plus/pages/modchart/` | `/es-LA/api/plus/modchart/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/plus/pages/gdi/` | `/es-LA/api/plus/gdi/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/plus/pages/modchart/` | `/es-LA/api/plus/modchart/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/plus/pages/modifiers/` | `/es-LA/api/plus/modifiers/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/plus/pages/variables/` | `/es-LA/api/plus/variables/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/plus/pages/video/` | `/es-LA/api/plus/video/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/plus/pages/windows/` | `/es-LA/api/plus/windows/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/plus/pages/variables/` | `/es-LA/api/plus/variables/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/plus/pages/video/` | `/es-LA/api/plus/video/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/plus/pages/windows/` | `/es-LA/api/plus/windows/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/psych/` | `/es-LA/api/psych/` | Implemented | `themeToggle`, `sectionSearch`, `home-page`, `vscode-extension`, `running-script`, `functions`, `other-pages` |
 | `/pages/achievements/` | `/api/psych/achievements/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/pages/camera/` | `/api/psych/camera/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
@@ -56,7 +56,7 @@ Local videos: **4**
 | `/pages/score/` | `/api/psych/score/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/pages/script/` | `/api/psych/script/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/pages/shaders/` | `/api/psych/shaders/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/snippets/` | `/api/psych/snippets/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/snippets/` | `/api/psych/snippets/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/pages/sound/` | `/api/psych/sound/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/pages/spritesheet/` | `/api/psych/spritesheet/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/pages/substate/` | `/api/psych/substate/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
@@ -65,21 +65,23 @@ Local videos: **4**
 | `/pages/translations/` | `/api/psych/translations/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/pages/tween/` | `/api/psych/tween/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/pages/uncategorized/` | `/api/psych/uncategorized/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/variables/` | `/api/psych/variables/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/variables/` | `/api/psych/variables/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/plus/` | `/api/plus/` | Implemented | `themeToggle` |
-| `/plus/pages/gdi/` | `/api/plus/gdi/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/plus/pages/modchart/` | `/api/plus/modchart/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/plus/pages/gdi/` | `/api/plus/gdi/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/plus/pages/modchart/` | `/api/plus/modchart/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/plus/pages/modifiers/` | `/api/plus/modifiers/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/plus/pages/variables/` | `/api/plus/variables/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/plus/pages/video/` | `/api/plus/video/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/plus/pages/windows/` | `/api/plus/windows/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/plus/pages/variables/` | `/api/plus/variables/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/plus/pages/video/` | `/api/plus/video/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/plus/pages/windows/` | `/api/plus/windows/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/psych/` | `/api/psych/` | Implemented | `themeToggle`, `sectionSearch`, `home-page`, `vscode-extension`, `running-script`, `functions`, `other-pages` |
 
-## Assets requiring a migration decision
+## Video asset migration
 
-- `/assets/videos/beat.mp4`
-- `/assets/videos/drunk.mp4`
-- `/assets/videos/reverse.mp4`
-- `/assets/videos/tipsy.mp4`
+| Legacy asset | V2 asset | Status |
+|---|---|---|
+| `/assets/videos/beat.mp4` | `/videos/beat.mp4` | Implemented |
+| `/assets/videos/drunk.mp4` | `/videos/drunk.mp4` | Implemented |
+| `/assets/videos/reverse.mp4` | `/videos/reverse.mp4` | Implemented |
+| `/assets/videos/tipsy.mp4` | `/videos/tipsy.mp4` | Implemented |
 
 Redirects are added to `public/_redirects` only after their destination exists. This prevents replacing a working legacy URL with a v2 404.

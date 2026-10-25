@@ -1,0 +1,20 @@
+---
+title: "Plus Variables"
+description: "Direct values and parameters used by video, modchart, window, and system functions."
+---
+
+import data from '../../../../data/api/plus/variables.json';
+import copy from '../../../../data/translations/en/plus/variables.json';
+
+:::caution[Glossary under review]
+These names help navigate the API, but do not imply that every value is a global variable available on every platform.
+:::
+
+{copy.intro}
+
+{data.groups.map((group, index) => (
+  <section aria-labelledby={group.id}>
+    <h2 id={group.id}>{copy.groups[index]}</h2>
+    <p>{group.items.map((item) => <code style="margin-inline-end: 0.5rem">{item}</code>)}</p>
+  </section>
+))}

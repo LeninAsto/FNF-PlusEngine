@@ -1,0 +1,34 @@
+{
+  "groups": [
+    {
+      "title": "Starter Files",
+      "labels": [
+        "Mod Folder sample",
+        "Sample Script with callbacks"
+      ]
+    },
+    {
+      "title": "Cutscene Scripts",
+      "labels": [
+        "Example Video/Dialogue on Bopeebo",
+        "Drag and Drop Dialogue Script"
+      ]
+    },
+    {
+      "title": "Note Types and Events",
+      "labels": [
+        "Custom Event example - Opponent Fade",
+        "Custom Note Type TXT example"
+      ]
+    },
+    {
+      "title": "Stages and Gameplay",
+      "labels": [
+        "Week 1-6 stages recreated in Lua",
+        "Tween example - Boyfriend gets bigger",
+        "Animated Sprite example",
+        "setPropertyFromClass example"
+      ]
+    }
+  ]
+}

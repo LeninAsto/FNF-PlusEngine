@@ -1,3 +1,138 @@
 {
-  "addModifier": "Registers a modifier by name for every playfield by default, or for the selected field when one is supplied. Named playfields are supported by the current dev implementation."
+  "reverse": {
+    "description": "Moves receptors/notes toward reverse scroll behavior.",
+    "videoNote": "Used function: addModifier(\"reverse\"), then set/ease reverse to value 1."
+  },
+  "drunk": {
+    "description": "Applies sinusoidal horizontal movement based on distance/beat.",
+    "videoNote": "Used function: addModifier(\"drunk\"), then set/ease drunk to value 1."
+  },
+  "tipsy": {
+    "description": "Applies sinusoidal vertical movement to lanes.",
+    "videoNote": "Used function: addModifier(\"tipsy\"), then set/ease tipsy to value 1."
+  },
+  "beat": {
+    "description": "Pulses note movement according to the song beat.",
+    "videoNote": "Used function: addModifier(\"beat\"), then set/ease beat to value 1."
+  },
+  "bumpy": {
+    "description": "Offsets notes on the Z axis for pseudo-depth waves.",
+    "videoNote": null
+  },
+  "boost": {
+    "description": "Changes scroll distance curve to speed notes near receptors.",
+    "videoNote": null
+  },
+  "bounce": {
+    "description": "Adds bouncing motion to note paths.",
+    "videoNote": null
+  },
+  "confusion": {
+    "description": "Rotates note/receptor angles.",
+    "videoNote": null
+  },
+  "stealth": {
+    "description": "Controls note/receptor visibility and alpha-style effects.",
+    "videoNote": null
+  },
+  "x": {
+    "description": "Moves notes/receptors in X, Y, and Z space.",
+    "videoNote": null
+  },
+  "scale": {
+    "description": "Changes note/receptor scale and stretch.",
+    "videoNote": null
+  },
+  "invert": {
+    "description": "Swaps lane positions around the center.",
+    "videoNote": null
+  },
+  "opponentSwap": {
+    "description": "Swaps player and opponent lane fields.",
+    "videoNote": null
+  },
+  "flip": {
+    "description": "Equivalent lane flip behavior exposed through related lane transforms.",
+    "videoNote": null
+  },
+  "receptorScroll": {
+    "description": "Moves receptors along scroll/path direction.",
+    "videoNote": null
+  },
+  "rotate": {
+    "description": "Rotates the field or arrow coordinates.",
+    "videoNote": null
+  },
+  "localrotate": {
+    "description": "Rotates lanes around their local origin.",
+    "videoNote": null
+  },
+  "centerrotate": {
+    "description": "Rotates around a centered field origin.",
+    "videoNote": null
+  },
+  "field": {
+    "description": "Applies field-level transforms and rotations.",
+    "videoNote": null
+  },
+  "orient": {
+    "description": "Orients notes toward their path direction.",
+    "videoNote": null
+  },
+  "skew": {
+    "description": "Skews note/receptor visuals.",
+    "videoNote": null
+  },
+  "zoom": {
+    "description": "Applies zoom-like scaling to the modchart field.",
+    "videoNote": null
+  },
+  "zigzag": {
+    "description": "Creates alternating zig-zag movement.",
+    "videoNote": null
+  },
+  "tornado": {
+    "description": "Warps lanes in a tornado-like curve.",
+    "videoNote": null
+  },
+  "schmovinDrunk": {
+    "description": "Schmovin-flavored drunk movement variant.",
+    "videoNote": null
+  },
+  "schmovinTipsy": {
+    "description": "Schmovin-flavored tipsy movement variant.",
+    "videoNote": null
+  },
+  "schmovinTornado": {
+    "description": "Schmovin tornado variant.",
+    "videoNote": null
+  },
+  "arrowshape": {
+    "description": "Uses a custom CSV shape/path for arrow placement.",
+    "videoNote": null
+  },
+  "eyeshape": {
+    "description": "False Paradise eye-shaped path modifier.",
+    "videoNote": null
+  },
+  "spiral": {
+    "description": "False Paradise spiral path movement.",
+    "videoNote": null
+  },
+  "vibrate": {
+    "description": "Adds rapid vibration-style movement.",
+    "videoNote": null
+  },
+  "wiggle": {
+    "description": "Adds wiggly lane/path movement.",
+    "videoNote": null
+  },
+  "noteTweenAngle": {
+    "description": "Psych-style note tween angle compatibility modifier.",
+    "videoNote": null
+  },
+  "noteTweenDirection": {
+    "description": "Psych-style note tween direction compatibility modifier.",
+    "videoNote": null
+  }
 }

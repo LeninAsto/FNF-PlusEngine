@@ -1,0 +1,67 @@
+{
+  "initGDIThread": {
+    "description": "Starts the GDI effect thread.",
+    "parameters": {},
+    "examples": []
+  },
+  "stopGDIThread": {
+    "description": "Stops the GDI effect thread.",
+    "parameters": {},
+    "examples": []
+  },
+  "pauseGDIThread": {
+    "description": "Pauses or resumes the GDI thread.",
+    "parameters": {
+      "pause": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "isGDIThreadRunning": {
+    "description": "Returns whether the GDI thread is running.",
+    "parameters": {},
+    "examples": []
+  },
+  "getGDIElapsedTime": {
+    "description": "Returns elapsed GDI effect time.",
+    "parameters": {},
+    "examples": []
+  },
+  "prepareGDIEffect": {
+    "description": "Prepares a named GDI effect and optional wait time.",
+    "parameters": {
+      "effect": "Parameter used by this callback.",
+      "wait": "Parameter used by this callback. Default: 0."
+    },
+    "examples": []
+  },
+  "enableGDIEffect": {
+    "description": "Enables or disables a prepared GDI effect.",
+    "parameters": {
+      "effect": "Parameter used by this callback.",
+      "enabled": "Parameter used by this callback. Default: true."
+    },
+    "examples": []
+  },
+  "removeGDIEffect": {
+    "description": "Removes a named GDI effect.",
+    "parameters": {
+      "effect": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "setGDIEffectWaitTime": {
+    "description": "Changes a GDI effect wait/delay time.",
+    "parameters": {
+      "effect": "Parameter used by this callback.",
+      "wait": "Parameter used by this callback."
+    },
+    "examples": []
+  },
+  "setGDIElapsedTime": {
+    "description": "Overrides elapsed GDI time.",
+    "parameters": {
+      "elapsed": "Parameter used by this callback."
+    },
+    "examples": []
+  }
+}

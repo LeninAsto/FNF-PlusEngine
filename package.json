@@ -7,9 +7,12 @@
     "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
     "build": "npm run check:generated && npm run validate && ASTRO_TELEMETRY_DISABLED=1 astro build && node scripts/validate-build.mjs",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
+    "test:e2e": "npm run build && playwright test",
     "inventory": "node scripts/inventory-legacy.mjs",
     "generate:psych": "node scripts/migrate-psych.mjs",
-    "check:generated": "node scripts/migrate-psych.mjs --check",
+    "generate:plus": "node scripts/migrate-plus.mjs",
+    "generate": "npm run generate:psych && npm run generate:plus",
+    "check:generated": "node scripts/migrate-psych.mjs --check && node scripts/migrate-plus.mjs --check",
     "validate": "node scripts/validate-docs.mjs"
   },
   "dependencies": {
@@ -18,6 +21,7 @@
     "sharp": "0.35.5"
   },
   "devDependencies": {
+    "@playwright/test": "1.64.1",
     "typescript": "7.0.2"
   }
 }
