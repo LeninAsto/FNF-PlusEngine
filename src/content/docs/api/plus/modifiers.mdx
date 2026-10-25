@@ -1,0 +1,22 @@
+---
+title: Plus modifiers API
+description: Register and schedule modifiers in Plus Engine modcharts.
+---
+
+import ApiEntry from '../../../../components/ApiEntry.astro';
+import api from '../../../../data/api/plus/modifiers.json';
+import copy from '../../../../data/translations/en/plus/modifiers.json';
+
+:::caution[Development source]
+This first entry was compared with the `dev` implementation. It is not yet a stable-version guarantee.
+:::
+
+{api.functions.map((entry) => <ApiEntry {...entry} description={copy[entry.id]} locale="en" />)}
+
+```lua title="modchart.lua"
+function onInitModchart()
+    addModifier('drunk')
+    set('drunk', -5, 0)
+    ease('drunk', 4, 4, 1, 'sineInOut', 1)
+end
+```

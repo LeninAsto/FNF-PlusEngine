@@ -1,0 +1,22 @@
+---
+title: API de modifiers de Plus
+description: Registra y programa modifiers en modcharts de Plus Engine.
+---
+
+import ApiEntry from '../../../../../components/ApiEntry.astro';
+import api from '../../../../../data/api/plus/modifiers.json';
+import copy from '../../../../../data/translations/es-LA/plus/modifiers.json';
+
+:::caution[Código de desarrollo]
+Esta primera entrada se comparó con la implementación de `dev`. Todavía no representa una garantía para una versión estable.
+:::
+
+{api.functions.map((entry) => <ApiEntry {...entry} description={copy[entry.id]} locale="es-LA" />)}
+
+```lua title="modchart.lua"
+function onInitModchart()
+    addModifier('drunk')
+    set('drunk', -5, 0)
+    ease('drunk', 4, 4, 1, 'sineInOut', 1)
+end
+```

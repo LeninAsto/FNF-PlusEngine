@@ -1,0 +1,35 @@
+---
+title: Create your first mod
+description: Prepare a minimal Plus Engine mod and confirm that the engine loads it.
+---
+
+import { FileTree, Steps } from '@astrojs/starlight/components';
+
+This guide establishes the folder structure used by the scripting tutorials. It currently targets the `dev` branch and will be tested against the next stable release before launch.
+
+<Steps>
+1. Create a folder for the mod inside `mods/`.
+2. Add a `pack.json` file and an `images` directory.
+3. Enable the mod from the Mods menu and restart the state when prompted.
+</Steps>
+
+<FileTree>
+- mods/
+  - my-first-mod/
+    - pack.json
+    - images/
+    - scripts/
+</FileTree>
+
+```json title="mods/my-first-mod/pack.json"
+{
+  "name": "My First Mod",
+  "description": "A minimal Plus Engine mod",
+  "restart": false,
+  "runsGlobally": false
+}
+```
+
+:::caution[Verification in progress]
+The minimal package fields and exact reload behavior still need an end-to-end test in a built `dev` executable. This page does not mark them as release-verified yet.
+:::

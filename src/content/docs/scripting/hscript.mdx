@@ -1,0 +1,22 @@
+---
+title: HScript scripting
+description: Typed script callbacks and the important differences from Lua.
+---
+
+HScript exposes engine objects directly and uses typed callback arguments. It is useful when a Lua wrapper does not expose the behavior you need.
+
+```haxe title="scripts/hello.hx"
+function onCreatePost() {
+    debugPrint('Plus Engine loaded this HScript');
+}
+
+function onSpawnNote(note:Note) {
+    // HScript receives the Note object directly.
+}
+```
+
+The matching Lua callback is `onSpawnNote(id, data, type, isSustainNote, strumTime)`. Do not copy parameter lists between the two languages.
+
+:::note[Source status]
+The signatures above were checked against `docs/scripts/TemplateScript.hx` and `TemplateScript.lua` at Plus commit `ac6374135b68a78e167cd8557d3a1babf51f9c24`.
+:::

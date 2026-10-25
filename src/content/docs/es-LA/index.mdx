@@ -1,0 +1,32 @@
+---
+title: Documentación de Plus Engine
+description: Crea mods, escribe scripts y consulta la compatibilidad de APIs de Plus Engine.
+template: splash
+hero:
+  tagline: Guías prácticas y referencia API con estado de compatibilidad explícito.
+  actions:
+    - text: Crear un mod
+      link: /es-LA/guides/create-mod/
+      icon: right-arrow
+      variant: primary
+    - text: Explorar la API
+      link: /es-LA/api/psych/playstate/
+      icon: open-book
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="Empieza con un mod funcional" icon="rocket">
+    Sigue ejemplos completos con árbol de archivos, código ejecutable y resultado esperado.
+  </Card>
+  <Card title="Conoce lo que soporta Plus" icon="approve-check">
+    Cada API muestra su fuente y estado de verificación sin asumir compatibilidad.
+  </Card>
+  <Card title="Lua y HScript" icon="seti:lua">
+    Elige el lenguaje apropiado para tu mod y plataformas objetivo.
+  </Card>
+</CardGrid>
+
+Este sitio está migrando la documentación anterior. Las APIs aún no verificadas se marcan claramente durante la auditoría del código fuente.

@@ -1,0 +1,24 @@
+---
+title: Scripts con Lua
+description: Dónde viven los scripts Lua y cómo Plus Engine llama sus ciclos de vida.
+---
+
+Lua es la ruta más portable para mods existentes de Psych. Los scripts de canción suelen vivir en `mods/<mod>/data/<canción>/` y los globales en `mods/<mod>/scripts/`.
+
+```lua title="scripts/hola.lua"
+function onCreatePost()
+    debugPrint('Plus Engine cargó este script Lua')
+end
+
+function onBeatHit()
+    if curBeat % 4 == 0 then
+        debugPrint('Compás en el beat ' .. curBeat)
+    end
+end
+```
+
+La plantilla de `dev` define actualmente `onCreate`, `onCreatePost`, `onUpdate`, `onUpdatePost`, `onBeatHit`, `onStepHit`, `onDestroy` y callbacks específicos del gameplay.
+
+:::note[Estado de la fuente]
+Los nombres de callbacks se comprobaron contra `docs/scripts/TemplateScript.lua` en el commit Plus `ac6374135b68a78e167cd8557d3a1babf51f9c24`. El comportamiento en runtime y las plataformas compatibles siguen dentro de la auditoría.
+:::

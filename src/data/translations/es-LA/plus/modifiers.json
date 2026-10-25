@@ -1,0 +1,3 @@
+{
+  "addModifier": "Registra un modifier por nombre para todos los playfields por defecto, o para el campo seleccionado cuando se proporciona uno. La implementación actual de dev admite playfields con nombre."
+}

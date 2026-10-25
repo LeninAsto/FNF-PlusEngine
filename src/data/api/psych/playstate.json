@@ -1,0 +1,25 @@
+{
+  "category": "playstate",
+  "language": "lua",
+  "functions": [
+    {
+      "id": "startCountdown",
+      "signature": "startCountdown()",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych Lua reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/main/pages/playstate.html"
+        },
+        {
+          "label": "Plus Lua callback registration",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/backend/FunkinLua.hx#L1098"
+        }
+      ],
+      "testedAtCommit": null
+    }
+  ]
+}

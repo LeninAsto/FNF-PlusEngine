@@ -1,0 +1,35 @@
+---
+title: Crea tu primer mod
+description: Prepara un mod mínimo de Plus Engine y confirma que el motor lo carga.
+---
+
+import { FileTree, Steps } from '@astrojs/starlight/components';
+
+Esta guía establece la estructura de carpetas usada por los tutoriales de scripting. Por ahora apunta a la rama `dev` y se probará contra la próxima versión estable antes del lanzamiento.
+
+<Steps>
+1. Crea una carpeta para el mod dentro de `mods/`.
+2. Agrega un archivo `pack.json` y un directorio `images`.
+3. Activa el mod desde el menú Mods y reinicia el estado cuando se solicite.
+</Steps>
+
+<FileTree>
+- mods/
+  - mi-primer-mod/
+    - pack.json
+    - images/
+    - scripts/
+</FileTree>
+
+```json title="mods/mi-primer-mod/pack.json"
+{
+  "name": "Mi primer mod",
+  "description": "Un mod mínimo de Plus Engine",
+  "restart": false,
+  "runsGlobally": false
+}
+```
+
+:::caution[Verificación en progreso]
+Los campos mínimos del paquete y el comportamiento exacto de recarga todavía necesitan una prueba completa con un ejecutable compilado desde `dev`. Esta página aún no los marca como verificados para una versión estable.
+:::

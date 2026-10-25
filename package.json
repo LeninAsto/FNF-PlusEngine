@@ -1,0 +1,21 @@
+{
+  "name": "fnf-plus-engine-docs",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
+    "build": "npm run validate && ASTRO_TELEMETRY_DISABLED=1 astro build && node scripts/validate-build.mjs",
+    "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
+    "inventory": "node scripts/inventory-legacy.mjs",
+    "validate": "node scripts/validate-docs.mjs"
+  },
+  "dependencies": {
+    "@astrojs/starlight": "0.42.7",
+    "astro": "7.4.2",
+    "sharp": "0.35.5"
+  },
+  "devDependencies": {
+    "typescript": "7.0.2"
+  }
+}

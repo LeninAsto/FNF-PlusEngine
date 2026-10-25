@@ -1,0 +1,14 @@
+---
+title: Psych PlayState API
+description: Song flow functions from the Psych Lua API and their Plus Engine status.
+---
+
+import ApiEntry from '../../../../components/ApiEntry.astro';
+import api from '../../../../data/api/psych/playstate.json';
+import copy from '../../../../data/translations/en/psych/playstate.json';
+
+:::caution[Compatibility audit in progress]
+Finding a callback in source confirms that the symbol exists. It is only marked **Verified** after a runtime test records the target commit and platforms.
+:::
+
+{api.functions.map((entry) => <ApiEntry {...entry} description={copy[entry.id]} locale="en" />)}

@@ -1,0 +1,3 @@
+{
+  "startCountdown": "Starts the song countdown. The Plus source registers this Lua callback, but its release and platform behavior has not yet completed the runtime test matrix."
+}

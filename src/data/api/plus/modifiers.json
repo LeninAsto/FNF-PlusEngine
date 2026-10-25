@@ -1,0 +1,25 @@
+{
+  "category": "modifiers",
+  "language": "lua",
+  "functions": [
+    {
+      "id": "addModifier",
+      "signature": "addModifier(name, field = -1)",
+      "origin": "plus-added",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Plus Lua implementation",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/ModchartFunctions.hx#L92"
+        },
+        {
+          "label": "Modchart editor guide",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/docs/modchart-editor.md"
+        }
+      ],
+      "testedAtCommit": null
+    }
+  ]
+}
