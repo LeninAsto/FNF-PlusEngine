@@ -1,0 +1,60 @@
+{
+  "doTweenX": {
+    "description": "Tweens an object's X position.",
+    "parameters": {
+      "tag": "Tween identifier tag.",
+      "objTag": "Object (sprite/text) tag to tween.",
+      "targetX": "Target X position.",
+      "duration": "Tween duration in seconds.",
+      "options": "Options table (ex. {ease: 'quadInOut'})."
+    },
+    "examples": []
+  },
+  "doTweenY": {
+    "description": "Tweens an object's Y position.",
+    "parameters": {
+      "tag": "Tween identifier tag.",
+      "objTag": "Object tag to tween.",
+      "targetY": "Target Y position.",
+      "duration": "Tween duration in seconds."
+    },
+    "examples": []
+  },
+  "doTweenAlpha": {
+    "description": "Tweens an object's transparency (0 = invisible, 1 = opaque).",
+    "parameters": {
+      "tag": "Tween identifier.",
+      "objTag": "Object tag.",
+      "targetAlpha": "Target transparency (0-1).",
+      "duration": "Tween duration in seconds."
+    },
+    "examples": []
+  },
+  "doTweenColor": {
+    "description": "Tweens an object's color over time.",
+    "parameters": {
+      "tag": "Tween identifier.",
+      "objTag": "Object tag.",
+      "color": "Target color (hex or name).",
+      "duration": "Tween duration in seconds."
+    },
+    "examples": []
+  },
+  "doTweenAngle": {
+    "description": "Tweens an object's rotation angle.",
+    "parameters": {
+      "tag": "Tween identifier.",
+      "objTag": "Object tag.",
+      "targetAngle": "Target rotation in degrees.",
+      "duration": "Tween duration in seconds."
+    },
+    "examples": []
+  },
+  "cancelTween": {
+    "description": "Cancels a tween before it completes.",
+    "parameters": {
+      "tag": "Tween tag to cancel."
+    },
+    "examples": []
+  }
+}

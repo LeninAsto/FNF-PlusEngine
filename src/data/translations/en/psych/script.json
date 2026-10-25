@@ -1,0 +1,89 @@
+{
+  "getRunningScripts": {
+    "description": "Returns a table with paths of all running Lua scripts.",
+    "parameters": {},
+    "examples": []
+  },
+  "callScript": {
+    "description": "Calls a function in another running Lua script and returns its result.",
+    "parameters": {
+      "luaFile": "Path to the target Lua script.",
+      "funcName": "Function to call in the target script.",
+      "args": "Optional arguments passed to the target function."
+    },
+    "examples": [
+      "Calls customFunction(0, 999) in scripts/test.lua."
+    ]
+  },
+  "addLuaScript": {
+    "description": "Adds a Lua script without immediately running callbacks.",
+    "parameters": {
+      "luaFile": "Script file path.",
+      "ignoreAlreadyRunning": "Skip if already running. Defaults to false."
+    },
+    "examples": []
+  },
+  "removeLuaScript": {
+    "description": "Removes a running Lua script.",
+    "parameters": {
+      "luaFile": "Script file path to remove."
+    },
+    "examples": []
+  },
+  "isRunning": {
+    "description": "Checks if a script is currently running.",
+    "parameters": {
+      "luaFile": "Script file path to check."
+    },
+    "examples": []
+  },
+  "setVar": {
+    "description": "Saves a variable accessible to all scripts.",
+    "parameters": {
+      "varName": "Variable name identifier.",
+      "value": "Value to store."
+    },
+    "examples": [
+      "Stores a numeric value for other scripts."
+    ]
+  },
+  "getVar": {
+    "description": "Gets a variable saved with setVar.",
+    "parameters": {
+      "varName": "Variable name to retrieve."
+    },
+    "examples": [
+      "Retrieves previously stored variable."
+    ]
+  },
+  "callOnScripts": {
+    "description": "Calls a function on all running scripts.",
+    "parameters": {
+      "funcName": "Function name to call.",
+      "args": "Function arguments. Defaults to null.",
+      "ignoreStops": "Ignore return false. Defaults to false.",
+      "ignoreSelf": "Ignore calling script. Defaults to true.",
+      "exclusions": "Scripts to exclude. Defaults to null."
+    },
+    "examples": [
+      "Calls function with arguments on all scripts."
+    ]
+  },
+  "runHaxeCode": {
+    "description": "Runs Haxe code inside a Lua script.",
+    "parameters": {
+      "codeToRun": "Haxe code to execute.",
+      "varsToBring": "Variables to expose to Haxe. Defaults to null.",
+      "funcToRun": "Function to run after code. Defaults to null.",
+      "funcArgs": "Function arguments. Defaults to null."
+    },
+    "examples": [
+      "Changes boyfriend color via Haxe."
+    ]
+  },
+  "close": {
+    "description": "Closes the current Lua script.",
+    "parameters": {},
+    "examples": []
+  }
+}

@@ -1,0 +1,14 @@
+---
+title: "Text Functions"
+description: "Create, style, and update Lua text objects on screen."
+---
+
+import ApiEntry from '../../../../components/ApiEntry.astro';
+import api from '../../../../data/api/psych/text.json';
+import copy from '../../../../data/translations/en/psych/text.json';
+
+:::caution[Compatibility audit in progress]
+These entries were migrated from the legacy catalog and linked to the pinned upstream reference. They remain **Needs review** until Plus runtime tests record a commit and platforms.
+:::
+
+{api.functions.map((entry) => <ApiEntry {...entry} copy={copy[entry.id]} locale="en" />)}

@@ -1,0 +1,19 @@
+{
+  "changeDiscordPresence": {
+    "description": "Updates Discord rich presence with custom text and images.",
+    "parameters": {
+      "details": "Main text shown in presence. Defaults to 'In the Menus'.",
+      "state": "Secondary text. Defaults to null.",
+      "smallImageKey": "Small image identifier. Defaults to null.",
+      "largeImageKey": "Large image identifier. Defaults to null."
+    },
+    "examples": []
+  },
+  "changeDiscordClientID": {
+    "description": "Changes the Discord application ID being used.",
+    "parameters": {
+      "clientID": "Discord application/client ID."
+    },
+    "examples": []
+  }
+}

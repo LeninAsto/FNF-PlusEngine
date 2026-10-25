@@ -1,3 +1,1 @@
-{
-  "startCountdown": "Inicia la cuenta regresiva de la canción. El código de Plus registra este callback de Lua, pero su comportamiento por versión y plataforma aún no completa la matriz de pruebas en runtime."
-}
+{}

@@ -1,0 +1,35 @@
+{
+  "makeFlxAnimateSprite": {
+    "description": "Creates a Lua Sprite that can use Animate Atlas.",
+    "parameters": {
+      "tag": "Sprite identifier tag.",
+      "folderOrImg": "Path to image or atlas folder. Defaults to null.",
+      "x": "X position. Defaults to 0.",
+      "y": "Y position. Defaults to 0.",
+      "animationJson": "Path to animation JSON. Defaults to null."
+    },
+    "examples": []
+  },
+  "loadAnimateAtlas": {
+    "description": "Loads the Atlas folder for a FlxAnimate sprite.",
+    "parameters": {
+      "tag": "Sprite tag.",
+      "folderOrImg": "Path to atlas folder or image.",
+      "animationJson": "Path to animation JSON. Defaults to null."
+    },
+    "examples": [
+      "Loads atlas for the sprite."
+    ]
+  },
+  "addAnimationBySymbol": {
+    "description": "Adds an animation using a symbol from Adobe Animate.",
+    "parameters": {
+      "tag": "Sprite tag.",
+      "name": "Animation name to register.",
+      "symbol": "Symbol identifier in the Animate file.",
+      "framerate": "Animation FPS. Defaults to 24.",
+      "loop": "Whether animation loops. Defaults to false."
+    },
+    "examples": []
+  }
+}

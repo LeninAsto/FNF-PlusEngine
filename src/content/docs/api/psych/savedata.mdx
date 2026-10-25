@@ -1,0 +1,14 @@
+---
+title: "Save Data Functions"
+description: "Read and write persistent save values."
+---
+
+import ApiEntry from '../../../../components/ApiEntry.astro';
+import api from '../../../../data/api/psych/savedata.json';
+import copy from '../../../../data/translations/en/psych/savedata.json';
+
+:::caution[Compatibility audit in progress]
+These entries were migrated from the legacy catalog and linked to the pinned upstream reference. They remain **Needs review** until Plus runtime tests record a commit and platforms.
+:::
+
+{api.functions.map((entry) => <ApiEntry {...entry} copy={copy[entry.id]} locale="en" />)}

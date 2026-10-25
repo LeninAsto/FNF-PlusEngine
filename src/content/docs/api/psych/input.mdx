@@ -1,0 +1,14 @@
+---
+title: "Input Functions"
+description: "Detect keyboard, mouse, and gamepad input."
+---
+
+import ApiEntry from '../../../../components/ApiEntry.astro';
+import api from '../../../../data/api/psych/input.json';
+import copy from '../../../../data/translations/en/psych/input.json';
+
+:::caution[Compatibility audit in progress]
+These entries were migrated from the legacy catalog and linked to the pinned upstream reference. They remain **Needs review** until Plus runtime tests record a commit and platforms.
+:::
+
+{api.functions.map((entry) => <ApiEntry {...entry} copy={copy[entry.id]} locale="en" />)}

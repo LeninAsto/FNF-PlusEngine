@@ -41,8 +41,14 @@ export default defineConfig({
           label: 'API reference',
           translations: { 'es-LA': 'Referencia API' },
           items: [
-            { label: 'Psych PlayState', slug: 'api/psych/playstate' },
-            { label: 'Plus modifiers', translations: { 'es-LA': 'Modifiers de Plus' }, slug: 'api/plus/modifiers' }
+            {
+              label: 'Psych API',
+              items: [{ autogenerate: { directory: 'api/psych', collapsed: true } }]
+            },
+            {
+              label: 'Plus API',
+              items: [{ autogenerate: { directory: 'api/plus', collapsed: true } }]
+            }
           ]
         }
       ]

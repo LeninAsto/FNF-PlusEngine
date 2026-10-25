@@ -1,0 +1,142 @@
+{
+  "category": "flxanimate",
+  "language": "lua",
+  "sourceCommit": "e2e36943bfe1d4d6407becafcf6d64e631122cb1",
+  "functions": [
+    {
+      "id": "makeFlxAnimateSprite",
+      "signature": "makeFlxAnimateSprite(tag:String, ?folderOrImg:String = null, ?x:Float = 0, ?y:Float = 0, ?animationJson:String = null):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/flxanimate.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "folderOrImg",
+          "type": "String",
+          "optional": true
+        },
+        {
+          "name": "x",
+          "type": "Float",
+          "optional": true
+        },
+        {
+          "name": "y",
+          "type": "Float",
+          "optional": true
+        },
+        {
+          "name": "animationJson",
+          "type": "String",
+          "optional": true
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "loadAnimateAtlas",
+      "signature": "loadAnimateAtlas(tag:String, folderOrImg:String, ?animationJson:String = null):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/flxanimate.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "folderOrImg",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "animationJson",
+          "type": "String",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "loadAnimateAtlas('mySprite', 'characters/atlasTest')"
+        }
+      ]
+    },
+    {
+      "id": "addAnimationBySymbol",
+      "signature": "addAnimationBySymbol(tag:String, name:String, symbol:String, ?framerate:Float = 24, ?loop:Bool = false):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/flxanimate.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "name",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "symbol",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "framerate",
+          "type": "Float",
+          "optional": true
+        },
+        {
+          "name": "loop",
+          "type": "Bool",
+          "optional": true
+        }
+      ],
+      "examples": []
+    }
+  ]
+}

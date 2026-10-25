@@ -1,0 +1,199 @@
+{
+  "category": "camera",
+  "language": "lua",
+  "sourceCommit": "e2e36943bfe1d4d6407becafcf6d64e631122cb1",
+  "functions": [
+    {
+      "id": "setCameraScroll",
+      "signature": "setCameraScroll(x:Float, y:Float):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/camera.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "x",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "y",
+          "type": "Float",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "cameraSetTarget",
+      "signature": "cameraSetTarget(character:String):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/camera.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "character",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": [
+        {
+          "code": "cameraSetTarget('bf')"
+        },
+        {
+          "code": "cameraSetTarget('dad')"
+        }
+      ]
+    },
+    {
+      "id": "cameraShake",
+      "signature": "cameraShake(camera:String, intensity:Float, duration:Float):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/camera.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "camera",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "intensity",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "cameraFlash",
+      "signature": "cameraFlash(camera:String, color:String, duration:Float, ?forced:Bool = false):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/camera.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "camera",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "color",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "forced",
+          "type": "Bool",
+          "optional": true
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "cameraFade",
+      "signature": "cameraFade(camera:String, color:String, duration:Float, ?toAlpha:Float = 1, ?fromAlpha:Float = 0):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/camera.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "camera",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "color",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "toAlpha",
+          "type": "Float",
+          "optional": true
+        },
+        {
+          "name": "fromAlpha",
+          "type": "Float",
+          "optional": true
+        }
+      ],
+      "examples": []
+    }
+  ]
+}

@@ -9,12 +9,23 @@ interface Props {
   available: string[];
   sourceLinks: { label: string; url: string }[];
   testedAtCommit: string | null;
-  description: string;
+  parameters?: { name: string; type: string; optional: boolean }[];
+  examples?: { code: string }[];
+  warnings?: string[];
+  copy?: string | {
+    description: string;
+    parameters?: Record<string, string>;
+    examples?: string[];
+  };
+  description?: string;
   locale?: 'en' | 'es-LA';
 }
 
 const props = Astro.props;
 const es = props.locale === 'es-LA';
+const copy = typeof props.copy === 'string'
+  ? { description: props.copy }
+  : props.copy ?? { description: props.description ?? '' };
 const labels = {
   'psych-upstream': 'Psych upstream',
   'plus-added': es ? 'Agregada por Plus' : 'Added by Plus',
@@ -35,7 +46,43 @@ const statuses = {
     <Badge text={statuses[props.status].text} variant={statuses[props.status].variant} />
   </div>
   <pre><code>{props.signature}</code></pre>
-  <p>{props.description}</p>
+  <p>{copy.description}</p>
+  {
+    props.warnings && props.warnings.length > 0 && (
+      <aside class="entry-warning">
+        <strong>{es ? 'Advertencia editorial:' : 'Editorial warning:'}</strong>
+        {props.warnings.map((warning) => <p>{warning}</p>)}
+      </aside>
+    )
+  }
+  {
+    props.parameters && props.parameters.length > 0 && (
+      <>
+        <h3>{es ? 'Parámetros' : 'Parameters'}</h3>
+        <dl class="parameters">
+          {props.parameters.map((parameter) => (
+            <div>
+              <dt><code>{parameter.name}</code>{parameter.optional ? ` (${es ? 'opcional' : 'optional'})` : ''} · <em>{parameter.type}</em></dt>
+              {copy.parameters?.[parameter.name] && <dd>{copy.parameters[parameter.name]}</dd>}
+            </div>
+          ))}
+        </dl>
+      </>
+    )
+  }
+  {
+    props.examples && props.examples.length > 0 && (
+      <>
+        <h3>{es ? 'Ejemplos' : 'Examples'}</h3>
+        {props.examples.map((example, index) => (
+          <div class="example">
+            <pre><code>{example.code}</code></pre>
+            {copy.examples?.[index] && <p>{copy.examples[index]}</p>}
+          </div>
+        ))}
+      </>
+    )
+  }
   {
     props.available.length > 0 ? (
       <p><strong>{es ? 'Disponible en:' : 'Available in:'}</strong> {props.available.join(', ')}</p>
@@ -67,5 +114,29 @@ const statuses = {
 
   .sources {
     font-size: var(--sl-text-sm);
+  }
+
+  .parameters {
+    display: grid;
+    gap: 0.75rem;
+  }
+
+  .entry-warning {
+    background: color-mix(in srgb, #d97706 15%, transparent);
+    border-inline-start: 4px solid #d97706;
+    padding: 0.75rem 1rem;
+  }
+
+  .entry-warning p:last-child {
+    margin-bottom: 0;
+  }
+
+  .parameters div {
+    border-inline-start: 3px solid var(--sl-color-gray-5);
+    padding-inline-start: 1rem;
+  }
+
+  .parameters dd {
+    margin: 0.25rem 0 0;
   }
 </style>

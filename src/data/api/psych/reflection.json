@@ -1,0 +1,385 @@
+{
+  "category": "reflection",
+  "language": "lua",
+  "sourceCommit": "e2e36943bfe1d4d6407becafcf6d64e631122cb1",
+  "functions": [
+    {
+      "id": "getProperty",
+      "signature": "getProperty(variable:String, ?allowMaps:Bool = false):Dynamic",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/reflection.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [],
+      "examples": [
+        {
+          "code": "getProperty('dad.scale.x')"
+        },
+        {
+          "code": "getProperty('singAnimations[0]')"
+        },
+        {
+          "code": "getProperty('boyfriend.animOffsets.idle', true)"
+        }
+      ]
+    },
+    {
+      "id": "setProperty",
+      "signature": "setProperty(variable:String, value:Dynamic, ?allowMaps:Bool = false, ?allowInstances:Bool = false):Dynamic",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/reflection.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "variable",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "value",
+          "type": "Dynamic",
+          "optional": false
+        },
+        {
+          "name": "allowMaps",
+          "type": "Bool",
+          "optional": true
+        },
+        {
+          "name": "allowInstances",
+          "type": "Bool",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "setProperty('boyfriend.stunned', true)"
+        },
+        {
+          "code": "setProperty('singAnimations[3]', 'singLEFT')"
+        }
+      ]
+    },
+    {
+      "id": "getPropertyFromGroup",
+      "signature": "getPropertyFromGroup(variable:String, index:Int, property:Dynamic, ?allowMaps:Bool = false):Dynamic",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/reflection.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "variable",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "index",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "property",
+          "type": "Dynamic",
+          "optional": false
+        },
+        {
+          "name": "allowMaps",
+          "type": "Bool",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "getPropertyFromGroup('playerStrums', 1, 'animation.curAnim.name')"
+        }
+      ]
+    },
+    {
+      "id": "setPropertyFromGroup",
+      "signature": "setPropertyFromGroup(variable:String, index:Int, property:Dynamic, value:Dynamic, ?allowMaps:Bool = false, ?allowInstances:Bool = false):Dynamic",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/reflection.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "variable",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "index",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "property",
+          "type": "Dynamic",
+          "optional": false
+        },
+        {
+          "name": "value",
+          "type": "Dynamic",
+          "optional": false
+        }
+      ],
+      "examples": [
+        {
+          "code": "setPropertyFromGroup('playerStrums', 2, 'visible', false)"
+        }
+      ]
+    },
+    {
+      "id": "getPropertyFromClass",
+      "signature": "getPropertyFromClass(classVar:String, variable:String, ?allowMaps:Bool = false):Dynamic",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/reflection.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "classVar",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "variable",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "allowMaps",
+          "type": "Bool",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "getPropertyFromClass('backend.ClientPrefs', 'data.downScroll')"
+        }
+      ]
+    },
+    {
+      "id": "setPropertyFromClass",
+      "signature": "setPropertyFromClass(classVar:String, variable:String, value:Dynamic, ?allowMaps:Bool = false, ?allowInstances:Bool = false):Dynamic",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/reflection.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "classVar",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "variable",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "value",
+          "type": "Dynamic",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "callMethod",
+      "signature": "callMethod(method:String, ?args:Array<Dynamic> = null):Dynamic",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/reflection.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "method",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "args",
+          "type": "Array<Dynamic>",
+          "optional": true
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "callMethodFromClass",
+      "signature": "callMethodFromClass(classVar:String, method:String, ?args:Array<Dynamic> = null):Dynamic",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/reflection.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "classVar",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "method",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "args",
+          "type": "Array<Dynamic>",
+          "optional": true
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "createInstance",
+      "signature": "createInstance(className:String, ?args:Array<Dynamic> = null):Dynamic",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/reflection.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "className",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "args",
+          "type": "Array<Dynamic>",
+          "optional": true
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "updateHitbox",
+      "signature": "updateHitbox(tag:String):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/reflection.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    }
+  ]
+}

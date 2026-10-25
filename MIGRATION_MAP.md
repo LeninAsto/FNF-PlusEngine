@@ -10,29 +10,29 @@ Local videos: **4**
 |---|---|---|---|
 | `/` | `/` | Implemented | `themeToggle` |
 | `/es/` | `/es-LA/` | Implemented | `themeToggle` |
-| `/es/pages/achievements/` | `/es-LA/api/psych/achievements/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/camera/` | `/es-LA/api/psych/camera/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/character/` | `/es-LA/api/psych/character/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/discord/` | `/es-LA/api/psych/discord/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/file/` | `/es-LA/api/psych/file/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/flxanimate/` | `/es-LA/api/psych/flxanimate/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/input/` | `/es-LA/api/psych/input/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/achievements/` | `/es-LA/api/psych/achievements/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/camera/` | `/es-LA/api/psych/camera/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/character/` | `/es-LA/api/psych/character/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/discord/` | `/es-LA/api/psych/discord/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/file/` | `/es-LA/api/psych/file/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/flxanimate/` | `/es-LA/api/psych/flxanimate/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/input/` | `/es-LA/api/psych/input/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/pages/playstate/` | `/es-LA/api/psych/playstate/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/precache/` | `/es-LA/api/psych/precache/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/reflection/` | `/es-LA/api/psych/reflection/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/savedata/` | `/es-LA/api/psych/savedata/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/score/` | `/es-LA/api/psych/score/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/script/` | `/es-LA/api/psych/script/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/shaders/` | `/es-LA/api/psych/shaders/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/precache/` | `/es-LA/api/psych/precache/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/reflection/` | `/es-LA/api/psych/reflection/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/savedata/` | `/es-LA/api/psych/savedata/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/score/` | `/es-LA/api/psych/score/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/script/` | `/es-LA/api/psych/script/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/shaders/` | `/es-LA/api/psych/shaders/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/pages/snippets/` | `/es-LA/api/psych/snippets/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/sound/` | `/es-LA/api/psych/sound/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/spritesheet/` | `/es-LA/api/psych/spritesheet/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/substate/` | `/es-LA/api/psych/substate/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/text/` | `/es-LA/api/psych/text/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/timer/` | `/es-LA/api/psych/timer/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/translations/` | `/es-LA/api/psych/translations/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/tween/` | `/es-LA/api/psych/tween/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/es/pages/uncategorized/` | `/es-LA/api/psych/uncategorized/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/sound/` | `/es-LA/api/psych/sound/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/spritesheet/` | `/es-LA/api/psych/spritesheet/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/substate/` | `/es-LA/api/psych/substate/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/text/` | `/es-LA/api/psych/text/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/timer/` | `/es-LA/api/psych/timer/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/translations/` | `/es-LA/api/psych/translations/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/tween/` | `/es-LA/api/psych/tween/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/es/pages/uncategorized/` | `/es-LA/api/psych/uncategorized/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/pages/variables/` | `/es-LA/api/psych/variables/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/plus/` | `/es-LA/api/plus/` | Implemented | `themeToggle` |
 | `/es/plus/pages/gdi/` | `/es-LA/api/plus/gdi/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
@@ -42,29 +42,29 @@ Local videos: **4**
 | `/es/plus/pages/video/` | `/es-LA/api/plus/video/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/plus/pages/windows/` | `/es-LA/api/plus/windows/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/es/psych/` | `/es-LA/api/psych/` | Implemented | `themeToggle`, `sectionSearch`, `home-page`, `vscode-extension`, `running-script`, `functions`, `other-pages` |
-| `/pages/achievements/` | `/api/psych/achievements/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/camera/` | `/api/psych/camera/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/character/` | `/api/psych/character/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/discord/` | `/api/psych/discord/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/file/` | `/api/psych/file/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/flxanimate/` | `/api/psych/flxanimate/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/input/` | `/api/psych/input/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/achievements/` | `/api/psych/achievements/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/camera/` | `/api/psych/camera/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/character/` | `/api/psych/character/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/discord/` | `/api/psych/discord/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/file/` | `/api/psych/file/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/flxanimate/` | `/api/psych/flxanimate/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/input/` | `/api/psych/input/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/pages/playstate/` | `/api/psych/playstate/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/precache/` | `/api/psych/precache/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/reflection/` | `/api/psych/reflection/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/savedata/` | `/api/psych/savedata/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/score/` | `/api/psych/score/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/script/` | `/api/psych/script/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/shaders/` | `/api/psych/shaders/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/precache/` | `/api/psych/precache/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/reflection/` | `/api/psych/reflection/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/savedata/` | `/api/psych/savedata/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/score/` | `/api/psych/score/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/script/` | `/api/psych/script/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/shaders/` | `/api/psych/shaders/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/pages/snippets/` | `/api/psych/snippets/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/sound/` | `/api/psych/sound/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/spritesheet/` | `/api/psych/spritesheet/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/substate/` | `/api/psych/substate/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/text/` | `/api/psych/text/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/timer/` | `/api/psych/timer/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/translations/` | `/api/psych/translations/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/tween/` | `/api/psych/tween/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
-| `/pages/uncategorized/` | `/api/psych/uncategorized/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/sound/` | `/api/psych/sound/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/spritesheet/` | `/api/psych/spritesheet/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/substate/` | `/api/psych/substate/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/text/` | `/api/psych/text/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/timer/` | `/api/psych/timer/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/translations/` | `/api/psych/translations/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/tween/` | `/api/psych/tween/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
+| `/pages/uncategorized/` | `/api/psych/uncategorized/` | Implemented | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/pages/variables/` | `/api/psych/variables/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |
 | `/plus/` | `/api/plus/` | Implemented | `themeToggle` |
 | `/plus/pages/gdi/` | `/api/plus/gdi/` | Pending content | `themeToggle`, `pageSearch`, `pageNav`, `pageContent` |

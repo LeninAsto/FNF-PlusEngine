@@ -1,0 +1,364 @@
+{
+  "category": "uncategorized",
+  "language": "lua",
+  "sourceCommit": "e2e36943bfe1d4d6407becafcf6d64e631122cb1",
+  "functions": [
+    {
+      "id": "FlxColor",
+      "signature": "FlxColor(color:String):Int",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/uncategorized.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "color",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": [
+        {
+          "code": "FlxColor('FF0000')"
+        },
+        {
+          "code": "FlxColor('red')"
+        }
+      ]
+    },
+    {
+      "id": "getColorFromName",
+      "signature": "getColorFromName(name:String):Int",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/uncategorized.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "getColorFromString",
+      "signature": "getColorFromString(value:String):Int",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/uncategorized.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "value",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "stringSplit",
+      "signature": "stringSplit(string:String, separator:String):Array<String>",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/uncategorized.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "string",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "separator",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": [
+        {
+          "code": "stringSplit('hello,world', ',')"
+        }
+      ]
+    },
+    {
+      "id": "stringStartsWith",
+      "signature": "stringStartsWith(string:String, start:String):Bool",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/uncategorized.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "string",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "start",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "stringEndsWith",
+      "signature": "stringEndsWith(string:String, end:String):Bool",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/uncategorized.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "string",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "end",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "stringTrim",
+      "signature": "stringTrim(string:String):String",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/uncategorized.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "string",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "getRandomBool",
+      "signature": "getRandomBool(?chance:Float = 0.5):Bool",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/uncategorized.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "chance",
+          "type": "Float",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "getRandomBool()"
+        },
+        {
+          "code": "getRandomBool(0.75)"
+        }
+      ]
+    },
+    {
+      "id": "getRandomInt",
+      "signature": "getRandomInt(min:Int, ?max:Int = 1, ?exclude:String = ''):Int",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/uncategorized.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "min",
+          "type": "Int",
+          "optional": false
+        },
+        {
+          "name": "max",
+          "type": "Int",
+          "optional": true
+        },
+        {
+          "name": "exclude",
+          "type": "String",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "getRandomInt(1, 5)"
+        },
+        {
+          "code": "getRandomInt(1, 8, '3, 4')"
+        }
+      ]
+    },
+    {
+      "id": "debugPrint",
+      "signature": "debugPrint(text:String, ?color:String = null):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/uncategorized.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "text",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "color",
+          "type": "String",
+          "optional": true
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "getModSetting",
+      "signature": "getModSetting(save:String, variable:String):Dynamic",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/uncategorized.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "save",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "variable",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    }
+  ]
+}

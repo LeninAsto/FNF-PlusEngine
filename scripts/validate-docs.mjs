@@ -3,6 +3,7 @@ import { resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
 const errors = [];
+const notices = [];
 const statuses = new Set(['verified', 'needs-review', 'unsupported', 'deprecated']);
 const origins = new Set(['psych-upstream', 'plus-added', 'plus-modified']);
 
@@ -10,10 +11,20 @@ async function json(path) {
   return JSON.parse(await readFile(resolve(root, path), 'utf8'));
 }
 
-const collections = [
-  ['psych/playstate', await json('src/data/api/psych/playstate.json')],
-  ['plus/modifiers', await json('src/data/api/plus/modifiers.json')]
-];
+const collections = [];
+for (const origin of ['psych', 'plus']) {
+  const directory = resolve(root, `src/data/api/${origin}`);
+  const files = (await readdir(directory)).filter((file) => file.endsWith('.json')).sort();
+  for (const file of files) {
+    const name = `${origin}/${file.slice(0, -5)}`;
+    collections.push([name, await json(`src/data/api/${name}.json`)]);
+  }
+}
+
+function hasTranslation(value) {
+  if (typeof value === 'string') return Boolean(value.trim());
+  return Boolean(value && typeof value === 'object' && typeof value.description === 'string' && value.description.trim());
+}
 
 for (const [name, collection] of collections) {
   const ids = new Set();
@@ -25,6 +36,9 @@ for (const [name, collection] of collections) {
     if (!origins.has(entry.origin)) errors.push(`${name}/${entry.id}: invalid origin ${entry.origin}`);
     if (!entry.signature?.startsWith(entry.id)) errors.push(`${name}/${entry.id}: signature does not start with its id`);
     if (!Array.isArray(entry.sourceLinks) || entry.sourceLinks.length === 0) errors.push(`${name}/${entry.id}: missing source links`);
+    if (name.startsWith('psych/') && entry.sourceLinks.some(({ url }) => url.includes('/blob/main/'))) {
+      errors.push(`${name}/${entry.id}: upstream source link must use a pinned commit`);
+    }
     if (entry.status === 'verified' && (!entry.testedAtCommit || entry.available.length === 0)) {
       errors.push(`${name}/${entry.id}: verified entries require testedAtCommit and available versions`);
     }
@@ -32,7 +46,13 @@ for (const [name, collection] of collections) {
 
   for (const locale of ['en', 'es-LA']) {
     const translations = await json(`src/data/translations/${locale}/${name}.json`);
-    for (const id of ids) if (!translations[id]?.trim()) errors.push(`${locale}/${name}: missing translation for ${id}`);
+    let missing = 0;
+    for (const id of ids) {
+      if (hasTranslation(translations[id])) continue;
+      if (locale === 'es-LA' && name.startsWith('psych/')) missing += 1;
+      else errors.push(`${locale}/${name}: missing translation for ${id}`);
+    }
+    if (missing) notices.push(`${locale}/${name}: ${missing} entries intentionally fall back to English`);
     for (const id of Object.keys(translations)) if (!ids.has(id)) errors.push(`${locale}/${name}: unknown translation key ${id}`);
   }
 }
@@ -59,7 +79,7 @@ for (const path of englishPages) {
 const redirects = (await readFile(resolve(root, 'public/_redirects'), 'utf8'))
   .split('\n')
   .map((line) => line.trim())
-  .filter(Boolean);
+  .filter((line) => line && !line.startsWith('#'));
 for (const redirect of redirects) {
   const [, target] = redirect.split(/\s+/);
   const normalized = target.replace(/^\//, '').replace(/\/$/, '');
@@ -74,3 +94,4 @@ if (errors.length) {
 }
 
 console.log(`Validated ${collections.length} API collections, 2 locales, ${pages.length} pages, and ${redirects.length} redirects.`);
+if (notices.length) console.log(`${notices.length} localized collections contain explicit English fallbacks.`);

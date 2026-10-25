@@ -1,0 +1,39 @@
+{
+  "getAchievementScore": {
+    "description": "Returns the score/progress for an achievement with counters.",
+    "parameters": {
+      "name": "Achievement name identifier."
+    },
+    "examples": []
+  },
+  "setAchievementScore": {
+    "description": "Sets the progress/score of an achievement.",
+    "parameters": {
+      "name": "Achievement name.",
+      "value": "New progress value."
+    },
+    "examples": []
+  },
+  "addAchievementScore": {
+    "description": "Adds to an achievement's score.",
+    "parameters": {
+      "name": "Achievement name.",
+      "value": "Amount to add."
+    },
+    "examples": []
+  },
+  "unlockAchievement": {
+    "description": "Unlocks an achievement.",
+    "parameters": {
+      "name": "Achievement name."
+    },
+    "examples": []
+  },
+  "isAchievementUnlocked": {
+    "description": "Returns whether an achievement is unlocked.",
+    "parameters": {
+      "name": "Achievement name."
+    },
+    "examples": []
+  }
+}

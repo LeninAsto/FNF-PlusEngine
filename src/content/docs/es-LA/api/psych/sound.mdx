@@ -1,0 +1,15 @@
+---
+title: "Funciones de Sonido"
+description: "Reproduce y controla sonidos y música con volumen y tono."
+---
+
+import ApiEntry from '../../../../../components/ApiEntry.astro';
+import api from '../../../../../data/api/psych/sound.json';
+import copy from '../../../../../data/translations/es-LA/psych/sound.json';
+import englishCopy from '../../../../../data/translations/en/psych/sound.json';
+
+:::caution[Traducción y compatibilidad en revisión]
+Las descripciones que todavía no tienen traducción muestran el texto inglés original. Ninguna entrada se considera compatible con Plus hasta registrar pruebas en runtime, commit y plataformas.
+:::
+
+{api.functions.map((entry) => <ApiEntry {...entry} copy={copy[entry.id] ?? englishCopy[entry.id]} locale="es-LA" />)}

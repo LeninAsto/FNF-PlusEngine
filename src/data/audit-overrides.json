@@ -1,0 +1,61 @@
+{
+  "psych/playstate/startCountdown": {
+    "appendSourceLinks": [
+      {
+        "label": "Plus Lua callback registration",
+        "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/backend/FunkinLua.hx#L1098"
+      }
+    ]
+  },
+  "psych/script/callScript": {
+    "signature": "callScript(luaFile:String, funcName:String, ?args:Array<Dynamic> = null):Dynamic",
+    "parameters": [
+      { "name": "luaFile", "type": "String", "optional": false },
+      { "name": "funcName", "type": "String", "optional": false },
+      { "name": "args", "type": "Array<Dynamic>", "optional": true }
+    ],
+    "examples": [
+      { "code": "callScript('scripts/test', 'customFunction', {0, 999})" }
+    ],
+    "warnings": [
+      "The legacy Plus catalog assigned this entry the addLuaScript signature and examples. The signature shown here was corrected against pinned upstream and Plus source."
+    ],
+    "copy": {
+      "description": "Calls a function in another running Lua script and returns its result.",
+      "parameters": {
+        "luaFile": "Path to the target Lua script.",
+        "funcName": "Function to call in the target script.",
+        "args": "Optional arguments passed to the target function."
+      },
+      "examples": ["Calls customFunction(0, 999) in scripts/test.lua."]
+    },
+    "appendSourceLinks": [
+      {
+        "label": "Plus callScript registration",
+        "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/backend/FunkinLua.hx#L357"
+      }
+    ]
+  },
+  "psych/script/addLuaScript": {
+    "warnings": [
+      "The pinned upstream examples call callScript instead of addLuaScript. Those examples are intentionally omitted pending correction."
+    ],
+    "appendSourceLinks": [
+      {
+        "label": "Plus addLuaScript registration",
+        "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/backend/FunkinLua.hx#L485"
+      }
+    ]
+  },
+  "psych/script/addHScript": {
+    "warnings": [
+      "The pinned upstream examples call callScript instead of addHScript. Those examples are intentionally omitted pending correction."
+    ],
+    "appendSourceLinks": [
+      {
+        "label": "Plus addHScript registration",
+        "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/backend/FunkinLua.hx#L503"
+      }
+    ]
+  }
+}

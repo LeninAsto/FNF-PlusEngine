@@ -1,0 +1,249 @@
+{
+  "category": "tween",
+  "language": "lua",
+  "sourceCommit": "e2e36943bfe1d4d6407becafcf6d64e631122cb1",
+  "functions": [
+    {
+      "id": "doTweenX",
+      "signature": "doTweenX(tag:String, objTag:String, targetX:Float, duration:Float, ?options:Any = null):String",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/tween.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "objTag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "targetX",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "options",
+          "type": "Any",
+          "optional": true
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "doTweenY",
+      "signature": "doTweenY(tag:String, objTag:String, targetY:Float, duration:Float, ?options:Any = null):String",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/tween.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "objTag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "targetY",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "doTweenAlpha",
+      "signature": "doTweenAlpha(tag:String, objTag:String, targetAlpha:Float, duration:Float, ?options:Any = null):String",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/tween.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "objTag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "targetAlpha",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "doTweenColor",
+      "signature": "doTweenColor(tag:String, objTag:String, color:String, duration:Float, ?options:Any = null):String",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/tween.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "objTag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "color",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "doTweenAngle",
+      "signature": "doTweenAngle(tag:String, objTag:String, targetAngle:Float, duration:Float, ?options:Any = null):String",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/tween.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "objTag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "targetAngle",
+          "type": "Float",
+          "optional": false
+        },
+        {
+          "name": "duration",
+          "type": "Float",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "cancelTween",
+      "signature": "cancelTween(tag:String):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/tween.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    }
+  ]
+}

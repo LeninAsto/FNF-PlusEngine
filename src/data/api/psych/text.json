@@ -1,0 +1,255 @@
+{
+  "category": "text",
+  "language": "lua",
+  "sourceCommit": "e2e36943bfe1d4d6407becafcf6d64e631122cb1",
+  "functions": [
+    {
+      "id": "makeLuaText",
+      "signature": "makeLuaText(tag:String, ?text:String = '', ?width:Int = 0, ?x:Float = 0, ?y:Float = 0, ?size:Int = 16, ?fontName:String = 'Arial'):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/text.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "text",
+          "type": "String",
+          "optional": true
+        },
+        {
+          "name": "width",
+          "type": "Int",
+          "optional": true
+        },
+        {
+          "name": "x",
+          "type": "Float",
+          "optional": true
+        },
+        {
+          "name": "y",
+          "type": "Float",
+          "optional": true
+        },
+        {
+          "name": "size",
+          "type": "Int",
+          "optional": true
+        },
+        {
+          "name": "fontName",
+          "type": "String",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "makeLuaText('myText', 'Hello World', 0, 100, 100, 32)"
+        }
+      ]
+    },
+    {
+      "id": "addLuaText",
+      "signature": "addLuaText(tag:String, ?inFront:Bool = false):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/text.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "inFront",
+          "type": "Bool",
+          "optional": true
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "removeLuaText",
+      "signature": "removeLuaText(tag:String, ?destroy:Bool = true):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/text.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "destroy",
+          "type": "Bool",
+          "optional": true
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "setTextString",
+      "signature": "setTextString(tag:String, text:String):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/text.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "text",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "setTextSize",
+      "signature": "setTextSize(tag:String, size:Int):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/text.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "size",
+          "type": "Int",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "setTextFont",
+      "signature": "setTextFont(tag:String, font:String):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/text.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "font",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "luaTextExists",
+      "signature": "luaTextExists(tag:String):Bool",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/text.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    }
+  ]
+}

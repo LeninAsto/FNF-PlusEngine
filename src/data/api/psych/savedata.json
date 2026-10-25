@@ -1,0 +1,180 @@
+{
+  "category": "savedata",
+  "language": "lua",
+  "sourceCommit": "e2e36943bfe1d4d6407becafcf6d64e631122cb1",
+  "functions": [
+    {
+      "id": "initSaveData",
+      "signature": "initSaveData(save:String, ?folder:String = 'psychenginemods'):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/savedata.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "save",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "folder",
+          "type": "String",
+          "optional": true
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "flushSaveData",
+      "signature": "flushSaveData(save:String):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/savedata.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "save",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "eraseSaveData",
+      "signature": "eraseSaveData(save:String, ?folder:String = 'psychenginemods'):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/savedata.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "save",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "folder",
+          "type": "String",
+          "optional": true
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "getDataFromSave",
+      "signature": "getDataFromSave(save:String, key:String, ?defaultValue:Dynamic = null):Dynamic",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/savedata.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "save",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "key",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "defaultValue",
+          "type": "Dynamic",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "getDataFromSave('playerSave', 'level', 1)"
+        }
+      ]
+    },
+    {
+      "id": "setDataFromSave",
+      "signature": "setDataFromSave(save:String, key:String, value:Dynamic):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/savedata.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "save",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "key",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "value",
+          "type": "Dynamic",
+          "optional": false
+        }
+      ],
+      "examples": [
+        {
+          "code": "setDataFromSave('playerSave', 'level', 5)"
+        }
+      ]
+    }
+  ]
+}

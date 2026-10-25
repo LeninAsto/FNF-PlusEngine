@@ -1,0 +1,19 @@
+{
+  "getTranslationPhrase": {
+    "description": "Gets a translated phrase by key with optional parameter replacement.",
+    "parameters": {
+      "key": "Translation key identifier.",
+      "defaultPhrase": "Fallback if key not found. Defaults to key itself.",
+      "args": "Replacement arguments. Defaults to null."
+    },
+    "examples": []
+  },
+  "getFileTranslation": {
+    "description": "Loads a translation file and returns its contents.",
+    "parameters": {
+      "file": "Translation file path.",
+      "ignoreModFolders": "Ignore mod folder files. Defaults to false."
+    },
+    "examples": []
+  }
+}

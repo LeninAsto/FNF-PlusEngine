@@ -1,0 +1,46 @@
+{
+  "getTextFromFile": {
+    "description": "Reads a text file and returns its content.",
+    "parameters": {
+      "path": "File path to read.",
+      "ignoreModFolders": "Ignore mod folder paths. Defaults to false."
+    },
+    "examples": []
+  },
+  "checkFileExists": {
+    "description": "Returns true if a file exists.",
+    "parameters": {
+      "file": "File path to check.",
+      "absolute": "Use absolute path. Defaults to false."
+    },
+    "examples": [
+      "Checks relative path.",
+      "Checks absolute path."
+    ]
+  },
+  "saveFile": {
+    "description": "Saves content to a file.",
+    "parameters": {
+      "file": "File path to save to.",
+      "content": "Content to write.",
+      "absolute": "Use absolute path. Defaults to false."
+    },
+    "examples": []
+  },
+  "deleteFile": {
+    "description": "Deletes a file.",
+    "parameters": {
+      "file": "File path to delete.",
+      "absolute": "Use absolute path. Defaults to false."
+    },
+    "examples": []
+  },
+  "directoryFileList": {
+    "description": "Lists all files in a directory.",
+    "parameters": {
+      "directory": "Directory path to list.",
+      "absolute": "Use absolute path. Defaults to false."
+    },
+    "examples": []
+  }
+}

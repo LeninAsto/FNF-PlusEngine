@@ -5,9 +5,11 @@
   "type": "module",
   "scripts": {
     "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
-    "build": "npm run validate && ASTRO_TELEMETRY_DISABLED=1 astro build && node scripts/validate-build.mjs",
+    "build": "npm run check:generated && npm run validate && ASTRO_TELEMETRY_DISABLED=1 astro build && node scripts/validate-build.mjs",
     "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
     "inventory": "node scripts/inventory-legacy.mjs",
+    "generate:psych": "node scripts/migrate-psych.mjs",
+    "check:generated": "node scripts/migrate-psych.mjs --check",
     "validate": "node scripts/validate-docs.mjs"
   },
   "dependencies": {

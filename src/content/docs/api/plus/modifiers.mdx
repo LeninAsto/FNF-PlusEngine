@@ -11,7 +11,7 @@ import copy from '../../../../data/translations/en/plus/modifiers.json';
 This first entry was compared with the `dev` implementation. It is not yet a stable-version guarantee.
 :::
 
-{api.functions.map((entry) => <ApiEntry {...entry} description={copy[entry.id]} locale="en" />)}
+{api.functions.map((entry) => <ApiEntry {...entry} copy={copy[entry.id]} locale="en" />)}
 
 ```lua title="modchart.lua"
 function onInitModchart()

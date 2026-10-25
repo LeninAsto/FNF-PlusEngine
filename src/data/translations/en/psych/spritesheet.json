@@ -1,0 +1,134 @@
+{
+  "makeLuaSprite": {
+    "description": "Creates a Lua Sprite with a specific image and stores it with the given tag name.",
+    "parameters": {
+      "tag": "Unique identifier for the sprite.",
+      "image": "Image path from 'images/' folder (ex. 'funkay', 'myStage/myImage'). Use null for no image.",
+      "x": "X position on screen. Defaults to 0.",
+      "y": "Y position on screen. Defaults to 0."
+    },
+    "examples": [
+      "Creates a sprite with the 'funkay' image.",
+      "Creates a sprite at position (100, 200)."
+    ]
+  },
+  "makeAnimatedLuaSprite": {
+    "description": "Creates an animated Lua Sprite with image and .XML/.JSON/.TXT animation data.",
+    "parameters": {
+      "tag": "Unique identifier for the sprite.",
+      "image": "Image path with animation data files (ex. 'logoBumpin' loads logoBumpin.png/.xml).",
+      "x": "X position on screen. Defaults to 0.",
+      "y": "Y position on screen. Defaults to 0.",
+      "spriteType": "Animation format: 'auto', 'aseprite', 'opensfl', 'json', etc. Defaults to 'auto'."
+    },
+    "examples": [
+      "Creates animated sprite from logoBumpin.png/.xml.",
+      "Creates Aseprite-format sprite."
+    ]
+  },
+  "makeGraphic": {
+    "description": "Generates a solid color square as graphic for a Lua Sprite.",
+    "parameters": {
+      "tag": "Unique identifier for the sprite.",
+      "width": "Width in pixels. Defaults to 256.",
+      "height": "Height in pixels. Defaults to 256.",
+      "color": "Hex color or color name (ex. 'FF0000', 'red'). Defaults to 'FFFFFF' (white)."
+    },
+    "examples": [
+      "Creates a 500x500 red square.",
+      "Creates a 1000x200 green rectangle."
+    ]
+  },
+  "loadGraphic": {
+    "description": "Loads an image to a Lua Sprite with optional grid for frame division.",
+    "parameters": {
+      "tag": "Lua Sprite tag name.",
+      "image": "Image path from 'images/' folder.",
+      "gridX": "Frame width for grid division. Defaults to 0 (no grid).",
+      "gridY": "Frame height for grid division. Defaults to 0 (no grid)."
+    },
+    "examples": [
+      "Loads the 'funkay' image to the sprite.",
+      "Loads image with 150x150 frame grid for sprite sheet."
+    ]
+  },
+  "loadFrames": {
+    "description": "Loads a specific image and .XML/.JSON/.TXT animation data to a Lua Sprite.",
+    "parameters": {
+      "tag": "Lua Sprite tag name.",
+      "image": "Image path (loads image.png and image.xml/json automatically).",
+      "spriteType": "Animation format ('auto', 'aseprite', 'opensfl'). Defaults to 'auto'."
+    },
+    "examples": [
+      "Loads logoBumpin.png with logoBumpin.xml animation data.",
+      "Loads with Aseprite animation format."
+    ]
+  },
+  "addAnimation": {
+    "description": "Adds an animation to a Lua Sprite from loaded frames.",
+    "parameters": {
+      "tag": "Lua Sprite tag name.",
+      "name": "Animation name identifier.",
+      "frames": "Frame indices as string (\"0,1,2\") or array ({0,1,2,3}).",
+      "framerate": "Animation speed in frames per second. Defaults to 24.",
+      "loop": "Whether animation repeats. Defaults to false."
+    },
+    "examples": [
+      "Adds 'idle' animation using frames 0, 1, and 2.",
+      "Adds looping 'idle' at 12 fps with frames 0-3."
+    ]
+  },
+  "addAnimationByPrefix": {
+    "description": "Adds an animation using frame prefix matching (matches frames starting with prefix).",
+    "parameters": {
+      "tag": "Lua Sprite tag name.",
+      "name": "Animation name identifier.",
+      "prefix": "Prefix to match frames (ex. 'character-idle' matches 'character-idle0', 'character-idle1', etc).",
+      "framerate": "Animation speed in FPS. Defaults to 24.",
+      "loop": "Whether animation repeats. Defaults to false."
+    },
+    "examples": [
+      "Adds animation matching frames starting with 'character-idle'."
+    ]
+  },
+  "playAnim": {
+    "description": "Plays an animation on a Lua Sprite.",
+    "parameters": {
+      "tag": "Lua Sprite tag name.",
+      "name": "Animation name to play.",
+      "force": "Force restart even if already playing. Defaults to false.",
+      "reverse": "Play animation backwards. Defaults to false.",
+      "startFrame": "Start at specific frame. Defaults to 0."
+    },
+    "examples": [
+      "Plays the 'idle' animation.",
+      "Force-plays 'jump' animation from the start."
+    ]
+  },
+  "addLuaSprite": {
+    "description": "Adds a Lua Sprite to the scene. By default adds it behind the stage.",
+    "parameters": {
+      "tag": "Lua Sprite tag name.",
+      "inFront": "If true, adds in front of stage. If false, adds behind. Defaults to false."
+    },
+    "examples": [
+      "Adds sprite behind the stage.",
+      "Adds sprite in front of the stage."
+    ]
+  },
+  "removeLuaSprite": {
+    "description": "Removes a Lua Sprite from the scene.",
+    "parameters": {
+      "tag": "Lua Sprite tag name.",
+      "destroy": "Whether to destroy the sprite entirely. Defaults to true."
+    },
+    "examples": []
+  },
+  "luaSpriteExists": {
+    "description": "Returns whether a Lua Sprite with the given tag exists.",
+    "parameters": {
+      "tag": "Lua Sprite tag name to check."
+    },
+    "examples": []
+  }
+}

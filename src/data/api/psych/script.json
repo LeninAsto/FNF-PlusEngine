@@ -1,0 +1,354 @@
+{
+  "category": "script",
+  "language": "lua",
+  "sourceCommit": "e2e36943bfe1d4d6407becafcf6d64e631122cb1",
+  "functions": [
+    {
+      "id": "getRunningScripts",
+      "signature": "getRunningScripts():Array<String>",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/script.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "callScript",
+      "signature": "callScript(luaFile:String, funcName:String, ?args:Array<Dynamic> = null):Dynamic",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/script.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        },
+        {
+          "label": "Plus callScript registration",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/backend/FunkinLua.hx#L357"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "luaFile",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "funcName",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "args",
+          "type": "Array<Dynamic>",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "callScript('scripts/test', 'customFunction', {0, 999})"
+        }
+      ],
+      "warnings": [
+        "The legacy Plus catalog assigned this entry the addLuaScript signature and examples. The signature shown here was corrected against pinned upstream and Plus source."
+      ]
+    },
+    {
+      "id": "addLuaScript",
+      "signature": "addLuaScript(luaFile:String, ?ignoreAlreadyRunning:Bool = false):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/script.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        },
+        {
+          "label": "Plus addLuaScript registration",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/backend/FunkinLua.hx#L485"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "luaFile",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "ignoreAlreadyRunning",
+          "type": "Bool",
+          "optional": true
+        }
+      ],
+      "examples": [],
+      "warnings": [
+        "The pinned upstream examples call callScript instead of addLuaScript. Those examples are intentionally omitted pending correction."
+      ]
+    },
+    {
+      "id": "removeLuaScript",
+      "signature": "removeLuaScript(luaFile:String):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/script.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "luaFile",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "isRunning",
+      "signature": "isRunning(luaFile:String):Bool",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/script.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "luaFile",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    },
+    {
+      "id": "setVar",
+      "signature": "setVar(varName:String, value:Dynamic):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/script.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "varName",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "value",
+          "type": "Dynamic",
+          "optional": false
+        }
+      ],
+      "examples": [
+        {
+          "code": "setVar('storedValue', 10.5)"
+        }
+      ]
+    },
+    {
+      "id": "getVar",
+      "signature": "getVar(varName:String):Dynamic",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/script.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "varName",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": [
+        {
+          "code": "getVar('storedValue')"
+        }
+      ]
+    },
+    {
+      "id": "callOnScripts",
+      "signature": "callOnScripts(funcName:String, ?args:Array<Dynamic> = null, ?ignoreStops:Bool = false, ?ignoreSelf:Bool = true, ?exclusions:Array<String> = null):Dynamic",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/script.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "funcName",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "args",
+          "type": "Array<Dynamic>",
+          "optional": true
+        },
+        {
+          "name": "ignoreStops",
+          "type": "Bool",
+          "optional": true
+        },
+        {
+          "name": "ignoreSelf",
+          "type": "Bool",
+          "optional": true
+        },
+        {
+          "name": "exclusions",
+          "type": "Array<String>",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "callOnScripts('customFunction', {1})"
+        }
+      ]
+    },
+    {
+      "id": "runHaxeCode",
+      "signature": "runHaxeCode(codeToRun:String, ?varsToBring:Any = null, ?funcToRun:String = null, ?funcArgs:Array<Dynamic> = null):Dynamic",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/script.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "codeToRun",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "varsToBring",
+          "type": "Any",
+          "optional": true
+        },
+        {
+          "name": "funcToRun",
+          "type": "String",
+          "optional": true
+        },
+        {
+          "name": "funcArgs",
+          "type": "Array<Dynamic>",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "runHaxeCode('game.boyfriend.color = FlxColor.RED;')"
+        }
+      ]
+    },
+    {
+      "id": "close",
+      "signature": "close():Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/script.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [],
+      "examples": []
+    }
+  ]
+}

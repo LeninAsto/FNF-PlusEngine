@@ -1,6 +1,7 @@
 {
   "category": "playstate",
   "language": "lua",
+  "sourceCommit": "e2e36943bfe1d4d6407becafcf6d64e631122cb1",
   "functions": [
     {
       "id": "startCountdown",
@@ -11,15 +12,352 @@
       "platforms": [],
       "sourceLinks": [
         {
-          "label": "Psych Lua reference",
-          "url": "https://github.com/ShadowMario/psychengine.lua/blob/main/pages/playstate.html"
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/playstate.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
         },
         {
           "label": "Plus Lua callback registration",
           "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/ac6374135b68a78e167cd8557d3a1babf51f9c24/source/psychlua/backend/FunkinLua.hx#L1098"
         }
       ],
-      "testedAtCommit": null
+      "testedAtCommit": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "endSong",
+      "signature": "endSong()",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/playstate.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "getSongPosition",
+      "signature": "getSongPosition()",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/playstate.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "restartSong",
+      "signature": "restartSong(?skipTransition:Bool = false):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/playstate.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "skipTransition",
+          "type": "Bool",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "restartSong()"
+        },
+        {
+          "code": "restartSong(true)"
+        }
+      ]
+    },
+    {
+      "id": "exitSong",
+      "signature": "exitSong(?skipTransition:Bool = false):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/playstate.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [],
+      "examples": []
+    },
+    {
+      "id": "loadSong",
+      "signature": "loadSong(?name:String = null, ?difficultyNum:Int = -1):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/playstate.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "String",
+          "optional": true
+        },
+        {
+          "name": "difficultyNum",
+          "type": "Int",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "loadSong('Bopeebo', 0)"
+        },
+        {
+          "code": "loadSong('Lit Up', 1)"
+        }
+      ]
+    },
+    {
+      "id": "triggerEvent",
+      "signature": "triggerEvent(name:String, ?value1:String = '', ?value2:String = ''):Bool",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/playstate.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "name",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "value1",
+          "type": "String",
+          "optional": true
+        },
+        {
+          "name": "value2",
+          "type": "String",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "triggerEvent('Hey!', 'BF', 0.6)"
+        }
+      ]
+    },
+    {
+      "id": "setHealthBarColors",
+      "signature": "setHealthBarColors(left:String, right:String):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/playstate.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "left",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "right",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": [
+        {
+          "code": "setHealthBarColors('FF0000', '00FF00')"
+        },
+        {
+          "code": "setHealthBarColors('red', 'lime')"
+        }
+      ]
+    },
+    {
+      "id": "setTimeBarColors",
+      "signature": "setTimeBarColors(left:String, right:String):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/playstate.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [],
+      "examples": [
+        {
+          "code": "setTimeBarColors('FF0000', '00FF00')"
+        }
+      ]
+    },
+    {
+      "id": "startDialogue",
+      "signature": "startDialogue(dialogueFile:String, ?music:String):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/playstate.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "dialogueFile",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "music",
+          "type": "String",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "startDialogue('dialogue')"
+        },
+        {
+          "code": "startDialogue('dialogue', 'breakfast')"
+        }
+      ]
+    },
+    {
+      "id": "startVideo",
+      "signature": "startVideo(videoFile:String, ?canSkip:Bool = true, ?forMidSong:Bool = false, ?shouldLoop:Bool = false, ?playOnLoad:Bool = true):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/playstate.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "videoFile",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "canSkip",
+          "type": "Bool",
+          "optional": true
+        },
+        {
+          "name": "forMidSong",
+          "type": "Bool",
+          "optional": true
+        },
+        {
+          "name": "shouldLoop",
+          "type": "Bool",
+          "optional": true
+        },
+        {
+          "name": "playOnLoad",
+          "type": "Bool",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "startVideo('test_video')"
+        }
+      ]
     }
   ]
 }

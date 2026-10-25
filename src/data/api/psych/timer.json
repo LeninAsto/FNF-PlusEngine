@@ -1,0 +1,78 @@
+{
+  "category": "timer",
+  "language": "lua",
+  "sourceCommit": "e2e36943bfe1d4d6407becafcf6d64e631122cb1",
+  "functions": [
+    {
+      "id": "runTimer",
+      "signature": "runTimer(tmrTag:String, ?time:Float = 1.0, ?loops:Int = 1):String",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/timer.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tmrTag",
+          "type": "String",
+          "optional": false
+        },
+        {
+          "name": "time",
+          "type": "Float",
+          "optional": true
+        },
+        {
+          "name": "loops",
+          "type": "Int",
+          "optional": true
+        }
+      ],
+      "examples": [
+        {
+          "code": "runTimer('myTimer', 1.0)"
+        },
+        {
+          "code": "runTimer('myTimer', 2.5, 3)"
+        }
+      ]
+    },
+    {
+      "id": "cancelTimer",
+      "signature": "cancelTimer(tag:String):Void",
+      "origin": "psych-upstream",
+      "status": "needs-review",
+      "available": [],
+      "platforms": [],
+      "sourceLinks": [
+        {
+          "label": "Psych upstream reference",
+          "url": "https://github.com/ShadowMario/psychengine.lua/blob/e2e36943bfe1d4d6407becafcf6d64e631122cb1/pages/timer.html"
+        },
+        {
+          "label": "Legacy Plus catalog",
+          "url": "https://github.com/LeninAsto/FNF-PlusEngine/blob/f75228d80ea9887ca1d69eedea3df71c67bf3fad/docs/assets/psych.js"
+        }
+      ],
+      "testedAtCommit": null,
+      "parameters": [
+        {
+          "name": "tag",
+          "type": "String",
+          "optional": false
+        }
+      ],
+      "examples": []
+    }
+  ]
+}
