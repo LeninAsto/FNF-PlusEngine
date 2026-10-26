@@ -27,6 +27,7 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 	var _touchDragStartY:Float = 0;
 	var _touchDragStartScroll:Int = 0;
 	var _touchDragMoved:Bool = false;
+	var _clearTouchDragNextFrame:Bool = false;
 	static inline var TOUCH_DRAG_DEADZONE:Float = 8;
 	#end
 
@@ -108,6 +109,13 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 	public var curScroll:Int = 0;
 
 	override function update(elapsed:Float) {
+		#if FLX_TOUCH
+		if (_clearTouchDragNextFrame) {
+			_clearTouchDragNextFrame = false;
+			_touchDragMoved = false;
+		}
+		#end
+
 		var lastFocus = PsychUIInputText.focusOn;
 		var pressedScroll:Bool = FlxG.mouse.justPressed && scrollTrack.visible && FlxG.mouse.overlaps(scrollTrack, camera);
 		super.update(elapsed);
@@ -251,8 +259,7 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 
 		if (activeTouch.justReleased) {
 			_touchDragID = -1;
-			// Items update before their parent group, so keep this value for the
-			// release frame and clear it on the following update.
+			_clearTouchDragNextFrame = true;
 		} else if (!activeTouch.pressed) {
 			_touchDragID = -1;
 			_touchDragMoved = false;
@@ -281,7 +288,6 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 			_curFilter = null;
 			#if FLX_TOUCH
 			_touchDragID = -1;
-			_touchDragMoved = false;
 			#end
 		}
 
@@ -444,10 +450,14 @@ class PsychUIDropDownItem extends FlxSpriteGroup {
 			bg.alpha = style.bgAlpha;
 			forceNextUpdate = false;
 
-			if (overlapped && FlxG.mouse.justPressed)
-				onClick();
 			#if FLX_TOUCH
-			else if (touchReleased && (parentDropDown == null || !parentDropDown.suppressTouchSelection()))
+			if (touchReleased) {
+				if (parentDropDown == null || !parentDropDown.suppressTouchSelection())
+					onClick();
+			} else if (!touchOver && overlapped && FlxG.mouse.justPressed)
+				onClick();
+			#else
+			if (overlapped && FlxG.mouse.justPressed)
 				onClick();
 			#end
 		}

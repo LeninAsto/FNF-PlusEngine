@@ -5,6 +5,9 @@ import flixel.input.keyboard.FlxKey;
 import flixel.util.FlxDestroyUtil;
 import flash.events.KeyboardEvent;
 import lime.system.Clipboard;
+#if FLX_TOUCH
+import flixel.input.touch.FlxTouch;
+#end
 
 enum abstract AccentCode(Int) from Int from UInt to Int to UInt {
 	var NONE = -1;
@@ -455,9 +458,46 @@ class PsychUIInputText extends FlxSpriteGroup {
 	}
 	#end
 
+	function setCaretFromPointerScreenX(pointerScreenX:Float):Void {
+		caretIndex = 0;
+		var lastBound:Float = 0;
+		var textObjX:Float = textObj.getScreenPosition(camera).x;
+		var txtX:Float = textObjX - textObj.textField.scrollH;
+
+		for (i => bound in _boundaries) {
+			if (pointerScreenX >= txtX + (bound - lastBound) / 2) {
+				caretIndex = i + 1;
+				txtX += bound - lastBound;
+				lastBound = bound;
+			} else
+				break;
+		}
+		updateCaret();
+	}
+
 	override function update(elapsed:Float) {
 		super.update(elapsed);
 
+		#if FLX_TOUCH
+		var touchedThisFrame:Bool = false;
+		for (touch in FlxG.touches.list) {
+			if (touch == null || !touch.justPressed)
+				continue;
+			if (!touch.overlaps(behindText, camera))
+				continue;
+
+			touchedThisFrame = true;
+			if (!FlxG.keys.pressed.SHIFT)
+				selectIndex = -1;
+			else if (selectIndex == -1)
+				selectIndex = caretIndex;
+			focusOn = this;
+			setCaretFromPointerScreenX(touch.getScreenPosition(camera).x);
+			break;
+		}
+
+		if (!touchedThisFrame) {
+		#end
 		if (FlxG.mouse.justPressed) {
 			if (FlxG.mouse.overlaps(behindText, camera)) {
 				if (!FlxG.keys.pressed.SHIFT)
@@ -465,26 +505,13 @@ class PsychUIInputText extends FlxSpriteGroup {
 				else if (selectIndex == -1)
 					selectIndex = caretIndex;
 				focusOn = this;
-				caretIndex = 0;
-				var lastBound:Float = 0;
-				var textObjX:Float = textObj.getScreenPosition(camera).x;
-				var mousePosX:Float = FlxG.mouse.getScreenPosition(camera).x;
-				var txtX:Float = textObjX - textObj.textField.scrollH;
-
-				for (i => bound in _boundaries) {
-					if (mousePosX >= txtX + (bound - lastBound) / 2) {
-						caretIndex = i + 1;
-						txtX += bound - lastBound;
-						lastBound = bound;
-					} else
-						break;
-				}
-				updateCaret();
+				setCaretFromPointerScreenX(FlxG.mouse.getScreenPosition(camera).x);
 			} else if (focusOn == this)
 				focusOn = null;
-
-			// trace('changed focus to: ' + this);
 		}
+		#if FLX_TOUCH
+		}
+		#end
 
 		if (focusOn == this) {
 			_caretTime = (_caretTime + elapsed) % 1;
