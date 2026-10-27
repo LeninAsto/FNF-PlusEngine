@@ -46,7 +46,8 @@ test('community catalog filters, sorts and progressively loads videos', async ({
   await expect(page.getByRole('heading', { name: 'Junior07BETA' })).toBeVisible();
   await expect(page.locator('.community-video-card')).toHaveCount(10);
   await expect(page.locator('#communityHeroImage')).toHaveAttribute('src', /junior07beta\.jpg/);
-  await expect(page.locator('.video-channel-link').first()).toHaveAttribute('href', 'https://www.youtube.com/@Junior_07_BETA');
+  await expect(page.locator('.video-channel-link')).toHaveCount(0);
+  await expect(page.locator('.compatibility-state')).toHaveCount(0);
 
   const mostPopular = await page.evaluate(async () => {
     const data = await fetch('../data/ports.json').then((response) => response.json());

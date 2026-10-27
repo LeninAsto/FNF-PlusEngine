@@ -261,9 +261,6 @@ code { font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; }
 .video-play { position: absolute; top: 50%; left: 50%; display: grid; width: 48px; aspect-ratio: 1; place-items: center; border-radius: 50%; background: rgba(255, 0, 51, .92); color: #fff; transform: translate(-50%, -50%); }
 .community-video-copy { display: grid; gap: .55rem; padding: .85rem; }
 .community-video-copy h2 { font-size: .98rem; line-height: 1.4; }
-.video-channel-link { display: inline-flex; justify-self: start; align-items: center; gap: .45rem; color: var(--ink); font-size: .84rem; font-weight: 800; text-decoration: none; }
-.video-channel-link img { width: 28px; aspect-ratio: 1; object-fit: cover; border-radius: 50%; }
-.video-channel-link:hover span { color: var(--primary); text-decoration: underline; }
 .video-stats { color: var(--ink-soft); font-size: .78rem; }
 .video-watch-link { justify-self: start; font-size: .84rem; font-weight: 800; text-decoration: none; }
 .load-more-wrap { display: flex; justify-content: center; padding: .5rem 0 1rem; }

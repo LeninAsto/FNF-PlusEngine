@@ -53,8 +53,6 @@
       '<img src="https://i.ytimg.com/vi/' + encodeURIComponent(video.id) + '/hqdefault.jpg" alt="" loading="lazy" />',
       '<span class="video-play" aria-hidden="true">▶</span></button>',
       '<div class="community-video-copy"><h2>' + title + "</h2>",
-      '<a class="video-channel-link" href="' + escapeHtml(porter.url) + '" target="_blank" rel="noreferrer">',
-      '<img src="' + escapeHtml(new URL(porter.avatar, siteRoot).href) + '" alt="" loading="lazy" /><span>' + escapeHtml(porter.name) + "</span></a>",
       '<p class="video-stats">' + formatViews(video.views) + " " + (spanish ? "visualizaciones" : "views") + (date ? " · " + escapeHtml(date) : "") + "</p>",
       '<a class="video-watch-link" href="' + watchUrl + '" target="_blank" rel="noreferrer">' + (spanish ? "Ver en YouTube" : "Watch on YouTube") + " →</a>",
       "</div></article>"
