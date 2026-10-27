@@ -109,7 +109,7 @@ class Main extends Sprite
 		#end
 
 		#if VIDEOS_ALLOWED
-		hxvlc.util.Handle.init(#if (hxvlc >= "1.8.0") ['--no-lua'] #end);
+		initHxvlc();
 		#end
 
 		#if LUA_ALLOWED
@@ -340,12 +340,14 @@ class Main extends Sprite
 	{
 		var gameX:Float = 0;
 		var gameY:Float = 0;
+		#if mobile
 		if (FlxG.game != null && FlxG.stage != null)
 		{
 			var bounds = FlxG.game.getBounds(FlxG.stage);
 			gameX = bounds.x;
 			gameY = bounds.y;
 		}
+		#end
 
 		if (fpsVar != null)
 			fpsVar.positionFPS(gameX + 10, gameY + 3, 1.0);
@@ -359,6 +361,29 @@ class Main extends Sprite
 			modsButton.updatePosition();
 		#end
 	}
+
+	#if VIDEOS_ALLOWED
+	static function initHxvlc():Void
+	{
+		try
+		{
+			var options = hxvlc.impl.Instance.defaultArgs();
+			#if windows
+			// hxvlc 2.3.1 ships a plugins.dat whose recorded timestamps can differ
+			// after Lime copies the DLLs. Rebuild it instead of trusting a stale cache.
+			options.remove('--no-plugins-scan');
+			if (!options.contains('--reset-plugins-cache'))
+				options.push('--reset-plugins-cache');
+			#end
+			hxvlc.util.Handle.init(options);
+			trace('hxvlc initialized successfully');
+		}
+		catch (e:Dynamic)
+		{
+			trace('hxvlc initialization failed: $e');
+		}
+	}
+	#end
 
 	function initializeMaterialVolumeTray():Void
 	{
@@ -465,18 +490,6 @@ class Main extends Sprite
 	private function setupGame():Void
 	{
 		trace('\n\n' + backend.Native.buildSystemInfo());
-
-		#if hxvlc
-		try
-		{
-			hxvlc.util.Handle.init();
-			trace('hxvlc initialized successfully');
-		}
-		catch (e:Dynamic)
-		{
-			trace('hxvlc initialization failed: $e');
-		}
-		#end
 
 		var flxGraphic = backend.Paths.image("watermark");
 		if (flxGraphic != null)
