@@ -747,7 +747,7 @@ jobs:
             if [ "$PUBLISH_RESULT" = "success" ]; then
               DOWNLOAD_LABEL="Release"
               DOWNLOAD_URL="$RELEASE_URL"
-              DESCRIPTION="The workflow completed successfully and the latest dev build is ready to download."
+              DESCRIPTION="The workflow completed successfully and the latest dev lowend build is ready to download."
             else
               DOWNLOAD_LABEL="Artifacts"
               DOWNLOAD_URL="$RUN_URL"
