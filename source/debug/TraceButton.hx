@@ -129,8 +129,9 @@ class TraceButton extends Sprite
 	{
 		if (FlxG.stage != null)
 		{
-			this.x = FlxG.stage.stageWidth - buttonSize - padding;
-			this.y = padding;
+			var bounds = FlxG.game != null ? FlxG.game.getBounds(FlxG.stage) : null;
+			this.x = (bounds != null ? bounds.right : FlxG.stage.stageWidth) - buttonSize - padding;
+			this.y = (bounds != null ? bounds.top : 0) + padding;
 		}
 	}
 

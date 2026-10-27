@@ -249,9 +249,7 @@ class Main extends Sprite
 		if (fpsVar != null)
 		{
 			// Posicionamiento inicial con márgenes constantes
-			var marginX = 10;
-			var marginY = 3;
-			fpsVar.positionFPS(marginX, marginY, 1.0);
+			positionDebugOverlays();
 		}
 
 		#if (linux || mac) // fix the app icon not showing up on the Linux Panel / Mac Dock
@@ -305,24 +303,7 @@ class Main extends Sprite
 			backend.RenderInterpolation.syncAllCameras();
 
 			// Only reposition the FPS counter, no scaling.
-			if (fpsVar != null)
-			{
-				var marginX = 10;
-				var marginY = 3;
-				fpsVar.positionFPS(marginX, marginY, 1.0);
-			}
-
-			// Reposition TraceDisplay button.
-			#if mobile
-			if (traceButton != null)
-			{
-				traceButton.updatePosition();
-			}
-			if (modsButton != null)
-			{
-				modsButton.updatePosition();
-			}
-			#end
+			positionDebugOverlays();
 
 			// Only reposition the watermark, no scaling.
 			positionWatermark();
@@ -353,6 +334,30 @@ class Main extends Sprite
 		});
 
 		setupGame();
+	}
+
+	function positionDebugOverlays():Void
+	{
+		var gameX:Float = 0;
+		var gameY:Float = 0;
+		if (FlxG.game != null && FlxG.stage != null)
+		{
+			var bounds = FlxG.game.getBounds(FlxG.stage);
+			gameX = bounds.x;
+			gameY = bounds.y;
+		}
+
+		if (fpsVar != null)
+			fpsVar.positionFPS(gameX + 10, gameY + 3, 1.0);
+		if (traceDisplay != null)
+			traceDisplay.positionTrace(gameX + 10, gameY + 100);
+
+		#if mobile
+		if (traceButton != null)
+			traceButton.updatePosition();
+		if (modsButton != null)
+			modsButton.updatePosition();
+		#end
 	}
 
 	function initializeMaterialVolumeTray():Void

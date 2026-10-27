@@ -74,6 +74,8 @@ class PsychUIBox extends FlxSpriteGroup {
 
 	override function update(elapsed:Float) {
 		super.update(elapsed);
+		if (PsychUIInputText.pointerInputBlockedFor(this))
+			return;
 
 		_lastClick += elapsed;
 		if (!FlxG.mouse.released && _draggingBox && canMove) {

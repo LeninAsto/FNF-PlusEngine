@@ -54,6 +54,8 @@ class PsychUIButton extends FlxSpriteGroup {
 
 	override function update(elapsed:Float) {
 		super.update(elapsed);
+		if (PsychUIInputText.pointerInputBlockedFor(this))
+			return;
 
 		if (_firstFrame) {
 			bg.color = normalStyle.bgColor;

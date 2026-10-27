@@ -232,7 +232,7 @@
     "redo_action": "Ulangi # {1} : {2}"
   },
   "info": {
-    "playback": "Bagian: {1} | Kalahkan: {2} | Langkah: {3} | Waktu: {4} / {5}"
+    "playback": "{1} / {2}\n\nBagian: {3}\nKetukan: {4}\nLangkah: {5}\n\nSnap Ketukan: {6} / 16\nDipilih: {7}"
   },
   "event_panel": {
     "selected_event": "Acara Terpilih: {1} / {2}",

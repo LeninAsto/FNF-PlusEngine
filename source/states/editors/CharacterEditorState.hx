@@ -38,6 +38,9 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 	var copiedOffset:Array<Float> = [0, 0];
 	var _char:String = null;
 	var _goToPlayState:Bool = true;
+	#if MODS_ALLOWED
+	var _editorModDirectory:String = '';
+	#end
 
 	var anims = null;
 	var animsTxt:FlxText;
@@ -61,6 +64,11 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 	{
 		this._char = char;
 		this._goToPlayState = goToPlayState;
+		#if MODS_ALLOWED
+		// Capture the directory selected in MasterEditorMenu before LoadingState's
+		// launched-mod context has a chance to replace it during the transition.
+		this._editorModDirectory = Mods.currentModDirectory;
+		#end
 		if (this._char == null)
 			this._char = Character.DEFAULT_CHARACTER;
 
@@ -69,6 +77,9 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 	override function create()
 	{
+		#if MODS_ALLOWED
+		Mods.currentModDirectory = _editorModDirectory != null ? _editorModDirectory : '';
+		#end
 		Paths.clearStoredMemory();
 		Paths.clearUnusedMemory();
 

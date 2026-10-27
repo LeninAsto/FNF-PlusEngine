@@ -232,7 +232,7 @@
     "redo_action": "Refazer #{1}: {2}"
   },
   "info": {
-    "playback": "Seção: {1} | Beat: {2} | Passo: {3} | Hora: {4} / {5}"
+    "playback": "{1} / {2}\n\nSeção: {3}\nBeat: {4}\nPasso: {5}\n\nDivisão do beat: {6} / 16\nSelecionadas: {7}"
   },
   "event_panel": {
     "selected_event": "Evento selecionado: {1} / {2}",

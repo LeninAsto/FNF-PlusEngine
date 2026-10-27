@@ -183,8 +183,9 @@ class ModsButton extends Sprite
 	{
 		if (FlxG.stage != null)
 		{
-			x = FlxG.stage.stageWidth - buttonSize - padding;
-			y = padding + buttonSize + spacing;
+			var bounds = FlxG.game != null ? FlxG.game.getBounds(FlxG.stage) : null;
+			x = (bounds != null ? bounds.right : FlxG.stage.stageWidth) - buttonSize - padding;
+			y = (bounds != null ? bounds.top : 0) + padding + buttonSize + spacing;
 		}
 	}
 
