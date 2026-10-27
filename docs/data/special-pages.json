@@ -884,20 +884,20 @@
                                     {
                                         "title":  {
                                                       "en":  "Cutscene Scripts",
-                                                      "es":  "Scripts de cinemÃ¡ticas"
+                                                      "es":  "Scripts de cinemáticas"
                                                   },
                                         "links":  [
                                                       {
                                                           "label":  {
                                                                         "en":  "Example Video/Dialogue on Bopeebo",
-                                                                        "es":  "Ejemplo de video/diÃ¡logo en Bopeebo"
+                                                                        "es":  "Ejemplo de video/diálogo en Bopeebo"
                                                                     },
                                                           "href":  "https://drive.google.com/file/d/1o6B9Vq00a8Jo8-PtSqSo6_3PSbT5HhXg"
                                                       },
                                                       {
                                                           "label":  {
                                                                         "en":  "Drag and Drop Dialogue Script",
-                                                                        "es":  "Script de diÃ¡logo arrastrar y soltar"
+                                                                        "es":  "Script de diálogo arrastrar y soltar"
                                                                     },
                                                           "href":  "https://drive.google.com/file/d/15SMMmz5xpNompGne6S7GgEjfqEOu48xx"
                                                       }

@@ -1,173 +1,23 @@
 <!doctype html>
 <html lang="es" data-theme="auto">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Plus Engine</title>
-    <meta
-      name="description"
-      content="Portal de documentación de Plus Engine con resumen del proyecto, video de presentación y enlaces a Psych y Plus."
-    />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap"
-      rel="stylesheet"
-    />
-    <link rel="icon" href="../assets/favicon.ico" />
-    <link rel="stylesheet" href="../assets/site.css" />
-    <script defer src="../assets/site.js"></script>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Documentación de Plus Engine</title><meta name="description" content="Documentación oficial de Plus Engine, compatibilidad con Psych y API Lua de Plus." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="icon" href="../assets/favicon.ico" /><link rel="stylesheet" href="../assets/site.css" /><script defer src="../assets/site.js"></script>
   </head>
-  <body class="welcome-body">
-    <div class="ambient ambient-a"></div>
-    <div class="ambient ambient-b"></div>
-
-    <header class="topbar">
-      <a class="brand" href="../">
-        <img src="../assets/pluslogo.png" alt="Plus Engine" class="brand-logo plus-logo" />
-      </a>
-      <nav class="top-actions">
-        <a class="text-link" href="../">English</a>
-        <a class="text-link" href="./">Español</a>
-        <button id="themeToggle" class="icon-btn" type="button" aria-label="Cambiar tema">
-          Tema: Auto
-        </button>
-      </nav>
-    </header>
-
-    <main class="welcome-main">
-      <section class="hero card home-hero">
-        <div class="hero-copy">
-          <p class="eyebrow">Plus Engine</p>
-          <h1>Resumen del proyecto y portal de documentación</h1>
-          <p>
-            Plus Engine está basado en Psych 1.0.4 y mantiene una dirección de modcharts
-            inspirada en NotITG. Además, soporta reproducción de video hxcodec desde las
-            versiones 0.6.3 y 0.7.3 de Psych mod.
-          </p>
-          <p>
-            Este portal presenta el resumen del proyecto, las rutas de documentación de Psych y
-            Plus, y el material de presentación del engine.
-          </p>
-          <div class="cta-row">
-            <a class="btn btn-filled" href="psych/">API Lua de Psych</a>
-            <a class="btn btn-outlined" href="plus/">API Lua de Plus</a>
-          </div>
-        </div>
-
-        <img
-          src="../assets/pluslogo.png"
-          alt="Logo de Plus Engine"
-          class="home-logo"
-          draggable="false"
-        />
-      </section>
-
-      <section class="home-grid">
-        <article class="card home-card wide">
-          <h2>Resumen del proyecto</h2>
-          <p>
-            El archivo README describe Plus Engine como una bifurcación basada en Haxe, que cuenta con una
-            interfaz de Material Design, compatibilidad con Android, diversas opciones de idioma y
-            herramientas de modificación que conservan la estructura original del motor.
-          </p>
-          <div class="stat-grid">
-            <div class="stat-box">
-              <div class="stat-label">Base</div>
-              <div class="stat-value">Psych 1.0.4</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-label">Video</div>
-              <div class="stat-value">hxvlc</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-label">Idiomas</div>
-              <div class="stat-value">5+</div>
-            </div>
-            <div class="stat-box">
-              <div class="stat-label">Plataforma</div>
-              <div class="stat-value">Multi</div>
-            </div>
-          </div>
-        </article>
-
-        <article class="card home-card half">
-          <h2>Puntos clave del README</h2>
-          <ul class="plain-list">
-            <li>Modcharts inspirados en NotITG.</li>
-            <li>Presentación Material Design para el portal de documentación.</li>
-            <li>Soporte para móvil, escritorio y dominios personalizados.</li>
-            <li>Versiones en varios idiomas para el portal y las páginas.</li>
-            <li>Créditos, colaboradores y enlaces comunitarios visibles.</li>
-          </ul>
-        </article>
-
-        <article class="card home-card half">
-          <h2>Vídeo de presentación</h2>
-          <p class="sidebar-copy">
-            Vista previa integrada de la presentación del proyecto. Si el navegador bloquea la vista previa integrada, utiliza el
-            enlace externo que aparece a continuación.
-          </p>
-          <div style="margin-top: 0.8rem;">
-            <iframe
-              class="video-frame"
-              src="https://www.youtube-nocookie.com/embed/ZQEBBj7YqzU"
-              title="Vídeo de presentación de Plus Engine"
-              loading="lazy"
-              referrerpolicy="strict-origin-when-cross-origin"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-              allowfullscreen
-            ></iframe>
-          </div>
-          <div class="mini-actions" style="margin-top: 0.8rem;">
-            <a class="mini-pill" href="https://youtu.be/ZQEBBj7YqzU" target="_blank" rel="noreferrer">Abrir en YouTube</a>
-          </div>
-        </article>
-
-        <article class="card home-card third">
-          <h2>Visitas</h2>
-          <p class="sidebar-copy">Contador de visitas de la portada principal.</p>
-          <div class="stat-grid" style="grid-template-columns: 1fr;">
-            <div class="stat-box">
-              <div class="stat-label">Visitas totales</div>
-              <div class="stat-value"><span data-visit-counter>0</span></div>
-            </div>
-          </div>
-        </article>
-
-        <article class="card home-card third">
-          <h2>Comunidad</h2>
-          <div class="contact-grid">
-            <div class="contact-box">
-              <strong>Discord</strong>
-              <span>Servidor de comunidad para novedades, soporte y modding.</span>
-              <div class="mini-actions">
-                <a class="mini-pill" href="https://discord.gg/EBvUWcMdqV" target="_blank" rel="noreferrer">Abrir Discord</a>
-              </div>
-            </div>
-            <div class="contact-box">
-              <strong>WhatsApp</strong>
-              <span>Canal de contacto directo para seguimiento rápido.</span>
-              <div class="mini-actions">
-                <a class="mini-pill" href="https://wa.me/51936521805" target="_blank" rel="noreferrer">Abrir WhatsApp</a>
-              </div>
-            </div>
-          </div>
-        </article>
-
-        <article class="card home-card third">
-          <h2>Accesos rápidos</h2>
-          <div class="page-links">
-            <a href="psych/">Docs de Psych<small>Diseño clásico con estilo Material</small></a>
-            <a href="plus/">Docs de Plus<small>Callbacks de video y notas del engine</small></a>
-            <a href="../">English<small>Volver al portal principal</small></a>
-          </div>
-        </article>
-      </section>
+  <body class="docs-body">
+    <a class="skip-link" href="#contenido">Saltar al contenido</a>
+    <header class="topbar"><a class="brand psych-brand" href="./"><img src="../assets/pluslogo.png" alt="Plus Engine" class="brand-logo plus-logo" /><span class="psych-brand-copy"><span class="psych-brand-title">Plus Engine</span><span class="psych-brand-subtitle">Documentación</span></span></a><nav class="top-actions"><a class="text-link" href="psych/">API Psych</a><a class="text-link" href="plus/">API Plus</a><a class="text-link lang-switch" href="../">English</a><button id="themeToggle" class="icon-btn" type="button">Tema</button></nav></header>
+    <main id="contenido" class="wiki-layout">
+      <aside class="card wiki-sidebar" aria-label="Secciones de documentación"><p class="eyebrow">Contenido</p><nav class="section-nav"><a class="is-active" href="#resumen">Resumen</a><a href="#referencias">Referencias API</a><a href="#ejemplos">Ejemplos en video</a><a href="community/">Ports de la comunidad</a><a href="https://github.com/LeninAsto/FNF-PlusEngine" target="_blank" rel="noreferrer">Código fuente</a></nav></aside>
+      <article class="wiki-content">
+        <section id="resumen" class="card docs-intro"><div><p class="eyebrow">Documentación oficial</p><h1>Plus Engine</h1><p>Material de referencia para scripting, modcharts, reproducción de video y compatibilidad con Psych Engine.</p><div class="page-route-meta"><span class="chip">Base Psych Engine 1.0.4</span><span class="chip">Lua y HScript</span><span class="chip">Escritorio y Android</span></div></div><img src="../assets/pluslogo.png" alt="Logo de Plus Engine" class="docs-intro-logo" /></section>
+        <section id="referencias" class="wiki-section"><div class="wiki-heading"><p class="eyebrow">Referencia</p><h2>Documentación de API</h2><p>Selecciona la API correspondiente al script o función que quieras implementar.</p></div><div class="reference-grid"><a class="card reference-card" href="psych/"><span class="reference-label">API compatible</span><h3>API Lua de Psych</h3><p>Gameplay, sprites, cámaras, input, tweens, datos guardados y otros callbacks compatibles.</p><strong>212 funciones documentadas →</strong></a><a class="card reference-card" href="plus/"><span class="reference-label">Extensiones del engine</span><h3>API Lua de Plus</h3><p>Video sprites, modcharts, modificadores, variables y utilidades específicas de Windows.</p><strong>Abrir referencia →</strong></a></div></section>
+        <section class="card documentation-note"><h2>Acerca de esta documentación</h2><p>La navegación sigue convenciones de una wiki técnica: índice estable, búsqueda por nombre de función, enlaces directos y ejemplos breves. La disponibilidad puede depender de la versión de Plus Engine y de la plataforma.</p></section>
+        <section id="ejemplos" class="wiki-section"><div class="wiki-heading"><p class="eyebrow">Referencia multimedia</p><h2>Ejemplos de modificadores</h2><p>Clips breves alojados en el repositorio y usados por la documentación.</p></div><div class="documentation-videos"><article><video controls muted playsinline preload="metadata" src="../assets/videos/reverse.mp4"></video><h3>Reverse</h3></article><article><video controls muted playsinline preload="metadata" src="../assets/videos/drunk.mp4"></video><h3>Drunk</h3></article><article><video controls muted playsinline preload="metadata" src="../assets/videos/tipsy.mp4"></video><h3>Tipsy</h3></article><article><video controls muted playsinline preload="metadata" src="../assets/videos/beat.mp4"></video><h3>Beat</h3></article></div><p class="wiki-next"><a href="plus/pages/modifiers/">Abrir la referencia completa de modificadores</a> · <a href="community/">Ver ports de la comunidad</a></p></section>
+      </article>
     </main>
-
-    <footer class="footer-note">
-      <p>Portal de documentación de Plus Engine.</p>
-    </footer>
+    <footer class="footer-note">Documentación de Plus Engine · Source publicado desde <code>docs/</code>.</footer>
   </body>
 </html>

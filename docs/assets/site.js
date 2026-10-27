@@ -1,129 +1,100 @@
 (function () {
   const root = document.documentElement;
-  const storageKey = "lua-api-theme";
+  const key = "plus-engine-theme";
+  const spanish = root.lang === "es";
+  const scriptUrl = document.currentScript?.src || location.href;
+  const siteRoot = new URL("../", scriptUrl);
 
-  function stripIndexHtml() {
-    const { pathname, search, hash } = window.location;
-    if (!pathname.endsWith("/index.html")) {
-      return;
-    }
-
-    const cleanPath = pathname.slice(0, -"index.html".length);
-    window.history.replaceState({}, "", `${cleanPath}${search}${hash}`);
+  function systemTheme() {
+    return matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
   }
 
-  function getSystemTheme() {
-    return window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
+  function savedTheme() {
+    try { return localStorage.getItem(key) || "auto"; }
+    catch (_) { return "auto"; }
   }
 
-  function applyTheme(theme) {
-    if (theme === "auto") {
-      root.setAttribute("data-theme", getSystemTheme());
-      return;
-    }
-    root.setAttribute("data-theme", theme);
+  function applyTheme(value) {
+    root.dataset.theme = value === "auto" ? systemTheme() : value;
+    const button = document.getElementById("themeToggle");
+    if (!button) return;
+    const labels = spanish
+      ? { auto: "Tema: auto", dark: "Tema: oscuro", light: "Tema: claro" }
+      : { auto: "Theme: auto", dark: "Theme: dark", light: "Theme: light" };
+    button.textContent = labels[value];
+    button.dataset.mode = value;
+    button.title = spanish ? "Cambiar tema" : "Change theme";
   }
 
   function cycleTheme() {
-    const current = localStorage.getItem(storageKey) || "auto";
+    const current = savedTheme();
     const next = current === "auto" ? "dark" : current === "dark" ? "light" : "auto";
-    localStorage.setItem(storageKey, next);
+    try { localStorage.setItem(key, next); } catch (_) {}
     applyTheme(next);
-    refreshThemeToggle(next);
   }
 
-  function refreshThemeToggle(theme) {
-    const toggle = document.getElementById("themeToggle");
-    if (!toggle) {
-      return;
-    }
-
-    const label = theme === "auto" ? "Theme: Auto" : theme === "dark" ? "Theme: Dark" : "Theme: Light";
-    toggle.textContent = label;
-    toggle.setAttribute("aria-label", `Current theme ${theme}`);
-    toggle.setAttribute("aria-pressed", theme === "dark" ? "true" : "false");
-  }
-
-  async function updateVisitCounter() {
-    const counter = document.querySelector("[data-visit-counter]");
-    if (!counter) {
-      return;
-    }
-
-    const pageKey = window.location.pathname
-      .replace(/[^a-z0-9]+/gi, "-")
-      .replace(/^-+|-+$/g, "")
-      .toLowerCase() || "home";
-    const namespace = "plus-engine-docs";
-    const remoteUrl = `https://api.countapi.xyz/hit/${namespace}/${pageKey}`;
-
-    try {
-      const response = await fetch(remoteUrl, { cache: "no-store" });
-      if (!response.ok) {
-        throw new Error("counter request failed");
-      }
-
-      const data = await response.json();
-      if (data && typeof data.value === "number") {
-        counter.textContent = String(data.value);
-        counter.dataset.counterSource = "remote";
-        return;
-      }
-      throw new Error("counter response missing value");
-    } catch (error) {
-      const localKey = `${namespace}:${pageKey}`;
-      const nextValue = Number(localStorage.getItem(localKey) || "0") + 1;
-      localStorage.setItem(localKey, String(nextValue));
-      counter.textContent = String(nextValue);
-      counter.dataset.counterSource = "local";
+  function cleanIndexUrl() {
+    const { pathname, search, hash } = location;
+    if (pathname.endsWith("/index.html")) {
+      history.replaceState({}, "", `${pathname.slice(0, -10)}${search}${hash}`);
     }
   }
 
-  async function updateCloudflareUser() {
+  function buildMobileNavigation() {
+    const sidebar = document.querySelector(".psych-sidebar, .docs-layout > .sidebar");
     const actions = document.querySelector(".top-actions");
-    if (!actions) {
-      return;
-    }
+    if (!sidebar || !actions) return;
 
-    const badge = document.createElement("span");
-    badge.className = "user-pill";
-    badge.textContent = "Local";
-    badge.title = "Cloudflare Access identity is not available in local/static preview.";
-    actions.insertBefore(badge, actions.firstChild);
+    const toggle = document.createElement("button");
+    toggle.className = "menu-toggle";
+    toggle.type = "button";
+    toggle.textContent = spanish ? "Menú" : "Menu";
+    toggle.setAttribute("aria-controls", sidebar.id || "docsNavigation");
+    toggle.setAttribute("aria-expanded", "false");
+    if (!sidebar.id) sidebar.id = "docsNavigation";
 
-    try {
-      const response = await fetch("/api/me", { cache: "no-store" });
-      if (!response.ok) {
-        return;
-      }
+    const scrim = document.createElement("button");
+    scrim.className = "nav-scrim";
+    scrim.type = "button";
+    scrim.tabIndex = -1;
+    scrim.setAttribute("aria-label", spanish ? "Cerrar menú" : "Close menu");
+    document.body.append(scrim);
+    actions.prepend(toggle);
 
-      const user = await response.json();
-      if (user && user.authenticated) {
-        badge.textContent = user.email || user.id || "Cloudflare user";
-        badge.title = "Verified by Cloudflare Access";
-        badge.dataset.verified = "true";
-      }
-    } catch (error) {
-      badge.dataset.offline = "true";
-    }
+    const close = () => {
+      document.body.classList.remove("nav-open");
+      toggle.setAttribute("aria-expanded", "false");
+    };
+    toggle.addEventListener("click", () => {
+      const open = document.body.classList.toggle("nav-open");
+      toggle.setAttribute("aria-expanded", String(open));
+    });
+    scrim.addEventListener("click", close);
+    sidebar.addEventListener("click", (event) => {
+      if (event.target.closest("a")) close();
+    });
+    addEventListener("keydown", (event) => { if (event.key === "Escape") close(); });
+    matchMedia("(min-width: 981px)").addEventListener("change", close);
   }
 
-  const savedTheme = localStorage.getItem(storageKey) || "auto";
-  applyTheme(savedTheme);
-  stripIndexHtml();
-  refreshThemeToggle(savedTheme);
-  updateVisitCounter();
-  updateCloudflareUser();
-
-  const toggle = document.getElementById("themeToggle");
-  if (toggle) {
-    toggle.addEventListener("click", cycleTheme);
+  function addCommunityLink() {
+    const actions = document.querySelector(".top-actions");
+    const theme = document.getElementById("themeToggle");
+    if (!actions || actions.querySelector("[data-community-link]")) return;
+    const link = document.createElement("a");
+    link.className = "text-link";
+    link.dataset.communityLink = "true";
+    link.textContent = spanish ? "Porters" : "Community ports";
+    link.href = new URL(spanish ? "es/community/" : "community/", siteRoot).href;
+    actions.insertBefore(link, theme);
   }
 
-  window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-    const current = localStorage.getItem(storageKey) || "auto";
-    if (current === "auto") {
-      applyTheme("auto");
-    }
+  applyTheme(savedTheme());
+  cleanIndexUrl();
+  addCommunityLink();
+  buildMobileNavigation();
+  document.getElementById("themeToggle")?.addEventListener("click", cycleTheme);
+  matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    if (savedTheme() === "auto") applyTheme("auto");
   });
 })();

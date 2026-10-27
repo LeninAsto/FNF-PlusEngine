@@ -160,10 +160,44 @@
     if (!nav) return;
 
     const query = document.getElementById("pageSearch")?.value.toLowerCase().trim() || "";
-    const pages = allPages().filter((item) => {
-      if (!query) return true;
-      return `${item.title} ${item.summary} ${item.id}`.toLowerCase().includes(query);
-    });
+    const tokens = query.split(/\s+/).filter(Boolean);
+
+    if (tokens.length) {
+      const results = [];
+      for (const page of allPages()) {
+        const category = categories.find((item) => item.id === page.id);
+        const pageText = `${page.id} ${page.title} ${page.summary}`.toLowerCase();
+        if (tokens.every((token) => pageText.includes(token))) {
+          results.push({ title: page.title, detail: page.summary, href: page.route, current: page.id === pageId });
+        }
+        for (const fn of category?.functions || []) {
+          const functionText = `${fn.name} ${fn.signature} ${fn.description || ""} ${JSON.stringify(fn.parameters || [])}`.toLowerCase();
+          if (tokens.every((token) => functionText.includes(token))) {
+            results.push({
+              title: fn.name,
+              detail: `${page.title} · ${fn.signature}`,
+              href: `${page.route}#${encodeURIComponent(fn.name)}`,
+              current: page.id === pageId
+            });
+          }
+        }
+      }
+
+      if (!results.length) {
+        nav.innerHTML = `<div class="inline-note">${esc(ui.noSearchResults)}</div>`;
+        return;
+      }
+
+      nav.innerHTML = results.slice(0, 40).map((item) => `
+        <a class="${item.current ? "is-active" : ""}" href="${esc(item.href)}">
+          ${esc(item.title)}
+          <small>${esc(item.detail)}</small>
+        </a>
+      `).join("");
+      return;
+    }
+
+    const pages = allPages();
 
     if (!pages.length) {
       nav.innerHTML = `<div class="inline-note">${esc(ui.noSearchResults)}</div>`;

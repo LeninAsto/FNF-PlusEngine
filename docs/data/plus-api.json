@@ -316,13 +316,13 @@
                                    "es":  {
                                               "title":  "Funciones Lua de modchart",
                                               "summary":  "Eventos por beat, playfields, aliases, modifiers scriptados y helpers de valores.",
-                                              "intro":  "Coloca la preparaciÃ³n del modchart dentro de onInitModchart(). Registra modifiers antes de usarlos y luego programa set/ease/add/callback por beat."
+                                              "intro":  "Coloca la preparación del modchart dentro de onInitModchart(). Registra modifiers antes de usarlos y luego programa set/ease/add/callback por beat."
                                           },
                                    "groups":  [
                                                   {
                                                       "id":  "modifier-management",
                                                       "en":  "Modifier management",
-                                                      "es":  "GestiÃ³n de modifiers",
+                                                      "es":  "Gestión de modifiers",
                                                       "functions":  [
                                                                         {
                                                                             "name":  "addModifier",
@@ -1749,7 +1749,7 @@
                                     "es":  {
                                                "title":  "Modifiers de modchart",
                                                "summary":  "Lista compilada de modifiers usada por el renderer de modchart inspirado en NotITG.",
-                                               "intro":  "Cada modifier cambia posiciÃ³n, visuales, path o scroll de notas/receptores. Los videos se pueden agregar despuÃ©s por modifier sin tocar el HTML."
+                                               "intro":  "Cada modifier cambia posición, visuales, path o scroll de notas/receptores. Los videos se pueden agregar después por modifier sin tocar el HTML."
                                            },
                                     "items":  [
                                                   {
@@ -1771,7 +1771,7 @@
                                                                       "drunk"
                                                                   ],
                                                       "en":  "Applies sinusoidal horizontal movement based on distance/beat.",
-                                                      "es":  "Aplica movimiento horizontal sinusoidal segÃºn distancia/beat.",
+                                                      "es":  "Aplica movimiento horizontal sinusoidal según distancia/beat.",
                                                       "video":  "drunk.mp4",
                                                       "videoNote":  {
                                                                         "en":  "Used function: addModifier(\"drunk\"), then set/ease drunk to value 1.",
@@ -1797,7 +1797,7 @@
                                                                       "beat"
                                                                   ],
                                                       "en":  "Pulses note movement according to the song beat.",
-                                                      "es":  "Hace pulsar el movimiento de notas segÃºn el beat.",
+                                                      "es":  "Hace pulsar el movimiento de notas según el beat.",
                                                       "video":  "beat.mp4",
                                                       "videoNote":  {
                                                                         "en":  "Used function: addModifier(\"beat\"), then set/ease beat to value 1.",
@@ -1837,7 +1837,7 @@
                                                                       "confusion"
                                                                   ],
                                                       "en":  "Rotates note/receptor angles.",
-                                                      "es":  "Rota los Ã¡ngulos de notas/receptores.",
+                                                      "es":  "Rota los ángulos de notas/receptores.",
                                                       "video":  null
                                                   },
                                                   {
@@ -1908,7 +1908,7 @@
                                                                       "receptorScroll"
                                                                   ],
                                                       "en":  "Moves receptors along scroll/path direction.",
-                                                      "es":  "Mueve receptores en la direcciÃ³n de scroll/path.",
+                                                      "es":  "Mueve receptores en la dirección de scroll/path.",
                                                       "video":  null
                                                   },
                                                   {
@@ -1954,7 +1954,7 @@
                                                                       "orient"
                                                                   ],
                                                       "en":  "Orients notes toward their path direction.",
-                                                      "es":  "Orienta notas hacia la direcciÃ³n de su path.",
+                                                      "es":  "Orienta notas hacia la dirección de su path.",
                                                       "video":  null
                                                   },
                                                   {
@@ -2053,7 +2053,7 @@
                                                                       "vibrate"
                                                                   ],
                                                       "en":  "Adds rapid vibration-style movement.",
-                                                      "es":  "Agrega movimiento rÃ¡pido tipo vibraciÃ³n.",
+                                                      "es":  "Agrega movimiento rápido tipo vibración.",
                                                       "video":  null
                                                   },
                                                   {
@@ -2094,8 +2094,8 @@
                                            },
                                     "es":  {
                                                "title":  "Variables de Plus",
-                                               "summary":  "Valores directos y parÃ¡metros usados por video, modchart, ventana y funciones del sistema.",
-                                               "intro":  "Esta pÃ¡gina expande la lista vieja que solo tenÃ­a video. Agrupa valores como Psych para ubicar lo que pertenece a video, modchart, Windows o GDI."
+                                               "summary":  "Valores directos y parámetros usados por video, modchart, ventana y funciones del sistema.",
+                                               "intro":  "Esta página expande la lista anterior que solo tenía video. Agrupa valores como Psych para ubicar lo que pertenece a video, modchart, Windows o GDI."
                                            },
                                     "groups":  [
                                                    {
@@ -2132,7 +2132,7 @@
                                                    },
                                                    {
                                                        "en":  "Modchart geometry",
-                                                       "es":  "GeometrÃ­a de modchart",
+                                                       "es":  "Geometría de modchart",
                                                        "items":  [
                                                                      "ARROW_SIZE",
                                                                      "ARROW_SIZEDIV2",
@@ -2189,11 +2189,11 @@
                                   "es":  {
                                              "title":  "Funciones de Windows",
                                              "summary":  "Callbacks Lua solo para Windows: movimiento de ventana, opacidad, wallpaper, taskbar, iconos del escritorio y notificaciones.",
-                                             "intro":  "Estas funciones requieren WINDOWS_FUNCTIONS_ALLOWED y afectan el entorno de ventana/escritorio del usuario. Ãšsalas solo con consentimiento claro."
+                                             "intro":  "Estas funciones requieren WINDOWS_FUNCTIONS_ALLOWED y afectan el entorno de ventana/escritorio del usuario. Úsalas solo con consentimiento claro."
                                          },
                                   "warningText":  {
                                                       "en":  "Warning: these callbacks can hide taskbar/icons, change wallpaper, move windows, capture screenshots, or alter opacity. Keep them opt-in.",
-                                                      "es":  "Advertencia: estos callbacks pueden ocultar taskbar/iconos, cambiar wallpaper, mover ventanas, capturar screenshots o alterar opacidad. DÃ©jalos siempre opt-in."
+                                                      "es":  "Advertencia: estos callbacks pueden ocultar la barra de tareas o iconos, cambiar el fondo, mover ventanas, capturar la pantalla o alterar la opacidad. Déjalos siempre como funciones opcionales."
                                                   },
                                   "functions":  [
                                                     {
@@ -3118,7 +3118,7 @@
                               "es":  {
                                          "title":  "Funciones Windows GDI",
                                          "summary":  "Callbacks experimentales solo para Windows para el thread de efectos GDI.",
-                                         "intro":  "Los efectos GDI son visualmente agresivos y afectan el sistema. TrÃ¡talos como efectos especiales solo para builds confiables."
+                                         "intro":  "Los efectos GDI son visualmente agresivos y afectan el sistema. Trátalos como efectos especiales solo para builds confiables."
                                      },
                               "warningText":  {
                                                   "en":  "Strong warning: GDI effects can be disruptive, flashing, confusing, or unsafe for sensitive users. Do not enable them silently.",

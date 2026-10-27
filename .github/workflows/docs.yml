@@ -6,18 +6,21 @@ on:
   pull_request:
     paths:
       - '.github/workflows/docs.yml'
-      - 'astro.config.mjs'
+      - '.node-version'
       - 'package.json'
       - 'package-lock.json'
       - 'playwright.config.ts'
-      - 'public/**'
+      - 'docs/**'
       - 'scripts/**'
-      - 'src/**'
       - 'tests/**'
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
 
 jobs:
   build-and-test:
@@ -30,11 +33,32 @@ jobs:
           node-version: 24
           cache: npm
       - run: npm ci
-      - run: npx playwright install --with-deps chromium
-      - run: npm run test:e2e
+      - run: npm run build
       - uses: actions/upload-artifact@v7
-        if: always()
+        if: success() && github.event_name == 'pull_request'
         with:
           name: docs-site
-          path: dist
+          path: docs
           if-no-files-found: error
+      - uses: actions/configure-pages@v5
+        if: github.ref == 'refs/heads/web-page' && github.event_name != 'pull_request'
+      - uses: actions/upload-pages-artifact@v4
+        if: github.ref == 'refs/heads/web-page' && github.event_name != 'pull_request'
+        with:
+          path: docs
+
+  deploy:
+    if: github.ref == 'refs/heads/web-page' && github.event_name != 'pull_request'
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

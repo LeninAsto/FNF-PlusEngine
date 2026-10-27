@@ -14,7 +14,7 @@ export default defineConfig({
       : undefined
   },
   webServer: {
-    command: 'node scripts/serve-dist.mjs',
+    command: 'node scripts/serve-static.mjs',
     url: 'http://127.0.0.1:4321',
     reuseExistingServer: false,
     timeout: 30_000

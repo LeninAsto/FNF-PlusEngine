@@ -3,25 +3,17 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "scripts": {
-    "dev": "ASTRO_TELEMETRY_DISABLED=1 astro dev",
-    "build": "npm run check:generated && npm run validate && ASTRO_TELEMETRY_DISABLED=1 astro build && node scripts/validate-build.mjs",
-    "preview": "ASTRO_TELEMETRY_DISABLED=1 astro preview",
-    "test:e2e": "npm run build && playwright test",
-    "inventory": "node scripts/inventory-legacy.mjs",
-    "generate:psych": "node scripts/migrate-psych.mjs",
-    "generate:plus": "node scripts/migrate-plus.mjs",
-    "generate": "npm run generate:psych && npm run generate:plus",
-    "check:generated": "node scripts/migrate-psych.mjs --check && node scripts/migrate-plus.mjs --check",
-    "validate": "node scripts/validate-docs.mjs"
+  "engines": {
+    "node": ">=24 <25"
   },
-  "dependencies": {
-    "@astrojs/starlight": "0.42.7",
-    "astro": "7.4.2",
-    "sharp": "0.35.5"
+  "scripts": {
+    "dev": "node scripts/serve-static.mjs",
+    "build": "node scripts/validate-static.mjs",
+    "preview": "node scripts/serve-static.mjs",
+    "test:e2e": "npm run build && playwright test",
+    "validate": "node scripts/validate-static.mjs"
   },
   "devDependencies": {
-    "@playwright/test": "1.64.1",
-    "typescript": "7.0.2"
+    "@playwright/test": "1.64.1"
   }
 }

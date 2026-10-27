@@ -82,10 +82,51 @@
   function renderNav() {
     const nav = document.getElementById("pageNav");
     const query = document.getElementById("pageSearch")?.value.toLowerCase().trim() || "";
-    const filtered = pages().filter((page) => {
-      if (!query) return true;
-      return `${page.id} ${page.title} ${page.summary}`.toLowerCase().includes(query);
-    });
+    const tokens = query.split(/\s+/).filter(Boolean);
+
+    if (tokens.length) {
+      const results = [];
+      for (const page of pages()) {
+        const source = api.pages[page.id] || {};
+        const pageText = `${page.id} ${page.title} ${page.summary}`.toLowerCase();
+        if (tokens.every((token) => pageText.includes(token))) {
+          results.push({ title: page.title, detail: page.summary, href: routeFor(page.id), current: page.id === pageId });
+        }
+
+        const entries = [
+          ...(source.functions || []),
+          ...(source.variables || []),
+          ...(source.items || []),
+          ...(source.groups || []).flatMap((group) => group.items || group.functions || [])
+        ];
+        for (const entry of entries) {
+          const title = typeof entry === "string" ? entry : entry.name || local(entry.title) || "";
+          const entryText = `${title} ${typeof entry === "string" ? entry : JSON.stringify(entry)}`.toLowerCase();
+          if (title && tokens.every((token) => entryText.includes(token))) {
+            results.push({
+              title,
+              detail: `${page.title}${entry.signature ? ` · ${entry.signature}` : ""}`,
+              href: `${routeFor(page.id)}#${encodeURIComponent(title)}`,
+              current: page.id === pageId
+            });
+          }
+        }
+      }
+
+      if (!results.length) {
+        nav.innerHTML = `<div class="inline-note">${esc(ui.noSearchResults || "No results.")}</div>`;
+        return;
+      }
+      nav.innerHTML = results.slice(0, 40).map((item) => `
+        <a class="${item.current ? "is-active" : ""}" href="${esc(item.href)}">
+          ${esc(item.title)}
+          <small>${esc(item.detail)}</small>
+        </a>
+      `).join("");
+      return;
+    }
+
+    const filtered = pages();
 
     if (!filtered.length) {
       nav.innerHTML = `<div class="inline-note">${esc(ui.noSearchResults || "No results.")}</div>`;
@@ -161,7 +202,7 @@
       <article class="card section-card">
         <h2>${esc(ui.variables || "Variables")}</h2>
         <ul class="psych-list">
-          ${items.map((item) => `<li><span class="code-pill">${esc(item.name)}</span> - ${esc(local(item))}</li>`).join("")}
+          ${items.map((item) => `<li id="${esc(item.name)}"><span class="code-pill">${esc(item.name)}</span> - ${esc(local(item))}</li>`).join("")}
         </ul>
       </article>
     `;
@@ -198,7 +239,7 @@
         <h2>${esc(ui.modifiers || "Modifiers")}</h2>
         <div class="modifier-grid">
           ${items.map((item) => `
-            <div class="modifier-card">
+            <div class="modifier-card" id="${esc(item.name)}">
               <h3>${esc(item.name)}</h3>
               <p>${esc(local(item))}</p>
               <strong class="modifier-subtitle">${esc(ui.submodifiers || "Submodifiers / aliases")}</strong>
