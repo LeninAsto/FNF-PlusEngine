@@ -368,12 +368,29 @@ class ShaderFunctions
 			return null;
 		}
 
-		if(Std.isOfType(target, FlxRuntimeShader))
-			return cast target;
+		var runtimeShader:FlxRuntimeShader = asRuntimeShader(target);
+		if(runtimeShader != null)
+			return runtimeShader;
 
 		var shaderValue:Dynamic = Reflect.getProperty(target, 'shader');
-		if(shaderValue != null && Std.isOfType(shaderValue, FlxRuntimeShader))
-			return cast shaderValue;
+		return asRuntimeShader(shaderValue);
+	}
+
+	static function asRuntimeShader(value:Dynamic):FlxRuntimeShader
+	{
+		if(value == null)
+			return null;
+		if(Std.isOfType(value, FlxRuntimeShader))
+			return cast value;
+
+		// Some OpenFL/Flixel builds expose a runtime shader through a generated
+		// wrapper, which makes Std.isOfType() lie even though the Psych uniform
+		// API is present. Accept only that complete API, not arbitrary shaders.
+		if(Reflect.field(value, 'setFloat') != null
+			&& Reflect.field(value, 'setInt') != null
+			&& Reflect.field(value, 'setBool') != null
+			&& Reflect.field(value, 'setSampler2D') != null)
+			return cast value;
 
 		return null;
 	}
@@ -383,8 +400,9 @@ class ShaderFunctions
 	static function resolveRuntimeShader(funk:FunkinLua, shader:String, ?onError:Dynamic):FlxRuntimeShader
 	{
 		var existing:Dynamic = LuaUtils.getObjectDirectly(shader);
-		if(existing != null && Std.isOfType(existing, FlxRuntimeShader))
-			return cast existing;
+		var existingRuntimeShader:FlxRuntimeShader = asRuntimeShader(existing);
+		if(existingRuntimeShader != null)
+			return existingRuntimeShader;
 
 		#if MODS_ALLOWED
 		if(shaders.ErrorHandledShader.isBroken(shader))

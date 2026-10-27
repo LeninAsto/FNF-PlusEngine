@@ -520,7 +520,12 @@ class ShaderCompatibility
 				continue;
 			}
 
-			if (code >= "0".code && code <= "9".code)
+			var startsWithDigit:Bool = code >= "0".code && code <= "9".code;
+			var startsWithDecimalPoint:Bool = source.charAt(i) == "."
+				&& i + 1 < source.length
+				&& source.charCodeAt(i + 1) >= "0".code
+				&& source.charCodeAt(i + 1) <= "9".code;
+			if (startsWithDigit || startsWithDecimalPoint)
 			{
 				i++;
 				while (i < source.length)
