@@ -1,11 +1,11 @@
-name: Docs v2
+name: Docs
 
 on:
   push:
-    branches: [web-page-v2]
+    branches: [web-page]
   pull_request:
     paths:
-      - '.github/workflows/docs-v2.yml'
+      - '.github/workflows/docs.yml'
       - 'astro.config.mjs'
       - 'package.json'
       - 'package-lock.json'
@@ -35,6 +35,6 @@ jobs:
       - uses: actions/upload-artifact@v7
         if: always()
         with:
-          name: docs-v2-site
+          name: docs-site
           path: dist
           if-no-files-found: error
