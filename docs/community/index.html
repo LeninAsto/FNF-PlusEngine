@@ -12,9 +12,13 @@
   <body class="docs-body">
     <header class="topbar"><a class="brand psych-brand" href="../"><img src="../assets/pluslogo.png" alt="Plus Engine" class="brand-logo plus-logo" /><span class="psych-brand-copy"><span class="psych-brand-title">Plus Engine</span><span class="psych-brand-subtitle">Community ports</span></span></a><nav class="top-actions"><a class="text-link" href="../">Documentation</a><a class="text-link" href="../psych/">Psych API</a><a class="text-link lang-switch" href="../es/community/">Español</a><button id="themeToggle" class="icon-btn" type="button">Theme</button></nav></header>
     <main class="community-page">
-      <header class="card community-intro"><p class="eyebrow">Community directory</p><h1>Psych Engine porters</h1><p>Selected creators who publish Psych Engine ports. Each profile links to its official channel and groups representative videos from that porter.</p></header>
-      <div class="ports-toolbar"><label for="porterFilter">Filter by porter</label><select id="porterFilter"><option value="">All porters</option></select><span id="portsStatus" aria-live="polite">Loading profiles…</span></div>
-      <section id="portsGrid" class="ports-grid" aria-live="polite"></section>
+      <header class="card community-intro" id="communityHero">
+        <div class="community-hero-copy"><p class="eyebrow" id="communityHeroEyebrow">Community directory</p><h1 id="communityHeroTitle">Psych Engine porters</h1><p id="communityHeroDescription">Selected creators who publish Psych Engine ports. Select a porter to view their profile and videos.</p><a id="communityHeroLink" class="youtube-channel-link" href="#" target="_blank" rel="noreferrer" hidden>Open channel →</a></div>
+        <img id="communityHeroImage" class="community-hero-image" src="../assets/logo.png" alt="Psych Engine" />
+      </header>
+      <div class="ports-toolbar"><div class="filter-field"><label for="porterFilter">Porter</label><select id="porterFilter"><option value="">All porters</option></select></div><div class="filter-field"><label for="videoSort">Order</label><select id="videoSort"><option value="recent">Most recent</option><option value="popular">Most popular</option></select></div><span id="portsStatus" aria-live="polite">Loading videos…</span></div>
+      <section id="portsGrid" class="ports-grid" aria-label="Community videos" aria-live="polite"></section>
+      <div class="load-more-wrap"><button id="loadMorePorts" class="btn btn-filled" type="button">Load 10 more</button></div>
       <section class="card documentation-note"><h2>Directory criteria</h2><p>Channels and videos link to their original YouTube publishers. The directory is an editorial index: it does not mirror downloads or replace each creator's installation notes.</p></section>
     </main>
   </body>

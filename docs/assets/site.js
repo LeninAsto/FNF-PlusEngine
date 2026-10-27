@@ -94,11 +94,14 @@
     const footer = document.createElement("footer");
     footer.className = "site-counter";
     footer.setAttribute("aria-label", spanish ? "Contador de visitas" : "Visitor counter");
+    const title = document.createElement("h2");
+    title.className = "site-counter-title";
+    title.textContent = "Page Views";
     const image = document.createElement("img");
     image.src = "https://count.getloli.com/@psych-plus-page?theme=booru-lisu&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto&prefix=0";
     image.alt = spanish ? "Contador de visitas de la documentación" : "Documentation visitor counter";
-    image.loading = "lazy";
-    footer.append(image);
+    image.loading = "eager";
+    footer.append(title, image);
     document.body.append(footer);
   }
 

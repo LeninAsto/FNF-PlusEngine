@@ -241,22 +241,18 @@ code { font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; }
 .documentation-videos h3 { padding: .65rem .25rem .2rem; font-size: .95rem; }
 .wiki-next { color: var(--ink-soft); }
 .community-page { display: grid; gap: 1rem; width: min(calc(100% - 2rem), 1050px); margin: 0 auto; padding: 1.5rem 0 4rem; }
-.community-intro { padding: clamp(1.5rem, 4vw, 3rem); background: linear-gradient(135deg, var(--primary-container), var(--surface-low) 72%); }
+.community-intro { display: grid; grid-template-columns: minmax(0, 1fr) 210px; gap: 2rem; align-items: center; padding: clamp(1.5rem, 4vw, 3rem); background: linear-gradient(135deg, var(--primary-container), var(--surface-low) 72%); }
+.community-hero-copy { display: grid; justify-items: start; gap: .5rem; }
+.community-hero-image { justify-self: center; width: min(100%, 210px); max-height: 190px; object-fit: contain; filter: drop-shadow(0 14px 18px rgba(48, 7, 70, .2)); }
+.community-intro.is-porter .community-hero-image { width: 150px; aspect-ratio: 1; object-fit: cover; border: 4px solid var(--surface); border-radius: 50%; }
 .ports-toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: .65rem; padding: .8rem 0; }
-.ports-toolbar label { font-weight: 800; }
+.filter-field { display: grid; gap: .3rem; }
+.ports-toolbar label { color: var(--ink-soft); font-size: .72rem; font-weight: 800; letter-spacing: .07em; text-transform: uppercase; }
 .ports-toolbar select { min-height: 42px; padding: .45rem 2.2rem .45rem .75rem; border: 1px solid var(--outline-soft); border-radius: 12px; background: var(--surface); color: var(--ink); }
 .ports-toolbar span { margin-left: auto; color: var(--ink-soft); font-size: .86rem; }
-.ports-grid { display: grid; gap: 1.25rem; }
-.porter-profile { overflow: hidden; border-radius: var(--radius-lg); box-shadow: none; }
-.porter-banner { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 1rem; align-items: center; padding: 1.25rem; background: linear-gradient(135deg, var(--primary-container), var(--surface-low)); }
-.porter-avatar { width: 92px; aspect-ratio: 1; object-fit: cover; border: 3px solid var(--surface); border-radius: 50%; box-shadow: 0 8px 24px rgba(34, 15, 40, .18); }
-.porter-summary { display: grid; gap: .2rem; }
-.porter-summary h2 { font-size: clamp(1.4rem, 3vw, 2rem); }
-.porter-summary > p:last-child { max-width: 66ch; color: var(--ink-soft); font-size: .9rem; }
-.porter-handle { justify-self: start; font-weight: 800; text-decoration: none; }
+.ports-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
 .youtube-channel-link { display: inline-flex; align-items: center; gap: .45rem; min-height: 42px; padding: .55rem .85rem; border-radius: 999px; background: #ff0033; color: #fff; font-weight: 800; text-decoration: none; white-space: nowrap; }
 .youtube-channel-link:hover { color: #fff; background: #d9002b; }
-.porter-videos { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .8rem; padding: 1rem; }
 .community-video-card { min-width: 0; overflow: hidden; border: 1px solid var(--outline-soft); border-radius: var(--radius-md); background: var(--surface-low); }
 .video-poster, .community-video-card iframe { display: block; width: 100%; aspect-ratio: 16/9; border: 0; background: #080609; }
 .video-poster { position: relative; padding: 0; overflow: hidden; cursor: pointer; }
@@ -264,9 +260,16 @@ code { font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; }
 .video-poster:hover img { transform: scale(1.035); }
 .video-play { position: absolute; top: 50%; left: 50%; display: grid; width: 48px; aspect-ratio: 1; place-items: center; border-radius: 50%; background: rgba(255, 0, 51, .92); color: #fff; transform: translate(-50%, -50%); }
 .community-video-copy { display: grid; gap: .55rem; padding: .85rem; }
-.community-video-copy h3 { font-size: .95rem; line-height: 1.4; }
-.community-video-copy a { justify-self: start; font-size: .84rem; font-weight: 800; text-decoration: none; }
-.site-counter { display: flex; justify-content: center; width: min(calc(100% - 2rem), var(--page)); margin: 0 auto; padding: 1rem 0 2.5rem; }
+.community-video-copy h2 { font-size: .98rem; line-height: 1.4; }
+.video-channel-link { display: inline-flex; justify-self: start; align-items: center; gap: .45rem; color: var(--ink); font-size: .84rem; font-weight: 800; text-decoration: none; }
+.video-channel-link img { width: 28px; aspect-ratio: 1; object-fit: cover; border-radius: 50%; }
+.video-channel-link:hover span { color: var(--primary); text-decoration: underline; }
+.video-stats { color: var(--ink-soft); font-size: .78rem; }
+.video-watch-link { justify-self: start; font-size: .84rem; font-weight: 800; text-decoration: none; }
+.load-more-wrap { display: flex; justify-content: center; padding: .5rem 0 1rem; }
+.load-more-wrap [hidden] { display: none; }
+.site-counter { display: grid; justify-items: center; gap: .7rem; width: min(calc(100% - 2rem), var(--page)); margin: 0 auto 2rem; padding: 1.2rem; border: 1px solid var(--outline-soft); border-radius: var(--radius-lg); background: var(--surface-low); }
+.site-counter-title { font-size: 1rem; letter-spacing: .04em; }
 .site-counter img { max-width: 100%; height: auto; image-rendering: pixelated; }
 
 @media (max-width: 980px) {
@@ -283,7 +286,7 @@ code { font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; }
   body.nav-open .nav-scrim { visibility: visible; opacity: 1; }
   .wiki-layout { grid-template-columns: 1fr; }
   .wiki-sidebar { position: static; }
-  .porter-videos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .ports-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
 }
 
 @media (max-width: 760px) {
@@ -311,14 +314,12 @@ code { font-family: "Cascadia Code", "SFMono-Regular", Consolas, monospace; }
   .hero-logo { width: 200px; }
   .home-card.half, .home-card.third { grid-column: span 12; }
   .wiki-layout, .community-page { width: min(calc(100% - 1rem), var(--page)); }
-  .docs-intro { grid-template-columns: 1fr; }
+  .docs-intro, .community-intro { grid-template-columns: 1fr; }
   .docs-intro-logo { width: min(220px, 70%); }
   .reference-grid, .ports-grid { grid-template-columns: 1fr; }
   .documentation-videos { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .ports-toolbar span { width: 100%; margin-left: 0; }
-  .porter-banner { grid-template-columns: auto minmax(0, 1fr); }
-  .youtube-channel-link { grid-column: 1 / -1; justify-self: start; }
-  .porter-videos { grid-template-columns: 1fr; }
+  .community-hero-image { justify-self: start; width: min(180px, 60%); }
 }
 
 @media (prefers-reduced-motion: reduce) {

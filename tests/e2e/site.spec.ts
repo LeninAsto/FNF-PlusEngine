@@ -33,16 +33,27 @@ test('Plus search matches functions outside the current section', async ({ page 
   await expect(page.locator('#pageNav a').first()).toHaveAttribute('href', /video.*playLuaVideoSprite/);
 });
 
-test('community directory groups videos under selected porters', async ({ page }) => {
+test('community catalog filters, sorts and progressively loads videos', async ({ page }) => {
   await page.goto('/community/');
   await expect(page.getByRole('heading', { name: 'Psych Engine porters' })).toBeVisible();
-  await expect(page.locator('.porter-profile')).toHaveCount(8);
-  await expect(page.locator('.community-video-card')).toHaveCount(24);
-  await expect(page.locator('.compatibility-state')).toHaveCount(0);
+  await expect(page.locator('.community-video-card')).toHaveCount(10);
+  await expect(page.locator('#portsStatus')).toHaveText('10 of 150 videos');
+
+  await page.locator('#loadMorePorts').click();
+  await expect(page.locator('.community-video-card')).toHaveCount(20);
 
   await page.locator('#porterFilter').selectOption('junior07beta');
-  await expect(page.locator('.porter-profile')).toHaveCount(1);
   await expect(page.getByRole('heading', { name: 'Junior07BETA' })).toBeVisible();
+  await expect(page.locator('.community-video-card')).toHaveCount(10);
+  await expect(page.locator('#communityHeroImage')).toHaveAttribute('src', /junior07beta\.jpg/);
+  await expect(page.locator('.video-channel-link').first()).toHaveAttribute('href', 'https://www.youtube.com/@Junior_07_BETA');
+
+  const mostPopular = await page.evaluate(async () => {
+    const data = await fetch('../data/ports.json').then((response) => response.json());
+    return data.videos.filter((video) => video.porter === 'junior07beta').sort((left, right) => right.views - left.views)[0].id;
+  });
+  await page.locator('#videoSort').selectOption('popular');
+  await expect(page.locator('.video-poster').first()).toHaveAttribute('data-video-id', mostPopular);
   await page.locator('.video-poster').first().click();
   await expect(page.locator('.community-video-card iframe')).toHaveCount(1);
 });
@@ -58,6 +69,7 @@ test('Plus home mirrors the Psych documentation shell', async ({ page }) => {
 test('visitor counter is added at the end of every page', async ({ page }) => {
   await page.goto('/pages/playstate/');
   await expect(page.locator('body > .site-counter')).toHaveCount(1);
+  await expect(page.locator('.site-counter-title')).toHaveText('Page Views');
   await expect(page.locator('.site-counter img')).toHaveAttribute('src', /count\.getloli\.com\/@psych-plus-page/);
 });
 
