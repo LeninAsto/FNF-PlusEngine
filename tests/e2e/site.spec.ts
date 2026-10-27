@@ -33,11 +33,32 @@ test('Plus search matches functions outside the current section', async ({ page 
   await expect(page.locator('#pageNav a').first()).toHaveAttribute('href', /video.*playLuaVideoSprite/);
 });
 
-test('community ports render videos and compatibility notices', async ({ page }) => {
+test('community directory groups videos under selected porters', async ({ page }) => {
   await page.goto('/community/');
   await expect(page.getByRole('heading', { name: 'Psych Engine porters' })).toBeVisible();
-  await expect(page.locator('.port-card')).toHaveCount(2);
-  await expect(page.locator('.compatibility-state')).toHaveCount(2);
+  await expect(page.locator('.porter-profile')).toHaveCount(8);
+  await expect(page.locator('.community-video-card')).toHaveCount(24);
+  await expect(page.locator('.compatibility-state')).toHaveCount(0);
+
+  await page.locator('#porterFilter').selectOption('junior07beta');
+  await expect(page.locator('.porter-profile')).toHaveCount(1);
+  await expect(page.getByRole('heading', { name: 'Junior07BETA' })).toBeVisible();
+  await page.locator('.video-poster').first().click();
+  await expect(page.locator('.community-video-card iframe')).toHaveCount(1);
+});
+
+test('Plus home mirrors the Psych documentation shell', async ({ page }) => {
+  await page.goto('/plus/');
+  await expect(page.locator('.psych-layout')).toHaveCount(1);
+  await expect(page.locator('.psych-sidebar')).toHaveCount(1);
+  await expect(page.locator('.psych-hero')).toHaveCount(1);
+  await expect(page.locator('#sectionSearch')).toBeVisible();
+});
+
+test('visitor counter is added at the end of every page', async ({ page }) => {
+  await page.goto('/pages/playstate/');
+  await expect(page.locator('body > .site-counter')).toHaveCount(1);
+  await expect(page.locator('.site-counter img')).toHaveAttribute('src', /count\.getloli\.com\/@psych-plus-page/);
 });
 
 test('mobile API navigation opens without horizontal overflow', async ({ page }) => {

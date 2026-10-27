@@ -1,27 +1,39 @@
 {
   "updatedAt": "2026-10-27T00:00:00Z",
+  "porters": [
+    { "id": "perez-sen", "name": "Perez Sen", "handle": "@Perez_Sen", "channelId": "UCEYFosmDgar2KHqE8thFAbg", "url": "https://www.youtube.com/@Perez_Sen", "avatar": "assets/porters/perez-sen.jpg", "description": "Ports de mods de Friday Night Funkin' a Psych Engine para Android y PC." },
+    { "id": "juann", "name": "Juann", "handle": "@Juann123", "channelId": "UC2H6SBrvy5ewIHtWOfPZjXQ", "url": "https://www.youtube.com/@Juann123", "avatar": "assets/porters/juann.jpg", "description": "Publica ports optimizados de Psych Engine para Android, PC y otras plataformas." },
+    { "id": "asbelin", "name": "AsbelinFNF", "handle": "@LiterallyAsbelin", "channelId": "UC5GgD67c-lSQIeHyc_9hDHQ", "url": "https://www.youtube.com/@LiterallyAsbelin", "avatar": "assets/porters/asbelin.jpg", "description": "Creador y porter de proyectos de FNF, con pruebas, scripts y ports para Psych Engine." },
+    { "id": "jacm", "name": "Jacm", "handle": "@Jacm0Back", "channelId": "UCrQdXngTdBwZEZdIFU8YIqQ", "url": "https://www.youtube.com/@Jacm0Back", "avatar": "assets/porters/jacm.jpg", "description": "Porter centrado en contenido de Matt y recreaciones para Psych Engine 0.7.3." },
+    { "id": "ulisegas", "name": "UliseGas", "handle": "@Ulisegas", "channelId": "UCISRIC_ji3dmuzeWouJQydQ", "url": "https://www.youtube.com/@Ulisegas", "avatar": "assets/porters/ulisegas.jpg", "description": "Canal dedicado a ports arcade y recreaciones de mods para Psych Engine." },
+    { "id": "junior07beta", "name": "Junior07BETA", "handle": "@Junior_07_BETA", "channelId": "UCFvkwBPoGO10A8You7Ya6qg", "url": "https://www.youtube.com/@Junior_07_BETA", "avatar": "assets/porters/junior07beta.jpg", "description": "Contenido de FNF y mods optimizados para Psych Engine en Android y PC." },
+    { "id": "sumikofnf", "name": "SumikoFNF", "handle": "@SumikoFNF", "channelId": "UCbSfVhuXA8U58U3ZLArTEMw", "url": "https://www.youtube.com/@SumikoFNF", "avatar": "assets/porters/sumikofnf.jpg", "description": "Optimización de mods y tutoriales de instalación para distintas versiones de Psych Engine." },
+    { "id": "itzsapo", "name": "ItzSapo", "handle": "@ItzSapo", "channelId": "UCJ_ks2_aKYjLq77NdWzlHVQ", "url": "https://www.youtube.com/@ItzSapo", "avatar": "assets/porters/itzsapo.jpg", "description": "Ports de bajo consumo para Android y Windows, especialmente contenido de VS Impostor." }
+  ],
   "videos": [
-    {
-      "id": "rBmqHKNJTi4",
-      "title": "TWIDDLEFINGER Psych Engine Port (Android/PC)",
-      "porter": "UliseGas",
-      "porterUrl": "https://www.youtube.com/@Ulisegas",
-      "published": "2024-07-20",
-      "engine": "Psych Engine 0.7.3",
-      "platforms": ["Android", "PC"],
-      "verifiedPlus": false,
-      "url": "https://www.youtube.com/watch?v=rBmqHKNJTi4"
-    },
-    {
-      "id": "aDgNZVBvwUs",
-      "title": "Hit Single Real Android Port (Psych Engine)",
-      "porter": "UliseGas",
-      "porterUrl": "https://www.youtube.com/@Ulisegas",
-      "published": "2024-07-11",
-      "engine": "Psych Engine 0.7.3",
-      "platforms": ["Android", "PC"],
-      "verifiedPlus": false,
-      "url": "https://www.youtube.com/watch?v=aDgNZVBvwUs"
-    }
+    { "id": "vMMQFSNICVE", "porter": "perez-sen", "title": "VS The Galaxy 2.5 FULL WEEK — Psych Engine Port" },
+    { "id": "fuHiZ0yDy9g", "porter": "perez-sen", "title": "wish I could care less — Psych Engine Port" },
+    { "id": "u0j7N3SP1zI", "porter": "perez-sen", "title": "Friday Night Funkin': Soft V2 — Psych Engine files" },
+    { "id": "rPa9IamiBMc", "porter": "juann", "title": "Metroman BF — Psych Engine Port optimizado" },
+    { "id": "vA-jcqz6Q-Y", "porter": "juann", "title": "Wii Funkin' VS Matt V3 — Psych Engine Port" },
+    { "id": "IVTYCV8pbEk", "porter": "juann", "title": "430 LEGACY Playable — Psych Engine Port" },
+    { "id": "2_WirK-K8y8", "porter": "asbelin", "title": "MCM V2 — Psych Engine Port test" },
+    { "id": "-vjSHQvO9xE", "porter": "asbelin", "title": "FUNKADELIX — Full Psych Engine Port" },
+    { "id": "Wuua6LFCKdU", "porter": "asbelin", "title": "Funkin'Mix — Psych Engine Port preview" },
+    { "id": "Z4CYUP-sfqE", "porter": "jacm", "title": "Final Destination God — Psych Engine Port preview" },
+    { "id": "s1pfcMk-7v8", "porter": "jacm", "title": "Boxing Match — Wii Funkin Psych Engine Port" },
+    { "id": "NtAUJm23NI8", "porter": "jacm", "title": "Sporting — Wii Funkin Psych Engine Port" },
+    { "id": "LAvED90M_lc", "porter": "ulisegas", "title": "Wednesday Infidelity V2 — Psych Engine Port" },
+    { "id": "FvmmbhSLNTk", "porter": "ulisegas", "title": "FNF Pico Update — Definitive Psych Engine Port" },
+    { "id": "1npaIEtSZOE", "porter": "ulisegas", "title": "Indie Cross 1.5 — Full Psych Engine Port" },
+    { "id": "gl8AAB5lrLo", "porter": "junior07beta", "title": "Don Ramón Virtual Diva FanChart — Psych Engine Port" },
+    { "id": "6MczOewAm40", "porter": "junior07beta", "title": "The Amazing Dance of Richard — Optimized Port" },
+    { "id": "5pzVB-nXPiw", "porter": "junior07beta", "title": "Animania V0.6 — Optimized Psych Engine Port" },
+    { "id": "xV16pyBnZ4I", "porter": "sumikofnf", "title": "VS Ihan V2 — Re-optimized Psych Engine Port" },
+    { "id": "AvS8dxn1rvI", "porter": "sumikofnf", "title": "Gorefield V2 — Psych Engine Android Port" },
+    { "id": "2K1Mq27CCRE", "porter": "sumikofnf", "title": "Weekly Beyond Beerus VS Goku — Optimized Port" },
+    { "id": "Z1wqvylO8YM", "porter": "itzsapo", "title": "VS Impostor V4 Tomongus Week — Low-end Port" },
+    { "id": "DtoE_nUFXqY", "porter": "itzsapo", "title": "Funked Birth — Low-end Psych Engine Port" },
+    { "id": "zGUGEms8EPs", "porter": "itzsapo", "title": "VS Impostor V4 Pink Week — Low-end Port" }
   ]
 }

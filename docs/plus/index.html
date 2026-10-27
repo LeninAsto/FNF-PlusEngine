@@ -1,15 +1,31 @@
 <!doctype html>
 <html lang="en" data-theme="auto">
-  <head><meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" /><title>Plus Engine Lua API</title><meta name="description" content="Plus Engine Lua API reference." /><link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /><link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" /><link rel="icon" href="../assets/favicon.ico" /><link rel="stylesheet" href="../assets/site.css" /><script defer src="../assets/site.js"></script></head>
+  <head>
+    <meta charset="UTF-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Plus Engine — Lua Script API</title><meta name="description" content="Plus Engine Lua API reference." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" /><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;700;800&family=Space+Grotesk:wght@500;700&display=swap" rel="stylesheet" />
+    <link rel="icon" href="../assets/favicon.ico" /><link rel="stylesheet" href="../assets/site.css" /><script defer src="../assets/site.js"></script>
+  </head>
   <body class="docs-body psych-page">
-    <header class="topbar"><a class="brand psych-brand" href="../"><img src="../assets/pluslogo.png" alt="Plus Engine" class="brand-logo plus-logo" /><span class="psych-brand-copy"><span class="psych-brand-title">Plus Engine</span><span class="psych-brand-subtitle">Lua API</span></span></a><nav class="top-actions"><a class="text-link" href="../">Home</a><a class="text-link" href="../psych/">Psych</a><a class="text-link lang-switch" href="../es/plus/">Español</a><button id="themeToggle" class="icon-btn" type="button">Theme</button></nav></header>
+    <div class="ambient ambient-a"></div><div class="ambient ambient-b"></div>
+    <header class="topbar"><a class="brand psych-brand" href="../"><img src="../assets/pluslogo.png" alt="Plus Engine" class="brand-logo plus-logo" /><span class="psych-brand-copy"><span class="psych-brand-title">Plus Engine</span><span class="psych-brand-subtitle">Lua Script API</span></span></a><nav class="top-actions"><a class="text-link" href="../">Home</a><a class="text-link" href="../psych/">Psych</a><a class="text-link lang-switch" href="../es/plus/">Español</a><button id="themeToggle" class="icon-btn" type="button">Theme</button></nav></header>
     <main class="psych-layout">
-      <aside class="card psych-sidebar"><div class="sidebar-block"><p class="eyebrow">Plus API</p><h2>Reference sections</h2><p class="sidebar-copy">Engine-specific Lua callbacks and values.</p></div><nav class="section-nav"><a href="pages/video/">Video functions</a><a href="pages/modchart/">Modchart functions</a><a href="pages/modifiers/">Modifiers</a><a href="pages/variables/">Variables</a><a href="pages/windows/">Windows functions</a><a href="pages/gdi/">Windows GDI</a></nav></aside>
+      <aside class="card psych-sidebar" aria-label="Page navigation">
+        <div class="sidebar-block"><p class="eyebrow">Plus Home</p><h2>Lua API reference</h2><p class="sidebar-copy">Plus-specific callbacks and values, presented with the same structure as the Psych reference.</p></div>
+        <div class="sidebar-search"><label for="sectionSearch">Search sections</label><input id="sectionSearch" class="search-field" type="search" placeholder="Video, modifiers, Windows…" /></div>
+        <nav class="section-nav" aria-label="Quick links"><a href="#home-page">Home Page</a><a href="#functions">Reference sections</a><a href="#platform-notes">Platform notes</a></nav>
+        <div class="sidebar-footer">Psych-compatible scripting, with Plus Engine extensions documented separately.</div>
+      </aside>
       <section class="psych-main">
-        <article class="card section-card page-route-hero"><p class="eyebrow">Plus Engine</p><h1>Lua API reference</h1><p>Functions and values added by Plus Engine on top of the Psych-compatible scripting API.</p><div class="page-route-meta"><span class="chip">6 sections</span><span class="chip">Searchable functions</span><span class="chip">Direct anchors</span></div></article>
-        <article class="card section-card"><h2>Reference sections</h2><div class="page-links"><a href="pages/video/">Video functions<small>VideoSprite and playback callbacks</small></a><a href="pages/modchart/">Modchart functions<small>Scheduling, playfields and callbacks</small></a><a href="pages/modifiers/">Modifiers<small>Names, aliases and video examples</small></a><a href="pages/variables/">Variables<small>Video, modchart, window and system values</small></a><a href="pages/windows/">Windows functions<small>Desktop and application-window callbacks</small></a><a href="pages/gdi/">Windows GDI<small>Experimental, opt-in visual effects</small></a></div></article>
-        <article class="card section-card"><h2>Compatibility and safety</h2><p>Windows and GDI callbacks are platform-specific. GDI effects can be disruptive or unsafe for photosensitive users and must never be enabled without clear user consent.</p><div class="inline-note">For standard Psych callbacks, use the <a href="../psych/">Psych Lua API reference</a>.</div></article>
+        <article class="card psych-hero" id="home-page" data-searchable="true">
+          <div class="hero-copy"><p class="eyebrow">Plus Engine</p><h1>Lua Script API</h1><p>Functions and values added by Plus Engine on top of its Psych-compatible scripting API.</p><div class="hero-actions"><a class="btn btn-filled" href="#functions">Browse Functions</a><a class="btn btn-outlined" href="../psych/">Psych API</a></div></div>
+          <img width="400" src="../assets/pluslogo.png" alt="Plus Engine Logo" class="hero-logo" draggable="false" />
+        </article>
+        <article class="card section-card" id="functions" data-searchable="true"><h2>Reference sections</h2><p>There are 6 Plus Engine sections:</p><div class="page-links"><a href="pages/video/">Video Functions<small>VideoSprite and playback callbacks</small></a><a href="pages/modchart/">Modchart Functions<small>Scheduling, playfields and callbacks</small></a><a href="pages/modifiers/">Modifiers<small>Names, aliases and video examples</small></a><a href="pages/variables/">Variables<small>Video, modchart, window and system values</small></a><a href="pages/windows/">Windows Functions<small>Desktop and application-window callbacks</small></a><a href="pages/gdi/">Windows GDI<small>Experimental, opt-in visual effects</small></a></div></article>
+        <article class="card section-card" id="platform-notes" data-searchable="true"><h2>Platform notes</h2><p>Plus Engine retains the Psych scripting base. Windows and GDI entries are marked separately because they depend on desktop APIs.</p><div class="inline-note">For base callbacks, use the <a href="../psych/">Psych Lua API reference</a>.</div></article>
       </section>
     </main>
+    <script>document.getElementById("sectionSearch")?.addEventListener("input",event=>{const query=event.target.value.toLowerCase().trim();document.querySelectorAll("[data-searchable='true']").forEach(card=>card.hidden=Boolean(query)&&!card.textContent.toLowerCase().includes(query));});</script>
   </body>
 </html>

@@ -89,10 +89,24 @@
     actions.insertBefore(link, theme);
   }
 
+  function addVisitorCounter() {
+    if (document.querySelector(".site-counter")) return;
+    const footer = document.createElement("footer");
+    footer.className = "site-counter";
+    footer.setAttribute("aria-label", spanish ? "Contador de visitas" : "Visitor counter");
+    const image = document.createElement("img");
+    image.src = "https://count.getloli.com/@psych-plus-page?theme=booru-lisu&padding=7&offset=0&align=top&scale=1&pixelated=1&darkmode=auto&prefix=0";
+    image.alt = spanish ? "Contador de visitas de la documentación" : "Documentation visitor counter";
+    image.loading = "lazy";
+    footer.append(image);
+    document.body.append(footer);
+  }
+
   applyTheme(savedTheme());
   cleanIndexUrl();
   addCommunityLink();
   buildMobileNavigation();
+  addVisitorCounter();
   document.getElementById("themeToggle")?.addEventListener("click", cycleTheme);
   matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
     if (savedTheme() === "auto") applyTheme("auto");
