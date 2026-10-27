@@ -50,7 +50,6 @@ class StageWeek1 extends BaseStage
 		}
 	}
 
-    #if OPT_VER
 	override function createPost()
 	{
 		super.createPost();
@@ -58,7 +57,6 @@ class StageWeek1 extends BaseStage
 		if (PlayState.SONG.song == 'Tutorial' && dad != null)
 			dad.setPosition(fixed_GF_X, fixed_GF_Y);
 	}
-	#end
 
 	override function eventPushed(event:objects.Note.EventNote)
 	{

@@ -20,12 +20,12 @@
 	"vocals_file": "",
 	"no_antialiasing": false,
 	"image": "characters/Pico_Death",
-	"position": [15, 335],
+	"position": [315, 450],
 	"healthicon": "pico",
 	"flip_x": true,
 	"healthbar_colors": [183, 216, 85],
-	"camera_position": [0, 0],
+	"camera_position": [-340, -150],
 	"sing_duration": 4,
-	"scale": 1,
+	"scale": 2,
 	"_editor_isPlayer": true
 }

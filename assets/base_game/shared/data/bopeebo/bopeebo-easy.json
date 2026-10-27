@@ -803,7 +803,7 @@
 			}
 		],
 		"song": "Bopeebo",
-		"needsVoices": true,
+		"needsVoices": false,
 		"validScore": true,
 		"format": "psych_v1_convert",
 		"speed": 1,

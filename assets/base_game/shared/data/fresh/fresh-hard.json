@@ -1577,7 +1577,7 @@
 		],
 		"player2": "dad",
 		"song": "Fresh",
-		"needsVoices": true,
+		"needsVoices": false,
 		"bpm": 120,
 		"speed": 1.8,
 		"format": "psych_v1_convert"

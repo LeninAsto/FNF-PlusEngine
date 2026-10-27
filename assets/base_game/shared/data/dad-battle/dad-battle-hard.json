@@ -2003,7 +2003,7 @@
 		],
 		"player2": "dad",
 		"song": "Dad Battle",
-		"needsVoices": true,
+		"needsVoices": false,
 		"bpm": 180,
 		"speed": 2.3,
 		"format": "psych_v1_convert"

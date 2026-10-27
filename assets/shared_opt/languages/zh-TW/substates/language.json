@@ -1,6 +1,0 @@
-{
-  "$schema": 1,
-  "$namespace": "substates.language",
-  "hint": "選擇的語言應用.",
-  "applied_badge": "活動"
-}
