@@ -1,6 +1,0 @@
-{
-  "$schema": 1,
-  "$namespace": "substates.language",
-  "hint": "ACEPTAR aplica el idioma seleccionado.",
-  "applied_badge": "Activo"
-}

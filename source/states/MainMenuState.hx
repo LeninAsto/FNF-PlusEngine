@@ -22,23 +22,9 @@ class MainMenuState extends MusicBeatState
 {
 	public static var fnfVersion:String = '0.2.8';
 	public static var plusEngineVersion:String = '1.3'; // Nothing interesting =)
-	public static var isOpt(get, never):String;
-	public static var psychEngineVersion(get, never):String; // This is also used for Discord RPC
+	public static var psychEngineVersion:String; = "1.0.4 (" + plusEngineVersion + ")"; // This is also used for Discord RPC
 	public static var curSelected:Int = 0;
 	public static var curColumn:MainMenuColumn = MainMenuColumn.CENTER;
-
-	static function get_isOpt():String
-	#if OPT_VER
-		return "Optimized";
-	#else
-	    return "";
-	#end
-
-	static function get_psychEngineVersion():String
-	{
-		var suffix:String = isOpt;
-		return "1.0.4 (" + plusEngineVersion + ")" + (suffix.length > 0 ? " " + suffix : "");
-	}
 
 	public var allowMouse:Bool = true; // Turn this off to block mouse movement in menus
 

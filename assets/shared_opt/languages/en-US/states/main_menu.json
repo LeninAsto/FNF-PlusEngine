@@ -1,9 +1,0 @@
-{
-  "$schema": 1,
-  "$namespace": "states.main_menu",
-  "presence": "In the Menus",
-  "version": {
-    "psych_engine": "Psych Engine v{1}",
-    "friday_night_funkin": "Friday Night Funkin' v{1}"
-  }
-}

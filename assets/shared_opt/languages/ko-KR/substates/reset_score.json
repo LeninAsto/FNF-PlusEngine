@@ -1,5 +1,0 @@
-{
-  "$schema": 1,
-  "$namespace": "substates.reset_score",
-  "title": "점수를 재설정"
-}
