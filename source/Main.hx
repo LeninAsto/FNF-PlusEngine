@@ -50,6 +50,7 @@ class Main extends Sprite
 	public static var traceDisplay:TraceDisplay;
 	public static var traceButton:TraceButton;
 	public static var modsButton:ModsButton;
+	public static var debugButtonLayer:Sprite;
 	public static var materialVolumeTray:MaterialVolumeTray;
 
 	public static final platform:String = #if mobile "Phones" #else "PCs" #end;
@@ -220,6 +221,7 @@ class Main extends Sprite
 		FlxG.signals.postGameStart.addOnce(() ->
 		{
 			FlxG.scaleMode = new mobile.backend.MobileScaleMode();
+			positionDebugOverlays();
 		});
 		#end
 
@@ -257,19 +259,19 @@ class Main extends Sprite
 		traceDisplay = new TraceDisplay(10, 100, 0xFFFFFF);
 		addChild(traceDisplay);
 
-		// Agregar los botones de TraceDisplay y Debug para móvil
 		#if mobile
+		debugButtonLayer = new Sprite();
+		Lib.current.stage.addChild(debugButtonLayer);
 		traceButton = new TraceButton();
-		addChild(traceButton);
+		debugButtonLayer.addChild(traceButton);
 		modsButton = new ModsButton();
-		addChild(modsButton);
+		debugButtonLayer.addChild(modsButton);
 		#end
 
 		Lib.current.stage.align = "tl";
 		Lib.current.stage.scaleMode = StageScaleMode.NO_SCALE;
 		if (fpsVar != null)
 		{
-			// Posicionamiento inicial con márgenes constantes
 			positionDebugOverlays();
 		}
 
@@ -364,29 +366,31 @@ class Main extends Sprite
 		setupGame();
 	}
 
-	function positionDebugOverlays():Void
+	public static function positionDebugOverlays():Void
 	{
-		var gameX:Float = 0;
-		var gameY:Float = 0;
-		#if mobile
-		if (FlxG.game != null && FlxG.stage != null)
-		{
-			var bounds = FlxG.game.getBounds(FlxG.stage);
-			gameX = bounds.x;
-			gameY = bounds.y;
-		}
-		#end
+		var bounds = debug.DebugOverlayLayout.gameBounds();
 
 		if (fpsVar != null)
-			fpsVar.positionFPS(gameX + 10, gameY + 3, 1.0);
+			fpsVar.positionFPS(bounds.left + debug.DebugOverlayLayout.FPS_MARGIN_X,
+				bounds.top + debug.DebugOverlayLayout.FPS_MARGIN_Y, 1.0);
 		if (traceDisplay != null)
-			traceDisplay.positionTrace(gameX + 10, gameY + 100);
+			traceDisplay.positionTrace(bounds.left + debug.DebugOverlayLayout.MARGIN,
+				bounds.top + 112);
 
 		#if mobile
 		if (traceButton != null)
 			traceButton.updatePosition();
 		if (modsButton != null)
 			modsButton.updatePosition();
+		bringDebugButtonsToFront();
+		#end
+	}
+
+	public static function bringDebugButtonsToFront():Void
+	{
+		#if mobile
+		if (debugButtonLayer != null && debugButtonLayer.parent != null)
+			debugButtonLayer.parent.setChildIndex(debugButtonLayer, debugButtonLayer.parent.numChildren - 1);
 		#end
 	}
 

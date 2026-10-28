@@ -20,7 +20,7 @@ class TraceButton extends Sprite
 	private var buttonText:TextField;
 	private var isPressed:Bool = false;
 	private var buttonSize:Float = 40;
-	private var padding:Float = 10;
+	private var padding:Float = DebugOverlayLayout.MARGIN;
 
 	public function new()
 	{
@@ -122,17 +122,15 @@ class TraceButton extends Sprite
 		if (TraceDisplay.instance != null)
 		{
 			TraceDisplay.instance.toggleDisplay();
+			Main.bringDebugButtonsToFront();
 		}
 	}
 
 	private function positionButton():Void
 	{
-		if (FlxG.stage != null)
-		{
-			var bounds = FlxG.game != null ? FlxG.game.getBounds(FlxG.stage) : null;
-			this.x = (bounds != null ? bounds.right : FlxG.stage.stageWidth) - buttonSize - padding;
-			this.y = (bounds != null ? bounds.top : 0) + padding;
-		}
+		var bounds = DebugOverlayLayout.gameBounds();
+		this.x = bounds.right - buttonSize - padding;
+		this.y = bounds.top + padding;
 	}
 
 	public function updatePosition():Void

@@ -4,7 +4,7 @@
 
 extern "C" int plus_native_api_version()
 {
-	return 3;
+	return 4;
 }
 
 extern "C" void plus_wave_batch(const float* input, float* output, std::size_t count,

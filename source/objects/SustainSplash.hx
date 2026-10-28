@@ -154,6 +154,17 @@ class SustainSplash extends FlxSprite
 			animation.curAnim.frameRate = frameRate;
 			animation.curAnim.looped = true;
 		}
+		// Atlas animations do not necessarily share the same source size/offset.
+		// The native FlxSprite renderer honors clipRect, so keeping holdStart's
+		// smaller rectangle can clip the classic-color hold loop completely. The
+		// modchart renderer draws its own geometry and used to hide this problem.
+		refreshHoldClip();
+	}
+
+	inline function refreshHoldClip():Void
+	{
+		clipRect = null;
+		clipRect = new flixel.math.FlxRect(0, !PlayState.isPixelStage ? 0 : -210, frameWidth, frameHeight);
 	}
 
 	public function finishHold():Void
@@ -214,7 +225,7 @@ class SustainSplash extends FlxSprite
 			if (name == 'holdStart')
 				playHoldLoop();
 		};
-		clipRect = new flixel.math.FlxRect(0, !PlayState.isPixelStage ? 0 : -210, frameWidth, frameHeight);
+		refreshHoldClip();
 
 		if (!Note.usesRGBShader())
 		{

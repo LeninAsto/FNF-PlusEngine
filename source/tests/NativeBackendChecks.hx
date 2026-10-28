@@ -4,6 +4,7 @@ import backend.native.NativeBackend;
 import backend.native.NativeAudio;
 import backend.native.NativeGeometry;
 import backend.native.NativeMath;
+import backend.native.NativeNotes;
 import haxe.Timer;
 import haxe.io.Bytes;
 import lime.utils.Float32Array;
@@ -24,7 +25,7 @@ class NativeBackendChecks
 	public static function run():Void
 	{
 		NativeBackend.init();
-		if (!NativeBackend.available || NativeBackend.apiVersion != 3)
+		if (!NativeBackend.available || NativeBackend.apiVersion != 4 || !NativeBackend.notesAvailable)
 			throw 'native backend unavailable or incompatible (API ${NativeBackend.apiVersion})';
 
 		var input = new Float32Array(LENGTH);
@@ -48,6 +49,7 @@ class NativeBackendChecks
 
 		var geometryReport = checkGeometry();
 		var audioReport = checkAudio();
+		var notesReport = checkNotes();
 
 		// Warm both paths before timing so startup/JIT-like cache effects stay out.
 		for (_ in 0...4)
@@ -74,6 +76,57 @@ class NativeBackendChecks
 			+ '\nRatio (Haxe/C++): ${roundMs(haxeMs / nativeMs)}x'
 			+ geometryReport
 			+ audioReport;
+		report += notesReport;
+	}
+
+	static function checkNotes():String
+	{
+		var report = '';
+		var empty = new Vector<Float>(0, true);
+		NativeNotes.timingWindows(empty, empty, empty, Bytes.alloc(0), Bytes.alloc(0), 0, 166.67);
+		for (count in [8, 32, 128, 1024, 8192])
+		{
+			var times = new Vector<Float>(count, true);
+			var late = new Vector<Float>(count, true);
+			var early = new Vector<Float>(count, true);
+			var states = Bytes.alloc(count);
+			var expected = Bytes.alloc(count);
+			var actual = Bytes.alloc(count);
+			var routed = Bytes.alloc(count);
+			for (i in 0...count)
+			{
+				times[i] = 100000 + (i - count * 0.5) * 3.75;
+				late[i] = 0.65 + (i % 5) * 0.17;
+				early[i] = 0.75 + (i % 7) * 0.11;
+				var state = (i % 13 == 0) ? NativeNotes.STATE_WAS_GOOD_HIT : 0;
+				if (i % 97 == 0) state |= NativeNotes.STATE_ALREADY_TOO_LATE;
+				states.set(i, state);
+			}
+
+			NativeNotes.timingWindowsHaxe(times, late, early, states, expected, count, 100000, 166.67);
+			NativeNotes.timingWindowsNative(times, late, early, states, actual, count, 100000, 166.67);
+			NativeNotes.timingWindows(times, late, early, states, routed, 100000, 166.67);
+			for (i in 0...count)
+			{
+				if (expected.get(i) != actual.get(i))
+					throw 'note timing native parity failed at count $count, index $i (${expected.get(i)} != ${actual.get(i)})';
+				if (expected.get(i) != routed.get(i))
+					throw 'note timing routed parity failed at count $count, index $i (${expected.get(i)} != ${routed.get(i)})';
+			}
+
+			var iterations = Std.int(Math.max(500, 2000000 / count));
+			var start = Timer.stamp();
+			for (i in 0...iterations)
+				NativeNotes.timingWindowsHaxe(times, late, early, states, expected, count, 100000 + i * 0.01, 166.67);
+			var haxeMs = (Timer.stamp() - start) * 1000;
+			start = Timer.stamp();
+			for (i in 0...iterations)
+				NativeNotes.timingWindowsNative(times, late, early, states, actual, count, 100000 + i * 0.01, 166.67);
+			var nativeMs = (Timer.stamp() - start) * 1000;
+			report += '\nNote windows $count x $iterations: Haxe ${roundMs(haxeMs)} ms, '
+				+ 'C++ ${roundMs(nativeMs)} ms, ${roundMs(haxeMs / nativeMs)}x';
+		}
+		return report;
 	}
 
 	static function checkGeometry():String

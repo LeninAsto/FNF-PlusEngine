@@ -6,12 +6,25 @@ private typedef ShaderSourceToken =
 	var kind:Int;
 }
 
+private typedef AdaptedShaderSource =
+{
+	var source:String;
+	var result:String;
+}
+
 class ShaderCompatibility
 {
+	static var adaptedSourceCache:Map<String, AdaptedShaderSource> = new Map<String, AdaptedShaderSource>();
+
 	public static function adaptRuntimeShaderCode(source:String, shaderName:String = null, stage:String = "fragment"):String
 	{
 		if (source == null)
 			return null;
+
+		var cacheKey = stage + '\u0000' + (shaderName == null ? '' : shaderName);
+		var cached = adaptedSourceCache.get(cacheKey);
+		if (cached != null && cached.source == source)
+			return cached.result;
 
 		var code:String = source.replace("\r\n", "\n").replace("\r", "\n");
 		if (code.length > 0 && code.charCodeAt(0) == 0xFEFF)
@@ -37,7 +50,9 @@ class ShaderCompatibility
 		}
 
 		code = normalizeNumericArithmetic(code);
-		return normalizeStrictConstructors(code);
+		code = normalizeStrictConstructors(code);
+		adaptedSourceCache.set(cacheKey, {source: source, result: code});
+		return code;
 	}
 
 	/**

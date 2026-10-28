@@ -17,7 +17,7 @@ import mobile.backend.PsychJNI;
 	public var dynamicColors:Bool = true; // yes cause its cool -Karim
 	public var controlsAlpha:Float = FlxG.onMobile ? 0.6 : 0;
 	public var showTouchPointer:Bool = true; // show touch pointer indicator (like Android dev option)
-	public var showMobileDebugButtons:Bool = false; // show the trace button on mobile
+	public var showMobileDebugButtons:Bool = true; // show the trace/mod-state buttons on mobile
 	public var mobileReceptorAlign:Bool = false; // Align receptors with hitbox lanes (mobile only, may break scripts)
 	public var hitboxType:String = "Gradient";
 
@@ -443,6 +443,19 @@ class ClientPrefs
 			Reflect.setField(FlxG.save.data, 'sustainSplashDefaulted', true);
 			FlxG.save.flush();
 		}
+
+		#if mobile
+		// The buttons previously shipped hidden by default, which left trace and
+		// scripted-state recovery inaccessible on touch-only devices. Enable them
+		// once; the mobile option remains user-controllable afterwards.
+		if (!Reflect.hasField(FlxG.save.data, 'mobileDebugButtonsDefaulted'))
+		{
+			data.showMobileDebugButtons = true;
+			Reflect.setField(FlxG.save.data, 'showMobileDebugButtons', true);
+			Reflect.setField(FlxG.save.data, 'mobileDebugButtonsDefaulted', true);
+			FlxG.save.flush();
+		}
+		#end
 
 		if (!Reflect.hasField(FlxG.save.data, 'fpsCounterMode'))
 		{

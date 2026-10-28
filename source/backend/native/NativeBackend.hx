@@ -5,6 +5,7 @@ class NativeBackend
 {
 	public static final available:Bool = #if cpp true #else false #end;
 	public static var apiVersion(default, null):Int = 0;
+	public static var notesAvailable(default, null):Bool = false;
 	static var initialized:Bool = false;
 
 	public static function init():Void
@@ -14,5 +15,6 @@ class NativeBackend
 
 		initialized = true;
 		apiVersion = NativeMath.apiVersion();
+		notesAvailable = available && apiVersion >= 4;
 	}
 }

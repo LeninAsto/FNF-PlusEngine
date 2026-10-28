@@ -55,7 +55,11 @@ class MobileSettingsSubState extends BaseOptionsMenu
 
 		option = new Option('Infinity Display',
 			'If checked, extends the viewport vertically for taller screens while keeping the classic 16:9 gameplay area.', 'infinityDisplay', BOOL);
-		option.onChange = () -> FlxG.scaleMode = new mobile.backend.MobileScaleMode();
+		option.onChange = () ->
+		{
+			FlxG.scaleMode = new mobile.backend.MobileScaleMode();
+			Main.positionDebugOverlays();
+		};
 		addOption(option);
 		#end
 
