@@ -5559,6 +5559,15 @@ class PlayState extends MusicBeatState
 	#end
 
 	public function callOnScripts(funcToCall:String, args:Array<Dynamic> = null, ignoreStops = false, exclusions:Array<String> = null, excludeValues:Array<Dynamic> = null):Dynamic {
+		if (args == null) args = [];
+		// MusicBeatState dispatches these lifecycle hooks for every state already.
+		// Do not call the global script twice when PlayState forwards its own hook.
+		var globalResult:Dynamic = LuaUtils.Function_Continue;
+		if (funcToCall != 'onUpdate' && funcToCall != 'onStepHit' && funcToCall != 'onBeatHit' && funcToCall != 'onSectionHit')
+			globalResult = MusicBeatState.callOnGlobalScript(funcToCall, args);
+		if (!ignoreStops && (globalResult == LuaUtils.Function_Stop || globalResult == LuaUtils.Function_StopLua || globalResult == LuaUtils.Function_StopAll))
+			return globalResult;
+
 		var hasScripts:Bool = false;
 		#if LUA_ALLOWED
 		hasScripts = luaArray != null && luaArray.length > 0;
@@ -5566,12 +5575,11 @@ class PlayState extends MusicBeatState
 		#if HSCRIPT_ALLOWED
 		hasScripts = hasScripts || (hscriptArray != null && hscriptArray.length > 0);
 		#end
-		if (!hasScripts) return LuaUtils.Function_Continue;
-		if(args == null) args = [];
+		if (!hasScripts) return globalResult;
 
 		var result:Dynamic = callOnLuas(funcToCall, args, ignoreStops, exclusions, excludeValues);
 		if(result == null || isScriptValueExcluded(result, excludeValues)) result = callOnHScript(funcToCall, args, ignoreStops, exclusions, excludeValues);
-		return result;
+		return result == LuaUtils.Function_Continue ? globalResult : result;
 	}
 
 	private static inline function isScriptValueExcluded(value:Dynamic, exclusions:Array<Dynamic>):Bool
