@@ -297,15 +297,14 @@ class Main extends Sprite
 
 		// shader coords fix
 		var resizeDebounceTimer:FlxTimer = null;
+		var lastResizeWidth:Int = -1;
+		var lastResizeHeight:Int = -1;
 		function handleGameResized():Void
 		{
-			ClientPrefs.applyFramePacing();
 			backend.RenderInterpolation.syncAllCameras();
 
-			// Only reposition the FPS counter, no scaling.
+			// Reapply the final positions after the window has settled.
 			positionDebugOverlays();
-
-			// Only reposition the watermark, no scaling.
 			positionWatermark();
 
 			if (FlxG.cameras != null)
@@ -323,11 +322,19 @@ class Main extends Sprite
 
 		FlxG.signals.gameResized.add(function(w, h)
 		{
+			if (w == lastResizeWidth && h == lastResizeHeight)
+				return;
+			lastResizeWidth = w;
+			lastResizeHeight = h;
+
+			// Keep lightweight overlays responsive while dragging the border. Camera
+			// interpolation and bitmap-cache invalidation wait until resizing settles.
+			positionDebugOverlays();
+			positionWatermark();
+
 			if (resizeDebounceTimer == null)
-			{
 				resizeDebounceTimer = new FlxTimer();
-			}
-			resizeDebounceTimer.start(0.05, function(_)
+			resizeDebounceTimer.start(0.15, function(_)
 			{
 				handleGameResized();
 			});
@@ -529,7 +536,6 @@ class Main extends Sprite
 			watermark.alpha = 0.5;
 			addChild(watermark);
 			positionWatermark();
-			Lib.current.stage.addEventListener(openfl.events.Event.RESIZE, function(_) positionWatermark());
 		}
 		if (watermark != null)
 		{
