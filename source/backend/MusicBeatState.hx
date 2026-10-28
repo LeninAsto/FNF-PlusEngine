@@ -613,14 +613,6 @@ class MusicBeatState extends BaseMusicBeatState
 
 	public static function initGlobalScript():Void
 	{
-		#if HSCRIPT_ALLOWED
-		#if MODS_ALLOWED
-		Mods.loadTopMod();
-		#end
-		#elseif MODS_ALLOWED
-		Mods.loadTopMod();
-		#end
-
 		var activeMod:String = '';
 		#if MODS_ALLOWED
 		activeMod = Mods.currentModDirectory != null ? Mods.currentModDirectory : '';
