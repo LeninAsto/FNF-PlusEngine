@@ -1,5 +1,7 @@
 package backend.ui.md3;
 
+import backend.ui.PsychUIInputText;
+
 import flixel.FlxG;
 import flixel.FlxSprite;
 import flixel.group.FlxSpriteGroup;
@@ -230,6 +232,8 @@ class MaterialCheckbox extends FlxSpriteGroup
 	override function update(elapsed:Float):Void
 	{
 		super.update(elapsed);
+		if (PsychUIInputText.pointerInputBlockedFor(this))
+			return;
 
 		if (!enabled || !allowMouseInput)
 			return;
