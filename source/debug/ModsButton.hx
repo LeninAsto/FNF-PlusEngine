@@ -24,7 +24,7 @@ class ModsButton extends Sprite
 	private var buttonText:TextField;
 	private var isPressed:Bool = false;
 	private var buttonSize:Float = 40;
-	private var padding:Float = 10;
+	private var padding:Float = DebugOverlayLayout.MARGIN;
 	private var spacing:Float = 8;
 
 	public function new()
@@ -181,12 +181,9 @@ class ModsButton extends Sprite
 
 	private function positionButton():Void
 	{
-		if (FlxG.stage != null)
-		{
-			var bounds = FlxG.game != null ? FlxG.game.getBounds(FlxG.stage) : null;
-			x = (bounds != null ? bounds.right : FlxG.stage.stageWidth) - buttonSize - padding;
-			y = (bounds != null ? bounds.top : 0) + padding + buttonSize + spacing;
-		}
+		var bounds = DebugOverlayLayout.gameBounds();
+		x = bounds.right - buttonSize - padding;
+		y = bounds.top + padding + buttonSize + spacing;
 	}
 
 	public function updatePosition():Void

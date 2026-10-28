@@ -50,6 +50,7 @@ class Main extends Sprite
 	public static var traceDisplay:TraceDisplay;
 	public static var traceButton:TraceButton;
 	public static var modsButton:ModsButton;
+	public static var debugButtonLayer:Sprite;
 	public static var materialVolumeTray:MaterialVolumeTray;
 
 	public static final platform:String = #if mobile "Phones" #else "PCs" #end;
@@ -68,6 +69,27 @@ class Main extends Sprite
 		// Install the handlers before constructing Main so startup/storage failures
 		// on mobile also reach the recovery screen.
 		backend.CrashHandler.init();
+
+		#if (sys && (debug || NATIVE_BACKEND_TEST))
+		if (Sys.args().indexOf('--native-backend-self-test') != -1)
+		{
+			var exitCode:Int = 0;
+			try
+			{
+				tests.NativeBackendChecks.run();
+				sys.io.File.saveContent('native-backend-checks.txt',
+					'PASS: native batch parity and benchmark.' + tests.NativeBackendChecks.report);
+			}
+			catch (error:Dynamic)
+			{
+				exitCode = 1;
+				sys.io.File.saveContent('native-backend-checks.txt', 'FAIL: ' + error + '\n'
+					+ haxe.CallStack.toString(haxe.CallStack.exceptionStack()));
+			}
+			tests.NativeBackendChecks.exitProcess(exitCode);
+			return;
+		}
+		#end
 
 		#if (cpp && windows)
 		final maxInstanceSlots:Int = ClientPrefs.loadMaxInstanceSlotsEarly();
@@ -199,6 +221,7 @@ class Main extends Sprite
 		FlxG.signals.postGameStart.addOnce(() ->
 		{
 			FlxG.scaleMode = new mobile.backend.MobileScaleMode();
+			positionDebugOverlays();
 		});
 		#end
 
@@ -236,19 +259,19 @@ class Main extends Sprite
 		traceDisplay = new TraceDisplay(10, 100, 0xFFFFFF);
 		addChild(traceDisplay);
 
-		// Agregar los botones de TraceDisplay y Debug para móvil
 		#if mobile
+		debugButtonLayer = new Sprite();
+		Lib.current.stage.addChild(debugButtonLayer);
 		traceButton = new TraceButton();
-		addChild(traceButton);
+		debugButtonLayer.addChild(traceButton);
 		modsButton = new ModsButton();
-		addChild(modsButton);
+		debugButtonLayer.addChild(modsButton);
 		#end
 
 		Lib.current.stage.align = "tl";
 		Lib.current.stage.scaleMode = StageScaleMode.NO_SCALE;
 		if (fpsVar != null)
 		{
-			// Posicionamiento inicial con márgenes constantes
 			positionDebugOverlays();
 		}
 
@@ -297,15 +320,14 @@ class Main extends Sprite
 
 		// shader coords fix
 		var resizeDebounceTimer:FlxTimer = null;
+		var lastResizeWidth:Int = -1;
+		var lastResizeHeight:Int = -1;
 		function handleGameResized():Void
 		{
-			ClientPrefs.applyFramePacing();
 			backend.RenderInterpolation.syncAllCameras();
 
-			// Only reposition the FPS counter, no scaling.
+			// Reapply the final positions after the window has settled.
 			positionDebugOverlays();
-
-			// Only reposition the watermark, no scaling.
 			positionWatermark();
 
 			if (FlxG.cameras != null)
@@ -323,11 +345,19 @@ class Main extends Sprite
 
 		FlxG.signals.gameResized.add(function(w, h)
 		{
+			if (w == lastResizeWidth && h == lastResizeHeight)
+				return;
+			lastResizeWidth = w;
+			lastResizeHeight = h;
+
+			// Keep lightweight overlays responsive while dragging the border. Camera
+			// interpolation and bitmap-cache invalidation wait until resizing settles.
+			positionDebugOverlays();
+			positionWatermark();
+
 			if (resizeDebounceTimer == null)
-			{
 				resizeDebounceTimer = new FlxTimer();
-			}
-			resizeDebounceTimer.start(0.05, function(_)
+			resizeDebounceTimer.start(0.15, function(_)
 			{
 				handleGameResized();
 			});
@@ -336,29 +366,31 @@ class Main extends Sprite
 		setupGame();
 	}
 
-	function positionDebugOverlays():Void
+	public static function positionDebugOverlays():Void
 	{
-		var gameX:Float = 0;
-		var gameY:Float = 0;
-		#if mobile
-		if (FlxG.game != null && FlxG.stage != null)
-		{
-			var bounds = FlxG.game.getBounds(FlxG.stage);
-			gameX = bounds.x;
-			gameY = bounds.y;
-		}
-		#end
+		var bounds = debug.DebugOverlayLayout.gameBounds();
 
 		if (fpsVar != null)
-			fpsVar.positionFPS(gameX + 10, gameY + 3, 1.0);
+			fpsVar.positionFPS(bounds.left + debug.DebugOverlayLayout.FPS_MARGIN_X,
+				bounds.top + debug.DebugOverlayLayout.FPS_MARGIN_Y, 1.0);
 		if (traceDisplay != null)
-			traceDisplay.positionTrace(gameX + 10, gameY + 100);
+			traceDisplay.positionTrace(bounds.left + debug.DebugOverlayLayout.MARGIN,
+				bounds.top + 112);
 
 		#if mobile
 		if (traceButton != null)
 			traceButton.updatePosition();
 		if (modsButton != null)
 			modsButton.updatePosition();
+		bringDebugButtonsToFront();
+		#end
+	}
+
+	public static function bringDebugButtonsToFront():Void
+	{
+		#if mobile
+		if (debugButtonLayer != null && debugButtonLayer.parent != null)
+			debugButtonLayer.parent.setChildIndex(debugButtonLayer, debugButtonLayer.parent.numChildren - 1);
 		#end
 	}
 
@@ -529,7 +561,6 @@ class Main extends Sprite
 			watermark.alpha = 0.5;
 			addChild(watermark);
 			positionWatermark();
-			Lib.current.stage.addEventListener(openfl.events.Event.RESIZE, function(_) positionWatermark());
 		}
 		if (watermark != null)
 		{

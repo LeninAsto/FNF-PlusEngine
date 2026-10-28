@@ -2,6 +2,7 @@ package shaders;
 
 import flixel.addons.display.FlxRuntimeShader;
 import lime.graphics.opengl.GLProgram;
+import openfl.display.ShaderParameter;
 
 class ErrorHandledShader extends FlxShader implements IErrorHandler
 {
@@ -83,6 +84,51 @@ class ErrorHandledRuntimeShader extends FlxRuntimeShader implements IErrorHandle
 		this.shaderName = shaderName;
 		super(ShaderCompatibility.adaptRuntimeShaderCode(fragmentSource, shaderName, "fragment"),
 			ShaderCompatibility.adaptRuntimeShaderCode(vertexSource, shaderName, "vertex"));
+	}
+
+	// FlxRuntimeShader's scalar setters replace the value with a fresh one-item
+	// Array. Uniforms such as time are commonly updated every frame, so reuse
+	// the existing storage to avoid steady GC pressure on mobile.
+	override public function setFloat(name:String, value:Float):Void
+	{
+		var parameter:ShaderParameter<Float> = Reflect.field(data, name);
+		if (parameter == null)
+		{
+			super.setFloat(name, value);
+			return;
+		}
+		if (parameter.value == null || parameter.value.length == 0)
+			parameter.value = [value];
+		else
+			parameter.value[0] = value;
+	}
+
+	override public function setInt(name:String, value:Int):Void
+	{
+		var parameter:ShaderParameter<Int> = Reflect.field(data, name);
+		if (parameter == null)
+		{
+			super.setInt(name, value);
+			return;
+		}
+		if (parameter.value == null || parameter.value.length == 0)
+			parameter.value = [value];
+		else
+			parameter.value[0] = value;
+	}
+
+	override public function setBool(name:String, value:Bool):Void
+	{
+		var parameter:ShaderParameter<Bool> = Reflect.field(data, name);
+		if (parameter == null)
+		{
+			super.setBool(name, value);
+			return;
+		}
+		if (parameter.value == null || parameter.value.length == 0)
+			parameter.value = [value];
+		else
+			parameter.value[0] = value;
 	}
 
 	override function __createGLProgram(vertexSource:String, fragmentSource:String):GLProgram
