@@ -8,6 +8,7 @@ import flixel.FlxG;
 import backend.CoolUtil;
 import states.FlashingState;
 import states.TitleState;
+import backend.native.NativeBackend;
 
 /**
  * InitialState - Decides which state to start with.
@@ -22,6 +23,7 @@ class InitialState extends MusicBeatState
 		#end
 
 		super.create();
+		NativeBackend.init();
 
 		ClientPrefs.loadPrefs();
 		Highscore.load();

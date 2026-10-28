@@ -69,6 +69,27 @@ class Main extends Sprite
 		// on mobile also reach the recovery screen.
 		backend.CrashHandler.init();
 
+		#if (sys && (debug || NATIVE_BACKEND_TEST))
+		if (Sys.args().indexOf('--native-backend-self-test') != -1)
+		{
+			var exitCode:Int = 0;
+			try
+			{
+				tests.NativeBackendChecks.run();
+				sys.io.File.saveContent('native-backend-checks.txt',
+					'PASS: native batch parity and benchmark.' + tests.NativeBackendChecks.report);
+			}
+			catch (error:Dynamic)
+			{
+				exitCode = 1;
+				sys.io.File.saveContent('native-backend-checks.txt', 'FAIL: ' + error + '\n'
+					+ haxe.CallStack.toString(haxe.CallStack.exceptionStack()));
+			}
+			tests.NativeBackendChecks.exitProcess(exitCode);
+			return;
+		}
+		#end
+
 		#if (cpp && windows)
 		final maxInstanceSlots:Int = ClientPrefs.loadMaxInstanceSlotsEarly();
 		if (!backend.Native.reserveInstanceSlot(maxInstanceSlots))

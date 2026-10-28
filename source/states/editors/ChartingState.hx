@@ -8,6 +8,7 @@ import flixel.util.FlxStringUtil;
 import flixel.util.FlxDestroyUtil;
 import flixel.input.keyboard.FlxKey;
 import lime.utils.Assets;
+import lime.utils.Float32Array;
 import lime.media.AudioBuffer;
 import flash.media.Sound;
 import flash.geom.Rectangle;
@@ -24,6 +25,7 @@ import backend.Difficulty;
 import backend.Highscore;
 import backend.AssetLoader;
 import backend.AudioTempo;
+import backend.native.NativeAudio;
 import objects.Character;
 import objects.HealthIcon;
 import objects.Note;
@@ -7120,6 +7122,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 	// Ported from the old chart editor
 	var wavData:Array<Array<Array<Float>>> = [[[0], [0]], [[0], [0]]];
+	var waveformPeakBuffer:Float32Array;
 	static inline final MAX_WAVEFORM_BITMAP_HEIGHT:Int = 4096;
 
 	function updateWaveform()
@@ -7256,133 +7259,24 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		if (index >= endIndex)
 			return array != null ? array : [[[0], [0]], [[0], [0]]];
 
-		var samples:Float = endIndex - index;
-
-		if (steps == null)
-			steps = 1280;
-
-		var samplesPerRow:Float = samples / steps;
-		var samplesPerRowI:Int = Std.int(Math.max(1, samplesPerRow));
-
-		var gotIndex:Int = 0;
-
-		var lmin:Float = 0;
-		var lmax:Float = 0;
-
-		var rmin:Float = 0;
-		var rmax:Float = 0;
-
-		var rows:Float = 0;
-
-		var simpleSample:Bool = true; // samples > 17200;
-		var v1:Bool = false;
-
+		var maxRows:Int = Std.int(Math.max(1, steps == null ? 1280 : steps));
 		if (array == null)
-			array = [[[0], [0]], [[0], [0]]];
-
-		while (index < endIndex)
+			array = [[[], []], [[], []]];
+		var required:Int = (maxRows + 1) * NativeAudio.OUTPUT_STRIDE;
+		if (waveformPeakBuffer == null || waveformPeakBuffer.length < required)
+			waveformPeakBuffer = new Float32Array(required);
+		var rowCount:Int = NativeAudio.waveformPeaks(bytes, channels, index, endIndex,
+			maxRows, multiply, waveformPeakBuffer);
+		for (row in 0...rowCount)
 		{
-			if (index >= 0)
-			{
-				var sampleOffset:Int = index * bytesPerFrame;
-				var byte:Int = bytes.getUInt16(sampleOffset);
-
-				if (byte > 65535 / 2)
-					byte -= 65536;
-
-				var sample:Float = (byte / 32768);
-
-				if (sample > 0)
-				{
-					if (sample > lmax)
-						lmax = sample;
-				}
-				else if (sample < lmin)
-					lmin = sample;
-
-				if (channels >= 2)
-				{
-					byte = bytes.getUInt16(sampleOffset + 2);
-
-					if (byte > 65535 / 2)
-						byte -= 65536;
-
-					sample = (byte / 32768);
-
-					if (sample > 0)
-					{
-						if (sample > rmax)
-							rmax = sample;
-					}
-					else if (sample < 0)
-					{
-						if (sample < rmin)
-							rmin = sample;
-					}
-				}
-			}
-
-			v1 = samplesPerRowI > 0 ? (index % samplesPerRowI == 0) : false;
-			while (simpleSample ? v1 : rows >= samplesPerRow)
-			{
-				v1 = false;
-				rows -= samplesPerRow;
-
-				gotIndex++;
-
-				var lRMin:Float = Math.abs(lmin) * multiply;
-				var lRMax:Float = lmax * multiply;
-
-				var rRMin:Float = Math.abs(rmin) * multiply;
-				var rRMax:Float = rmax * multiply;
-
-				if (gotIndex > array[0][0].length)
-					array[0][0].push(lRMin);
-				else
-					array[0][0][gotIndex - 1] = array[0][0][gotIndex - 1] + lRMin;
-
-				if (gotIndex > array[0][1].length)
-					array[0][1].push(lRMax);
-				else
-					array[0][1][gotIndex - 1] = array[0][1][gotIndex - 1] + lRMax;
-
-				if (channels >= 2)
-				{
-					if (gotIndex > array[1][0].length)
-						array[1][0].push(rRMin);
-					else
-						array[1][0][gotIndex - 1] = array[1][0][gotIndex - 1] + rRMin;
-
-					if (gotIndex > array[1][1].length)
-						array[1][1].push(rRMax);
-					else
-						array[1][1][gotIndex - 1] = array[1][1][gotIndex - 1] + rRMax;
-				}
-				else
-				{
-					if (gotIndex > array[1][0].length)
-						array[1][0].push(lRMin);
-					else
-						array[1][0][gotIndex - 1] = array[1][0][gotIndex - 1] + lRMin;
-
-					if (gotIndex > array[1][1].length)
-						array[1][1].push(lRMax);
-					else
-						array[1][1][gotIndex - 1] = array[1][1][gotIndex - 1] + lRMax;
-				}
-
-				lmin = 0;
-				lmax = 0;
-
-				rmin = 0;
-				rmax = 0;
-			}
-
-			index++;
-			rows++;
-			if (gotIndex > steps)
-				break;
+			var offset:Int = row * NativeAudio.OUTPUT_STRIDE;
+			array[0][0].push(waveformPeakBuffer[offset]);
+			array[0][1].push(waveformPeakBuffer[offset + 1]);
+			array[1][0].push(waveformPeakBuffer[offset + 2]);
+			array[1][1].push(waveformPeakBuffer[offset + 3]);
 		}
+		return array;
+
 
 		return array;
 		#else
