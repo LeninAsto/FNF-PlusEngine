@@ -72,6 +72,8 @@ class StageData
 		var stage:String = '';
 		if (SONG.stage != null)
 			stage = SONG.stage;
+		else if (Song.loadedSongName != null)
+			stage = vanillaSongStage(Paths.formatToSongPath(Song.loadedSongName));
 		else
 			stage = DEFAULT_STAGE;
 
@@ -100,6 +102,16 @@ class StageData
 			return getStageFile(DEFAULT_STAGE);
 
 		return dummy();
+	}
+
+	public static function vanillaSongStage(songName):String
+	{
+		switch (songName)
+		{
+			case 'bopeeboo' || 'dad-battle' || 'fresh' || 'tutorial':
+				return DEFAULT_STAGE;
+		}
+		return DEFAULT_STAGE;
 	}
 
 	public static var reservedNames:Array<String> = ['gf', 'gfGroup', 'dad', 'dadGroup', 'boyfriend', 'boyfriendGroup']; // blocks these names from being used on stage editor's name input text
@@ -225,4 +237,3 @@ class StageData
 			|| (!ClientPrefs.data.lowQuality && (filters & HIGH_QUALITY) == HIGH_QUALITY));
 	}
 }
-
