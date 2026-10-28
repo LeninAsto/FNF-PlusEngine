@@ -37,7 +37,6 @@ typedef SwagSong =
 	@:optional var splashSkin:String;
 	@:optional var isAnimated:Bool;
 	@:optional var useModcharts:Bool;
-	@:optional var extendedEventValues:Bool;
 	@:optional var extraStrumLines:Array<ExtraStrumLineData>;
 }
 
@@ -830,27 +829,5 @@ class Song
 		return song;
 	}
 
-	public static function chartUsesExtendedValues(song:SwagSong):Bool
-	{
-		if (song == null || song.events == null)
-			return false;
-
-		for (eventGroup in song.events)
-		{
-			if (eventGroup == null || eventGroup.length < 2)
-				continue;
-
-			var events:Array<Dynamic> = eventGroup[1];
-			if (events == null)
-				continue;
-
-			for (event in events)
-			{
-				if (event != null && event.length > 3)
-					return true;
-			}
-		}
-		return false;
-	}
 }
 

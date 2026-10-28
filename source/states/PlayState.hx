@@ -2177,19 +2177,9 @@ class PlayState extends MusicBeatState
 			value2: event[1][i][2]
 		};
 
-		if (event[1][i].length > 3 && event[1][i][3] != null)
-			subEvent.value3 = event[1][i][3];
-		else
-			subEvent.value3 = '';
-
-		if (event[1][i].length > 4 && event[1][i][4] != null)
-			subEvent.value4 = event[1][i][4];
-		else
-			subEvent.value4 = '';
-
 		eventNotes.push(subEvent);
 		eventPushed(subEvent);
-		callOnScripts('onEventPushed', [subEvent.event, subEvent.value1 != null ? subEvent.value1 : '', subEvent.value2 != null ? subEvent.value2 : '', subEvent.strumTime, subEvent.value3 != null ? subEvent.value3 : '', subEvent.value4 != null ? subEvent.value4 : '']);
+		callOnScripts('onEventPushed', [subEvent.event, subEvent.value1 != null ? subEvent.value1 : '', subEvent.value2 != null ? subEvent.value2 : '', subEvent.strumTime]);
 	}
 
 	public var skipArrowStartTween:Bool = false; //for lua
@@ -3130,41 +3120,18 @@ class PlayState extends MusicBeatState
 			if(eventNotes[0].value2 != null)
 				value2 = eventNotes[0].value2;
 
-			var value3:String = '';
-			if (eventNotes[0].value3 != null)
-				value3 = eventNotes[0].value3;
-
-			var value4:String = '';
-			if (eventNotes[0].value4 != null)
-				value4 = eventNotes[0].value4;
-
-			triggerEvent(eventNotes[0].event, value1, value2, value3, value4, leStrumTime);
+			triggerEvent(eventNotes[0].event, value1, value2, leStrumTime);
 			eventNotes.shift();
 		}
 	}
 
-	public function triggerEvent(eventName:String, value1:String, value2:String, value3:String, value4:String, strumTime:Float) {
+	public function triggerEvent(eventName:String, value1:String, value2:String, strumTime:Float) {
 		var flValue1:Null<Float> = Std.parseFloat(value1);
 		var flValue2:Null<Float> = Std.parseFloat(value2);
-		var flValue3:Null<Float> = Std.parseFloat(value3);
-		var flValue4:Null<Float> = Std.parseFloat(value4);
 		if(Math.isNaN(flValue1)) flValue1 = null;
 		if(Math.isNaN(flValue2)) flValue2 = null;
-		if(Math.isNaN(flValue3)) flValue3 = null;
-		if(Math.isNaN(flValue4)) flValue4 = null;
 
 		switch(eventName) {
-			case 'Set Strum Line':
-				var lineId = value1 == null ? '' : value1.trim();
-				var property = value2 == null ? '' : value2.trim().toLowerCase();
-				switch (property)
-				{
-					case 'visible': setStrumLineVisible(lineId, value3 == '1' || value3.toLowerCase() == 'true');
-					case 'x': if (flValue3 != null) { var line = getStrumLine(lineId); if (line != null && line.receptor(0) != null) setStrumLinePosition(lineId, flValue3, line.receptor(0).y); }
-					case 'y': if (flValue3 != null) { var line = getStrumLine(lineId); if (line != null && line.receptor(0) != null) setStrumLinePosition(lineId, line.receptor(0).x, flValue3); }
-					case 'scale': if (flValue3 != null) setStrumLineScale(lineId, flValue3);
-					case 'spacing': if (flValue3 != null) setStrumLineSpacing(lineId, flValue3);
-				}
 			case 'Hey!':
 				var value:Int = 2;
 				switch(value1.toLowerCase().trim()) {
@@ -3495,39 +3462,14 @@ class PlayState extends MusicBeatState
 					skinChanged = true;
 				}
 
-				if (value3 != null && value3.trim().length > 0)
-				{
-					var newUI:String = value3.trim();
-					if (stageUI != newUI)
-					{
-						if (temporaryStageUI == null)
-							temporaryStageUI = stageUI;
-
-						stageUI = newUI;
-
-						reloadHealthBarColors();
-						reloadGradientColors();
-						refreshBreakTimerVisualStyle();
-
-						if (iconP1 != null) iconP1.alpha = ClientPrefs.data.healthBarAlpha;
-						if (iconP2 != null) iconP2.alpha = ClientPrefs.data.healthBarAlpha;
-						if (iconGF != null) iconGF.alpha = ClientPrefs.data.healthBarAlpha;
-
-						cacheCountdown();
-						cachePopUpScore();
-
-						skinChanged = true;
-					}
-				}
-
 				if (skinChanged)
 					reloadAllNotesSkin();
 
-				callOnScripts('onUIChanged', [value3 != null ? value3 : '']);
+				callOnScripts('onUIChanged');
 		}
 
-		stagesFunc(function(stage:BaseStage) stage.eventCalled(eventName, value1, value2, value3, value4, flValue1, flValue2, flValue3, flValue4, strumTime));
-		callOnScripts('onEvent', [eventName, value1, value2, value3, value4, strumTime]);
+		stagesFunc(function(stage:BaseStage) stage.eventCalled(eventName, value1, value2, flValue1, flValue2, strumTime));
+		callOnScripts('onEvent', [eventName, value1, value2, strumTime]);
 	}
 
 	public function moveCameraSection(?sec:Null<Int>):Void {
