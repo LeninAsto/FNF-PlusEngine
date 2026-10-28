@@ -89,20 +89,18 @@ class ModchartFunctions
 		var lua:State = funk.lua;
 
 		// Add modifier
-		Lua_helper.add_callback(lua, "addModifier", function(name:String, ?field:Dynamic = -1)
+		Lua_helper.add_callback(lua, "addModifier", function(name:String, ?field:Dynamic = "all", ?beat:Null<Float>)
 		{
 			if (Manager.instance == null)
 				return;
 
 			if (isNamedPlayfield(field))
 			{
-				final playfield = requireNamedPlayfield(field, 'addModifier');
-				if (playfield != null)
-					playfield.addModifier(name);
+				Manager.instance.addModifierToNamedPlayfield(Std.string(field), name, beat);
 				return;
 			}
 
-			Manager.instance.addModifier(name, resolveFieldIndex(field, -1));
+			Manager.instance.addModifier(name, resolveFieldIndex(field, -1), beat);
 		});
 
 		// Set modifier percent
@@ -1159,7 +1157,17 @@ class ModchartFunctions
 
 	private static function isNamedPlayfield(field:Dynamic):Bool
 	{
-		return false;
+		if (!Std.isOfType(field, String))
+			return false;
+
+		final name = Std.string(field).trim();
+		if (name.length <= 0)
+			return false;
+		if (name.toLowerCase() == 'all')
+			return false;
+
+		// Numeric strings are reserved for beat/index-compatible Lua calls.
+		return Math.isNaN(toFloat(name, Math.NaN));
 	}
 
 	private static function resolveFieldIndex(field:Dynamic, defaultField:Int = -1):Int
