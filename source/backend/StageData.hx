@@ -108,7 +108,7 @@ class StageData
 	{
 		switch (songName)
 		{
-			case 'bopeeboo' || 'dad-battle' || 'fresh' || 'tutorial':
+			case 'bopeeboo' | 'dad-battle' | 'fresh' | 'tutorial':
 				return DEFAULT_STAGE;
 		}
 		return DEFAULT_STAGE;
