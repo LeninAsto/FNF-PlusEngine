@@ -94,6 +94,7 @@
 
 	<assets path='art/readme.txt' rename='do NOT readme.txt' unless="mobile" />
 	<assets path='art/PsychEngine.exe' rename='PsychEngine.exe' if="windows" />
+	<assets path="${DISCORD_SOCIAL_SDK_DIR}/bin/release/discord_partner_sdk.dll" rename="discord_partner_sdk.dll" if="windows DISCORD_ALLOWED" unless="32bits" />
 
 	<!-- OpenAL config -->
 	<section if="desktop">
@@ -116,11 +117,11 @@
 	<haxelib name="hscript-iris" version="git" if="HSCRIPT_ALLOWED"/>
 	<haxelib name="hxscript" version="git" if="HSCRIPT_ALLOWED"/>
 	<haxelib name="hxvlc" if="VIDEOS_ALLOWED"/>
-	<haxelib name="hxdiscord_rpc" if="DISCORD_ALLOWED"/>
+	<haxelib name="hxDiscordSocial" if="DISCORD_ALLOWED"/>
 	<haxelib name="flxanimate"/>
 
-	<!-- Disable Discord IO Thread -->
-	<haxedef name="DISCORD_DISABLE_IO_THREAD" if="hxdiscord_rpc" />
+	<!-- Enable the official Social SDK backend on supported Windows x64 builds. -->
+	<haxedef name="hxdiscordsocial_native" if="windows DISCORD_ALLOWED" unless="32bits" />
 	<haxedef name="NO_PRECOMPILED_HEADERS" if="linux" />
 
 	<!-- Suppress warnings for Android compilation -->

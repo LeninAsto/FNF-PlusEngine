@@ -7,36 +7,43 @@ class LegacyFunctions
 	{
 		var lua:State = funk.lua;
 
-		Lua_helper.add_callback(lua, "getScore", function() {
+		Lua_helper.add_callback(lua, "getScore", function()
+		{
 			ClassResolver.warnLegacyLuaUsage('getScore()', "getProperty('songScore')");
 			var game:PlayState = PlayState.instance;
 			return game != null ? game.songScore : 0;
 		});
-		Lua_helper.add_callback(lua, "getMisses", function() {
+		Lua_helper.add_callback(lua, "getMisses", function()
+		{
 			ClassResolver.warnLegacyLuaUsage('getMisses()', "getProperty('songMisses')");
 			var game:PlayState = PlayState.instance;
 			return game != null ? game.songMisses : 0;
 		});
-		Lua_helper.add_callback(lua, "getHits", function() {
+		Lua_helper.add_callback(lua, "getHits", function()
+		{
 			ClassResolver.warnLegacyLuaUsage('getHits()', "getProperty('songHits')");
 			var game:PlayState = PlayState.instance;
 			return game != null ? game.songHits : 0;
 		});
 
-		Lua_helper.add_callback(lua, "changePresence", function(details:String = 'In the Menus', ?state:String, ?smallImageKey:String, ?hasStartTimestamp:Bool = false, ?endTimestamp:Float = 0) {
-			ClassResolver.warnLegacyLuaUsage('changePresence(...)', 'changeDiscordPresence(...)');
-			#if DISCORD_ALLOWED
-			DiscordClient.changePresence(details, state, smallImageKey, hasStartTimestamp, endTimestamp);
-			return true;
-			#else
-			return false;
-			#end
-		});
+		Lua_helper.add_callback(lua, "changePresence",
+			function(details:String = 'In the Menus', ?state:String, ?smallImageKey:String, ?hasStartTimestamp:Bool = false, ?endTimestamp:Float = 0)
+			{
+				ClassResolver.warnLegacyLuaUsage('changePresence(...)', 'discordSetPresence(...)');
+				#if DISCORD_ALLOWED
+				DiscordClient.changePresence(details, state, smallImageKey, hasStartTimestamp, endTimestamp);
+				return true;
+				#else
+				return false;
+				#end
+			});
 
-		Lua_helper.add_callback(lua, "getGlobalFromScript", function(luaFile:String, global:String) {
+		Lua_helper.add_callback(lua, "getGlobalFromScript", function(luaFile:String, global:String)
+		{
 			ClassResolver.warnLegacyLuaUsage('getGlobalFromScript(luaFile, global)', 'callScript(...) or shared variables with setOnLuas/setOnScripts');
 			var script:FunkinLua = findSiblingScript(funk, luaFile);
-			if(script == null || script.lua == null || global == null) return null;
+			if (script == null || script.lua == null || global == null)
+				return null;
 
 			Lua.getglobal(script.lua, global);
 			var result:Dynamic = readSimpleLuaValue(script.lua, -1);
@@ -44,10 +51,12 @@ class LegacyFunctions
 			return result;
 		});
 
-		Lua_helper.add_callback(lua, "setGlobalFromScript", function(luaFile:String, global:String, value:Dynamic) {
+		Lua_helper.add_callback(lua, "setGlobalFromScript", function(luaFile:String, global:String, value:Dynamic)
+		{
 			ClassResolver.warnLegacyLuaUsage('setGlobalFromScript(luaFile, global, value)', 'setOnLuas(...) or setOnScripts(...)');
 			var script:FunkinLua = findSiblingScript(funk, luaFile);
-			if(script == null || script.lua == null || global == null) return false;
+			if (script == null || script.lua == null || global == null)
+				return false;
 
 			script.set(global, value);
 			return true;
@@ -56,22 +65,25 @@ class LegacyFunctions
 
 	static function findSiblingScript(funk:FunkinLua, luaFile:String):FunkinLua
 	{
-		if(luaFile == null || luaFile.length < 1) return null;
+		if (luaFile == null || luaFile.length < 1)
+			return null;
 
 		var wanted:String = normalizeScriptPath(luaFile);
-		if(!wanted.endsWith('.lua')) wanted += '.lua';
+		if (!wanted.endsWith('.lua'))
+			wanted += '.lua';
 
-		for(script in getScripts(funk))
+		for (script in getScripts(funk))
 		{
-			if(script == null || script.closed || script.lua == null) continue;
+			if (script == null || script.closed || script.lua == null)
+				continue;
 
 			var scriptPath:String = normalizeScriptPath(script.scriptName);
-			if(scriptPath == wanted || scriptPath.endsWith('/' + wanted))
+			if (scriptPath == wanted || scriptPath.endsWith('/' + wanted))
 				return script;
 
 			var slash:Int = scriptPath.lastIndexOf('/');
 			var fileName:String = slash > -1 ? scriptPath.substring(slash + 1) : scriptPath;
-			if(fileName == wanted)
+			if (fileName == wanted)
 				return script;
 		}
 		return null;
@@ -79,9 +91,9 @@ class LegacyFunctions
 
 	static function getScripts(funk:FunkinLua):Array<FunkinLua>
 	{
-		if(funk.context != null && funk.context.scriptList != null)
+		if (funk.context != null && funk.context.scriptList != null)
 			return funk.context.scriptList;
-		if(PlayState.instance != null)
+		if (PlayState.instance != null)
 			return PlayState.instance.luaArray;
 		return [];
 	}
@@ -93,7 +105,7 @@ class LegacyFunctions
 
 	static function readSimpleLuaValue(lua:State, index:Int):Dynamic
 	{
-		return switch(Lua.type(lua, index))
+		return switch (Lua.type(lua, index))
 		{
 			case Lua.LUA_TNUMBER: Lua.tonumber(lua, index);
 			case Lua.LUA_TSTRING: Lua.tostring(lua, index);
