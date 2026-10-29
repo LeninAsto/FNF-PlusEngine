@@ -180,6 +180,7 @@ import mobile.backend.PsychJNI;
 	public var checkForUpdates:Bool = true;
 	public var comboStacking:Bool = true;
 	public var discordRPC:Bool = true;
+	public var discordRPCDetails:Bool = true;
 	public var language:String = 'en-US';
 	public var dynamicCombo:Bool = false;
 	public var resultsStateAtEnd:Bool = true;

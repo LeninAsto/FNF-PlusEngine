@@ -176,6 +176,10 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		var option:Option = new Option('Discord Rich Presence',
 			"Uncheck this to prevent accidental leaks, it will hide the Application from your \"Playing\" box on Discord", 'discordRPC', BOOL);
 		addOption(option);
+
+		var option:Option = new Option('Discord Presence Details',
+			'Share the current song, difficulty, editor and timer. Disable for a more private basic status.', 'discordRPCDetails', BOOL);
+		addOption(option);
 		#end
 
 		var option:Option = new Option('Combo Stacking',
