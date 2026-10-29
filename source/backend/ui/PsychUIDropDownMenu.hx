@@ -14,8 +14,10 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 	public var scrollThumb:FlxSprite;
 	public var onSelect:Int->String->Void;
 
-	public var selectedIndex(default, set):Int = -1;
-	public var selectedLabel(default, set):String = null;
+	public var selectedIndex(get, set):Int;
+	public var selectedLabel(get, set):String;
+	var _selectedIndex:Int = -1;
+	var _selectedLabel:String = null;
 
 	var _curFilter:Array<String>;
 	var _itemWidth:Float = 0;
@@ -90,28 +92,32 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 	}
 
 	function set_selectedIndex(v:Int) {
-		selectedIndex = v;
-		if (selectedIndex < 0 || selectedIndex >= list.length)
-			selectedIndex = -1;
+		_selectedIndex = v;
+		if (_selectedIndex < 0 || _selectedIndex >= list.length)
+			_selectedIndex = -1;
 
-		@:bypassAccessor selectedLabel = list[selectedIndex];
-		text = (selectedLabel != null) ? selectedLabel : '';
-		return selectedIndex;
+		_selectedLabel = list[_selectedIndex];
+		text = (_selectedLabel != null) ? _selectedLabel : '';
+		return _selectedIndex;
 	}
+
+	function get_selectedIndex():Int return _selectedIndex;
 
 	function set_selectedLabel(v:String) {
 		var id:Int = list.indexOf(v);
 		if (id >= 0) {
-			@:bypassAccessor selectedIndex = id;
-			selectedLabel = v;
-			text = selectedLabel;
+			_selectedIndex = id;
+			_selectedLabel = v;
+			text = _selectedLabel;
 		} else {
-			@:bypassAccessor selectedIndex = -1;
-			selectedLabel = null;
+			_selectedIndex = -1;
+			_selectedLabel = null;
 			text = '';
 		}
-		return selectedLabel;
+		return _selectedLabel;
 	}
+
+	function get_selectedLabel():String return _selectedLabel;
 
 	var _items:Array<PsychUIDropDownItem> = [];
 
@@ -442,7 +448,7 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 	}
 
 	function addOption(option:String) {
-		@:bypassAccessor list.push(option);
+		list.push(option);
 		var curID:Int = list.length - 1;
 		var item:PsychUIDropDownItem = cast recycle(PsychUIDropDownItem, () -> new PsychUIDropDownItem(1, 1, this._itemWidth), true);
 		item.cameras = cameras;

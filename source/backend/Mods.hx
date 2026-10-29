@@ -52,12 +52,11 @@ class Mods
 	public static function pushGlobalMods() // prob a better way to do this but idc
 	{
 		globalMods = [];
-		// A launched mod is an isolated runtime context. Keep it first so
-		// merged asset lookups and global scripts cannot silently fall back to
-		// another enabled mod while that context is active.
+		// The active/top mod is resolved separately by Paths.modFolders().
+		// Keep the engine/base-game pack at the end so it remains a fallback,
+		// instead of shadowing assets from enabled global mods.
 		if (launchedMod != null && launchedMod.length > 0)
 			pushGlobalMod(launchedMod);
-		pushGlobalMod(BASE_GAME_MOD_FOLDER);
 
 		for (mod in parseList().enabled)
 		{
@@ -68,6 +67,7 @@ class Mods
 			if (pack != null && pack.runsGlobally)
 				pushGlobalMod(mod);
 		}
+		pushGlobalMod(BASE_GAME_MOD_FOLDER);
 		return globalMods;
 	}
 
@@ -137,7 +137,15 @@ class Mods
 		#if MODS_ALLOWED
 		if (mods)
 		{
-			// Global mods first
+			// Active/top mod always has priority over global and engine assets.
+			if (Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0)
+			{
+				var folder:String = Paths.mods(Mods.currentModDirectory + '/' + fileToFind);
+				if (AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder))
+					foldersToCheck.push(folder);
+			}
+
+			// Then enabled global mods, in their configured order.
 			for (mod in Mods.getGlobalMods())
 			{
 				var folder:String = Paths.mods(mod + '/' + fileToFind);
@@ -150,13 +158,6 @@ class Mods
 			if (AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder))
 				foldersToCheck.push(Paths.mods(fileToFind));
 
-			// And lastly, the loaded mod's folder
-			if (Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0)
-			{
-				var folder:String = Paths.mods(Mods.currentModDirectory + '/' + fileToFind);
-				if (AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder))
-					foldersToCheck.push(folder);
-			}
 		}
 		#end
 		return foldersToCheck;

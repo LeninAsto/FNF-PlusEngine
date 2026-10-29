@@ -71,6 +71,9 @@ class ShaderFunctions
 			}
 
 			if(leObj != null) {
+				if(runtimeShaderMatches(leObj.shader, shader))
+					return true;
+
 				var runtimeShader:FlxRuntimeShader = null;
 				runtimeShader = resolveRuntimeShader(funk, shader, function(error:Dynamic)
 				{
@@ -101,6 +104,11 @@ class ShaderFunctions
 			var camera:FlxCamera = LuaUtils.cameraFromString(cameraName);
 			if(camera == null)
 				return false;
+			if(cameraHasRuntimeShader(camera, shader))
+			{
+				camera.filtersEnabled = true;
+				return true;
+			}
 
 			var runtimeShader:FlxRuntimeShader = resolveRuntimeShader(funk, shader, function(error:Dynamic)
 			{
@@ -397,6 +405,27 @@ class ShaderFunctions
 	#end
 
 	#if (!flash && sys)
+	static function runtimeShaderMatches(value:Dynamic, shaderName:String):Bool
+	{
+		if(value == null || shaderName == null)
+			return false;
+		var tagged:Dynamic = LuaUtils.getObjectDirectly(shaderName);
+		if(tagged != null && value == tagged)
+			return true;
+		return Reflect.hasField(value, 'shaderName') && Reflect.field(value, 'shaderName') == shaderName;
+	}
+
+	static function cameraHasRuntimeShader(camera:FlxCamera, shaderName:String):Bool
+	{
+		if(camera == null || camera.filters == null)
+			return false;
+		for(filter in camera.filters)
+			if(Std.isOfType(filter, openfl.filters.ShaderFilter)
+				&& runtimeShaderMatches((cast filter : openfl.filters.ShaderFilter).shader, shaderName))
+				return true;
+		return false;
+	}
+
 	static function resolveRuntimeShader(funk:FunkinLua, shader:String, ?onError:Dynamic):FlxRuntimeShader
 	{
 		var existing:Dynamic = LuaUtils.getObjectDirectly(shader);

@@ -17,11 +17,20 @@ private typedef ScheduledPlayfieldOperation =
 	var field:Int;
 }
 
+private typedef ScheduledModifierOperation =
+{
+	var beat:Float;
+	var name:String;
+	var field:Int;
+	var target:Null<PlayField>;
+}
+
 private class ManagedPlayfield
 {
 	public var name:Null<String>;
 	public var playfield:PlayField;
 	public var active:Bool;
+	public var pendingModifiers:Array<String> = [];
 
 	public function new(name:Null<String>, playfield:PlayField, active:Bool = false)
 	{
@@ -63,6 +72,7 @@ final class Manager extends FlxBasic
 
 	private var __namedPlayfields:StringMap<ManagedPlayfield> = new StringMap();
 	private var __scheduledPlayfieldOps:Array<ScheduledPlayfieldOperation> = [];
+	private var __scheduledModifierOps:Array<ScheduledModifierOperation> = [];
 
 	private var renderer:CtxRenderer;
 	private var __frameToken:Int = 0;
@@ -127,7 +137,9 @@ final class Manager extends FlxBasic
 		Adapter.init();
 		Adapter.instance.onModchartingInitialization();
 
-		addPlayfield();
+		// The base field has a stable public identity. Its render index remains 0,
+		// but scripts should address it as "main" instead of guessing an index.
+		addPlayfield("main");
 		__renderRequested = false;
 	}
 
@@ -181,10 +193,56 @@ final class Manager extends FlxBasic
 	 * @param name The name of the modifier.
 	 * @param field Optionally, the specific playfield to target.
 	 */
-	public inline function addModifier(name:String, field:Int = -1)
+	public function addModifier(name:String, field:Int = -1, ?beat:Float):Void
 	{
+		if (beat != null && !Math.isNaN(beat))
+		{
+			requestRender();
+			__scheduledModifierOps.push({beat: beat, name: name, field: field, target: null});
+			return;
+		}
+
 		requestRender();
 		iteratePlayfields((pf) -> pf.addModifier(name), field);
+	}
+
+	/** Schedules a modifier on a named/pre-created playfield. */
+	public function addModifierToPlayfield(name:String, playfield:PlayField, ?beat:Float):Void
+	{
+		if (playfield == null)
+			return;
+
+		if (beat != null && !Math.isNaN(beat))
+		{
+			requestRender();
+			__scheduledModifierOps.push({beat: beat, name: name, field: -1, target: playfield});
+			return;
+		}
+
+		requestRender();
+		playfield.addModifier(name);
+	}
+
+	/** Adds a modifier to a named field, retaining it until that field activates. */
+	public function addModifierToNamedPlayfield(fieldName:String, modifierName:String, ?beat:Float):Void
+	{
+		final key = __normalizePlayfieldName(fieldName);
+		final entry = key == null ? null : __namedPlayfields.get(key);
+		if (entry == null)
+			return;
+
+		if (beat != null && !Math.isNaN(beat))
+		{
+			requestRender();
+			__scheduledModifierOps.push({beat: beat, name: modifierName, field: -1, target: entry.playfield});
+			return;
+		}
+
+		requestRender();
+		if (entry.active)
+			entry.playfield.addModifier(modifierName);
+		else if (!entry.pendingModifiers.contains(modifierName.toLowerCase()))
+			entry.pendingModifiers.push(modifierName);
 	}
 
 	/**
@@ -732,6 +790,7 @@ final class Manager extends FlxBasic
 		}
 		__namedPlayfields = new StringMap();
 		__scheduledPlayfieldOps.resize(0);
+		__scheduledModifierOps.resize(0);
 		if (renderer != null)
 			renderer.dispose();
 		renderer = null;
@@ -769,6 +828,9 @@ final class Manager extends FlxBasic
 
 		playfields.push(entry.playfield);
 		entry.active = true;
+		for (modifier in entry.pendingModifiers)
+			entry.playfield.addModifier(modifier);
+		entry.pendingModifiers.resize(0);
 	}
 
 	private function __findPlayfieldIndex(playfield:PlayField):Int
@@ -875,6 +937,25 @@ final class Manager extends FlxBasic
 			}
 
 			__scheduledPlayfieldOps.splice(index, 1);
+		}
+
+		// Process modifier registration after playfield operations. This allows
+		// addPlayfield(beat) followed by addModifier(name, field, beat).
+		index = 0;
+		while (index < __scheduledModifierOps.length)
+		{
+			final operation = __scheduledModifierOps[index];
+			if (curBeat < operation.beat)
+			{
+				index++;
+				continue;
+			}
+
+			if (operation.target != null)
+				operation.target.addModifier(operation.name);
+			else
+				iteratePlayfields((pf) -> pf.addModifier(operation.name), operation.field);
+			__scheduledModifierOps.splice(index, 1);
 		}
 	}
 

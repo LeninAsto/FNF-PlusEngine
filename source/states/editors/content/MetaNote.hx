@@ -198,31 +198,12 @@ class EventMetaNote extends MetaNote
 		if (events.length == 1)
 		{
 			var event = events[0];
-			var hasExtended:Bool = (event.length > 3);
-			if (hasExtended)
-			{
-				var v3:String = (event.length > 3 && event[3] != null) ? event[3] : '';
-				var v4:String = (event.length > 4 && event[4] != null) ? event[4] : '';
-				eventText.text = 'Event: ${event[0]} ($myTime ms)\nValue 1: ${event[1]}\nValue 2: ${event[2]}\nValue 3: ${v3}\nValue 4: ${v4}';
-			}
-			else
-			{
-				eventText.text = 'Event: ${event[0]} ($myTime ms)\nValue 1: ${event[1]}\nValue 2: ${event[2]}';
-			}
+			eventText.text = 'Event: ${event[0]} ($myTime ms)\nValue 1: ${event[1]}\nValue 2: ${event[2]}';
 		}
 		else if (events.length > 1)
 		{
 			var eventNames:Array<String> = [for (event in events) event[0]];
-			var extendedCount:Int = 0;
-			for (event in events)
-				if (event.length > 3)
-					extendedCount++;
-
-			var extendedInfo:String = '';
-			if (extendedCount > 0)
-				extendedInfo = ' (${extendedCount} with extended values)';
-
-			eventText.text = '${events.length} Events ($myTime ms)$extendedInfo:\n${eventNames.join(', ')}';
+			eventText.text = '${events.length} Events ($myTime ms):\n${eventNames.join(', ')}';
 		}
 		else
 			eventText.text = 'ERROR FAILSAFE';
@@ -231,14 +212,14 @@ class EventMetaNote extends MetaNote
 	public function getEventValues(index:Int):Array<String>
 	{
 		if (index < 0 || index >= events.length)
-			return ['', '', '', ''];
+			return ['', '', ''];
 
 		var event:Array<String> = events[index];
-		var result:Array<String> = ['', '', '', ''];
+		var result:Array<String> = ['', '', ''];
 
 		if (event != null)
 		{
-			for (i in 0...(event.length > 4 ? 4 : event.length))
+			for (i in 0...(event.length > 3 ? 3 : event.length))
 				result[i] = event[i] != null ? event[i] : '';
 		}
 
@@ -254,25 +235,13 @@ class EventMetaNote extends MetaNote
 		if (event == null)
 			return;
 
-		while (event.length < 4)
-			event.push('');
-
-		for (i in 0...(values.length > 4 ? 4 : values.length))
+		for (i in 0...(values.length > 3 ? 3 : values.length))
 		{
 			if (values[i] != null)
 				event[i] = values[i];
 		}
 
 		updateEventText();
-	}
-
-	public function hasExtendedValues(index:Int):Bool
-	{
-		if (index < 0 || index >= events.length)
-			return false;
-
-		var event:Array<String> = events[index];
-		return (event != null && event.length > 3);
 	}
 
 	override function destroy()

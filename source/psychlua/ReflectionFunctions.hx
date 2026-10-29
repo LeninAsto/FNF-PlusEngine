@@ -378,8 +378,14 @@ class ReflectionFunctions
 	}
 	public static function parseSingleInstance(arg:Dynamic)
 	{
+		// Only strings can contain an instance reference. Keep numbers, booleans
+		// and other Lua values untouched so reflected constructors receive their
+		// original types (for example VideoSprite(..., true, false, true)).
+		if (!Std.isOfType(arg, String))
+			return arg;
+
 		var argStr:String = cast arg;
-		if(argStr != null && argStr.length > instanceStr.length)
+		if(argStr.length > instanceStr.length)
 		{
 			var index:Int = argStr.indexOf('::');
 			if(index > -1)
