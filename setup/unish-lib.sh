@@ -10,10 +10,10 @@ haxelib setup ~/haxelib
 # Core build stack - required by the engine and every target.
 ###############################################################################
 echo "[Core] hxcpp"
-haxelib git hxcpp https://github.com/Psych-Plus-Haxelib/hxcpp
+haxelib git hxcpp https://github.com/Psych-Plus-Haxelib/hxcpp --quiet
 
 echo "[Core] lime"
-haxelib git lime https://github.com/Psych-Plus-Haxelib/lime
+haxelib git lime https://github.com/Psych-Plus-Haxelib/lime --quiet
 sh ./setup/unish-openal.sh
 
 echo "[Core] openfl git"
@@ -23,7 +23,7 @@ haxelib git openfl https://github.com/Psych-Plus-Haxelib/openfl.git --quiet
 # HaxeFlixel stack - required by Plus/Psych.
 ###############################################################################
 echo "[Flixel] flixel"
-haxelib git flixel https://github.com/Psych-Plus-Haxelib/flixel
+haxelib git flixel https://github.com/Psych-Plus-Haxelib/flixel --quiet
 
 echo "[Flixel] flixel-addons git"
 haxelib git flixel-addons https://github.com/Psych-Plus-Haxelib/flixel-addons.git --quiet
@@ -39,13 +39,13 @@ haxelib install flixel-ui 2.6.5 --quiet
 # flxanimate is the Psych/Plus animation package: imports are flxanimate.*.
 ###############################################################################
 echo "[Plus/Psych] hscript-iris"
-haxelib git hscript-iris https://github.com/Psych-Plus-Haxelib/hscript-iris
+haxelib git hscript-iris https://github.com/Psych-Plus-Haxelib/hscript-iris --quiet
 
 echo "[Plus/Psych] hxscript"
-haxelib git hxscript https://github.com/Psych-Plus-Haxelib/hxscript.git
+haxelib git hxscript https://github.com/Psych-Plus-Haxelib/hxscript.git --quiet
 
 echo "[Plus/Psych] linc_luajit"
-haxelib git linc_luajit https://github.com/Psych-Plus-Haxelib/linc_luajit
+haxelib git linc_luajit https://github.com/Psych-Plus-Haxelib/linc_luajit --quiet
 
 echo "[Plus/Psych] flxanimate 4.0.0"
 haxelib install flxanimate 4.0.0 --quiet
@@ -59,8 +59,8 @@ haxelib install tjson 1.4.0 --quiet
 ###############################################################################
 # Optional desktop/media integrations.
 ###############################################################################
-echo "[Optional] hxdiscord_rpc 1.3.0"
-haxelib install hxdiscord_rpc 1.3.0 --quiet --skip-dependencies
+echo "[Optional] hxDiscordSocial"
+haxelib git hxDiscordSocial https://github.com/LeninAsto/hxDiscordSocial.git --quiet
 
 echo "[Optional] hxvlc 2.3.1"
 haxelib install hxvlc 2.3.1 --quiet --skip-dependencies
@@ -69,10 +69,10 @@ haxelib install hxvlc 2.3.1 --quiet --skip-dependencies
 # Lightweight audio visualization used by Plus/Psych UI helpers.
 ###############################################################################
 echo "[Audio Viz] funkin.vis"
-haxelib git funkin.vis https://github.com/FunkinCrew/funkVis 22b1ce089dd924f15cdc4632397ef3504d464e90
+haxelib git funkin.vis https://github.com/FunkinCrew/funkVis 22b1ce089dd924f15cdc4632397ef3504d464e90 --quiet
 
 echo "[Audio Viz] grig.audio"
-haxelib git grig.audio https://gitlab.com/haxe-grig/grig.audio.git cbf91e2180fd2e374924fe74844086aab7891666
+haxelib git grig.audio https://gitlab.com/haxe-grig/grig.audio.git cbf91e2180fd2e374924fe74844086aab7891666 --quiet
 
 echo "[Check libraries]"
 haxelib list
