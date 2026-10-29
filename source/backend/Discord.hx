@@ -5,6 +5,7 @@ import haxe.Int64;
 import hxdiscordsocial.Discord as SocialDiscord;
 import hxdiscordsocial.DiscordEvent;
 import hxdiscordsocial.DiscordResult;
+import hxdiscordsocial.DiscordOperation;
 import hxdiscordsocial.ActivityPlatform;
 import hxdiscordsocial.Presence;
 import hxdiscordsocial.PresenceBuilder;
@@ -17,11 +18,13 @@ class DiscordClient
 	public static var isInitialized(default, null):Bool = false;
 	private inline static final _defaultID:String = "1449954550134870079";
 	private inline static final _projectURL:String = "https://github.com/LeninAsto/FNF-PlusEngine";
+	private inline static final _credentialPrefix:String = "hxDiscordSocial/PlusEngine/";
 	public static var clientID(default, set):String = _defaultID;
 
 	private static var presence:Presence = new Presence({});
 	private static var listenerRegistered:Bool = false;
 	private static var pollingRegistered:Bool = false;
+	private static var attemptedTokenRestore:Bool = false;
 
 	public static function check():Void
 	{
@@ -69,6 +72,7 @@ class DiscordClient
 		}
 
 		isInitialized = true;
+		attemptedTokenRestore = false;
 		changePresence();
 		trace('Discord Social SDK initialization requested for $clientID');
 		return true;
@@ -104,10 +108,16 @@ class DiscordClient
 	}
 
 	/** Opens Discord's OAuth consent using PKCE. Requires Public Client in Developer Portal. */
-	public static function authorize(?scopes:String):Bool return accepted(SocialDiscord.authorize(scopes));
+	public static function authorize(?scopes:String):Bool {
+		if (!isInitialized && !initialize()) return false;
+		return accepted(SocialDiscord.authorize(scopes));
+	}
 	public static function restoreToken(accessToken:String):Bool return accepted(SocialDiscord.restoreToken(accessToken));
 	public static function refreshToken(refreshToken:String):Bool return accepted(SocialDiscord.refreshToken(refreshToken));
-	public static function logout():Bool return accepted(SocialDiscord.logout());
+	public static function logout():Bool {
+		clearStoredCredentials();
+		return isInitialized && accepted(SocialDiscord.logout());
+	}
 	public static function getAuthState():String return Std.string(SocialDiscord.authState);
 	public static function getDiscordUserId():String return SocialDiscord.currentUser == null ? "" : SocialDiscord.currentUser.id;
 	public static function getDiscordDisplayName():String return SocialDiscord.currentUser == null ? "" : SocialDiscord.currentUser.displayName;
@@ -141,6 +151,7 @@ class DiscordClient
 
 		if (changed && isInitialized)
 		{
+			attemptedTokenRestore = false;
 			var result = SocialDiscord.changeApplication(clientID);
 			if (!accepted(result))
 				traceRejected("changeApplication", result);
@@ -228,26 +239,49 @@ class DiscordClient
 		{
 			case Ready(id):
 				trace('Discord Social SDK ready ($id)');
+				restoreStoredSession();
 			case PresenceUpdated(value):
 				trace('Discord Rich Presence updated: $value');
 			case PresenceCleared:
 			case AuthorizationStarted:
 				trace("Discord authorization opened");
-			case Authenticated(_):
-				trace("Discord authorization accepted; token available through hxDiscordSocial");
+			case Authenticated(token):
+				var accessSaved = DiscordCredentialStorage.write(credentialKey("access"), token.accessToken);
+				var refreshSaved = DiscordCredentialStorage.write(credentialKey("refresh"), token.refreshToken);
+				trace(accessSaved && refreshSaved ? "Discord authorization saved securely" : "Discord authorization succeeded, but secure token storage failed");
 			case AuthenticationReady(user):
 				trace('Discord signed in as ${user.displayName} (${user.id})');
 			case TokenRefreshRequired:
-				trace("Discord token needs refreshing");
+				var refresh = DiscordCredentialStorage.read(credentialKey("refresh"));
+				if (refresh != null) refreshToken(refresh); else trace("Discord token needs refreshing, but no refresh token is stored");
 			case LoggedOut:
 				trace("Discord account disconnected");
 			case Disconnected(error):
 				trace('Discord disconnected: $error');
 			case Error(operation, error):
 				trace('Discord $operation error: $error');
+				if (!error.retryable && (operation == DiscordOperation.RestoreToken || operation == DiscordOperation.RefreshToken))
+					clearStoredCredentials();
 			case Shutdown:
 		}
 	}
+
+	private static function restoreStoredSession():Void
+	{
+		if (attemptedTokenRestore || !DiscordCredentialStorage.available()) return;
+		attemptedTokenRestore = true;
+		var access = DiscordCredentialStorage.read(credentialKey("access"));
+		if (access != null && !restoreToken(access)) trace("Stored Discord session could not be restored");
+	}
+
+	private static function clearStoredCredentials():Void
+	{
+		DiscordCredentialStorage.remove(credentialKey("access"));
+		DiscordCredentialStorage.remove(credentialKey("refresh"));
+	}
+
+	private static inline function credentialKey(kind:String):String
+		return _credentialPrefix + clientID + "/" + kind;
 
 	private static function unixTimestamp(value:Null<Float>):Null<Int64>
 	{
