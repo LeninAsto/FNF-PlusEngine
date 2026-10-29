@@ -208,7 +208,8 @@ class DiscordClient
 		{
 			case Ready(id):
 				trace('Discord Social SDK ready ($id)');
-			case PresenceUpdated(_):
+			case PresenceUpdated(value):
+				trace('Discord Rich Presence updated: $value');
 			case PresenceCleared:
 			case Disconnected(error):
 				trace('Discord disconnected: $error');

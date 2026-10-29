@@ -94,7 +94,7 @@
 
 	<assets path='art/readme.txt' rename='do NOT readme.txt' unless="mobile" />
 	<assets path='art/PsychEngine.exe' rename='PsychEngine.exe' if="windows" />
-	<assets path="${DISCORD_SOCIAL_SDK_DIR}/bin/release/discord_partner_sdk.dll" rename="discord_partner_sdk.dll" if="windows DISCORD_ALLOWED" unless="32bits" />
+	<assets path="${DISCORD_SOCIAL_SDK_DIR}/bin/release/discord_partner_sdk.dll" rename="discord.dll" if="windows DISCORD_ALLOWED" unless="32bits" />
 
 	<!-- OpenAL config -->
 	<section if="desktop">

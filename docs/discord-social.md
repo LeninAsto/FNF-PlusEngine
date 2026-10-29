@@ -14,8 +14,8 @@ $env:DISCORD_SOCIAL_SDK_DIR = 'C:\path\to\discord_social_sdk'
 haxelib run lime build windows -debug
 ```
 
-The build links the SDK from that external directory and copies
-`discord_partner_sdk.dll` next to `PlusEngine.exe`. SDK binaries and headers
+The build links the SDK from that external directory and copies its runtime as
+`discord.dll` next to `PlusEngine.exe`. SDK binaries and headers
 must not be committed to this repository.
 
 ## Mod application ID
