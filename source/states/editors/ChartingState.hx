@@ -3865,7 +3865,11 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		};
 
 		objY += 40;
+		#if (haxe_ver >= 5.0)
+		var copyButton:PsychUIButton = new PsychUIButton(objX, objY, chartPhrase('ui.copy_section', 'Copy Section'), () -> copyNotesOnSection());
+		#else
 		var copyButton:PsychUIButton = new PsychUIButton(objX, objY, chartPhrase('ui.copy_section', 'Copy Section'), copyNotesOnSection.bind());
+		#end
 		var pasteButton:PsychUIButton = new PsychUIButton(objX + 100, objY, chartPhrase('ui.paste_section', 'Paste Section'), function()
 		{
 			pasteCopiedNotesToSection(affectNotes.checked, affectEvents.checked);
@@ -6076,32 +6080,32 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				state.add(btn);
 
 				var btnY = 320;
-				var btn:PsychUIButton = new PsychUIButton(0, btnY, chartPhrase('ui.light', 'Light'), changeTheme.bind(LIGHT));
+			var btn:PsychUIButton = new PsychUIButton(0, btnY, chartPhrase('ui.light', 'Light'), #if (haxe_ver >= 5.0) () -> changeTheme(LIGHT) #else changeTheme.bind(LIGHT) #end);
 				btn.screenCenter(X);
 				btn.x -= 180;
 				btn.cameras = state.cameras;
 				state.add(btn);
 
-				var btn:PsychUIButton = new PsychUIButton(0, btnY, chartPhrase('ui.dark', 'Dark'), changeTheme.bind(DARK));
+			var btn:PsychUIButton = new PsychUIButton(0, btnY, chartPhrase('ui.dark', 'Dark'), #if (haxe_ver >= 5.0) () -> changeTheme(DARK) #else changeTheme.bind(DARK) #end);
 				btn.screenCenter(X);
 				btn.x -= 60;
 				btn.cameras = state.cameras;
 				state.add(btn);
 
-				var btn:PsychUIButton = new PsychUIButton(0, btnY, chartPhrase('ui.default', 'Default'), changeTheme.bind(DEFAULT));
+			var btn:PsychUIButton = new PsychUIButton(0, btnY, chartPhrase('ui.default', 'Default'), #if (haxe_ver >= 5.0) () -> changeTheme(DEFAULT) #else changeTheme.bind(DEFAULT) #end);
 				btn.screenCenter(X);
 				btn.cameras = state.cameras;
 				btn.x += 60;
 				state.add(btn);
 
-				var btn:PsychUIButton = new PsychUIButton(0, btnY, chartPhrase('ui.v_slice', 'V-Slice'), changeTheme.bind(VSLICE));
+			var btn:PsychUIButton = new PsychUIButton(0, btnY, chartPhrase('ui.v_slice', 'V-Slice'), #if (haxe_ver >= 5.0) () -> changeTheme(VSLICE) #else changeTheme.bind(VSLICE) #end);
 				btn.screenCenter(X);
 				btn.x += 180;
 				btn.cameras = state.cameras;
 				state.add(btn);
 
 				btnY += 60;
-				var btn:PsychUIButton = new PsychUIButton(0, btnY, chartPhrase('ui.custom', 'Custom'), changeTheme.bind(CUSTOM));
+			var btn:PsychUIButton = new PsychUIButton(0, btnY, chartPhrase('ui.custom', 'Custom'), #if (haxe_ver >= 5.0) () -> changeTheme(CUSTOM) #else changeTheme.bind(CUSTOM) #end);
 				btn.screenCenter(X);
 				btn.x -= 180;
 				btn.cameras = state.cameras;

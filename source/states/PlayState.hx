@@ -1849,7 +1849,11 @@ class PlayState extends MusicBeatState
 		@:privateAccess
 		FlxG.sound.playMusic(inst._sound, 1, false);
 		#if FLX_PITCH applyAudioRate(FlxG.sound.music); #end
+		#if (haxe_ver >= 5.0)
+		FlxG.sound.music.onComplete = () -> finishSong();
+		#else
 		FlxG.sound.music.onComplete = finishSong.bind();
+		#end
 		if (hasAudio(vocals)) vocals.play();
 		if (hasAudio(opponentVocals)) opponentVocals.play();
 

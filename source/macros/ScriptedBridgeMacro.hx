@@ -25,7 +25,9 @@ class ScriptedBridgeMacro {
 		{base: 'objects.NoteSplash'},
 		{base: 'backend.BaseStage'},
 		{base: 'objects.Alphabet'},
+		#if (haxe_ver < 5.0)
 		{base: 'objects.Bar'},
+		#end
 		{base: 'objects.HealthIcon'},
 		{base: 'psychlua.backend.ModchartSprite'}
 	];
@@ -33,6 +35,16 @@ class ScriptedBridgeMacro {
 	static inline var PACK:String = 'scripting.bridges';
 
 	public static function generate():Void {
+		#if (haxe_ver >= 5.0)
+		// Haxe 5 restricts type-dependent work in init macros, but generated
+		// bridge modules must still exist before the engine's source is typed.
+		Context.onAfterInitMacros(() -> generateNow());
+		#else
+		generateNow();
+		#end
+	}
+
+	static function generateNow():Void {
 		if (!Context.defined('HSCRIPT_ALLOWED'))
 			return;
 
@@ -40,6 +52,12 @@ class ScriptedBridgeMacro {
 		var pack:Array<String> = PACK.split('.');
 		var bridgeRefs:Array<Expr> = [];
 		var basePaths:Array<Expr> = [];
+		#if (haxe_ver >= 5.0)
+		// Force bridge bases to finish typing before their generated subclasses are
+		// introduced. Haxe 5 keeps these class references lazy by default.
+		for (entry in BASES)
+			Context.getType(entry.base);
+		#end
 
 		for (entry in BASES) {
 			var superPath:TypePath = toTypePath(entry.base);

@@ -23,7 +23,7 @@ class ScriptGlobals {
 	static var keepCursor:Class<objects.Cursor> = objects.Cursor;
 	static var keepPsychFlxAnimate:Class<backend.PsychFlxAnimate> = backend.PsychFlxAnimate;
 	#if DISCORD_ALLOWED
-	static var keepDiscordClient:Class<backend.DiscordClient> = backend.DiscordClient;
+	static var keepDiscordClient:Class<backend.Discord.DiscordClient> = backend.Discord.DiscordClient;
 	#end
 	static var keepCutsceneHandler:Class<cutscenes.CutsceneHandler> = cutscenes.CutsceneHandler;
 	static var keepRainShader:Class<shaders.RainShader> = shaders.RainShader;
@@ -64,7 +64,7 @@ class ScriptGlobals {
 		'backend.BaseStage',
 		'backend.PsychFlxAnimate',
 		#if DISCORD_ALLOWED
-		'backend.DiscordClient',
+		'backend.Discord.DiscordClient',
 		#end
 		'backend.Difficulty',
 		'backend.Mods',
@@ -226,8 +226,8 @@ class ScriptGlobals {
 		set('BINARY', openfl.utils.AssetType.BINARY);
 		set('FONT', openfl.utils.AssetType.FONT);
 		#if DISCORD_ALLOWED
-		set('DiscordClient', backend.DiscordClient);
-		set('Discord', backend.DiscordClient);
+		set('DiscordClient', backend.Discord.DiscordClient);
+		set('Discord', backend.Discord.DiscordClient);
 		#end
 		set('getVar', getVar);
 		set('setVar', setVar);
