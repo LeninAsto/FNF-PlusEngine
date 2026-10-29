@@ -32,10 +32,10 @@ on:
         type: boolean
         default: true
       publish_all:
-        description: "Publish to all platforms (dev build)"
+        description: "Publish to all platforms (opt build)"
         type: boolean
         default: true
-      dev_lowend_build:
+      opt-build:
         description: "Show GitHub commit build info in-game"
         type: boolean
         default: true
@@ -46,7 +46,7 @@ permissions:
 env:
   APP_VERSION: 4.0.0-${{ github.run_id }}
   HAXE_VERSION: 4.3.7
-  DEV_BUILD_TAG: dev-lowend-build
+  DEV_BUILD_TAG: opt-build
 
 jobs:
   check_platforms:
@@ -60,7 +60,7 @@ jobs:
       build_macos_intel: ${{ steps.set_outputs.outputs.build_macos_intel }}
       build_ios: ${{ steps.set_outputs.outputs.build_ios }}
       publish_all: ${{ steps.set_outputs.outputs.publish_all }}
-      dev_lowend_build: ${{ steps.set_outputs.outputs.dev_lowend_build }}
+      opt-build: ${{ steps.set_outputs.outputs.opt-build }}
     steps:
       - id: set_outputs
         run: |
@@ -73,9 +73,9 @@ jobs:
             echo "build_ios=true" >> $GITHUB_OUTPUT
             echo "publish_all=true" >> $GITHUB_OUTPUT
             if [[ "${{ github.ref_name }}" == "opt" ]]; then
-              echo "dev_lowend_build=true" >> $GITHUB_OUTPUT
+              echo "opt-build=true" >> $GITHUB_OUTPUT
             else
-              echo "dev_lowend_build=false" >> $GITHUB_OUTPUT
+              echo "opt-build=false" >> $GITHUB_OUTPUT
             fi
           else
             echo "build_linux=${{ github.event.inputs.build_linux }}" >> $GITHUB_OUTPUT
@@ -85,7 +85,7 @@ jobs:
             echo "build_macos_intel=${{ github.event.inputs.build_macos_intel }}" >> $GITHUB_OUTPUT
             echo "build_ios=${{ github.event.inputs.build_ios }}" >> $GITHUB_OUTPUT
             echo "publish_all=${{ github.event.inputs.publish_all }}" >> $GITHUB_OUTPUT
-            echo "dev_lowend_build=${{ github.event.inputs.dev_lowend_build }}" >> $GITHUB_OUTPUT
+            echo "opt-build=${{ github.event.inputs.opt-build }}" >> $GITHUB_OUTPUT
           fi
 
   build_linux_x64:
@@ -123,7 +123,7 @@ jobs:
 
           class BuildInfoGenerated
           {
-          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_lowend_build == 'true' }};
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.opt-build == 'true' }};
           	public static inline final commit:String = "${{ github.sha }}";
           	public static inline final runId:String = "${{ github.run_id }}";
           }
@@ -239,7 +239,7 @@ jobs:
 
           class BuildInfoGenerated
           {
-          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_lowend_build == 'true' }};
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.opt-build == 'true' }};
           	public static inline final commit:String = "${{ github.sha }}";
           	public static inline final runId:String = "${{ github.run_id }}";
           }
@@ -307,7 +307,7 @@ jobs:
 
           class BuildInfoGenerated
           {
-          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_lowend_build == 'true' }};
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.opt-build == 'true' }};
           	public static inline final commit:String = "${{ github.sha }}";
           	public static inline final runId:String = "${{ github.run_id }}";
           }
@@ -371,7 +371,7 @@ jobs:
 
           class BuildInfoGenerated
           {
-          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_lowend_build == 'true' }};
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.opt-build == 'true' }};
           	public static inline final commit:String = "${{ github.sha }}";
           	public static inline final runId:String = "${{ github.run_id }}";
           }
@@ -433,7 +433,7 @@ jobs:
 
           class BuildInfoGenerated
           {
-          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_lowend_build == 'true' }};
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.opt-build == 'true' }};
           	public static inline final commit:String = "${{ github.sha }}";
           	public static inline final runId:String = "${{ github.run_id }}";
           }
@@ -495,7 +495,7 @@ jobs:
 
           class BuildInfoGenerated
           {
-          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.dev_lowend_build == 'true' }};
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.opt-build == 'true' }};
           	public static inline final commit:String = "${{ github.sha }}";
           	public static inline final runId:String = "${{ github.run_id }}";
           }
@@ -582,8 +582,8 @@ jobs:
               sys.exit(1)
           PY
 
-  publish_dev_lowend_build:
-    name: Publish Dev Lowend Build
+  publish_opt-build:
+    name: Publish Opt Build
     runs-on: ubuntu-24.04
     needs:
       - check_platforms
@@ -676,7 +676,7 @@ jobs:
               repo,
               tag_name: tag,
               target_commitish: context.sha,
-              name: `dev lowend build ${buildDate}`,
+              name: `optbuild ${buildDate}`,
               body: [
                 `Build based on the commit ${context.sha}.`,
                 `Workflow run: ${context.runId}.`,
@@ -711,7 +711,7 @@ jobs:
     runs-on: ubuntu-24.04
     needs:
       - summary
-      - publish_dev_lowend_build
+      - publish_opt-build
     if: always() && github.event_name != 'pull_request'
 
     steps:
@@ -719,7 +719,7 @@ jobs:
         env:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           SUMMARY_RESULT: ${{ needs.summary.result }}
-          PUBLISH_RESULT: ${{ needs.publish_dev_lowend_build.result }}
+          PUBLISH_RESULT: ${{ needs.publish_opt-build.result }}
           REPOSITORY: ${{ github.repository }}
           RUN_ID: ${{ github.run_id }}
           RUN_NUMBER: ${{ github.run_number }}
@@ -736,7 +736,7 @@ jobs:
           fi
 
           RUN_URL="$SERVER_URL/$REPOSITORY/actions/runs/$RUN_ID"
-          RELEASE_URL="$SERVER_URL/$REPOSITORY/releases/tag/dev-lowend-build"
+          RELEASE_URL="$SERVER_URL/$REPOSITORY/releases/tag/opt-build"
           SHORT_SHA="${SHA::7}"
           TIMESTAMP_UTC="$(date -u +"%Y-%m-%d %H:%M UTC")"
           TIMESTAMP_ISO="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
@@ -747,7 +747,7 @@ jobs:
             if [ "$PUBLISH_RESULT" = "success" ]; then
               DOWNLOAD_LABEL="Release"
               DOWNLOAD_URL="$RELEASE_URL"
-              DESCRIPTION="The workflow completed successfully and the latest dev lowend build is ready to download."
+              DESCRIPTION="The workflow completed successfully and the latest opt build is ready to download."
             else
               DOWNLOAD_LABEL="Artifacts"
               DOWNLOAD_URL="$RUN_URL"
