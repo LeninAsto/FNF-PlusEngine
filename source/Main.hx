@@ -134,9 +134,6 @@ class Main extends Sprite
 		initHxvlc();
 		#end
 
-		#if LUA_ALLOWED
-		Mods.pushGlobalMods();
-		#end
 		Mods.loadTopMod();
 
 		FlxG.save.bind('funkin', CoolUtil.getSavePath());

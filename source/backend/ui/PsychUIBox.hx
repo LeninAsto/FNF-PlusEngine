@@ -74,8 +74,15 @@ class PsychUIBox extends FlxSpriteGroup {
 
 	override function update(elapsed:Float) {
 		super.update(elapsed);
-		if (PsychUIInputText.pointerInputBlockedFor(this))
+		if (PsychUIInputText.pointerInputBlockedFor(this)) {
+			// A focused dropdown lives inside the selected tab's detached menu.
+			// That menu is not updated by super.update(), so returning here used
+			// to freeze its owner until Enter cleared focus. Keep the menu alive;
+			// its sibling controls individually honor the same pointer blocker.
+			if (selectedTab != null && !isMinimized)
+				selectedTab.updateMenu(this, elapsed);
 			return;
+		}
 
 		_lastClick += elapsed;
 		if (!FlxG.mouse.released && _draggingBox && canMove) {

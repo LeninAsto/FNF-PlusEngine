@@ -67,8 +67,7 @@ class InitialState extends MusicBeatState
 		trace("Mod Launched: " + Mods.launchedMod);
 		if (Mods.launchedMod != null && Mods.launchedMod.length > 0 && Mods.isLaunchable(Mods.launchedMod))
 		{
-			Mods.currentModDirectory = Mods.launchedMod;
-			Mods.pushGlobalMods();
+			Mods.loadTopMod();
 			Mods.applyWindowBrand(Mods.launchedMod);
 			Language.reloadPhrases();
 			scripting.GlobalScriptManager.loadForMod(Mods.launchedMod);
@@ -86,13 +85,15 @@ class InitialState extends MusicBeatState
 			FlxG.save.data.launchedMod = null;
 			FlxG.save.flush();
 			Mods.launchedMod = null;
-			Mods.currentModDirectory = '';
-			Mods.pushGlobalMods();
+			Mods.loadTopMod();
 			Mods.resetWindowBrand();
 		}
+		else
+			Mods.loadTopMod();
 		MusicBeatState.switchState(new TitleState());
 		#else
 		trace("meh, hardcoded");
+		Mods.loadTopMod();
 		MusicBeatState.switchState(new TitleState());
 		#end
 	}

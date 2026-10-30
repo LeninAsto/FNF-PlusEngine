@@ -392,26 +392,29 @@ class Mods
 
 	public static function loadTopMod()
 	{
+		var resolvedMod:String = '';
+
 		#if MODS_ALLOWED
 		if (launchedMod != null && launchedMod.length > 0)
+			resolvedMod = launchedMod;
+		else
 		{
-			currentModDirectory = launchedMod;
-			return;
+			var list:Array<String> = Mods.parseList().enabled;
+			if (list != null)
+				for (mod in list)
+					if (mod != null && mod.length > 0 && !isRequiredGlobalMod(mod))
+					{
+						resolvedMod = mod;
+						break;
+					}
 		}
 		#end
 
-		Mods.currentModDirectory = '';
-
-		#if MODS_ALLOWED
-		var list:Array<String> = Mods.parseList().enabled;
-		if (list != null)
-			for (mod in list)
-				if (mod != null && mod.length > 0 && !isRequiredGlobalMod(mod))
-				{
-					Mods.currentModDirectory = mod;
-					break;
-				}
-		#end
+		// Keep Psych Engine's global UI context deterministic: a launched mod
+		// owns the context, otherwise the first enabled (top) mod does. Global
+		// fallbacks are rebuilt afterwards so runsGlobally mods remain available.
+		currentModDirectory = resolvedMod;
+		pushGlobalMods();
 	}
 
 	public static function getLaunchState(folder:String):String
