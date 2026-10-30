@@ -176,22 +176,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		var option:Option = new Option('Discord Rich Presence',
 			"Uncheck this to prevent accidental leaks, it will hide the Application from your \"Playing\" box on Discord", 'discordRPC', BOOL);
 		addOption(option);
-
-		var option:Option = new Option('Discord Presence Details',
-			'Share the current song, difficulty, editor and timer. Disable for a more private basic status.', 'discordRPCDetails', BOOL);
-		addOption(option);
-
-		var option:Option = new Option('Connect Discord Account',
-			'Open Discord authorization. Account linking is optional and is not needed for Rich Presence.', '', ACTION);
-		option.onChange = function() DiscordClient.authorize();
-		option.showCondition = function() return DiscordClient.getAuthState() != 'Ready';
-		addOption(option);
-
-		var option:Option = new Option('Disconnect Discord Account',
-			'Disconnect Discord and remove the credentials stored by this game.', '', ACTION);
-		option.onChange = function() DiscordClient.logout();
-		option.showCondition = function() return DiscordClient.getAuthState() == 'Ready';
-		addOption(option);
 		#end
 
 		var option:Option = new Option('Combo Stacking',

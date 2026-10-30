@@ -67,9 +67,6 @@ class MainMenuState extends MusicBeatState
 	{
 		super.create();
 
-		#if MODS_ALLOWED
-		Mods.pushGlobalMods();
-		#end
 		Mods.loadTopMod();
 
 		#if DISCORD_ALLOWED

@@ -86,11 +86,6 @@ class ModsMenuState extends MusicBeatState {
 
 		modsList = Mods.parseList();
 		Mods.loadTopMod();
-		if (Mods.launchedMod != null && Mods.launchedMod.length > 0)
-			Mods.currentModDirectory = Mods.launchedMod;
-		else
-			Mods.currentModDirectory = '';
-		Mods.pushGlobalMods();
 		backend.Language.reloadPhrases();
 
 		#if DISCORD_ALLOWED

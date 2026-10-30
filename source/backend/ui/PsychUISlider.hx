@@ -63,8 +63,6 @@ class PsychUISlider extends FlxSpriteGroup {
 
 	override function update(elapsed:Float) {
 		super.update(elapsed);
-		if (PsychUIInputText.pointerInputBlockedFor(this))
-			return;
 
 		if (FlxG.mouse.justMoved || FlxG.mouse.justPressed || forceNextUpdate) {
 			forceNextUpdate = false;

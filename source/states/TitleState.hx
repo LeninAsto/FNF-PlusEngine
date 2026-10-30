@@ -40,6 +40,7 @@ class TitleState extends MusicBeatState
 
 	public static var initialized:Bool = false;
 	public static var introVideoPlayed:Bool = false;
+	static var loadedModContext:String = null;
 
 	public var forceShowIntro:Bool = false; // Si debe forzar mostrar la intro
 
@@ -71,6 +72,22 @@ class TitleState extends MusicBeatState
 
 	override public function create():Void
 	{
+		#if MODS_ALLOWED
+		// TitleState can be reached after the mod browser, a reset or a launcher.
+		// Resolve its asset context here instead of depending on the previous
+		// state having done it in the correct order.
+		Mods.loadTopMod();
+		var modContext:String = Mods.currentModDirectory + '|' + Mods.getGlobalMods().join('|');
+		if (loadedModContext != modContext)
+		{
+			loadedModContext = modContext;
+			initialized = false;
+			introVideoPlayed = false;
+			if (FlxG.sound.music != null)
+				FlxG.sound.music.stop();
+		}
+		#end
+
 		Paths.clearStoredMemory();
 		super.create();
 		Paths.clearUnusedMemory();

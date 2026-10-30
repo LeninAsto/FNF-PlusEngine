@@ -51,8 +51,6 @@ class PsychUIRadioGroup extends FlxSpriteGroup {
 
 	override function update(elapsed:Float) {
 		super.update(elapsed);
-		if (PsychUIInputText.pointerInputBlockedFor(this))
-			return;
 
 		_hitbox.x = x;
 		_hitbox.y = y;

@@ -224,14 +224,6 @@ jobs:
           chmod +x ./setup/unish-lib.sh
           ./setup/unish-lib.sh
 
-      - name: Install Discord Social SDK
-        env:
-          DISCORD_SOCIAL_SDK_URL: ${{ secrets.DISCORD_SOCIAL_SDK_URL }}
-          DISCORD_SOCIAL_SDK_SHA256: ${{ secrets.DISCORD_SOCIAL_SDK_SHA256 }}
-        run: |
-          chmod +x ./setup/install-discord-social-sdk.sh
-          ./setup/install-discord-social-sdk.sh
-
       - name: Configure Lime
         run: |
           haxelib run lime setup android
@@ -306,13 +298,6 @@ jobs:
         run: |
           haxelib setup C:\haxelib
           cmd /c setup\windows-lib.bat
-
-      - name: Install Discord Social SDK
-        shell: pwsh
-        env:
-          DISCORD_SOCIAL_SDK_URL: ${{ secrets.DISCORD_SOCIAL_SDK_URL }}
-          DISCORD_SOCIAL_SDK_SHA256: ${{ secrets.DISCORD_SOCIAL_SDK_SHA256 }}
-        run: ./setup/install-discord-social-sdk.ps1
 
       - name: Prepare build
         run: |

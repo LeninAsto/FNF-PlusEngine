@@ -46,8 +46,6 @@ class PsychUINumericStepper extends PsychUIInputText {
 
 	override function update(elapsed:Float) {
 		super.update(elapsed);
-		if (PsychUIInputText.pointerInputBlockedFor(this))
-			return;
 
 		if (FlxG.mouse.justPressed) {
 			if (buttonPlus != null && buttonPlus.exists && FlxG.mouse.overlaps(buttonPlus, camera)) {
