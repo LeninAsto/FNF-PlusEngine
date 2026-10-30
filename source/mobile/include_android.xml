@@ -12,7 +12,6 @@
 	</config:android>
 	<!-- Copy our custom launcher icon resources into the generated Gradle project -->
 	<assets path="android/app/src/main" rename="app/src/main" type="template" />
-	<assets path="android/discord-build.gradle.kts" rename="build.gradle.kts" type="template" if="DISCORD_ALLOWED" />
 	<!-- Tell lime run/test to start the public launcher activity instead of the internal game runtime activity -->
 	<config:android launch-activity=".launcher.EngineLauncherActivity" />
 	

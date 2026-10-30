@@ -61,8 +61,8 @@ haxelib install tjson 1.4.0 --quiet
 REM ============================================================================
 REM Optional desktop/media integrations.
 REM ============================================================================
-echo [Optional] hxDiscordSocial
-haxelib git hxDiscordSocial https://github.com/LeninAsto/hxDiscordSocial.git --quiet
+echo [Optional] hxdiscord_rpc 1.3.0
+haxelib install hxdiscord_rpc 1.3.0 --quiet --skip-dependencies
 
 echo [Optional] hxvlc 2.3.1
 haxelib install hxvlc 2.3.1 --quiet --skip-dependencies

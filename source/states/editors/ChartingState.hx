@@ -6792,11 +6792,12 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			try
 			{
 				var path:String = Paths.getPath('characters/' + char + '.json', TEXT);
-				#if MODS_ALLOWED
-				var unparsedJson = File.getContent(path);
-				#else
-				var unparsedJson = Assets.getText(path);
-				#end
+				// File.getContent works for loose desktop mods, but Android assets are
+				// packed inside the APK and must go through OpenFL's asset loader.
+				// AssetLoader supports both locations, matching Character itself.
+				var unparsedJson = AssetLoader.loadText(path);
+				if (unparsedJson == null || unparsedJson.length == 0)
+					return null;
 				return cast Json.parse(unparsedJson);
 			}
 			catch (e:Dynamic)

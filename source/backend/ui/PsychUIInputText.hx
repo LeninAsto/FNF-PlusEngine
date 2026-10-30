@@ -39,7 +39,6 @@ class PsychUIInputText extends FlxSpriteGroup {
 	static final KEY_ACUTE = 180;
 
 	public static var focusOn(default, set):PsychUIInputText = null;
-	static var _pointerBlockOwner:PsychUIInputText = null;
 
 	public var name:String;
 	public var bg:FlxSprite;
@@ -50,8 +49,6 @@ class PsychUIInputText extends FlxSpriteGroup {
 	public var onChange:String->String->Void;
 	/** Dropdowns and other picker-style controls should not summon Android's keyboard. */
 	public var showSoftKeyboardOnFocus:Bool = true;
-	/** Keep pointer input exclusive to this control while it owns focus. */
-	public var blocksPointerInputBehind:Bool = false;
 
 	public var fieldWidth(default, set):Int = 0;
 	public var maxLength(default, set):Int = 0;
@@ -99,9 +96,6 @@ class PsychUIInputText extends FlxSpriteGroup {
 	var _nextAccent:AccentCode = NONE;
 
 	public var inInsertMode:Bool = false;
-	#if android
-	var _softKeyboardActive:Bool = false;
-	#end
 
 	// Tracks Caps Lock toggle state.
 	static var _capsLockState:Bool = false;
@@ -244,13 +238,6 @@ class PsychUIInputText extends FlxSpriteGroup {
 		static final ignored:Array<FlxKey> = [SHIFT, CONTROL, ESCAPE, CAPSLOCK];
 		if (ignored.contains(flxKey))
 			return;
-
-		#if android
-		// Android dispatches printable virtual-keyboard input through onTextInput.
-		// Handling the accompanying KEY_DOWN as well inserts every character twice.
-		if (_softKeyboardActive && charCode >= 32)
-			return;
-		#end
 
 		var lastAccent = _nextAccent;
 		switch (keyCode) {
@@ -433,11 +420,6 @@ class PsychUIInputText extends FlxSpriteGroup {
 	public var unfocus:Void->Void;
 
 	public static function set_focusOn(v:PsychUIInputText) {
-		// Re-focusing the same control used to register onSoftInput repeatedly.
-		// Lime signals keep every registration, so one key became two, then three.
-		if (focusOn == v)
-			return v;
-
 		final previous = focusOn;
 		if (previous != null && previous != v && previous.exists) {
 			if (previous.unfocus != null)
@@ -449,31 +431,8 @@ class PsychUIInputText extends FlxSpriteGroup {
 			#if android if (previous.exists) previous.setSoftKeyboard(false); #end
 		}
 		focusOn = v;
-		if (v != null && v.blocksPointerInputBehind)
-			_pointerBlockOwner = v;
 		#if android if (v != null && v.showSoftKeyboardOnFocus) v.setSoftKeyboard(true); #end
 		return v;
-	}
-
-	/**
-	 * Returns true while a modal input owns the current pointer gesture. The
-	 * owner survives focus loss until press/release flags clear, preventing the
-	 * same tap from falling through to a control behind it.
-	 */
-	public static function pointerInputBlockedFor(control:Dynamic):Bool {
-		if (focusOn != null && focusOn.blocksPointerInputBehind)
-			_pointerBlockOwner = focusOn;
-
-		if (_pointerBlockOwner == null)
-			return false;
-		if (focusOn != _pointerBlockOwner
-			&& !FlxG.mouse.justPressed
-			&& !FlxG.mouse.pressed
-			&& !FlxG.mouse.justReleased) {
-			_pointerBlockOwner = null;
-			return false;
-		}
-		return control != _pointerBlockOwner;
 	}
 
 	#if android
@@ -481,10 +440,7 @@ class PsychUIInputText extends FlxSpriteGroup {
 		var window = lime.app.Application.current.window;
 		if (window == null)
 			return;
-		_softKeyboardActive = show;
 		if (show) {
-			// Keep the listener unique even if focus state was externally disturbed.
-			window.onTextInput.remove(onSoftInput);
 			window.onTextInput.add(onSoftInput);
 			window.textInputEnabled = true; // pops up the on-screen keyboard
 		} else {
@@ -519,18 +475,8 @@ class PsychUIInputText extends FlxSpriteGroup {
 		updateCaret();
 	}
 
-	/**
-	 * Lets compound controls keep this input focused when a pointer press lands
-	 * on one of their children. This matters on touch devices, where a touch is
-	 * also exposed as a mouse press by OpenFL.
-	 */
-	public function keepFocusOnPointerPress():Bool
-		return false;
-
 	override function update(elapsed:Float) {
 		super.update(elapsed);
-		if (pointerInputBlockedFor(this))
-			return;
 
 		#if FLX_TOUCH
 		var touchedThisFrame:Bool = false;
@@ -560,7 +506,7 @@ class PsychUIInputText extends FlxSpriteGroup {
 					selectIndex = caretIndex;
 				focusOn = this;
 				setCaretFromPointerScreenX(FlxG.mouse.getScreenPosition(camera).x);
-			} else if (focusOn == this && !keepFocusOnPointerPress())
+			} else if (focusOn == this)
 				focusOn = null;
 		}
 		#if FLX_TOUCH

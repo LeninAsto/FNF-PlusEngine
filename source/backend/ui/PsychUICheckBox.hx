@@ -36,8 +36,6 @@ class PsychUICheckBox extends FlxSpriteGroup {
 
 	override function update(elapsed:Float) {
 		super.update(elapsed);
-		if (PsychUIInputText.pointerInputBlockedFor(this))
-			return;
 
 		if (FlxG.mouse.justPressed) {
 			var screenPos:FlxPoint = getScreenPosition(null, camera);

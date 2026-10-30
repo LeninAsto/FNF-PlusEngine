@@ -1,6 +1,9 @@
 package backend.ui;
 
 import backend.ui.PsychUIBox.UIStyleData;
+#if mobile
+import flixel.FlxSubState;
+#end
 #if FLX_TOUCH
 import flixel.input.touch.FlxTouch;
 #end
@@ -14,10 +17,8 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 	public var scrollThumb:FlxSprite;
 	public var onSelect:Int->String->Void;
 
-	public var selectedIndex(get, set):Int;
-	public var selectedLabel(get, set):String;
-	var _selectedIndex:Int = -1;
-	var _selectedLabel:String = null;
+	public var selectedIndex(default, set):Int = -1;
+	public var selectedLabel(default, set):String = null;
 
 	var _curFilter:Array<String>;
 	var _itemWidth:Float = 0;
@@ -32,22 +33,20 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 	var _touchDragStartY:Float = 0;
 	var _touchDragStartScroll:Int = 0;
 	var _touchDragMoved:Bool = false;
-	var _clearTouchDragNextFrame:Bool = false;
+	var _touchPressedItem:PsychUIDropDownItem;
 	static inline var TOUCH_DRAG_DEADZONE:Float = 8;
 	#end
 
 	public function new(x:Float, y:Float, list:Array<String>, callback:Int->String->Void, ?width:Float = 100, ?maxVisibleItems:Int = 0) {
 		super(x, y);
-		blocksPointerInputBehind = true;
-		// Dropdowns are searchable inputs too. In particular, Android users need
-		// the soft keyboard to filter long character/event lists.
-		showSoftKeyboardOnFocus = true;
+		showSoftKeyboardOnFocus = false;
 		if (list == null)
 			list = [];
 
 		_itemWidth = width - 2;
 		_maxVisibleItems = maxVisibleItems;
 		#if mobile
+		_scrollBarWidth = 14;
 		if (_maxVisibleItems <= 0)
 			_maxVisibleItems = 8;
 		#end
@@ -61,9 +60,6 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 		button.animation.play('normal', true);
 		add(button);
 
-		#if mobile
-		_scrollBarWidth = 14;
-		#end
 		scrollTrack = new FlxSprite().makeGraphic(_scrollBarWidth, 1, 0xFF303030);
 		scrollThumb = new FlxSprite().makeGraphic(_scrollBarWidth, 1, 0xFFB0B0B0);
 		scrollTrack.visible = scrollTrack.active = false;
@@ -92,43 +88,37 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 	}
 
 	function set_selectedIndex(v:Int) {
-		_selectedIndex = v;
-		if (_selectedIndex < 0 || _selectedIndex >= list.length)
-			_selectedIndex = -1;
+		selectedIndex = v;
+		if (selectedIndex < 0 || selectedIndex >= list.length)
+			selectedIndex = -1;
 
-		_selectedLabel = list[_selectedIndex];
-		text = (_selectedLabel != null) ? _selectedLabel : '';
-		return _selectedIndex;
+		@:bypassAccessor selectedLabel = list[selectedIndex];
+		text = (selectedLabel != null) ? selectedLabel : '';
+		return selectedIndex;
 	}
-
-	function get_selectedIndex():Int return _selectedIndex;
 
 	function set_selectedLabel(v:String) {
 		var id:Int = list.indexOf(v);
 		if (id >= 0) {
-			_selectedIndex = id;
-			_selectedLabel = v;
-			text = _selectedLabel;
+			@:bypassAccessor selectedIndex = id;
+			selectedLabel = v;
+			text = selectedLabel;
 		} else {
-			_selectedIndex = -1;
-			_selectedLabel = null;
+			@:bypassAccessor selectedIndex = -1;
+			selectedLabel = null;
 			text = '';
 		}
-		return _selectedLabel;
+		return selectedLabel;
 	}
-
-	function get_selectedLabel():String return _selectedLabel;
 
 	var _items:Array<PsychUIDropDownItem> = [];
 
 	public var curScroll:Int = 0;
 
 	override function update(elapsed:Float) {
-		#if FLX_TOUCH
-		if (_clearTouchDragNextFrame) {
-			_clearTouchDragNextFrame = false;
-			_touchDragMoved = false;
-		}
+		#if mobile
+		updateMobileSelector(elapsed);
+		return;
 		#end
 
 		var lastFocus = PsychUIInputText.focusOn;
@@ -158,12 +148,7 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 			button.animation.play('normal', true);
 
 		#if FLX_TOUCH
-		var buttonTouch:FlxTouch = findTouchOver(button, true, false);
-		if (buttonTouch != null) {
-			button.animation.play('pressed', true);
-			PsychUIInputText.focusOn = lastFocus == this ? null : this;
-		} else if (findReleasedTouch() != null && button.animation.curAnim != null && button.animation.curAnim.name != 'normal')
-			button.animation.play('normal', true);
+		handleTouchInput(lastFocus);
 		#end
 
 		if (lastFocus != PsychUIInputText.focusOn) {
@@ -180,11 +165,41 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 				wheel--;
 			if (wheel != 0)
 				showDropDown(true, curScroll - wheel, _curFilter);
-			#if FLX_TOUCH
-			handleTouchScrolling();
-			#end
 		}
 	}
+
+	#if mobile
+	/**
+	 * Android does not use the desktop fly-out list.  It opens a real modal
+	 * selector instead, so the state behind it cannot consume a swipe or tap.
+	 */
+	function updateMobileSelector(elapsed:Float):Void {
+		super.update(elapsed);
+		showDropDown(false);
+		if (MobileDropDownSelector.current != null)
+			return;
+
+		for (touch in FlxG.touches.list) {
+			if (touch == null || !touch.justPressed)
+				continue;
+			if (!touch.overlaps(behindText, camera) && !touch.overlaps(button, camera))
+				continue;
+
+			PsychUIInputText.focusOn = null;
+			button.animation.play('pressed', true);
+			var options:Array<String> = list.copy();
+			var selector = new MobileDropDownSelector(options, selectedIndex, camera, function(index:Int) {
+				if (index >= 0 && index < list.length)
+					clickedOn(index, list[index]);
+			});
+			var targetState:flixel.FlxState = FlxG.state;
+			while (targetState.subState != null)
+				targetState = targetState.subState;
+			targetState.openSubState(selector);
+			return;
+		}
+	}
+	#end
 
 	function updateScrollFromPointer():Void {
 		updateScrollFromY(FlxG.mouse.getWorldPosition(camera, _pointerPosition).y);
@@ -202,45 +217,7 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 		showDropDown(true, Math.round(ratio * maxScroll), _curFilter);
 	}
 
-	override public function keepFocusOnPointerPress():Bool {
-		if (FlxG.mouse.overlaps(button, camera) || (scrollTrack.visible && FlxG.mouse.overlaps(scrollTrack, camera)))
-			return true;
-
-		for (item in _items)
-			if (item != null && item.visible && item.active && FlxG.mouse.overlaps(item.bg, camera))
-				return true;
-
-		#if FLX_TOUCH
-		for (touch in FlxG.touches.list) {
-			if (touch == null || !touch.justPressed)
-				continue;
-			if (touch.overlaps(button, camera) || (scrollTrack.visible && touch.overlaps(scrollTrack, camera)))
-				return true;
-			if (touchOverVisibleItem(touch))
-				return true;
-		}
-		#end
-		return false;
-	}
-
 	#if FLX_TOUCH
-	function findTouchOver(object:FlxSprite, justPressedOnly:Bool, justReleasedOnly:Bool):FlxTouch {
-		for (touch in FlxG.touches.list) {
-			if (touch == null || (justPressedOnly && !touch.justPressed) || (justReleasedOnly && !touch.justReleased))
-				continue;
-			if (touch.overlaps(object, camera))
-				return touch;
-		}
-		return null;
-	}
-
-	function findReleasedTouch():FlxTouch {
-		for (touch in FlxG.touches.list)
-			if (touch != null && touch.justReleased)
-				return touch;
-		return null;
-	}
-
 	function findTouchByID(id:Int):FlxTouch {
 		for (touch in FlxG.touches.list)
 			if (touch != null && touch.touchPointID == id)
@@ -248,65 +225,82 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 		return null;
 	}
 
-	function touchOverVisibleItem(touch:FlxTouch):Bool {
+	function getTouchItem(touch:FlxTouch):PsychUIDropDownItem {
 		for (item in _items)
 			if (item != null && item.visible && item.active && touch.overlaps(item.bg, camera))
-				return true;
-		return false;
+				return item;
+		return null;
 	}
 
-	function handleTouchScrolling():Void {
-		if (_touchDragID < 0) {
-			for (touch in FlxG.touches.list) {
-				if (touch == null || !touch.justPressed)
-					continue;
-
-				if (scrollTrack.visible && touch.overlaps(scrollTrack, camera)) {
-					updateScrollFromY(touch.getWorldPosition(camera, _pointerPosition).y);
-					_touchDragMoved = true;
-					return;
-				}
-
-				if (touchOverVisibleItem(touch)) {
-					_touchDragID = touch.touchPointID;
-					_touchDragStartY = touch.getWorldPosition(camera, _pointerPosition).y;
-					_touchDragStartScroll = curScroll;
-					_touchDragMoved = false;
-					return;
-				}
+	/**
+	 * Mobile owns a touch from press to release.  Letting individual list rows
+	 * react to the release used to race the swipe code because FlxSpriteGroup
+	 * updates children before this dropdown.  A short gesture picks a row;
+	 * a vertical gesture scrolls it instead.
+	 */
+	function handleTouchInput(lastFocus:PsychUIInputText):Void {
+		if (_touchDragID >= 0) {
+			var activeTouch:FlxTouch = findTouchByID(_touchDragID);
+			if (activeTouch == null) {
+				clearTouchGesture();
+				return;
 			}
-			_touchDragMoved = false;
+
+			var currentY:Float = activeTouch.getWorldPosition(camera, _pointerPosition).y;
+			var deltaY:Float = currentY - _touchDragStartY;
+			if (activeTouch.pressed && Math.abs(deltaY) >= TOUCH_DRAG_DEADZONE) {
+				_touchDragMoved = true;
+				var rowHeight:Float = _touchPressedItem != null ? _touchPressedItem.height : 20;
+				showDropDown(true, _touchDragStartScroll - Math.round(deltaY / Math.max(1, rowHeight)), _curFilter);
+			}
+
+			if (activeTouch.justReleased) {
+				var picked:PsychUIDropDownItem = _touchPressedItem;
+				var shouldPick:Bool = !_touchDragMoved && picked != null && picked.visible && activeTouch.overlaps(picked.bg, camera);
+				clearTouchGesture();
+				if (shouldPick && picked.onClick != null)
+					picked.onClick();
+			} else if (!activeTouch.pressed)
+				clearTouchGesture();
 			return;
 		}
 
-		var activeTouch:FlxTouch = findTouchByID(_touchDragID);
-		if (activeTouch == null) {
-			_touchDragID = -1;
-			_touchDragMoved = false;
+		for (touch in FlxG.touches.list) {
+			if (touch == null || !touch.justPressed)
+				continue;
+
+			// Tapping the field or arrow is a predictable open/close toggle.
+			if (touch.overlaps(behindText, camera) || touch.overlaps(button, camera)) {
+				button.animation.play('pressed', true);
+				PsychUIInputText.focusOn = lastFocus == this ? null : this;
+				return;
+			}
+
+			if (lastFocus != this)
+				continue;
+
+			var item:PsychUIDropDownItem = getTouchItem(touch);
+			if (item != null || (scrollTrack.visible && touch.overlaps(scrollTrack, camera))) {
+				_touchDragID = touch.touchPointID;
+				_touchDragStartY = touch.getWorldPosition(camera, _pointerPosition).y;
+				_touchDragStartScroll = curScroll;
+				_touchDragMoved = false;
+				_touchPressedItem = item;
+				if (item == null)
+					updateScrollFromY(_touchDragStartY);
+				return;
+			}
+
+			// A tap outside is an explicit cancel, so an editor cannot be left trapped.
+			PsychUIInputText.focusOn = null;
 			return;
 		}
+	}
 
-		var currentY:Float = activeTouch.getWorldPosition(camera, _pointerPosition).y;
-		var deltaY:Float = currentY - _touchDragStartY;
-		if (activeTouch.pressed && Math.abs(deltaY) >= TOUCH_DRAG_DEADZONE) {
-			_touchDragMoved = true;
-			var rowHeight:Float = 20;
-			for (item in _items) {
-				if (item != null && item.height > 0) {
-					rowHeight = item.height;
-					break;
-				}
-			}
-			showDropDown(true, _touchDragStartScroll - Math.round(deltaY / rowHeight), _curFilter);
-		}
-
-		if (activeTouch.justReleased) {
-			_touchDragID = -1;
-			_clearTouchDragNextFrame = true;
-		} else if (!activeTouch.pressed) {
-			_touchDragID = -1;
-			_touchDragMoved = false;
-		}
+	function clearTouchGesture():Void {
+		_touchDragID = -1;
+		_touchDragMoved = false;
+		_touchPressedItem = null;
 	}
 
 	public inline function suppressTouchSelection():Bool
@@ -317,13 +311,7 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 		return _maxVisibleItems > 0 ? Std.int(Math.min(_maxVisibleItems, total)) : total;
 	}
 
-	function getRowHeight():Float {
-		for (item in _items)
-			if (item != null && item.height > 0)
-				return item.height;
-		return 20;
-	}
-
+	/** Keeps the popover on screen on phones while leaving desktop layout unchanged. */
 	function updateMobileLayout(total:Int):Int {
 		var wanted:Int = getVisibleCount(total);
 		_opensUpward = false;
@@ -345,6 +333,13 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 		return wanted;
 	}
 
+	function getRowHeight():Float {
+		for (item in _items)
+			if (item != null && item.height > 0)
+				return item.height;
+		return 20;
+	}
+
 	private function showDropDownClickFix() {
 		if (FlxG.mouse.justPressed) {
 			for (item in _items) // extra update to fix a little bug where it wouldnt click on any option if another input text was behind the drop down
@@ -358,7 +353,7 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 			text = selectedLabel;
 			_curFilter = null;
 			#if FLX_TOUCH
-			_touchDragID = -1;
+			clearTouchGesture();
 			#end
 		}
 
@@ -448,7 +443,7 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 	}
 
 	function addOption(option:String) {
-		list.push(option);
+		@:bypassAccessor list.push(option);
 		var curID:Int = list.length - 1;
 		var item:PsychUIDropDownItem = cast recycle(PsychUIDropDownItem, () -> new PsychUIDropDownItem(1, 1, this._itemWidth), true);
 		item.cameras = cameras;
@@ -491,11 +486,6 @@ class PsychUIDropDownItem extends FlxSpriteGroup {
 		textColor: FlxColor.BLACK,
 		bgAlpha: 1
 	};
-	public var selectedStyle:UIStyleData = {
-		bgColor: 0xFFDCEBFF,
-		textColor: 0xFF003A75,
-		bgAlpha: 1
-	};
 
 	public var bg:FlxSprite;
 	public var text:FlxText;
@@ -518,38 +508,27 @@ class PsychUIDropDownItem extends FlxSpriteGroup {
 
 	override function update(elapsed:Float) {
 		super.update(elapsed);
-		var touchOver:Bool = false;
-		var touchReleased:Bool = false;
 		#if FLX_TOUCH
+		var touchIsActive:Bool = false;
 		for (touch in FlxG.touches.list) {
-			if (touch != null && touch.overlaps(bg, camera)) {
-				touchOver = true;
-				if (touch.justReleased)
-					touchReleased = true;
+			if (touch != null && (touch.pressed || touch.justPressed || touch.justReleased)) {
+				touchIsActive = true;
+				break;
 			}
 		}
 		#end
 
-		if (FlxG.mouse.justMoved || FlxG.mouse.justPressed || touchOver || touchReleased || forceNextUpdate) {
-			var overlapped:Bool = FlxG.mouse.overlaps(bg, camera) || touchOver;
+		if (FlxG.mouse.justMoved || FlxG.mouse.justPressed || forceNextUpdate) {
+			var overlapped:Bool = FlxG.mouse.overlaps(bg, camera);
 
-			var selected:Bool = parentDropDown != null && parentDropDown.selectedLabel == label;
-			var style = overlapped ? hoverStyle : (selected ? selectedStyle : normalStyle);
+			var style = overlapped ? hoverStyle : normalStyle;
 			bg.color = style.bgColor;
 			text.color = style.textColor;
 			bg.alpha = style.bgAlpha;
 			forceNextUpdate = false;
 
-			#if FLX_TOUCH
-			if (touchReleased) {
-				if (parentDropDown == null || !parentDropDown.suppressTouchSelection())
-					onClick();
-			} else if (!touchOver && overlapped && FlxG.mouse.justPressed)
+			if (overlapped && FlxG.mouse.justPressed #if FLX_TOUCH && !touchIsActive #end)
 				onClick();
-			#else
-			if (overlapped && FlxG.mouse.justPressed)
-				onClick();
-			#end
 		}
 
 		text.x = bg.x;
@@ -563,11 +542,231 @@ class PsychUIDropDownItem extends FlxSpriteGroup {
 		text.text = v;
 		var itemHeight:Float = text.height + 6;
 		#if mobile
-		// A 14-ish pixel row is fine for a mouse and miserable for a finger.
-		itemHeight = Math.max(30, itemHeight);
+		itemHeight = Math.max(24, itemHeight);
 		#end
 		bg.scale.y = itemHeight;
 		bg.updateHitbox();
 		return v;
 	}
 }
+
+#if mobile
+/** Full-screen, touch-only chooser used by PsychUIDropDownMenu on Android. */
+private class MobileDropDownSelector extends FlxSubState {
+	public static var current:MobileDropDownSelector;
+
+	var options:Array<String>;
+	var onPick:Int->Void;
+	var uiCamera:FlxCamera;
+	var panel:FlxSprite;
+	var title:FlxText;
+	var hint:FlxText;
+	var rows:Array<FlxSprite> = [];
+	var labels:Array<FlxText> = [];
+	var scrollTrack:FlxSprite;
+	var scrollThumb:FlxSprite;
+	var rowHeight:Float = 32;
+	var firstVisible:Int = 0;
+	var selected:Int;
+	var visibleRows:Int = 1;
+	var touchID:Int = -1;
+	var touchStartY:Float = 0;
+	var touchStartScroll:Int = 0;
+	var touchCandidate:Int = -1;
+	var didDrag:Bool = false;
+	var pointer:FlxPoint = new FlxPoint();
+	static inline var DRAG_DEADZONE:Float = 8;
+
+	public function new(options:Array<String>, selected:Int, uiCamera:FlxCamera, onPick:Int->Void) {
+		super(0xA6000000);
+		current = this;
+		this.options = options == null ? [] : options;
+		this.selected = selected;
+		this.onPick = onPick;
+		this.uiCamera = uiCamera != null ? uiCamera : FlxG.camera;
+
+		var panelWidth:Float = Math.min(560, FlxG.width - 32);
+		rowHeight = Math.max(28, Math.min(38, Math.floor(FlxG.height / 17)));
+		visibleRows = Std.int(Math.max(1, Math.min(8, Math.min(this.options.length, Math.floor((FlxG.height - 126) / rowHeight)))));
+		var panelHeight:Float = 72 + visibleRows * rowHeight + 18;
+		var panelX:Float = (FlxG.width - panelWidth) / 2;
+		var panelY:Float = (FlxG.height - panelHeight) / 2;
+
+		panel = new FlxSprite(panelX, panelY).makeGraphic(Std.int(panelWidth), Std.int(panelHeight), 0xFF20242C);
+		panel.cameras = [uiCamera];
+		panel.scrollFactor.set();
+		add(panel);
+
+		title = new FlxText(panelX + 16, panelY + 12, panelWidth - 32, 'Select an option', 16);
+		title.setFormat(Paths.font('vcr.ttf'), 16, FlxColor.WHITE, CENTER);
+		title.cameras = [uiCamera];
+		title.scrollFactor.set();
+		add(title);
+
+		hint = new FlxText(panelX + 16, panelY + 36, panelWidth - 32, 'Tap to select  •  Swipe to scroll  •  Tap outside to cancel', 8);
+		hint.setFormat(Paths.font('vcr.ttf'), 8, 0xFFB9C4D1, CENTER);
+		hint.cameras = [uiCamera];
+		hint.scrollFactor.set();
+		add(hint);
+
+		var listWidth:Int = Std.int(panelWidth - 44);
+		for (i in 0...visibleRows) {
+			var row = new FlxSprite().makeGraphic(listWidth, Std.int(rowHeight - 2), FlxColor.WHITE);
+			row.cameras = [uiCamera];
+			row.scrollFactor.set();
+			add(row);
+			rows.push(row);
+
+			var label = new FlxText(0, 0, listWidth - 14, '', 11);
+			label.setFormat(Paths.font('vcr.ttf'), 11, FlxColor.BLACK, LEFT);
+			label.cameras = [uiCamera];
+			label.scrollFactor.set();
+			add(label);
+			labels.push(label);
+		}
+
+		scrollTrack = new FlxSprite().makeGraphic(12, Std.int(visibleRows * rowHeight - 2), 0xFF11151C);
+		scrollTrack.cameras = [uiCamera];
+		scrollTrack.scrollFactor.set();
+		add(scrollTrack);
+		scrollThumb = new FlxSprite().makeGraphic(12, 20, 0xFF7CC7FF);
+		scrollThumb.cameras = [uiCamera];
+		scrollThumb.scrollFactor.set();
+		add(scrollThumb);
+
+		layout();
+	}
+
+	override function update(elapsed:Float):Void {
+		super.update(elapsed);
+		if (FlxG.keys.justPressed.ESCAPE) {
+			close();
+			return;
+		}
+
+		if (touchID >= 0) {
+			var touch = findTouch(touchID);
+			if (touch == null) {
+				clearGesture();
+				return;
+			}
+			var deltaY:Float = touch.getScreenPosition(pointer).y - touchStartY;
+			if (touch.pressed && Math.abs(deltaY) >= DRAG_DEADZONE) {
+				didDrag = true;
+				firstVisible = boundScroll(touchStartScroll - Math.round(deltaY / rowHeight));
+				layout();
+			}
+			if (touch.justReleased) {
+				var pick:Int = touchCandidate;
+				var canPick:Bool = !didDrag && pick >= 0 && pick < options.length && rowAtTouch(touch) == pick;
+				clearGesture();
+				if (canPick)
+					choose(pick);
+			} else if (!touch.pressed)
+				clearGesture();
+			return;
+		}
+
+		for (touch in FlxG.touches.list) {
+			if (touch == null || !touch.justPressed)
+				continue;
+			var pickedRow = rowAtTouch(touch);
+			if (pickedRow >= 0 || touch.overlaps(scrollTrack, uiCamera)) {
+				touchID = touch.touchPointID;
+				touchStartY = touch.getScreenPosition(pointer).y;
+				touchStartScroll = firstVisible;
+				touchCandidate = pickedRow;
+				didDrag = false;
+				if (pickedRow < 0)
+					setScrollFromTouch(touch);
+				return;
+			}
+			close();
+			return;
+		}
+	}
+
+	function layout():Void {
+		var rowX:Float = panel.x + 16;
+		var rowY:Float = panel.y + 60;
+		for (slot in 0...visibleRows) {
+			var index = firstVisible + slot;
+			var visible = index < options.length;
+			var row = rows[slot];
+			var label = labels[slot];
+			row.visible = label.visible = visible;
+			if (!visible)
+				continue;
+			row.setPosition(rowX, rowY + slot * rowHeight);
+			row.color = index == selected ? 0xFF9FD5FF : (slot % 2 == 0 ? 0xFFF4F6F8 : 0xFFE2E7EC);
+			label.text = (index == selected ? '✓  ' : '   ') + options[index];
+			label.color = index == selected ? 0xFF003B69 : FlxColor.BLACK;
+			label.setPosition(row.x + 6, row.y + (row.height - label.height) / 2);
+		}
+
+		var listHeight:Float = visibleRows * rowHeight - 2;
+		scrollTrack.setPosition(panel.x + panel.width - 28, rowY);
+		scrollTrack.setGraphicSize(12, Std.int(listHeight));
+		scrollTrack.updateHitbox();
+		var maxScroll = maxScroll();
+		var thumbHeight:Float = maxScroll <= 0 ? listHeight : Math.max(24, listHeight * visibleRows / options.length);
+		scrollThumb.visible = scrollTrack.visible = maxScroll > 0;
+		scrollThumb.setGraphicSize(12, Std.int(thumbHeight));
+		scrollThumb.updateHitbox();
+		if (maxScroll > 0)
+			scrollThumb.setPosition(scrollTrack.x, scrollTrack.y + (listHeight - thumbHeight) * firstVisible / maxScroll);
+	}
+
+	function rowAtTouch(touch:FlxTouch):Int {
+		for (slot in 0...rows.length)
+			if (rows[slot].visible && touch.overlaps(rows[slot], uiCamera))
+				return firstVisible + slot;
+		return -1;
+	}
+
+	function setScrollFromTouch(touch:FlxTouch):Void {
+		var max = maxScroll();
+		if (max <= 0)
+			return;
+		var y:Float = touch.getScreenPosition(pointer).y;
+		var travel:Float = scrollTrack.height - scrollThumb.height;
+		var ratio:Float = FlxMath.bound((y - scrollTrack.y - scrollThumb.height / 2) / Math.max(1, travel), 0, 1);
+		firstVisible = boundScroll(Math.round(ratio * max));
+		layout();
+	}
+
+	inline function maxScroll():Int return Std.int(Math.max(0, options.length - visibleRows));
+	inline function boundScroll(value:Int):Int return Std.int(FlxMath.bound(value, 0, maxScroll()));
+
+	function findTouch(id:Int):FlxTouch {
+		for (touch in FlxG.touches.list)
+			if (touch != null && touch.touchPointID == id)
+				return touch;
+		return null;
+	}
+
+	function clearGesture():Void {
+		touchID = -1;
+		touchCandidate = -1;
+		didDrag = false;
+	}
+
+	function choose(index:Int):Void {
+		selected = index;
+		if (onPick != null)
+			onPick(index);
+		close();
+	}
+
+	override function destroy():Void {
+		if (current == this)
+			current = null;
+		options = null;
+		onPick = null;
+		rows = null;
+		labels = null;
+		pointer = null;
+		super.destroy();
+	}
+}
+#end

@@ -26,7 +26,7 @@
 	<define name="HSCRIPT_ALLOWED" if="desktop || mobile" />
 	<define name="LUA_ALLOWED" if="cpp" />
 	<define name="ACHIEVEMENTS_ALLOWED" />
-	<define name="DISCORD_ALLOWED" if="desktop || android" />
+	<define name="DISCORD_ALLOWED" if="desktop" />
 	<define name="TRANSLATIONS_ALLOWED" />
 	<define name="IRIS_DEBUG"/>
 	<define name="WINDOWS_FUNCTIONS_ALLOWED" if="desktop" />
@@ -94,8 +94,6 @@
 
 	<assets path='art/readme.txt' rename='do NOT readme.txt' unless="mobile" />
 	<assets path='art/PsychEngine.exe' rename='PsychEngine.exe' if="windows" />
-	<assets path="${DISCORD_SOCIAL_SDK_DIR}/bin/release/discord_partner_sdk.dll" rename="discord.dll" if="windows DISCORD_ALLOWED" unless="32bits" />
-	<assets path="${DISCORD_SOCIAL_SDK_DIR}/lib/release/discord_partner_sdk.aar" rename="app/libs/discord_partner_sdk.aar" type="template" if="android DISCORD_ALLOWED" />
 
 	<!-- OpenAL config -->
 	<section if="desktop">
@@ -118,14 +116,11 @@
 	<haxelib name="hscript-iris" version="git" if="HSCRIPT_ALLOWED"/>
 	<haxelib name="hxscript" version="git" if="HSCRIPT_ALLOWED"/>
 	<haxelib name="hxvlc" if="VIDEOS_ALLOWED"/>
-	<haxelib name="hxDiscordSocial" if="DISCORD_ALLOWED"/>
+	<haxelib name="hxdiscord_rpc" if="DISCORD_ALLOWED"/>
 	<haxelib name="flxanimate"/>
 
-	<!-- Enable the official Social SDK backend on supported Windows x64 builds. -->
-	<haxedef name="hxdiscordsocial_native" if="(windows || android) DISCORD_ALLOWED" unless="32bits" />
-	<architecture name="ARM64" if="android DISCORD_ALLOWED" />
-	<architecture exclude="ARMV7" if="android DISCORD_ALLOWED" />
-	<template path="source/mobile" if="android" />
+	<!-- Disable Discord IO Thread -->
+	<haxedef name="DISCORD_DISABLE_IO_THREAD" if="hxdiscord_rpc" />
 	<haxedef name="NO_PRECOMPILED_HEADERS" if="linux" />
 
 	<!-- Suppress warnings for Android compilation -->

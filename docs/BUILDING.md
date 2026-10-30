@@ -2,7 +2,6 @@
 
 * [Dependencies](#dependencies)
 * [Building](#building)
-* [Discord Social SDK in CI](#discord-social-sdk-in-ci)
 
 ---
 
@@ -89,21 +88,6 @@ It depends on your operating system. For Windows, run `windows.bat`, for anythin
 Sit back, relax, and wait for haxelib to do its magic. You will be done when you see the word "**Finished!**"
 
 To build the game, run `lime test cpp`.
-
-## Discord Social SDK in CI
-
-Windows and Android builds use the proprietary Discord Social SDK. It is intentionally not committed to this repository or embedded in the Haxelib. Discord's current SDK terms restrict copying and redistribution, so placing the SDK in a public repository or publishing it inside a library package is not a safe default. See the [official terms](https://support-dev.discord.com/hc/en-us/articles/30225844245271-Discord-Social-SDK-Terms).
-
-The workflow downloads the SDK into the runner's temporary directory and verifies it before compiling. Configure these repository or environment secrets:
-
-```text
-DISCORD_SOCIAL_SDK_URL       # private HTTPS URL to the SDK .zip
-DISCORD_SOCIAL_SDK_SHA256    # SHA-256 of that exact .zip
-```
-
-The download may be a private Release asset, object-storage URL, or an internal artifact service. The archive must contain the normal SDK layout (`include/discordpp.h`, Windows `lib/release` and `bin/release`, Android `lib/release/discord_partner_sdk.aar`). The helper scripts are `setup/install-discord-social-sdk.ps1` and `setup/install-discord-social-sdk.sh`.
-
-For a self-hosted runner, preinstall the SDK and set `DISCORD_SOCIAL_SDK_DIR`; the scripts will reuse it without downloading anything.
 
 ---
 
