@@ -1,23 +1,32 @@
 package backend;
 
 #if DISCORD_ALLOWED
-import Sys.sleep;
-import sys.thread.Thread;
+import haxe.Int64;
+import hxdiscordsocial.Discord as SocialDiscord;
+import hxdiscordsocial.DiscordEvent;
+import hxdiscordsocial.DiscordResult;
+import hxdiscordsocial.DiscordOperation;
+import hxdiscordsocial.ActivityPlatform;
+import hxdiscordsocial.Presence;
+import hxdiscordsocial.PresenceBuilder;
+import hxdiscordsocial.PresenceButton;
 import lime.app.Application;
-import hxdiscord_rpc.Discord;
-import hxdiscord_rpc.Types;
-import flixel.util.FlxStringUtil;
 
+/** Plus Engine adapter for the backend-independent hxDiscordSocial API. */
 class DiscordClient
 {
-	public static var isInitialized:Bool = false;
+	public static var isInitialized(default, null):Bool = false;
 	private inline static final _defaultID:String = "1449954550134870079";
+	private inline static final _projectURL:String = "https://github.com/LeninAsto/FNF-PlusEngine";
+	private inline static final _credentialPrefix:String = "hxDiscordSocial/PlusEngine/";
 	public static var clientID(default, set):String = _defaultID;
-	private static var presence:DiscordPresence = new DiscordPresence();
-	// hides this field from scripts and reflection in general
-	@:unreflective private static var __thread:Thread;
 
-	public static function check()
+	private static var presence:Presence = new Presence({});
+	private static var listenerRegistered:Bool = false;
+	private static var pollingRegistered:Bool = false;
+	private static var attemptedTokenRestore:Bool = false;
+
+	public static function check():Void
 	{
 		if (ClientPrefs.data.discordRPC)
 			initialize();
@@ -25,255 +34,277 @@ class DiscordClient
 			shutdown();
 	}
 
-	public static function prepare()
+	public static function prepare():Void
 	{
+		registerEvents();
+		if (!pollingRegistered && Application.current != null)
+		{
+			Application.current.onUpdate.add(poll);
+			pollingRegistered = true;
+		}
+
 		if (!isInitialized && ClientPrefs.data.discordRPC)
 			initialize();
 
-		Application.current.window.onClose.add(function()
+		if (Application.current != null && Application.current.window != null)
 		{
-			if (isInitialized)
-				shutdown();
-		});
+			Application.current.window.onClose.add(function()
+			{
+				if (isInitialized)
+					shutdown();
+			});
+		}
 	}
 
-	public dynamic static function shutdown()
+	public static function initialize(?applicationId:String):Bool
 	{
+		registerEvents();
+		if (applicationId != null && applicationId.length > 0)
+			clientID = applicationId;
+		if (isInitialized)
+			return true;
+
+		var result = SocialDiscord.initialize(clientID);
+		if (!accepted(result))
+		{
+			traceRejected("initialize", result);
+			return false;
+		}
+
+		isInitialized = true;
+		attemptedTokenRestore = false;
+		changePresence();
+		trace('Discord Social SDK initialization requested for $clientID');
+		return true;
+	}
+
+	public static function shutdown():Void
+	{
+		if (!isInitialized)
+			return;
+
+		SocialDiscord.clearPresence();
+		SocialDiscord.shutdown();
+		SocialDiscord.poll();
 		isInitialized = false;
-		Discord.Shutdown();
 		trace("Discord Client shutdown");
 	}
 
-	private static function onReady(request:cpp.RawConstPointer<DiscordUser>):Void
+	public static function changePresence(details:String = "In the Menus", ?state:String, ?smallImageKey:String, ?hasStartTimestamp:Bool, ?endTimestamp:Float,
+			largeImageKey:String = "icon"):Bool
 	{
-		final user = cast(request[0].username, String);
-		final discriminator = cast(request[0].discriminator, String);
+		var nowSeconds = Date.now().getTime() / 1000;
+		var start:Null<Int64> = hasStartTimestamp == true ? Int64.fromFloat(nowSeconds) : null;
+		var end:Null<Int64> = endTimestamp != null && endTimestamp > 0 ? Int64.fromFloat(nowSeconds + endTimestamp / 1000) : null;
 
-		var message = '(Discord) Connected to User ';
-		if (discriminator != '0') // Old discriminators
-			message += '($user#$discriminator)';
-		else // New Discord IDs/Discriminator system
-			message += '($user)';
-
-		trace(message);
-		changePresence();
+		return submitPresence(buildPresence(details, state, smallImageKey, largeImageKey, start, end));
 	}
 
-	private static function onError(errorCode:Int, message:cpp.ConstCharStar):Void
+	/** Sets Presence with absolute Unix timestamps in seconds for scripts and new integrations. */
+	public static function setPresence(details:String = "In the Menus", ?state:String, ?smallImageKey:String, ?startTimestamp:Float, ?endTimestamp:Float,
+			largeImageKey:String = "icon"):Bool
 	{
-		trace('Discord: Error ($errorCode: ${cast (message, String)})');
+		return submitPresence(buildPresence(details, state, smallImageKey, largeImageKey, unixTimestamp(startTimestamp), unixTimestamp(endTimestamp)));
 	}
 
-	private static function onDisconnected(errorCode:Int, message:cpp.ConstCharStar):Void
+	/** Opens Discord's OAuth consent using PKCE. Requires Public Client in Developer Portal. */
+	public static function authorize(?scopes:String):Bool {
+		if (!isInitialized && !initialize()) return false;
+		return accepted(SocialDiscord.authorize(scopes));
+	}
+	public static function restoreToken(accessToken:String):Bool return accepted(SocialDiscord.restoreToken(accessToken));
+	public static function refreshToken(refreshToken:String):Bool return accepted(SocialDiscord.refreshToken(refreshToken));
+	public static function logout():Bool {
+		clearStoredCredentials();
+		return isInitialized && accepted(SocialDiscord.logout());
+	}
+	public static function getAuthState():String return Std.string(SocialDiscord.authState);
+	public static function getDiscordUserId():String return SocialDiscord.currentUser == null ? "" : SocialDiscord.currentUser.id;
+	public static function getDiscordDisplayName():String return SocialDiscord.currentUser == null ? "" : SocialDiscord.currentUser.displayName;
+
+	public static function updatePresence():Bool
 	{
-		trace('Discord: Disconnected ($errorCode: ${cast (message, String)})');
+		return submitPresence(presence);
 	}
 
-	public static function initialize()
+	public static function clearPresence():Bool
 	{
-		var discordHandlers:DiscordEventHandlers = #if (hxdiscord_rpc > "1.2.4") new DiscordEventHandlers(); #else DiscordEventHandlers.create(); #end
-		discordHandlers.ready = cpp.Function.fromStaticFunction(onReady);
-		discordHandlers.disconnected = cpp.Function.fromStaticFunction(onDisconnected);
-		discordHandlers.errored = cpp.Function.fromStaticFunction(onError);
-		Discord.Initialize(clientID, cpp.RawPointer.addressOf(discordHandlers), #if (hxdiscord_rpc > "1.2.4") false #else 1 #end, null);
-
 		if (!isInitialized)
-			trace("Discord Client initialized");
-
-		if (__thread == null)
-		{
-			__thread = Thread.create(() ->
-			{
-				while (true)
-				{
-					if (isInitialized)
-					{
-						#if DISCORD_DISABLE_IO_THREAD
-						Discord.UpdateConnection();
-						#end
-						Discord.RunCallbacks();
-					}
-
-					// Wait 1 second until the next loop...
-					Sys.sleep(1.0);
-				}
-			});
-		}
-		isInitialized = true;
+			return false;
+		var result = SocialDiscord.clearPresence();
+		if (!accepted(result))
+			traceRejected("clearPresence", result);
+		return accepted(result);
 	}
 
-	public static function changePresence(details:String = 'In the Menus', ?state:String, ?smallImageKey:String, ?hasStartTimestamp:Bool, ?endTimestamp:Float,
-			largeImageKey:String = 'icon')
-	{
-		var startTimestamp:Float = 0;
-		if (hasStartTimestamp)
-			startTimestamp = Date.now().getTime();
-		if (endTimestamp > 0)
-			endTimestamp = startTimestamp + endTimestamp;
-
-		presence.state = state;
-		presence.details = details;
-		presence.smallImageKey = smallImageKey;
-		presence.largeImageKey = largeImageKey;
-		presence.largeImageText = "Plus Engine v" + states.MainMenuState.plusEngineVersion;
-		// Obtained times are in milliseconds so they are divided so Discord can use it
-		presence.startTimestamp = Std.int(startTimestamp / 1000);
-		presence.endTimestamp = Std.int(endTimestamp / 1000);
-		updatePresence();
-
-		// trace('Discord RPC Updated. Arguments: $details, $state, $smallImageKey, $hasStartTimestamp, $endTimestamp, $largeImageKey');
-	}
-
-	public static function updatePresence()
-	{
-		Discord.UpdatePresence(cpp.RawConstPointer.addressOf(presence.__presence));
-	}
-
-	inline public static function resetClientID()
+	public static inline function resetClientID():Void
 	{
 		clientID = _defaultID;
 	}
 
-	private static function set_clientID(newID:String)
+	private static function set_clientID(newID:String):String
 	{
-		var change:Bool = (clientID != newID);
+		if (newID == null || newID.length == 0)
+			newID = _defaultID;
+		var changed = clientID != newID;
 		clientID = newID;
 
-		if (change && isInitialized)
+		if (changed && isInitialized)
 		{
-			shutdown();
-			initialize();
-			updatePresence();
+			attemptedTokenRestore = false;
+			var result = SocialDiscord.changeApplication(clientID);
+			if (!accepted(result))
+				traceRejected("changeApplication", result);
 		}
 		return newID;
 	}
 
-	#if (MODS_ALLOWED && DISCORD_ALLOWED)
-	public static function loadModRPC()
+	#if MODS_ALLOWED
+	public static function loadModRPC():Void
 	{
 		var pack:Dynamic = Mods.getPack();
-		if (pack != null && pack.discordRPC != null && pack.discordRPC != clientID)
-		{
-			clientID = pack.discordRPC;
-			// trace('Changing clientID! $clientID, $_defaultID');
-		}
+		var applicationId:Dynamic = pack == null ? null : Reflect.field(pack, "discordApplicationId");
+		if (applicationId != null && Std.isOfType(applicationId, String) && applicationId != clientID)
+			clientID = applicationId;
 	}
 	#end
 
 	#if LUA_ALLOWED
-	public static function addLuaCallbacks(lua:State)
+	public static function addLuaCallbacks(lua:State):Void
 	{
-		Lua_helper.add_callback(lua, "changeDiscordPresence", changePresence);
-		Lua_helper.add_callback(lua, "changeDiscordClientID", function(?newID:String)
+		Lua_helper.add_callback(lua, "discordInitialize", function(?applicationId:String) return initialize(applicationId));
+		Lua_helper.add_callback(lua, "discordSetPresence", setPresence);
+		Lua_helper.add_callback(lua, "discordClearPresence", clearPresence);
+		Lua_helper.add_callback(lua, "discordShutdown", function()
 		{
-			if (newID == null)
-				newID = _defaultID;
-			clientID = newID;
+			shutdown();
+			return true;
 		});
+		Lua_helper.add_callback(lua, "discordAuthorize", authorize);
+		Lua_helper.add_callback(lua, "discordRestoreToken", restoreToken);
+		Lua_helper.add_callback(lua, "discordRefreshToken", refreshToken);
+		Lua_helper.add_callback(lua, "discordLogout", logout);
+		Lua_helper.add_callback(lua, "discordGetAuthState", getAuthState);
+		Lua_helper.add_callback(lua, "discordGetUserId", getDiscordUserId);
+		Lua_helper.add_callback(lua, "discordGetDisplayName", getDiscordDisplayName);
 	}
 	#end
-}
 
-@:allow(backend.DiscordClient)
-private final class DiscordPresence
-{
-	public var state(get, set):String;
-	public var details(get, set):String;
-	public var smallImageKey(get, set):String;
-	public var largeImageKey(get, set):String;
-	public var largeImageText(get, set):String;
-	public var startTimestamp(get, set):Int;
-	public var endTimestamp(get, set):Int;
-
-	@:noCompletion private var __presence:DiscordRichPresence;
-
-	function new()
+	private static function submitPresence(value:Presence):Bool
 	{
-		__presence = #if (hxdiscord_rpc > "1.2.4") new DiscordRichPresence(); #else DiscordRichPresence.create(); #end
+		if (!isInitialized && !initialize())
+			return false;
+		presence = value.copy();
+		var result = SocialDiscord.setPresence(presence);
+		if (!accepted(result))
+			traceRejected("setPresence", result);
+		return accepted(result);
 	}
 
-	public function toString():String
+	private static function buildPresence(details:String, state:Null<String>, smallImageKey:Null<String>, largeImageKey:String,
+			start:Null<Int64>, end:Null<Int64>):Presence
 	{
-		return FlxStringUtil.getDebugString([
-			LabelValuePair.weak("state", state),
-			LabelValuePair.weak("details", details),
-			LabelValuePair.weak("smallImageKey", smallImageKey),
-			LabelValuePair.weak("largeImageKey", largeImageKey),
-			LabelValuePair.weak("largeImageText", largeImageText),
-			LabelValuePair.weak("startTimestamp", startTimestamp),
-			LabelValuePair.weak("endTimestamp", endTimestamp)
-		]);
+		var showDetails = ClientPrefs.data.discordRPCDetails;
+		var builder = new PresenceBuilder()
+			.identity("Friday Night Funkin': Plus Engine")
+			.text(details, showDetails ? state : null)
+			.largeAsset(largeImageKey, "Plus Engine v" + states.MainMenuState.plusEngineVersion, _projectURL)
+			.buttons([new PresenceButton("View Plus Engine", _projectURL)])
+			.platforms(ActivityPlatform.Desktop | ActivityPlatform.Android);
+		if (showDetails)
+		{
+			builder.smallAsset(smallImageKey, state);
+			builder.timestamps(start, end);
+		}
+		return builder.build();
 	}
 
-	@:noCompletion inline function get_state():String
+	private static function registerEvents():Void
 	{
-		return __presence.state;
+		if (listenerRegistered)
+			return;
+		SocialDiscord.addListener(onDiscordEvent);
+		listenerRegistered = true;
 	}
 
-	@:noCompletion inline function set_state(value:String):String
+	private static function poll(_deltaTime:Int):Void
 	{
-		return __presence.state = value;
+		if (isInitialized)
+			SocialDiscord.poll();
 	}
 
-	@:noCompletion inline function get_details():String
+	private static function onDiscordEvent(event:DiscordEvent):Void
 	{
-		return __presence.details;
+		switch (event)
+		{
+			case Ready(id):
+				trace('Discord Social SDK ready ($id)');
+				restoreStoredSession();
+			case PresenceUpdated(value):
+				trace('Discord Rich Presence updated: $value');
+			case PresenceCleared:
+			case AuthorizationStarted:
+				trace("Discord authorization opened");
+			case Authenticated(token):
+				var accessSaved = DiscordCredentialStorage.write(credentialKey("access"), token.accessToken);
+				var refreshSaved = DiscordCredentialStorage.write(credentialKey("refresh"), token.refreshToken);
+				trace(accessSaved && refreshSaved ? "Discord authorization saved securely" : "Discord authorization succeeded, but secure token storage failed");
+			case AuthenticationReady(user):
+				trace('Discord signed in as ${user.displayName} (${user.id})');
+			case TokenRefreshRequired:
+				var refresh = DiscordCredentialStorage.read(credentialKey("refresh"));
+				if (refresh != null) refreshToken(refresh); else trace("Discord token needs refreshing, but no refresh token is stored");
+			case LoggedOut:
+				trace("Discord account disconnected");
+			case Disconnected(error):
+				trace('Discord disconnected: $error');
+			case Error(operation, error):
+				trace('Discord $operation error: $error');
+				if (!error.retryable && (operation == DiscordOperation.RestoreToken || operation == DiscordOperation.RefreshToken))
+					clearStoredCredentials();
+			case Shutdown:
+		}
 	}
 
-	@:noCompletion inline function set_details(value:String):String
+	private static function restoreStoredSession():Void
 	{
-		return __presence.details = value;
+		if (attemptedTokenRestore || !DiscordCredentialStorage.available()) return;
+		attemptedTokenRestore = true;
+		var access = DiscordCredentialStorage.read(credentialKey("access"));
+		if (access != null && !restoreToken(access)) trace("Stored Discord session could not be restored");
 	}
 
-	@:noCompletion inline function get_smallImageKey():String
+	private static function clearStoredCredentials():Void
 	{
-		return __presence.smallImageKey;
+		DiscordCredentialStorage.remove(credentialKey("access"));
+		DiscordCredentialStorage.remove(credentialKey("refresh"));
 	}
 
-	@:noCompletion inline function set_smallImageKey(value:String):String
+	private static inline function credentialKey(kind:String):String
+		return _credentialPrefix + clientID + "/" + kind;
+
+	private static function unixTimestamp(value:Null<Float>):Null<Int64>
 	{
-		return __presence.smallImageKey = value;
+		return value != null && value > 0 ? Int64.fromFloat(value) : null;
 	}
 
-	@:noCompletion inline function get_largeImageKey():String
+	private static function accepted(result:DiscordResult):Bool
 	{
-		return __presence.largeImageKey;
+		return switch (result)
+		{
+			case Accepted: true;
+			case Rejected(_): false;
+		};
 	}
 
-	@:noCompletion inline function set_largeImageKey(value:String):String
+	private static function traceRejected(operation:String, result:DiscordResult):Void
 	{
-		return __presence.largeImageKey = value;
-	}
-
-	@:noCompletion inline function get_largeImageText():String
-	{
-		return __presence.largeImageText;
-	}
-
-	@:noCompletion inline function set_largeImageText(value:String):String
-	{
-		return __presence.largeImageText = value;
-	}
-
-	@:noCompletion inline function get_startTimestamp():Int
-	{
-		return __presence.startTimestamp;
-	}
-
-	@:noCompletion inline function set_startTimestamp(value:Int):Int
-	{
-		return __presence.startTimestamp = value;
-	}
-
-	@:noCompletion inline function get_endTimestamp():Int
-	{
-		return __presence.endTimestamp;
-	}
-
-	@:noCompletion inline function set_endTimestamp(value:Int):Int
-	{
-		return __presence.endTimestamp = value;
+		switch (result)
+		{
+			case Accepted:
+			case Rejected(error):
+				trace('Discord $operation rejected: $error');
+		}
 	}
 }
 #end
-
