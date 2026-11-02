@@ -2656,9 +2656,8 @@ class PlayState extends MusicBeatState
 			setSongTime(Math.max(0, Conductor.songPosition));
 		}
 
-		#if android
-		updateAndroidComboSprites(elapsed);
-		#end
+		if (ClientPrefs.data.runOnLightVisual)
+		    updatePooledComboSprites(elapsed);
 
 		#if MODCHART_ALLOWED
 		mcDebug(elapsed);
@@ -3878,17 +3877,15 @@ class PlayState extends MusicBeatState
 	// Stores Ratings and Combo Sprites in a group
 	public var comboGroup:FlxSpriteGroup;
 	var comboSpritePool:Array<FlxSprite> = [];
-	#if android
-	var androidComboSpritePool:Array<FlxSprite> = [];
-	var androidComboSpriteLife:Array<Float> = [];
-	var androidComboSpriteFadeStart:Array<Float> = [];
-	var androidRatingGraphics:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
-	var androidNumGraphics:Array<FlxGraphic> = [];
-	var androidMinusGraphic:FlxGraphic;
-	var androidComboKGraphic:FlxGraphic;
-	var androidComboMGraphic:FlxGraphic;
-	var androidComboDotGraphic:FlxGraphic;
-	#end
+	var pooledComboSpritePool:Array<FlxSprite> = [];
+	var pooledComboSpriteLife:Array<Float> = [];
+	var pooledComboSpriteFadeStart:Array<Float> = [];
+	var pooledRatingGraphics:Map<String, FlxGraphic> = new Map<String, FlxGraphic>();
+	var pooledNumGraphics:Array<FlxGraphic> = [];
+	var pooledMinusGraphic:FlxGraphic;
+	var pooledComboKGraphic:FlxGraphic;
+	var pooledComboMGraphic:FlxGraphic;
+	var pooledComboDotGraphic:FlxGraphic;
 	var breakTimerHud:BreakTimerHud = null;
 	// Stores HUD Objects in a Group
 	public var uiGroup:FlxSpriteGroup;
@@ -3910,42 +3907,40 @@ class PlayState extends MusicBeatState
 		Paths.image(uiAsset('early'));
 		Paths.image(uiAsset('late'));
 
-		#if android
-		androidRatingGraphics.clear();
-		androidNumGraphics.resize(0);
-		for (rating in ratingsData)
-			androidRatingGraphics.set(rating.image, Paths.image(uiAsset(rating.image)));
-		androidRatingGraphics.set('miss', Paths.image(uiAsset('miss')));
-		androidMinusGraphic = Paths.image(popupMinusAsset());
-		androidComboKGraphic = Paths.image(uiAsset('k'));
-		androidComboMGraphic = Paths.image(uiAsset('m'));
-		androidComboDotGraphic = Paths.image(uiAsset('dot'));
-		for (i in 0...10)
-			androidNumGraphics[i] = Paths.image(uiAsset('num' + i));
-		for (i in 0...18)
-			createAndroidComboSprite();
-		#end
+		if (ClientPrefs.data.runOnLightVisual)
+			pooledRatingGraphics.clear();
+			pooledNumGraphics.resize(0);
+			for (rating in ratingsData)
+				pooledRatingGraphics.set(rating.image, Paths.image(uiAsset(rating.image)));
+			pooledRatingGraphics.set('miss', Paths.image(uiAsset('miss')));
+			pooledMinusGraphic = Paths.image(popupMinusAsset());
+			pooledComboKGraphic = Paths.image(uiAsset('k'));
+			pooledComboMGraphic = Paths.image(uiAsset('m'));
+			pooledComboDotGraphic = Paths.image(uiAsset('dot'));
+			for (i in 0...10)
+				pooledNumGraphics[i] = Paths.image(uiAsset('num' + i));
+			for (i in 0...18)
+				createPooledComboSprite();
 	}
 
-	#if android
-	function createAndroidComboSprite():FlxSprite
+	function createPooledComboSprite():FlxSprite
 	{
 		var spr:FlxSprite = new FlxSprite();
-		spr.ID = androidComboSpritePool.length;
+		spr.ID = pooledComboSpritePool.length;
 		spr.exists = false;
 		spr.active = false;
 		spr.visible = false;
-		androidComboSpritePool.push(spr);
-		androidComboSpriteLife.push(0);
-		androidComboSpriteFadeStart.push(0);
+		pooledComboSpritePool.push(spr);
+		pooledComboSpriteLife.push(0);
+		pooledComboSpriteFadeStart.push(0);
 		if (comboGroup != null)
 			comboGroup.add(spr);
 		return spr;
 	}
 
-	function getAndroidComboSprite():FlxSprite
+	function getPooledComboSprite():FlxSprite
 	{
-		for (spr in androidComboSpritePool)
+		for (spr in pooledComboSpritePool)
 			if (spr != null && !spr.exists)
 			{
 				// Recycled sprites keep their old group index. Move each new popup to
@@ -3957,10 +3952,10 @@ class PlayState extends MusicBeatState
 				}
 				return spr;
 			}
-		return createAndroidComboSprite();
+		return createPooledComboSprite();
 	}
 
-	function releaseAndroidComboSprite(spr:FlxSprite):Void
+	function releasePooledComboSprite(spr:FlxSprite):Void
 	{
 		if (spr == null)
 			return;
@@ -3972,14 +3967,14 @@ class PlayState extends MusicBeatState
 		spr.color = FlxColor.WHITE;
 		spr.velocity.set();
 		spr.acceleration.set();
-		if (spr.ID >= 0 && spr.ID < androidComboSpriteLife.length)
+		if (spr.ID >= 0 && spr.ID < pooledComboSpriteLife.length)
 		{
-			androidComboSpriteLife[spr.ID] = 0;
-			androidComboSpriteFadeStart[spr.ID] = 0;
+			pooledComboSpriteLife[spr.ID] = 0;
+			pooledComboSpriteFadeStart[spr.ID] = 0;
 		}
 	}
 
-	function setupAndroidComboSprite(spr:FlxSprite, graphic:FlxGraphic, x:Float, y:Float, scale:Float, antialias:Bool, visible:Bool):Void
+	function setupPooledComboSprite(spr:FlxSprite, graphic:FlxGraphic, x:Float, y:Float, scale:Float, antialias:Bool, visible:Bool):Void
 	{
 		if (spr == null || graphic == null)
 			return;
@@ -4003,34 +3998,34 @@ class PlayState extends MusicBeatState
 		if (visible)
 		{
 			var safeRate:Float = playbackRate <= 0 ? 1 : playbackRate;
-			androidComboSpriteLife[spr.ID] = 0.28 / safeRate;
-			androidComboSpriteFadeStart[spr.ID] = 0.16 / safeRate;
+			pooledComboSpriteLife[spr.ID] = 0.28 / safeRate;
+			pooledComboSpriteFadeStart[spr.ID] = 0.16 / safeRate;
 		}
 	}
 
-	function updateAndroidComboSprites(elapsed:Float):Void
+	function updatePooledComboSprites(elapsed:Float):Void
 	{
-		for (spr in androidComboSpritePool)
+		for (spr in pooledComboSpritePool)
 		{
 			if (spr == null || !spr.exists)
 				continue;
 
 			var id:Int = spr.ID;
-			var life:Float = androidComboSpriteLife[id] - elapsed;
-			androidComboSpriteLife[id] = life;
+			var life:Float = pooledComboSpriteLife[id] - elapsed;
+			pooledComboSpriteLife[id] = life;
 			if (life <= 0)
 			{
-				releaseAndroidComboSprite(spr);
+				releasePooledComboSprite(spr);
 				continue;
 			}
 
-			var fadeStart:Float = androidComboSpriteFadeStart[id];
+			var fadeStart:Float = pooledComboSpriteFadeStart[id];
 			if (life < fadeStart && fadeStart > 0)
 				spr.alpha = life / fadeStart;
 		}
 	}
 
-	function popUpScoreAndroid(daRating:Rating, isMiss:Bool = false):Void
+	function popUpScorePooled(daRating:Rating, isMiss:Bool = false):Void
 	{
 		if (!ClientPrefs.data.popUpRating || ClientPrefs.data.hideHud || comboGroup == null)
 			return;
@@ -4042,8 +4037,8 @@ class PlayState extends MusicBeatState
 		var placement:Float = FlxG.width * 0.35;
 		var ratingScale:Float = PlayState.isPixelStage ? daPixelZoom * 0.85 : 0.7;
 		var numScale:Float = PlayState.isPixelStage ? daPixelZoom : 0.5;
-		var rating:FlxSprite = getAndroidComboSprite();
-		setupAndroidComboSprite(rating, androidRatingGraphics.get(isMiss ? 'miss' : daRating.image), placement - 40 + ClientPrefs.data.comboOffset[0],
+		var rating:FlxSprite = getPooledComboSprite();
+		setupPooledComboSprite(rating, pooledRatingGraphics.get(isMiss ? 'miss' : daRating.image), placement - 40 + ClientPrefs.data.comboOffset[0],
 			(FlxG.height * 0.5) - 60 - ClientPrefs.data.comboOffset[1], ratingScale, antialias, showRating);
 
 		if (!showComboNum || (!isMiss && combo > 0 && combo < 10))
@@ -4059,23 +4054,22 @@ class PlayState extends MusicBeatState
 			var digit:Null<Int> = isMinus ? null : Std.parseInt(character);
 			var graphic:FlxGraphic = switch (character)
 			{
-				case '-': androidMinusGraphic;
-				case '.': androidComboDotGraphic;
-				case 'k': androidComboKGraphic;
-				case 'M': androidComboMGraphic;
-				default: digit != null && digit >= 0 && digit <= 9 ? androidNumGraphics[digit] : null;
+				case '-': pooledMinusGraphic;
+				case '.': pooledComboDotGraphic;
+				case 'k': pooledComboKGraphic;
+				case 'M': pooledComboMGraphic;
+				default: digit != null && digit >= 0 && digit <= 9 ? pooledNumGraphics[digit] : null;
 			};
 			if (graphic == null)
 				continue;
 
-			var numScore:FlxSprite = getAndroidComboSprite();
-			setupAndroidComboSprite(numScore, graphic, placement + (43 * i) - 90 + ClientPrefs.data.comboOffset[2],
+			var numScore:FlxSprite = getPooledComboSprite();
+			setupPooledComboSprite(numScore, graphic, placement + (43 * i) - 90 + ClientPrefs.data.comboOffset[2],
 				(FlxG.height * 0.5) + 80 - ClientPrefs.data.comboOffset[3], numScale, antialias, true);
 			numScore.velocity.x = ClientPrefs.data.comboStacking ? 0 : FlxG.random.float(-3, 3) * playbackRate;
 			if (isMiss) numScore.color = 0xFFB060FF;
 		}
 	}
-	#end
 
 	inline function uiAsset(name:String):String
 		return Paths.getUIPath(name);
@@ -4363,13 +4357,12 @@ class PlayState extends MusicBeatState
 
 			FlxTween.cancelTweensOf(spr);
 			if (spr.scale != null) FlxTween.cancelTweensOf(spr.scale);
-			#if android
-			if (spr.ID >= 0 && spr.ID < androidComboSpritePool.length && androidComboSpritePool[spr.ID] == spr)
-			{
-				releaseAndroidComboSprite(spr);
-				continue;
-			}
-			#end
+			if (ClientPrefs.data.runOnLightVisual)
+				if (spr.ID >= 0 && spr.ID < pooledComboSpritePool.length && pooledComboSpritePool[spr.ID] == spr)
+				{
+					releasePooledComboSprite(spr);
+					continue;
+				}
 			releaseComboSprite(spr);
 		}
 	}
@@ -4384,11 +4377,7 @@ class PlayState extends MusicBeatState
 		var hitDiff:Float = isMiss ? 0 : (note.strumTime - Conductor.songPosition + ClientPrefs.data.ratingOffset) / playbackRate;
 		var noteDiff:Float = Math.abs(hitDiff);
 		if (!isMiss) vocals.volume = 1;
-		#if android
-		var lightHitVisuals:Bool = !ClientPrefs.data.nfRatingStyle;
-		#else
-		var lightHitVisuals:Bool = false;
-		#end
+		var lightHitVisuals:Bool = ClientPrefs.data.runOnLightVisual;
 
 		if (!suppressDenseVisuals && !lightHitVisuals
 			&& (skipDenseBotplayNoteScripts() || !ClientPrefs.data.comboStacking || ClientPrefs.data.nfRatingStyle))
@@ -4438,9 +4427,7 @@ class PlayState extends MusicBeatState
 
 		if (lightHitVisuals)
 		{
-			#if android
-			popUpScoreAndroid(daRating, isMiss);
-			#end
+			popUpScorePooled(daRating, isMiss);
 			return;
 		}
 		var antialias:Bool = ClientPrefs.data.antialiasing;
@@ -5045,11 +5032,7 @@ class PlayState extends MusicBeatState
 	{
 		if(note.wasGoodHit) return;
 		if(cpuControlled && note.ignoreNote) return;
-		#if android
 		var lightHitVisuals = ClientPrefs.data.runOnLightVisual;
-		#else
-		var lightHitVisuals:Bool = false;
-		#end
 
 		var isSus:Bool = note.isSustainNote; //GET OUT OF MY HEAD, GET OUT OF MY HEAD, GET OUT OF MY HEAD
 		var leData:Int = Math.round(Math.abs(note.noteData));
@@ -5711,11 +5694,7 @@ class PlayState extends MusicBeatState
 	}
 
 	public function RecalculateRating(badHit:Bool = false, scoreBop:Bool = true) {
-		#if android
-		var refreshScore:Bool = badHit || (Conductor.songPosition - lastScoreRefreshTime) >= 50;
-		#else
 		var refreshScore:Bool = true;
-		#end
 
 		if (refreshScore)
 		{
