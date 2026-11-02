@@ -1,78 +1,54 @@
 {
 	"animations": [
 		{
-			"offsets": [
-				-218,
-				-280
-			],
+			"offsets": [-218, -280],
 			"loop": false,
+			"fps": 24,
 			"anim": "idle",
-			"fps": 24,
-			"name": "idle spirit_",
-			"indices": []
+			"indices": [],
+			"name": "idle spirit"
 		},
 		{
-			"offsets": [
-				-200,
-				-280
-			],
+			"offsets": [-200, -280],
 			"loop": false,
+			"fps": 24,
 			"anim": "singLEFT",
-			"fps": 24,
-			"name": "left_",
-			"indices": []
+			"indices": [],
+			"name": "left"
 		},
 		{
-			"offsets": [
-				170,
-				110
-			],
+			"offsets": [170, 110],
 			"loop": false,
+			"fps": 24,
 			"anim": "singDOWN",
-			"fps": 24,
-			"name": "spirit down_",
-			"indices": []
+			"indices": [],
+			"name": "spirit down"
 		},
 		{
-			"offsets": [
-				-220,
-				-280
-			],
+			"offsets": [-220, -280],
 			"loop": false,
+			"fps": 24,
 			"anim": "singRIGHT",
-			"fps": 24,
-			"name": "right_",
-			"indices": []
+			"indices": [],
+			"name": "right"
 		},
 		{
-			"offsets": [
-				-220,
-				-240
-			],
+			"offsets": [-220, -240],
 			"loop": false,
-			"anim": "singUP",
 			"fps": 24,
-			"name": "up_",
-			"indices": []
+			"anim": "singUP",
+			"indices": [],
+			"name": "up"
 		}
 	],
+	"vocals_file": "",
 	"no_antialiasing": true,
 	"image": "characters/spirit",
-	"position": [
-		-150,
-		100
-	],
+	"position": [170, 420],
 	"healthicon": "spirit-pixel",
 	"flip_x": false,
-	"healthbar_colors": [
-		255,
-		60,
-		110
-	],
-	"camera_position": [
-		0,
-		0
-	],
+	"healthbar_colors": [255, 60, 110],
+	"camera_position": [-700, -690],
 	"sing_duration": 4,
 	"scale": 6
 }

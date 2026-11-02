@@ -1,13 +1,14 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<TextureAtlas imagePath="dialogueBox-senpaiMad.png">
-	<!-- Created with Adobe Animate version 20.0.0.17400 -->
-	<!-- http://www.adobe.com/products/animate.html -->
-	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10000" x="0" y="0" width="249" height="144"/>
-	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10001" x="259" y="0" width="249" height="144"/>
-	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10002" x="0" y="154" width="249" height="144"/>
-	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10003" x="259" y="154" width="249" height="144"/>
-	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10004" x="0" y="308" width="249" height="144"/>
-	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10005" x="0" y="308" width="249" height="144"/>
-	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10006" x="259" y="308" width="249" height="144"/>
-	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10007" x="259" y="308" width="249" height="144"/>
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Created with Heroic Packer v0.1.5 https://heroicpacker.heroeyad.dev/
+-->
+<TextureAtlas imagePath="dialogueBox-senpaiMad.png" width="1254" height="113" spritePadding="3" borderPadding="1">
+	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10000" x="1" y="1" width="215" height="111" frameX="-22" frameY="-12" frameWidth="249" frameHeight="144"/>
+	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10001" x="1051" y="1" width="202" height="110" frameX="-26" frameY="-15" frameWidth="249" frameHeight="144"/>
+	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10002" x="428" y="1" width="205" height="111" frameX="-20" frameY="-11" frameWidth="249" frameHeight="144"/>
+	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10003" x="844" y="1" width="204" height="108" frameX="-24" frameY="-16" frameWidth="249" frameHeight="144"/>
+	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10004" x="219" y="1" width="206" height="111" frameX="-20" frameY="-14" frameWidth="249" frameHeight="144"/>
+	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10005" x="219" y="1" width="206" height="111" frameX="-20" frameY="-14" frameWidth="249" frameHeight="144"/>
+	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10006" x="636" y="1" width="205" height="109" frameX="-22" frameY="-15" frameWidth="249" frameHeight="144"/>
+	<SubTexture name="SENPAI ANGRY IMPACT SPEECH instance 10007" x="636" y="1" width="205" height="109" frameX="-22" frameY="-15" frameWidth="249" frameHeight="144"/>
 </TextureAtlas>
