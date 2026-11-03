@@ -204,11 +204,12 @@ class MusicBeatState extends BaseMusicBeatState
 		}
 
 		var fullscreen:Bool = backend.WindowMode.isFullscreen();
-		if (FlxG.save.data != null && (!_hasSavedFullscreen || _lastSavedFullscreen != fullscreen))
+		if (backend.WindowMode.fullscreenPreferenceReady && FlxG.save.data != null && (!_hasSavedFullscreen || _lastSavedFullscreen != fullscreen))
 		{
 			FlxG.save.data.fullscreen = fullscreen;
 			_lastSavedFullscreen = fullscreen;
 			_hasSavedFullscreen = true;
+			FlxG.save.flush();
 		}
 
 		// Screenshot support with F10 (F5 is used by Freeplay reload)

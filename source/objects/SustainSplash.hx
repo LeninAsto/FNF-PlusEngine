@@ -164,7 +164,13 @@ class SustainSplash extends FlxSprite
 	inline function refreshHoldClip():Void
 	{
 		clipRect = null;
-		clipRect = new flixel.math.FlxRect(0, !PlayState.isPixelStage ? 0 : -210, frameWidth, frameHeight);
+		// The classic (non-RGB) atlas has trimmed frames with negative frame
+		// offsets. A sprite clip rect is applied before those offsets by the
+		// native FlxSprite renderer, so it erases holdStart/hold entirely. The
+		// modchart renderer does not use this clip rect, which is why the bug was
+		// only visible without a manager. RGB keeps its existing clipping path.
+		if (Note.usesRGBShader())
+			clipRect = new flixel.math.FlxRect(0, !PlayState.isPixelStage ? 0 : -210, frameWidth, frameHeight);
 	}
 
 	public function finishHold():Void
