@@ -39,6 +39,26 @@ class HScript extends Iris
 	public var returnValue:Dynamic;
 	public var scriptName:String = '';
 	var hookCache:Map<String, Bool> = new Map();
+	var repairedLuaShaderTags:Map<String, Bool> = new Map();
+	#if (!flash && sys)
+	var missingLuaObjectShader:shaders.ErrorHandledShader.ErrorHandledRuntimeShader;
+	#end
+
+	// Old Psych Lua mods commonly use this inside runHaxeCode.  Iris evaluates
+	// the expression more strictly than the old SScript bridge did, so a missing
+	// Lua tag reaches ShaderFilter as null. Keep the repair in memory only.
+	static final LEGACY_LUA_OBJECT_SHADER:EReg = ~/game\.getLuaObject\(\s*["']([^"']+)["']\s*\)\s*\.shader/g;
+
+	static function repairLegacyLuaShaderAccess(code:String):String
+	{
+		if (code == null || !LEGACY_LUA_OBJECT_SHADER.match(code))
+			return code;
+
+		return LEGACY_LUA_OBJECT_SHADER.map(code, function(_)
+		{
+			return 'getLuaObjectShader(' + haxe.Json.stringify(LEGACY_LUA_OBJECT_SHADER.matched(1)) + ')';
+		});
+	}
 
 	#if LUA_ALLOWED
 	public var parentLua:FunkinLua;
@@ -54,6 +74,7 @@ class HScript extends Iris
 
 	public static function initHaxeModuleCode(parent:FunkinLua, code:String, ?varsToBring:Any = null)
 	{
+		code = repairLegacyLuaShaderAccess(code);
 		var hs:HScript = try parent.hscript catch (e) null;
 		if (hs == null)
 		{
@@ -346,6 +367,7 @@ class HScript extends Iris
 		set('ShaderCompatibility', shaders.ShaderCompatibility);
 		#end
 		set('ShaderFilter', flash.filters.ShaderFilter);
+		set('getLuaObjectShader', resolveLuaObjectShader);
 		set('StringTools', StringTools);
 		#if flxanimate
 		set('FlxAnimate', FlxAnimate);
@@ -1022,6 +1044,34 @@ class HScript extends Iris
 		});
 	}
 	#end
+
+	function resolveLuaObjectShader(tag:String):Dynamic
+	{
+		var object:Dynamic = PlayState.instance != null ? PlayState.instance.getLuaObject(tag) : null;
+		var shader:Dynamic = object != null ? Reflect.getProperty(object, 'shader') : null;
+		if (shader != null)
+			return shader;
+
+		// This is deliberately scoped to legacy Haxe snippets. It neither creates a
+		// Lua object nor writes to the mod: the placeholder disappears with this
+		// HScript session and merely keeps a malformed filter entry harmless.
+		#if (!flash && sys)
+		if (missingLuaObjectShader == null)
+			missingLuaObjectShader = new shaders.ErrorHandledShader.ErrorHandledRuntimeShader('__missing_lua_object_shader__');
+
+		if (!repairedLuaShaderTags.exists(tag))
+		{
+			repairedLuaShaderTags.set(tag, true);
+			var message = 'Compatibility repair: $scriptName references missing Lua object "$tag" as a shader. A neutral session-only shader was used; fix the mod script.';
+			if (PlayState.instance != null)
+				PlayState.instance.addTextToDebug(message, FlxColor.YELLOW);
+			trace(message);
+		}
+		return missingLuaObjectShader;
+		#else
+		return null;
+		#end
+	}
 
 	override function call(funcToRun:String, ?args:Array<Dynamic>):IrisCall
 	{

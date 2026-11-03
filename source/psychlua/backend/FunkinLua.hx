@@ -875,6 +875,24 @@ class FunkinLua
 			return PlayState.instance == null ? 0 : PlayState.instance.strumLines.length);
 		Lua_helper.add_callback(lua, "getExtraStrumLineCount", function():Int
 			return PlayState.instance == null ? 0 : Std.int(Math.max(0, PlayState.instance.strumLines.length - 2)));
+		// Runtime visual-only lanes for legacy/custom modcharts. Unlike chart
+		// Extra StrumLines, these never receive notes or input ownership.
+		Lua_helper.add_callback(lua, "makeLuaStrumLine", function(id:String, ?source:Dynamic = 'player'):Bool
+		{
+			if (PlayState.instance == null)
+				return false;
+			var sourceId = 'player';
+			if (Std.isOfType(source, Int) || Std.isOfType(source, Float))
+				sourceId = Std.int(cast source) == 0 ? 'opponent' : 'player';
+			else if (source != null && Std.string(source).trim().length > 0)
+				sourceId = Std.string(source);
+			var created = PlayState.instance.makeLuaStrumLine(id, sourceId);
+			if (!created)
+				luaTrace('makeLuaStrumLine: could not create "$id" from "$sourceId"', false, false, FlxColor.YELLOW);
+			return created;
+		});
+		Lua_helper.add_callback(lua, "isLuaStrumLine", function(id:String):Bool
+			return PlayState.instance != null && PlayState.instance.isLuaStrumLine(id));
 		Lua_helper.add_callback(lua, "getStrumLineIndex", function(id:String):Int
 		{
 			var line = PlayState.instance == null ? null : PlayState.instance.getStrumLine(id);

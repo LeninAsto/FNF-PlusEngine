@@ -88,7 +88,7 @@ class PicoBlazinHandler
 			case "weekend-1-tauntforce":
 				playTauntAnim();
 			case "weekend-1-reversefakeout":
-				playIdleAnim(); // TODO: Which anim?
+				playIdleAnim(); // Reverse fakeout returns Pico to neutral.
 		}
 	}
 
@@ -197,7 +197,7 @@ class PicoBlazinHandler
 	{
 		var bfPos:Int = FlxG.state.members.indexOf(boyfriendGroup);
 		var dadPos:Int = FlxG.state.members.indexOf(dadGroup);
-		if (bfPos < dadPos)
+		if (bfPos < 0 || dadPos < 0 || bfPos < dadPos)
 			return;
 
 		FlxG.state.members[dadPos] = boyfriendGroup;
@@ -208,7 +208,7 @@ class PicoBlazinHandler
 	{
 		var bfPos:Int = FlxG.state.members.indexOf(boyfriendGroup);
 		var dadPos:Int = FlxG.state.members.indexOf(dadGroup);
-		if (bfPos > dadPos)
+		if (bfPos < 0 || dadPos < 0 || bfPos > dadPos)
 			return;
 
 		FlxG.state.members[dadPos] = boyfriendGroup;
@@ -351,7 +351,7 @@ class PicoBlazinHandler
 	{
 		var bfPos:Int = FlxG.state.members.indexOf(boyfriendGroup);
 		var dadPos:Int = FlxG.state.members.indexOf(dadGroup);
-		if (bfPos < dadPos)
+		if (bfPos < 0 || dadPos < 0 || bfPos < dadPos)
 			return;
 
 		FlxG.state.members[dadPos] = boyfriendGroup;
@@ -362,7 +362,7 @@ class PicoBlazinHandler
 	{
 		var bfPos:Int = FlxG.state.members.indexOf(boyfriendGroup);
 		var dadPos:Int = FlxG.state.members.indexOf(dadGroup);
-		if (bfPos > dadPos)
+		if (bfPos < 0 || dadPos < 0 || bfPos > dadPos)
 			return;
 
 		FlxG.state.members[dadPos] = boyfriendGroup;

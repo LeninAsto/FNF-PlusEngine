@@ -185,13 +185,13 @@ class DarnellBlazinHandler
 			case "weekend-1-idle":
 				playIdleAnim();
 			case "weekend-1-fakeout":
-				playCringeAnim(); // TODO: Which anim?
+				playCringeAnim();
 			case "weekend-1-taunt":
 				playPissedConditionalAnim();
 			case "weekend-1-tauntforce":
 				playPissedAnim();
 			case "weekend-1-reversefakeout":
-				playFakeoutAnim(); // TODO: Which anim?
+				playFakeoutAnim();
 		}
 		cantUppercut = false;
 	}
@@ -334,7 +334,7 @@ class DarnellBlazinHandler
 	{
 		var dadPos:Int = FlxG.state.members.indexOf(dadGroup);
 		var bfPos:Int = FlxG.state.members.indexOf(boyfriendGroup);
-		if (dadPos < bfPos)
+		if (dadPos < 0 || bfPos < 0 || dadPos < bfPos)
 			return;
 
 		FlxG.state.members[bfPos] = dadGroup;
@@ -345,7 +345,7 @@ class DarnellBlazinHandler
 	{
 		var dadPos:Int = FlxG.state.members.indexOf(dadGroup);
 		var bfPos:Int = FlxG.state.members.indexOf(boyfriendGroup);
-		if (dadPos > bfPos)
+		if (dadPos < 0 || bfPos < 0 || dadPos > bfPos)
 			return;
 
 		FlxG.state.members[bfPos] = dadGroup;
