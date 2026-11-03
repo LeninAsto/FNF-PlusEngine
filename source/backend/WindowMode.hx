@@ -7,6 +7,8 @@ class WindowMode
 {
 	public static var borderlessFullscreen(default, null):Bool = false;
 	public static var exclusiveFullscreen(default, null):Bool = false;
+	/** Prevents InitState from overwriting the fullscreen value before TitleState restores it. */
+	public static var fullscreenPreferenceReady(default, null):Bool = false;
 
 	static var lastWindowedX:Int = 0;
 	static var lastWindowedY:Int = 0;
@@ -33,6 +35,7 @@ class WindowMode
 
 	public static function applyFullscreenPreference(enable:Bool):Void
 	{
+		fullscreenPreferenceReady = true;
 		#if desktop
 		#if windows
 		var mode = ClientPrefs.data.fullscreenMode;
@@ -46,6 +49,11 @@ class WindowMode
 		setBorderlessFullscreen(enable);
 		#end
 		#end
+	}
+
+	public static function markFullscreenPreferenceReady():Void
+	{
+		fullscreenPreferenceReady = true;
 	}
 
 	public static function reapplyFullscreenPreference():Void

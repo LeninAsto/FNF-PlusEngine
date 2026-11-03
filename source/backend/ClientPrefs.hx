@@ -117,9 +117,9 @@ import mobile.backend.PsychJNI;
 	public var showComboNum:Bool = true;
 	public var showTimingTags:Bool = false;
 	public var showHitMs:Bool = false;
-	#if android
-	public var runOnLightVisual:Bool = true;
-	#end
+	// The pooled hit-visual path is an Android performance fallback. Desktop
+	// keeps the normal renderer so modcharts and desktop visuals stay faithful.
+	public var runOnLightVisual:Bool = #if android true #else false #end;
 	public var comboInGame:Bool = false;
 	public var nfRatingStyle:Bool = false;
 	public var endCountdown:Bool = false; // Enables/disables the end countdown
@@ -425,6 +425,11 @@ class ClientPrefs
 		for (key in Reflect.fields(data))
 			if (key != 'gameplaySettings' && Reflect.hasField(FlxG.save.data, key))
 				Reflect.setField(data, key, Reflect.field(FlxG.save.data, key));
+
+		#if !android
+		// Ignore an old/mobile save value when opening the desktop build.
+		data.runOnLightVisual = false;
+		#end
 
 		if (!Reflect.hasField(FlxG.save.data, 'hardwareAccelerationDefaulted'))
 		{

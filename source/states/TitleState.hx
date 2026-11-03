@@ -120,11 +120,10 @@ class TitleState extends MusicBeatState
 
 		if (!initialized || forceShowIntro)
 		{
-			if (FlxG.save.data != null && FlxG.save.data.fullscreen)
-			{
-				backend.WindowMode.applyFullscreenPreference(FlxG.save.data.fullscreen);
-				// trace('LOADED FULLSCREEN SETTING!!');
-			}
+			if (FlxG.save.data != null && Reflect.hasField(FlxG.save.data, 'fullscreen'))
+				backend.WindowMode.applyFullscreenPreference(Reflect.field(FlxG.save.data, 'fullscreen') == true);
+			else
+				backend.WindowMode.markFullscreenPreferenceReady();
 			persistentUpdate = true;
 			persistentDraw = true;
 			if (!initialized)

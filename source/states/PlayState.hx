@@ -378,10 +378,12 @@ class PlayState extends MusicBeatState
 	public static var nextReloadAll:Bool = false;
 
 	public var luaTouchPad:TouchPad;
+	var gameplayStateGuard:backend.GameplayStateGuard;
 
 	override public function create()
 	{
 		//trace('Playback Rate: ' + playbackRate);
+		gameplayStateGuard = new backend.GameplayStateGuard();
 		_lastLoadedModDirectory = Mods.currentModDirectory;
 		NoteSplash.clearCache();
 		Paths.clearStoredMemory();
@@ -3918,6 +3920,7 @@ class PlayState extends MusicBeatState
 		Paths.image(uiAsset('late'));
 
 		if (ClientPrefs.data.runOnLightVisual)
+		{
 			pooledRatingGraphics.clear();
 			pooledNumGraphics.resize(0);
 			for (rating in ratingsData)
@@ -3931,6 +3934,7 @@ class PlayState extends MusicBeatState
 				pooledNumGraphics[i] = Paths.image(uiAsset('num' + i));
 			for (i in 0...18)
 				createPooledComboSprite();
+		}
 	}
 
 	function createPooledComboSprite():FlxSprite
@@ -5283,6 +5287,11 @@ class PlayState extends MusicBeatState
 		{
 			stageUI = temporaryStageUI;
 			temporaryStageUI = null;
+		}
+		if (gameplayStateGuard != null)
+		{
+			gameplayStateGuard.restore();
+			gameplayStateGuard = null;
 		}
 		shutdownThread = true;
 		FlxG.signals.preUpdate.remove(checkForResync);
