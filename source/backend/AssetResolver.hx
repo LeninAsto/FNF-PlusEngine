@@ -47,11 +47,6 @@ class AssetResolver
 			var levelPath:String = Paths.getFolderPath(file, Paths.currentLevel);
 			if (OpenFlAssets.exists(levelPath, type))
 				return levelPath;
-			#if MODS_ALLOWED
-			var baseLevelPath:String = 'assets/${Mods.BASE_GAME_LOCAL_FOLDER}/${Paths.currentLevel}/$file';
-			if (FileSystem.exists(baseLevelPath))
-				return baseLevelPath;
-			#end
 		}
 
 		var sharedPath:String = Paths.getSharedPath(file);
