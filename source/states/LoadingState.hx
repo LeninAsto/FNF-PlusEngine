@@ -1,6 +1,7 @@
 package states;
 
 import backend.LoadTaskGroup;
+import backend.AssetResolver;
 import haxe.Json;
 import lime.utils.Assets;
 import openfl.display.BitmapData;
@@ -258,6 +259,7 @@ class LoadingState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+		AssetResolver.flushDiagnostics();
 		if (dontUpdate)
 			return;
 		GlobalLoadingOverlay.showPersistent();
@@ -833,6 +835,14 @@ class LoadingState extends MusicBeatState
 				if (song.stage == null || song.stage.length < 1)
 					song.stage = StageData.vanillaSongStage(folder);
 				var stageData:StageFile = StageData.getStageFile(song.stage);
+				var stageDirectory:String = stageData != null && stageData.directory != null ? stageData.directory.trim() : '';
+				if (stageDirectory.length == 0)
+					stageDirectory = StageData.DEFAULT_STAGE_DIRECTORY;
+				if (Paths.currentLevel != stageDirectory)
+				{
+					Paths.setCurrentLevel(stageDirectory);
+					AssetResolver.queueDiagnostic('Loading stage "${song.stage}" from asset folder "$stageDirectory"');
+				}
 				var stageUI:String = stageData != null && stageData.stageUI != null ? stageData.stageUI.trim() : '';
 				var pixelStage:Bool = stageUI == 'pixel' || stageUI.endsWith('-pixel') || (stageUI.length == 0 && stageData != null && stageData.isPixelStage == true);
 				if (stageUI.length == 0)
@@ -931,6 +941,8 @@ class LoadingState extends MusicBeatState
 									imgs.push(sprite.image);
 						}
 					}
+					for (image in imgs)
+						AssetResolver.reportStageImageFallback(image);
 					prepare(imgs, snds, mscs);
 				}
 
