@@ -38,6 +38,7 @@ import states.play.HudSafeZone;
 import states.play.NoteSplashHelper;
 import states.play.PlayModes;
 import states.play.RatingNames;
+import mobile.backend.MobileScaleMode;
 #if windows
 import states.play.WindowBorderPulse;
 #end
@@ -890,7 +891,7 @@ class PlayState extends MusicBeatState
 				s.y = strumLineY;
 				if (lineIdx < 2)
 				{
-					s.x = strumLineX + Note.swagWidth * s.noteData + 50
+					s.x = strumLineX + Note.swagWidth * lane + 50
 						+ MobileScaleMode.getHorizontalOffset()
 						+ (MobileScaleMode.getSafeWidth() / 2) * lineIdx;
 				}

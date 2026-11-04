@@ -223,7 +223,7 @@ class MusicBeatState extends BaseMusicBeatState
 		{
 			persistentUpdate = persistentDraw = true;
 			#if HSCRIPT_ALLOWED
-			scripting.ScriptedStates.exitToEngine();
+			scripting.ScriptedStates.openModsMenu();
 			#else
 			#if MODS_ALLOWED
 			Mods.launchedMod = null;
@@ -616,7 +616,9 @@ class MusicBeatState extends BaseMusicBeatState
 	{
 		var activeMod:String = '';
 		#if MODS_ALLOWED
-		activeMod = Mods.currentModDirectory != null ? Mods.currentModDirectory : '';
+		// Enabled mods may provide assets, but only an explicit Launch may run
+		// their global code. This keeps the normal Psych Plus menus script-free.
+		activeMod = Mods.launchedMod != null ? Mods.launchedMod : '';
 		#end
 		if (globalScriptMod != activeMod)
 		{
@@ -641,8 +643,8 @@ class MusicBeatState extends BaseMusicBeatState
 		if (globalLuaScript == null)
 		{
 			#if MODS_ALLOWED
-			var luaPath:String = Paths.modFolders('scripts/GlobalScript.lua');
-			if (!FileSystem.exists(luaPath))
+			var luaPath:String = activeMod.length > 0 ? Paths.mods(activeMod + '/scripts/GlobalScript.lua') : null;
+			if (luaPath == null || !FileSystem.exists(luaPath))
 				luaPath = Paths.getSharedPath('scripts/GlobalScript.lua');
 			#else
 			var luaPath:String = Paths.getSharedPath('scripts/GlobalScript.lua');
@@ -673,7 +675,7 @@ class MusicBeatState extends BaseMusicBeatState
 			return; // Already initialized
 
 		#if MODS_ALLOWED
-		var scriptPath:String = Paths.modFolders('scripts/GlobalScript.hx');
+		var scriptPath:String = activeMod.length > 0 ? Paths.mods(activeMod + '/scripts/GlobalScript.hx') : null;
 		if (scriptPath == null || !FileSystem.exists(scriptPath))
 			scriptPath = Paths.getSharedPath('scripts/GlobalScript.hx');
 		#else
