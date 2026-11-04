@@ -207,6 +207,8 @@ class PlayState extends MusicBeatState
 	/** Flat compatibility group for Lua. It is indexed, but never added to the state. */
 	public var extraStrums:FlxTypedGroup<StrumNote> = new FlxTypedGroup<StrumNote>();
 	public var strumLines:Array<StrumLine> = [];
+	/** Runtime-only visual lanes created from Lua. They never own chart notes or input. */
+	var luaVisualStrumLines:Map<String, Bool> = new Map();
 	public var grpNoteSplashes:FlxTypedGroup<NoteSplash> = new FlxTypedGroup<NoteSplash>();
 	public var grpHoldSplashes:FlxTypedGroup<SustainSplash> = new FlxTypedGroup<SustainSplash>();
 
@@ -2184,6 +2186,7 @@ class PlayState extends MusicBeatState
 	{
 		strumLines.resize(0);
 		extraStrums.clear();
+		luaVisualStrumLines.clear();
 		strumLines.push(new StrumLine('opponent', 0, StrumLineType.OPPONENT, opponentStrums, 'dad'));
 		strumLines.push(new StrumLine('player', 1, StrumLineType.PLAYER, playerStrums, 'boyfriend'));
 		if (SONG == null || SONG.extraStrumLines == null) return;
@@ -2217,6 +2220,66 @@ class PlayState extends MusicBeatState
 		for (line in strumLines) if (line.id == key) return line;
 		return null;
 	}
+
+	/**
+	 * Creates a four-receptor, visual-only strumline during gameplay.
+	 *
+	 * This is intentionally separate from `SONG.extraStrumLines`: generated
+	 * receptors do not alter chart ownership, spawning, inputs, score or health.
+	 * `sourceId` chooses an existing line whose skin, direction and placement are
+	 * copied, typically `player` or `opponent`.
+	 */
+	public function makeLuaStrumLine(id:String, ?sourceId:String = 'player'):Bool
+	{
+		if (id == null || strumLines.length >= 7)
+			return false;
+
+		var key = id.trim().toLowerCase();
+		if (key.length == 0 || getStrumLine(key) != null)
+			return false;
+
+		var source = getStrumLine(sourceId == null ? 'player' : sourceId);
+		if (source == null || source.receptors.length != 4)
+			return false;
+
+		var receptors = new FlxTypedGroup<StrumNote>();
+		var line = new StrumLine(key, strumLines.length, StrumLineType.ADDITIONAL, receptors, source.character, source.visible);
+		line.active = true;
+		line.effectiveScale = source.effectiveScale;
+		line.effectiveSpacing = source.effectiveSpacing;
+
+		for (lane in 0...4)
+		{
+			var template = source.receptor(lane);
+			if (template == null)
+				return false;
+
+			var receptor = new StrumNote(template.x, template.y, lane, line.index);
+			if (template.texture != null)
+				receptor.texture = template.texture;
+			receptor.downScroll = template.downScroll;
+			receptor.direction = template.direction;
+			receptor.sustainReduce = template.sustainReduce;
+			receptor.layoutScale = template.layoutScale;
+			receptor.scale.set(template.scale.x, template.scale.y);
+			receptor.alpha = template.alpha;
+			receptor.visible = line.visible && template.visible;
+			receptor.updateHitbox();
+
+			receptors.add(receptor);
+			extraStrums.add(receptor);
+			strumLineNotes.add(receptor);
+			line.defaultX.push(receptor.x);
+			line.defaultY.push(receptor.y);
+		}
+
+		strumLines.push(line);
+		luaVisualStrumLines.set(key, true);
+		return true;
+	}
+
+	public inline function isLuaStrumLine(id:String):Bool
+		return id != null && luaVisualStrumLines.exists(id.trim().toLowerCase());
 
 	public inline function getStrumLineForNote(note:Note):Null<StrumLine>
 	{
