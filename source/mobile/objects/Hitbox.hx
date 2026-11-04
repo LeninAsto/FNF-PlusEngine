@@ -15,9 +15,6 @@ import mobile.backend.MobileScaleMode;
  */
 class Hitbox extends MobileInputManager implements IMobileControls
 {
-	final offsetFir:Int = (ClientPrefs.data.hitboxPos ? Std.int(FlxG.height / 4) * 3 : 0);
-	final offsetSec:Int = (ClientPrefs.data.hitboxPos ? 0 : Std.int(FlxG.height / 4));
-
 	public var buttonLeft:TouchButton = new TouchButton(0, 0, [MobileInputID.HITBOX_LEFT, MobileInputID.NOTE_LEFT]);
 	public var buttonDown:TouchButton = new TouchButton(0, 0, [MobileInputID.HITBOX_DOWN, MobileInputID.NOTE_DOWN]);
 	public var buttonUp:TouchButton = new TouchButton(0, 0, [MobileInputID.HITBOX_UP, MobileInputID.NOTE_UP]);
@@ -47,6 +44,11 @@ class Hitbox extends MobileInputManager implements IMobileControls
 				storedButtonsIDs.set(button, Reflect.getProperty(field, 'IDs'));
 		}
 
+		usesSafeStripLayout = !arrowsLayout && extraMode != NONE;
+
+		final offsetFir:Float = currentOffsetFir();
+		final offsetSec:Float = currentOffsetSec();
+
 		// V-Slice style arrows layout (centered, fixed size)
 		if (arrowsLayout)
 		{
@@ -69,25 +71,25 @@ class Hitbox extends MobileInputManager implements IMobileControls
 			switch (extraMode)
 			{
 				case NONE:
-					add(buttonLeft = createHint(0, 0, Std.int(FlxG.width / 4), FlxG.height, 0xFFC24B99));
-					add(buttonDown = createHint(FlxG.width / 4, 0, Std.int(FlxG.width / 4), FlxG.height, 0xFF00FFFF));
-					add(buttonUp = createHint(FlxG.width / 2, 0, Std.int(FlxG.width / 4), FlxG.height, 0xFF12FA05));
+					add(buttonLeft  = createHint(0, 0, Std.int(FlxG.width / 4), FlxG.height, 0xFFC24B99));
+					add(buttonDown  = createHint(FlxG.width / 4, 0, Std.int(FlxG.width / 4), FlxG.height, 0xFF00FFFF));
+					add(buttonUp    = createHint(FlxG.width / 2, 0, Std.int(FlxG.width / 4), FlxG.height, 0xFF12FA05));
 					add(buttonRight = createHint((FlxG.width / 2) + (FlxG.width / 4), 0, Std.int(FlxG.width / 4), FlxG.height, 0xFFF9393F));
+
 				case SINGLE:
-					add(buttonLeft = createHint(0, offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3, 0xFFC24B99));
-					add(buttonDown = createHint(FlxG.width / 4, offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3, 0xFF00FFFF));
-					add(buttonUp = createHint(FlxG.width / 2, offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3, 0xFF12FA05));
-					add(buttonRight = createHint((FlxG.width / 2) + (FlxG.width / 4), offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3,
-						0xFFF9393F));
+					add(buttonLeft  = createHint(0, offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3, 0xFFC24B99));
+					add(buttonDown  = createHint(FlxG.width / 4, offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3, 0xFF00FFFF));
+					add(buttonUp    = createHint(FlxG.width / 2, offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3, 0xFF12FA05));
+					add(buttonRight = createHint((FlxG.width / 2) + (FlxG.width / 4), offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3, 0xFFF9393F));
 					add(buttonExtra = createHint(0, offsetFir, FlxG.width, Std.int(FlxG.height / 4), 0xFF0066FF));
+
 				case DOUBLE:
-					add(buttonLeft = createHint(0, offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3, 0xFFC24B99));
-					add(buttonDown = createHint(FlxG.width / 4, offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3, 0xFF00FFFF));
-					add(buttonUp = createHint(FlxG.width / 2, offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3, 0xFF12FA05));
-					add(buttonRight = createHint((FlxG.width / 2) + (FlxG.width / 4), offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3,
-						0xFFF9393F));
+					add(buttonLeft   = createHint(0, offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3, 0xFFC24B99));
+					add(buttonDown   = createHint(FlxG.width / 4, offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3, 0xFF00FFFF));
+					add(buttonUp     = createHint(FlxG.width / 2, offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3, 0xFF12FA05));
+					add(buttonRight  = createHint((FlxG.width / 2) + (FlxG.width / 4), offsetSec, Std.int(FlxG.width / 4), Std.int(FlxG.height / 4) * 3, 0xFFF9393F));
 					add(buttonExtra2 = createHint(Std.int(FlxG.width / 2), offsetFir, Std.int(FlxG.width / 2), Std.int(FlxG.height / 4), 0xA6FF00));
-					add(buttonExtra = createHint(0, offsetFir, Std.int(FlxG.width / 2), Std.int(FlxG.height / 4), 0xFF0066FF));
+					add(buttonExtra  = createHint(0, offsetFir, Std.int(FlxG.width / 2), Std.int(FlxG.height / 4), 0xFF0066FF));
 			}
 		}
 
@@ -100,32 +102,57 @@ class Hitbox extends MobileInputManager implements IMobileControls
 		storedButtonsIDs.clear();
 		scrollFactor.set();
 		updateTrackedButtons();
-		
-		// Apply infinity display offset (skips arrows layout as they span full height)
-		if (!arrowsLayout)
-			applyInfinityDisplayOffset();
+
+		if (usesSafeStripLayout)
+		{
+			lastOffsetFir = currentOffsetFir();
+			lastOffsetSec = currentOffsetSec();
+			refreshInfinityOffset();
+		}
 
 		instance = this;
 	}
-	
-	/**
-	 * Apply vertical offset for infinity display mode
-	 */
-	function applyInfinityDisplayOffset():Void
+
+	private var lastOffsetFir:Float = 0;
+	private var lastOffsetSec:Float = 0;
+	private var usesSafeStripLayout:Bool = false;
+
+	function refreshInfinityOffset():Void
 	{
-		var offset:Float = MobileScaleMode.getVerticalOffset();
-		if (offset == 0) return;
-		
-		// Apply offset to all buttons
-		for (fieldName in Reflect.fields(this))
+		var verticalOffset:Float = MobileScaleMode.getVerticalOffset();
+		var targetFir:Float = currentOffsetFir() + verticalOffset;
+		var targetSec:Float = currentOffsetSec() + verticalOffset;
+
+		if (targetFir != lastOffsetFir)
 		{
-			var field = Reflect.field(this, fieldName);
-			if (Std.isOfType(field, TouchButton))
-			{
-				var button:TouchButton = cast field;
-				button.y += offset;
-			}
+			var delta = targetFir - lastOffsetFir;
+			lastOffsetFir = targetFir;
+			if (buttonExtra  != null) buttonExtra.y  += delta;
+			if (buttonExtra2 != null) buttonExtra2.y += delta;
 		}
+
+		if (targetSec != lastOffsetSec)
+		{
+			var delta = targetSec - lastOffsetSec;
+			lastOffsetSec = targetSec;
+			if (buttonLeft  != null) buttonLeft.y  += delta;
+			if (buttonDown  != null) buttonDown.y  += delta;
+			if (buttonUp    != null) buttonUp.y    += delta;
+			if (buttonRight != null) buttonRight.y += delta;
+		}
+	}
+
+	inline function currentOffsetFir():Float
+		return ClientPrefs.data.hitboxPos ? Std.int(FlxG.height / 4) * 3 : 0;
+
+	inline function currentOffsetSec():Float
+		return ClientPrefs.data.hitboxPos ? 0 : Std.int(FlxG.height / 4);
+
+	override function update(elapsed:Float):Void
+	{
+		if (usesSafeStripLayout)
+			refreshInfinityOffset();
+		super.update(elapsed);
 	}
 
 	/**

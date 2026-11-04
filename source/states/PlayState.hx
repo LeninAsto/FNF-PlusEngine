@@ -833,6 +833,10 @@ class PlayState extends MusicBeatState
 		addTouchPadCamera();
 		#end
 
+		#if mobile
+		MobileScaleMode.onGameSizeChanged.add(relayoutHud);
+		#end
+
 		super.create();
 		Paths.clearUnusedMemory();
 
@@ -841,6 +845,62 @@ class PlayState extends MusicBeatState
 		initBreakTimerHud();
 
 		if(eventNotes.length < 1) checkEventNote();
+	}
+
+	function relayoutHud():Void
+	{
+		if (healthBar == null || timeBar == null || timeTxt == null)
+			return;
+
+		timeTxt.x = STRUM_X + (FlxG.width / 2) - 248;
+		timeTxt.y = ClientPrefs.data.downScroll
+			? HudSafeZone.y() + HudSafeZone.height() - 44
+			: 19;
+		if (ClientPrefs.data.timeBarType == 'Song Name')
+			timeTxt.y += 3;
+
+		timeBar.y = timeTxt.y + (timeTxt.height / 4);
+		timeBar.x = HudSafeZone.x() + (HudSafeZone.width() - timeBar.width) / 2;
+
+		healthBar.y = HudSafeZone.y() + HudSafeZone.height() * (!ClientPrefs.data.downScroll ? 0.89 : 0.11);
+		healthBar.x = HudSafeZone.x() + (HudSafeZone.width() - healthBar.width) / 2;
+
+		final oldBounce:Bool = ClientPrefs.data.iconBounceType == 'Old';
+		if (iconP1 != null) iconP1.y = oldBounce ? healthBar.y - (iconP1.height / 2) : healthBar.y - 75;
+		if (iconP2 != null) iconP2.y = oldBounce ? healthBar.y - (iconP2.height / 2) : healthBar.y - 75;
+		if (iconGF != null) iconGF.y = oldBounce ? healthBar.y - (iconGF.height / 2) : healthBar.y - 75;
+
+		if (scoreTxt != null)  { scoreTxt.x = 0;  scoreTxt.fieldWidth  = FlxG.width;  scoreTxt.y  = healthBar.y + 40; }
+		if (botplayTxt != null){ botplayTxt.x = 400; botplayTxt.fieldWidth = FlxG.width - 800;
+								botplayTxt.y = ClientPrefs.data.downScroll ? healthBar.y + 70 : healthBar.y - 90; }
+		if (versionText != null){ versionText.x = 0; versionText.fieldWidth = FlxG.width; }
+		if (lyricText != null)  { lyricText.fieldWidth = FlxG.width; lyricText.y = FlxG.height * 0.72; }
+
+		for (lineIdx in 0...strumLines.length)
+		{
+			var line = strumLines[lineIdx];
+			var strumLineY:Float = HudSafeZone.y()
+				+ (ClientPrefs.data.downScroll ? (HudSafeZone.height() - 150) : 50);
+			var strumLineX:Float = ClientPrefs.data.middleScroll ? STRUM_X_MIDDLESCROLL : STRUM_X;
+
+			for (lane in 0...line.receptors.length)
+			{
+				var s = line.receptors.members[lane];
+				if (s == null) continue;
+				s.y = strumLineY;
+				if (lineIdx < 2)
+				{
+					s.x = strumLineX + Note.swagWidth * s.noteData + 50
+						+ MobileScaleMode.getHorizontalOffset()
+						+ (MobileScaleMode.getSafeWidth() / 2) * lineIdx;
+				}
+			}
+		}
+
+		if (strumLines.length > 2)
+			layoutStrumLines();
+
+		captureDefaultStrumPositions();
 	}
 
 	function initModchart():Void
@@ -5358,6 +5418,11 @@ class PlayState extends MusicBeatState
 		}
 		shutdownThread = true;
 		FlxG.signals.preUpdate.remove(checkForResync);
+
+		#if mobile
+		MobileScaleMode.onGameSizeChanged.remove(relayoutHud);
+		#end
+
 		super.destroy();
 	}
 
