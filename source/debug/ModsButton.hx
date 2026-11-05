@@ -16,7 +16,7 @@ import openfl.text.TextFormatAlign;
 import states.ModsMenuState;
 
 /**
- * Small mobile button that exits a scripted/custom state back to ModsMenuState.
+	 * Small mobile button that opens ModsMenuState from a scripted/custom state.
  */
 class ModsButton extends Sprite
 {
@@ -161,7 +161,7 @@ class ModsButton extends Sprite
 		}
 
 		#if HSCRIPT_ALLOWED
-		scripting.ScriptedStates.exitToEngine();
+		scripting.ScriptedStates.openModsMenu();
 		#else
 		#if MODS_ALLOWED
 		backend.Mods.launchedMod = null;

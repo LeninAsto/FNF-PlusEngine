@@ -44,11 +44,13 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 			list = [];
 
 		_itemWidth = width - 2;
-		_maxVisibleItems = maxVisibleItems;
+		// A desktop list used to have no viewport unless each caller explicitly
+		// supplied one.  That made the mouse wheel a no-op for the long lists in
+		// the editors (characters, animations, stages, etc.).  Keep the compact
+		// eight-row selector everywhere; callers can still request another size.
+		_maxVisibleItems = maxVisibleItems > 0 ? maxVisibleItems : 8;
 		#if mobile
 		_scrollBarWidth = 14;
-		if (_maxVisibleItems <= 0)
-			_maxVisibleItems = 8;
 		#end
 		setGraphicSize(width, 20);
 		updateHitbox();
@@ -450,7 +452,11 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 		item.label = option;
 		item.parentDropDown = this;
 		item.visible = item.active = false;
-		item.onClick = function() clickedOn(curID, option);
+		// Use the row's current data, not values captured while it was created.
+		// Dropdown rows are recycled when a list is replaced; a captured first
+		// row could therefore report the old placeholder instead of `bf`.
+		item.optionIndex = curID;
+		item.onClick = function() clickedOn(item.optionIndex, item.label);
 		item.forceNextUpdate = true;
 		_items.push(item);
 		insert(1, item);
@@ -476,6 +482,7 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 
 class PsychUIDropDownItem extends FlxSpriteGroup {
 	public var parentDropDown:PsychUIDropDownMenu;
+	public var optionIndex:Int = -1;
 	public var hoverStyle:UIStyleData = {
 		bgColor: 0xFF0066FF,
 		textColor: FlxColor.WHITE,

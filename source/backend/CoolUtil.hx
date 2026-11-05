@@ -238,6 +238,8 @@ class CoolUtil
 	inline public static function listFromString(string:String):Array<String>
 	{
 		var daList:Array<String> = [];
+		if (string != null && string.length > 0 && string.charCodeAt(0) == 0xFEFF)
+			string = string.substr(1);
 		daList = string.trim().split('\n');
 
 		for (i in 0...daList.length)

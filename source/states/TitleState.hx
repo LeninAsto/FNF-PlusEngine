@@ -3,6 +3,7 @@ package states;
 import backend.AssetLoader;
 import backend.ClientPrefs;
 import flixel.input.keyboard.FlxKey;
+import flixel.graphics.FlxGraphic;
 import flixel.graphics.frames.FlxFrame;
 import flixel.group.FlxGroup;
 import flixel.input.gamepad.FlxGamepad;
@@ -202,7 +203,10 @@ class TitleState extends MusicBeatState
 		introVideo = null;
 		if (video != null)
 		{
-			remove(video, true);
+			// VideoSprite owns the media teardown after it calls this callback.
+			// Destroying it here races the skip/end callback and can leave hxvlc
+			// trying to build a frame from an already disposed bitmap.
+			remove(video, false);
 		}
 		startIntro();
 	}
@@ -298,7 +302,17 @@ class TitleState extends MusicBeatState
 		credTextShit.screenCenter();
 		credTextShit.visible = false;
 
-		ngSpr = new FlxSprite(0, FlxG.height * 0.52).loadGraphic(Paths.image('newgrounds_logo'));
+		var newgroundsLogo:FlxGraphic = Paths.image('newgrounds_logo');
+		ngSpr = new FlxSprite(0, FlxG.height * 0.52);
+		if (newgroundsLogo != null)
+			ngSpr.loadGraphic(newgroundsLogo);
+		else
+		{
+			// A disabled mod can leave a stale asset cache during the restart.
+			// The intro must remain runnable even if the optional logo was evicted.
+			trace('[WARN] Missing newgrounds_logo; continuing title intro without it.');
+			ngSpr.makeGraphic(1, 1, FlxColor.TRANSPARENT);
+		}
 		ngSpr.visible = false;
 		ngSpr.setGraphicSize(Std.int(ngSpr.width * 0.8));
 		ngSpr.updateHitbox();
