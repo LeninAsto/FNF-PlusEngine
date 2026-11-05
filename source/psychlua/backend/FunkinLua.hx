@@ -156,8 +156,8 @@ class FunkinLua
 		#if mobile
 		set('screenWidth', MobileScaleMode.getSafeWidth());
 		set('screenHeight', MobileScaleMode.getSafeHeight());
-		set('displayWidth', MobileScaleMode.getScreenWidth());
-		set('displayHeight', MobileScaleMode.getScreenHeight());
+		set('displayWidth', MobileScaleMode.getSafeWidth());
+		set('displayHeight', MobileScaleMode.getSafeHeight());
 		set('screenOffsetX', MobileScaleMode.getHorizontalOffset());
 		set('screenOffsetY', MobileScaleMode.getVerticalOffset());
 		#else
