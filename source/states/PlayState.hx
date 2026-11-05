@@ -3595,6 +3595,17 @@ class PlayState extends MusicBeatState
 					reloadAllNotesSkin();
 
 				callOnScripts('onUIChanged');
+
+			case 'Change Stage UI':
+				if (temporaryStageUI == null)
+					temporaryStageUI = stageUI;
+				var targetUI = (value1 != null) ? value1.trim() : '';
+				if (targetUI.length > 0)
+					stageUI = targetUI;
+				else if (temporaryStageUI != null)
+					stageUI = temporaryStageUI;
+
+			    callOnScripts('onStageUIChanged');
 		}
 
 		stagesFunc(function(stage:BaseStage) stage.eventCalled(eventName, value1, value2, flValue1, flValue2, strumTime));
