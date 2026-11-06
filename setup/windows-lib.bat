@@ -64,7 +64,7 @@ REM ============================================================================
 echo [Optional] hxdiscord_rpc 1.3.0
 haxelib install hxdiscord_rpc 1.3.0 --quiet --skip-dependencies
 
-echo [Optional] hxvlc 2.3.1
+echo [Optional] hxvlc 2.3.2
 haxelib install hxvlc 2.3.1 --quiet --skip-dependencies
 
 REM ============================================================================
