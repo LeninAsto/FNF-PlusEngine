@@ -4221,7 +4221,7 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	inline function uiAsset(name:String):String
+	inline static function uiAsset(name:String):String
 		return Paths.getUIPath(name);
 
 	public static function formatComboCount(value:Int):String
