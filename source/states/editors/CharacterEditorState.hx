@@ -322,8 +322,11 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 						animateGhost.active = false;
 					}
 
-					if (animateGhost == null || animateGhostImage != character.imageFile)
+					if (animateGhostImage != character.imageFile)
+					{
 						Paths.loadAnimateAtlas(animateGhost, character.imageFile);
+						animateGhostImage = character.imageFile;
+					}
 
 					if (myAnim.indices != null && myAnim.indices.length > 0)
 						animateGhost.anim.addBySymbolIndices('anim', myAnim.name, myAnim.indices, 0, false);
@@ -332,8 +335,6 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 					animateGhost.anim.play('anim', true, false, character.atlas.anim.curFrame);
 					animateGhost.anim.pause();
-
-					animateGhostImage = character.imageFile;
 				}
 
 				var spr:FlxSprite = !character.isAnimateAtlas ? ghost : animateGhost;
@@ -790,7 +791,6 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		{
 			if (sender == scaleStepper)
 			{
-				reloadCharacterImage();
 				character.jsonScale = sender.value;
 				character.scale.set(character.jsonScale, character.jsonScale);
 				character.updateHitbox();
@@ -958,14 +958,18 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		character.offset.x -= dx;
 		character.offset.y -= dy;
 
-		anim.offsets[0] = Std.int(character.offset.x);
-		anim.offsets[1] = Std.int(character.offset.y);
-
-		character.addOffset(anim.anim, character.offset.x, character.offset.y);
 		updateText();
 
 		if (FlxG.mouse.justReleased)
+		{
+			anim.offsets[0] = Std.int(character.offset.x);
+			anim.offsets[1] = Std.int(character.offset.y);
+			character.offset.x = anim.offsets[0];
+			character.offset.y = anim.offsets[1];
+			character.addOffset(anim.anim, anim.offsets[0], anim.offsets[1]);
+			updateText();
 			draggingCharacter = false;
+		}
 	}
 
 	override function update(elapsed:Float)
@@ -1071,11 +1075,12 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			if (holdingArrowsTime > 0.6)
 			{
 				holdingArrowsElapsed += elapsed;
-				while (holdingArrowsElapsed > (1 / 60))
+				var steps:Int = Std.int(holdingArrowsElapsed / (1 / 60));
+				if (steps > 0)
 				{
-					character.offset.x += ((moveKeys[0] ? 1 : 0) - (moveKeys[1] ? 1 : 0)) * shiftMultBig;
-					character.offset.y += ((moveKeys[2] ? 1 : 0) - (moveKeys[3] ? 1 : 0)) * shiftMultBig;
-					holdingArrowsElapsed -= (1 / 60);
+					character.offset.x += ((moveKeys[0] ? 1 : 0) - (moveKeys[1] ? 1 : 0)) * shiftMultBig * steps;
+					character.offset.y += ((moveKeys[2] ? 1 : 0) - (moveKeys[3] ? 1 : 0)) * shiftMultBig * steps;
+					holdingArrowsElapsed -= steps * (1 / 60);
 					changedOffset = true;
 				}
 			}
@@ -1368,7 +1373,10 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 	inline function updateCharacterPositions()
 	{
-		if ((character != null && !character.isPlayer) || (character == null && predictCharacterIsNotPlayer(_char)))
+		if (character == null) 
+			return;
+
+		if (!character.isPlayer)
 			character.setPosition(dadPosition.x, dadPosition.y);
 		else
 			character.setPosition(bfPosition.x, bfPosition.y);
@@ -1504,7 +1512,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 		if (characterList.length < 1)
 			characterList.push('');
-		charDropDown.list = characterList;
+		charDropDown.list = characterList.copy();
 		charDropDown.selectedLabel = _char;
 	}
 
@@ -1526,10 +1534,11 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 	{
 		if (_file == null)
 			return;
-		_file.removeEventListener(Event.COMPLETE, onSaveComplete);
+		_file.removeEventListener(#if desktop Event.SELECT #else Event.COMPLETE #end, onSaveComplete);
 		_file.removeEventListener(Event.CANCEL, onSaveCancel);
 		_file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
 		_file = null;
+		unsavedProgress = false;
 		FlxG.log.notice("Successfully saved file.");
 	}
 
@@ -1537,7 +1546,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 	{
 		if (_file == null)
 			return;
-		_file.removeEventListener(Event.COMPLETE, onSaveComplete);
+		_file.removeEventListener(#if desktop Event.SELECT #else Event.COMPLETE #end, onSaveComplete);
 		_file.removeEventListener(Event.CANCEL, onSaveCancel);
 		_file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
 		_file = null;
@@ -1547,7 +1556,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 	{
 		if (_file == null)
 			return;
-		_file.removeEventListener(Event.COMPLETE, onSaveComplete);
+		_file.removeEventListener(#if desktop Event.SELECT #else Event.COMPLETE #end, onSaveComplete);
 		_file.removeEventListener(Event.CANCEL, onSaveCancel);
 		_file.removeEventListener(IOErrorEvent.IO_ERROR, onSaveError);
 		_file = null;

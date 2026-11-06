@@ -63,7 +63,7 @@ echo "[Optional] hxdiscord_rpc 1.3.0"
 haxelib install hxdiscord_rpc 1.3.0 --quiet --skip-dependencies
 
 echo "[Optional] hxvlc 2.3.2"
-haxelib install hxvlc 2.3.1 --quiet --skip-dependencies
+haxelib install hxvlc 2.3.2 --quiet --skip-dependencies
 
 ###############################################################################
 # Lightweight audio visualization used by Plus/Psych UI helpers.
