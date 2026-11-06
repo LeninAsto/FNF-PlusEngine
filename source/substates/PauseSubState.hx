@@ -510,15 +510,24 @@ class PauseSubState extends MusicBeatSubstate
 						var target = PlayState.isStoryMode ?
 							() -> backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()) :
 							() -> states.FreeplayStateSelector.create();
-						openSubState(new StickerSubState({
-							targetState: _ ->
-							{
-								FlxG.sound.playMusic(Paths.music('freakyMenu'));
-								return target();
-							},
-							stickerPack: StickerSubState.randomPack(),
-							playOutOnTarget: true
-						}));
+
+						if (ClientPrefs.data.stickerTransition)
+						{
+							openSubState(new StickerSubState({
+								targetState: _ ->
+								{
+									FlxG.sound.playMusic(Paths.music('freakyMenu'));
+									return target();
+								},
+								stickerPack: StickerSubState.randomPack(),
+								playOutOnTarget: true
+							}));
+						}
+						else
+						{
+							FlxG.sound.playMusic(Paths.music('freakyMenu'));
+							MusicBeatState.switchState(target());
+						}
 					}
 					PlayState.changedDifficulty = false;
 					PlayState.chartingMode = false;

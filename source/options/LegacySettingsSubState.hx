@@ -15,6 +15,10 @@ class LegacySettingsSubState extends BaseOptionsMenu
 			'vanillaTransition', BOOL);
 		addOption(option);
 
+		var option:Option = new Option('Sticker Transition', 'If unchecked, stickers are won\'t show when exit', 
+		    'stickerTransition', BOOL);
+		addOption(option);
+
 		var option:Option = new Option('Options Menu Style', 'Changes the Options menus between Plus cards and Psych classic.', 'optionsMenuStyle',
 			STRING, ['Plus', 'Psych']);
 		addOption(option);

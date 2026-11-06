@@ -178,6 +178,10 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		#end
 
+		var option:Option = new Option('Unfriendly Results State', 
+		    "Uncheck this to show friendly version of PERFECT result instead of unfriendly version on ResultsState", 'naughtynessResults', BOOL);
+		addOption(option);
+
 		var option:Option = new Option('Combo Stacking',
 			"If unchecked, Ratings and Combo won't stack, saving on System Memory and making them easier to read", 'comboStacking', BOOL);
 		addOption(option);
@@ -196,6 +200,11 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 		var option:Option = new Option('Show Early/Late Sprites',
 			'Shows Early or Late tags on the top corners of the rating sprite depending on hit timing.', 'showTimingTags', BOOL);
+		addOption(option);
+		option.onChange = syncPopupVisibility;
+
+		var option:Option = new Option('Show Minus, Dot, K and M Sprites', 
+		    'Shows Minus, Dot, K and M at the rating sprite.', 'showMinusDotKM', BOOL);
 		addOption(option);
 		option.onChange = syncPopupVisibility;
 
