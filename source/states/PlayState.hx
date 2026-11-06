@@ -4237,7 +4237,8 @@ class PlayState extends MusicBeatState
 		return '${Std.int(tenths / 10)}.${tenths % 10}k';
 	}
 
-	inline function comboCharacterAsset(character:String):String
+	public static function comboCharacterAsset(character:String):String
+	{
 		if (!ClientPrefs.data.showMinusDotKM && (character == '.' || character == 'k' || character == 'M'))
             return null; 
 
@@ -4247,7 +4248,8 @@ class PlayState extends MusicBeatState
 			case 'k': uiAsset('k');
 			case 'M': uiAsset('m');
 			default: uiAsset('num' + character);
-		};
+		}
+	}
 
 	function getComboSprite():FlxSprite
 	{
