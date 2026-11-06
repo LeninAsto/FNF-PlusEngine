@@ -439,11 +439,19 @@ class ResultsState extends MusicBeatState
 				startPsychFreeplayMusic();
 			return freeplay;
 		};
-		openSubState(new StickerSubState({
-			targetState: _ -> target(),
-			stickerPack: StickerSubState.randomPack(),
-			playOutOnTarget: true
-		}));
+
+		if (ClientPrefs.data.stickerTransition)
+		{
+			openSubState(new StickerSubState({
+				targetState: _ -> target(),
+				stickerPack: StickerSubState.randomPack(),
+				playOutOnTarget: true
+			}));
+		}
+		else
+		{
+			MusicBeatState.switchState(target());
+		}
 	}
 
 	function startPsychFreeplayMusic():Void

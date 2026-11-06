@@ -178,6 +178,10 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		#end
 
+		var option:Option = new Option('Unfriendly Results State', 
+		    "Uncheck this to show friendly version of PERFECT result instead of unfriendly version on ResultsState", 'naughtynessResults', BOOL);
+		addOption(option);
+
 		var option:Option = new Option('Combo Stacking',
 			"If unchecked, Ratings and Combo won't stack, saving on System Memory and making them easier to read", 'comboStacking', BOOL);
 		addOption(option);
