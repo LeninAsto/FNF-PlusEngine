@@ -4194,7 +4194,8 @@ class PlayState extends MusicBeatState
 			return;
 
 		var popupCount:Int = isMiss ? songMisses : combo;
-		var comboStr:String = !isMiss && popupCount >= 10000 ? formatComboCount(popupCount)
+		var comboStr:String = !isMiss && popupCount >= 10000 && ClientPrefs.data.showMinusDotKM
+			? formatComboCount(popupCount)
 			: (ClientPrefs.data.dynamicCombo ? Std.string(popupCount) : Std.string(popupCount).lpad('0', 3));
 		for (i in 0...(comboStr.length + (isMiss ? 1 : 0)))
 		{
@@ -4203,10 +4204,10 @@ class PlayState extends MusicBeatState
 			var digit:Null<Int> = isMinus ? null : Std.parseInt(character);
 			var graphic:FlxGraphic = switch (character)
 			{
-				case '-': pooledMinusGraphic;
-				case '.': pooledComboDotGraphic;
-				case 'k': pooledComboKGraphic;
-				case 'M': pooledComboMGraphic;
+				case '-': ClientPrefs.data.showMinusDotKM ? pooledMinusGraphic : null;
+				case '.': ClientPrefs.data.showMinusDotKM ? pooledComboDotGraphic : null;
+				case 'k': ClientPrefs.data.showMinusDotKM ? pooledComboKGraphic : null;
+				case 'M': ClientPrefs.data.showMinusDotKM ? pooledComboMGraphic : null;
 				default: digit != null && digit >= 0 && digit <= 9 ? pooledNumGraphics[digit] : null;
 			};
 			if (graphic == null)
@@ -4237,6 +4238,9 @@ class PlayState extends MusicBeatState
 	}
 
 	inline function comboCharacterAsset(character:String):String
+		if (!ClientPrefs.data.showMinusDotKM && (character == '.' || character == 'k' || character == 'M'))
+            return null; 
+
 		return switch (character)
 		{
 			case '.': uiAsset('dot');
@@ -4638,12 +4642,17 @@ class PlayState extends MusicBeatState
 			var daLoop:Int = 0;
 			var xThing:Float = 0;
 			var popupCount:Int = isMiss ? songMisses : combo;
-			var comboStr:String = !isMiss && popupCount >= 10000 ? formatComboCount(popupCount)
+			var comboStr:String = !isMiss && popupCount >= 10000 && ClientPrefs.data.showMinusDotKM
+				? formatComboCount(popupCount)
 				: (ClientPrefs.data.dynamicCombo ? Std.string(popupCount) : Std.string(popupCount).lpad('0', 3));
 			for (i in 0...(comboStr.length + (isMiss ? 1 : 0)))
 			{
 				var isMinus:Bool = i == comboStr.length;
+				if (isMinus && !ClientPrefs.data.showMinusDotKM)
+					continue;
 				var numberAsset:String = isMinus ? popupMinusAsset() : comboCharacterAsset(comboStr.charAt(i));
+				if (numberAsset == null)
+                    continue;
 				var numScore:FlxSprite = getComboSprite().loadGraphic(Paths.image(numberAsset));
 				if (isMiss) numScore.color = 0xFFB060FF;
 				numScore.screenCenter();

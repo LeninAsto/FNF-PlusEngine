@@ -203,6 +203,11 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		option.onChange = syncPopupVisibility;
 
+		var option:Option = new Option('Show Minus, Dot, K and M Sprites', 
+		    'Shows Minus, Dot, K and M at the rating sprite.', 'showMinusDotKM', BOOL);
+		addOption(option);
+		option.onChange = syncPopupVisibility;
+
 		var option:Option = new Option('Show Hit MS', 'Shows the millisecond timing error next to judgement popups.', 'showHitMs', BOOL);
 		addOption(option);
 		option.onChange = syncPopupVisibility;

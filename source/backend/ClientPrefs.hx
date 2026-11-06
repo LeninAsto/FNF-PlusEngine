@@ -116,6 +116,7 @@ import mobile.backend.PsychJNI;
 	public var showCombo:Bool = false;
 	public var showComboNum:Bool = true;
 	public var showTimingTags:Bool = false;
+	public var showMinusDotKM:Bool = false;
 	public var showHitMs:Bool = false;
 	// The pooled hit-visual path is an Android performance fallback. Desktop
 	// keeps the normal renderer so modcharts and desktop visuals stay faithful.
