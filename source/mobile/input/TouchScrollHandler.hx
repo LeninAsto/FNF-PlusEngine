@@ -1,6 +1,7 @@
 package mobile.input;
 
 import flixel.FlxG;
+import backend.ClientPrefs;
 
 /** Shared tap and drag navigation for touch-first menu screens. */
 class TouchScrollHandler
@@ -35,7 +36,8 @@ class TouchScrollHandler
 			if (allowScroll && touch.pressed)
 			{
 				var deltaY:Float = touch.y - startY;
-				if (Math.abs(deltaY) >= swipeDistance)
+				var sensitivity:Float = Math.max(0.25, ClientPrefs.data.mobileScrollSensitivity);
+				if (Math.abs(deltaY) >= swipeDistance / sensitivity)
 				{
 					onScroll(deltaY < 0 ? 1 : -1);
 					startY = touch.y;

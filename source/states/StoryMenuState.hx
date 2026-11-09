@@ -10,6 +10,7 @@ import objects.MenuCharacter;
 import options.GameplayChangersSubstate;
 import substates.ResetScoreSubState;
 import backend.StageData;
+import mobile.input.TouchScrollHandler;
 #if mobile
 import mobile.backend.MobileScaleMode;
 #end
@@ -42,6 +43,9 @@ class StoryMenuState extends MusicBeatState
 	public var rightArrow:FlxSprite;
 
 	public var loadedWeeks:Array<WeekData> = [];
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
+	static inline final TOUCH_DIFFICULTY_LEFT:Int = -2;
+	static inline final TOUCH_DIFFICULTY_RIGHT:Int = -3;
 
 	inline function safeX(x:Float):Float
 	{
@@ -223,9 +227,10 @@ class StoryMenuState extends MusicBeatState
 		changeWeek();
 		changeDifficulty();
 
-		addTouchPad('LEFT_FULL', 'A_B_X_Y');
-
 		super.create();
+		// Weeks are swiped directly and difficulty has its own onscreen arrows.
+		addTouchPad('NONE', 'A_B_X_Y');
+		addTouchPadCamera();
 	}
 
 	override function closeSubState()
@@ -234,12 +239,33 @@ class StoryMenuState extends MusicBeatState
 		changeWeek();
 		super.closeSubState();
 		removeTouchPad();
-		addTouchPad('LEFT_FULL', 'A_B_X_Y');
+		addTouchPad('NONE', 'A_B_X_Y');
+		addTouchPadCamera();
 	}
 
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+		var touchAccept:Bool = false;
+		if (!movedBack && !selectedWeek)
+			touchHandler.update(true, true, getTouchStoryTargetAt, function(index:Int, x:Float, y:Float)
+			{
+				if (index == TOUCH_DIFFICULTY_LEFT)
+					changeDifficulty(-1);
+				else if (index == TOUCH_DIFFICULTY_RIGHT)
+					changeDifficulty(1);
+				else if (index == curWeek)
+					touchAccept = true;
+				else
+				{
+					changeWeek(index - curWeek);
+					changeDifficulty();
+				}
+			}, function(direction:Int)
+			{
+				changeWeek(direction);
+				changeDifficulty();
+			});
 
 		if (WeekData.weeksList.length < 1)
 		{
@@ -316,7 +342,7 @@ class StoryMenuState extends MusicBeatState
 				openSubState(backend.ScriptableSubstate.tryCreate('ResetScoreSubState', new ResetScoreSubState('', curDifficulty, '', curWeek)));
 				removeTouchPad();
 			}
-			else if (controls.ACCEPT || (touchPad != null && touchPad.buttonA.justPressed))
+			else if (controls.ACCEPT || touchAccept || (touchPad != null && touchPad.buttonA.justPressed))
 				selectWeek();
 		}
 
@@ -370,6 +396,9 @@ class StoryMenuState extends MusicBeatState
 			{
 				PlayState.storyPlaylist = songArray;
 				PlayState.isStoryMode = true;
+				// A previous freeplay or week song must not suppress this week's
+				// first legacy cutscene.
+				PlayState.seenCutscene = false;
 				selectedWeek = true;
 
 				var diffic = Difficulty.getFilePath(curDifficulty);
@@ -538,6 +567,28 @@ class StoryMenuState extends MusicBeatState
 		return (!leWeek.startUnlocked
 			&& leWeek.weekBefore.length > 0
 			&& (!weekCompleted.exists(leWeek.weekBefore) || !weekCompleted.get(leWeek.weekBefore)));
+	}
+
+	function getTouchWeekAt(x:Float, y:Float):Int
+	{
+		if (grpWeekText == null)
+			return TouchScrollHandler.NO_TARGET;
+		for (index => item in grpWeekText.members)
+			if (item != null && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
+	}
+
+	function getTouchStoryTargetAt(x:Float, y:Float):Int
+	{
+		if (difficultySelectors != null && difficultySelectors.visible)
+		{
+			if (leftArrow != null && x >= leftArrow.x && x <= leftArrow.x + leftArrow.width && y >= leftArrow.y && y <= leftArrow.y + leftArrow.height)
+				return TOUCH_DIFFICULTY_LEFT;
+			if (rightArrow != null && x >= rightArrow.x && x <= rightArrow.x + rightArrow.width && y >= rightArrow.y && y <= rightArrow.y + rightArrow.height)
+				return TOUCH_DIFFICULTY_RIGHT;
+		}
+		return getTouchWeekAt(x, y);
 	}
 
 	function updateText()

@@ -92,10 +92,13 @@ class MasterEditorMenu extends MusicBeatState
 
 		FlxG.mouse.visible = false;
 
-		addTouchPad('NONE', 'B');
-		addTouchPadCamera();
-
 		super.create();
+
+		// MusicBeatState.create() initializes/resets the Psych camera. Attach the
+		// touchpad afterwards so TouchButton never retains the pre-reset camera.
+		// Expose the existing loaded-mod selector on touch devices too.
+		addTouchPad('LEFT_RIGHT', 'B');
+		addTouchPadCamera();
 	}
 
 	// ← NUEVO: Función para construir opciones traducidas
@@ -117,8 +120,10 @@ class MasterEditorMenu extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		if (touchHandler.update(true, true, getTouchOptionAt, onTouchOption, function(direction:Int) changeSelection(direction)))
+		if (grpTexts != null && touchHandler.update(true, true, getTouchOptionAt, onTouchOption, function(direction:Int) changeSelection(direction)))
 			return;
+		if (FlxG.mouse.wheel != 0)
+			changeSelection(-FlxG.mouse.wheel);
 		if (controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed))
 		{
 			changeSelection(-1);
@@ -179,6 +184,8 @@ class MasterEditorMenu extends MusicBeatState
 
 		for (num => item in grpTexts.members)
 		{
+			if (item == null)
+				continue;
 			item.targetY = num - curSelected;
 			item.alpha = canSelect(num) ? 0.6 : 0.25;
 			if (item.targetY == 0)
@@ -197,6 +204,8 @@ class MasterEditorMenu extends MusicBeatState
 
 	function changeSelection(change:Int = 0)
 	{
+		if (options == null || options.length == 0)
+			return;
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 		var direction:Int = change < 0 ? -1 : 1;
 		var target:Int = curSelected + change;
@@ -214,6 +223,8 @@ class MasterEditorMenu extends MusicBeatState
 
 	function getTouchOptionAt(x:Float, y:Float):Int
 	{
+		if (grpTexts == null)
+			return TouchScrollHandler.NO_TARGET;
 		for (index => item in grpTexts.members)
 			if (item != null && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
 				return index;

@@ -488,7 +488,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		else if (grpOptions != null)
 		{
 			for (index => item in grpOptions.members)
-				if (item != null && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+				// Psych places BOOL checkboxes to the left of their label. Include that
+				// visual hitbox so tapping the checkbox is equivalent to tapping its row.
+				if (item != null && x >= item.x - 140 && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
 					return index;
 		}
 		return -1;

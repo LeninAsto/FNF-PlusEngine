@@ -4,7 +4,7 @@ import flixel.addons.effects.FlxTrail;
 import states.stages.objects.*;
 import substates.GameOverSubstate;
 import cutscenes.DialogueBox;
-import openfl.utils.Assets as OpenFlAssets;
+import backend.AssetLoader;
 
 class SchoolEvil extends BaseStage
 {
@@ -93,24 +93,15 @@ class SchoolEvil extends BaseStage
 	function initDoof()
 	{
 		var file:String = Paths.txt('$songName/${songName}Dialogue_${ClientPrefs.data.language}'); // Checks for vanilla/Senpai dialogue
-		#if MODS_ALLOWED
-		if (!FileSystem.exists(file))
-		#else
-		if (!OpenFlAssets.exists(file))
-		#end
+		// Android bundles these dialogue files in the APK, where FileSystem.exists
+		// cannot see them. Resolve through the same loader used by chart assets.
+		if (!AssetLoader.exists(file, TEXT))
 		{
 			file = Paths.txt('$songName/${songName}Dialogue');
 		}
 
-		#if MODS_ALLOWED
-		if (!FileSystem.exists(file))
-		#else
-		if (!OpenFlAssets.exists(file))
-		#end
-		{
-			startCountdown();
+		if (!AssetLoader.exists(file, TEXT))
 			return;
-		}
 
 		doof = new DialogueBox(false, CoolUtil.coolTextFile(file));
 		doof.cameras = [camHUD];
@@ -123,6 +114,15 @@ class SchoolEvil extends BaseStage
 	function schoolIntro():Void
 	{
 		inCutscene = true;
+		// If a custom/localized Thorns dialogue is absent, do not leave the
+		// state permanently in cutscene mode. This used to look like a broken
+		// chart until the player restarted it.
+		if (doof == null)
+		{
+			startCountdown();
+			return;
+		}
+
 		var red:FlxSprite = new FlxSprite(-100, -100).makeGraphic(FlxG.width * 2, FlxG.height * 2, 0xFFff1b31);
 		red.scrollFactor.set();
 		add(red);

@@ -47,6 +47,16 @@ class MobileSettingsSubState extends BaseOptionsMenu
 		};
 		addOption(option);
 
+		option = new Option('Touch Menu Scroll Sensitivity',
+			'Controls how much a finger swipe changes touch menu selections. Higher values scroll with less movement.',
+			'mobileScrollSensitivity', PERCENT);
+		option.scrollSpeed = 1;
+		option.minValue = 0.5;
+		option.maxValue = 2;
+		option.changeValue = 0.1;
+		option.decimals = 1;
+		addOption(option);
+
 		#if mobile
 		option = new Option('Allow Phone Screensaver',
 			'If checked, the phone will sleep after going inactive for few seconds.\n(The time depends on your phone\'s options)', 'screensaver', BOOL);

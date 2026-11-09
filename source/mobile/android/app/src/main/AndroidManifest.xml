@@ -27,6 +27,7 @@
 			android:label="::APP_TITLE::"
 			android:launchMode="singleTask"
 			android:resizeableActivity="true"
+			android:theme="@style/LimeAppMainTheme"
 			android:screenOrientation="fullUser">
 
 			<intent-filter>
@@ -97,7 +98,7 @@
 
 		::if (SHARE_FILES)::
 		<provider
-			android:name="org.haxe.lime.StorageProvider"
+			android:name="::APP_PACKAGE::.PlusEngineStorageProvider"
 			android:authorities="::APP_PACKAGE::.documentsprovider"
 			android:exported="true"
 			android:grantUriPermissions="true"

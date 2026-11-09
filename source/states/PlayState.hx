@@ -2730,7 +2730,8 @@ class PlayState extends MusicBeatState
 			return;
 		}
 		denseRatingPending = true;
-		denseRatingHadMiss = denseRatingHadMiss || badHit;
+		if (badHit)
+			denseRatingHadMiss = true;
 	}
 
 	private function flushDenseRatingRecalculation():Void
@@ -3971,6 +3972,9 @@ class PlayState extends MusicBeatState
 					FlxTransitionableState.skipNextTransIn = true;
 					FlxTransitionableState.skipNextTransOut = true;
 					prevCamFollow = camFollow;
+					// Story dialogue belongs to each song. The previous song's countdown
+					// marks this static flag, so clear it before creating the next state.
+					seenCutscene = false;
 
 					Song.loadFromJson(PlayState.storyPlaylist[0] + difficulty, PlayState.storyPlaylist[0]);
 					FlxG.sound.music.stop();

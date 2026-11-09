@@ -3,7 +3,7 @@ package states.stages;
 import states.stages.objects.*;
 import substates.GameOverSubstate;
 import cutscenes.DialogueBox;
-import openfl.utils.Assets as OpenFlAssets;
+import backend.AssetLoader;
 
 class School extends BaseStage
 {
@@ -118,24 +118,15 @@ class School extends BaseStage
 	function initDoof()
 	{
 		var file:String = Paths.txt('$songName/${songName}Dialogue_${ClientPrefs.data.language}'); // Checks for vanilla/Senpai dialogue
-		#if MODS_ALLOWED
-		if (!FileSystem.exists(file))
-		#else
-		if (!OpenFlAssets.exists(file))
-		#end
+		// FileSystem.exists is false for assets packaged inside Android APKs.
+		// AssetLoader checks both extracted/mod files and bundled OpenFL assets.
+		if (!AssetLoader.exists(file, TEXT))
 		{
 			file = Paths.txt('$songName/${songName}Dialogue');
 		}
 
-		#if MODS_ALLOWED
-		if (!FileSystem.exists(file))
-		#else
-		if (!OpenFlAssets.exists(file))
-		#end
-		{
-			startCountdown();
+		if (!AssetLoader.exists(file, TEXT))
 			return;
-		}
 
 		doof = new DialogueBox(false, CoolUtil.coolTextFile(file));
 		doof.cameras = [camHUD];
