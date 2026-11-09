@@ -2,6 +2,7 @@ package options;
 
 import states.MainMenuState;
 import backend.StageData;
+import mobile.input.TouchScrollHandler;
 import flixel.util.FlxSpriteUtil;
 
 class OptionsState extends MusicBeatState
@@ -49,6 +50,7 @@ class OptionsState extends MusicBeatState
 
 	var optionsIntroActive:Bool = true;
 	var substateInputBlocked:Bool = false;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler(42);
 
 	public static function normalizeMenuStyle(style:String):String
 	{
@@ -267,7 +269,7 @@ class OptionsState extends MusicBeatState
 			}
 			}
 
-		addTouchPad('UP_DOWN', 'A_B_C');
+		applyTouchPadLayout();
 
 		super.create();
 		callOnCompanionScript('onOptionsMenuCreatePost', [getOptionsCopy()]);
@@ -303,8 +305,15 @@ class OptionsState extends MusicBeatState
 				item.alpha = 0;
 			}
 		removeTouchPad();
-		addTouchPad('UP_DOWN', 'A_B_C');
+		applyTouchPadLayout();
 		persistentUpdate = true;
+	}
+
+	function applyTouchPadLayout():Void
+	{
+		// Plus is operated directly; Psych keeps only its value arrows and menu shortcuts.
+		addTouchPad(isPlusStyle() ? 'NONE' : 'LEFT_RIGHT', isPlusStyle() ? 'B_C' : 'B_C');
+		addTouchPadCamera();
 	}
 
 	var exiting = false;
@@ -316,6 +325,8 @@ class OptionsState extends MusicBeatState
 		if (isPlusStyle())
 		{
 			updatePlusLayout(elapsed);
+			if (handleTouchNavigation())
+				return;
 			handleInput();
 			return;
 		}
@@ -379,6 +390,9 @@ class OptionsState extends MusicBeatState
 
 		if (!exiting && !substateInputBlocked)
 		{
+			if (handleTouchNavigation())
+				return;
+
 			if (controls.UI_UP_P)
 				changeSelection(-1);
 			if (controls.UI_DOWN_P)
@@ -414,6 +428,36 @@ class OptionsState extends MusicBeatState
 			else if (controls.ACCEPT && options != null && options.length > 0)
 				openSelectedSubstate(options[curSelected]);
 		}
+	}
+
+	function handleTouchNavigation():Bool
+	{
+		if (exiting || substateInputBlocked || optionsIntroActive || options == null || options.length < 1)
+			return false;
+		return touchHandler.update(true, !isPlusStyle(), getTouchOptionAt, function(index:Int, x:Float, y:Float)
+		{
+			selectOption(index);
+			openSelectedSubstate(options[index]);
+		}, changeSelection);
+	}
+
+	function getTouchOptionAt(x:Float, y:Float):Int
+	{
+		if (isPlusStyle())
+		{
+			if (plusCards == null)
+				return -1;
+			for (card in plusCards.members)
+				if (card != null && card.containsTouchPoint(x, y))
+					return card.index;
+		}
+		else if (grpOptions != null)
+		{
+			for (index => item in grpOptions.members)
+				if (item != null && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+					return index;
+		}
+		return -1;
 	}
 
 	function handleInput():Void
@@ -467,7 +511,6 @@ class OptionsState extends MusicBeatState
 			return;
 
 		var moveLerp:Float = Math.exp(-elapsed * (optionsIntroActive ? 7.2 : 10.2));
-		var selectedRow:Int = Std.int(curSelected / 2);
 		for (card in plusCards.members)
 		{
 			if (card == null)
@@ -477,7 +520,9 @@ class OptionsState extends MusicBeatState
 			var col:Int = card.index % 2;
 			var row:Int = Std.int(card.index / 2);
 			var targetX:Float = (FlxG.width - 1024) * 0.5 + col * 524;
-			var targetY:Float = 96 + (row - selectedRow) * 104;
+			// The Plus dashboard deliberately keeps every category in a stable grid.
+			// Selection changes emphasis only; it must never make the whole page scroll.
+			var targetY:Float = 96 + row * 104;
 			var targetScale:Float = selected ? 1.035 : 1;
 			var targetAlpha:Float = selected ? 1 : 0.68;
 
@@ -707,6 +752,9 @@ private class PlusOptionCard extends FlxSpriteGroup
 		add(arrow);
 		applyTheme(false, false);
 	}
+
+	public inline function containsTouchPoint(x:Float, y:Float):Bool
+		return x >= this.x && x <= this.x + CARD_W && y >= this.y && y <= this.y + CARD_H;
 
 	public function applyTheme(selected:Bool, headerMode:Bool):Void
 	{

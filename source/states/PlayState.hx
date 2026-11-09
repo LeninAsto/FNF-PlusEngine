@@ -4240,7 +4240,7 @@ class PlayState extends MusicBeatState
 	public static function comboCharacterAsset(character:String):String
 	{
 		if (!ClientPrefs.data.showMinusDotKM && (character == '.' || character == 'k' || character == 'M'))
-            return null; 
+			return null;
 
 		return switch (character)
 		{
@@ -4653,8 +4653,8 @@ class PlayState extends MusicBeatState
 				if (isMinus && !ClientPrefs.data.showMinusDotKM)
 					continue;
 				var numberAsset:String = isMinus ? popupMinusAsset() : comboCharacterAsset(comboStr.charAt(i));
-				if (numberAsset == null)
-                    continue;
+			if (numberAsset == null)
+				continue;
 				var numScore:FlxSprite = getComboSprite().loadGraphic(Paths.image(numberAsset));
 				if (isMiss) numScore.color = 0xFFB060FF;
 				numScore.screenCenter();

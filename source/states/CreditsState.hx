@@ -7,6 +7,7 @@ import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
+import mobile.input.TouchScrollHandler;
 
 class CreditsState extends MusicBeatState
 {
@@ -21,6 +22,7 @@ class CreditsState extends MusicBeatState
 	public var descBg:FlxSprite;
 	public var intendedColor:FlxColor;
 	public var colorTween:FlxTween;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	public var offsetThing:Float = -75;
 
@@ -324,7 +326,8 @@ class CreditsState extends MusicBeatState
 		intendedColor = bg.color;
 		changeSelection();
 
-		addTouchPad('UP_DOWN', 'A_B');
+		addTouchPad('NONE', 'B');
+		addTouchPadCamera();
 
 		super.create();
 
@@ -347,6 +350,8 @@ class CreditsState extends MusicBeatState
 
 		if (!quitting)
 		{
+			if (touchHandler.update(true, true, getTouchCreditAt, onTouchCredit, function(direction:Int) changeSelection(direction)))
+				return;
 			if (creditsStuff.length > 1)
 			{
 				var shiftMult:Int = 1;
@@ -427,6 +432,26 @@ class CreditsState extends MusicBeatState
 	}
 
 	var moveTween:FlxTween = null;
+
+	function getTouchCreditAt(x:Float, y:Float):Int
+	{
+		for (index => item in grpOptions.members)
+			if (item != null && !unselectableCheck(index) && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
+	}
+
+	function onTouchCredit(index:Int, x:Float, y:Float):Void
+	{
+		if (index != curSelected)
+		{
+			changeSelection(index - curSelected);
+			return;
+		}
+		var link = creditsStuff[curSelected][3];
+		if (link != null && link.length > 4)
+			CoolUtil.browserLoad(link);
+	}
 
 	function changeSelection(change:Int = 0)
 	{

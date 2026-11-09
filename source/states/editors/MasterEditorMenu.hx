@@ -4,6 +4,7 @@ import backend.WeekData;
 import objects.Character;
 import states.MainMenuState;
 import states.FreeplayState;
+import mobile.input.TouchScrollHandler;
 
 class MasterEditorMenu extends MusicBeatState
 {
@@ -29,6 +30,7 @@ class MasterEditorMenu extends MusicBeatState
 	private var curDirectory = 0;
 	private var directoryTxt:FlxText;
 	private var disabledTxt:FlxText;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	override function create()
 	{
@@ -90,7 +92,8 @@ class MasterEditorMenu extends MusicBeatState
 
 		FlxG.mouse.visible = false;
 
-		addTouchPad(#if MODS_ALLOWED 'LEFT_FULL' #else 'UP_DOWN' #end, 'A_B');
+		addTouchPad('NONE', 'B');
+		addTouchPadCamera();
 
 		super.create();
 	}
@@ -114,6 +117,8 @@ class MasterEditorMenu extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+		if (touchHandler.update(true, true, getTouchOptionAt, onTouchOption, function(direction:Int) changeSelection(direction)))
+			return;
 		if (controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed))
 		{
 			changeSelection(-1);
@@ -205,6 +210,40 @@ class MasterEditorMenu extends MusicBeatState
 			}
 		}
 		curSelected = FlxMath.wrap(curSelected + change, 0, options.length - 1);
+	}
+
+	function getTouchOptionAt(x:Float, y:Float):Int
+	{
+		for (index => item in grpTexts.members)
+			if (item != null && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
+	}
+
+	function onTouchOption(index:Int, x:Float, y:Float):Void
+	{
+		if (index != curSelected)
+		{
+			changeSelection(index - curSelected);
+			return;
+		}
+		if (!canSelect(curSelected))
+			return;
+
+		switch (curSelected)
+		{
+			case 0: LoadingState.loadAndSwitchState(new ChartingState(), false);
+			case 1: LoadingState.loadAndSwitchState(new CharacterEditorState(Character.DEFAULT_CHARACTER, false));
+			case 2: LoadingState.loadAndSwitchState(new StageEditorState());
+			case 3: MusicBeatState.switchState(new WeekEditorState());
+			case 4: MusicBeatState.switchState(new MenuCharacterEditorState());
+			case 5: LoadingState.loadAndSwitchState(new DialogueEditorState(), false);
+			case 6: LoadingState.loadAndSwitchState(new DialogueCharacterEditorState(), false);
+			case 7: MusicBeatState.switchState(new NoteSplashEditorState());
+			case 8: MusicBeatState.switchState(new ModchartEditorState());
+		}
+		FlxG.sound.music.volume = 0;
+		FreeplayState.destroyFreeplayVocals();
 	}
 
 	function canSelect(index:Int):Bool

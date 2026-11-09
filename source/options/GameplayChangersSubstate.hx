@@ -5,6 +5,7 @@ import backend.BotplayCPU;
 import objects.AttachedText;
 import objects.CheckboxThingie;
 import options.Option.OptionType;
+import mobile.input.TouchScrollHandler;
 
 class GameplayChangersSubstate extends MusicBeatSubstate
 {
@@ -198,9 +199,15 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 	var nextAccept:Int = 5;
 	var holdTime:Float = 0;
 	var holdValue:Float = 0;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	override function update(elapsed:Float)
 	{
+		if (nextAccept <= 0 && touchHandler.update(true, true, getTouchOptionAt, onTouchOption, function(direction:Int) changeSelection(direction)))
+		{
+			super.update(elapsed);
+			return;
+		}
 		if (controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed))
 			changeSelection(-1);
 
@@ -397,6 +404,20 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 			addTouchPadCamera();
 		}
 		super.update(elapsed);
+	}
+
+	function getTouchOptionAt(x:Float, y:Float):Int
+	{
+		for (index => item in grpOptions.members)
+			if (item != null && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
+	}
+
+	function onTouchOption(index:Int, x:Float, y:Float):Void
+	{
+		if (index >= 0 && index < optionsArray.length)
+			selectOption(index);
 	}
 
 	function updateTextFrom(option:GameplayOption)

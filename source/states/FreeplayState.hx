@@ -11,6 +11,7 @@ import objects.MusicPlayer;
 import options.GameplayChangersSubstate;
 import options.OptionsMenuTheme;
 import substates.ResetScoreSubState;
+import mobile.input.TouchScrollHandler;
 import backend.ui.md3.MD3ShapeTools;
 import backend.ui.md3.MaterialTextField;
 import backend.ui.md3.MaterialWavyProgressIndicator;
@@ -132,6 +133,7 @@ class FreeplayState extends MusicBeatState
 	public var player:MusicPlayer;
 
 	var freeplayTouchInputBlockTime:Float = 0;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	public var inDifficultySelect:Bool = false;
 	public var difficultySelector:DifficultySelector;
@@ -716,7 +718,7 @@ class FreeplayState extends MusicBeatState
 		FlxG.stage.window.onDropFile.add(onDropFile);
 		#end
 
-		addTouchPad('UP_DOWN', 'A_B_C_X_Y_Z');
+		addTouchPad('NONE', 'B_C_X_Y_Z');
 		addTouchPadCamera();
 		if (touchPad != null)
 		{
@@ -732,7 +734,7 @@ class FreeplayState extends MusicBeatState
 		persistentUpdate = true;
 		super.closeSubState();
 		removeTouchPad();
-		addTouchPad('UP_DOWN', 'A_B_C_X_Y_Z');
+		addTouchPad('NONE', 'B_C_X_Y_Z');
 		addTouchPadCamera();
 		if (touchPad != null)
 		{
@@ -1011,6 +1013,7 @@ class FreeplayState extends MusicBeatState
 		var touchX:Bool = touchPad != null && touchPad.buttonX != null && touchPad.buttonX.justPressed;
 		var touchY:Bool = touchPad != null && touchPad.buttonY != null && touchPad.buttonY.justPressed;
 		var touchZ:Bool = touchPad != null && touchPad.buttonZ != null && touchPad.buttonZ.justPressed;
+		var touchSongAccept:Bool = false;
 
 		if (searchFocused && FlxG.keys.justPressed.ESCAPE)
 		{
@@ -1025,6 +1028,15 @@ class FreeplayState extends MusicBeatState
 			updateTexts(elapsed);
 			return;
 		}
+
+		if (!searchFocused && !player.playingMusic && !inDifficultySelect)
+			touchHandler.update(true, true, getTouchSongAt, function(index:Int, x:Float, y:Float)
+			{
+				if (index == curSelected)
+					touchSongAccept = true;
+				else
+					changeSelection(index - curSelected);
+			}, function(direction:Int) changeSelection(direction));
 
 		if (handleSongInfoLinkMouse())
 		{
@@ -1458,7 +1470,7 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 		else if (!searchFocused
-			&& (controls.ACCEPT || touchA)
+			&& (controls.ACCEPT || touchA || touchSongAccept)
 			&& !player.playingMusic)
 		{
 			if (!inDifficultySelect)
@@ -1603,6 +1615,14 @@ class FreeplayState extends MusicBeatState
 
 		// Actualizar textos de score cuando cambia la selección
 		difficultySelector.updateScoreTexts();
+	}
+
+	function getTouchSongAt(x:Float, y:Float):Int
+	{
+		for (index => item in grpSongs.members)
+			if (item != null && item.visible && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
 	}
 
 	function changeSelection(change:Int = 0, playSound:Bool = true)

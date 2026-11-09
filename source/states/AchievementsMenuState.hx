@@ -3,6 +3,7 @@ package states;
 import flixel.FlxObject;
 import flixel.util.FlxSort;
 import objects.Bar;
+import mobile.input.TouchScrollHandler;
 
 #if ACHIEVEMENTS_ALLOWED
 class AchievementsMenuState extends MusicBeatState
@@ -19,6 +20,7 @@ class AchievementsMenuState extends MusicBeatState
 	public var camFollow:FlxObject;
 
 	public var MAX_PER_ROW:Int = 4;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	override function create()
 	{
@@ -125,7 +127,8 @@ class AchievementsMenuState extends MusicBeatState
 
 		_changeSelection();
 
-		addTouchPad('LEFT_FULL', 'B_C');
+		addTouchPad('NONE', 'B_C');
+		addTouchPadCamera();
 
 		super.create();
 
@@ -137,7 +140,8 @@ class AchievementsMenuState extends MusicBeatState
 	{
 		super.closeSubState();
 		removeTouchPad();
-		addTouchPad('LEFT_FULL', 'B_C');
+		addTouchPad('NONE', 'B_C');
+		addTouchPadCamera();
 	}
 
 	function makeAchievement(achievement:String, data:Achievement, unlocked:Bool, mod:String = null)
@@ -165,6 +169,8 @@ class AchievementsMenuState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+		if (!goingBack && touchHandler.update(true, true, getTouchAchievementAt, onTouchAchievement, changeTouchRow))
+			return;
 
 		if (!goingBack && options.length > 1)
 		{
@@ -242,6 +248,38 @@ class AchievementsMenuState extends MusicBeatState
 	}
 
 	public var barTween:FlxTween = null;
+
+	function getTouchAchievementAt(x:Float, y:Float):Int
+	{
+		for (index => item in grpOptions.members)
+			if (item != null && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
+	}
+
+	function onTouchAchievement(index:Int, x:Float, y:Float):Void
+	{
+		if (index >= 0 && index < options.length)
+		{
+			curSelected = index;
+			_changeSelection();
+		}
+	}
+
+	function changeTouchRow(direction:Int):Void
+	{
+		var column:Int = curSelected % MAX_PER_ROW;
+		var target:Int = curSelected + direction * MAX_PER_ROW;
+		if (target < 0)
+		{
+			var lastRow:Int = Math.ceil(options.length / MAX_PER_ROW) - 1;
+			target = Std.int(Math.min(lastRow * MAX_PER_ROW + column, options.length - 1));
+		}
+		else if (target >= options.length)
+			target = column < options.length ? column : 0;
+		curSelected = target;
+		_changeSelection();
+	}
 
 	function _changeSelection()
 	{
