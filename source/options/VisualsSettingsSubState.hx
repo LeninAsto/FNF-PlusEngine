@@ -178,7 +178,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		#end
 
-		var option:Option = new Option('Unfriendly Results State', 
+		var option:Option = new Option('Unfriendly Results State',
 		    "Uncheck this to show friendly version of PERFECT result instead of unfriendly version on ResultsState", 'naughtynessResults', BOOL);
 		addOption(option);
 
@@ -203,7 +203,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		option.onChange = syncPopupVisibility;
 
-		var option:Option = new Option('Show Minus, Dot, K and M Sprites', 
+		var option:Option = new Option('Show Minus, Dot, K and M Sprites',
 		    'Shows Minus, Dot, K and M at the rating sprite.', 'showMinusDotKM', BOOL);
 		addOption(option);
 		option.onChange = syncPopupVisibility;

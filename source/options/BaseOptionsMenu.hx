@@ -8,6 +8,7 @@ import objects.CheckboxThingie;
 import objects.AttachedText;
 import options.Option;
 import backend.InputFormatter;
+import mobile.input.TouchScrollHandler;
 #if mobile
 import mobile.backend.MobileScaleMode;
 #end
@@ -155,7 +156,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		reloadCheckboxes();
 		setupIntroTransition();
 
-		addTouchPad('LEFT_FULL', 'A_B_C');
+		// The row itself is touchable. Psych needs value arrows; Plus only keeps Back.
+		addTouchPad(isPlusStyle() ? 'NONE' : 'LEFT_RIGHT', 'B');
+		addTouchPadCamera();
 	}
 
 	function isPlusStyle():Bool
@@ -220,6 +223,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	var bindingBlack:FlxSprite;
 	var bindingText:Alphabet;
 	var bindingText2:Alphabet;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler(38);
 
 	override function update(elapsed:Float)
 	{
@@ -240,6 +244,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 		if (curOption != null && !isOptionSelectable(curOption))
 			changeSelection(0);
+
+		if (handleTouchOptions())
+			return;
 
 		if (controls.UI_UP_P)
 		{
@@ -444,6 +451,97 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		{
 			nextAccept -= 1;
 		}
+	}
+
+	function handleTouchOptions():Bool
+	{
+		if (optionsArray == null || optionsArray.length < 1 || nextAccept > 0)
+			return false;
+		return touchHandler.update(true, true, getTouchOptionAt, handleTouchOptionTap, changeSelection);
+	}
+
+	function handleTouchOptionTap(index:Int, x:Float, y:Float):Void
+	{
+		selectOption(index);
+		var option = curOption;
+		if (option == null || !isOptionSelectable(option))
+			return;
+
+		var direction:Int = getTouchValueDirection(index, x, y);
+		if (direction != 0 && option.type != BOOL && option.type != ACTION && option.type != KEYBIND)
+			touchChangeValue(option, direction);
+		else if (option.type == BOOL)
+			touchToggleBoolean(option);
+		else if (option.type == ACTION)
+			touchRunAction(option);
+	}
+
+	function getTouchOptionAt(x:Float, y:Float):Int
+	{
+		if (isPlusStyle())
+		{
+			if (plusRows != null)
+				for (row in plusRows.members)
+					if (row != null && row.containsTouchPoint(x, y))
+						return row.index;
+		}
+		else if (grpOptions != null)
+		{
+			for (index => item in grpOptions.members)
+				if (item != null && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+					return index;
+		}
+		return -1;
+	}
+
+	function getTouchValueDirection(index:Int, x:Float, y:Float):Int
+	{
+		if (isPlusStyle() && plusRows != null && index >= 0 && index < plusRows.members.length)
+		{
+			var row = plusRows.members[index];
+			if (row != null && row.isValueTouchPoint(x, y))
+				return row.valueTouchDirection(x);
+		}
+		else if (!isPlusStyle() && x >= FlxG.width * 0.55)
+			return x < FlxG.width * 0.75 ? -1 : 1;
+		return 0;
+	}
+
+	function touchToggleBoolean(option:Option):Void
+	{
+		if (callOnCompanionScript('onOptionAccept', [getCurrentOption(), curSelected]) == Function_Stop)
+			return;
+		option.setValue(option.getValue() != true);
+		option.change();
+		reloadCheckboxes();
+		FlxG.sound.play(Paths.sound('scrollMenu'));
+	}
+
+	function touchRunAction(option:Option):Void
+	{
+		if (callOnCompanionScript('onOptionAccept', [getCurrentOption(), curSelected]) == Function_Stop)
+			return;
+		option.change();
+		FlxG.sound.play(Paths.sound('confirmMenu'));
+	}
+
+	function touchChangeValue(option:Option, direction:Int):Void
+	{
+		switch (option.type)
+		{
+			case STRING:
+				var next = FlxMath.wrap(option.curOption + direction, 0, option.options.length - 1);
+				option.curOption = next;
+				option.setValue(option.options[next]);
+			case INT, FLOAT, PERCENT:
+				var value:Float = FlxMath.bound(option.getValue() + option.changeValue * direction, option.minValue, option.maxValue);
+				option.setValue(option.type == INT ? Math.round(value) : FlxMath.roundDecimal(value, option.decimals));
+			default:
+				return;
+		}
+		updateTextFrom(option);
+		option.change();
+		FlxG.sound.play(Paths.sound('scrollMenu'));
 	}
 
 	function refreshThemeVisuals():Void
@@ -1143,6 +1241,15 @@ private class PlusOptionRow extends FlxSpriteGroup
 		syncLayout();
 	}
 
+	public inline function containsTouchPoint(x:Float, y:Float):Bool
+		return x >= this.x && x <= this.x + ROW_W && y >= this.y && y <= this.y + ROW_H;
+
+	public inline function isValueTouchPoint(x:Float, y:Float):Bool
+		return containsTouchPoint(x, y) && x >= this.x + ROW_W - 250;
+
+	public inline function valueTouchDirection(x:Float):Int
+		return x < this.x + ROW_W - 110 ? -1 : 1;
+
 	public function refreshFromOption():Void
 	{
 		if (option == null)
@@ -1161,7 +1268,7 @@ private class PlusOptionRow extends FlxSpriteGroup
 				var value:String = option.text;
 				if (value == null || value.length < 1)
 					value = Std.string(option.getValue());
-				setValueLabel(value);
+				setValueLabel(option.type == KEYBIND ? value : '<  ' + value + '  >');
 		}
 	}
 

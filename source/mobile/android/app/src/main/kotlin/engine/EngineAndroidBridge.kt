@@ -9,13 +9,57 @@ import android.os.Build
 import android.os.Bundle
 import android.os.Process
 import android.util.Log
-import android.view.Gravity
-import android.view.View
-import android.widget.Button
-import android.widget.LinearLayout
-import android.widget.ScrollView
-import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.ComponentActivity
+import androidx.activity.compose.setContent
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.ErrorOutline
+import androidx.compose.material.icons.rounded.Send
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.Card
+import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.ColorScheme
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
+import androidx.compose.material3.darkColorScheme
+import androidx.compose.material3.dynamicDarkColorScheme
+import androidx.compose.material3.dynamicLightColorScheme
+import androidx.compose.material3.lightColorScheme
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
 import org.haxe.extension.Extension
 import java.io.File
 import java.text.SimpleDateFormat
@@ -41,7 +85,14 @@ object EngineAndroidBridge {
 			.edit()
 			.putBoolean(PREF_SHOW_LAUNCHER, showLauncher)
 			.putBoolean(PREF_AUTO_START, autoStart)
-			.apply()
+			.commit()
+	}
+
+	@JvmStatic
+	fun getLauncherPrefs(): String {
+		val context = Extension.mainContext ?: return ""
+		val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+		return "${if (prefs.getBoolean(PREF_SHOW_LAUNCHER, true)) 1 else 0}|${if (prefs.getBoolean(PREF_AUTO_START, false)) 1 else 0}"
 	}
 
 	@JvmStatic
@@ -127,83 +178,15 @@ object EngineAndroidBridge {
 	}
 }
 
-class EngineCrashActivity : Activity() {
-	private var reportVisible = false
-	private lateinit var details: TextView
-	private lateinit var toggle: Button
-
+class EngineCrashActivity : ComponentActivity() {
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
 		val report = readCrashReport().ifBlank { getString(R.string.plus_crash_empty) }
-
-		val root = LinearLayout(this).apply {
-			orientation = LinearLayout.VERTICAL
-			setPadding(dp(22), dp(22), dp(22), dp(22))
-			setBackgroundColor(0xFF101113.toInt())
+		setContent {
+			EngineCrashTheme {
+				CrashRecoveryScreen(report, ::restartGame, ::shareCrashReport, ::closeRecovery)
+			}
 		}
-
-		root.addView(TextView(this).apply {
-			text = getString(R.string.plus_crash_title)
-			textSize = 24f
-			setTextColor(0xFFFFF3E8.toInt())
-			setTypeface(typeface, android.graphics.Typeface.BOLD)
-		})
-
-		root.addView(TextView(this).apply {
-			text = getString(R.string.plus_crash_subtitle)
-			textSize = 15f
-			setTextColor(0xFFC9CDD6.toInt())
-			setPadding(0, dp(8), 0, dp(18))
-		})
-
-		val actions = LinearLayout(this).apply {
-			orientation = LinearLayout.HORIZONTAL
-			gravity = Gravity.CENTER
-		}
-		actions.addView(Button(this).apply {
-			text = getString(R.string.plus_crash_restart)
-			setOnClickListener { restartGame() }
-		}, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginEnd = dp(8) })
-		actions.addView(Button(this).apply {
-			text = getString(R.string.plus_crash_close)
-			setOnClickListener { closeRecovery() }
-		}, LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply { marginStart = dp(8) })
-		root.addView(actions)
-
-		toggle = Button(this).apply {
-			text = getString(R.string.plus_crash_show_details)
-			setOnClickListener { toggleReport() }
-		}
-		root.addView(toggle, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT).apply {
-			topMargin = dp(14)
-		})
-
-		details = TextView(this).apply {
-			text = report
-			textSize = 12f
-			typeface = android.graphics.Typeface.MONOSPACE
-			setTextColor(0xFFE6E1E5.toInt())
-			setPadding(dp(12), dp(12), dp(12), dp(12))
-			visibility = View.GONE
-		}
-		root.addView(ScrollView(this).apply {
-			setBackgroundColor(0xFF22252C.toInt())
-			addView(details)
-			visibility = View.GONE
-			tag = "details_scroll"
-		}, LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, 0, 1f).apply {
-			topMargin = dp(12)
-		})
-
-		setContentView(root)
-	}
-
-	private fun toggleReport() {
-		reportVisible = !reportVisible
-		val scroll = details.parent as View
-		scroll.visibility = if (reportVisible) View.VISIBLE else View.GONE
-		details.visibility = if (reportVisible) View.VISIBLE else View.GONE
-		toggle.text = getString(if (reportVisible) R.string.plus_crash_hide_details else R.string.plus_crash_show_details)
 	}
 
 	private fun readCrashReport(): String {
@@ -225,5 +208,73 @@ class EngineCrashActivity : Activity() {
 		exitProcess(0)
 	}
 
-	private fun dp(value: Int): Int = (value * resources.displayMetrics.density).toInt()
+	private fun shareCrashReport() {
+		val intent = Intent(Intent.ACTION_SEND).apply {
+			type = "text/plain"
+			putExtra(Intent.EXTRA_SUBJECT, getString(R.string.plus_crash_share_subject))
+			putExtra(Intent.EXTRA_TEXT, readCrashReport())
+		}
+		startActivity(Intent.createChooser(intent, getString(R.string.plus_crash_send_logs)))
+	}
+}
+
+@Composable
+private fun EngineCrashTheme(content: @Composable () -> Unit) {
+	val context = LocalContext.current
+	val dark = true
+	val colors: ColorScheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+		if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
+	} else {
+		darkColorScheme(
+			primary = Color(0xFFFFB15C), onPrimary = Color(0xFF301600), secondary = Color(0xFF8AD7C1),
+			background = Color(0xFF101113), surface = Color(0xFF191B20), surfaceVariant = Color(0xFF22252C),
+			onBackground = Color(0xFFF2F0EA), onSurface = Color(0xFFF2F0EA), onSurfaceVariant = Color(0xFFC9CDD6)
+		)
+	}
+	MaterialTheme(colorScheme = colors, content = content)
+}
+
+@Composable
+private fun CrashRecoveryScreen(report: String, onRestart: () -> Unit, onSendLogs: () -> Unit, onClose: () -> Unit) {
+	var showDetails by remember { mutableStateOf(false) }
+	val context = LocalContext.current
+	Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
+		Box(
+			modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), MaterialTheme.colorScheme.background))).padding(24.dp),
+			contentAlignment = Alignment.Center
+		) {
+			Card(
+				modifier = Modifier.fillMaxWidth().heightIn(max = 680.dp), shape = RoundedCornerShape(28.dp),
+				colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface)
+			) {
+				Column(modifier = Modifier.padding(24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+					Row(verticalAlignment = Alignment.CenterVertically) {
+						Box(modifier = Modifier.size(56.dp).clip(CircleShape).background(MaterialTheme.colorScheme.error.copy(alpha = 0.18f)), contentAlignment = Alignment.Center) {
+							Icon(Icons.Rounded.ErrorOutline, null, modifier = Modifier.size(30.dp), tint = MaterialTheme.colorScheme.error)
+						}
+						Spacer(Modifier.width(16.dp))
+						Column {
+							Text(context.getString(R.string.plus_crash_title), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
+							Text(context.getString(R.string.plus_crash_subtitle), color = MaterialTheme.colorScheme.onSurfaceVariant)
+						}
+					}
+					Button(onClick = onRestart, modifier = Modifier.fillMaxWidth()) { Text(context.getString(R.string.plus_crash_restart)) }
+					OutlinedButton(onClick = onSendLogs, modifier = Modifier.fillMaxWidth()) {
+						Icon(Icons.Rounded.Send, null, modifier = Modifier.size(18.dp))
+						Spacer(Modifier.width(8.dp))
+						Text(context.getString(R.string.plus_crash_send_logs))
+					}
+					OutlinedButton(onClick = { showDetails = !showDetails }, modifier = Modifier.fillMaxWidth()) {
+						Text(context.getString(if (showDetails) R.string.plus_crash_hide_details else R.string.plus_crash_show_details))
+					}
+					if (showDetails) {
+						SelectionContainer {
+							Text(report, modifier = Modifier.fillMaxWidth().weight(1f, false).verticalScroll(rememberScrollState()).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(14.dp)).padding(14.dp), fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall)
+						}
+					}
+					OutlinedButton(onClick = onClose, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)) { Text(context.getString(R.string.plus_crash_close)) }
+				}
+			}
+		}
+	}
 }

@@ -1373,7 +1373,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 	inline function updateCharacterPositions()
 	{
-		if (character == null) 
+		if (character == null)
 			return;
 
 		if (!character.isPlayer)

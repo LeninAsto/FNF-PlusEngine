@@ -6645,7 +6645,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		{
 			if (note == null || !note.exists)
 				return;
-			if (notes.contains(note) || events.contains(note))
+			if ((!note.isEvent && notes.contains(note)) || (note.isEvent && events.contains(cast note)))
 				return;
 			note.destroy();
 		}

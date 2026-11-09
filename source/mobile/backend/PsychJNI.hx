@@ -51,6 +51,9 @@ class PsychJNI #if (lime >= "8.0.0") implements JNISafety #end
 	public static inline function setLauncherPrefs(showLauncher:Bool, autoStart:Bool):Dynamic
 		return setLauncherPrefs_jni(showLauncher, autoStart);
 
+	public static inline function getLauncherPrefs():String
+		return getLauncherPrefs_jni();
+
 	@:noCompletion private static var setOrientation_jni:Dynamic = JNI.createStaticMethod('org/libsdl/app/SDLActivity', 'setOrientation',
 		'(IIZLjava/lang/String;)V');
 	@:noCompletion private static var getCurrentOrientation_jni:Dynamic = JNI.createStaticMethod('org/libsdl/app/SDLActivity', 'getCurrentOrientation', '()I');
@@ -65,5 +68,7 @@ class PsychJNI #if (lime >= "8.0.0") implements JNISafety #end
 		'(Ljava/lang/String;)Z');
 	@:noCompletion private static var setLauncherPrefs_jni:Dynamic = JNI.createStaticMethod('com/leninasto/plusengine/EngineAndroidBridge',
 		'setLauncherPrefs', '(ZZ)V');
+	@:noCompletion private static var getLauncherPrefs_jni:Dynamic = JNI.createStaticMethod('com/leninasto/plusengine/EngineAndroidBridge',
+		'getLauncherPrefs', '()Ljava/lang/String;');
 }
 #end

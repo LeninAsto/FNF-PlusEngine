@@ -15,7 +15,7 @@ class LegacySettingsSubState extends BaseOptionsMenu
 			'vanillaTransition', BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Sticker Transition', 'If unchecked, stickers are won\'t show when exit', 
+		var option:Option = new Option('Sticker Transition', 'If unchecked, stickers are won\'t show when exit',
 		    'stickerTransition', BOOL);
 		addOption(option);
 
