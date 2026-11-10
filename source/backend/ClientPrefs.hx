@@ -18,6 +18,7 @@ import mobile.backend.PsychJNI;
 	public var controlsAlpha:Float = FlxG.onMobile ? 0.6 : 0;
 	public var showTouchPointer:Bool = true; // show touch pointer indicator (like Android dev option)
 	public var showMobileDebugButtons:Bool = true; // show the trace/mod-state buttons on mobile
+	public var mobileScrollSensitivity:Float = 1.0; // Touch menu swipe response multiplier
 	public var mobileReceptorAlign:Bool = false; // Align receptors with hitbox lanes (mobile only, may break scripts)
 	public var hitboxType:String = "Gradient";
 
@@ -427,6 +428,20 @@ class ClientPrefs
 		for (key in Reflect.fields(data))
 			if (key != 'gameplaySettings' && Reflect.hasField(FlxG.save.data, key))
 				Reflect.setField(data, key, Reflect.field(FlxG.save.data, key));
+
+		#if android
+		try
+		{
+			var launcherPrefs:String = PsychJNI.getLauncherPrefs();
+			var values:Array<String> = launcherPrefs != null ? launcherPrefs.split('|') : [];
+			if (values.length == 2)
+			{
+				data.showAndroidLauncher = values[0] == '1';
+				data.androidLauncherAutoStart = values[1] == '1';
+			}
+		}
+		catch (_:Dynamic) {}
+		#end
 
 		#if !android
 		// Ignore an old/mobile save value when opening the desktop build.

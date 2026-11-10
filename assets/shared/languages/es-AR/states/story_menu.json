@@ -1,0 +1,10 @@
+{
+  "$schema": 1,
+  "$namespace": "states.story_menu",
+  "presence": "En los menús",
+  "score": "PUNTUACIÓN DE LA SEMANA: {1}",
+  "errors": {
+    "no_weeks": "NO HAY SEMANAS PARA EL MODO HISTORIA\n\nPresioná {1} para abrir el editor de semanas.\nPresioná {2} para volver al menú principal.",
+    "no_visible_weeks": "NO HAY SEMANAS VISIBLES DISPONIBLES PARA EL MODO HISTORIA\n\nPresioná {1} para volver al menú principal."
+  }
+}

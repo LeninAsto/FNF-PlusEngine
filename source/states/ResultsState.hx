@@ -612,8 +612,7 @@ class ResultsState extends MusicBeatState
 		}
 	}
 
-	function anim(renderType:String, assetPath:String, offsets:Array<Float>, zIndex:Int, delay:Float = 0, scale:Float = 1, startFrameLabel:String = '',
-			?loopFrame:Int, ?loopFrameLabel:String, ?sound:String):ResultAnimationData
+	function anim(renderType:String, assetPath:String, offsets:Array<Float>, zIndex:Int, delay:Float = 0, scale:Float = 1, startFrameLabel:String = '', ?loopFrame:Int, ?loopFrameLabel:String, ?sound:String):ResultAnimationData
 	{
 		return {
 			renderType: renderType,

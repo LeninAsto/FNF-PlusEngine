@@ -29,9 +29,10 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.selection.SelectionContainer
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.rounded.ErrorOutline
-import androidx.compose.material.icons.rounded.Send
+import androidx.compose.material.icons.automirrored.rounded.Send
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -221,15 +222,15 @@ class EngineCrashActivity : ComponentActivity() {
 @Composable
 private fun EngineCrashTheme(content: @Composable () -> Unit) {
 	val context = LocalContext.current
-	val dark = true
+	val dark = isSystemInDarkTheme()
 	val colors: ColorScheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 		if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
 	} else {
-		darkColorScheme(
+		if (dark) darkColorScheme(
 			primary = Color(0xFFFFB15C), onPrimary = Color(0xFF301600), secondary = Color(0xFF8AD7C1),
 			background = Color(0xFF101113), surface = Color(0xFF191B20), surfaceVariant = Color(0xFF22252C),
 			onBackground = Color(0xFFF2F0EA), onSurface = Color(0xFFF2F0EA), onSurfaceVariant = Color(0xFFC9CDD6)
-		)
+		) else lightColorScheme()
 	}
 	MaterialTheme(colorScheme = colors, content = content)
 }
@@ -237,7 +238,9 @@ private fun EngineCrashTheme(content: @Composable () -> Unit) {
 @Composable
 private fun CrashRecoveryScreen(report: String, onRestart: () -> Unit, onSendLogs: () -> Unit, onClose: () -> Unit) {
 	var showDetails by remember { mutableStateOf(false) }
+	var showRecentLogs by remember { mutableStateOf(false) }
 	val context = LocalContext.current
+	val recentLogs = remember(report) { extractRecentLogs(report) }
 	Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
 		Box(
 			modifier = Modifier.fillMaxSize().background(Brush.verticalGradient(listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.18f), MaterialTheme.colorScheme.background))).padding(24.dp),
@@ -260,16 +263,24 @@ private fun CrashRecoveryScreen(report: String, onRestart: () -> Unit, onSendLog
 					}
 					Button(onClick = onRestart, modifier = Modifier.fillMaxWidth()) { Text(context.getString(R.string.plus_crash_restart)) }
 					OutlinedButton(onClick = onSendLogs, modifier = Modifier.fillMaxWidth()) {
-						Icon(Icons.Rounded.Send, null, modifier = Modifier.size(18.dp))
+						Icon(Icons.AutoMirrored.Rounded.Send, null, modifier = Modifier.size(18.dp))
 						Spacer(Modifier.width(8.dp))
 						Text(context.getString(R.string.plus_crash_send_logs))
 					}
 					OutlinedButton(onClick = { showDetails = !showDetails }, modifier = Modifier.fillMaxWidth()) {
 						Text(context.getString(if (showDetails) R.string.plus_crash_hide_details else R.string.plus_crash_show_details))
 					}
+					OutlinedButton(onClick = { showRecentLogs = !showRecentLogs }, modifier = Modifier.fillMaxWidth()) {
+						Text(context.getString(if (showRecentLogs) R.string.plus_crash_hide_recent_logs else R.string.plus_crash_show_recent_logs))
+					}
+					if (showRecentLogs) {
+						SelectionContainer {
+							Text(recentLogs, modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp, max = 360.dp).verticalScroll(rememberScrollState()).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(14.dp)).padding(14.dp), fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall)
+						}
+					}
 					if (showDetails) {
 						SelectionContainer {
-							Text(report, modifier = Modifier.fillMaxWidth().weight(1f, false).verticalScroll(rememberScrollState()).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(14.dp)).padding(14.dp), fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall)
+							Text(report, modifier = Modifier.fillMaxWidth().heightIn(min = 120.dp, max = 360.dp).verticalScroll(rememberScrollState()).background(MaterialTheme.colorScheme.surfaceVariant, RoundedCornerShape(14.dp)).padding(14.dp), fontFamily = FontFamily.Monospace, style = MaterialTheme.typography.bodySmall)
 						}
 					}
 					OutlinedButton(onClick = onClose, modifier = Modifier.fillMaxWidth(), colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.error)) { Text(context.getString(R.string.plus_crash_close)) }
@@ -277,4 +288,11 @@ private fun CrashRecoveryScreen(report: String, onRestart: () -> Unit, onSendLog
 			}
 		}
 	}
+}
+
+private fun extractRecentLogs(report: String): String {
+	val marker = "Recent trace lines before crash"
+	val start = report.indexOf(marker)
+	if (start < 0) return "No recent trace lines were captured before this crash."
+	return report.substring(start).removeSuffix("\n========================")
 }

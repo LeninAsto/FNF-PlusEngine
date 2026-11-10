@@ -3,6 +3,7 @@ package substates;
 import backend.WeekData;
 import backend.Highscore;
 import objects.HealthIcon;
+import mobile.input.TouchScrollHandler;
 
 class ResetScoreSubState extends MusicBeatSubstate
 {
@@ -16,6 +17,7 @@ class ResetScoreSubState extends MusicBeatSubstate
 	public var song:String;
 	public var difficulty:Int;
 	public var week:Int;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	// Week -1 = Freeplay
 	public function new(song:String, difficulty:Int, character:String, week:Int = -1)
@@ -78,12 +80,19 @@ class ResetScoreSubState extends MusicBeatSubstate
 			letter.color = FlxColor.RED;
 		updateOptions();
 
-		addTouchPad('LEFT_RIGHT', 'A_B');
+		addTouchPad('NONE', 'B');
 		addTouchPadCamera();
 	}
 
 	override function update(elapsed:Float)
 	{
+		var touchAccept:Bool = false;
+		touchHandler.update(true, false, getTouchChoiceAt, function(index:Int, x:Float, y:Float)
+		{
+			onYes = index == 0;
+			touchAccept = true;
+		}, function(_) {});
+
 		bg.alpha += elapsed * 1.5;
 		if (bg.alpha > 0.6)
 			bg.alpha = 0.6;
@@ -109,7 +118,7 @@ class ResetScoreSubState extends MusicBeatSubstate
 			close();
 			controls.isInSubstate = false;
 		}
-		else if (controls.ACCEPT)
+		else if (controls.ACCEPT || touchAccept)
 		{
 			if (onYes)
 			{
@@ -129,7 +138,7 @@ class ResetScoreSubState extends MusicBeatSubstate
 		}
 		if (touchPad == null)
 		{ // sometimes it dosent add the tpad, hopefully this fixes it
-			addTouchPad('LEFT_RIGHT', 'A_B');
+			addTouchPad('NONE', 'B');
 			addTouchPadCamera();
 		}
 		super.update(elapsed);
@@ -147,6 +156,24 @@ class ResetScoreSubState extends MusicBeatSubstate
 		noText.scale.set(scales[1 - confirmInt], scales[1 - confirmInt]);
 		if (week == -1)
 			icon.animation.curAnim.curFrame = confirmInt;
+	}
+
+	function setChoice(yes:Bool):Void
+	{
+		if (onYes == yes)
+			return;
+		FlxG.sound.play(Paths.sound('scrollMenu'), 1);
+		onYes = yes;
+		updateOptions();
+	}
+
+	function getTouchChoiceAt(x:Float, y:Float):Int
+	{
+		if (yesText != null && x >= yesText.x && x <= yesText.x + yesText.width && y >= yesText.y && y <= yesText.y + yesText.height)
+			return 0;
+		if (noText != null && x >= noText.x && x <= noText.x + noText.width && y >= noText.y && y <= noText.y + noText.height)
+			return 1;
+		return TouchScrollHandler.NO_TARGET;
 	}
 
 	override function destroy()

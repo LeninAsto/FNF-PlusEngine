@@ -47,14 +47,24 @@ class MobileSettingsSubState extends BaseOptionsMenu
 		};
 		addOption(option);
 
+		option = new Option('Touch Menu Scroll Sensitivity',
+			'Controls how much a finger swipe changes touch menu selections. Higher values scroll with less movement.',
+			'mobileScrollSensitivity', PERCENT);
+		option.scrollSpeed = 1;
+		option.minValue = 0.5;
+		option.maxValue = 2;
+		option.changeValue = 0.1;
+		option.decimals = 1;
+		addOption(option);
+
 		#if mobile
 		option = new Option('Allow Phone Screensaver',
 			'If checked, the phone will sleep after going inactive for few seconds.\n(The time depends on your phone\'s options)', 'screensaver', BOOL);
 		option.onChange = () -> lime.system.System.allowScreenTimeout = curOption.getValue();
 		addOption(option);
 
-		option = new Option('Infinity Display',
-			'If checked, extends the viewport vertically for taller screens while keeping the classic 16:9 gameplay area.', 'infinityDisplay', BOOL);
+		option = new Option('Expanded Fullscreen View',
+			'Fills the complete screen using the traditional fullscreen behavior. Wide displays may stretch the image slightly, but mods keep their standard coordinates.', 'infinityDisplay', BOOL);
 		option.onChange = () ->
 		{
 			FlxG.scaleMode = new mobile.backend.MobileScaleMode();

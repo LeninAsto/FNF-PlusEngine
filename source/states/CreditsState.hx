@@ -326,10 +326,12 @@ class CreditsState extends MusicBeatState
 		intendedColor = bg.color;
 		changeSelection();
 
+		super.create();
+
+		// MusicBeatState.create() resets the Psych cameras. Attach afterwards so
+		// TouchButton never retains a stale camera when the Credits are opened.
 		addTouchPad('NONE', 'B');
 		addTouchPadCamera();
-
-		super.create();
 
 		#if MODS_ALLOWED
 		Mods.currentModDirectory = (Mods.launchedMod != null && Mods.launchedMod.length > 0) ? Mods.launchedMod : previousModDirectory;
@@ -436,7 +438,8 @@ class CreditsState extends MusicBeatState
 	function getTouchCreditAt(x:Float, y:Float):Int
 	{
 		for (index => item in grpOptions.members)
-			if (item != null && !unselectableCheck(index) && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+			if (item != null && !unselectableCheck(index) && x >= 0 && x <= FlxG.width
+				&& y >= item.y - 18 && y <= item.y + Math.max(item.height, 68) + 18)
 				return index;
 		return TouchScrollHandler.NO_TARGET;
 	}

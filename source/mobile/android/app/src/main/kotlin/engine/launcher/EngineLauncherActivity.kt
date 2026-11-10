@@ -1,6 +1,7 @@
 package ::APP_PACKAGE::.launcher
 
 import android.Manifest
+import android.app.Activity
 import android.app.DownloadManager
 import android.content.Context
 import android.content.Intent
@@ -66,6 +67,7 @@ import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.SideEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -74,13 +76,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
+import androidx.core.view.WindowCompat
 import androidx.core.os.LocaleListCompat
 import ::APP_PACKAGE::.BuildConfig
 import ::APP_PACKAGE::.MainActivity
@@ -125,6 +130,7 @@ class EngineLauncherActivity : ComponentActivity() {
 
 	override fun onCreate(savedInstanceState: Bundle?) {
 		super.onCreate(savedInstanceState)
+		WindowCompat.setDecorFitsSystemWindows(window, true)
 		refreshLauncherPrefs()
 		refreshState()
 
@@ -166,6 +172,7 @@ class EngineLauncherActivity : ComponentActivity() {
 		super.onResume()
 		requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_USER
 		gameLaunchPending = false
+		refreshLauncherPrefs()
 		refreshState()
 	}
 
@@ -186,7 +193,7 @@ class EngineLauncherActivity : ComponentActivity() {
 		getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 			.edit()
 			.putBoolean(PREF_SHOW_LAUNCHER, enabled)
-			.apply()
+			.commit()
 	}
 
 	private fun updateAutoStart(enabled: Boolean) {
@@ -194,7 +201,7 @@ class EngineLauncherActivity : ComponentActivity() {
 		getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
 			.edit()
 			.putBoolean(PREF_AUTO_START, enabled)
-			.apply()
+			.commit()
 		if (enabled) queueAutoStartIfNeeded()
 	}
 
@@ -620,8 +627,10 @@ private data class UpdateState(
 )
 
 @Composable
+@Suppress("DEPRECATION") // Keeps opaque, user-configured launcher bars before API 35's edge-to-edge model.
 private fun LauncherTheme(content: @Composable () -> Unit) {
 	val context = LocalContext.current
+	val view = LocalView.current
 	val dark = isSystemInDarkTheme()
 	val colorScheme = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
 		if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
@@ -651,6 +660,18 @@ private fun LauncherTheme(content: @Composable () -> Unit) {
 			onSurface = Color(0xFF1D1B20),
 			onSurfaceVariant = Color(0xFF49454F)
 		)
+	}
+
+	if (!view.isInEditMode) SideEffect {
+		val activity = context as? Activity
+		activity?.window?.let { window ->
+			window.statusBarColor = colorScheme.background.toArgb()
+			window.navigationBarColor = colorScheme.background.toArgb()
+			WindowCompat.getInsetsController(window, view).apply {
+				isAppearanceLightStatusBars = !dark
+				isAppearanceLightNavigationBars = !dark
+			}
+		}
 	}
 
 	MaterialTheme(

@@ -19,6 +19,9 @@ class CrashHandler
 {
 	private static var initialized:Bool = false;
 	private static var handlingCrash:Bool = false;
+	private static var traceCaptureInstalled:Bool = false;
+	private static final MAX_RECENT_TRACE_LINES:Int = 100;
+	private static var recentTraceLines:Array<String> = [];
 	// Help link/repository to display in the event of a crash
 	public static final HELP_LINK:String = "https://github.com/Psych-Plus-Team/FNF-PlusEngine";
 
@@ -85,6 +88,7 @@ class CrashHandler
 		if (initialized)
 			return;
 		initialized = true;
+		installTraceCapture();
 
 		if (openfl.Lib.current != null && openfl.Lib.current.loaderInfo != null)
 			openfl.Lib.current.loaderInfo.uncaughtErrorEvents.addEventListener(UncaughtErrorEvent.UNCAUGHT_ERROR, onUncaughtError);
@@ -146,6 +150,7 @@ class CrashHandler
 		}
 		stackLabel = stackLabelArr.join('\r\n');
 
+		var priorTrace:String = getRecentTraceLog();
 		var errorMsg = formatCrashText(phrase('kinds.hardcoded', 'Hardcoded Error'), m, stackLabel, [
 			phrase('tips.hardcoded_origin', 'This crashed outside hxscript, so it is probably engine/source code or a compiled library path.'),
 			phrase('tips.first_source_line', 'Check the first source line in the stack before the engine loop; that is usually the useful culprit.'),
@@ -156,11 +161,11 @@ class CrashHandler
 		trace('\n\n$errorMsg');
 
 		#if sys
-		saveErrorMessage(errorMsg);
+		saveErrorMessage(buildCrashLog(errorMsg, priorTrace));
 		#end
 
 		#if DISCORD_ALLOWED DiscordClient.shutdown(); #end
-		showCrashAndExit(errorMsg, phrase('titles.error', 'Error!'));
+		showCrashAndExit(buildCrashLog(errorMsg, priorTrace), phrase('titles.error', 'Error!'));
 	}
 
 	#if (cpp || hl)
@@ -176,6 +181,7 @@ class CrashHandler
 			crashMessage = funnyNullMessage(Std.string(message));
 		}
 
+		var priorTrace:String = getRecentTraceLog();
 		var errorLog = formatCrashText(phrase('kinds.critical_hardcoded', 'Critical Hardcoded Error'), crashMessage,
 			haxe.CallStack.toString(haxe.CallStack.exceptionStack(true)), [
 			phrase('tips.native_crash', 'This is a native/critical crash path, so the app could not recover cleanly.'),
@@ -190,11 +196,11 @@ class CrashHandler
 		trace(phrase('help_inline', 'For help, visit: {1}', [HELP_LINK]));
 
 		#if sys
-		saveErrorMessage(errorLog);
+		saveErrorMessage(buildCrashLog(errorLog, priorTrace));
 		#end
 
 		#if DISCORD_ALLOWED DiscordClient.shutdown(); #end
-		showCrashAndExit(errorLog, phrase('titles.critical_error', 'Critical Error!'));
+		showCrashAndExit(buildCrashLog(errorLog, priorTrace), phrase('titles.critical_error', 'Critical Error!'));
 	}
 	#end
 
@@ -207,6 +213,43 @@ class CrashHandler
 		}
 		handlingCrash = true;
 		return true;
+	}
+
+	private static function installTraceCapture():Void
+	{
+		if (traceCaptureInstalled)
+			return;
+		traceCaptureInstalled = true;
+
+		var previousTrace = haxe.Log.trace;
+		haxe.Log.trace = function(value:Dynamic, ?infos:haxe.PosInfos):Void
+		{
+			var prefix:String = '';
+			if (infos != null && infos.fileName != null)
+				prefix = '[${infos.fileName}:${infos.lineNumber}] ';
+			for (line in Std.string(value).replace('\r', '').split('\n'))
+				pushRecentTrace(prefix + line);
+			if (previousTrace != null)
+				previousTrace(value, infos);
+		};
+	}
+
+	private static function pushRecentTrace(line:String):Void
+	{
+		recentTraceLines.push(line);
+		while (recentTraceLines.length > MAX_RECENT_TRACE_LINES)
+			recentTraceLines.shift();
+	}
+
+	private static function getRecentTraceLog():String
+	{
+		return recentTraceLines.length > 0 ? recentTraceLines.join('\n') : '(No trace lines were captured before the crash.)';
+	}
+
+	private static function buildCrashLog(errorLog:String, priorTrace:String):String
+	{
+		return errorLog + '\n\n========================\nRecent trace lines before crash (last ' + MAX_RECENT_TRACE_LINES + '):\n'
+			+ priorTrace + '\n========================';
 	}
 
 	private static function showCrashAndExit(message:String, title:String):Void
@@ -277,8 +320,7 @@ class CrashHandler
 			if (!FileSystem.exists(folder))
 				FileSystem.createDirectory(folder);
 
-			var fullLog = message + '\n\n========================\n' + phrase('help_inline', 'For help, visit: {1}', [HELP_LINK]) + '\n========================';
-			File.saveContent(folder + Date.now().toString().replace(' ', '-').replace(':', "'") + '.txt', fullLog);
+			File.saveContent(folder + Date.now().toString().replace(' ', '-').replace(':', "'") + '.txt', message);
 		}
 		catch (e:haxe.Exception)
 			trace(phrase('save_failed', 'Couldn\'t save error message. ({1})', [e.message]));

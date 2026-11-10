@@ -231,8 +231,8 @@
     }
   },
   "infinity_display": {
-    "name": "Infinity Display",
-    "description": "If checked, extends the viewport vertically for taller screens while keeping the classic 16:9 gameplay area."
+    "name": "Expanded Fullscreen View",
+    "description": "Fills the complete screen using the traditional fullscreen behavior. Wide displays may stretch the image slightly, but mods keep their standard coordinates."
   },
   "instant_window_close": {
     "name": "Instant Window Close",
@@ -258,9 +258,9 @@
     "name": "Launcher Auto-start",
     "description": "If checked, the Android launcher automatically starts the engine after 3 seconds."
   },
-  "lighter_hit_path": {
-    "name": "Lighter Hit Path",
-    "description": "If unchecked, the full visual path will run instead of light visual path.\nUnchecked this may cause LAG performance."
+  "performance_hit_effects": {
+    "name": "Performance Hit Effects",
+    "description": "Uses pooled hit effects for smoother gameplay on mobile. NF Rating Style and Combo Stacking are unavailable while it is enabled."
   },
   "low_quality": {
     "name": "Low Quality",

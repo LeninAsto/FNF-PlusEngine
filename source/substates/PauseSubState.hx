@@ -25,6 +25,7 @@ import backend.Paths;
 import backend.Language;
 import backend.AssetLoader;
 import haxe.Json;
+import mobile.input.TouchScrollHandler;
 #if mobile
 import mobile.backend.MobileScaleMode;
 #end
@@ -54,6 +55,7 @@ class PauseSubState extends MusicBeatSubstate
 	public var missingTextBG:FlxSprite;
 	public var missingText:FlxText;
 	public var dateTimeText:FlxText;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	private var lastDateTimeMinute:Int = -1;
 
@@ -249,7 +251,9 @@ class PauseSubState extends MusicBeatSubstate
 		regenMenu();
 		cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
 
-		addTouchPad(menuItems.contains('Skip Time') ? 'LEFT_FULL' : 'UP_DOWN', 'A');
+		// The menu itself supports tap and swipe. Keep only Back on mobile so
+		// gameplay controls do not cover pause options.
+		addTouchPad('NONE', 'B');
 		addTouchPadCamera();
 
 		super.create();
@@ -328,7 +332,17 @@ class PauseSubState extends MusicBeatSubstate
 
 		super.update(elapsed);
 
-		if (controls.BACK #if android || FlxG.android.justReleased.BACK #end)
+		var touchAccept:Bool = false;
+		touchHandler.update(true, true, getTouchMenuItemAt, function(index:Int, x:Float, y:Float)
+		{
+			// Pause rows are direct actions on touch; requiring a second tap was
+			// especially error-prone after the list animated into place.
+			curSelected = index;
+			changeSelection(0);
+			touchAccept = true;
+		}, changeSelection);
+
+		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed) #if android || FlxG.android.justReleased.BACK #end)
 		{
 			close();
 			return;
@@ -385,7 +399,7 @@ class PauseSubState extends MusicBeatSubstate
 				}
 		}
 
-		if (controls.ACCEPT && (cantUnpause <= 0 || !controls.controllerMode))
+		if ((controls.ACCEPT || touchAccept) && (cantUnpause <= 0 || !controls.controllerMode))
 		{
 			if (menuItems == difficultyChoices)
 			{
@@ -537,7 +551,7 @@ class PauseSubState extends MusicBeatSubstate
 
 		if (touchPad == null) // sometimes it dosent add the tpad, hopefully this fixes it
 		{
-			addTouchPad(PlayState.chartingMode ? 'LEFT_FULL' : 'UP_DOWN', 'A');
+			addTouchPad('NONE', 'B');
 			addTouchPadCamera();
 		}
 	}
@@ -612,6 +626,17 @@ class PauseSubState extends MusicBeatSubstate
 		missingText.visible = false;
 		missingTextBG.visible = false;
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
+	}
+
+	function getTouchMenuItemAt(x:Float, y:Float):Int
+	{
+		if (grpMenuShit == null)
+			return TouchScrollHandler.NO_TARGET;
+		for (index => item in grpMenuShit.members)
+			if (item != null && x >= 0 && x <= FlxG.width
+				&& y >= item.y - 18 && y <= item.y + Math.max(item.height, 68) + 18)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
 	}
 
 	function regenMenu():Void

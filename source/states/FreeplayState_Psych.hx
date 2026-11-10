@@ -624,7 +624,8 @@ class FreeplayState_Psych extends MusicBeatState
 	function getTouchSongAt(x:Float, y:Float):Int
 	{
 		for (index => item in grpSongs.members)
-			if (item != null && item.visible && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+			if (item != null && item.visible && x >= 0 && x <= FlxG.width
+				&& y >= item.y - 16 && y <= item.y + Math.max(item.height, 64) + 16)
 				return index;
 		return TouchScrollHandler.NO_TARGET;
 	}

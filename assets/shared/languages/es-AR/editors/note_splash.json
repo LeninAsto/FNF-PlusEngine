@@ -1,0 +1,40 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.note_splash",
+  "ui": {
+    "add_update": "Agregar/Actualizar",
+    "animation_name": "Nombre de la animación:",
+    "animation_prefix": "Prefijo de animación:",
+    "animations": "Animaciones:",
+    "blue": "Azul:",
+    "color_to_replace": "Color a reemplazar:",
+    "convert_txt": "Convertir TXT",
+    "do_not_replace": "No reemplazar",
+    "green": "Verde:",
+    "image": "Imagen:",
+    "indices_optional": "Índices (OPCIONAL):",
+    "maximum_fps": "FPS máximos:",
+    "minimum_fps": "FPS mínimos:",
+    "note_data": "Datos de nota:",
+    "red": "Rojo:",
+    "reload_image": "Recargar imagen",
+    "remove": "Eliminar",
+    "replacing_color": "Reemplazo de color:",
+    "save": "Guardar",
+    "scale": "Escala:",
+    "template": "Plantilla"
+  },
+  "presence": {
+    "title": "Editor de Note Splash"
+  },
+  "help": {
+    "open": "Presioná {1} para ver la ayuda",
+    "mobile": "Tocá un receptor\npara generar un Splash\n\nFlechas: mover desplazamiento\nMantené Z: mover desplazamientos 10 veces más rápido\n\n\nC: copiar desplazamiento actual\nV: pegar el desplazamiento copiado en el Splash actual\nPor cada 4 valores adicionales de datos de nota\nse agregará un conjunto extra de animaciones",
+    "desktop": "Hacé clic en un receptor o presioná la barra espaciadora\npara generar un Splash\n\nFlechas: mover desplazamiento\nMantené Shift: mover desplazamientos 10 veces más rápido\n\n\nCtrl + C: copiar desplazamiento actual\nCtrl + V: pegar el desplazamiento copiado en el Splash actual\nCtrl + R: restablecer desplazamiento actual\nPor cada 4 valores adicionales de datos de nota\nse agregará un conjunto extra de animaciones"
+  },
+  "tabs": {
+    "animation": "Animación",
+    "properties": "Propiedades",
+    "shader": "Shader"
+  }
+}

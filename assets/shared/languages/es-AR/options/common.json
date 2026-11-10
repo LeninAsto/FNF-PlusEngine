@@ -1,0 +1,110 @@
+{
+  "$schema": 1,
+  "$namespace": "options",
+  "common": {
+    "title": "Opciones",
+    "presence": "Menú de opciones"
+  },
+  "mobile_controls_tip": "Presioná {1} para ir al menú de controles móviles",
+  "controls": {
+    "keyboard_short": "CTRL",
+    "rebinding": "Asignando {1}",
+    "rebinding_help": "Mantené presionado {1} para cancelar\nMantené presionado {2} para borrar"
+  },
+  "categories": {
+    "note_colors": {
+      "name": "Colores de notas",
+      "description": "Cambiá los colores de las notas y sus efectos de acierto."
+    },
+    "controls": {
+      "name": "Controles",
+      "description": "Cambiá las asignaciones del teclado y del control."
+    },
+    "adjust_delay_and_combo": {
+      "name": "Ajustar retardo y combo",
+      "description": "Ajustá el retardo de las notas, el desfase de calificación y la posición del combo."
+    },
+    "graphics": {
+      "name": "Configuración de gráficos",
+      "description": "Cambiá la configuración de rendimiento y renderizado."
+    },
+    "visuals": {
+      "name": "Configuración visual",
+      "description": "Cambiá las preferencias del HUD, la cámara y otros aspectos visuales."
+    },
+    "gameplay": {
+      "name": "Configuración de juego",
+      "description": "Cambiá los modificadores y las ayudas del juego."
+    },
+    "legacy": {
+      "name": "Configuración heredada",
+      "description": "Cambiá las opciones de compatibilidad con el comportamiento anterior de Psych/Plus."
+    },
+    "mod_security": {
+      "name": "Controles de seguridad de mods",
+      "description": "Cambiá las comprobaciones usadas al cargar mods."
+    },
+    "modchart": {
+      "name": "Configuración de modchart",
+      "description": "Cambiá el comportamiento y la compatibilidad de modcharts."
+    },
+    "language": {
+      "name": "Idioma",
+      "description": "Cambiá el idioma activo."
+    },
+    "mobile": {
+      "name": "Configuración móvil",
+      "description": "Cambiá los controles y la distribución en dispositivos móviles."
+    }
+  },
+  "menus": {
+    "modchart": {
+      "title": "Configuración de modchart",
+      "presence": "Menú de opciones de Modchart"
+    },
+    "legacy": {
+      "title": "Configuración heredada",
+      "presence": "Menú de configuración heredada"
+    },
+    "mod_security": {
+      "title": "Controles de seguridad de mods",
+      "presence": "Controles de seguridad de mods"
+    },
+    "gameplay": {
+      "title": "Configuración de juego",
+      "presence": "Menú de configuración del juego"
+    },
+    "graphics": {
+      "title": "Configuración de gráficos",
+      "presence": "Menú de configuración de gráficos"
+    },
+    "visuals": {
+      "title": "Configuración visual",
+      "presence": "Menú de configuración visual"
+    },
+    "language": {
+      "title": "Idioma",
+      "presence": "Menú de idioma"
+    },
+    "controls": {
+      "presence": "Menú de controles"
+    },
+    "note_colors": {
+      "presence": "Menú de colores de notas"
+    },
+    "classic_note_colors": {
+      "presence": "Menú de colores de notas clásicas",
+      "channels": "Tono        Saturación   Brillo"
+    },
+    "offset": {
+      "presence": "Menú de retardo y posición del combo"
+    },
+    "mobile": {
+      "title": "Configuración móvil",
+      "presence": "Menú de configuración móvil"
+    },
+    "mod_settings": {
+      "presence": "Ajustes del mod ({1})"
+    }
+  }
+}

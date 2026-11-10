@@ -19,12 +19,16 @@ class MobileScaleMode extends BaseScaleMode
 
 	public static inline function getSafeWidth():Float
 	{
+		if (ClientPrefs.data.infinityDisplay && allowInfinityDisplay)
+			return FlxG.width;
 		var s = Math.min(FlxG.width / baseWidth, FlxG.height / baseHeight);
 		return baseWidth * s;
 	}
 
 	public static inline function getSafeHeight():Float
 	{
+		if (ClientPrefs.data.infinityDisplay && allowInfinityDisplay)
+			return FlxG.height;
 		var s = Math.min(FlxG.width / baseWidth, FlxG.height / baseHeight);
 		return baseHeight * s;
 	}
@@ -40,11 +44,17 @@ class MobileScaleMode extends BaseScaleMode
 
 	override function updateGameSize(Width:Int, Height:Int):Void
 	{
+		// Android can briefly report a zero-sized surface while backgrounding.
+		// Dividing by that value poisons the scale mode with NaN/Infinity and the
+		// resumed game keeps running behind a black renderer.
+		if (Width <= 0 || Height <= 0)
+			return;
 		if (ClientPrefs.data.infinityDisplay && allowInfinityDisplay)
 		{
-			var scale:Float = Math.min(Width / baseWidth, Height / baseHeight);
-			gameSize.x = Math.floor(Width  / scale);
-			gameSize.y = Math.floor(Height / scale);
+			// Match the traditional Psych-style fullscreen policy: occupy the
+			// entire physical screen. This deliberately keeps the canonical logical
+			// resolution so Lua/mod coordinates remain compatible.
+			super.updateGameSize(Width, Height);
 		}
 		else
 		{
@@ -63,10 +73,19 @@ class MobileScaleMode extends BaseScaleMode
 			}
 		}
 
+		if (!Math.isFinite(gameSize.x) || !Math.isFinite(gameSize.y) || gameSize.x <= 0 || gameSize.y <= 0)
+			return;
+
 		for (cam in FlxG.cameras.list)
 			cam.setSize(Std.int(gameSize.x), Std.int(gameSize.y));
 
 		onGameSizeChanged.dispatch();
+	}
+
+	public static function refreshAfterFocus():Void
+	{
+		if (FlxG.scaleMode is MobileScaleMode && FlxG.width > 0 && FlxG.height > 0)
+			FlxG.scaleMode = new MobileScaleMode();
 	}
 
 	override function updateGamePosition():Void

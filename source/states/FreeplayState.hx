@@ -448,6 +448,7 @@ class FreeplayState extends MusicBeatState
 			MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, 2, darkestColor, OptionsMenuTheme.cardStroke(false));
 		}
 		card.antialiasing = ClientPrefs.data.antialiasing;
+		card.ID = index;
 		card.visible = false;
 		cardArray[index] = card;
 		cardGroup.add(card);
@@ -1035,8 +1036,16 @@ class FreeplayState extends MusicBeatState
 				if (index == curSelected)
 					touchSongAccept = true;
 				else
-					changeSelection(index - curSelected);
+					selectTouchSong(index);
 			}, function(direction:Int) changeSelection(direction));
+		else if (!searchFocused && !player.playingMusic && inDifficultySelect)
+			touchHandler.update(true, true, getTouchDifficultyAt, function(index:Int, x:Float, y:Float)
+			{
+				if (index == difficultySelector.curSelected)
+					touchSongAccept = true;
+				else
+					changeDifficultySelection(index - difficultySelector.curSelected);
+			}, function(direction:Int) changeDifficultySelection(direction));
 
 		if (handleSongInfoLinkMouse())
 		{
@@ -1321,6 +1330,8 @@ class FreeplayState extends MusicBeatState
 				{
 					changeDifficultySelection(1);
 				}
+				if (FlxG.mouse.wheel != 0)
+					changeDifficultySelection(-FlxG.mouse.wheel);
 			}
 		}
 
@@ -1482,7 +1493,17 @@ class FreeplayState extends MusicBeatState
 				persistentUpdate = false;
 
 				var songLowercase:String = Paths.formatToSongPath(songs[curSelected].songName);
-				var poop:String = Highscore.formatSong(songLowercase, difficultySelector.curSelected);
+				// The selector has its own cursor. Commit it before creating PlayState:
+				// PlayState uses storyDifficulty for chart-dependent systems after the
+				// loader has read the pending chart. Leaving it at Normal made a visibly
+				// selected Hard/Easy session behave as Normal.
+				var selectedDifficulty:Int = Std.int(FlxMath.bound(difficultySelector.curSelected, 0, Difficulty.list.length - 1));
+				difficultySelector.curSelected = selectedDifficulty;
+				curDifficulty = selectedDifficulty;
+				PlayState.storyDifficulty = selectedDifficulty;
+				lastDifficultyName = Difficulty.getString(selectedDifficulty, false);
+				songs[curSelected].lastDifficulty = lastDifficultyName;
+				var poop:String = Highscore.formatSong(songLowercase, selectedDifficulty);
 
 				LoadingState.setPendingSongChart(poop, songLowercase);
 				@:privateAccess
@@ -1606,6 +1627,10 @@ class FreeplayState extends MusicBeatState
 	function changeDifficultySelection(change:Int = 0)
 	{
 		difficultySelector.changeSelection(change);
+		// Keep the gameplay loader and the visible card on the same difficulty.
+		// Without this assignment a selected Easy/Hard card could still load the
+		// previously cached Normal chart.
+		curDifficulty = difficultySelector.curSelected;
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 
 		#if !switch
@@ -1619,8 +1644,38 @@ class FreeplayState extends MusicBeatState
 
 	function getTouchSongAt(x:Float, y:Float):Int
 	{
-		for (index => item in grpSongs.members)
-			if (item != null && item.visible && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+		// Cards and labels live in different groups. Use the stable song ID,
+		// never a group's transient member position.
+		for (card in cardArray)
+		{
+			if (card != null && card.visible && x >= card.x && x <= card.x + card.width && y >= card.y && y <= card.y + card.height)
+				return card.ID;
+		}
+		for (item in grpSongs.members)
+		{
+			if (item == null || !item.visible)
+				continue;
+			if (x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+				return item.ID;
+		}
+		return TouchScrollHandler.NO_TARGET;
+	}
+
+	function selectTouchSong(index:Int):Void
+	{
+		if (index < 0 || index >= songs.length || index == curSelected)
+			return;
+		curSelected = index;
+		// Resolve the visual carousel before the next tap, otherwise the user can
+		// release over a card that moved to another logical index.
+		lerpSelected = curSelected;
+		changeSelection(0);
+	}
+
+	function getTouchDifficultyAt(x:Float, y:Float):Int
+	{
+		for (index => card in difficultySelector.cards.members)
+			if (card != null && card.visible && x >= card.x && x <= card.x + card.width && y >= card.y && y <= card.y + card.height)
 				return index;
 		return TouchScrollHandler.NO_TARGET;
 	}
