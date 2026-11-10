@@ -1,0 +1,41 @@
+{
+  "$schema": 1,
+  "$namespace": "options.theme_accent",
+  "presence": "Selector de color de acento",
+  "title": "Color de acento del tema",
+  "hint": "Mirá los controles MD3 reales mientras ajustás el selector. ENTER confirma y ATRÁS cancela.",
+  "picker_hint": "Rueda, tira de luminancia y paleta, sin saturar la interfaz.",
+  "live_preview": "Vista previa en tiempo real activada",
+  "use_custom": "Usar color de acento personalizado",
+  "mini_hint": "A la derecha se muestran los controles del engine con el color elegido. Si no te gusta cómo se ven acá, tampoco te gustarán en los menús.",
+  "hex_label": "HEX {1}",
+  "boxes": {
+    "preview": "Vista previa del tema",
+    "picker": "Selector de acento",
+    "components": "Vista previa de los componentes MD3"
+  },
+  "preview": {
+    "title": "EJEMPLO DE FREEPLAY",
+    "meta": "Vista previa del acento personalizado"
+  },
+  "chips": {
+    "active": "Acento activo",
+    "custom": "Color personalizado",
+    "preset_safe": "Compatible con colores predefinidos",
+    "selected": "Seleccionado",
+    "hex": "Valor HEX"
+  },
+  "sections": {
+    "standard": "Progreso estándar",
+    "wavy": "Progreso ondulado",
+    "widgets": "Otros controles del motor"
+  },
+  "actions": {
+    "copy_hex": "Copiar HEX",
+    "paste_hex": "Pegar HEX",
+    "apply": "Aplicar",
+    "cancel": "Cancelar",
+    "preview": "Vista previa",
+    "accent": "Acento"
+  }
+}
