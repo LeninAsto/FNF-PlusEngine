@@ -63,8 +63,8 @@ class MobileSettingsSubState extends BaseOptionsMenu
 		option.onChange = () -> lime.system.System.allowScreenTimeout = curOption.getValue();
 		addOption(option);
 
-		option = new Option('Infinity Display',
-			'If checked, extends the viewport vertically for taller screens while keeping the classic 16:9 gameplay area.', 'infinityDisplay', BOOL);
+		option = new Option('Expanded Fullscreen View',
+			'Fills the complete screen using the traditional fullscreen behavior. Wide displays may stretch the image slightly, but mods keep their standard coordinates.', 'infinityDisplay', BOOL);
 		option.onChange = () ->
 		{
 			FlxG.scaleMode = new mobile.backend.MobileScaleMode();

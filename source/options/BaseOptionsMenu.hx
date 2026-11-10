@@ -463,7 +463,10 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	function handleTouchOptionTap(index:Int, x:Float, y:Float):Void
 	{
 		selectOption(index);
-		var option = curOption;
+		// Resolve from the tapped index. A visual refresh may be deferred for a
+		// frame, so relying on curOption here made Psych-style BOOL rows appear
+		// selected without actually toggling.
+		var option = getOptionAt(index);
 		if (option == null || !isOptionSelectable(option))
 			return;
 
@@ -487,11 +490,26 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		}
 		else if (grpOptions != null)
 		{
+			var closest:Int = -1;
+			var closestDistance:Float = Math.POSITIVE_INFINITY;
 			for (index => item in grpOptions.members)
-				// Psych places BOOL checkboxes to the left of their label. Include that
-				// visual hitbox so tapping the checkbox is equivalent to tapping its row.
-				if (item != null && x >= item.x - 140 && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
-					return index;
+			{
+				if (item == null || x < 0 || x > FlxG.width)
+					continue;
+				// Rows may overlap while their Alphabet groups are easing. Pick the
+				// closest rendered row instead of the first broad hitbox in the list;
+				// that was the one-row-up offset reported by touch users.
+				var centerY:Float = item.y + item.height * 0.5;
+				var hitRadius:Float = Math.max(52, item.height * 0.75);
+				var distance:Float = Math.abs(y - centerY);
+				if (distance <= hitRadius && distance < closestDistance)
+				{
+					closest = index;
+					closestDistance = distance;
+				}
+			}
+			if (closest != -1)
+				return closest;
 		}
 		return -1;
 	}

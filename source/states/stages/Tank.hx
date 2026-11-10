@@ -104,6 +104,10 @@ class Tank extends BaseStage
 				var gf:Character = cast daGf;
 				if (gf.curCharacter == 'pico-speaker')
 				{
+					// Pico owns the charted shoot cues. The old code read the Tankmen
+					// static cache but never filled it, so Stress had neither soldiers
+					// crossing the stage nor their matching shots.
+					TankmenBG.animationNotes = gf.animationNotes != null ? gf.animationNotes.copy() : [];
 					var firstTank:TankmenBG = new TankmenBG(20, 500, true);
 					firstTank.resetShit(20, 1500, true);
 					firstTank.strumTime = 10;

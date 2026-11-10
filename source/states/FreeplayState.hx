@@ -1493,7 +1493,17 @@ class FreeplayState extends MusicBeatState
 				persistentUpdate = false;
 
 				var songLowercase:String = Paths.formatToSongPath(songs[curSelected].songName);
-				var poop:String = Highscore.formatSong(songLowercase, difficultySelector.curSelected);
+				// The selector has its own cursor. Commit it before creating PlayState:
+				// PlayState uses storyDifficulty for chart-dependent systems after the
+				// loader has read the pending chart. Leaving it at Normal made a visibly
+				// selected Hard/Easy session behave as Normal.
+				var selectedDifficulty:Int = Std.int(FlxMath.bound(difficultySelector.curSelected, 0, Difficulty.list.length - 1));
+				difficultySelector.curSelected = selectedDifficulty;
+				curDifficulty = selectedDifficulty;
+				PlayState.storyDifficulty = selectedDifficulty;
+				lastDifficultyName = Difficulty.getString(selectedDifficulty, false);
+				songs[curSelected].lastDifficulty = lastDifficultyName;
+				var poop:String = Highscore.formatSong(songLowercase, selectedDifficulty);
 
 				LoadingState.setPendingSongChart(poop, songLowercase);
 				@:privateAccess
@@ -1617,6 +1627,10 @@ class FreeplayState extends MusicBeatState
 	function changeDifficultySelection(change:Int = 0)
 	{
 		difficultySelector.changeSelection(change);
+		// Keep the gameplay loader and the visible card on the same difficulty.
+		// Without this assignment a selected Easy/Hard card could still load the
+		// previously cached Normal chart.
+		curDifficulty = difficultySelector.curSelected;
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 
 		#if !switch

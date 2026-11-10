@@ -312,7 +312,12 @@ class NoteSplash extends FlxSprite
 		var colorIndex:Int = Note.normalizeNoteData(noteData);
 		var canUseSplashShader:Bool = inEditor
 			|| ((note == null || note.noteSplashData.useRGBShader) && Note.usesRGBShader());
-		if (Note.usesClassicColors())
+		// Hurt splashes are already coloured artwork. With RGB notes disabled we
+		// must preserve that asset instead of tinting it with the lane HSV shader.
+		var useHurtAssetColors:Bool = note != null && note.noteType == 'Hurt Note' && Note.usesClassicColors();
+		if (useHurtAssetColors)
+			shader = null;
+		else if (Note.usesClassicColors())
 		{
 			shader = colorSwap.shader;
 			Note.applyHSVToColorSwap(colorSwap, colorIndex);

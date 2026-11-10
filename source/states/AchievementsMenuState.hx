@@ -170,7 +170,9 @@ class AchievementsMenuState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		if (!goingBack && touchHandler.update(true, true, getTouchAchievementAt, onTouchAchievement, changeTouchRow))
+		// Achievement cards are selected directly. A vertical swipe used to move
+		// the selected card instead of respecting the card that was tapped.
+		if (!goingBack && touchHandler.update(true, false, getTouchAchievementAt, onTouchAchievement, function(_) {}))
 			return;
 
 		if (!goingBack && options.length > 1)
@@ -253,7 +255,10 @@ class AchievementsMenuState extends MusicBeatState
 	function getTouchAchievementAt(x:Float, y:Float):Int
 	{
 		for (index => item in grpOptions.members)
-			if (item != null && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+			// Touch coordinates are screen-space while the achievement grid follows
+			// the camera vertically.
+			if (item != null && x >= item.x && x <= item.x + item.width
+				&& y >= item.y - FlxG.camera.scroll.y && y <= item.y - FlxG.camera.scroll.y + item.height)
 				return index;
 		return TouchScrollHandler.NO_TARGET;
 	}
@@ -383,13 +388,11 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 	override function update(elapsed:Float)
 	{
 		var touchAccept:Bool = false;
-		touchHandler.update(true, true, getTouchChoiceAt, function(index:Int, x:Float, y:Float)
+		touchHandler.update(true, false, getTouchChoiceAt, function(index:Int, x:Float, y:Float)
 		{
-			if ((index == 0) == onYes)
-				touchAccept = true;
-			else
-				setChoice(index == 0);
-		}, function(direction:Int) setChoice(!onYes));
+			onYes = index == 0;
+			touchAccept = true;
+		}, function(_) {});
 
 		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed))
 		{

@@ -335,13 +335,11 @@ class PauseSubState extends MusicBeatSubstate
 		var touchAccept:Bool = false;
 		touchHandler.update(true, true, getTouchMenuItemAt, function(index:Int, x:Float, y:Float)
 		{
-			if (index == curSelected)
-				touchAccept = true;
-			else
-			{
-				curSelected = index;
-				changeSelection(0);
-			}
+			// Pause rows are direct actions on touch; requiring a second tap was
+			// especially error-prone after the list animated into place.
+			curSelected = index;
+			changeSelection(0);
+			touchAccept = true;
 		}, changeSelection);
 
 		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed) #if android || FlxG.android.justReleased.BACK #end)
@@ -635,7 +633,8 @@ class PauseSubState extends MusicBeatSubstate
 		if (grpMenuShit == null)
 			return TouchScrollHandler.NO_TARGET;
 		for (index => item in grpMenuShit.members)
-			if (item != null && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+			if (item != null && x >= 0 && x <= FlxG.width
+				&& y >= item.y - 18 && y <= item.y + Math.max(item.height, 68) + 18)
 				return index;
 		return TouchScrollHandler.NO_TARGET;
 	}

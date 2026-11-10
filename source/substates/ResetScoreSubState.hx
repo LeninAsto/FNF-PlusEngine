@@ -80,20 +80,18 @@ class ResetScoreSubState extends MusicBeatSubstate
 			letter.color = FlxColor.RED;
 		updateOptions();
 
-		addTouchPad('LEFT_RIGHT', 'A_B');
+		addTouchPad('NONE', 'B');
 		addTouchPadCamera();
 	}
 
 	override function update(elapsed:Float)
 	{
 		var touchAccept:Bool = false;
-		touchHandler.update(true, true, getTouchChoiceAt, function(index:Int, x:Float, y:Float)
+		touchHandler.update(true, false, getTouchChoiceAt, function(index:Int, x:Float, y:Float)
 		{
-			if ((index == 0) == onYes)
-				touchAccept = true;
-			else
-				setChoice(index == 0);
-		}, function(direction:Int) setChoice(!onYes));
+			onYes = index == 0;
+			touchAccept = true;
+		}, function(_) {});
 
 		bg.alpha += elapsed * 1.5;
 		if (bg.alpha > 0.6)
@@ -140,7 +138,7 @@ class ResetScoreSubState extends MusicBeatSubstate
 		}
 		if (touchPad == null)
 		{ // sometimes it dosent add the tpad, hopefully this fixes it
-			addTouchPad('LEFT_RIGHT', 'A_B');
+			addTouchPad('NONE', 'B');
 			addTouchPadCamera();
 		}
 		super.update(elapsed);

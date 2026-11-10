@@ -11,6 +11,8 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 	var splashSkinOption:Option = null;
 	var themeModeOption:Option = null;
 	var accentColorOption:Option = null;
+	var nfRatingOption:Option = null;
+	var comboStackingOption:Option = null;
 	var notes:FlxTypedGroup<StrumNote>;
 	var splashes:FlxTypedGroup<NoteSplash>;
 	var noteY:Float = 90;
@@ -144,6 +146,9 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 		var option:Option = new Option('NF Rating Style', 'If checked, ratings and combo numbers bop in place instead of flying/fading.', 'nfRatingStyle',
 			BOOL);
+		nfRatingOption = option;
+		option.selectableCondition = () -> !ClientPrefs.data.runOnLightVisual;
+		option.onChange = syncPerformanceHitEffects;
 		addOption(option);
 
 		var option:Option = new Option('Health Bar Opacity', 'How much transparent should the health bar and icons be.', 'healthBarAlpha', PERCENT);
@@ -184,6 +189,9 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 		var option:Option = new Option('Combo Stacking',
 			"If unchecked, Ratings and Combo won't stack, saving on System Memory and making them easier to read", 'comboStacking', BOOL);
+		comboStackingOption = option;
+		option.selectableCondition = () -> !ClientPrefs.data.runOnLightVisual;
+		option.onChange = syncPerformanceHitEffects;
 		addOption(option);
 
 		var option:Option = new Option('Show Rating Sprite', 'If unchecked, hides the rating sprite popup when hitting notes.', 'showRating', BOOL);
@@ -213,12 +221,16 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		option.onChange = syncPopupVisibility;
 
 		#if android
-		var option:Option = new Option('Lighter Hit Path', 'If unchecked, the full visual path will run instead of light visual path.\nUnchecked this may cause LAG performance.', 'runOnLightVisual', BOOL);
+		var option:Option = new Option('Performance Hit Effects', 'Uses pooled hit effects for smoother gameplay on mobile. NF Rating Style and Combo Stacking are unavailable while it is enabled.', 'runOnLightVisual', BOOL);
+		option.selectableCondition = () -> !ClientPrefs.data.nfRatingStyle && !ClientPrefs.data.comboStacking;
 		option.onChange = function()
 		{
-			ClientPrefs.saveSettings();
+			syncPerformanceHitEffects();
 		};
 		addOption(option);
+		// The base menu has not built its checkbox groups yet, so this constructor
+		// path must normalize data only; visual refresh belongs to onChange.
+		normalizePerformanceHitEffects();
 		#end
 
 		var option:Option = new Option('Combo and Rating in camGame',
@@ -539,10 +551,24 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 	function onChangeWatermark()
 	{
-		if (Main.watermarkSprite != null)
-			Main.watermarkSprite.visible = ClientPrefs.data.showWatermark;
-		if (Main.watermark != null)
-			Main.watermark.visible = ClientPrefs.data.showWatermark;
+		Main.refreshWatermark();
+	}
+
+	function syncPerformanceHitEffects():Void
+	{
+		normalizePerformanceHitEffects();
+		reloadCheckboxes();
+		refreshOptionAlphas();
+		ClientPrefs.saveSettings();
+	}
+
+	inline function normalizePerformanceHitEffects():Void
+	{
+		if (ClientPrefs.data.runOnLightVisual)
+		{
+			ClientPrefs.data.nfRatingStyle = false;
+			ClientPrefs.data.comboStacking = false;
+		}
 	}
 
 	function onChangeKeyViewerColor()

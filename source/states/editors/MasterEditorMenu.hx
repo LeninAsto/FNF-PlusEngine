@@ -226,7 +226,8 @@ class MasterEditorMenu extends MusicBeatState
 		if (grpTexts == null)
 			return TouchScrollHandler.NO_TARGET;
 		for (index => item in grpTexts.members)
-			if (item != null && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+			if (item != null && x >= 0 && x <= FlxG.width
+				&& y >= item.y - 18 && y <= item.y + Math.max(item.height, 68) + 18)
 				return index;
 		return TouchScrollHandler.NO_TARGET;
 	}

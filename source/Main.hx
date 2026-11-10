@@ -220,6 +220,13 @@ class Main extends Sprite
 			FlxG.scaleMode = new mobile.backend.MobileScaleMode();
 			positionDebugOverlays();
 		});
+		FlxG.signals.focusGained.add(() ->
+		{
+			// The surface can be recreated after Android returns from background.
+			// Recreate the scale mode after it has settled so Infinity Display never
+			// keeps the invalid dimensions from the paused surface.
+			new FlxTimer().start(0.12, function(_) mobile.backend.MobileScaleMode.refreshAfterFocus());
+		});
 		#end
 
 		#if HSCRIPT_ALLOWED
@@ -391,6 +398,18 @@ class Main extends Sprite
 		#end
 	}
 
+	public static function refreshWatermark():Void
+	{
+		if (watermarkSprite == null || openfl.Lib.current == null || openfl.Lib.current.stage == null)
+			return;
+		watermarkSprite.visible = ClientPrefs.data.showWatermark;
+		var stage = openfl.Lib.current.stage;
+		if (watermarkSprite.parent != stage)
+			stage.addChild(watermarkSprite);
+		stage.setChildIndex(watermarkSprite, stage.numChildren - 1);
+		positionWatermark();
+	}
+
 	#if VIDEOS_ALLOWED
 	static function initHxvlc():Void
 	{
@@ -474,7 +493,7 @@ class Main extends Sprite
 			backend.WindowMode.toggleFullscreen();
 	}
 
-	function positionWatermark():Void
+	public static function positionWatermark():Void
 	{
 		if (watermarkSprite != null && watermark != null)
 		{
@@ -483,13 +502,6 @@ class Main extends Sprite
 			var stageW = openfl.Lib.current.stage.stageWidth;
 			watermarkSprite.x = stageW - watermark.width * Math.abs(watermark.scaleX) - marginX;
 			watermarkSprite.y = marginY;
-		}
-		if (watermark != null && watermark.parent == this)
-		{
-			var stageW = Lib.current.stage.stageWidth;
-			var stageH = Lib.current.stage.stageHeight;
-			watermark.x = stageW - watermark.width * Math.abs(watermark.scaleX) + 110;
-			watermark.y = stageH - watermark.height * Math.abs(watermark.scaleY) - 30;
 		}
 	}
 
@@ -545,24 +557,7 @@ class Main extends Sprite
 			trace('The watermark could not be loaded using backend.Paths.image("watermark").');
 		}
 
-		var imagePath = backend.Paths.getPath('images/watermark.png', IMAGE);
-		if (sys.FileSystem.exists(imagePath))
-		{
-			if (watermark != null && watermark.parent != null)
-				removeChild(watermark);
-			var bmpData = openfl.display.BitmapData.fromFile(imagePath);
-			watermark = new openfl.display.Bitmap(bmpData);
-			var scale = 0.85;
-			watermark.scaleX = -scale;
-			watermark.scaleY = scale;
-			watermark.alpha = 0.5;
-			addChild(watermark);
-			positionWatermark();
-		}
-		if (watermark != null)
-		{
-			watermark.visible = ClientPrefs.data.showWatermark;
-		}
+		refreshWatermark();
 	}
 }
 

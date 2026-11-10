@@ -409,15 +409,26 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 	function getTouchOptionAt(x:Float, y:Float):Int
 	{
 		for (index => item in grpOptions.members)
-			if (item != null && x >= item.x && x <= item.x + item.width && y >= item.y && y <= item.y + item.height)
+			if (item != null && x >= 0 && x <= FlxG.width
+				&& y >= item.y - 18 && y <= item.y + Math.max(item.height, 64) + 18)
 				return index;
 		return TouchScrollHandler.NO_TARGET;
 	}
 
 	function onTouchOption(index:Int, x:Float, y:Float):Void
 	{
-		if (index >= 0 && index < optionsArray.length)
-			selectOption(index);
+		if (index < 0 || index >= optionsArray.length)
+			return;
+		selectOption(index);
+		// Checkbox rows are full touch controls too; do not require a virtual A
+		// button after the user has already tapped the option.
+		if (curOption != null && curOption.type == BOOL)
+		{
+			curOption.setValue(curOption.getValue() != true);
+			curOption.change();
+			reloadCheckboxes();
+			FlxG.sound.play(Paths.sound('scrollMenu'));
+		}
 	}
 
 	function updateTextFrom(option:GameplayOption)
