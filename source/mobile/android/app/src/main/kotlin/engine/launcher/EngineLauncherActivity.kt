@@ -7,7 +7,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
-import android.content.res.Configuration
 import android.net.Uri
 import android.os.Build
 import android.os.Bundle
@@ -100,7 +99,6 @@ class EngineLauncherActivity : ComponentActivity() {
 	private companion object {
 		private const val DOCUMENTS_UI_BROWSE_ACTION = "android.provider.action.BROWSE"
 		private const val EXTERNAL_STORAGE_AUTHORITY = "com.android.externalstorage.documents"
-		private const val FORCE_LANDSCAPE_EXTRA = "org.haxe.lime.forceLandscapeBeforeSdl"
 		private const val PREFS_NAME = "plus_engine_launcher"
 		private const val PREF_SHOW_LAUNCHER = "show_launcher"
 		private const val PREF_AUTO_START = "auto_start"
@@ -217,22 +215,15 @@ class EngineLauncherActivity : ComponentActivity() {
 		if (gameLaunchPending) return
 
 		gameLaunchPending = true
-		requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE
+		val intent = Intent(this, MainActivity::class.java)
+			.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
 
-		val launchDelay = if (resources.configuration.orientation == Configuration.ORIENTATION_LANDSCAPE) 80L else 360L
-		window.decorView.postDelayed({
-			val intent = Intent(this, MainActivity::class.java)
-				.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
-				.putExtra(FORCE_LANDSCAPE_EXTRA, true)
-
-			runCatching {
-				startActivity(intent)
-			}.onFailure {
-				gameLaunchPending = false
-				requestedOrientation = ActivityInfo.SCREEN_ORIENTATION_FULL_USER
-				Toast.makeText(this, it.localizedMessage ?: it.toString(), Toast.LENGTH_LONG).show()
-			}
-		}, launchDelay)
+		runCatching {
+			startActivity(intent)
+		}.onFailure {
+			gameLaunchPending = false
+			Toast.makeText(this, it.localizedMessage ?: it.toString(), Toast.LENGTH_LONG).show()
+		}
 	}
 
 	private fun getGameDataDirectory(): File {
