@@ -1,0 +1,10 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.playtest",
+  "ui": {
+    "section_0": "Sección: 0"
+  },
+  "presence": {
+    "title": "Probando el chart en el editor"
+  }
+}

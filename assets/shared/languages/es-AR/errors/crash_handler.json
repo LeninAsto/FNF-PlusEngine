@@ -1,0 +1,63 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.crash_handler",
+  "titles": {
+    "error": "¡Error!",
+    "critical_error": "¡Error crítico!"
+  },
+  "kinds": {
+    "hardcoded": "Error en código del programa",
+    "critical_hardcoded": "Error crítico en código del programa"
+  },
+  "format": {
+    "error_kind": "ERROR: {1}",
+    "message": "Mensaje:",
+    "trace": "Traza:",
+    "tips": "Consejos:",
+    "need_help": "¿Necesitás ayuda? Visitá:"
+  },
+  "stack": {
+    "non_haxe_function": "Función que no es de Haxe (C)",
+    "module": "Módulo {1}",
+    "source_line": "{1}.{2}() [línea {3}]",
+    "file_line": "{1} [línea {2}]",
+    "local_function": "Función local {1}",
+    "method": "{1} - {2}"
+  },
+  "tips": {
+    "hardcoded_origin": "El fallo ocurrió fuera de hxscript, así que probablemente provenga del código fuente del engine o de una biblioteca compilada.",
+    "first_source_line": "Revisá la primera línea de código fuente en la pila antes del bucle del engine; suele indicar dónde está el problema.",
+    "rebuild_assets": "Si esto solo ocurre después de editar scripts o clases, volvé a compilar y asegurate de que los recursos exportados estén actualizados.",
+    "native_crash": "Se trata de un fallo nativo o crítico, por lo que la aplicación no pudo recuperarse correctamente.",
+    "close_running_build": "Si esto apareció al probar una compilación, cerrá todas las instancias de PlusEngine.exe antes de volver a compilar.",
+    "disable_mod_scripts": "Si los mods están habilitados, intentá de nuevo con los scripts deshabilitados para distinguir los fallos del engine de los causados por los mods."
+  },
+  "null_messages": {
+    "0": "¡Ups! Los dioses del código no están contentos... ¡se encontró una referencia nula!",
+    "1": "Houston, ¡tenemos un problema nulo!",
+    "2": "Error 404: objeto no encontrado (simplemente es nulo)",
+    "3": "¡Felicitaciones! ¡Descubriste el vacío! (nulo)",
+    "4": "El objeto decidió tomarse unas vacaciones (nulo)",
+    "5": "*trombón triste* pasó algo nulo",
+    "6": "¿Nulo? ¡Qué poco copado!",
+    "7": "El objeto fue a comprar cigarrillos y nunca volvió (nulo)",
+    "8": "Logro desbloqueado: ¡Encontraste una referencia nula!",
+    "9": "Las referencias nulas se guardan en las bolas.",
+    "10": "Momento bruh: referencia nula detectada",
+    "11": "Problema de habilidad: intentaste usar un objeto nulo",
+    "12": "El objeto dijo: «Bueno, me voy» (nulo)",
+    "13": "Error: object.exe dejó de funcionar (nulo)",
+    "14": "¡Felicitaciones, lo rompiste! (referencia nula)",
+    "15": "El objeto está en una cita con undefined (nulo)",
+    "16": "¿Una referencia nula? ¿En MI engine? Es más probable de lo que pensás",
+    "17": "Objeto no encontrado. ¿Revisaste debajo del sillón? (nulo)"
+  },
+  "null_error_message": "Mensaje de error nulo (irónico, ¿no?)",
+  "original_error": "{1}\n\nError original: {2}",
+  "unknown_error": "Error desconocido",
+  "unknown_critical_error": "Error crítico desconocido",
+  "help_inline": "Para obtener ayuda, visitá: {1}",
+  "recursive_handler": "El controlador de fallos se ejecutó de nuevo mientras ya estaba manejando un error.",
+  "android_dispatch_failed": "No se pudo iniciar la actividad de errores de Android: {1}",
+  "save_failed": "No se pudo guardar el mensaje de error. ({1})"
+}

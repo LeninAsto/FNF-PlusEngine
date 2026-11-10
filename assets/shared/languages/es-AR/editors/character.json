@@ -1,0 +1,53 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.character",
+  "ui": {
+    "add_update": "Agregar/actualizar",
+    "advanced_animation_indices": "AVANZADO - Índices de animación:",
+    "animated_icon": "Ícono animado",
+    "animation_name": "Nombre de la animación:",
+    "animation_symbol_name_tag": "Nombre/etiqueta del símbolo de animación:",
+    "animations": "Animaciones:",
+    "camera_x_y": "Cámara X/Y:",
+    "character": "Personaje:",
+    "character_x_y": "Personaje X/Y:",
+    "flip_x": "Invertir en X",
+    "framerate": "FPS:",
+    "get_icon_color": "Obtener color del ícono",
+    "health_bar_r_g_b": "Barra de salud R/G/B:",
+    "health_icon_name": "Nombre del ícono de salud:",
+    "highlight_ghost": "Resaltar silueta",
+    "image_file_name": "Nombre del archivo de imagen:",
+    "load_template": "Cargar plantilla",
+    "make_ghost": "Crear silueta",
+    "no_antialiasing": "Sin suavizado",
+    "playable_character": "Personaje jugable",
+    "reload_char": "Recargar personaje",
+    "reload_image": "Recargar imagen",
+    "remove": "Eliminar",
+    "save_character": "Guardar personaje",
+    "scale": "Escala:",
+    "should_it_loop": "¿Repetir en bucle?",
+    "sing_animation_length": "Duración de la animación de canto:",
+    "vocals_file_postfix": "Sufijo del archivo de voces:",
+    "zoom_1x": "Zoom: 1x"
+  },
+  "presence": {
+    "title": "Editor de personajes",
+    "character": "Personaje: {1}"
+  },
+  "help": {
+    "open": "Presioná {1} para ver la ayuda",
+    "mobile": "CÁMARA\nX/Y - Acercar/alejar la cámara\nG + botones de flecha - Mover la cámara\nZ - Restablecer el zoom de la cámara\n\nPERSONAJE\nA - Restablecer el desplazamiento actual\nV/D - Animación anterior/siguiente\nBotones de flecha - Mover el desplazamiento\n\nOTROS\nS - Mostrar/ocultar siluetas\nMantené C - Mover los desplazamientos 10 veces más rápido y la cámara 4 veces más rápido",
+    "desktop": "CÁMARA\nE/Q - Acercar/alejar la cámara\nJ/K/L/I - Mover la cámara\nR - Restablecer el zoom de la cámara\n\nPERSONAJE\nCtrl + R - Restablecer el desplazamiento actual\nCtrl + C - Copiar el desplazamiento actual\nCtrl + V - Pegar el desplazamiento copiado en la animación actual\nCtrl + Z - Deshacer el último pegado o restablecimiento\nW/S - Animación anterior/siguiente\nEspacio - Reproducir la animación de nuevo\nTeclas de flecha - Mover el desplazamiento\nA/D - Avanzar fotograma (atrás/adelante)\n\nOTROS\nF12 - Mostrar/ocultar siluetas\nMantené Shift - Mover los desplazamientos 10 veces más rápido y la cámara 4 veces más rápido\nMantené Ctrl - Mover la cámara 4 veces más lento"
+  },
+  "messages": {
+    "no_animation": "ERROR: No se encontró ninguna animación"
+  },
+  "tabs": {
+    "animations": "Animaciones",
+    "character": "Personaje",
+    "ghost": "Silueta",
+    "settings": "Ajustes"
+  }
+}

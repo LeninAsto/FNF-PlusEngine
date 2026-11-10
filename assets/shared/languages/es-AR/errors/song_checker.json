@@ -1,0 +1,26 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.song_checker",
+  "title": "REVISOR DE CANCIONES",
+  "prefix": {
+    "error": "[ERROR]",
+    "warning": "[ADVERTENCIA]",
+    "fix": "[CORRECCIÓN]"
+  },
+  "more": "...y {1} más.",
+  "issues": {
+    "missing_chart": "No se encontró un chart para esta dificultad.",
+    "invalid_chart": "El chart existe, pero no se pudo interpretar.",
+    "repaired_song_name": "Se restauró el nombre de la canción que faltaba a partir de su carpeta.",
+    "missing_notes": "El chart no tiene un array de notas.",
+    "repaired_events": "El array de eventos que faltaba se reemplazó por uno vacío.",
+    "invalid_bpm": "El BPM debe ser mayor que cero.",
+    "repaired_speed": "La velocidad de desplazamiento no válida se restableció a 1.",
+    "repaired_gf": "El personaje de girlfriend que faltaba se restableció a \"gf\".",
+    "missing_inst": "Falta el audio instrumental.",
+    "missing_voices": "Las voces están habilitadas, pero no se encontraron archivos de voces predeterminados ni separados.",
+    "invalid_section": "La sección {1} no tiene una lista de notas.",
+    "invalid_note": "Nota con formato incorrecto en la sección {1}, índice {2}.",
+    "invalid_note_values": "Datos no numéricos de una nota en la sección {1}, índice {2}."
+  }
+}
