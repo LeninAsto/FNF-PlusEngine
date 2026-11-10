@@ -231,8 +231,8 @@
     }
   },
   "infinity_display": {
-    "name": "Pantalla infinita",
-    "description": "Si está activado, extiende la vista verticalmente para pantallas más altas y mantiene el área de juego clásica de 16:9."
+    "name": "Vista expandida en pantalla completa",
+    "description": "Llena toda la pantalla con el comportamiento tradicional de pantalla completa. En pantallas anchas, la imagen puede estirarse un poco, pero los mods mantienen sus coordenadas habituales."
   },
   "instant_window_close": {
     "name": "Cierre instantáneo de ventana",
@@ -258,9 +258,9 @@
     "name": "Inicio automático del launcher",
     "description": "Si está activado, el launcher de Android inicia el engine automáticamente después de 3 segundos."
   },
-  "lighter_hit_path": {
-    "name": "Efectos de acierto ligeros",
-    "description": "Si está desactivado, se usa la ruta visual completa en lugar de la ligera.\nEsto puede causar problemas de rendimiento."
+  "performance_hit_effects": {
+    "name": "Efectos de acierto optimizados",
+    "description": "Reutiliza los efectos de acierto para que el juego funcione con mayor fluidez en móviles. Mientras esta opción esté activada, el estilo de calificación NF y la superposición de combos no estarán disponibles."
   },
   "low_quality": {
     "name": "Baja calidad",
