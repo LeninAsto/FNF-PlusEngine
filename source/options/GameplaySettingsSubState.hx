@@ -32,6 +32,14 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		option.onChange = onChangeAutoPause;
 
+		#if MODS_ALLOWED
+		var option:Option = new Option('Mod & Script Security',
+			'Optional protection that scans mod .lua/.hx scripts before they run.\nYou can still play normally and stay safer, but false positives may block some safe scripts.',
+			'modSecure', BOOL);
+		option.onChange = onChangeModSecurity;
+		addOption(option);
+		#end
+
 		#if windows
 		var option:Option = new Option('Windows GDI Effects',
 			'Allows Windows desktop GDI effects. Keep disabled unless you explicitly want mods to use them.', 'windowsGDIEffects', BOOL);
@@ -124,6 +132,15 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 
 	function onChangeAutoPause()
 		FlxG.autoPause = ClientPrefs.data.autoPause;
+
+	#if MODS_ALLOWED
+	function onChangeModSecurity()
+	{
+		ClientPrefs.saveSettings();
+		if (ClientPrefs.data.modSecure)
+			backend.ModSecurity.rescanAll();
+	}
+	#end
 
 	#if windows
 	function onChangeWindowsGDIEffects()

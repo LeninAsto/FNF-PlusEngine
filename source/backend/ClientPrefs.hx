@@ -197,7 +197,7 @@ import mobile.backend.PsychJNI;
 
 	// Mod compatibility / security
 	public var scriptWarns:Bool = true; // Show warnings for deprecated Lua/HScript compatibility APIs
-	public var modSecure:Bool = true; // Scan mod Lua/HScript before allowing sensitive APIs to run
+	public var modSecure:Bool = false; // Opt-in scan for mod Lua/HScript sensitive APIs
 	public var modSecurityChecks:Map<String, Bool> = new Map();
 }
 
