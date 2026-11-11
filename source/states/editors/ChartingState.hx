@@ -330,6 +330,11 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	var vortexEnabled:Bool = false;
 	var waveformEnabled:Bool = false;
 	var waveformTarget:WaveformTarget = INST;
+	var lilStage:FlxSprite;
+	var lilBf:FlxSprite;
+	var lilOpp:FlxSprite;
+	var lilBfHoldEnd:Float = -1;
+	var lilOppHoldEnd:Float = -1;
 
 	// Drag & Drop
 	var dragDropOverlay:FlxSprite;
@@ -397,6 +402,16 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		waveformSprite.scrollFactor.x = 0;
 		waveformSprite.visible = false;
 		add(waveformSprite);
+
+		lilStage = new FlxSprite(100, 432).loadGraphic(Paths.image('editors/buddies/lilStage'));
+		lilStage.scrollFactor.set();
+		lilBf = createLilBuddy('editors/buddies/lilBf', true);
+		lilOpp = createLilBuddy('editors/buddies/lilOpp');
+		for (buddy in [lilStage, lilBf, lilOpp])
+		{
+			buddy.visible = chartEditorSave.data.showLilBuddies != false;
+			add(buddy);
+		}
 
 		dummyArrow = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
 		dummyArrow.setGraphicSize(GRID_SIZE, GRID_SIZE);
@@ -520,7 +535,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		infoBox.getTab('Information').menu.add(infoText);
 		add(infoBox);
 
-		selectedEventBox = new PsychUIBox(12, FlxG.height - 182, 280, 170, ['Events']);
+		selectedEventBox = new PsychUIBox(12, 150, 280, 170, ['Events']);
 		localizeTabs(selectedEventBox, 'panels');
 		selectedEventBox.scrollFactor.set();
 		selectedEventBox.cameras = [camUI];
@@ -1535,6 +1550,22 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				note.alpha = (note.strumTime >= Conductor.songPosition) ? 1 : 0.6;
 				if (Conductor.songPosition > note.strumTime && lastTime <= note.strumTime)
 				{
+					var buddy:FlxSprite = note.mustPress ? lilBf : lilOpp;
+					var holdEnd:Float = note.strumTime + note.sustainLength;
+					var activeHoldEnd:Float = note.mustPress ? lilBfHoldEnd : lilOppHoldEnd;
+					if (buddy != null && (note.sustainLength > 0 || activeHoldEnd <= note.strumTime))
+					{
+						buddy.animation.play(Std.string(note.songData[1] % GRID_COLUMNS_PER_PLAYER), true);
+						buddy.animation.curAnim.looped = note.sustainLength > 0;
+						if (note.sustainLength > 0)
+						{
+							if (note.mustPress)
+								lilBfHoldEnd = Math.max(lilBfHoldEnd, holdEnd);
+							else
+								lilOppHoldEnd = Math.max(lilOppHoldEnd, holdEnd);
+						}
+					}
+
 					if (canPlayHitSound)
 					{
 						if (hitSoundPlayer && note.mustPress)
@@ -1560,6 +1591,8 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 					}
 				}
 			}
+			resetLilBuddyHold(lilBf, true);
+			resetLilBuddyHold(lilOpp, false);
 			forceDataUpdate = false;
 
 			// moved from beatHit()
@@ -3051,6 +3084,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	var playerMuteCheckBox:PsychUICheckBox;
 	var opponentVolumeStepper:PsychUINumericStepper;
 	var opponentMuteCheckBox:PsychUICheckBox;
+	var lilBuddiesBox:PsychUICheckBox;
 
 	function addChartingTab()
 	{
@@ -3105,6 +3139,13 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		instMuteCheckBox = new PsychUICheckBox(objX, objY, chartPhrase('ui.mute', 'Mute'), 60, updateAudioVolume);
 		playerMuteCheckBox = new PsychUICheckBox(objX + 100, objY, chartPhrase('ui.mute', 'Mute'), 60, updateAudioVolume);
 		opponentMuteCheckBox = new PsychUICheckBox(objX + 200, objY, chartPhrase('ui.mute', 'Mute'), 60, updateAudioVolume);
+		lilBuddiesBox = new PsychUICheckBox(objX, objY + 25, chartPhrase('ui.lil_buddies', "Lil' Buddies"), 100, function()
+		{
+			chartEditorSave.data.showLilBuddies = lilBuddiesBox.checked;
+			for (buddy in [lilStage, lilBf, lilOpp])
+				buddy.visible = lilBuddiesBox.checked;
+		});
+		lilBuddiesBox.checked = chartEditorSave.data.showLilBuddies != false;
 
 		tab_group.add(playbackSlider);
 		tab_group.add(preservePitchCheckBox);
@@ -3127,6 +3168,39 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		tab_group.add(playerMuteCheckBox);
 		tab_group.add(opponentVolumeStepper);
 		tab_group.add(opponentMuteCheckBox);
+		tab_group.add(lilBuddiesBox);
+	}
+
+	function createLilBuddy(asset:String, ?hasCheer:Bool = false):FlxSprite
+	{
+		var buddy:FlxSprite = new FlxSprite(100, 432).loadGraphic(Paths.image(asset), true, 300, 256);
+		buddy.animation.add('idle', [0, 1], 12, true);
+		for (i in 0...GRID_COLUMNS_PER_PLAYER)
+			buddy.animation.add(Std.string(i), [3 + (i * 3), 4 + (i * 3), 5 + (i * 3)], 12, false);
+		if (hasCheer)
+			buddy.animation.add('yeah', [17, 20, 23], 12, false);
+		buddy.animation.play('idle');
+		buddy.animation.finishCallback = function(_:String)
+		{
+			var holdEnd:Float = buddy == lilBf ? lilBfHoldEnd : lilOppHoldEnd;
+			if (holdEnd <= Conductor.songPosition)
+				buddy.animation.play('idle');
+		};
+		buddy.scrollFactor.set();
+		return buddy;
+	}
+
+	function resetLilBuddyHold(buddy:FlxSprite, isPlayer:Bool):Void
+	{
+		var holdEnd:Float = isPlayer ? lilBfHoldEnd : lilOppHoldEnd;
+		if (holdEnd > -1 && Conductor.songPosition >= holdEnd)
+		{
+			if (isPlayer)
+				lilBfHoldEnd = -1;
+			else
+				lilOppHoldEnd = -1;
+			buddy.animation.play('idle');
+		}
 	}
 
 	var gameOverCharDropDown:PsychUIDropDownMenu;

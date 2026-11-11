@@ -4203,8 +4203,8 @@ class PlayState extends MusicBeatState
 			: (ClientPrefs.data.dynamicCombo ? Std.string(popupCount) : Std.string(popupCount).lpad('0', 3));
 		for (i in 0...(comboStr.length + (isMiss ? 1 : 0)))
 		{
-			var isMinus:Bool = i == comboStr.length;
-			var character:String = isMinus ? '-' : comboStr.charAt(i);
+			var isMinus:Bool = isMiss && i == 0;
+			var character:String = isMinus ? '-' : comboStr.charAt(i - (isMiss ? 1 : 0));
 			var digit:Null<Int> = isMinus ? null : Std.parseInt(character);
 			var graphic:FlxGraphic = switch (character)
 			{
@@ -4653,10 +4653,10 @@ class PlayState extends MusicBeatState
 				: (ClientPrefs.data.dynamicCombo ? Std.string(popupCount) : Std.string(popupCount).lpad('0', 3));
 			for (i in 0...(comboStr.length + (isMiss ? 1 : 0)))
 			{
-				var isMinus:Bool = i == comboStr.length;
+				var isMinus:Bool = isMiss && i == 0;
 				if (isMinus && !ClientPrefs.data.showMinusDotKM)
 					continue;
-				var numberAsset:String = isMinus ? popupMinusAsset() : comboCharacterAsset(comboStr.charAt(i));
+				var numberAsset:String = isMinus ? popupMinusAsset() : comboCharacterAsset(comboStr.charAt(i - (isMiss ? 1 : 0)));
 			if (numberAsset == null)
 				continue;
 				var numScore:FlxSprite = getComboSprite().loadGraphic(Paths.image(numberAsset));
