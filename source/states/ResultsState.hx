@@ -608,7 +608,7 @@ class ResultsState extends MusicBeatState
 					anim('sparrow', 'resultScreen/results-bf/resultsGOOD/resultGirlfriendGOOD', [629, 323], 500, 0.91, 1, '', 9)
 				];
 			case SHIT:
-				[anim('animateatlas', 'resultScreen/results-bf/resultsSHIT', [-16.5, 23.5], 500, 0, 1, 'Intro', null, 'Loop Start')];
+				[anim('animateatlas', 'resultScreen/results-bf/resultsSHIT', [647.5, 358.5], 500, 0, 1, 'Intro', null, 'Loop Start')];
 		}
 	}
 

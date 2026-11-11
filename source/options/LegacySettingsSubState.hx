@@ -38,17 +38,6 @@ class LegacySettingsSubState extends BaseOptionsMenu
 			'scriptWarns', BOOL);
 		addOption(option);
 
-		#if MODS_ALLOWED
-		var option:Option = new Option('Mod Security',
-			'If checked, scans mod Lua/HScript and skips scripts from mods with untrusted sensitive APIs.', 'modSecure', BOOL);
-		option.onChange = function()
-		{
-			ClientPrefs.saveSettings();
-			backend.ModSecurity.rescanAll();
-		};
-		addOption(option);
-		#end
-
 		var option:Option = new Option('Drag Character',
 			'If checked, holding a character with mouse/touch screen will move the position, just like in Codename Engine.', 'cneStyleDragCharacter', BOOL);
 		option.onChange = function()
