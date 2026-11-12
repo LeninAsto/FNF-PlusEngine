@@ -30,3 +30,6 @@ vs_Community.exe
 !.vscode/extensions.json
 art/build_html.bat
 art/build_html-debug.bat
+
+# We don't want this
+assets/shared/scripts/classes/*
