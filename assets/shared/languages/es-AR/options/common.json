@@ -5,7 +5,7 @@
     "title": "Opciones",
     "presence": "Menú de opciones"
   },
-  "mobile_controls_tip": "Presioná {1} para ir al menú de controles móviles",
+  "mobile_controls_tip": "Presioná {1} para ir a los controles móviles",
   "controls": {
     "keyboard_short": "CTRL",
     "rebinding": "Asignando {1}",
@@ -21,8 +21,8 @@
       "description": "Cambiá las asignaciones del teclado y del control."
     },
     "adjust_delay_and_combo": {
-      "name": "Retardo y combo",
-      "description": "Ajustá el retardo de las notas, el desfase de calificación y la posición del combo."
+      "name": "Desfase y combo",
+      "description": "Ajustá el desfase (offset) de las notas, la calificación y la posición del combo."
     },
     "graphics": {
       "name": "Gráficos",
@@ -45,7 +45,7 @@
       "description": "Cambiá las comprobaciones usadas al cargar mods."
     },
     "modchart": {
-      "name": "Modchart",
+      "name": "Modcharts",
       "description": "Cambiá el comportamiento y la compatibilidad de modcharts."
     },
     "language": {
@@ -53,7 +53,7 @@
       "description": "Cambiá el idioma activo."
     },
     "mobile": {
-      "name": "Opciones móviles",
+      "name": "Móvil",
       "description": "Cambiá los controles y la distribución en dispositivos móviles."
     }
   },
@@ -97,7 +97,7 @@
       "channels": "Tono        Saturación   Brillo"
     },
     "offset": {
-      "presence": "Menú de retardo y posición del combo"
+      "presence": "Menú de desfase y posición del combo"
     },
     "mobile": {
       "title": "Opciones móviles",
