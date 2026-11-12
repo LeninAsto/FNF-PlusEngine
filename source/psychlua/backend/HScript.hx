@@ -47,7 +47,10 @@ class HScript extends Iris
 	// Old Psych Lua mods commonly use this inside runHaxeCode.  Iris evaluates
 	// the expression more strictly than the old SScript bridge did, so a missing
 	// Lua tag reaches ShaderFilter as null. Keep the repair in memory only.
-	static final LEGACY_LUA_OBJECT_SHADER:EReg = ~/game\.getLuaObject\(\s*["']([^"']+)["']\s*\)\s*\.shader/g;
+	// Only repair reads.  A runtime shader creation writes to this exact field;
+	// replacing that left-hand side with getLuaObjectShader(...) makes it an
+	// invalid HScript assignment and stops legacy createShader.lua scripts.
+	static final LEGACY_LUA_OBJECT_SHADER:EReg = ~/game\.getLuaObject\(\s*["']([^"']+)["']\s*\)\s*\.shader(?!\s*=)/g;
 
 	static function repairLegacyLuaShaderAccess(code:String):String
 	{

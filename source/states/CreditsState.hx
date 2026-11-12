@@ -93,6 +93,13 @@ class CreditsState extends MusicBeatState
 				"FFB347"
 			],
 			[
+				"Rozebud",
+				"",
+				Language.getPhrase('states.credits.roles.rozebud', "Creator of the Chart Editor's Lil' Buddies"),
+				"https://github.com/ThatRozebudDude/FPS-Plus-Public",
+				"E08B40"
+			],
+			[
 				"AutisticLulu",
 				"lulu",
 				Language.getPhrase('states.credits.roles.autistic_lulu', 'Psych Engine 1.0.x fixes and maintenance'),

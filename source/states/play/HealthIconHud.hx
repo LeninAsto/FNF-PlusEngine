@@ -82,7 +82,11 @@ class HealthIconHud
 
 	static function lerpScale(elapsed:Float, rate:Float, icon:HealthIcon, nf:Bool):Void
 	{
-		if (icon == null || !icon.visible)
+		// Mods such as Mario Madness replace a native icon with a Lua sprite that
+		// follows its transform. The native icon is intentionally invisible there,
+		// but it must still complete its scale decay or the proxy gets stuck at
+		// the first beat's scale and no longer bops.
+		if (icon == null)
 			return;
 
 		final t:Float = nf ? FlxMath.bound((1 - (elapsed * 9 * rate)) / 1.1, 0, 1) : Math.exp(-elapsed * 9 * rate);
@@ -93,7 +97,7 @@ class HealthIconHud
 	static inline final CODENAME_LERP:Float = 0.33;
 	static function codenameScale(elapsed:Float, rate:Float, icon:HealthIcon):Void
 	{
-		if (icon == null || !icon.visible) return;
+		if (icon == null) return;
 
 		final base:Float = icon.baseScale > 0 ? icon.baseScale : 1.0;
 		final t:Float = 1.0 - Math.pow(1.0 - CODENAME_LERP, elapsed * 60.0 * rate);

@@ -1166,8 +1166,6 @@ class PlayState extends MusicBeatState
 		{
 			if(ClientPrefs.data.shadedTimeBar)
 				timeBar.setGradientColors(rightColor, leftColor);
-			else
-				timeBar.setColors(FlxColor.WHITE, FlxColor.BLACK);
 		}
 	}
 
@@ -3043,6 +3041,13 @@ class PlayState extends MusicBeatState
 		setOnScripts('botPlayCPUProfile', isBotplayCPU() ? botplayCPUProfile() : '');
 		if (!skipUltraDenseBotplayScripts())
 			callOnScripts('onUpdatePost', [elapsed]);
+
+		// Lua modcharts commonly move/scale receptors in onUpdatePost, which runs
+		// after Flixel has updated grpHoldSplashes. Re-sync here so the cover is
+		// rendered from the same final receptor pose instead of one frame behind.
+		for (splash in grpHoldSplashes.members)
+			if (splash != null && splash.exists)
+				splash.refreshStrumTransform();
 	}
 
 	override function onAudioDeviceReopened():Void
@@ -4076,8 +4081,6 @@ class PlayState extends MusicBeatState
 		pooledComboSpritePool.push(spr);
 		pooledComboSpriteLife.push(0);
 		pooledComboSpriteFadeStart.push(0);
-		if (comboGroup != null)
-			comboGroup.add(spr);
 		return spr;
 	}
 
@@ -4088,11 +4091,10 @@ class PlayState extends MusicBeatState
 			{
 				// Recycled sprites keep their old group index. Move each new popup to
 				// the end so a newer combo is always drawn above the previous one.
-				if (comboGroup != null)
-				{
+				if (comboGroup != null && comboGroup.members.indexOf(spr) >= 0)
 					comboGroup.remove(spr, true);
-					comboGroup.add(spr);
-				}
+				resetComboSprite(spr);
+				spr.revive();
 				return spr;
 			}
 		return createPooledComboSprite();
@@ -4123,6 +4125,8 @@ class PlayState extends MusicBeatState
 			return;
 
 		spr.loadGraphic(graphic);
+		if (comboGroup != null && comboGroup.members.indexOf(spr) < 0)
+			comboGroup.add(spr);
 		spr.setGraphicSize(Std.int(spr.width * scale));
 		spr.updateHitbox();
 		spr.x = x;
@@ -4133,8 +4137,6 @@ class PlayState extends MusicBeatState
 		spr.active = true;
 		spr.exists = visible;
 		spr.antialiasing = antialias;
-		if (comboGroup != null && comboGroup.members.indexOf(spr) < 0)
-			comboGroup.add(spr);
 		spr.velocity.set(0, -125 * playbackRate);
 		spr.acceleration.set(0, 360 * playbackRate * playbackRate);
 
@@ -4193,8 +4195,8 @@ class PlayState extends MusicBeatState
 			: (ClientPrefs.data.dynamicCombo ? Std.string(popupCount) : Std.string(popupCount).lpad('0', 3));
 		for (i in 0...(comboStr.length + (isMiss ? 1 : 0)))
 		{
-			var isMinus:Bool = i == comboStr.length;
-			var character:String = isMinus ? '-' : comboStr.charAt(i);
+			var isMinus:Bool = isMiss && i == 0;
+			var character:String = isMinus ? '-' : comboStr.charAt(i - (isMiss ? 1 : 0));
 			var digit:Null<Int> = isMinus ? null : Std.parseInt(character);
 			var graphic:FlxGraphic = switch (character)
 			{
@@ -4252,10 +4254,8 @@ class PlayState extends MusicBeatState
 			if (spr != null && !spr.exists)
 			{
 				spr.revive();
-				// Pool reuse must also refresh draw order. Otherwise an old slot can
-				// put a brand-new popup behind a combo that is still fading out.
-				comboGroup.remove(spr, true);
-				comboGroup.add(spr);
+				if (comboGroup != null && comboGroup.members.indexOf(spr) >= 0)
+					comboGroup.remove(spr, true);
 				resetComboSprite(spr);
 				return spr;
 			}
@@ -4263,7 +4263,6 @@ class PlayState extends MusicBeatState
 
 		var spr = new FlxSprite();
 		comboSpritePool.push(spr);
-		comboGroup.add(spr);
 		resetComboSprite(spr);
 		return spr;
 	}
@@ -4428,6 +4427,7 @@ class PlayState extends MusicBeatState
 		if (showTag)
 		{
 			var tag:FlxSprite = getComboSprite().loadGraphic(Paths.image(uiAsset(early ? 'early' : 'late')));
+			comboGroup.add(tag);
 			tag.setGraphicSize(Std.int(Math.max(1, rating.width * 0.48)));
 			tag.updateHitbox();
 			tag.x = early ? rating.x - tag.width * 0.18 : rating.x + rating.width - tag.width * 0.82;
@@ -4604,6 +4604,7 @@ class PlayState extends MusicBeatState
 			rating.x += ClientPrefs.data.comboOffset[0];
 			rating.y -= ClientPrefs.data.comboOffset[1];
 			rating.antialiasing = antialias;
+			comboGroup.add(rating);
 
 			var comboSpr:FlxSprite = getComboSprite().loadGraphic(Paths.image(uiAsset('combo')));
 			comboSpr.screenCenter();
@@ -4643,10 +4644,10 @@ class PlayState extends MusicBeatState
 				: (ClientPrefs.data.dynamicCombo ? Std.string(popupCount) : Std.string(popupCount).lpad('0', 3));
 			for (i in 0...(comboStr.length + (isMiss ? 1 : 0)))
 			{
-				var isMinus:Bool = i == comboStr.length;
+				var isMinus:Bool = isMiss && i == 0;
 				if (isMinus && !ClientPrefs.data.showMinusDotKM)
 					continue;
-				var numberAsset:String = isMinus ? popupMinusAsset() : comboCharacterAsset(comboStr.charAt(i));
+				var numberAsset:String = isMinus ? popupMinusAsset() : comboCharacterAsset(comboStr.charAt(i - (isMiss ? 1 : 0)));
 			if (numberAsset == null)
 				continue;
 				var numScore:FlxSprite = getComboSprite().loadGraphic(Paths.image(numberAsset));
@@ -4672,6 +4673,8 @@ class PlayState extends MusicBeatState
 				numScore.visible = ClientPrefs.data.popUpRating && !ClientPrefs.data.hideHud && showComboNum
 					&& (isMiss || combo >= 10 || combo == 0);
 				numScore.antialiasing = antialias;
+				if (showComboNum)
+					comboGroup.add(numScore);
 
 				if (ClientPrefs.data.nfRatingStyle)
 					FlxTween.tween(numScore.scale, {x: numScore.scale.x * 0.88, y: numScore.scale.y * 0.88}, 0.12 / playbackRate, {ease: FlxEase.quadOut});
@@ -4690,6 +4693,8 @@ class PlayState extends MusicBeatState
 			}
 			if (!ClientPrefs.data.nfRatingStyle)
 				comboSpr.x = xThing + 50;
+			if (showCombo)
+				comboGroup.add(comboSpr);
 			if (ClientPrefs.data.nfRatingStyle)
 			{
 				rating.scale.scale(1.16);
@@ -5553,7 +5558,10 @@ class PlayState extends MusicBeatState
 		iconTurn = -iconTurn;
 		for (icon in [iconP1, iconP2, iconGF])
 		{
-			if (icon == null || !icon.visible)
+			// Lua proxy icons can follow an intentionally hidden native icon.
+			// Keep its transform animated so the visible proxy receives the same
+			// D&B bop rather than a permanently flat scale/angle.
+			if (icon == null)
 				continue;
 
 			FlxTween.cancelTweensOf(icon);
