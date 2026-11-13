@@ -25,19 +25,19 @@
       "description": "Adjust note delay, rating offset, and combo placement."
     },
     "graphics": {
-      "name": "Graphics Settings",
+      "name": "Graphics",
       "description": "Change performance and rendering settings."
     },
     "visuals": {
-      "name": "Visual Settings",
+      "name": "Visuals",
       "description": "Change HUD, camera, and visual preferences."
     },
     "gameplay": {
-      "name": "Gameplay Settings",
+      "name": "Gameplay",
       "description": "Change gameplay modifiers and helpers."
     },
     "legacy": {
-      "name": "Legacy Settings",
+      "name": "Legacy",
       "description": "Change compatibility settings for older Psych/Plus behavior."
     },
     "mod_security": {
@@ -45,7 +45,7 @@
       "description": "Change checks used when loading mods."
     },
     "modchart": {
-      "name": "Modchart Settings",
+      "name": "Modchart",
       "description": "Change modchart behavior and compatibility."
     },
     "language": {
@@ -53,7 +53,7 @@
       "description": "Change the active language."
     },
     "mobile": {
-      "name": "Mobile Settings",
+      "name": "Mobile",
       "description": "Change mobile controls and layout settings."
     }
   },

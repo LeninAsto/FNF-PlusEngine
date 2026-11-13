@@ -279,6 +279,28 @@ class AssetLoader
 		#end
 	}
 
+	/** Returns PCM suitable for visualization without replacing the streamed playback buffer. */
+	public static function analyzerBuffer(sound:Sound):AudioBuffer
+	{
+		if (sound == null)
+			return null;
+		@:privateAccess var buffer:AudioBuffer = sound.__buffer;
+		if (buffer == null || buffer.data != null)
+			return buffer;
+
+		#if (lime_vorbis && sys)
+		lockAnalyzer();
+		var preparation = analyzerBuffers.get(buffer);
+		var decoded = preparation != null ? preparation.decoded : null;
+		unlockAnalyzer();
+		if (decoded != null)
+			return decoded;
+		if (preparation == null)
+			beginAnalyzerPreparation(buffer, true);
+		#end
+		return null;
+	}
+
 	public static function isAnalyzerPreparationFinished(buffer:AudioBuffer):Bool
 	{
 		if (buffer == null || buffer.data != null) return true;

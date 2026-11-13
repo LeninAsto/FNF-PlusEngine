@@ -272,7 +272,7 @@
     "set_property": "Value 1: Variable name\nValue 2: New value",
     "play_sound": "Value 1: Sound file name\nValue 2: Volume (Default: 1), ranges from 0 to 1",
     "set_camera_bopping": "Sets how camera should bop.\nValue 1: Frequency (in beats)\nValue 2: Intensity scale (1 for default)",
-    "lyric_event": "Displays a lyric text in the middle of the screen.\nValue 1: Text to display (leave blank to fade out).\nValue 2: Text color name or hex (leave blank for white).",
+    "lyric_event": "Displays a lyric text in the middle of the screen.\\n in Value 1 makes a new line.\nValue 1: Text to display (leave blank to fade out).\nValue 2: Text color, optionally followed by | and a background color (example: white | #000000).",
     "add_secondary_icon": "Value 1: Side of Health Bar (Dad, BF)\nValue 2: Swap position of BF and GF icons when GF Sing (true, false)",
     "change_ui": "Change noteskin and notesplash.\nValue 1: Noteskin name (leave blank to keep current)\nValue 2: Notesplash name (leave blank to keep current)\nValue 3: UI style name (leave blank to keep current)"
   }

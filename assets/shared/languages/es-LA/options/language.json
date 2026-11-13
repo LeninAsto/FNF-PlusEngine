@@ -9,11 +9,11 @@
     "active": "{1} (Activo)"
   },
   "sync": {
-    "name": "Descargar o actualizar idiomas",
-    "description": "Comprueba el catálogo oficial e instala de forma segura paquetes de idiomas nuevos o actualizados.",
+    "name": "Descargar idiomas",
+    "description": "Obtén idiomas nuevos o actualizados.",
     "success_title": "Idiomas actualizados",
     "error_title": "Error al actualizar idiomas",
-    "success": "Instalados: {1}. Ya actualizados: {2}.",
-    "error": "No se pudieron actualizar los paquetes de idioma:\n{1}"
+    "success": "Instalados: {1}. Al día: {2}.",
+    "error": "No se pudieron obtener idiomas:\n{1}"
   }
 }

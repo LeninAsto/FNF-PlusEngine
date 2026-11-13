@@ -166,7 +166,9 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 			if (FlxG.keys.justPressed.DOWN)
 				wheel--;
 			if (wheel != 0)
-				showDropDown(true, curScroll + wheel, _curFilter);
+				// On Windows a positive wheel delta means the user moved upward;
+				// list indexes grow downward, so the content moves in the opposite direction.
+				showDropDown(true, curScroll - wheel, _curFilter);
 		}
 	}
 

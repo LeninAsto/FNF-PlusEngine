@@ -45,8 +45,8 @@ class LanguageSubState extends BaseOptionsMenu
 		}
 
 		var syncOption = new Option(
-			Language.getPhrase('options.language.sync.name', 'Download or update languages'),
-			Language.getPhrase('options.language.sync.description', 'Checks the official catalog and safely installs new or updated language packs.'),
+			Language.getPhrase('options.language.sync.name', 'Download languages'),
+			Language.getPhrase('options.language.sync.description', 'Get new or updated language packs.'),
 			'', ACTION, null, 'language_sync');
 		syncOption.onChange = startSync;
 		addOption(syncOption);
@@ -101,8 +101,8 @@ class LanguageSubState extends BaseOptionsMenu
 			? Language.getPhrase('options.language.sync.success_title', 'Languages updated')
 			: Language.getPhrase('options.language.sync.error_title', 'Language update failed');
 		var message:String = result.success
-			? Language.getPhrase('options.language.sync.success', 'Installed: {1}. Already current: {2}.', [result.installed, result.skipped])
-			: Language.getPhrase('options.language.sync.error', 'Could not update language packs:\n{1}', [result.message]);
+			? Language.getPhrase('options.language.sync.success', 'Installed: {1}. Current: {2}.', [result.installed, result.skipped])
+			: Language.getPhrase('options.language.sync.error', 'Could not get languages:\n{1}', [result.message]);
 		CoolUtil.showPopUp(message, popupTitle);
 	}
 	#else

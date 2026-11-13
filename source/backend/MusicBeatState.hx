@@ -532,7 +532,7 @@ class MusicBeatState extends BaseMusicBeatState
 		}
 		catch (e:crowplexus.hscript.Expr.Error)
 		{
-			var msg = crowplexus.hscript.Printer.errorToString(e, false);
+			var msg = ScriptErrorTranslator.hscript(crowplexus.hscript.Printer.errorToString(e, false));
 			trace('[CompanionScript] HScript error in $path:\n$msg');
 			addStateScriptTextToDebug('$path: $msg', FlxColor.RED);
 		}
@@ -883,7 +883,7 @@ class MusicBeatState extends BaseMusicBeatState
 					trace('GlobalScript IrisError caught');
 					try
 					{
-						var errorMsg = Printer.errorToString(e, false);
+						var errorMsg = ScriptErrorTranslator.hscript(Printer.errorToString(e, false));
 						trace('GlobalScript Error: $errorMsg');
 						addScriptTextToDebug('$scriptPath: $errorMsg', FlxColor.RED);
 					}

@@ -240,7 +240,7 @@ private class ScriptWorld
 		}
 		catch (e:IrisError)
 		{
-			Iris.error(crowplexus.hscript.Printer.errorToString(e, false), cast {fileName: file, showLine: true});
+			Iris.error(ScriptErrorTranslator.hscript(crowplexus.hscript.Printer.errorToString(e, false)), cast {fileName: file, showLine: true});
 			loading.remove(fullName);
 			return false;
 		}

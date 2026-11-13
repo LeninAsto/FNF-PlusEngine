@@ -5,7 +5,7 @@
     "title": "Opciones",
     "presence": "Menú de opciones"
   },
-  "mobile_controls_tip": "Presioná {1} para ir al menú de controles móviles",
+  "mobile_controls_tip": "Presioná {1} para ir a los controles móviles",
   "controls": {
     "keyboard_short": "CTRL",
     "rebinding": "Asignando {1}",
@@ -21,31 +21,31 @@
       "description": "Cambiá las asignaciones del teclado y del control."
     },
     "adjust_delay_and_combo": {
-      "name": "Ajustar retardo y combo",
-      "description": "Ajustá el retardo de las notas, el desfase de calificación y la posición del combo."
+      "name": "Desfase y combo",
+      "description": "Ajustá el desfase (offset) de las notas, la calificación y la posición del combo."
     },
     "graphics": {
-      "name": "Configuración de gráficos",
+      "name": "Gráficos",
       "description": "Cambiá la configuración de rendimiento y renderizado."
     },
     "visuals": {
-      "name": "Configuración visual",
+      "name": "Visual",
       "description": "Cambiá las preferencias del HUD, la cámara y otros aspectos visuales."
     },
     "gameplay": {
-      "name": "Configuración de juego",
+      "name": "Juego",
       "description": "Cambiá los modificadores y las ayudas del juego."
     },
     "legacy": {
-      "name": "Configuración heredada",
+      "name": "Heredado",
       "description": "Cambiá las opciones de compatibilidad con el comportamiento anterior de Psych/Plus."
     },
     "mod_security": {
-      "name": "Controles de seguridad de mods",
+      "name": "Seguridad de mods",
       "description": "Cambiá las comprobaciones usadas al cargar mods."
     },
     "modchart": {
-      "name": "Configuración de modchart",
+      "name": "Modchart",
       "description": "Cambiá el comportamiento y la compatibilidad de modcharts."
     },
     "language": {
@@ -53,33 +53,33 @@
       "description": "Cambiá el idioma activo."
     },
     "mobile": {
-      "name": "Configuración móvil",
+      "name": "Móvil",
       "description": "Cambiá los controles y la distribución en dispositivos móviles."
     }
   },
   "menus": {
     "modchart": {
-      "title": "Configuración de modchart",
+      "title": "Opciones de modchart",
       "presence": "Menú de opciones de Modchart"
     },
     "legacy": {
-      "title": "Configuración heredada",
-      "presence": "Menú de configuración heredada"
+      "title": "Compatibilidad",
+      "presence": "Menú de compatibilidad"
     },
     "mod_security": {
-      "title": "Controles de seguridad de mods",
+      "title": "Seguridad de mods",
       "presence": "Controles de seguridad de mods"
     },
     "gameplay": {
-      "title": "Configuración de juego",
+      "title": "Jugabilidad",
       "presence": "Menú de configuración del juego"
     },
     "graphics": {
-      "title": "Configuración de gráficos",
+      "title": "Gráficos",
       "presence": "Menú de configuración de gráficos"
     },
     "visuals": {
-      "title": "Configuración visual",
+      "title": "Visuales",
       "presence": "Menú de configuración visual"
     },
     "language": {
@@ -97,10 +97,10 @@
       "channels": "Tono        Saturación   Brillo"
     },
     "offset": {
-      "presence": "Menú de retardo y posición del combo"
+      "presence": "Menú de desfase y posición del combo"
     },
     "mobile": {
-      "title": "Configuración móvil",
+      "title": "Opciones móviles",
       "presence": "Menú de configuración móvil"
     },
     "mod_settings": {

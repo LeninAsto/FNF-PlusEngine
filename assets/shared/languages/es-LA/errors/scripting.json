@@ -6,19 +6,41 @@
     "load_error_message": "{1}\n\n{2}",
     "non_function_callback": "ERROR ({1}): intento de llamar a un valor {2}",
     "callback_error": "ERROR ({1}): {2}",
-    "playstate_only": "{1} es solo para PlayState y no se puede ejecutar desde un host {2} Lua."
+    "playstate_only": "{1} es solo para PlayState y no se puede ejecutar desde un host {2} Lua.",
+    "runtime_error": "Error de ejecución",
+    "memory_error": "Error de asignación de memoria",
+    "critical_error": "Error crítico",
+    "unknown_error": "Error desconocido",
+    "nil_index": "intento de indexar un valor nulo",
+    "nil_call": "intento de llamar a un valor nulo",
+    "nil_arithmetic": "intento de realizar una operación aritmética con un valor nulo",
+    "syntax_near": "error de sintaxis cerca de {1}"
   },
   "hscript": {
     "warning": "ADVERTENCIA: {1}",
     "null_field": "Referencia nula: intentando acceder a \"{1}\" en un objeto nulo",
     "script_warning": "ADVERTENCIA ({1}): {2}",
-    "unsupported": "¡HScript no es compatible con esta plataforma!"
+    "unsupported": "¡HScript no es compatible con esta plataforma!",
+    "unknown_identifier": "Identificador desconocido: {1}",
+    "missing_function": "No existe una función llamada: {1}",
+    "null_function": "Se intentó llamar a la función nula {1}",
+    "not_initialized": "runHaxeFunction: HScript aún no se inicializó. Usa \"runHaxeCode\" para hacerlo",
+    "callback_missing_argument": "createCallback ({1}): falta el tercer argumento",
+    "invalid_character": "Carácter no válido: {1}",
+    "unexpected_token": "Token inesperado: \"{1}\"",
+    "invalid_preprocessor": "Preprocesador no válido ({1})",
+    "invalid_iterator": "Iterador no válido: {1}",
+    "invalid_operator": "Operador no válido: {1}",
+    "invalid_access": "Acceso no válido al campo {1}",
+    "invalid_class": "Clase no válida o desconocida: {1}",
+    "invalid_parameter_count": "Cantidad de parámetros no válida. Se recibieron {1}; se requieren {2}"
   },
   "mod_settings": {
     "title": "Nombre del mod: {1}",
     "parse_error": "Se produjo un error: {1}",
     "file_missing": "getModSetting: ¡No se pudo encontrar {1}!",
-    "setting_missing": "getModSetting: ¡No se pudo encontrar \"{1}\" dentro de la configuración de {2}!"
+    "setting_missing": "getModSetting: ¡No se pudo encontrar \"{1}\" dentro de la configuración de {2}!",
+    "missing_mod_folder": "getModSetting: el argumento #2 es nulo y el script no está dentro de una carpeta de mod empaquetada."
   },
   "raw_error_with_source": "{1}\n{2}"
 }
