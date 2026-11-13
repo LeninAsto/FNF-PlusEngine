@@ -30,6 +30,7 @@ class ClearPercentCounter extends FlxTypedSpriteGroup<FlxSprite>
 
 		var clearPercentText:FlxSprite = new FlxSprite(isSmall ? 40 : 0, 0);
 		clearPercentText.loadGraphic(Paths.image('resultScreen/clearPercent/clearPercentText${isSmall ? 'Small' : ''}'));
+		clearPercentText.antialiasing = ClientPrefs.data.antialiasing;
 		add(clearPercentText);
 
 		drawNumbers();
@@ -109,6 +110,7 @@ class ClearPercentNumber extends FlxSprite
 		super(x, y);
 
 		frames = Paths.getSparrowAtlas('resultScreen/clearPercent/clearPercentNumber${isSmall ? 'Small' : variant ? 'Right' : 'Left'}');
+		antialiasing = ClientPrefs.data.antialiasing;
 
 		for (i in 0...10)
 			animation.addByPrefix('$i', 'number $i 0', 24, false);

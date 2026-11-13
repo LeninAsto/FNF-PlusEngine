@@ -139,7 +139,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		],
 		[
 			'Lyric Event',
-			"Displays a lyric text in the middle of the screen.\nValue 1: Text to display (leave blank to fade out).\nValue 2: Text color name or hex (leave blank for white)."
+			"Displays a lyric text in the middle of the screen.\\n in Value 1 makes a new line.\nValue 1: Text to display (leave blank to fade out).\nValue 2: Text color, optionally followed by | and a background color (example: white | #000000)."
 		],
 		[
 			'Add Secondary Icon',

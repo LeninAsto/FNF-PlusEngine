@@ -8,8 +8,8 @@
   "mobile_controls_tip": "Presione {1} para ir al menú de controles móviles",
   "controls": {
     "keyboard_short": "CONTROL",
-    "rebinding": "Volver a vincular {1}",
-    "rebinding_help": "Mantenga presionado {1} para cancelar\nMantenga presionado {2} para eliminar"
+    "rebinding": "Cambiando: {1}",
+    "rebinding_help": "Manten pres. {1} para cance.\nManten pres. {2} para borrar."
   },
   "categories": {
     "note_colors": {
@@ -25,19 +25,19 @@
       "description": "Ajuste el retraso de las notas, la compensación de calificación y la ubicación del combo."
     },
     "graphics": {
-      "name": "Configuración de gráficos",
+      "name": "Gráficos",
       "description": "Cambie la configuración de rendimiento y renderizado."
     },
     "visuals": {
-      "name": "Configuraciones visuales",
+      "name": "Visuales",
       "description": "Cambie HUD, cámara y preferencias visuales."
     },
     "gameplay": {
-      "name": "Configuración de juego",
+      "name": "Juego",
       "description": "Cambia los modificadores y ayudantes del juego."
     },
     "legacy": {
-      "name": "Configuración heredada",
+      "name": "Heredado",
       "description": "Cambie la configuración de compatibilidad para el comportamiento anterior de Psych/Plus."
     },
     "mod_security": {
@@ -45,7 +45,7 @@
       "description": "Comprobaciones de cambio utilizadas al cargar mods."
     },
     "modchart": {
-      "name": "Configuración de modchart",
+      "name": "Modchart",
       "description": "Cambie el comportamiento y la compatibilidad del modchart."
     },
     "language": {
@@ -53,7 +53,7 @@
       "description": "Cambiar el idioma activo."
     },
     "mobile": {
-      "name": "Configuración móvil",
+      "name": "Móvil",
       "description": "Cambie los controles móviles y la configuración de diseño."
     }
   },

@@ -25,19 +25,19 @@
       "description": "Ajuste o atraso da nota, deslocamento da classificação e colocação combinada."
     },
     "graphics": {
-      "name": "Configuração dos Gráficos",
+      "name": "Gráficos",
       "description": "Alterar as configurações de desempenho e renderização."
     },
     "visuals": {
-      "name": "Configuração Visual",
+      "name": "Visual",
       "description": "Altere as preferências de HUD, câmera e visual."
     },
     "gameplay": {
-      "name": "Configuração do Jogo",
+      "name": "Jogo",
       "description": "Alterar modificadores de jogabilidade e ajudantes."
     },
     "legacy": {
-      "name": "Configuração do Legado",
+      "name": "Legado",
       "description": "Alterar configurações de compatibilidade para o comportamento Psych/Plus mais antigo."
     },
     "mod_security": {
@@ -45,7 +45,7 @@
       "description": "Alterar as verificações usadas ao carregar mods."
     },
     "modchart": {
-      "name": "Configuração do Modchart",
+      "name": "Modchart",
       "description": "Alterar o comportamento e compatibilidade do modchart."
     },
     "language": {
@@ -53,7 +53,7 @@
       "description": "Mude a linguagem ativa."
     },
     "mobile": {
-      "name": "Configuração do Móvel",
+      "name": "Móvel",
       "description": "Alterar controles móveis e configurações de layout."
     }
   },

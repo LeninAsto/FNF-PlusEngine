@@ -7,6 +7,8 @@ class Language
 	/** Font for glyphs outside the sprite alphabet, even in the language selector. */
 	public static function getFontForText(text:String, fallback:String = 'NotoSans-Medium.ttf'):String
 	{
+		if (text == null)
+			return Paths.font(fallback);
 		// Native names must remain readable when a different language is active.
 		if (text.indexOf('简体中文') != -1)
 			return Paths.font('NotoSansSC-Medium.ttf');
@@ -23,14 +25,26 @@ class Language
 			if (code >= 0x3040 && code <= 0x30FF)
 				return Paths.font('NotoSansJP-Medium.ttf');
 			if (code >= 0x3400 && code <= 0x9FFF)
-				font = switch (ClientPrefs.data.language)
-				{
-					case 'ja-JP': 'NotoSansJP-Medium.ttf';
-					case 'zh-TW': 'NotoSansTC-Medium.ttf';
-					default: 'NotoSansSC-Medium.ttf';
-				};
+				font = containsTraditionalChinese(text) ? 'NotoSansTC-Medium.ttf' : 'NotoSansSC-Medium.ttf';
 		}
 		return Paths.font(font);
+	}
+
+	/**
+	 * Han characters shared by simplified and traditional Chinese have no Unicode
+	 * marker. Detect common traditional-only glyphs; ambiguous text safely uses
+	 * the Simplified CJK font, which still contains the shared characters.
+	 */
+	static function containsTraditionalChinese(text:String):Bool
+	{
+		for (i in 0...text.length)
+			switch (text.charCodeAt(i))
+			{
+				case 0x570B, 0x5B78, 0x6F22, 0x7E41, 0x8A9E, 0x9AD4, 0x9EDE, 0x9F8D, 0x9580, 0x7FD2, 0x8B93, 0x8F49, 0x958B, 0x95DC:
+					return true;
+				default:
+			}
+		return false;
 	}
 	#if TRANSLATIONS_ALLOWED
 	private static inline var DEFAULT_LANGUAGE_CODE:String = 'en-US';

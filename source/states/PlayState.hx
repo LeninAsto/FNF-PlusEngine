@@ -307,6 +307,9 @@ class PlayState extends MusicBeatState
 	var iconTurn:Float = 10;
 	var lyricText:FlxText;
 	var lyricTween:FlxTween;
+	var lyricBackground:FlxSprite;
+	var lyricBackgroundTween:FlxTween;
+	var lyricGroup:FlxSpriteGroup;
 	var versionText:FlxText;
 	var verTween:FlxTween;
 	var languageRevision:Int = -1;
@@ -649,14 +652,23 @@ class PlayState extends MusicBeatState
 
 		if(eventsPushed.contains('Lyric Event'))
 		{
+			lyricGroup = new FlxSpriteGroup();
+			lyricGroup.cameras = [camHUD];
+			lyricBackground = new FlxSprite().makeGraphic(1, 1, FlxColor.BLACK);
+			lyricBackground.scrollFactor.set();
+			lyricBackground.alpha = 0;
+			lyricBackground.visible = !ClientPrefs.data.hideHud;
+			lyricBackground.cameras = [camHUD];
+			lyricGroup.add(lyricBackground);
+
 			lyricText = new FlxText(0, FlxG.height * 0.72, FlxG.width, "", 32);
-			lyricText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			lyricText.setFormat(Language.getFontForText('', 'vcr.ttf'), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			lyricText.scrollFactor.set();
 			lyricText.borderSize = 2;
 			lyricText.alpha = 0;
 			lyricText.visible = !ClientPrefs.data.hideHud;
 			lyricText.cameras = [camHUD];
-			uiGroup.add(lyricText);
+			lyricGroup.add(lyricText);
 		}
 
 		camFollow = new FlxObject();
@@ -748,6 +760,10 @@ class PlayState extends MusicBeatState
 		uiGroup.cameras = [camHUD];
 		noteGroup.cameras = [camHUD];
 		comboGroup.cameras = [ClientPrefs.data.comboInGame ? camGame : camHUD];
+		// Add after every HUD and note group: lyrics remain in camHUD but are its
+		// final layer, rather than being hidden by later HUD additions.
+		if (lyricGroup != null)
+			add(lyricGroup);
 
 		startingSong = true;
 
@@ -3533,12 +3549,18 @@ class PlayState extends MusicBeatState
 						lyricTween.cancel();
 						lyricTween = null;
 					}
+					if(lyricBackgroundTween != null)
+					{
+						lyricBackgroundTween.cancel();
+						lyricBackgroundTween = null;
+					}
 
-					var lyr = value1.trim();
+					var lyr = value1.replace('\\n', '\n').trim();
 					if(lyr.length > 0)
 					{
 						var col = FlxColor.WHITE;
-						var raw = value2.trim();
+						var parts:Array<String> = value2.split('|');
+						var raw = parts[0].trim();
 						if(raw.length > 0)
 						{
 							try
@@ -3551,9 +3573,26 @@ class PlayState extends MusicBeatState
 							}
 						}
 
+						lyricText.font = Language.getFontForText(lyr, 'vcr.ttf');
 						lyricText.text = lyr;
 						lyricText.color = col;
 						lyricText.alpha = 0;
+						var bgRaw:String = parts.length > 1 ? parts[1].trim() : '';
+						if(lyricBackground != null && bgRaw.length > 0)
+						{
+							try { lyricBackground.color = FlxColor.fromString(bgRaw); }
+							catch(e:Dynamic) { lyricBackground.color = FlxColor.BLACK; }
+							var padding:Float = 14;
+							lyricBackground.setPosition(lyricText.x + (lyricText.width - lyricText.textField.textWidth) / 2 - padding,
+								lyricText.y - padding * 0.5);
+							lyricBackground.setGraphicSize(lyricText.textField.textWidth + padding * 2, lyricText.textField.textHeight + padding);
+							lyricBackground.updateHitbox();
+							lyricBackground.alpha = 0;
+							lyricBackgroundTween = FlxTween.tween(lyricBackground, {alpha: 0.72}, 0.25, {ease: FlxEase.cubeOut,
+								onComplete: function(t:FlxTween) lyricBackgroundTween = null});
+						}
+						else if(lyricBackground != null)
+							lyricBackground.alpha = 0;
 						lyricTween = FlxTween.tween(lyricText, {alpha: 1}, 0.25, {
 							ease: FlxEase.cubeOut,
 							onComplete: function(t:FlxTween) lyricTween = null
@@ -3561,6 +3600,8 @@ class PlayState extends MusicBeatState
 					}
 					else
 					{
+						if(lyricBackground != null)
+							lyricBackgroundTween = FlxTween.tween(lyricBackground, {alpha: 0}, 0.4, {ease: FlxEase.cubeIn});
 						lyricTween = FlxTween.tween(lyricText, {alpha: 0}, 0.4, {
 							ease: FlxEase.cubeIn,
 							onComplete: function(t:FlxTween)

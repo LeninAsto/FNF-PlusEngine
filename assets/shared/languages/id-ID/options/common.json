@@ -25,19 +25,19 @@
       "description": "Sesuaikan penundaan nada, offset peringkat, dan penempatan kombo."
     },
     "graphics": {
-      "name": "Pengaturan Grafik",
+      "name": "Grafik",
       "description": "Ubah pengaturan kinerja dan rendering."
     },
     "visuals": {
-      "name": "Pengaturan Visual",
+      "name": "Visual",
       "description": "Ubah HUD, kamera, dan preferensi visual."
     },
     "gameplay": {
-      "name": "Pengaturan Permainan",
+      "name": "Permainan",
       "description": "Ubah pengubah dan pembantu gameplay."
     },
     "legacy": {
-      "name": "Pengaturan Warisan",
+      "name": "Warisan",
       "description": "Ubah pengaturan kompatibilitas untuk perilaku Psych /Plus yang lebih lama."
     },
     "mod_security": {
@@ -45,7 +45,7 @@
       "description": "Ubah pemeriksaan yang digunakan saat memuat mod."
     },
     "modchart": {
-      "name": "Pengaturan Modchart",
+      "name": "Modchart",
       "description": "Ubah perilaku dan kompatibilitas modchart."
     },
     "language": {
@@ -53,7 +53,7 @@
       "description": "Ubah bahasa aktif."
     },
     "mobile": {
-      "name": "Pengaturan Seluler",
+      "name": "Seluler",
       "description": "Ubah kontrol seluler dan pengaturan tata letak."
     }
   },

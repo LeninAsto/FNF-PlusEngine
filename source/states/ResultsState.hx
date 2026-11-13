@@ -99,6 +99,7 @@ class ResultsState extends MusicBeatState
 		clearPercentSmall.visible = false;
 
 		bgFlash = FlxGradient.createGradientFlxSprite(FlxG.width, FlxG.height, [0xFFFFF1A6, 0xFFFFF1BE], 90);
+		bgFlash.antialiasing = ClientPrefs.data.antialiasing;
 		resultsAnim = createSparrow(FlxG.width - 1480, -10, "resultScreen/results");
 		ratingsPopin = createSparrow(-135, 135, "resultScreen/ratingsPopin");
 		scorePopin = createSparrow(-180, 515, "resultScreen/scorePopin");
@@ -130,7 +131,9 @@ class ResultsState extends MusicBeatState
 		camera = cameraEverything;
 		FlxG.camera.zoom = 1.0;
 
-		addZ(FlxGradient.createGradientFlxSprite(FlxG.width, FlxG.height, [0xFFFECC5C, 0xFFFDC05C], 90), 10, [cameraBG]);
+		var backgroundGradient = FlxGradient.createGradientFlxSprite(FlxG.width, FlxG.height, [0xFFFECC5C, 0xFFFDC05C], 90);
+		backgroundGradient.antialiasing = ClientPrefs.data.antialiasing;
+		addZ(backgroundGradient, 10, [cameraBG]);
 		bgFlash.scrollFactor.set();
 		bgFlash.visible = false;
 		addZ(bgFlash, 20);
@@ -152,10 +155,12 @@ class ResultsState extends MusicBeatState
 		if (!Paths.fileExists('images/resultScreen/$diffSpr.png', AssetType.IMAGE, true))
 			diffSpr = 'diff_normal';
 		difficulty.loadGraphic(Paths.image("resultScreen/" + diffSpr));
+		difficulty.antialiasing = ClientPrefs.data.antialiasing;
 		addZ(difficulty, 1000);
 		addZ(songName, 1000);
 
 		blackTopBar.loadGraphic(createResultsBar());
+		blackTopBar.antialiasing = ClientPrefs.data.antialiasing;
 		blackTopBar.y = -blackTopBar.height;
 		FlxTween.tween(blackTopBar, {y: 0}, 7 / 24, {ease: FlxEase.quartOut, startDelay: 3 / 24, onComplete: _ -> songName.visible = true});
 		addZ(blackTopBar, 1010);
@@ -214,6 +219,7 @@ class ResultsState extends MusicBeatState
 		new FlxTimer().start(rank.getFlashDelay(), _ -> displayRankText());
 
 		highscoreNew.frames = Paths.getSparrowAtlas("resultScreen/highscoreNew");
+		highscoreNew.antialiasing = ClientPrefs.data.antialiasing;
 		highscoreNew.animation.addByPrefix("new", "highscoreAnim0", 24, false);
 		highscoreNew.visible = false;
 		new FlxTimer().start(rank.getHighscoreDelay(), _ ->
@@ -234,6 +240,7 @@ class ResultsState extends MusicBeatState
 		new FlxTimer().start(rank.getMusicDelay(), _ -> playResultsMusic(rank));
 
 		rankBg.makeGraphic(FlxG.width, FlxG.height, FlxColor.BLACK);
+		rankBg.antialiasing = ClientPrefs.data.antialiasing;
 		rankBg.alpha = 0;
 		addZ(rankBg, 99999);
 		sortByZ();
@@ -322,6 +329,7 @@ class ResultsState extends MusicBeatState
 		FlxTween.tween(bgFlash, {alpha: 0}, 14 / 24);
 
 		var rankTextVert = new FlxBackdrop(Paths.image(rank.getVerTextAsset()), Y, 0, 30);
+		rankTextVert.antialiasing = ClientPrefs.data.antialiasing;
 		rankTextVert.x = FlxG.width - 44;
 		rankTextVert.y = 100;
 		addZ(rankTextVert, 990);
@@ -331,6 +339,7 @@ class ResultsState extends MusicBeatState
 		for (i in 0...12)
 		{
 			var rankTextBack = new FlxBackdrop(Paths.image(rank.getHorTextAsset()), X, 10, 0);
+			rankTextBack.antialiasing = ClientPrefs.data.antialiasing;
 			rankTextBack.x = FlxG.width / 2 - 320;
 			rankTextBack.y = 50 + (135 * i / 2) + 10;
 			rankTextBack.cameras = [cameraScroll];
@@ -511,6 +520,7 @@ class ResultsState extends MusicBeatState
 			return;
 
 		sprite.visible = false;
+		sprite.antialiasing = ClientPrefs.data.antialiasing;
 		sprite.scale.set(animData.scale, animData.scale);
 		characterAnimations.push({sprite: sprite, data: animData, delay: animData.delay, sound: animData.sound});
 		addZ(sprite, animData.zIndex);
@@ -559,6 +569,7 @@ class ResultsState extends MusicBeatState
 	{
 		var spr = new FlxSprite(x, y);
 		spr.frames = Paths.getSparrowAtlas(key);
+		spr.antialiasing = ClientPrefs.data.antialiasing;
 		return spr;
 	}
 

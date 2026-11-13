@@ -25,19 +25,19 @@
       "description": "Ajustá el retardo de las notas, el desfase de calificación y la posición del combo."
     },
     "graphics": {
-      "name": "Configuración de gráficos",
+      "name": "Gráficos",
       "description": "Cambiá la configuración de rendimiento y renderizado."
     },
     "visuals": {
-      "name": "Configuración visual",
+      "name": "Visual",
       "description": "Cambiá las preferencias del HUD, la cámara y otros aspectos visuales."
     },
     "gameplay": {
-      "name": "Configuración de juego",
+      "name": "Juego",
       "description": "Cambiá los modificadores y las ayudas del juego."
     },
     "legacy": {
-      "name": "Configuración heredada",
+      "name": "Heredado",
       "description": "Cambiá las opciones de compatibilidad con el comportamiento anterior de Psych/Plus."
     },
     "mod_security": {
@@ -45,7 +45,7 @@
       "description": "Cambiá las comprobaciones usadas al cargar mods."
     },
     "modchart": {
-      "name": "Configuración de modchart",
+      "name": "Modchart",
       "description": "Cambiá el comportamiento y la compatibilidad de modcharts."
     },
     "language": {
@@ -53,7 +53,7 @@
       "description": "Cambiá el idioma activo."
     },
     "mobile": {
-      "name": "Configuración móvil",
+      "name": "Móvil",
       "description": "Cambiá los controles y la distribución en dispositivos móviles."
     }
   },

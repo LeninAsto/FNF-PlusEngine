@@ -9,11 +9,11 @@
     "active": "{1} (Active)"
   },
   "sync": {
-    "name": "Download or update languages",
-    "description": "Checks the official catalog and safely installs new or updated language packs.",
+    "name": "Download languages",
+    "description": "Get new or updated language packs.",
     "success_title": "Languages updated",
     "error_title": "Language update failed",
-    "success": "Installed: {1}. Already current: {2}.",
-    "error": "Could not update language packs:\n{1}"
+    "success": "Installed: {1}. Current: {2}.",
+    "error": "Could not get languages:\n{1}"
   }
 }

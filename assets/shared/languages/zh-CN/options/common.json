@@ -25,19 +25,19 @@
       "description": "调整笔记延迟,评级抵消和组合位置."
     },
     "graphics": {
-      "name": "图形设置",
+      "name": "图形",
       "description": "调整性能与渲染设置。"
     },
     "visuals": {
-      "name": "视觉设置",
+      "name": "视觉",
       "description": "改变 HUD摄像头和视觉偏好."
     },
     "gameplay": {
-      "name": "游戏设置",
+      "name": "游戏",
       "description": "改变游戏调整器和辅助器."
     },
     "legacy": {
-      "name": "遗产设置",
+      "name": "遗产",
       "description": "改变老年人兼容性设置 Psych/加上行为."
     },
     "mod_security": {
@@ -45,7 +45,7 @@
       "description": "在装载模特时使用的检查更改."
     },
     "modchart": {
-      "name": "Modchart 设置",
+      "name": "Modchart",
       "description": "改变modchart行为和兼容性."
     },
     "language": {
@@ -53,7 +53,7 @@
       "description": "改变活动语言."
     },
     "mobile": {
-      "name": "移动设置",
+      "name": "移动",
       "description": "改变移动控制和布局设置."
     }
   },

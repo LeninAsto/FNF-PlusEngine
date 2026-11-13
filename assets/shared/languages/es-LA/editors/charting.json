@@ -272,7 +272,7 @@
     "set_property": "Valor 1: nombre de variable\nValor 2: Nuevo valor",
     "play_sound": "Valor 1: nombre del archivo de sonido\nValor 2: Volumen (predeterminado: 1), varía de 0 a 1",
     "set_camera_bopping": "Establece cómo debe moverse la cámara.\nValor 1: Frecuencia (en tiempos)\nValor 2: escala de intensidad (1 por defecto)",
-    "lyric_event": "Muestra un texto de letra en el medio de la pantalla.\nValor 1: Texto a mostrar (déjelo en blanco para que desaparezca).\nValor 2: nombre del color del texto o hexadecimal (dejar en blanco para el blanco).",
+    "lyric_event": "Muestra una letra en el centro de la pantalla. \\n en el valor 1 crea otra línea.\nValor 1: Texto a mostrar (en blanco lo oculta).\nValor 2: Color del texto; agrega | y un color de fondo opcional (ejemplo: white | #000000).",
     "add_secondary_icon": "Valor 1: Lado de la barra de salud (papá, novio)\nValor 2: intercambie la posición de los íconos BF y GF cuando GF cante (verdadero, falso)",
     "change_ui": "Cambie la máscara de notas y el salpicadero de notas.\nValor 1: nombre de Noteskin (déjelo en blanco para mantenerlo actualizado)\nValor 2: nombre de Notesplash (déjelo en blanco para mantenerlo actualizado)\nValor 3: nombre del estilo de la interfaz de usuario (déjelo en blanco para mantenerlo actualizado)"
   }
