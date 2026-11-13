@@ -278,6 +278,8 @@ class NoteSplash extends FlxSprite
 
 			if (texture != loadedTexture)
 				loadSplash(loadedTexture);
+			if (note != null && note.noteType == 'Hurt Note')
+				trace('[Hurt Splash] path requested=${note.noteSplashData.texture} resolved=$loadedTexture loaded=$texture maxAnims=$maxAnims');
 		}
 
 		if (Note.usesClassicColors())
@@ -309,11 +311,12 @@ class NoteSplash extends FlxSprite
 
 		var tempShader:RGBPalette = null;
 		var colorIndex:Int = Note.normalizeNoteData(noteData);
-		var canUseSplashShader:Bool = inEditor
+		var isHurtSplash:Bool = note != null && note.noteType == 'Hurt Note';
+		var canUseSplashShader:Bool = isHurtSplash || inEditor
 			|| ((note == null || note.noteSplashData.useRGBShader) && Note.usesRGBShader());
-		// Hurt splashes are already coloured artwork. With RGB notes disabled we
+		// Hurt splashes are already coloured artwork. With the RGB shader disabled we
 		// must preserve that asset instead of tinting it with the lane HSV shader.
-		var useHurtAssetColors:Bool = note != null && note.noteType == 'Hurt Note' && Note.usesClassicColors();
+		var useHurtAssetColors:Bool = isHurtSplash && !Note.usesRGBShader();
 		if (useHurtAssetColors)
 			shader = null;
 		else if (Note.usesClassicColors())
@@ -399,6 +402,10 @@ class NoteSplash extends FlxSprite
 			rgbShader.pixelAmount = 1;
 		else if (PlayState.isPixelStage)
 			rgbShader.pixelAmount = 6;
+		if (isHurtSplash)
+			trace('[Hurt Splash] spawn rgb=${Note.usesRGBShader()} pixel=${PlayState.isPixelStage} assetColors=$useHurtAssetColors'
+				+ ' allowRGB=${config.allowRGB} canShader=$canUseSplashShader shaderRGB=${rgbShader.enabled}'
+				+ ' palette=${note.noteSplashData.r},${note.noteSplashData.g},${note.noteSplashData.b}');
 
 		offset.set(10, 10);
 		var conf:NoteSplashAnim = config.animations.get(anim);
@@ -673,7 +680,7 @@ class NoteSplash extends FlxSprite
 	{
 		if (splash == null || splash.length < 1)
 			splash = getDefaultNoteSplashPath(pixel);
-		else if (Note.usesClassicColors() && splashPathExists(splash, pixel))
+		else if (!Note.usesRGBShader() && splashPathExists(splash, pixel))
 		{
 			var direct:String = resolveSplashCandidate(splash, pixel);
 			if (splashPathExists(direct, false, true))
@@ -682,7 +689,7 @@ class NoteSplash extends FlxSprite
 		else
 			splash = splashNameToPath(splash);
 
-		if (Note.usesClassicColors() && isRgbSplashPath(splash))
+		if (!Note.usesRGBShader() && isRgbSplashPath(splash))
 		{
 			var classic:String = resolveSplashCandidate(classicNoteSplash, pixel);
 			if (splashPathExists(classic, false, true))
@@ -712,6 +719,10 @@ class NoteSplash extends FlxSprite
 	{
 		if (splash == null || splash.length < 1)
 			return false;
+		// Legacy/no-RGB skins such as HURTnoteSplashes live outside the modern
+		// noteSplashes/ directory, so do not normalize their direct asset path.
+		if (!Note.usesRGBShader() && splashPathExists(splash, pixel))
+			return true;
 
 		var normalized:String = splashNameToPath(splash);
 		var resolved:String = resolveSplashCandidate(normalized, pixel);

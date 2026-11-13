@@ -229,13 +229,13 @@ class Note extends FlxSprite
 			{
 				case 'Hurt Note':
 					ignoreNote = mustPress;
-					if (usesClassicColors())
+					if (!usesRGBShader())
 					{
 						reloadNote('HURTNOTE_assets');
 						if (colorSwap != null)
 							resetHSVColorSwap(colorSwap);
 					}
-					if (PlayState.isPixelStage || usesClassicColors())
+					if (!usesRGBShader())
 						noteSplashData.texture = 'HURTnoteSplashes';
 
 					// note colors
@@ -247,10 +247,13 @@ class Note extends FlxSprite
 					}
 
 					// splash data and colors
-					noteSplashData.r = 0xFFFF0000;
-					noteSplashData.g = 0xFF101010;
-					if (!PlayState.isPixelStage && !usesClassicColors())
+					noteSplashData.r = 0xFFFF3030;
+					noteSplashData.g = 0xFFFF0000;
+					noteSplashData.b = 0xFF700000;
+					if (usesRGBShader())
 						noteSplashData.texture = 'noteSplashes/noteSplashes-electric';
+					trace('[Hurt Splash] note setup rgb=${usesRGBShader()} pixel=${PlayState.isPixelStage} texture=${noteSplashData.texture}'
+						+ ' rgb=${noteSplashData.r},${noteSplashData.g},${noteSplashData.b}');
 
 					// gameplay data
 					lowPriority = true;
