@@ -12,7 +12,7 @@
 		<package android:name="com.leninasto.fnfmodinstaller" />
 	</queries>
 
-	<application ::if (ANDROID_TARGET_SDK_VERSION >= 33)::android:enableOnBackInvokedCallback="true" ::end::::foreach ANDROID_APPLICATION::::if ((value != null) && (value != ""))::::key::="::value::" ::end::::end::>
+	<application android:appCategory="game" ::if (ANDROID_TARGET_SDK_VERSION >= 33)::android:enableOnBackInvokedCallback="true" ::end::::foreach ANDROID_APPLICATION::::if ((value != null) && (value != ""))::::key::="::value::" ::end::::end::>
 
 		::if (WIN_ORIENTATION=="portrait")::
 		<meta-data android:name="SDL_ENV.SDL_IOS_ORIENTATIONS" android:value="Portrait PortraitUpsideDown" />

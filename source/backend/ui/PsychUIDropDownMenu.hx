@@ -166,6 +166,8 @@ class PsychUIDropDownMenu extends PsychUIInputText {
 			if (FlxG.keys.justPressed.DOWN)
 				wheel--;
 			if (wheel != 0)
+				// On Windows a positive wheel delta means the user moved upward;
+				// list indexes grow downward, so the content moves in the opposite direction.
 				showDropDown(true, curScroll - wheel, _curFilter);
 		}
 	}
@@ -581,6 +583,7 @@ private class MobileDropDownSelector extends FlxSubState {
 	var touchStartScroll:Int = 0;
 	var touchCandidate:Int = -1;
 	var didDrag:Bool = false;
+	var draggingScrollBar:Bool = false;
 	var pointer:FlxPoint = new FlxPoint();
 	static inline var DRAG_DEADZONE:Float = 8;
 
@@ -660,7 +663,11 @@ private class MobileDropDownSelector extends FlxSubState {
 			var deltaY:Float = touch.getScreenPosition(pointer).y - touchStartY;
 			if (touch.pressed && Math.abs(deltaY) >= DRAG_DEADZONE) {
 				didDrag = true;
-				firstVisible = boundScroll(touchStartScroll - Math.round(deltaY / rowHeight));
+				// A list swipe follows the content, while the scrollbar follows the thumb.
+				// Applying the list gesture direction to the thumb made dragging upward jump
+				// toward later entries instead of toward the top.
+				var direction:Int = draggingScrollBar ? 1 : -1;
+				firstVisible = boundScroll(touchStartScroll + direction * Math.round(deltaY / rowHeight));
 				layout();
 			}
 			if (touch.justReleased) {
@@ -684,6 +691,7 @@ private class MobileDropDownSelector extends FlxSubState {
 				touchStartScroll = firstVisible;
 				touchCandidate = pickedRow;
 				didDrag = false;
+				draggingScrollBar = pickedRow < 0;
 				if (pickedRow < 0)
 					setScrollFromTouch(touch);
 				return;
@@ -756,6 +764,7 @@ private class MobileDropDownSelector extends FlxSubState {
 		touchID = -1;
 		touchCandidate = -1;
 		didDrag = false;
+		draggingScrollBar = false;
 	}
 
 	function choose(index:Int):Void {

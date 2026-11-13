@@ -1,5 +1,6 @@
 package states.editors;
 
+import backend.AssetLoader;
 import flixel.graphics.frames.FlxAtlasFrames;
 import flixel.util.FlxDestroyUtil;
 import openfl.net.FileReference;
@@ -456,17 +457,15 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 			var characterPath:String = 'characters/$intended.json';
 			var path:String = Paths.getPath(characterPath, TEXT, null, true);
-			#if MODS_ALLOWED
-			if (FileSystem.exists(path))
-			#else
-			if (Assets.exists(path))
-			#end
+			if (AssetLoader.exists(path, TEXT))
 			{
 				_char = intended;
 				check_player.checked = character.isPlayer;
 				addCharacter();
 				reloadCharacterOptions();
-				reloadCharacterDropDown();
+				// The picker already selected this row. Rebuilding it from the row's click
+				// callback destroys the active item before its update finishes.
+				charDropDown.selectedLabel = _char;
 				updatePointerPos();
 			}
 		else

@@ -558,6 +558,11 @@ class LuaUtils
 	}
 
 	public static function destroyObject(tag:String) {
+		#if (LUA_ALLOWED && VIDEOS_ALLOWED)
+		if(psychlua.VideoFunctions.destroyLuaVideoSprite(tag))
+			return;
+		#end
+
 		var variables = MusicBeatState.getVariables();
 		var obj:Dynamic = variables.get(tag);
 		if(obj == null || !Std.isOfType(obj, FlxBasic) || obj.destroy == null)

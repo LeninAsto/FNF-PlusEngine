@@ -25,19 +25,19 @@
       "description": "調整筆記延遲,評估抵消和組合位置."
     },
     "graphics": {
-      "name": "顯示器設定",
+      "name": "顯示器",
       "description": "調整效能與渲染設定。"
     },
     "visuals": {
-      "name": "視覺設定",
+      "name": "視覺",
       "description": "改變 HUD攝影機和視覺偏好."
     },
     "gameplay": {
-      "name": "遊戲設定",
+      "name": "遊戲",
       "description": "改變遊戲修改器和助手."
     },
     "legacy": {
-      "name": "遺產設定",
+      "name": "遺產",
       "description": "改變老年人相容性設定 Psych還有行為."
     },
     "mod_security": {
@@ -45,7 +45,7 @@
       "description": "在裝修模式時使用的檢查更改."
     },
     "modchart": {
-      "name": "Modchart 設定",
+      "name": "Modchart",
       "description": "改變模式譜面的行為和相容性."
     },
     "language": {
@@ -53,7 +53,7 @@
       "description": "改變活動語言."
     },
     "mobile": {
-      "name": "移動設定",
+      "name": "移動",
       "description": "改變移動控制和佈局設定."
     }
   },

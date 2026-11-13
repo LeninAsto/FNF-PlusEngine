@@ -6,19 +6,41 @@
     "load_error_message": "{1}\n\n{2}",
     "non_function_callback": "ERROR ({1}): attempt to call a {2} value",
     "callback_error": "ERROR ({1}): {2}",
-    "playstate_only": "{1} is PlayState-only and cannot run from a {2} Lua host."
+    "playstate_only": "{1} is PlayState-only and cannot run from a {2} Lua host.",
+    "runtime_error": "Runtime error",
+    "memory_error": "Memory allocation error",
+    "critical_error": "Critical error",
+    "unknown_error": "Unknown error",
+    "nil_index": "attempt to index a nil value",
+    "nil_call": "attempt to call a nil value",
+    "nil_arithmetic": "attempt to perform arithmetic on a nil value",
+    "syntax_near": "syntax error near {1}"
   },
   "hscript": {
     "warning": "WARNING: {1}",
     "null_field": "Null reference: trying to access \"{1}\" on null object",
     "script_warning": "WARNING ({1}): {2}",
-    "unsupported": "HScript is not supported on this platform!"
+    "unsupported": "HScript is not supported on this platform!",
+    "unknown_identifier": "Unknown identifier: {1}",
+    "missing_function": "No function named: {1}",
+    "null_function": "Tried to call null function {1}",
+    "not_initialized": "runHaxeFunction: HScript has not been initialized yet! Use \"runHaxeCode\" to initialize it",
+    "callback_missing_argument": "createCallback ({1}): 3rd argument is null",
+    "invalid_character": "Invalid character: {1}",
+    "unexpected_token": "Unexpected token: \"{1}\"",
+    "invalid_preprocessor": "Invalid preprocessor ({1})",
+    "invalid_iterator": "Invalid iterator: {1}",
+    "invalid_operator": "Invalid operator: {1}",
+    "invalid_access": "Invalid access to field {1}",
+    "invalid_class": "Invalid or unknown class: {1}",
+    "invalid_parameter_count": "Invalid number of parameters. Got {1}, required {2}"
   },
   "mod_settings": {
     "title": "Mod name: {1}",
     "parse_error": "An error occurred: {1}",
     "file_missing": "getModSetting: {1} could not be found!",
-    "setting_missing": "getModSetting: \"{1}\" could not be found inside {2}'s settings!"
+    "setting_missing": "getModSetting: \"{1}\" could not be found inside {2}'s settings!",
+    "missing_mod_folder": "getModSetting: Argument #2 is null and script is not inside a packed Mod folder!"
   },
   "raw_error_with_source": "{1}\n{2}"
 }

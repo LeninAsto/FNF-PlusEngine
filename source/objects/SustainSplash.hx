@@ -16,6 +16,9 @@ class SustainSplash extends FlxSprite
 	var loadedLane:Int = -1;
 	var atlasScaleX:Float = 1;
 	var atlasScaleY:Float = 1;
+	var baseOffsetX:Float = 106.25;
+	var baseOffsetY:Float = 100;
+	var opponentHold:Bool = false;
 
 	public function new():Void
 	{
@@ -129,18 +132,46 @@ class SustainSplash extends FlxSprite
 		if (strumNote == null)
 			return;
 
-		var lineScale:Float = strumNote.layoutScale;
-		if (!Math.isFinite(lineScale) || lineScale <= 0)
-			lineScale = 1;
-		var targetScaleX:Float = atlasScaleX * lineScale;
-		var targetScaleY:Float = atlasScaleY * lineScale;
+		// Lua modcharts often change strum.scale directly. layoutScale only tracks
+		// the engine's StrumLine layout, so it would leave this cover at its old size.
+		var baseStrumScale:Float = PlayState.isPixelStage ? PlayState.daPixelZoom : 0.7;
+		var lineScaleX:Float = Math.isFinite(strumNote.scale.x) && strumNote.scale.x > 0 ? strumNote.scale.x / baseStrumScale : strumNote.layoutScale;
+		var lineScaleY:Float = Math.isFinite(strumNote.scale.y) && strumNote.scale.y > 0 ? strumNote.scale.y / baseStrumScale : strumNote.layoutScale;
+		if (!Math.isFinite(lineScaleX) || lineScaleX <= 0) lineScaleX = 1;
+		if (!Math.isFinite(lineScaleY) || lineScaleY <= 0) lineScaleY = 1;
+		var targetScaleX:Float = atlasScaleX * lineScaleX;
+		var targetScaleY:Float = atlasScaleY * lineScaleY;
 		if (Math.abs(scale.x - targetScaleX) > 0.0001 || Math.abs(scale.y - targetScaleY) > 0.0001)
 		{
 			scale.set(targetScaleX, targetScaleY);
 			updateHitbox();
 		}
+		// Pixel hold-cover frames change from a 46x36 end frame to 14x9/16x10
+		// start/loop frames. Keep their origin current or each phase inherits the
+		// previous frame's geometry and jumps away from the receptor.
+		if (PlayState.isPixelStage)
+			updateHitbox();
 		setPosition(strumNote.x, strumNote.y);
+		// Flixel applies offset after scaling the frame. Scale only the distance
+		// from the frame origin, otherwise scaled receptors pull the cover away
+		// from their anchor instead of keeping it attached.
+		if (PlayState.isPixelStage)
+		{
+			// Pixel covers are authored around the receptor centre, unlike the
+			// desktop atlas that needs its historical visual offset.
+			offset.set(origin.x - strumNote.width * 0.5, origin.y - strumNote.height * 0.5);
+		}
+		else
+		{
+			offset.set(origin.x + (baseOffsetX - origin.x) * lineScaleX,
+				origin.y + (baseOffsetY - origin.y) * lineScaleY);
+		}
+		angle = strumNote.angle;
+		scrollFactor.set(strumNote.scrollFactor.x, strumNote.scrollFactor.y);
 	}
+
+	public inline function refreshStrumTransform():Void
+		syncToStrumLayout();
 
 	function playHoldLoop():Void
 	{
@@ -212,21 +243,32 @@ class SustainSplash extends FlxSprite
 		final splashDisabled:Bool = root.noteSplashData.disabled;
 
 		strumNote = strum;
+		// Opponent holds are ambience behind the receptors. Psych-style charts
+		// expect their cover to stay in its loop; only the player gets the
+		// start/end punctuation tied to press and release.
+		opponentHold = !root.mustPress;
 		syncToStrumLayout();
 		visible = true;
 		active = true;
 		animation.finishCallback = null;
-		animation.play('holdStart', true, false, 0);
-		if (animation.curAnim != null)
+		if (opponentHold)
 		{
-			animation.curAnim.frameRate = 24;
-			animation.curAnim.looped = false;
+			playHoldLoop();
 		}
-		animation.finishCallback = (name:Dynamic) ->
+		else
 		{
-			if (name == 'holdStart')
-				playHoldLoop();
-		};
+			animation.play('holdStart', true, false, 0);
+			if (animation.curAnim != null)
+			{
+				animation.curAnim.frameRate = 24;
+				animation.curAnim.looped = false;
+			}
+			animation.finishCallback = (name:Dynamic) ->
+			{
+				if (name == 'holdStart')
+					playHoldLoop();
+			};
+		}
 		refreshHoldClip();
 
 		if (!Note.usesRGBShader())
@@ -236,7 +278,14 @@ class SustainSplash extends FlxSprite
 		}
 		else if (daNote.rgbShader != null && daNote.rgbShader.enabled && daNote.shader != null)
 		{
-			shader = new objects.NoteSplash.PixelSplashShaderRef().shader;
+			var holdShader = new objects.NoteSplash.PixelSplashShaderRef();
+			// The pixel hold-cover atlas is already authored at the pixel UI scale
+			// and this sprite is enlarged by daPixelZoom. PixelSplashShaderRef
+			// defaults to a 6x6 sample block on pixel stages, which applies that
+			// enlargement a second time and turns each source pixel into a 36px block.
+			// Keep the RGB palette transform but sample the cover at native texels.
+			holdShader.pixelAmount = 1;
+			shader = holdShader.shader;
 			shader.data.r.value = daNote.shader.data.r.value;
 			shader.data.g.value = daNote.shader.data.g.value;
 			shader.data.b.value = daNote.shader.data.b.value;
@@ -246,7 +295,9 @@ class SustainSplash extends FlxSprite
 			shader = null;
 
 		alpha = strum.alpha;
-		offset.set(PlayState.isPixelStage ? 112.5 : 106.25, 100);
+		baseOffsetX = PlayState.isPixelStage ? 112.5 : 106.25;
+		baseOffsetY = 100;
+		syncToStrumLayout();
 
 		if (timer != null)
 			timer.cancel();
@@ -254,7 +305,7 @@ class SustainSplash extends FlxSprite
 		timer = new FlxTimer().start(timeThingy, (idk:FlxTimer) ->
 			{
 				timer = null;
-				if (!splashDisabled && animation != null && !ClientPrefs.data.hideSustainSplash)
+				if (!opponentHold && !splashDisabled && animation != null && !ClientPrefs.data.hideSustainSplash)
 				{
 					alpha = strumNote != null ? strumNote.alpha : 1;
 					finishHold();

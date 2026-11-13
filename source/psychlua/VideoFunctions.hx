@@ -10,11 +10,7 @@ class VideoFunctions
 	private static var activeVideos:Map<String, FlxVideoSprite> = new Map();
 	private static var videoVolumes:Map<String, Float> = new Map();
 	private static var videoFronts:Map<String, Bool> = new Map();
-	private static var videoCameras:Map<String, String> = new Map();
 	private static var pausedByGameplay:Map<String, Bool> = new Map();
-
-	private static var isDestroyed:Map<String, Bool> = new Map();
-	private static var allowDestroy:Map<String, Bool> = new Map();
 
 	public static function implement(funk:FunkinLua)
 	{
@@ -37,7 +33,7 @@ class VideoFunctions
 				}
 
 				var options = parseLuaVideoArgs(cameraOrVolume, volumeOrFront, front);
-				forceRemoveLuaVideo(tag);
+				LuaUtils.destroyObject(tag);
 				createLuaVideo(tag, path, x, y, options.camera, options.volume, options.front, funk, false);
 			});
 
@@ -62,7 +58,6 @@ class VideoFunctions
 					{
 						videoVolumes.set(tag, options.volume);
 						videoFronts.set(tag, options.front);
-						videoCameras.set(tag, options.camera);
 						videoSprite.x = x;
 						videoSprite.y = y;
 						applyLuaVideoCamera(videoSprite, options.camera);
@@ -80,7 +75,7 @@ class VideoFunctions
 
 				if (existingVideo != null)
 				{
-					forceRemoveLuaVideo(tag);
+					LuaUtils.destroyObject(tag);
 				}
 
 				createLuaVideo(tag, path, x, y, options.camera, options.volume, options.front, funk, true);
@@ -106,16 +101,12 @@ class VideoFunctions
 
 		Lua_helper.add_callback(lua, "removeLuaVideoSprite", function(tag:String)
 		{
-			removeLuaVideo(tag);
+			destroyLuaVideoSprite(tag);
 		});
 
 		Lua_helper.add_callback(lua, "forceRemoveLuaVideoSprite", function(tag:String)
 		{
-			if (allowDestroy.exists(tag))
-			{
-				allowDestroy.set(tag, true); // Permitir destrucción inmediata
-			}
-			removeLuaVideo(tag);
+			destroyLuaVideoSprite(tag);
 		});
 
 		Lua_helper.add_callback(lua, "luaVideoSpriteExists", function(tag:String):Bool
@@ -172,6 +163,43 @@ class VideoFunctions
 	}
 
 	#if VIDEOS_ALLOWED
+	public static inline function isLuaVideoSprite(object:Dynamic):Bool
+	{
+		return object != null && Std.isOfType(object, FlxVideoSprite);
+	}
+
+	/** Internal bridge for makeLuaSprite(tag, path, x, y, 'video'). */
+	public static function createLuaVideoSprite(tag:String, path:String, x:Float, y:Float, funk:FunkinLua):Bool
+	{
+		if (tag == null || tag.trim() == '' || path == null || path.trim() == '')
+			return false;
+
+		LuaUtils.destroyObject(tag);
+		createLuaVideo(tag, path, x, y, "camGame", 1.0, false, funk, false);
+		return isLuaVideoSprite(MusicBeatState.getVariables().get(tag));
+	}
+
+	/** Used by the generic sprite Lua helpers so videos share their lifecycle. */
+	public static function addLuaVideoSprite(tag:String, ?inFront:Bool = false):Bool
+	{
+		var object = MusicBeatState.getVariables().get(tag);
+		if (!isLuaVideoSprite(object))
+			return false;
+
+		playStoredLuaVideo(tag, cast object, inFront);
+		return true;
+	}
+
+	/** Removes metadata and the VLC object too; safe replacement for direct destroy(). */
+	public static function destroyLuaVideoSprite(tag:String):Bool
+	{
+		if (!isLuaVideoSprite(MusicBeatState.getVariables().get(tag)))
+			return false;
+
+		removeLuaVideo(tag);
+		return true;
+	}
+
 	private static function parseLuaVideoArgs(cameraOrVolume:Dynamic, volumeOrFront:Dynamic, front:Bool):Dynamic
 	{
 		var camera:String = "camHUD";
@@ -211,11 +239,8 @@ class VideoFunctions
 
 	private static function createLuaVideo(tag:String, path:String, x:Float, y:Float, camera:String, volume:Float, front:Bool, funk:FunkinLua, autoPlay:Bool):Void
 	{
-		isDestroyed.set(tag, false);
-		allowDestroy.set(tag, false);
 		videoVolumes.set(tag, volume);
 		videoFronts.set(tag, front);
-		videoCameras.set(tag, camera);
 
 		var videoSprite:FlxVideoSprite = new FlxVideoSprite();
 		videoSprite.active = false;
@@ -262,20 +287,12 @@ class VideoFunctions
 		{
 			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_videofunctions.luavideo_could_not_load_video_value', "LuaVideo: could not load video \"{1}\"", [path]), false, false, FlxColor.RED);
 			videoSprite.destroy();
-			isDestroyed.remove(tag);
-			allowDestroy.remove(tag);
 			videoVolumes.remove(tag);
 			videoFronts.remove(tag);
-			videoCameras.remove(tag);
 			return;
 		}
 		applyStoredLuaVideoVolume(tag, videoSprite);
 		applySongRate(videoSprite);
-
-		new flixel.util.FlxTimer().start(2.0, function(tmr:flixel.util.FlxTimer)
-		{
-			allowDestroy.set(tag, true);
-		});
 
 		var variables = MusicBeatState.getVariables();
 		variables.set(tag, videoSprite);
@@ -355,15 +372,6 @@ class VideoFunctions
 		videoSprite.cameras = [psychlua.backend.LuaUtils.cameraFromString(camera)];
 	}
 
-	private static function forceRemoveLuaVideo(tag:String):Void
-	{
-		if (allowDestroy.exists(tag))
-		{
-			allowDestroy.set(tag, true);
-		}
-		removeLuaVideo(tag);
-	}
-
 	private static function getLuaVideo(tag:String):FlxVideoSprite
 	{
 		var variables = MusicBeatState.getVariables();
@@ -387,17 +395,6 @@ class VideoFunctions
 
 	private static function removeLuaVideo(tag:String):Void
 	{
-		if (isDestroyed.exists(tag) && isDestroyed.get(tag))
-		{
-			return;
-		}
-
-		if (allowDestroy.exists(tag) && !allowDestroy.get(tag))
-		{
-			trace('LuaVideo: Cannot destroy "$tag" yet (not ready)');
-			return;
-		}
-
 		var variables = MusicBeatState.getVariables();
 		var video = variables.get(tag);
 
@@ -406,14 +403,9 @@ class VideoFunctions
 			activeVideos.remove(tag);
 			videoVolumes.remove(tag);
 			videoFronts.remove(tag);
-			videoCameras.remove(tag);
 			pausedByGameplay.remove(tag);
-			isDestroyed.remove(tag);
-			allowDestroy.remove(tag);
 			return;
 		}
-
-		isDestroyed.set(tag, true);
 
 		var videoSprite:FlxVideoSprite = cast video;
 
@@ -421,7 +413,6 @@ class VideoFunctions
 		activeVideos.remove(tag);
 		videoVolumes.remove(tag);
 		videoFronts.remove(tag);
-		videoCameras.remove(tag);
 		pausedByGameplay.remove(tag);
 
 		if (videoSprite.bitmap != null)
@@ -431,18 +422,16 @@ class VideoFunctions
 			videoSprite.bitmap.onPlaying.removeAll();
 		}
 
-		if (PlayState.instance != null && PlayState.instance.members != null)
+		var instance = psychlua.backend.LuaUtils.getTargetInstance();
+		if (instance != null && instance.members != null)
 		{
-			if (PlayState.instance.members.contains(videoSprite))
+			if (instance.members.contains(videoSprite))
 			{
-				PlayState.instance.remove(videoSprite);
+				instance.remove(videoSprite);
 			}
 		}
 
 		videoSprite.destroy();
-
-		isDestroyed.remove(tag);
-		allowDestroy.remove(tag);
 
 		trace('Video "$tag" destroyed');
 	}
@@ -569,14 +558,12 @@ class VideoFunctions
 
 		for (tag in tags)
 		{
-			allowDestroy.set(tag, true);
 			removeLuaVideo(tag);
 		}
 
 		activeVideos.clear();
 		videoVolumes.clear();
 		videoFronts.clear();
-		videoCameras.clear();
 		pausedByGameplay.clear();
 		#end
 	}

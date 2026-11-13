@@ -83,6 +83,7 @@ class TallyNumber extends FlxSprite
 		super(x, y);
 
 		frames = Paths.getSparrowAtlas("resultScreen/tallieNumber");
+		antialiasing = ClientPrefs.data.antialiasing;
 
 		for (i in 0...10)
 			animation.addByPrefix(Std.string(i), i + " small", 24, false);

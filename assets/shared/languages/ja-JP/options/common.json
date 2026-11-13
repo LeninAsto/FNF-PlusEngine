@@ -25,19 +25,19 @@
       "description": "ノートディレイ、レーティングオフセット、コンボの配置を調整します。"
     },
     "graphics": {
-      "name": "グラフィック設定",
+      "name": "グラフィック",
       "description": "性能とレンダリング設定を変更する."
     },
     "visuals": {
-      "name": "視覚設定",
+      "name": "視覚",
       "description": "変化 HUDカメラと視覚的な好み"
     },
     "gameplay": {
-      "name": "ゲームプレイ設定",
+      "name": "ゲームプレイ",
       "description": "ゲームモードやヘルパーを変更する"
     },
     "legacy": {
-      "name": "遺産設定",
+      "name": "遺産",
       "description": "高齢者の互換性設定を変更する Psych/ 行動も"
     },
     "mod_security": {
@@ -45,7 +45,7 @@
       "description": "モッドをロードする際に使ったチェックを変更する."
     },
     "modchart": {
-      "name": "Modchart 設定",
+      "name": "Modchart",
       "description": "Modchartの行動と互換性を変更する"
     },
     "language": {
@@ -53,7 +53,7 @@
       "description": "活発な言語を変えましょう."
     },
     "mobile": {
-      "name": "モバイル設定",
+      "name": "モバイル",
       "description": "モバイル制御とレイアウト設定を変更する"
     }
   },

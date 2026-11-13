@@ -29,15 +29,15 @@
       "description": "Cambiá la configuración de rendimiento y renderizado."
     },
     "visuals": {
-      "name": "Visuales",
+      "name": "Visual",
       "description": "Cambiá las preferencias del HUD, la cámara y otros aspectos visuales."
     },
     "gameplay": {
-      "name": "Jugabilidad",
+      "name": "Juego",
       "description": "Cambiá los modificadores y las ayudas del juego."
     },
     "legacy": {
-      "name": "Compatibilidad",
+      "name": "Heredado",
       "description": "Cambiá las opciones de compatibilidad con el comportamiento anterior de Psych/Plus."
     },
     "mod_security": {
@@ -45,7 +45,7 @@
       "description": "Cambiá las comprobaciones usadas al cargar mods."
     },
     "modchart": {
-      "name": "Modcharts",
+      "name": "Modchart",
       "description": "Cambiá el comportamiento y la compatibilidad de modcharts."
     },
     "language": {

@@ -45,6 +45,7 @@ class PsychUIInputText extends FlxSpriteGroup {
 	public var behindText:FlxSprite;
 	public var selection:FlxSprite;
 	public var textObj:FlxText;
+	var normalFont:String;
 	public var caret:FlxSprite;
 	public var onChange:String->String->Void;
 	/** Dropdowns and other picker-style controls should not summon Android's keyboard. */
@@ -60,6 +61,7 @@ class PsychUIInputText extends FlxSpriteGroup {
 	public var customFilterPattern(default, set):EReg;
 
 	public var selectedFormat:FlxTextFormat = new FlxTextFormat(FlxColor.WHITE);
+	static inline var CJK_START:Int = 0x3040;
 
 	public function new(x:Float = 0, y:Float = 0, wid:Int = 100, ?text:String = '', size:Int = 8) {
 		super(x, y);
@@ -67,6 +69,7 @@ class PsychUIInputText extends FlxSpriteGroup {
 		this.behindText = new FlxSprite(1, 1).makeGraphic(1, 1, FlxColor.WHITE);
 		this.selection = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
 		this.textObj = new FlxText(1, 1, Math.max(1, wid - 2), '', size);
+		normalFont = this.textObj.font;
 		this.caret = new FlxSprite().makeGraphic(1, 1, FlxColor.WHITE);
 		add(this.bg);
 		add(this.behindText);
@@ -86,6 +89,9 @@ class PsychUIInputText extends FlxSpriteGroup {
 		this.text = text;
 
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+		var window = lime.app.Application.current.window;
+		if (window != null)
+			window.onTextInput.add(onTextInput);
 	}
 
 	public var selectIndex:Int = -1;
@@ -428,35 +434,44 @@ class PsychUIInputText extends FlxSpriteGroup {
 			// cursor data after that point unless the input is still usable.
 			if (previous.exists && previous._boundaries != null)
 				previous.resetCaret();
-			#if android if (previous.exists) previous.setSoftKeyboard(false); #end
+			if (previous.exists)
+				previous.setTextInput(false);
 		}
 		focusOn = v;
-		#if android if (v != null && v.showSoftKeyboardOnFocus) v.setSoftKeyboard(true); #end
+		if (v != null && v.showSoftKeyboardOnFocus)
+			v.setTextInput(true);
 		return v;
 	}
 
-	#if android
-	function setSoftKeyboard(show:Bool):Void {
-		var window = lime.app.Application.current.window;
-		if (window == null)
-			return;
-		if (show) {
-			window.onTextInput.add(onSoftInput);
-			window.textInputEnabled = true; // pops up the on-screen keyboard
-		} else {
-			window.onTextInput.remove(onSoftInput);
-			window.textInputEnabled = false;
-		}
-	}
-
-	function onSoftInput(input:String):Void {
+	function onTextInput(input:String):Void
+	{
 		if (focusOn != this || input == null || input.length < 1)
 			return;
+
+		// IME commits for Korean, Japanese and Chinese arrive here, often with
+		// charCode == 0 on KEY_DOWN. Windows AltGr also emits text here for
+		// characters such as | and \\, after KEY_DOWN has already consumed Ctrl.
+		var needsNativeInput:Bool = FlxG.keys.pressed.CONTROL || FlxG.keys.pressed.ALT;
+		for (i in 0...input.length)
+			if (input.charCodeAt(i) >= CJK_START)
+			{
+				needsNativeInput = true;
+				break;
+			}
+		if (!needsNativeInput)
+			return;
+
 		for (i in 0...input.length)
 			_typeLetter(input.charCodeAt(i));
 		updateCaret();
 	}
-	#end
+
+	function setTextInput(show:Bool):Void {
+		var window = lime.app.Application.current.window;
+		if (window == null)
+			return;
+		window.textInputEnabled = show;
+	}
 
 	function setCaretFromPointerScreenX(pointerScreenX:Float):Void {
 		caretIndex = 0;
@@ -621,6 +636,9 @@ class PsychUIInputText extends FlxSpriteGroup {
 			focusOn = null;
 		_boundaries = null;
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
+		var window = lime.app.Application.current.window;
+		if (window != null)
+			window.onTextInput.remove(onTextInput);
 		super.destroy();
 	}
 
@@ -681,10 +699,28 @@ class PsychUIInputText extends FlxSpriteGroup {
 
 	var _boundaries:Array<Float> = [];
 
+	function needsCjkFont(value:String):Bool
+	{
+		if (value == null)
+			return false;
+		for (i in 0...value.length)
+		{
+			var code:Int = value.charCodeAt(i);
+			if ((code >= 0xAC00 && code <= 0xD7AF) || (code >= 0x1100 && code <= 0x11FF)
+				|| (code >= 0x3040 && code <= 0x30FF) || (code >= 0x3400 && code <= 0x9FFF))
+				return true;
+		}
+		return false;
+	}
+
 	function set_text(v:String) {
 		for (i in 0..._boundaries.length)
 			_boundaries.pop();
 		v = filter(v);
+		// Keep the editor's original pixel/UI font for ordinary text. Only CJK
+		// input needs a Noto font with the necessary glyph coverage.
+		textObj.font = needsCjkFont(v) ? Language.getFontForText(v) : normalFont;
+		textObj.color = FlxColor.BLACK;
 
 		textObj.text = '';
 		if (v != null && v.length > 0) {

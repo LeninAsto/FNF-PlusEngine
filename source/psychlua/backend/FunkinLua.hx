@@ -491,7 +491,7 @@ class FunkinLua
 					for (luaInstance in getSiblingScripts())
 						if (luaInstance.scriptName == luaPath)
 						{
-							luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.addluascript_the_script_value_is_already_running', "addLuaScript: The script \"{1}\" is already running!", [luaPath]));
+							luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.addlua_running', "addLuaScript: The script \"{1}\" is already running!", [luaPath]));
 							return;
 						}
 
@@ -510,7 +510,7 @@ class FunkinLua
 					for (script in game.hscriptArray)
 						if (script.origin == scriptPath)
 						{
-							luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.addhscript_the_script_value_is_already_running', "addHScript: The script \"{1}\" is already running!", [scriptPath]));
+							luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.addhscript_running', "addHScript: The script \"{1}\" is already running!", [scriptPath]));
 							return;
 						}
 
@@ -541,7 +541,7 @@ class FunkinLua
 					return true;
 			}
 
-			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.removeluascript_script_value_isn_t_running', "removeLuaScript: Script {1} isn't running!", [luaFile]), false, false, FlxColor.RED);
+			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.removelua_not_running', "removeLuaScript: Script {1} isn't running!", [luaFile]), false, false, FlxColor.RED);
 			return false;
 		});
 		Lua_helper.add_callback(lua, "removeHScript", function(scriptFile:String)
@@ -1404,9 +1404,19 @@ class FunkinLua
 			}
 		});
 
-		Lua_helper.add_callback(lua, "makeLuaSprite", function(tag:String, ?image:String = null, ?x:Float = 0, ?y:Float = 0)
+		Lua_helper.add_callback(lua, "makeLuaSprite", function(tag:String, ?image:String = null, ?x:Float = 0, ?y:Float = 0, ?spriteType:String = 'image')
 		{
 			tag = tag.replace('.', '');
+			if (spriteType != null && spriteType.toLowerCase() == 'video')
+			{
+				#if VIDEOS_ALLOWED
+				VideoFunctions.createLuaVideoSprite(tag, image, x, y, this);
+				#else
+				luaTrace(Language.getPhrase('errors.script_debug.psychlua_videofunctions.playluavideosprite_video_support_is_not_enabled', "makeLuaSprite: Video support is not enabled!"), false, false, FlxColor.RED);
+				#end
+				return;
+			}
+
 			LuaUtils.destroyObject(tag);
 			var leSprite:ModchartSprite = new ModchartSprite(x, y);
 			if (image != null && image.length > 0)
@@ -1511,6 +1521,11 @@ class FunkinLua
 		});
 		Lua_helper.add_callback(lua, "addLuaSprite", function(tag:String, ?inFront:Bool = false)
 		{
+			#if VIDEOS_ALLOWED
+			if (VideoFunctions.addLuaVideoSprite(tag, inFront))
+				return;
+			#end
+
 			var mySprite:FlxSprite = MusicBeatState.getVariables().get(tag);
 			if (mySprite == null)
 				return;
@@ -1606,6 +1621,20 @@ class FunkinLua
 
 		Lua_helper.add_callback(lua, "removeLuaSprite", function(tag:String, destroy:Bool = true, ?group:String = null)
 		{
+			#if VIDEOS_ALLOWED
+			if (VideoFunctions.isLuaVideoSprite(MusicBeatState.getVariables().get(tag)))
+			{
+				if (destroy)
+					VideoFunctions.destroyLuaVideoSprite(tag);
+				else
+				{
+					var video:FlxBasic = cast MusicBeatState.getVariables().get(tag);
+					LuaUtils.getTargetInstance().remove(video, true);
+				}
+				return;
+			}
+			#end
+
 			var obj:FlxSprite = LuaUtils.getObjectDirectly(tag);
 			if (obj == null || obj.destroy == null)
 				return;
@@ -1627,7 +1656,11 @@ class FunkinLua
 		Lua_helper.add_callback(lua, "luaSpriteExists", function(tag:String)
 		{
 			var obj:FlxSprite = MusicBeatState.getVariables().get(tag);
-			return (obj != null && (Std.isOfType(obj, ModchartSprite) || Std.isOfType(obj, ModchartAnimateSprite)));
+			return (obj != null && (Std.isOfType(obj, ModchartSprite) || Std.isOfType(obj, ModchartAnimateSprite)
+				#if VIDEOS_ALLOWED
+				|| VideoFunctions.isLuaVideoSprite(obj)
+				#end
+			));
 		});
 		Lua_helper.add_callback(lua, "luaTextExists", function(tag:String)
 		{
@@ -1682,7 +1715,7 @@ class FunkinLua
 				object.cameras = [LuaUtils.cameraFromString(camera)];
 				return true;
 			}
-			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.setobjectcamera_object_value_doesn_t_exist', "setObjectCamera: Object {1} doesn't exist!", [obj]), false, false, FlxColor.RED);
+			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.setcamera_missing_object', "setObjectCamera: Object {1} doesn't exist!", [obj]), false, false, FlxColor.RED);
 			return false;
 		});
 		Lua_helper.add_callback(lua, "setBlendMode", function(obj:String, blend:String = '')
@@ -1781,7 +1814,7 @@ class FunkinLua
 			#end
 			path = Paths.getPath('data/$songPath/$dialogueFile.json', TEXT);
 
-			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.startdialogue_trying_to_load_dialogue_value', "startDialogue: Trying to load dialogue: {1}", [path]));
+			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.dialogue_loading', "startDialogue: Trying to load dialogue: {1}", [path]));
 
 			#if MODS_ALLOWED
 			if (FileSystem.exists(path))
@@ -1793,7 +1826,7 @@ class FunkinLua
 				if (shit.dialogue.length > 0)
 				{
 					game.startDialogue(shit, music);
-					luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.startdialogue_successfully_loaded_dialogue', "startDialogue: Successfully loaded dialogue"), false, false, FlxColor.GREEN);
+					luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.dialogue_loaded', "startDialogue: Successfully loaded dialogue"), false, false, FlxColor.GREEN);
 					return true;
 				}
 				else
@@ -2081,7 +2114,7 @@ class FunkinLua
 			}
 			return LuaUtils.getModSetting(saveTag, modName);
 			#else
-			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.getmodsetting_mods_are_disabled_in_this_build', "getModSetting: Mods are disabled in this build!"), false, false, FlxColor.RED);
+			luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.mod_settings_disabled', "getModSetting: Mods are disabled in this build!"), false, false, FlxColor.RED);
 			#end
 		});
 		//
@@ -2206,10 +2239,10 @@ class FunkinLua
 			{
 				trace(resultStr);
 				#if (desktop || mobile)
-				CoolUtil.showPopUp(Language.getPhrase('errors.scripting.lua.load_error_message', '{1}\n\n{2}', [scriptName, resultStr]),
+				CoolUtil.showPopUp(Language.getPhrase('errors.scripting.lua.load_error_message', '{1}\n\n{2}', [scriptName, ScriptErrorTranslator.lua(resultStr)]),
 					Language.getPhrase('errors.scripting.lua.load_error_title', 'Error on Lua script!'));
 				#else
-				luaTrace(Language.getPhrase('errors.scripting.raw_error_with_source', '{1}\n{2}', [scriptName, resultStr]), true, false, FlxColor.RED);
+				luaTrace(Language.getPhrase('errors.scripting.raw_error_with_source', '{1}\n{2}', [scriptName, ScriptErrorTranslator.lua(resultStr)]), true, false, FlxColor.RED);
 				#end
 				scriptsByState.remove(this);
 				lua = null;
@@ -2274,7 +2307,7 @@ class FunkinLua
 			if (resultStr != null && result != 0)
 			{
 				trace(resultStr);
-				luaTrace(Language.getPhrase('errors.scripting.raw_error_with_source', '{1}\n{2}', [path, resultStr]), true, false, FlxColor.RED);
+				luaTrace(Language.getPhrase('errors.scripting.raw_error_with_source', '{1}\n{2}', [path, ScriptErrorTranslator.lua(resultStr)]), true, false, FlxColor.RED);
 				break;
 			}
 			trace('Lua NotITG data prelude loaded succesfully:' + path);
@@ -2369,7 +2402,7 @@ class FunkinLua
 			if (status != Lua.LUA_OK)
 			{
 				var error:String = getErrorMessage(status);
-				luaTrace(Language.getPhrase('errors.scripting.lua.callback_error', 'ERROR ({1}): {2}', [func, error]), false, false, FlxColor.RED);
+				luaTrace(Language.getPhrase('errors.scripting.lua.callback_error', 'ERROR ({1}): {2}', [func, ScriptErrorTranslator.lua(error)]), false, false, FlxColor.RED);
 				return LuaUtils.Function_Continue;
 			}
 
@@ -2682,16 +2715,16 @@ class FunkinLua
 			switch (status)
 			{
 				case Lua.LUA_ERRRUN:
-					return "Runtime Error";
+					return Language.getPhrase('errors.scripting.lua.runtime_error', 'Runtime error');
 				case Lua.LUA_ERRMEM:
-					return "Memory Allocation Error";
+					return Language.getPhrase('errors.scripting.lua.memory_error', 'Memory allocation error');
 				case Lua.LUA_ERRERR:
-					return "Critical Error";
+					return Language.getPhrase('errors.scripting.lua.critical_error', 'Critical error');
 			}
-			return "Unknown Error";
+			return Language.getPhrase('errors.scripting.lua.unknown_error', 'Unknown error');
 		}
 
-		return v;
+		return ScriptErrorTranslator.lua(v);
 		return null;
 	}
 
@@ -2766,7 +2799,7 @@ class FunkinLua
 		}
 		luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.missing_shader_value_frag_and_vert_files', "Missing shader {1} .frag AND .vert files!", [name]), false, false, FlxColor.RED);
 		#else
-		luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.this_platform_doesn_t_support_runtime_shaders', "This platform doesn't support Runtime Shaders!"), false, false, FlxColor.RED);
+		luaTrace(Language.getPhrase('errors.script_debug.psychlua_backend_funkinlua.runtime_shaders_unsupported', "This platform doesn't support Runtime Shaders!"), false, false, FlxColor.RED);
 		#end
 		return false;
 	}

@@ -21,6 +21,7 @@ import crowplexus.hscript.Tools;
 import crowplexus.iris.utils.UsingEntry;
 import haxe.ValueException;
 import openfl.utils.Assets as OpenFlAssets;
+import scripting.IrisScriptClassImport;
 
 typedef HScriptInfos =
 {
@@ -47,7 +48,10 @@ class HScript extends Iris
 	// Old Psych Lua mods commonly use this inside runHaxeCode.  Iris evaluates
 	// the expression more strictly than the old SScript bridge did, so a missing
 	// Lua tag reaches ShaderFilter as null. Keep the repair in memory only.
-	static final LEGACY_LUA_OBJECT_SHADER:EReg = ~/game\.getLuaObject\(\s*["']([^"']+)["']\s*\)\s*\.shader/g;
+	// Only repair reads.  A runtime shader creation writes to this exact field;
+	// replacing that left-hand side with getLuaObjectShader(...) makes it an
+	// invalid HScript assignment and stops legacy createShader.lua scripts.
+	static final LEGACY_LUA_OBJECT_SHADER:EReg = ~/game\.getLuaObject\(\s*["']([^"']+)["']\s*\)\s*\.shader(?!\s*=)/g;
 
 	static function repairLegacyLuaShaderAccess(code:String):String
 	{
@@ -88,7 +92,7 @@ class HScript extends Iris
 				var pos:HScriptInfos = cast {fileName: parent.scriptName, isLua: true};
 				if (parent.lastCalledFunction != '')
 					pos.funcName = parent.lastCalledFunction;
-				Iris.error(Printer.errorToString(e, false), pos);
+				Iris.error(ScriptErrorTranslator.hscript(Printer.errorToString(e, false)), pos);
 				parent.hscript = null;
 			}
 		}
@@ -108,7 +112,7 @@ class HScript extends Iris
 				pos.isLua = true;
 				if (parent.lastCalledFunction != '')
 					pos.funcName = parent.lastCalledFunction;
-				Iris.error(Printer.errorToString(e, false), pos);
+				Iris.error(ScriptErrorTranslator.hscript(Printer.errorToString(e, false)), pos);
 				hs.returnValue = null;
 			}
 		}
@@ -252,6 +256,7 @@ class HScript extends Iris
 			this.modFolder = parent.modFolder;
 		}
 		#end
+		customInterp.scriptMod = this.modFolder;
 		preset();
 		this.varsToBring = varsToBring;
 		if (!manualRun)
@@ -267,7 +272,7 @@ class HScript extends Iris
 				// Show error in debug text
 				if (PlayState.instance != null)
 				{
-					var errorMsg = Printer.errorToString(e, false);
+					var errorMsg = ScriptErrorTranslator.hscript(Printer.errorToString(e, false));
 					PlayState.instance.addTextToDebug(errorMsg, FlxColor.RED);
 				}
 				// Re-throw the exception so PlayState can handle it correctly
@@ -682,7 +687,7 @@ class HScript extends Iris
 			{
 				if (this.modFolder == null)
 				{
-					Iris.error('getModSetting: Argument #2 is null and script is not inside a packed Mod folder!', this.interp.posInfos());
+					Iris.error(Language.getPhrase('errors.scripting.mod_settings.missing_mod_folder', 'getModSetting: Argument #2 is null and script is not inside a packed Mod folder!'), this.interp.posInfos());
 					return null;
 				}
 				modName = this.modFolder;
@@ -815,7 +820,7 @@ class HScript extends Iris
 			if (funk != null)
 				funk.addLocalCallback(name, func);
 			else
-				Iris.error('createCallback ($name): 3rd argument is null', this.interp.posInfos());
+				Iris.error(Language.getPhrase('errors.scripting.hscript.callback_missing_argument', 'createCallback ({1}): 3rd argument is null', [name]), this.interp.posInfos());
 		});
 
 		// TouchPad support for mobile
@@ -887,7 +892,7 @@ class HScript extends Iris
 			}
 			catch (e:IrisError)
 			{
-				Iris.error(Printer.errorToString(e, false), this.interp.posInfos());
+				Iris.error(ScriptErrorTranslator.hscript(Printer.errorToString(e, false)), this.interp.posInfos());
 			}
 		});
 
@@ -999,7 +1004,7 @@ class HScript extends Iris
 				var pos:HScriptInfos = cast {fileName: funk.scriptName, showLine: false};
 				if (funk.lastCalledFunction != '')
 					pos.funcName = funk.lastCalledFunction;
-				Iris.error("runHaxeFunction: HScript has not been initialized yet! Use \"runHaxeCode\" to initialize it", pos);
+				Iris.error(Language.getPhrase('errors.scripting.hscript.not_initialized', 'runHaxeFunction: HScript has not been initialized yet! Use "runHaxeCode" to initialize it'), pos);
 			}
 			return null;
 		});
@@ -1036,7 +1041,7 @@ class HScript extends Iris
 			}
 			catch (e:IrisError)
 			{
-				Iris.error(Printer.errorToString(e, false), pos);
+				Iris.error(ScriptErrorTranslator.hscript(Printer.errorToString(e, false)), pos);
 			}
 			FunkinLua.lastCalledScript = funk;
 			if (FunkinLua.getBool('luaDebugMode') && FunkinLua.getBool('luaDeprecatedWarnings'))
@@ -1084,7 +1089,7 @@ class HScript extends Iris
 		if (known == null && !exists(funcToRun))
 		{
 			hookCache.set(funcToRun, false);
-			Iris.error('No function named: $funcToRun', this.interp.posInfos());
+			Iris.error(Language.getPhrase('errors.scripting.hscript.missing_function', 'No function named: {1}', [funcToRun]), this.interp.posInfos());
 			return null;
 		}
 		if (known == null)
@@ -1108,7 +1113,7 @@ class HScript extends Iris
 					pos.funcName = parentLua.lastCalledFunction;
 			}
 			#end
-			Iris.error(Printer.errorToString(e, false), pos);
+			Iris.error(ScriptErrorTranslator.hscript(Printer.errorToString(e, false)), pos);
 		}
 		catch (e:ValueException)
 		{
@@ -1122,7 +1127,7 @@ class HScript extends Iris
 					pos.funcName = parentLua.lastCalledFunction;
 			}
 			#end
-			Iris.error('$e', pos);
+			Iris.error(ScriptErrorTranslator.hscript('$e'), pos);
 		}
 		return null;
 	}
@@ -1748,6 +1753,8 @@ class CustomInterp extends crowplexus.hscript.Interp
 {
 	public var parentInstance(default, set):Dynamic = [];
 	public var scriptName:String = "Unknown";
+	/** Mod that owns this Iris script, used for scripts/classes imports. */
+	public var scriptMod:String;
 
 	private var _instanceFields:Array<String>;
 
@@ -1796,11 +1803,11 @@ class CustomInterp extends crowplexus.hscript.Interp
 
 		if (f == null)
 		{
-			Iris.error('Tried to call null function $funcToRun', posInfos());
+			Iris.error(Language.getPhrase('errors.scripting.hscript.null_function', 'Tried to call null function {1}', [funcToRun]), posInfos());
 			return null;
 		}
 
-		return Reflect.callMethod(o, f, args);
+		return IrisScriptClassImport.wrap(Reflect.callMethod(o, f, IrisScriptClassImport.unwrapArgs(args)));
 	}
 
 	override public function getOrImportClass(name:String):Dynamic
@@ -1820,6 +1827,18 @@ class CustomInterp extends crowplexus.hscript.Interp
 			return imports.get(shortName);
 		if (customClasses.exists(shortName))
 			return customClasses.get(shortName);
+
+		// Song, event, note type, character, stage and global Iris scripts may
+		// import a class from scripts/classes. The adapter delegates construction
+		// to the hxscript world that owns that mod class.
+		var scripted = IrisScriptClassImport.resolve(resolvedName, scriptMod);
+		if (scripted != null)
+		{
+			customClasses.set(resolvedName, scripted);
+			customClasses.set(name, scripted);
+			customClasses.set(shortName, scripted);
+			return scripted;
+		}
 
 		return null;
 	}

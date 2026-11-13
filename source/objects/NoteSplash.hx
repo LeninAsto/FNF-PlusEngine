@@ -287,9 +287,8 @@ class NoteSplash extends FlxSprite
 
 		if (babyArrow != null)
 		{
-			var lineScale:Float = getStrumLayoutScale();
-			setPosition(babyArrow.x - Note.swagWidth * 0.95 * lineScale,
-				babyArrow.y - Note.swagWidth * lineScale); // Prevent a one-tick jump on compact StrumLines.
+			setPosition(babyArrow.x - Note.swagWidth * 0.95 * getStrumLayoutScale(0),
+				babyArrow.y - Note.swagWidth * getStrumLayoutScale(1)); // Prevent a one-tick jump on compact StrumLines.
 		}
 
 		if (note != null)
@@ -483,11 +482,22 @@ class NoteSplash extends FlxSprite
 
 	static var buggedKillTime:Float = 0.5; // automatically kills note splashes if they break to prevent it from flooding your HUD
 
-	inline function getStrumLayoutScale():Float
+	inline function getStrumLayoutScale(axis:Int = 0):Float
 	{
-		if (babyArrow == null || !Math.isFinite(babyArrow.layoutScale) || babyArrow.layoutScale <= 0)
+		if (babyArrow == null)
 			return 1;
-		return babyArrow.layoutScale;
+
+		// Direct setPropertyFromGroup(..., 'scale.x/y', ...) does not update
+		// layoutScale. Normalize against Psych's stock receptor scale so both
+		// regular and RGB splashes inherit the real transform without changing
+		// their normal size.
+		var baseStrumScale:Float = PlayState.isPixelStage ? PlayState.daPixelZoom : 0.7;
+		var visualScale:Float = axis == 0 ? babyArrow.scale.x : babyArrow.scale.y;
+		if (Math.isFinite(visualScale) && visualScale > 0)
+			return visualScale / baseStrumScale;
+		if (Math.isFinite(babyArrow.layoutScale) && babyArrow.layoutScale > 0)
+			return babyArrow.layoutScale;
+		return 1;
 	}
 
 	function syncToStrumLayout():Void
@@ -495,19 +505,23 @@ class NoteSplash extends FlxSprite
 		if (babyArrow == null)
 			return;
 
-		var lineScale:Float = getStrumLayoutScale();
+		var lineScaleX:Float = getStrumLayoutScale(0);
+		var lineScaleY:Float = getStrumLayoutScale(1);
 		var configScale:Float = config != null && Math.isFinite(config.scale) ? config.scale : 1;
-		var targetScale:Float = configScale * lineScale;
-		if (Math.abs(scale.x - targetScale) > 0.0001 || Math.abs(scale.y - targetScale) > 0.0001)
+		var targetScaleX:Float = configScale * lineScaleX;
+		var targetScaleY:Float = configScale * lineScaleY;
+		if (Math.abs(scale.x - targetScaleX) > 0.0001 || Math.abs(scale.y - targetScaleY) > 0.0001)
 		{
-			scale.set(targetScale, targetScale);
+			scale.set(targetScaleX, targetScaleY);
 			updateHitbox();
 		}
 
 		if (copyX)
-			x = babyArrow.x - Note.swagWidth * 0.95 * lineScale;
+			x = babyArrow.x - Note.swagWidth * 0.95 * lineScaleX;
 		if (copyY)
-			y = babyArrow.y - Note.swagWidth * lineScale;
+			y = babyArrow.y - Note.swagWidth * lineScaleY;
+		angle = babyArrow.angle;
+		scrollFactor.set(babyArrow.scrollFactor.x, babyArrow.scrollFactor.y);
 	}
 
 	override function update(elapsed:Float)

@@ -699,7 +699,7 @@ class ModsMenuState extends MusicBeatState {
 
 	// ───────────────────────────────────────────────────── actions ──
 	function launchSelected() {
-		#if (HSCRIPT_ALLOWED && MODS_ALLOWED && !mobile)
+		#if (HSCRIPT_ALLOWED && MODS_ALLOWED)
 		var m = currentMod();
 		if (m == null)
 			return;
