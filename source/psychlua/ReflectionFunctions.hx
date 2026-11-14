@@ -211,7 +211,11 @@ class ReflectionFunctions
 						}
 
 					default: //Is Group
-						LuaUtils.setGroupStuff(realObject.members[index], variable, allowInstances ? parseInstances(value) : value, allowMaps);
+					{
+						var member = realObject.members[index];
+						if (member != null)
+							LuaUtils.setGroupStuff(member, variable, allowInstances ? parseInstances(value) : value, allowMaps);
+					}
 				}
 			}
 			else FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_reflectionfunctions.setpropertyfromgroup_missing_group', "setPropertyFromGroup: Group/Array {1} doesn't exist!", [group]), false, false, FlxColor.RED);

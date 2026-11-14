@@ -2595,7 +2595,11 @@ class FunkinLua
 			return null;
 		}
 
-		var strumNote:StrumNote = PlayState.instance.strumLineNotes.members[note % PlayState.instance.strumLineNotes.length];
+		// Psych scripts use the absolute strum index. Wrapping an invalid index
+		// back into the group makes legacy 10-key scripts tween unrelated lanes.
+		if (note < 0 || note >= PlayState.instance.strumLineNotes.length)
+			return null;
+		var strumNote:StrumNote = PlayState.instance.strumLineNotes.members[note];
 		if (strumNote == null)
 			return null;
 

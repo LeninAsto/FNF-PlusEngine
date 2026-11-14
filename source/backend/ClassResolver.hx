@@ -60,6 +60,9 @@ class ClassResolver
 		'CustomFadeTransition' => 'backend.CustomFadeTransition',
 		'FlxGUtils' => 'backend.FlxGUtils',
 		'ALSoftConfig' => 'backend.ALSoftConfig',
+		// Compatibility facade: old Lua/HScript HUDs use Main.fpsVar. Keep the
+		// actual boot class blocked while exposing only its safe FPS properties.
+		'Main' => 'psychlua.backend.LegacyMain',
 		'CrashHandler' => 'backend.CrashHandler',
 		'InputFormatter' => 'backend.InputFormatter',
 		'NoteTypesConfig' => 'backend.NoteTypesConfig',

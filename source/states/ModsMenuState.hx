@@ -993,7 +993,10 @@ class ModsMenuState extends MusicBeatState {
 				FreeplayState.vocals.fadeOut(0.3);
 				FreeplayState.vocals = null;
 			}
-			FlxG.camera.fade(FlxColor.BLACK, 0.5, false, FlxG.resetGame, false);
+			// Do not use FlxG.resetGame here: it may recreate the previous state.
+			// A restart-required mod-list change must always re-enter the engine
+			// bootstrap after its launch context was cleared.
+			FlxG.camera.fade(FlxColor.BLACK, 0.5, false, function() FlxG.switchState(new InitState.InitialState()), false);
 		} else {
 			MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
 		}

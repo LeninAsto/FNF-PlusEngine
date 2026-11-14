@@ -120,6 +120,7 @@ class LuaUtils
 		try
 		{
 			Reflect.setProperty(instance, variable, value);
+			syncLegacyNoteStrumLine(instance, variable);
 			return value;
 		}
 		catch(e:Dynamic)
@@ -340,8 +341,24 @@ class LuaUtils
 		if(setLegacyNoteSplashProperty(leArray, variable, value))
 			return value;
 		if(allowMaps && isMap(leArray)) leArray.set(variable, value);
-		else Reflect.setProperty(leArray, variable, value);
+		else
+		{
+			Reflect.setProperty(leArray, variable, value);
+			syncLegacyNoteStrumLine(leArray, variable);
+		}
 		return value;
+	}
+
+	static inline function syncLegacyNoteStrumLine(instance:Dynamic, variable:String):Void
+	{
+		if (variable != 'mustPress' || !Std.isOfType(instance, Note))
+			return;
+
+		var note:Note = cast instance;
+		// Old Psych scripts use `mustPress` as ownership. Preserve explicit
+		// additional strumlines, but keep the two classic lanes in sync.
+		if (note.strumLineIndex == 0 || note.strumLineIndex == 1)
+			note.strumLineIndex = note.mustPress ? 1 : 0;
 	}
 	public static function getGroupStuff(leArray:Dynamic, variable:String, ?allowMaps:Bool = false) {
 		var split:Array<String> = variable.split('.');

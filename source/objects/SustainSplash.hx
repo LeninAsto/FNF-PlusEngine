@@ -109,6 +109,11 @@ class SustainSplash extends FlxSprite
 
 		if (strumNote != null)
 		{
+			var parentCameras = strumNote.cameras;
+			if ((parentCameras == null || parentCameras.length == 0) && PlayState.instance != null)
+				parentCameras = PlayState.instance.grpHoldSplashes.cameras;
+			if (cameras != parentCameras)
+				cameras = parentCameras;
 			syncToStrumLayout();
 
 			if (ClientPrefs.data.hideSustainSplash)
