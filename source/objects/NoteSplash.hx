@@ -512,6 +512,12 @@ class NoteSplash extends FlxSprite
 		if (babyArrow == null)
 			return;
 
+		var parentCameras = babyArrow.cameras;
+		if ((parentCameras == null || parentCameras.length == 0) && PlayState.instance != null)
+			parentCameras = PlayState.instance.grpNoteSplashes.cameras;
+		if (cameras != parentCameras)
+			cameras = parentCameras;
+
 		var lineScaleX:Float = getStrumLayoutScale(0);
 		var lineScaleY:Float = getStrumLayoutScale(1);
 		var configScale:Float = config != null && Math.isFinite(config.scale) ? config.scale : 1;

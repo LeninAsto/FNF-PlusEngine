@@ -338,6 +338,9 @@ class HScript extends Iris
 		// Keep these first so old Psych scripts see the expected globals before
 		// Plus Engine layers add aliases or extended wrappers below.
 		set('Type', Type);
+		// Legacy HUD scripts use Main.fpsVar. This facade intentionally exposes
+		// only visibility/currentFPS, not the real Main/native debug surface.
+		set('Main', LegacyMain);
 		#if sys
 		set('File', File);
 		set('FileSystem', FileSystem);
@@ -586,6 +589,7 @@ class HScript extends Iris
 		#end
 		#if (hxvlc)
 		// hxvlc - Current video library (v3)
+		set('PsychVideoSprite', objects.PsychVideoSprite);
 		set('VideoSprite', objects.VideoSprite);
 		set('FlxVideoSprite', hxvlc.flixel.FlxVideoSprite);
 		set('FlxVideo', hxvlc.flixel.FlxVideo);

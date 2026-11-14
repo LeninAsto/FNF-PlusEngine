@@ -759,6 +759,8 @@ class PlayState extends MusicBeatState
 
 		uiGroup.cameras = [camHUD];
 		noteGroup.cameras = [camHUD];
+		grpNoteSplashes.cameras = [camHUD];
+		grpHoldSplashes.cameras = [camHUD];
 		comboGroup.cameras = [ClientPrefs.data.comboInGame ? camGame : camHUD];
 		// Add after every HUD and note group: lyrics remain in camHUD but are its
 		// final layer, rather than being hidden by later HUD additions.
@@ -834,10 +836,14 @@ class PlayState extends MusicBeatState
 
 		resetRPC();
 
-		stagesFunc(function(stage:BaseStage) stage.createPost());
-		callOnScripts('onCreatePost');
-
+		// Some legacy HScript forks configure modManager from onLoad/onCreatePost.
+		// Create and publish it before either callback so their setup is not lost.
 		initModchart();
+		stagesFunc(function(stage:BaseStage) stage.createPost());
+		// `onLoad` is a legacy HScript lifecycle hook used by several Psych forks.
+		// Keep it HScript-only; Lua has never had this engine lifecycle callback.
+		callOnHScript('onLoad');
+		callOnScripts('onCreatePost');
 		#if MODCHART_ALLOWED
 		if (Manager.instance != null && ClientPrefs.data.modchartDebug)
 			mcDebug(0);
