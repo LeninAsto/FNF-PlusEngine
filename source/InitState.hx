@@ -79,14 +79,11 @@ class InitialState extends MusicBeatState
 				return;
 			}
 			trace("Scriptable = null!");
+			scripting.ScriptedStates.clearLaunchedModContext();
 		}
 		else if (Mods.launchedMod != null && Mods.launchedMod.length > 0)
 		{
-			FlxG.save.data.launchedMod = null;
-			FlxG.save.flush();
-			Mods.launchedMod = null;
-			Mods.loadTopMod();
-			Mods.resetWindowBrand();
+			scripting.ScriptedStates.clearLaunchedModContext();
 		}
 		else
 			Mods.loadTopMod();
