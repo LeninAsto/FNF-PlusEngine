@@ -5395,12 +5395,14 @@ class PlayState extends MusicBeatState
 			? SONG.arrowSkin
 			: Note.getDefaultNoteSkinPath(isPixelStage);
 
+		// A note type can give a note its own atlas through `note.texture`.
+		// Reloading it with no argument silently replaces that atlas with SONG.arrowSkin.
 		for (note in notes)
-			if (note != null) note.reloadNote();
+			if (note != null) note.reloadNote(note.texture);
 		for (i in (denseChartQueue ? unspawnNoteCursor : 0)...unspawnNotes.length)
 		{
 			var note:Note = unspawnNotes[i];
-			if (note != null) note.reloadNote();
+			if (note != null) note.reloadNote(note.texture);
 		}
 
 		for (strum in strumLineNotes)
