@@ -348,7 +348,7 @@ class PauseSubState extends MusicBeatSubstate
 			return;
 		}
 
-		if (FlxG.keys.justPressed.F5)
+		if (FlxG.keys.justPressed.F5 && !FlxG.keys.anyJustPressed(ClientPrefs.keyBinds.get('screenshot')))
 		{
 			FlxTransitionableState.skipNextTransIn = true;
 			FlxTransitionableState.skipNextTransOut = true;

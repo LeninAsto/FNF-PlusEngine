@@ -191,7 +191,7 @@ class FPSCounter extends Sprite
 		lastFrameTime = Timer.stamp();
 		frameTimesArray = [for (i in 0...FRAME_TIMES_CAPACITY) 0];
 
-		// Add listener for F2
+		// Listen for the user-configurable FPS counter shortcut.
 		if (FlxG.stage != null)
 		{
 			FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
@@ -414,10 +414,14 @@ class FPSCounter extends Sprite
 			+ ' ms - GC: ' + realtimeMemoryLabel, debugLevel >= 2);
 	}
 
-	// Handle the F2 key event.
+	// Handle the FPS counter shortcut.
 	private function onKeyDown(event:KeyboardEvent):Void
 	{
-		if (event.keyCode == Keyboard.F2)
+		// The same key is being captured when the Controls menu is rebinding it.
+		if (Controls.instance != null && Controls.instance.isInSubstate)
+			return;
+		var keys = ClientPrefs.keyBinds.get('fps_counter');
+		if (keys != null && keys.contains(event.keyCode))
 		{
 			debugLevel = (debugLevel + 1) % 5; // Cycle: hidden, no bg, bg, basic debug, extended debug
 			ClientPrefs.data.fpsDebugLevel = debugLevel;

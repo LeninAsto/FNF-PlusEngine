@@ -1532,7 +1532,8 @@ class FreeplayState extends MusicBeatState
 		}
 
 		#if (MODS_ALLOWED && sys && !mobile)
-		if (!searchFocused && !player.playingMusic && FlxG.keys.justPressed.F5)
+		if (!searchFocused && !player.playingMusic && FlxG.keys.justPressed.F5
+			&& !FlxG.keys.anyJustPressed(ClientPrefs.keyBinds.get('screenshot')))
 		{
 			reloadModsFromFreeplay();
 			return;

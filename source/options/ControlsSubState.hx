@@ -41,9 +41,12 @@ class ControlsSubState extends MusicBeatSubstate
 		[false, 'DEBUG'],
 		[false, 'Key 1', 'debug_1', 'Debug Key #1'],
 		[false, 'Key 2', 'debug_2', 'Debug Key #2'],
+		[false, 'FPS Counter', 'fps_counter', 'Toggle FPS Counter'],
+		[false, 'Trace Display', 'trace_display', 'Toggle Trace Display'],
 		[false,],
 		[false, 'WINDOW'],
-		[false, 'Fullscreen', 'fullscreen', 'Fullscreen Toggel']
+		[false, 'Fullscreen', 'fullscreen', 'Fullscreen Toggel'],
+		[false, 'Screenshot', 'screenshot', 'Take Screenshot']
 	];
 	var curOptions:Array<Int>;
 	var curOptionsValid:Array<Int>;

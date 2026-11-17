@@ -249,6 +249,9 @@ class ClientPrefs
 		'debug_1' => [SEVEN],
 		'debug_2' => [EIGHT],
 		'debug_3' => [SIX],
+		'fps_counter' => [F2],
+		'trace_display' => [F4],
+		'screenshot' => [F5],
 		'fullscreen' => [F11]
 	];
 	public static var gamepadBinds:Map<String, Array<FlxGamepadInputID>> = [

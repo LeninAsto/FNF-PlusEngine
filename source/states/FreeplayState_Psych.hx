@@ -314,7 +314,7 @@ class FreeplayState_Psych extends MusicBeatState
 		if (!player.playingMusic)
 		{
 			#if (MODS_ALLOWED && sys && !mobile)
-			if (FlxG.keys.justPressed.F5)
+			if (FlxG.keys.justPressed.F5 && !FlxG.keys.anyJustPressed(ClientPrefs.keyBinds.get('screenshot')))
 			{
 				reloadModsFromFreeplay();
 				return;
