@@ -200,6 +200,8 @@ class CtxRenderer {
 			ctx.holdRenderer.beginFrame();
 			final renderPaths = pathEnabled[f];
 			for (player in 0...items.length) {
+				if (!playfield.acceptsPlayer(player))
+					continue;
 				var curItems:Array<Array<FlxSprite>> = items[player];
 
 				if (curItems == null || curItems.length == 0)

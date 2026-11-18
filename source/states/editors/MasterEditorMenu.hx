@@ -94,10 +94,7 @@ class MasterEditorMenu extends MusicBeatState
 
 		super.create();
 
-		// MusicBeatState.create() initializes/resets the Psych camera. Attach the
-		// touchpad afterwards so TouchButton never retains the pre-reset camera.
-		// Expose the existing loaded-mod selector on touch devices too.
-		addTouchPad('LEFT_RIGHT', 'B');
+		addTouchPad('LEFT_FULL', 'A_B');
 		addTouchPadCamera();
 	}
 
@@ -120,8 +117,6 @@ class MasterEditorMenu extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		if (grpTexts != null && touchHandler.update(true, true, getTouchOptionAt, onTouchOption, function(direction:Int) changeSelection(direction)))
-			return;
 		if (FlxG.mouse.wheel != 0)
 			changeSelection(-FlxG.mouse.wheel);
 		if (controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed))

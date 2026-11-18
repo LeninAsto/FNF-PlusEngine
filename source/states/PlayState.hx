@@ -279,6 +279,7 @@ class PlayState extends MusicBeatState
 	var hitTimes:Array<{time:Float, count:Int}> = [];
 	var msTxt:FlxText;
 	var msTween:FlxTween;
+	var msDropTween:FlxTween;
 
 	public var iconP1:HealthIcon;
 	public var iconP2:HealthIcon;
@@ -2835,7 +2836,7 @@ class PlayState extends MusicBeatState
 				openCharacterEditor();
 		}
 
-		if (healthBar.bounds.max != null && health > healthBar.bounds.max)
+		if (healthBar != null && healthBar.bounds != null && healthBar.bounds.max != null && health > healthBar.bounds.max)
 			health = healthBar.bounds.max;
 
 		updateIconsScale(elapsed);
@@ -3083,8 +3084,24 @@ class PlayState extends MusicBeatState
 
 	public dynamic function updateIconsPosition()
 	{
-		var isGFSinging:Bool = (SONG.notes[curSection] != null && SONG.notes[curSection].gfSection);
+		if (healthBar == null)
+			return;
+
+		var section:Null<SwagSection> = currentSongSection();
+		var isGFSinging:Bool = section != null && section.gfSection == true;
 		HealthIconHud.position(healthBar, isGFSinging, gfIconSide, gfIconSwapOnSing, iconP1, iconP2, iconGF);
+	}
+
+	/**
+	 * The conductor can advance one section after the final chart section while
+	 * the song-end transition is still running. Never index SONG.notes directly
+	 * from frame/update paths: Android's generated array access throws there.
+	 */
+	inline function currentSongSection():Null<SwagSection>
+	{
+		if (SONG == null || SONG.notes == null || curSection < 0 || curSection >= SONG.notes.length)
+			return null;
+		return SONG.notes[curSection];
 	}
 
 	function updateIconAnimations():Void
@@ -4079,6 +4096,7 @@ class PlayState extends MusicBeatState
 	var pooledComboKGraphic:FlxGraphic;
 	var pooledComboMGraphic:FlxGraphic;
 	var pooledComboDotGraphic:FlxGraphic;
+	var pooledComboGraphic:FlxGraphic;
 	var breakTimerHud:BreakTimerHud = null;
 	// Stores HUD Objects in a Group
 	public var uiGroup:FlxSpriteGroup;
@@ -4111,6 +4129,7 @@ class PlayState extends MusicBeatState
 			pooledComboKGraphic = Paths.image(uiAsset('k'));
 			pooledComboMGraphic = Paths.image(uiAsset('m'));
 			pooledComboDotGraphic = Paths.image(uiAsset('dot'));
+			pooledComboGraphic = Paths.image(uiAsset('combo'));
 			for (i in 0...10)
 				pooledNumGraphics[i] = Paths.image(uiAsset('num' + i));
 			for (i in 0...18)
@@ -4217,7 +4236,7 @@ class PlayState extends MusicBeatState
 		}
 	}
 
-	function popUpScorePooled(daRating:Rating, isMiss:Bool = false):Void
+	function popUpScorePooled(daRating:Rating, isMiss:Bool = false, hitDiff:Float = 0):Void
 	{
 		if (!ClientPrefs.data.popUpRating || ClientPrefs.data.hideHud || comboGroup == null)
 			return;
@@ -4233,13 +4252,23 @@ class PlayState extends MusicBeatState
 		setupPooledComboSprite(rating, pooledRatingGraphics.get(isMiss ? 'miss' : daRating.image), placement - 40 + ClientPrefs.data.comboOffset[0],
 			(FlxG.height * 0.5) - 60 - ClientPrefs.data.comboOffset[1], ratingScale, antialias, showRating);
 
-		if (!showComboNum || (!isMiss && combo > 0 && combo < 10))
-			return;
-
 		var popupCount:Int = isMiss ? songMisses : combo;
 		var comboStr:String = !isMiss && popupCount >= 10000 && ClientPrefs.data.showMinusDotKM
 			? formatComboCount(popupCount)
 			: (ClientPrefs.data.dynamicCombo ? Std.string(popupCount) : Std.string(popupCount).lpad('0', 3));
+		if (!isMiss && showCombo && pooledComboGraphic != null)
+		{
+			var comboSpr:FlxSprite = getPooledComboSprite();
+			setupPooledComboSprite(comboSpr, pooledComboGraphic, placement + (43 * (comboStr.length - 1)) - 40 + ClientPrefs.data.comboOffset[2],
+				(FlxG.height * 0.5) + 60 - ClientPrefs.data.comboOffset[3], ratingScale, antialias, true);
+		}
+
+		if (!showComboNum || (!isMiss && combo > 0 && combo < 10))
+		{
+			if (!isMiss)
+				addTiming(rating, hitDiff, antialias);
+			return;
+		}
 		for (i in 0...(comboStr.length + (isMiss ? 1 : 0)))
 		{
 			var isMinus:Bool = isMiss && i == 0;
@@ -4262,6 +4291,8 @@ class PlayState extends MusicBeatState
 			numScore.velocity.x = ClientPrefs.data.comboStacking ? 0 : FlxG.random.float(-3, 3) * playbackRate;
 			if (isMiss) numScore.color = 0xFFB060FF;
 		}
+		if (!isMiss)
+			addTiming(rating, hitDiff, antialias);
 	}
 
 	inline static function uiAsset(name:String):String
@@ -4499,19 +4530,23 @@ class PlayState extends MusicBeatState
 			}
 			if (msTween != null)
 				msTween.cancel();
+			if (msDropTween != null)
+				msDropTween.cancel();
 			if (comboGroup.members.indexOf(msTxt) < 0)
 				comboGroup.add(msTxt);
 
-		msTxt.text = Language.getPhrase('playstate.hud.milliseconds', '{1}ms', [Std.int(Math.round(hitDiff))]);
+			msTxt.text = Language.getPhrase('playstate.hud.milliseconds', '{1}ms', [Std.int(Math.round(hitDiff))]);
 			msTxt.color = color;
 			msTxt.alpha = 1;
 			msTxt.visible = true;
 			msTxt.x = FlxG.width * 0.35 - msTxt.fieldWidth * 0.5 + ClientPrefs.data.hitMsOffset[0];
-			msTxt.y = rating.y + rating.height + 8 - ClientPrefs.data.hitMsOffset[1];
-			msTxt.velocity.set(rating.velocity.x, rating.velocity.y - 12 * playbackRate);
-			msTxt.acceleration.set(rating.acceleration.x, rating.acceleration.y);
+			var targetY:Float = FlxG.height * 0.5 + 8 - ClientPrefs.data.hitMsOffset[1];
+			msTxt.y = targetY - 12;
+			msTxt.velocity.set();
+			msTxt.acceleration.set();
+			msDropTween = FlxTween.tween(msTxt, {y: targetY}, 0.12 / playbackRate, {ease: FlxEase.quadOut, onComplete: function(_) msDropTween = null});
 			msTween = FlxTween.tween(msTxt, {alpha: 0}, 0.2 / playbackRate, {
-				startDelay: Conductor.crochet * 0.001 / playbackRate,
+				startDelay: 0.22 / playbackRate,
 				onComplete: function(twn:FlxTween)
 				{
 					if (comboGroup != null && msTxt != null)
@@ -4540,6 +4575,11 @@ class PlayState extends MusicBeatState
 			{
 				msTween.cancel();
 				msTween = null;
+			}
+			if (msDropTween != null)
+			{
+				msDropTween.cancel();
+				msDropTween = null;
 			}
 			comboGroup.remove(msTxt, true);
 			msTxt.visible = false;
@@ -4623,7 +4663,7 @@ class PlayState extends MusicBeatState
 
 		if (lightHitVisuals)
 		{
-			popUpScorePooled(daRating, isMiss);
+			popUpScorePooled(daRating, isMiss, hitDiff);
 			return;
 		}
 		var antialias:Bool = ClientPrefs.data.antialiasing;
@@ -4664,8 +4704,8 @@ class PlayState extends MusicBeatState
 				comboSpr.acceleration.set(0, 0);
 			}
 			comboSpr.visible = (!isMiss && ClientPrefs.data.popUpRating && !ClientPrefs.data.hideHud && showCombo);
-			comboSpr.x += ClientPrefs.data.comboOffset[0];
-			comboSpr.y -= ClientPrefs.data.comboOffset[1];
+			comboSpr.x += ClientPrefs.data.comboOffset[2];
+			comboSpr.y -= ClientPrefs.data.comboOffset[3];
 			comboSpr.antialiasing = antialias;
 			comboSpr.y += 60;
 			comboSpr.velocity.x = ClientPrefs.data.comboStacking ? 0 : FlxG.random.int(1, 10) * playbackRate;
@@ -4682,6 +4722,8 @@ class PlayState extends MusicBeatState
 
 			comboSpr.updateHitbox();
 			rating.updateHitbox();
+			if (showCombo)
+				comboGroup.add(comboSpr);
 
 			var daLoop:Int = 0;
 			var xThing:Float = 0;
@@ -4738,10 +4780,7 @@ class PlayState extends MusicBeatState
 				if (numScore.x > xThing)
 					xThing = numScore.x;
 			}
-			if (!ClientPrefs.data.nfRatingStyle)
-				comboSpr.x = xThing + 50;
-			if (showCombo)
-				comboGroup.add(comboSpr);
+			comboSpr.x = xThing + 50;
 			if (ClientPrefs.data.nfRatingStyle)
 			{
 				rating.scale.scale(1.16);
@@ -5115,7 +5154,8 @@ class PlayState extends MusicBeatState
 
 		// play character anims
 		var char:Character = playerChar();
-		if((note != null && note.gfNote) || (SONG.notes[curSection] != null && SONG.notes[curSection].gfSection)) char = gf;
+		var section:Null<SwagSection> = currentSongSection();
+		if((note != null && note.gfNote) || (section != null && section.gfSection == true)) char = gf;
 
 		if(char != null && (note == null || !note.noMissAnimation) && char.hasMissAnimations)
 		{
@@ -5662,7 +5702,8 @@ class PlayState extends MusicBeatState
 
 	override function sectionHit()
 	{
-		if (SONG.notes[curSection] != null)
+		var section:Null<SwagSection> = currentSongSection();
+		if (section != null)
 		{
 			if (generatedMusic && !endingSong && !isCameraOnForcedPos)
 				moveCameraSection();
@@ -5673,16 +5714,16 @@ class PlayState extends MusicBeatState
 				camHUD.zoom += 0.03 * camZoomingMult;
 			}
 
-			if (SONG.notes[curSection].changeBPM)
+			if (section.changeBPM == true)
 			{
-				Conductor.bpm = SONG.notes[curSection].bpm;
+				Conductor.bpm = section.bpm;
 				setOnScripts('curBpm', Conductor.bpm);
 				setOnScripts('crochet', Conductor.crochet);
 				setOnScripts('stepCrochet', Conductor.stepCrochet);
 			}
-			setOnScripts('mustHitSection', SONG.notes[curSection].mustHitSection);
-			setOnScripts('altAnim', SONG.notes[curSection].altAnim);
-			setOnScripts('gfSection', SONG.notes[curSection].gfSection);
+			setOnScripts('mustHitSection', section.mustHitSection);
+			setOnScripts('altAnim', section.altAnim);
+			setOnScripts('gfSection', section.gfSection);
 		}
 		super.sectionHit();
 
@@ -5747,12 +5788,24 @@ class PlayState extends MusicBeatState
 		}
 		catch(e:IrisError)
 		{
-			var pos:HScriptInfos = cast {fileName: file, showLine: false};
-			Iris.error(Printer.errorToString(e, false), pos);
-			var newScript:HScript = cast (Iris.instances.get(file), HScript);
-			if(newScript != null)
-				newScript.destroy();
+			reportHScriptLoadFailure(file, Printer.errorToString(e, false));
 		}
+		catch(e:Dynamic)
+		{
+			// Mod scripts must never take down the native game loop. Iris errors are
+			// not the only values a scripted constructor/callback can throw.
+			reportHScriptLoadFailure(file, Std.string(e));
+		}
+	}
+
+	function reportHScriptLoadFailure(file:String, details:String):Void
+	{
+		var pos:HScriptInfos = cast {fileName: file, showLine: true};
+		Iris.error('Failed to load PlayState HScript "$file": $details', pos);
+		trace('[PlayState] Disabled failed HScript: $file :: $details');
+		var failedScript:HScript = cast (Iris.instances.get(file), HScript);
+		if (failedScript != null)
+			failedScript.destroy();
 	}
 	#end
 

@@ -311,8 +311,7 @@ class OptionsState extends MusicBeatState
 
 	function applyTouchPadLayout():Void
 	{
-		// Plus is operated directly; Psych keeps only its value arrows and menu shortcuts.
-		addTouchPad(isPlusStyle() ? 'NONE' : 'LEFT_RIGHT', isPlusStyle() ? 'B_C' : 'B_C');
+		addTouchPad('UP_DOWN', 'A_B_C');
 		addTouchPadCamera();
 	}
 
@@ -325,8 +324,6 @@ class OptionsState extends MusicBeatState
 		if (isPlusStyle())
 		{
 			updatePlusLayout(elapsed);
-			if (handleTouchNavigation())
-				return;
 			handleInput();
 			return;
 		}
@@ -390,9 +387,6 @@ class OptionsState extends MusicBeatState
 
 		if (!exiting && !substateInputBlocked)
 		{
-			if (handleTouchNavigation())
-				return;
-
 			if (controls.UI_UP_P)
 				changeSelection(-1);
 			if (controls.UI_DOWN_P)

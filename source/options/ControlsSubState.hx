@@ -11,6 +11,7 @@ import flixel.input.gamepad.FlxGamepadManager;
 
 class ControlsSubState extends MusicBeatSubstate
 {
+	public static var isRebinding:Bool = false;
 	var curSelected:Int = 0;
 	var curAlt:Bool = false;
 
@@ -41,9 +42,12 @@ class ControlsSubState extends MusicBeatSubstate
 		[false, 'DEBUG'],
 		[false, 'Key 1', 'debug_1', 'Debug Key #1'],
 		[false, 'Key 2', 'debug_2', 'Debug Key #2'],
+		[false, 'FPS Counter', 'fps_counter', 'Toggle FPS Counter'],
+		[false, 'Trace Display', 'trace_display', 'Toggle Trace Display'],
 		[false,],
 		[false, 'WINDOW'],
-		[false, 'Fullscreen', 'fullscreen', 'Fullscreen Toggel']
+		[false, 'Fullscreen', 'fullscreen', 'Fullscreen Toggel'],
+		[false, 'Screenshot', 'screenshot', 'Take Screenshot']
 	];
 	var curOptions:Array<Int>;
 	var curOptionsValid:Array<Int>;
@@ -65,6 +69,7 @@ class ControlsSubState extends MusicBeatSubstate
 
 	public function new()
 	{
+		isRebinding = false;
 		controls.isInSubstate = true;
 
 		super();
@@ -351,6 +356,7 @@ class ControlsSubState extends MusicBeatSubstate
 					add(bindingText2);
 
 					binding = true;
+					isRebinding = true;
 					holdingEsc = 0;
 					ClientPrefs.toggleVolumeKeys(false);
 					FlxG.sound.play(Paths.sound('scrollMenu'));
@@ -505,6 +511,7 @@ class ControlsSubState extends MusicBeatSubstate
 	function closeBinding()
 	{
 		binding = false;
+		isRebinding = false;
 		bindingBlack.destroy();
 		remove(bindingBlack);
 

@@ -29,9 +29,6 @@ class TouchScrollHandler
 			if (touch.justPressed)
 			{
 				startY = touch.y;
-				// Touch pads own their visual area. Letting a menu inspect the same
-				// touch caused button presses to activate whatever happened to be
-				// underneath them (and could start a menu swipe too).
 				if (isTouchPadPoint(touch.x, touch.y))
 				{
 					startTarget = NO_TARGET;
@@ -44,8 +41,6 @@ class TouchScrollHandler
 				}
 			}
 
-			// Only a touch that began on this menu can scroll this menu. This
-			// prevents a drag on a touch pad or empty background from hijacking it.
 			if (allowScroll && startTarget != NO_TARGET && touch.pressed)
 			{
 				var deltaY:Float = touch.y - startY;

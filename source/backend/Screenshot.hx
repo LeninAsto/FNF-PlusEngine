@@ -10,7 +10,7 @@ import slushithings.windows.WindowsAPI;
 /**
  * Screenshot utility for capturing game screenshots
  * Uses native Windows C++ code for reliable screen capture
- * Press F10 to take a screenshot
+ * Press the Screenshot binding (F5 by default) to take a screenshot
  */
 class Screenshot
 {
@@ -60,7 +60,11 @@ class Screenshot
 			var fullPath:String = FileSystem.absolutePath(Sys.getCwd() + screenshotFolder + '/' + filename);
 
 			// Use native Windows C++ code for screenshot capture
-			WindowsAPI.capture(fullPath);
+			if (!WindowsAPI.capture(fullPath))
+			{
+				trace('Error taking screenshot: Windows could not encode the PNG');
+				return false;
+			}
 
 			// Show notification
 			showNotification('Screenshot saved!');

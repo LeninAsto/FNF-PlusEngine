@@ -106,6 +106,12 @@ class SustainSplash extends FlxSprite
 	override function update(elapsed)
 	{
 		super.update(elapsed);
+		// Opponent covers have a deliberately smaller state machine than player
+		// covers: they may only render the looping body.  A recycled sprite (or a
+		// script that changes its animation) must never leak a start/end frame into
+		// the modchart renderer, which does not consult FlxSprite.visible.
+		if (opponentHold && alive && animation.curAnim?.name != 'hold')
+			playHoldLoop();
 
 		if (strumNote != null)
 		{
@@ -209,6 +215,22 @@ class SustainSplash extends FlxSprite
 	{
 		if (!alive || animation.curAnim?.name == 'holdEnd')
 			return;
+		// Opponent covers never use the player release punctuation.  Finishing an
+		// opponent hold means removing it immediately, rather than exposing the
+		// final hold-end frame for a tick.
+		if (opponentHold)
+		{
+			if (timer != null)
+			{
+				timer.cancel();
+				timer = null;
+			}
+			visible = false;
+			alpha = 0;
+			x = -50000;
+			kill();
+			return;
+		}
 
 		if (timer != null)
 		{

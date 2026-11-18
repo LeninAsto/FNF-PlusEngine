@@ -212,9 +212,9 @@ class MusicBeatState extends BaseMusicBeatState
 			FlxG.save.flush();
 		}
 
-		// Screenshot support with F10 (F5 is used by Freeplay reload)
+		// Screenshot support with a user-configurable Windows shortcut.
 		#if desktop
-		if (FlxG.keys.justPressed.F10)
+		if (FlxG.keys.anyJustPressed(ClientPrefs.keyBinds.get('screenshot')))
 		{
 			backend.Screenshot.capture();
 		}

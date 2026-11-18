@@ -55,9 +55,6 @@ class Mods
 		// The active/top mod is resolved separately by Paths.modFolders().
 		// Keep the engine/base-game pack at the end so it remains a fallback,
 		// instead of shadowing assets from enabled global mods.
-		if (launchedMod != null && launchedMod.length > 0)
-			pushGlobalMod(launchedMod);
-
 		for (mod in parseList().enabled)
 		{
 			if (isBaseGameMod(mod) || mod == launchedMod)
@@ -137,15 +134,10 @@ class Mods
 		#if MODS_ALLOWED
 		if (mods)
 		{
-			// Active/top mod always has priority over global and engine assets.
-			if (Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0)
-			{
-				var folder:String = Paths.mods(Mods.currentModDirectory + '/' + fileToFind);
-				if (AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder))
-					foldersToCheck.push(folder);
-			}
-
-			// Then enabled global mods, in their configured order.
+			// Psych's merge order is important for script compatibility: globals
+			// load first and the song's active mod loads last, so its callbacks and
+			// definitions can override the shared ones. The active mod is resolved
+			// separately below; do not also insert a launched mod into globalMods.
 			for (mod in Mods.getGlobalMods())
 			{
 				var folder:String = Paths.mods(mod + '/' + fileToFind);
@@ -153,10 +145,18 @@ class Mods
 					foldersToCheck.push(folder);
 			}
 
-			// Then "PsychEngine/mods/" main folder
+			// Then Psych's loose mods/ root.
 			var folder:String = Paths.mods(fileToFind);
 			if (AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder))
 				foldersToCheck.push(Paths.mods(fileToFind));
+
+			// Finally the active song mod, matching vanilla Psych Engine.
+			if (Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0)
+			{
+				var folder:String = Paths.mods(Mods.currentModDirectory + '/' + fileToFind);
+				if (AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder))
+					foldersToCheck.push(folder);
+			}
 
 		}
 		#end

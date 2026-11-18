@@ -4,7 +4,9 @@ package tests;
 import backend.Song;
 import backend.SongLoadPlan;
 import modchart.Manager;
+import modchart.backend.math.Vector3;
 import modchart.backend.standalone.adapters.psych.ModchartEditorPreviewContext;
+import modchart.engine.modifiers.list.PathModifier;
 import states.editors.content.ModchartTimeline;
 import states.editors.content.ModchartLuaImporter;
 import states.editors.content.ModchartScenePreview;
@@ -138,6 +140,10 @@ class ModchartEditorChecks
 		var submods = ModchartLuaImporter.parse('set("beatMult",0,2); set("drunkSpeed",0,3); set("bumpyY",0,1); set("x0",0,100); '
 			+ 'set("shrinkToMin",0,0.5); set("noteSkewX",0,0.2); set("mini0",0,0.1); set("schmovinArrowShapeOffset",0,24)');
 		var parentManager = new Manager();
+		var extraField = parentManager.addPlayerPlayfield('ghost', 2);
+		check(extraField != null && extraField.acceptsPlayer(2) && !extraField.acceptsPlayer(1), 'Extra StrumLine field was not isolated');
+		check(parentManager.playfields[0].acceptsPlayer(0) && parentManager.playfields[0].acceptsPlayer(1)
+			&& !parentManager.playfields[0].acceptsPlayer(2), 'Main field captured an extra StrumLine');
 		submods.install(parentManager);
 		var parentMods = parentManager.playfields[0].modifiers.modifiers;
 		check(parentMods.exists('beat') && parentMods.exists('drunk') && parentMods.exists('bumpy') && parentMods.exists('transform')
@@ -146,6 +152,19 @@ class ModchartEditorChecks
 			'Submodifier did not auto-install its compiled parent');
 		parentManager.setPercent('pulseSpeed', 2);
 		check(parentMods.exists('pulse'), 'Immediate submodifier did not auto-install its compiled parent');
+		report = 'bezier path';
+		parentManager.addModifier('path');
+		var path:PathModifier = cast parentMods.get('path');
+		check(path.loadBezier({x: 0, y: 0, z: 0}, {x: 0, y: 100, z: 0}, {x: 100, y: 100, z: 0}, {x: 100, y: 0, z: 0}, 8),
+			'Bezier path was rejected');
+		var midpoint = path.computePathAt(new Vector3(), 0, 750, 1, true);
+		check(midpoint.x > 40 && midpoint.x < 60 && midpoint.y > 70 && midpoint.y < 80, 'Bezier path midpoint is incorrect');
+		check(path.loadBezierForLane({x: 0, y: 0, z: 0}, {x: 0, y: -100, z: 0}, {x: -100, y: -100, z: 0}, {x: -100, y: 0, z: 0}, 8, 2),
+			'Lane Bezier path was rejected');
+		var lanePoint = path.computePathAt(new Vector3(), 2, 750, 1, true);
+		check(lanePoint.x < -40 && lanePoint.y < -70, 'Lane Bezier path did not override the global path');
+		check(!path.loadBezier({x: Math.NaN, y: 0, z: 0}, {x: 0, y: 0, z: 0}, {x: 0, y: 0, z: 0}, {x: 0, y: 0, z: 0}, 8),
+			'Invalid Bezier path replaced a valid path');
 		parentManager.destroy();
 		var schedule = ModchartLuaImporter.parse('set("drunk",4,0.5); ease("drunk",8,4,1,"linear")');
 		function sample(beat:Float):Float

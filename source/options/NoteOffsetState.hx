@@ -18,6 +18,7 @@ class NoteOffsetState extends MusicBeatState
 
 	var coolText:FlxText;
 	var rating:FlxSprite;
+	var comboSpr:FlxSprite;
 	var comboNums:FlxSpriteGroup;
 	var hitMsText:FlxText;
 	var dumbTexts:FlxTypedGroup<FlxText>;
@@ -85,6 +86,12 @@ class NoteOffsetState extends MusicBeatState
 		rating.updateHitbox();
 
 		add(rating);
+		comboSpr = new FlxSprite().loadGraphic(Paths.image('combo'));
+		comboSpr.cameras = [camHUD];
+		comboSpr.antialiasing = ClientPrefs.data.antialiasing;
+		comboSpr.setGraphicSize(Std.int(comboSpr.width * 0.7));
+		comboSpr.updateHitbox();
+		add(comboSpr);
 
 		comboNums = new FlxSpriteGroup();
 		comboNums.cameras = [camHUD];
@@ -595,6 +602,9 @@ class NoteOffsetState extends MusicBeatState
 		comboNums.screenCenter();
 		comboNums.x = coolText.x - 90 + ClientPrefs.data.comboOffset[2];
 		comboNums.y += 80 - ClientPrefs.data.comboOffset[3];
+		comboSpr.screenCenter();
+		comboSpr.x = comboNums.x + 43 * Math.max(0, comboNums.length - 1) + 50;
+		comboSpr.y = comboNums.y - 20;
 		repositionHitMs();
 		reloadTexts();
 	}
@@ -681,6 +691,7 @@ class NoteOffsetState extends MusicBeatState
 
 		// Combo Offset mode (1)
 		rating.visible = (currentMode == 1);
+		comboSpr.visible = (currentMode == 1);
 		comboNums.visible = (currentMode == 1);
 		hitMsText.visible = (currentMode == 3);
 		dumbTexts.visible = (currentMode == 1);

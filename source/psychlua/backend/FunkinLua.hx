@@ -19,6 +19,7 @@ import substates.PauseSubState;
 import substates.GameOverSubstate;
 import psychlua.backend.LuaUtils;
 import psychlua.backend.LuaUtils.LuaTweenOptions;
+import modchart.Manager;
 #if HSCRIPT_ALLOWED
 import psychlua.backend.HScript;
 #end
@@ -890,6 +891,24 @@ class FunkinLua
 			if (!created)
 				luaTrace('makeLuaStrumLine: could not create "$id" from "$sourceId"', false, false, FlxColor.YELLOW);
 			return created;
+		});
+		Lua_helper.add_callback(lua, "makeModStrumLine", function(id:String, ?source:Dynamic = 'player'):Bool
+		{
+			if (PlayState.instance == null || Manager.instance == null)
+				return false;
+			if (Manager.instance.getNamedPlayfield(id) != null)
+				return false;
+			var sourceId = 'player';
+			if (Std.isOfType(source, Int) || Std.isOfType(source, Float))
+				sourceId = Std.int(cast source) == 0 ? 'opponent' : 'player';
+			else if (source != null && Std.string(source).trim().length > 0)
+				sourceId = Std.string(source);
+			if (!PlayState.instance.makeLuaStrumLine(id, sourceId))
+				return false;
+			var line = PlayState.instance.getStrumLine(id);
+			if (line == null || Manager.instance.addPlayerPlayfield(line.id, line.index) == null)
+				return false;
+			return true;
 		});
 		Lua_helper.add_callback(lua, "isLuaStrumLine", function(id:String):Bool
 			return PlayState.instance != null && PlayState.instance.isLuaStrumLine(id));

@@ -128,7 +128,7 @@ class AchievementsMenuState extends MusicBeatState
 
 		_changeSelection();
 
-		addTouchPad('NONE', 'B_C');
+		addTouchPad('LEFT_FULL', 'A_B_C');
 		addTouchPadCamera();
 
 		super.create();
@@ -141,7 +141,7 @@ class AchievementsMenuState extends MusicBeatState
 	{
 		super.closeSubState();
 		removeTouchPad();
-		addTouchPad('NONE', 'B_C');
+		addTouchPad('LEFT_FULL', 'A_B_C');
 		addTouchPadCamera();
 	}
 
@@ -170,11 +170,6 @@ class AchievementsMenuState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		// Achievement cards are selected directly. A vertical swipe used to move
-		// the selected card instead of respecting the card that was tapped.
-		if (!goingBack && touchHandler.update(true, false, getTouchAchievementAt, onTouchAchievement, function(_) {}))
-			return;
-
 		if (!goingBack && options.length > 1)
 		{
 			var add:Int = 0;
@@ -380,20 +375,12 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 		add(noText);
 		updateOptions();
 
-		// YES/NO is handled by direct taps and swipes; Back is the only button.
-		addTouchPad('NONE', 'B');
+		addTouchPad('LEFT_RIGHT', 'A_B');
 		addTouchPadCamera();
 	}
 
 	override function update(elapsed:Float)
 	{
-		var touchAccept:Bool = false;
-		touchHandler.update(true, false, getTouchChoiceAt, function(index:Int, x:Float, y:Float)
-		{
-			onYes = index == 0;
-			touchAccept = true;
-		}, function(_) {});
-
 		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed))
 		{
 			close();
@@ -407,7 +394,7 @@ class ResetAchievementSubstate extends MusicBeatSubstate
 		if (controls.UI_LEFT_P || controls.UI_RIGHT_P)
 			setChoice(!onYes);
 
-		if (controls.ACCEPT || touchAccept)
+		if (controls.ACCEPT)
 		{
 			if (onYes)
 			{

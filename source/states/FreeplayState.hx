@@ -719,7 +719,7 @@ class FreeplayState extends MusicBeatState
 		FlxG.stage.window.onDropFile.add(onDropFile);
 		#end
 
-		addTouchPad('NONE', 'B_C_X_Y_Z');
+		addTouchPad('LEFT_FULL', 'A_B_C_X_Y_Z');
 		addTouchPadCamera();
 		if (touchPad != null)
 		{
@@ -735,7 +735,7 @@ class FreeplayState extends MusicBeatState
 		persistentUpdate = true;
 		super.closeSubState();
 		removeTouchPad();
-		addTouchPad('NONE', 'B_C_X_Y_Z');
+		addTouchPad('LEFT_FULL', 'A_B_C_X_Y_Z');
 		addTouchPadCamera();
 		if (touchPad != null)
 		{
@@ -1014,7 +1014,6 @@ class FreeplayState extends MusicBeatState
 		var touchX:Bool = touchPad != null && touchPad.buttonX != null && touchPad.buttonX.justPressed;
 		var touchY:Bool = touchPad != null && touchPad.buttonY != null && touchPad.buttonY.justPressed;
 		var touchZ:Bool = touchPad != null && touchPad.buttonZ != null && touchPad.buttonZ.justPressed;
-		var touchSongAccept:Bool = false;
 
 		if (searchFocused && FlxG.keys.justPressed.ESCAPE)
 		{
@@ -1029,23 +1028,6 @@ class FreeplayState extends MusicBeatState
 			updateTexts(elapsed);
 			return;
 		}
-
-		if (!searchFocused && !player.playingMusic && !inDifficultySelect)
-			touchHandler.update(true, true, getTouchSongAt, function(index:Int, x:Float, y:Float)
-			{
-				if (index == curSelected)
-					touchSongAccept = true;
-				else
-					selectTouchSong(index);
-			}, function(direction:Int) changeSelection(direction));
-		else if (!searchFocused && !player.playingMusic && inDifficultySelect)
-			touchHandler.update(true, true, getTouchDifficultyAt, function(index:Int, x:Float, y:Float)
-			{
-				if (index == difficultySelector.curSelected)
-					touchSongAccept = true;
-				else
-					changeDifficultySelection(index - difficultySelector.curSelected);
-			}, function(direction:Int) changeDifficultySelection(direction));
 
 		if (handleSongInfoLinkMouse())
 		{
@@ -1481,7 +1463,7 @@ class FreeplayState extends MusicBeatState
 			}
 		}
 		else if (!searchFocused
-			&& (controls.ACCEPT || touchA || touchSongAccept)
+			&& (controls.ACCEPT || touchA)
 			&& !player.playingMusic)
 		{
 			if (!inDifficultySelect)
@@ -1532,7 +1514,8 @@ class FreeplayState extends MusicBeatState
 		}
 
 		#if (MODS_ALLOWED && sys && !mobile)
-		if (!searchFocused && !player.playingMusic && FlxG.keys.justPressed.F5)
+		if (!searchFocused && !player.playingMusic && FlxG.keys.justPressed.F5
+			&& !FlxG.keys.anyJustPressed(ClientPrefs.keyBinds.get('screenshot')))
 		{
 			reloadModsFromFreeplay();
 			return;

@@ -156,8 +156,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		reloadCheckboxes();
 		setupIntroTransition();
 
-		// The row itself is touchable. Psych needs value arrows; Plus only keeps Back.
-		addTouchPad(isPlusStyle() ? 'NONE' : 'LEFT_RIGHT', 'B');
+		addTouchPad('LEFT_FULL', 'A_B_C');
 		addTouchPadCamera();
 	}
 
@@ -244,9 +243,6 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 		if (curOption != null && !isOptionSelectable(curOption))
 			changeSelection(0);
-
-		if (handleTouchOptions())
-			return;
 
 		if (controls.UI_UP_P)
 		{
@@ -496,13 +492,14 @@ class BaseOptionsMenu extends MusicBeatSubstate
 			{
 				if (item == null || x < 0 || x > FlxG.width)
 					continue;
-				// Rows may overlap while their Alphabet groups are easing. Pick the
-				// closest rendered row instead of the first broad hitbox in the list;
-				// that was the one-row-up offset reported by touch users.
-				var centerY:Float = item.y + item.height * 0.5;
-				var hitRadius:Float = Math.max(52, item.height * 0.75);
-				var distance:Float = Math.abs(y - centerY);
-				if (distance <= hitRadius && distance < closestDistance)
+				// Alphabet is a sprite group: its own height is not the rendered text
+				// bounds. Using it put BOOL hitboxes above the visible label whenever
+				// its checkbox tracker applied its vertical offset.
+				var textCenterY = getOptionTextCenterY(item);
+				var textDistance:Float = textCenterY != null ? Math.abs(y - textCenterY) : Math.POSITIVE_INFINITY;
+				var checkboxDistance:Float = getOptionCheckboxDistance(index, y);
+				var distance:Float = Math.min(textDistance, checkboxDistance);
+				if (distance <= 38 && distance < closestDistance)
 				{
 					closest = index;
 					closestDistance = distance;
@@ -512,6 +509,34 @@ class BaseOptionsMenu extends MusicBeatSubstate
 				return closest;
 		}
 		return -1;
+	}
+
+	function getOptionTextCenterY(item:Alphabet):Null<Float>
+	{
+		var top:Float = Math.POSITIVE_INFINITY;
+		var bottom:Float = Math.NEGATIVE_INFINITY;
+		for (letter in item.members)
+		{
+			if (letter == null || !letter.exists || !letter.visible)
+				continue;
+			top = Math.min(top, letter.y);
+			bottom = Math.max(bottom, letter.y + letter.height);
+		}
+		return top <= bottom ? (top + bottom) * 0.5 : null;
+	}
+
+	function getOptionCheckboxDistance(index:Int, y:Float):Float
+	{
+		if (checkboxGroup == null)
+			return Math.POSITIVE_INFINITY;
+		for (checkbox in checkboxGroup.members)
+		{
+			if (checkbox == null || checkbox.ID != index || !checkbox.exists || !checkbox.visible)
+				continue;
+			var centerY:Float = checkbox.y + checkbox.height * 0.5;
+			return Math.abs(y - centerY);
+		}
+		return Math.POSITIVE_INFINITY;
 	}
 
 	function getTouchValueDirection(index:Int, x:Float, y:Float):Int

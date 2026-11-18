@@ -203,11 +203,6 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 
 	override function update(elapsed:Float)
 	{
-		if (nextAccept <= 0 && touchHandler.update(true, true, getTouchOptionAt, onTouchOption, function(direction:Int) changeSelection(direction)))
-		{
-			super.update(elapsed);
-			return;
-		}
 		if (controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed))
 			changeSelection(-1);
 
