@@ -251,9 +251,7 @@ class PauseSubState extends MusicBeatSubstate
 		regenMenu();
 		cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
 
-		// The menu itself supports tap and swipe. Keep only Back on mobile so
-		// gameplay controls do not cover pause options.
-		addTouchPad('NONE', 'B');
+		addTouchPad(menuItems.contains('Skip Time') ? 'LEFT_FULL' : 'UP_DOWN', 'A_B');
 		addTouchPadCamera();
 
 		super.create();
@@ -332,16 +330,6 @@ class PauseSubState extends MusicBeatSubstate
 
 		super.update(elapsed);
 
-		var touchAccept:Bool = false;
-		touchHandler.update(true, true, getTouchMenuItemAt, function(index:Int, x:Float, y:Float)
-		{
-			// Pause rows are direct actions on touch; requiring a second tap was
-			// especially error-prone after the list animated into place.
-			curSelected = index;
-			changeSelection(0);
-			touchAccept = true;
-		}, changeSelection);
-
 		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed) #if android || FlxG.android.justReleased.BACK #end)
 		{
 			close();
@@ -399,7 +387,7 @@ class PauseSubState extends MusicBeatSubstate
 				}
 		}
 
-		if ((controls.ACCEPT || touchAccept) && (cantUnpause <= 0 || !controls.controllerMode))
+		if (controls.ACCEPT && (cantUnpause <= 0 || !controls.controllerMode))
 		{
 			if (menuItems == difficultyChoices)
 			{
@@ -551,7 +539,7 @@ class PauseSubState extends MusicBeatSubstate
 
 		if (touchPad == null) // sometimes it dosent add the tpad, hopefully this fixes it
 		{
-			addTouchPad('NONE', 'B');
+			addTouchPad(menuItems.contains('Skip Time') ? 'LEFT_FULL' : 'UP_DOWN', 'A_B');
 			addTouchPadCamera();
 		}
 	}

@@ -335,9 +335,7 @@ class CreditsState extends MusicBeatState
 
 		super.create();
 
-		// MusicBeatState.create() resets the Psych cameras. Attach afterwards so
-		// TouchButton never retains a stale camera when the Credits are opened.
-		addTouchPad('NONE', 'B');
+		addTouchPad('UP_DOWN', 'A_B');
 		addTouchPadCamera();
 
 		#if MODS_ALLOWED
@@ -359,8 +357,6 @@ class CreditsState extends MusicBeatState
 
 		if (!quitting)
 		{
-			if (touchHandler.update(true, true, getTouchCreditAt, onTouchCredit, function(direction:Int) changeSelection(direction)))
-				return;
 			if (creditsStuff.length > 1)
 			{
 				var shiftMult:Int = 1;

@@ -228,8 +228,7 @@ class StoryMenuState extends MusicBeatState
 		changeDifficulty();
 
 		super.create();
-		// Weeks are swiped directly and difficulty has its own onscreen arrows.
-		addTouchPad('NONE', 'A_B_X_Y');
+		addTouchPad('LEFT_FULL', 'A_B_X_Y');
 		addTouchPadCamera();
 	}
 
@@ -239,34 +238,13 @@ class StoryMenuState extends MusicBeatState
 		changeWeek();
 		super.closeSubState();
 		removeTouchPad();
-		addTouchPad('NONE', 'A_B_X_Y');
+		addTouchPad('LEFT_FULL', 'A_B_X_Y');
 		addTouchPadCamera();
 	}
 
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-		var touchAccept:Bool = false;
-		if (!movedBack && !selectedWeek)
-			touchHandler.update(true, true, getTouchStoryTargetAt, function(index:Int, x:Float, y:Float)
-			{
-				if (index == TOUCH_DIFFICULTY_LEFT)
-					changeDifficulty(-1);
-				else if (index == TOUCH_DIFFICULTY_RIGHT)
-					changeDifficulty(1);
-				else if (index == curWeek)
-					touchAccept = true;
-				else
-				{
-					changeWeek(index - curWeek);
-					changeDifficulty();
-				}
-			}, function(direction:Int)
-			{
-				changeWeek(direction);
-				changeDifficulty();
-			});
-
 		if (WeekData.weeksList.length < 1)
 		{
 			if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed) && !movedBack && !selectedWeek)
@@ -342,7 +320,7 @@ class StoryMenuState extends MusicBeatState
 				openSubState(backend.ScriptableSubstate.tryCreate('ResetScoreSubState', new ResetScoreSubState('', curDifficulty, '', curWeek)));
 				removeTouchPad();
 			}
-			else if (controls.ACCEPT || touchAccept || (touchPad != null && touchPad.buttonA.justPressed))
+			else if (controls.ACCEPT || (touchPad != null && touchPad.buttonA.justPressed))
 				selectWeek();
 		}
 

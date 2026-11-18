@@ -218,7 +218,7 @@ class FreeplayState_Psych extends MusicBeatState
 		changeSelection();
 		updateTexts();
 
-		addTouchPad('LEFT_RIGHT', 'B_C_X_Y_Z');
+		addTouchPad('LEFT_FULL', 'A_B_C_X_Y_Z');
 		addTouchPadCamera();
 		if (touchPad != null)
 			touchPad.updateTrackedButtons();
@@ -236,7 +236,7 @@ class FreeplayState_Psych extends MusicBeatState
 		persistentUpdate = true;
 		super.closeSubState();
 		removeTouchPad();
-		addTouchPad('LEFT_RIGHT', 'B_C_X_Y_Z');
+		addTouchPad('LEFT_FULL', 'A_B_C_X_Y_Z');
 		addTouchPadCamera();
 		if (touchPad != null)
 			touchPad.updateTrackedButtons();
@@ -297,15 +297,6 @@ class FreeplayState_Psych extends MusicBeatState
 		if (Math.abs(lerpRating - intendedRating) <= 0.01)
 			lerpRating = intendedRating;
 
-		var touchSongAccept:Bool = false;
-		if (!player.playingMusic)
-			touchHandler.update(true, true, getTouchSongAt, function(index:Int, x:Float, y:Float)
-			{
-				if (index == curSelected)
-					touchSongAccept = true;
-				else
-					changeSelection(index - curSelected);
-			}, function(direction:Int) changeSelection(direction));
 
 		var shiftMult:Int = 1;
 		if ((FlxG.keys.pressed.SHIFT || touchPad.buttonZ.justPressed) && !player.playingMusic)
@@ -488,7 +479,7 @@ class FreeplayState_Psych extends MusicBeatState
 				player.pauseOrResume(!player.playing);
 			}
 		}
-		else if ((controls.ACCEPT || touchPad.buttonA.justPressed || touchSongAccept) && !player.playingMusic)
+		else if ((controls.ACCEPT || touchPad.buttonA.justPressed) && !player.playingMusic)
 		{
 			persistentUpdate = false;
 
