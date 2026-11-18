@@ -83,6 +83,22 @@ class PathModifier extends Modifier {
 			__lanePaths.set(lane, clean);
 	}
 
+	public function loadBezier(start:PathNode, controlA:PathNode, controlB:PathNode, finish:PathNode, samples:Int = 24):Bool {
+		final path = makeBezier(start, controlA, controlB, finish, samples);
+		if (path == null)
+			return false;
+		loadPath(path);
+		return true;
+	}
+
+	public function loadBezierForLane(start:PathNode, controlA:PathNode, controlB:PathNode, finish:PathNode, samples:Int, lane:Int):Bool {
+		final path = makeBezier(start, controlA, controlB, finish, samples);
+		if (path == null)
+			return false;
+		loadPathForLane(path, lane);
+		return true;
+	}
+
 	public inline function clearLanePaths():Void {
 		__lanePaths.clear();
 	}
@@ -91,6 +107,31 @@ class PathModifier extends Modifier {
 		final lanePath = __lanePaths.get(lane);
 		return lanePath != null ? lanePath : __path;
 	}
+
+	private static function makeBezier(start:PathNode, controlA:PathNode, controlB:PathNode, finish:PathNode, samples:Int):Null<Array<PathNode>> {
+		if (!isValidNode(start) || !isValidNode(controlA) || !isValidNode(controlB) || !isValidNode(finish))
+			return null;
+
+		final count = FlxMath.minInt(MAX_PATH_NODES - 1, Std.int(Math.max(2, Math.min(256, samples))));
+		final result:Array<PathNode> = [];
+		for (i in 0...(count + 1)) {
+			final t = i / count;
+			final inv = 1 - t;
+			final a = inv * inv * inv;
+			final b = 3 * inv * inv * t;
+			final c = 3 * inv * t * t;
+			final d = t * t * t;
+			result.push({
+				x: a * start.x + b * controlA.x + c * controlB.x + d * finish.x,
+				y: a * start.y + b * controlA.y + c * controlB.y + d * finish.y,
+				z: a * start.z + b * controlA.z + c * controlB.z + d * finish.z
+			});
+		}
+		return result;
+	}
+
+	private static inline function isValidNode(node:PathNode):Bool
+		return node != null && Math.isFinite(node.x) && Math.isFinite(node.y) && Math.isFinite(node.z);
 
 	private function samplePathInto(activePath:Vector<PathNode>, distance:Float, output:Vector3):Bool {
 		final pathLength = activePath.length;

@@ -140,6 +140,7 @@ final class Manager extends FlxBasic
 		// The base field has a stable public identity. Its render index remains 0,
 		// but scripts should address it as "main" instead of guessing an index.
 		addPlayfield("main");
+		playfields[0].playerMask = 3;
 		__renderRequested = false;
 	}
 
@@ -589,6 +590,19 @@ final class Manager extends FlxBasic
 		final entry = __getOrCreateNamedPlayfield(name);
 		__activateNamedPlayfield(entry);
 		return __findPlayfieldIndex(entry.playfield);
+	}
+
+	/** Creates a named field that affects only one StrumLine. */
+	public function addPlayerPlayfield(name:String, player:Int):Null<PlayField>
+	{
+		if (name == null || name.trim().length == 0 || player < 0 || player >= 31 || getNamedPlayfield(name) != null)
+			return null;
+
+		addPlayfield(name);
+		final playfield = getNamedPlayfield(name);
+		if (playfield != null)
+			playfield.playerMask = 1 << player;
+		return playfield;
 	}
 
 	public function removePlayfield(field:Int, ?beat:Float):Bool

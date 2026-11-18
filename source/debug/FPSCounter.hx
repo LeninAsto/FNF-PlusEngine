@@ -417,8 +417,9 @@ class FPSCounter extends Sprite
 	// Handle the FPS counter shortcut.
 	private function onKeyDown(event:KeyboardEvent):Void
 	{
-		// The same key is being captured when the Controls menu is rebinding it.
-		if (Controls.instance != null && Controls.instance.isInSubstate)
+		// Keep the shortcut active in pause/error substates; only a live rebind
+		// operation should consume it.
+		if (options.ControlsSubState.isRebinding)
 			return;
 		var keys = ClientPrefs.keyBinds.get('fps_counter');
 		if (keys != null && keys.contains(event.keyCode))

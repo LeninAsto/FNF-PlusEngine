@@ -371,7 +371,7 @@ final class ModifierGroup {
 				else if (StringTools.startsWith(lowerName, 'fieldrotate') || StringTools.startsWith(lowerName, 'fieldorigin')
 					|| lowerName == 'fieldx' || lowerName == 'fieldy' || lowerName == 'fieldz' || lowerName == 'fielddepth'
 					|| lowerName == 'fieldpitch' || lowerName == 'fieldyaw' || lowerName == 'fieldroll') 'field';
-				else if (StringTools.startsWith(lowerName, 'luapath')) 'luapath';
+				else if (StringTools.startsWith(lowerName, 'path')) 'path';
 				else if (StringTools.startsWith(lowerName, 'spline')) 'modspline';
 				else if (StringTools.startsWith(lowerName, 'pulse')) 'pulse';
 				else if (StringTools.startsWith(lowerName, 'vibrate')) 'vibrate';

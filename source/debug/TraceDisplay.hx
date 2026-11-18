@@ -543,8 +543,9 @@ class TraceDisplay extends Sprite
 	 */
 	private function onKeyDown(event:KeyboardEvent):Void
 	{
-		// Do not toggle while this key is being assigned in Controls.
-		if (Controls.instance != null && Controls.instance.isInSubstate)
+		// Only suppress the key while Controls is actively capturing a new bind.
+		// Error, pause and debug substates must still be able to reveal traces.
+		if (options.ControlsSubState.isRebinding)
 			return;
 		var keys = ClientPrefs.keyBinds.get('trace_display');
 		if (keys != null && keys.contains(event.keyCode))

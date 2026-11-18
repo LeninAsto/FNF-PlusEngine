@@ -1,5 +1,7 @@
 package backend;
 
+import flixel.FlxG;
+import flixel.util.FlxColor;
 import states.PlayState;
 
 /**
@@ -11,6 +13,7 @@ class GameplayStateGuard
 {
 	final prefs:Map<String, Dynamic> = new Map();
 	final stageUI:String;
+	final cameraBgColor:FlxColor;
 	var restored:Bool = false;
 
 	public function new()
@@ -23,6 +26,10 @@ class GameplayStateGuard
 			prefs.set(key, value);
 		}
 		stageUI = PlayState.stageUI;
+		// FlxG.cameras.bgColor proxies the active camera. Lua mods often mutate
+		// camGame.bgColor, so the camera Flixel creates during a state switch can
+		// otherwise inherit that color before the next PlayState exists.
+		cameraBgColor = FlxG.cameras.bgColor;
 	}
 
 	public function restore():Void
@@ -39,6 +46,11 @@ class GameplayStateGuard
 		#end
 		ClientPrefs.applyFramePacing();
 		ClientPrefs.saveSettings();
+
+		// Restore this after script teardown and before the next state is created.
+		// This keeps a stage-local camera color (AKAGE's red background, for
+		// example) from becoming the next stage's implicit camera background.
+		FlxG.cameras.bgColor = cameraBgColor;
 
 		if (PlayState.temporaryStageUI == null && stageUI != null)
 			PlayState.stageUI = stageUI;

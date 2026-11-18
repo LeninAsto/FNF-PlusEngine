@@ -33,6 +33,8 @@ final class PlayField extends FlxSprite
 {
 	public var context:Context;
 	public var displayName:Null<String> = null;
+	/** -1 renders every strumline; otherwise this bit mask selects its owners. */
+	public var playerMask:Int = -1;
 	public var state(default, null):PlayfieldState;
 
 	public var events:EventManager;
@@ -103,6 +105,9 @@ final class PlayField extends FlxSprite
 
 	public inline function addModifier(name:String)
 		return modifiers.addModifier(name);
+
+	public inline function acceptsPlayer(player:Int):Bool
+		return playerMask < 0 || (player >= 0 && player < 31 && (playerMask & (1 << player)) != 0);
 
 	public inline function addScriptedModifier(name:String, instance:Modifier)
 		return modifiers.addScriptedModifier(name, instance);

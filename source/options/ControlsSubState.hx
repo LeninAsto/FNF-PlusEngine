@@ -11,6 +11,7 @@ import flixel.input.gamepad.FlxGamepadManager;
 
 class ControlsSubState extends MusicBeatSubstate
 {
+	public static var isRebinding:Bool = false;
 	var curSelected:Int = 0;
 	var curAlt:Bool = false;
 
@@ -68,6 +69,7 @@ class ControlsSubState extends MusicBeatSubstate
 
 	public function new()
 	{
+		isRebinding = false;
 		controls.isInSubstate = true;
 
 		super();
@@ -354,6 +356,7 @@ class ControlsSubState extends MusicBeatSubstate
 					add(bindingText2);
 
 					binding = true;
+					isRebinding = true;
 					holdingEsc = 0;
 					ClientPrefs.toggleVolumeKeys(false);
 					FlxG.sound.play(Paths.sound('scrollMenu'));
@@ -508,6 +511,7 @@ class ControlsSubState extends MusicBeatSubstate
 	function closeBinding()
 	{
 		binding = false;
+		isRebinding = false;
 		bindingBlack.destroy();
 		remove(bindingBlack);
 
