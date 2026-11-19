@@ -3,6 +3,8 @@
   "$namespace": "freeplay",
   "presence": "En los menús",
   "title": "FREEPLAY",
+  "song_count": "{1} CANCIONES",
+  "actions": "{1} JUGAR  •  {2} PREVIA  •  {3} JUGABILIDAD  •  {4} REINICIAR PUNTUACION  •  {5} VOLVER",
   "score": {
     "personal_best": "MEJOR PERSONAL: {1} ({2})",
     "details": "Puntuación: {1}\nPrecisión: {2}",

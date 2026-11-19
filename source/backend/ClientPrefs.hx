@@ -191,7 +191,9 @@ import mobile.backend.PsychJNI;
 	public var pauseCountdown:Bool = false; // Enable countdown when resuming from pause
 	public var heyIntro:Bool = false; // Boyfriend and Girlfriend do Hey! animation on countdown Go!
 	public var breakTimer:Bool = false; // Show timer when next notes are approaching
-	public var usePsychFreeplay:Bool = true; // Use Psych-style legacy Freeplay instead of PlusEngine Freeplay
+	public var usePsychFreeplay:Bool = true; // Legacy compatibility mirror for freeplayMenuStyle
+	public var mainMenuStyle:String = 'Normal'; // Normal, Plus
+	public var freeplayMenuStyle:String = 'Normal'; // Normal, Plus
 	public var cneStyleDragCharacter:Bool = false;
 	public var canDragCameraStage:Bool = true;
 
@@ -399,6 +401,7 @@ class ClientPrefs
 	public static function saveSettings()
 	{
 		syncThemeModeFlags();
+		normalizeMenuStyles();
 		normalizeFPSCounterPrefs();
 		#if windows
 		data.maxInstanceSlots = normalizeMaxInstanceSlots(data.maxInstanceSlots);
@@ -505,6 +508,9 @@ class ClientPrefs
 		if (!Reflect.hasField(FlxG.save.data, 'menuThemeMode'))
 			data.menuThemeMode = data.menuDarkTheme ? 'Dark' : 'Light';
 		syncThemeModeFlags();
+		if (!Reflect.hasField(FlxG.save.data, 'freeplayMenuStyle'))
+			data.freeplayMenuStyle = data.usePsychFreeplay ? 'Normal' : 'Plus';
+		normalizeMenuStyles();
 
 		if (Main.fpsVar != null)
 			Main.fpsVar.applyPrefs();
@@ -742,6 +748,18 @@ class ClientPrefs
 		};
 		data.menuDarkTheme = data.menuThemeMode == 'Dark';
 		data.menuAccentColorCustom = 0xFF000000 | (data.menuAccentColorCustom & 0x00FFFFFF);
+	}
+
+	public static function normalizeMenuStyles():Void
+	{
+		data.mainMenuStyle = normalizeMenuStyle(data.mainMenuStyle);
+		data.freeplayMenuStyle = normalizeMenuStyle(data.freeplayMenuStyle);
+		data.usePsychFreeplay = data.freeplayMenuStyle != 'Plus';
+	}
+
+	static function normalizeMenuStyle(style:String):String
+	{
+		return style != null && style.toLowerCase() == 'plus' ? 'Plus' : 'Normal';
 	}
 
 	static function getInterpolatedDrawFramerate(safeFramerate:Int):Int

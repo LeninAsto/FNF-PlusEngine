@@ -3,6 +3,7 @@
   "$namespace": "freeplay",
   "presence": "In the Menus",
   "title": "FREEPLAY",
+  "song_count": "{1} SONGS",
   "score": {
     "personal_best": "PERSONAL BEST: {1} ({2})",
     "details": "Score: {1}\nAccuracy: {2}",
@@ -19,6 +20,7 @@
     "helper": "Press B to focus, ESC to exit"
   },
   "tip": "Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.",
+  "actions": "{1} PLAY  •  {2} PREVIEW  •  {3} GAMEPLAY  •  {4} RESET SCORE  •  {5} BACK",
   "desktop_mod_tip": " / F5 reloads mods / drop a mod folder to import it.",
   "mod_import": {
     "title": "Importing mod",
