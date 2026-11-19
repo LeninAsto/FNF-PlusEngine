@@ -35,6 +35,7 @@ import states.editors.CharacterEditorState;
 import states.play.BreakTimerHud;
 import states.play.HealthIconHud;
 import states.play.HudSafeZone;
+import states.play.JudgementCounter;
 import states.play.NoteSplashHelper;
 import states.play.PlayModes;
 import states.play.RatingNames;
@@ -299,6 +300,7 @@ class PlayState extends MusicBeatState
 	var bonusLimit:Float = AccuracyTools.BONUS_MAX;
 	var bonusLocked:Bool = false;
 	public var scoreTxt:FlxText;
+	public var judgementCounter:JudgementCounter;
 	var timeTxt:FlxText;
 	var timeTween:FlxTween;
 	var scoreTxtTween:FlxTween;
@@ -730,6 +732,10 @@ class PlayState extends MusicBeatState
 		scoreTxt.borderSize = 1.25;
 		scoreTxt.visible = !ClientPrefs.data.hideHud;
 		uiGroup.add(scoreTxt);
+
+		judgementCounter = new JudgementCounter(ratingsData);
+		uiGroup.add(judgementCounter);
+		refreshJudgementCounter();
 
 		botplayTxt = new FlxText(400, healthBar.y - 90, FlxG.width - 800, botplayLabel(), 32);
 		botplayTxt.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -1780,6 +1786,15 @@ class PlayState extends MusicBeatState
 				[score, combo, tps, str]);
 		}
 		scoreTxt.text = tempScore;
+	}
+
+	public function refreshJudgementCounter():Void
+	{
+		if (judgementCounter != null)
+		{
+			judgementCounter.visible = ClientPrefs.data.showJudgementCounter && !ClientPrefs.data.hideHud;
+			judgementCounter.refresh(ratingsData, songMisses);
+		}
 	}
 
 	function botplayLabel():String
@@ -4639,7 +4654,11 @@ class PlayState extends MusicBeatState
 		{
 			totalNotesHit += daRating.ratingMod * density;
 			note.ratingMod = daRating.ratingMod;
-			if(!note.ratingDisabled) daRating.hits += density;
+			if (!note.ratingDisabled)
+			{
+				daRating.hits += density;
+				if (judgementCounter != null) judgementCounter.record(daRating.name, daRating.hits);
+			}
 			note.rating = daRating.name;
 			score = daRating.score;
 
@@ -5157,7 +5176,11 @@ class PlayState extends MusicBeatState
 		health -= subtract * healthLoss * density;
 		songScore -= 10 * density;
 		lockAccuracyBonus();
-		if(!endingSong) songMisses += density;
+		if (!endingSong)
+		{
+			songMisses += density;
+			if (judgementCounter != null) judgementCounter.record('miss', songMisses);
+		}
 		if (!endingSong) showMissPopup();
 		totalPlayed += density;
 		requestRatingRecalculation(true);

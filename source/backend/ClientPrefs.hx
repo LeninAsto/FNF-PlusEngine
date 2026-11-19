@@ -112,6 +112,7 @@ import mobile.backend.PsychJNI;
 	public var abbreviateScore:Bool = true;
 	public var hideSustainSplash:Bool = false;
 	public var showKeyViewer:Bool = false;
+	public var showJudgementCounter:Bool = false;
 	public var iconBounceType:String = 'Default';
 	public var showRating:Bool = true;
 	public var showCombo:Bool = false;
