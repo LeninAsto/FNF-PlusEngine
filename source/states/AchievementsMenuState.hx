@@ -240,7 +240,7 @@ class AchievementsMenuState extends MusicBeatState
 		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed))
 		{
 			FlxG.sound.play(Paths.sound('cancelMenu'));
-			MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
+			MusicBeatState.switchState(MainMenuStateSelector.create());
 			goingBack = true;
 		}
 	}

@@ -413,7 +413,7 @@ class CreditsState extends MusicBeatState
 
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				quitting = true;
-				MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
+				MusicBeatState.switchState(MainMenuStateSelector.create());
 			}
 		}
 

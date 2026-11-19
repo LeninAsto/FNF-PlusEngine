@@ -444,7 +444,7 @@ class ResultsState extends MusicBeatState
 		var target = boolParam('isWeek') ? () -> new states.StoryMenuState() : () ->
 		{
 			var freeplay = states.FreeplayStateSelector.create();
-			if (Std.isOfType(freeplay, states.FreeplayState_Psych))
+			if (Std.isOfType(freeplay, states.FreeplayState))
 				startPsychFreeplayMusic();
 			return freeplay;
 		};

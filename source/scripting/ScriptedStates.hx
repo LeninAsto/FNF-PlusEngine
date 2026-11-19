@@ -6,6 +6,7 @@ import backend.MusicBeatState;
 import backend.MusicBeatSubstate;
 import backend.Mods;
 import backend.Paths;
+import states.MainMenuStateSelector;
 import flixel.FlxG;
 import flixel.FlxState;
 import flixel.FlxSubState;
@@ -308,7 +309,7 @@ class ScriptedReturnState extends MusicBeatState {
 
 		done = true;
 		if (!ScriptedStates.switchToState(target, args, scope))
-			MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new states.MainMenuState()));
+			MusicBeatState.switchState(MainMenuStateSelector.create());
 	}
 }
 #end

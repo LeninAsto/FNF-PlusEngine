@@ -1,6 +1,6 @@
 package options;
 
-import states.MainMenuState;
+import states.MainMenuStateSelector;
 import backend.StageData;
 import mobile.input.TouchScrollHandler;
 import flixel.util.FlxSpriteUtil;
@@ -416,7 +416,7 @@ class OptionsState extends MusicBeatState
 				else
 				{
 					clearSubstateTransition();
-					MusicBeatState.switchState(new MainMenuState());
+					MusicBeatState.switchState(MainMenuStateSelector.create());
 				}
 			}
 			else if (controls.ACCEPT && options != null && options.length > 0)
@@ -493,7 +493,7 @@ class OptionsState extends MusicBeatState
 			else
 			{
 				clearSubstateTransition();
-				MusicBeatState.switchState(new MainMenuState());
+				MusicBeatState.switchState(MainMenuStateSelector.create());
 			}
 		}
 		else if (controls.ACCEPT && options != null && options.length > 0)

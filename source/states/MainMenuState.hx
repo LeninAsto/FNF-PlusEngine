@@ -71,7 +71,7 @@ class MainMenuState extends MusicBeatState
 	override function create()
 	{
 		super.create();
-		usePlusLayout = ClientPrefs.data.mainMenuStyle == 'Plus';
+		usePlusLayout = false;
 
 		Mods.loadTopMod();
 
