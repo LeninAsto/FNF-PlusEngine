@@ -3,6 +3,7 @@ package states;
 import flixel.FlxObject;
 import flixel.effects.FlxFlicker;
 import flixel.graphics.frames.FlxAtlasFrames;
+import flixel.group.FlxGroup.FlxTypedGroup;
 import states.editors.MasterEditorMenu;
 import options.OptionsState;
 import flixel.text.FlxText;
@@ -59,6 +60,10 @@ class MainMenuState extends MusicBeatState
 
 	public var magenta:FlxSprite;
 	public var camFollow:FlxObject;
+	private var usePlusLayout:Bool = false;
+	private var plusLogo:FlxSprite;
+	private var plusVizBars:FlxTypedGroup<FlxSprite>;
+	private static inline var PLUS_VIZ_BAR_COUNT:Int = 30;
 
 	static var showOutdatedWarning:Bool = true;
 	static var updateWarningShown:Bool = false;
@@ -66,6 +71,7 @@ class MainMenuState extends MusicBeatState
 	override function create()
 	{
 		super.create();
+		usePlusLayout = ClientPrefs.data.mainMenuStyle == 'Plus';
 
 		Mods.loadTopMod();
 
@@ -97,6 +103,8 @@ class MainMenuState extends MusicBeatState
 		magenta.visible = false;
 		magenta.color = 0xFFfd719b;
 		add(magenta);
+		if (usePlusLayout)
+			createPlusDecor();
 
 		menuItems = new PlusMainMenuItemGroup();
 		add(menuItems);
@@ -104,17 +112,40 @@ class MainMenuState extends MusicBeatState
 		for (num => option in optionShit)
 		{
 			var item:FlxSprite = createMenuItem(option, 0, (num * 140) + 90);
-			item.y += (4 - optionShit.length) * 70; // Offsets for when you have anything other than 4 items
-			item.screenCenter(X);
+			if (usePlusLayout)
+			{
+				item.x = safeX(84);
+				item.y = 132 + num * 102;
+			}
+			else
+			{
+				item.y += (4 - optionShit.length) * 70;
+				item.screenCenter(X);
+			}
 		}
 
 		if (leftOption != null)
+		{
 			leftItem = createMenuItem(leftOption, safeX(60), 490);
+			if (usePlusLayout)
+			{
+				leftItem.x = safeX(safeWidth() - leftItem.width - 38);
+				leftItem.y = 34;
+			}
+		}
 		if (rightOption != null)
 		{
 			rightItem = createMenuItem(rightOption, safeX(safeWidth() - 60), 490);
-			rightItem.x -= rightItem.width;
+			if (usePlusLayout)
+			{
+				rightItem.x = safeX(safeWidth() - rightItem.width - 38);
+				rightItem.y = FlxG.height - rightItem.height - 42;
+			}
+			else
+				rightItem.x -= rightItem.width;
 		}
+		if (usePlusLayout)
+			animatePlusEntrance();
 
 		var buildLine:String = BuildInfo.versionLine();
 		var hasBuildLine:Bool = buildLine.length > 0;
@@ -157,9 +188,83 @@ class MainMenuState extends MusicBeatState
 		#end
 
 		FlxG.camera.follow(camFollow, null, 0.15);
+		if (usePlusLayout)
+			camFollow.setPosition(FlxG.width * 0.5, FlxG.height * 0.5);
 
 		addTouchPad('NONE', 'E_X');
 
+	}
+
+	function createPlusDecor():Void
+	{
+		plusVizBars = new FlxTypedGroup<FlxSprite>();
+		var barWidth:Int = Std.int(Math.max(2, FlxG.width / PLUS_VIZ_BAR_COUNT - 3));
+		for (i in 0...PLUS_VIZ_BAR_COUNT)
+		{
+			var bar = new FlxSprite(i * (barWidth + 3), FlxG.height - 26).makeGraphic(barWidth, 1, FlxColor.WHITE);
+			bar.origin.set(0, 0);
+			bar.alpha = 0.52;
+			plusVizBars.add(bar);
+		}
+		add(plusVizBars);
+
+		plusLogo = new FlxSprite();
+		plusLogo.frames = Paths.getSparrowAtlas('logoBumpin');
+		plusLogo.animation.addByPrefix('bump', 'logo bumpin', 24, false);
+		plusLogo.animation.play('bump');
+		plusLogo.antialiasing = ClientPrefs.data.antialiasing;
+		plusLogo.setGraphicSize(310);
+		plusLogo.updateHitbox();
+		plusLogo.x = FlxG.width - plusLogo.width - 74;
+		plusLogo.y = (FlxG.height - plusLogo.height) * 0.5 - 12;
+		add(plusLogo);
+	}
+
+	function animatePlusEntrance():Void
+	{
+		for (i in 0...menuItems.length)
+		{
+			var item = menuItems.members[i];
+			if (item == null)
+				continue;
+			var targetX:Float = item.x;
+			item.x = -item.width - 36;
+			item.alpha = 0;
+			FlxTween.tween(item, {x: targetX, alpha: 1}, 0.38 + i * 0.07, {ease: FlxEase.cubeOut});
+		}
+		for (item in [leftItem, rightItem])
+		{
+			if (item == null)
+				continue;
+			var targetX:Float = item.x;
+			item.x = FlxG.width + 28;
+			item.alpha = 0;
+			FlxTween.tween(item, {x: targetX, alpha: 1}, 0.52, {ease: FlxEase.cubeOut});
+		}
+		if (plusLogo != null)
+		{
+			var targetX:Float = plusLogo.x;
+			plusLogo.x = FlxG.width + 40;
+			plusLogo.alpha = 0;
+			FlxTween.tween(plusLogo, {x: targetX, alpha: 1}, 0.58, {ease: FlxEase.backOut});
+		}
+	}
+
+	function updatePlusDecor():Void
+	{
+		if (plusVizBars == null)
+			return;
+		var time:Float = FlxG.sound.music != null ? FlxG.sound.music.time * 0.004 : 0;
+		for (i in 0...plusVizBars.members.length)
+		{
+			var bar = plusVizBars.members[i];
+			if (bar == null)
+				continue;
+			var height:Float = 10 + Math.abs(Math.sin(time + i * 0.39)) * (20 + (i % 5) * 8);
+			bar.scale.y = height;
+			bar.y = FlxG.height - 22 - height;
+			bar.color = FlxColor.interpolate(0xFF8D70F2, FlxColor.WHITE, i / Math.max(1, PLUS_VIZ_BAR_COUNT - 1));
+		}
 	}
 
 	#if MODS_ALLOWED
@@ -283,6 +388,8 @@ class MainMenuState extends MusicBeatState
 	{
 		if (FlxG.sound.music != null && FlxG.sound.music.volume < 0.8)
 			FlxG.sound.music.volume = Math.min(FlxG.sound.music.volume + 0.5 * elapsed, 0.8);
+		if (usePlusLayout)
+			updatePlusDecor();
 
 		#if CHECK_FOR_UPDATES
 		tryShowOutdatedWarning();
@@ -290,11 +397,23 @@ class MainMenuState extends MusicBeatState
 
 		if (!selectedSomethin && !isMenuInputBlocked())
 		{
-			if (controls.UI_UP_P)
-				changeItem(-1);
-
-			if (controls.UI_DOWN_P)
-				changeItem(1);
+			if (usePlusLayout && curColumn == MainMenuColumn.RIGHT && controls.UI_UP_P && leftItem != null)
+			{
+				curColumn = MainMenuColumn.LEFT;
+				changeItem();
+			}
+			else if (usePlusLayout && curColumn == MainMenuColumn.LEFT && controls.UI_DOWN_P && rightItem != null)
+			{
+				curColumn = MainMenuColumn.RIGHT;
+				changeItem();
+			}
+			else if (curColumn == MainMenuColumn.CENTER)
+			{
+				if (controls.UI_UP_P)
+					changeItem(-1);
+				if (controls.UI_DOWN_P)
+					changeItem(1);
+			}
 
 			var allowMouse:Bool = allowMouse;
 			if (allowMouse
@@ -384,14 +503,24 @@ class MainMenuState extends MusicBeatState
 					}
 
 				case MainMenuColumn.LEFT:
-					if (controls.UI_RIGHT_P)
+					if (usePlusLayout && controls.UI_DOWN_P && rightItem != null)
+					{
+						curColumn = MainMenuColumn.RIGHT;
+						changeItem();
+					}
+					else if (controls.UI_RIGHT_P)
 					{
 						curColumn = MainMenuColumn.CENTER;
 						changeItem();
 					}
 
 				case MainMenuColumn.RIGHT:
-					if (controls.UI_LEFT_P)
+					if (usePlusLayout && controls.UI_UP_P && leftItem != null)
+					{
+						curColumn = MainMenuColumn.LEFT;
+						changeItem();
+					}
+					else if (controls.UI_LEFT_P)
 					{
 						curColumn = MainMenuColumn.CENTER;
 						changeItem();
@@ -499,6 +628,13 @@ class MainMenuState extends MusicBeatState
 		super.update(elapsed);
 	}
 
+	override function beatHit():Void
+	{
+		super.beatHit();
+		if (usePlusLayout && plusLogo != null)
+			plusLogo.animation.play('bump', true);
+	}
+
 	function isMenuInputBlocked():Bool
 	{
 		if (menuItems == null)
@@ -533,7 +669,7 @@ class MainMenuState extends MusicBeatState
 		if (selectedItem.animation.getByName('selected') != null)
 			selectedItem.animation.play('selected');
 		selectedItem.centerOffsets();
-		camFollow.y = selectedItem.getGraphicMidpoint().y;
+		camFollow.y = usePlusLayout ? FlxG.height * 0.5 : selectedItem.getGraphicMidpoint().y;
 	}
 }
 

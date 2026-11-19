@@ -86,6 +86,9 @@ class FreeplayState extends MusicBeatState
 	private var songInfoLicenseText:FlxText;
 	private var songInfoCardLoadingLabel:FlxText;
 	private var songInfoCardSpinner:MaterialWavyProgressIndicator;
+	private var songInfoAlbumSpinner:MaterialWavyProgressIndicator;
+	private var songInfoStatsIcon:FlxText;
+	private var songInfoScoresIcon:FlxText;
 	private var songInfoCardY:Float = 0;
 	private var songInfoCardHiddenY:Float = 0;
 	private var songInfoCardShownY:Float = 0;
@@ -136,15 +139,24 @@ class FreeplayState extends MusicBeatState
 	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	public var inDifficultySelect:Bool = false;
+	private var difficultySongIndex:Int = -1;
 	public var difficultySelector:DifficultySelector;
 	public var songsOffsetX:Float = 0;
 
 	public var blackOverlay:FlxSprite;
-	public var layerFree:FlxSprite;
+	private var freeplayVinyl:FlxSprite;
+	private var freeplayVinylRotation:Float = 0;
+	private var freeplayHeaderPanel:FlxSprite;
 	public var cardArray:Array<FlxSprite> = [];
 	public var cardAccentArray:Array<FlxSprite> = [];
 	public var modTextArray:Array<FlxText> = [];
 	public var freeplayText:FlxText;
+	private var songCountText:FlxText;
+	private var songCountBg:FlxSprite;
+	private var songCountIcon:FlxText;
+	private var searchIcon:FlxText;
+	private var actionBarIcon:FlxText;
+	private var actionBarBg:FlxSprite;
 	public var lastThemeSignature:String = "";
 
 	// Variables para el zoom del bg
@@ -444,8 +456,11 @@ class FreeplayState extends MusicBeatState
 		}
 		else
 		{
-			var darkestColor = FlxColor.interpolate(songs[index].color, FlxColor.BLACK, 0.5);
-			MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, 2, darkestColor, OptionsMenuTheme.cardStroke(false));
+			// Pre-rendered card surfaces avoid rebuilding BitmapData whenever selection changes.
+			card.loadGraphic(Paths.image('ui/freeplay/song-card-normal'));
+			card.setGraphicSize(470, 110);
+			card.updateHitbox();
+			_cardVisualSignatures[index] = 'surface:false';
 		}
 		card.antialiasing = ClientPrefs.data.antialiasing;
 		card.ID = index;
@@ -455,6 +470,7 @@ class FreeplayState extends MusicBeatState
 
 		var accentBar:FlxSprite = new FlxSprite();
 		MD3ShapeTools.fillRoundRect(accentBar, 10, 84, 5);
+		accentBar.origin.set(0, 0);
 		accentBar.visible = false;
 		cardAccentArray[index] = accentBar;
 		cardAccentGroup.add(accentBar);
@@ -598,13 +614,15 @@ class FreeplayState extends MusicBeatState
 			_vizTargetHeights[i] = VIZ_MIN_H;
 		}
 
+		freeplayVinyl = new FlxSprite(0, 0).loadGraphic(Paths.image('ui/freeplay/vinyl-decor'));
+		freeplayVinyl.antialiasing = ClientPrefs.data.antialiasing;
+		freeplayVinyl.setGraphicSize(330);
+		freeplayVinyl.updateHitbox();
+		freeplayVinyl.x = -freeplayVinyl.width * 0.5;
+		freeplayVinyl.y = (FlxG.height - freeplayVinyl.height) * 0.5;
+		freeplayVinyl.alpha = 0.88;
+		add(freeplayVinyl);
 		add(vizBarsGroup);
-		layerFree = new FlxSprite().loadGraphic(Paths.image('ui/layerfree'));
-		layerFree.antialiasing = ClientPrefs.data.antialiasing;
-		layerFree.setGraphicSize(FlxG.width, FlxG.height);
-		layerFree.updateHitbox();
-		layerFree.alpha = 0.5;
-		add(layerFree);
 		vizBarsGroup.visible = true;
 		OptionsMenuTheme.syncAccent();
 		lastThemeSignature = OptionsMenuTheme.signature();
@@ -629,13 +647,31 @@ class FreeplayState extends MusicBeatState
 		// Eliminar scoreText de la esquina ya que ahora se mostrará debajo de cada dificultad
 		// scoreText ya no se usa
 
-		freeplayText = new FlxText(0, 0, 0, Language.getPhrase('freeplay.title', 'FREEPLAY'), 40);
-		freeplayText.setFormat(Paths.font("vcr.ttf"), 40, FlxColor.WHITE, CENTER);
+		freeplayHeaderPanel = new FlxSprite(28, 4).loadGraphic(Paths.image('ui/freeplay/header-wave-panel'));
+		freeplayHeaderPanel.setGraphicSize(360, 68);
+		freeplayHeaderPanel.updateHitbox();
+		freeplayHeaderPanel.alpha = 0.58;
+		add(freeplayHeaderPanel);
+
+		freeplayText = new FlxText(48, 14, 0, Language.getPhrase('freeplay.title', 'FREEPLAY'), 36);
+		freeplayText.setFormat(Paths.font("vcr.ttf"), 36, FlxColor.WHITE, CENTER);
 		freeplayText.borderSize = 0;
 		freeplayText.updateHitbox();
-		freeplayText.x = FlxG.width * 0.41;
-		freeplayText.y = 15;
 		add(freeplayText);
+
+		var songCountX:Float = freeplayText.x + freeplayText.width + 18;
+		songCountBg = new FlxSprite(songCountX, 17);
+		MD3ShapeTools.fillAndStrokeRoundRect(songCountBg, 150, 32, 16, 2, OptionsMenuTheme.cardFill(true), OptionsMenuTheme.cardStroke(false));
+		songCountBg.alpha = 0.92;
+		add(songCountBg);
+		songCountIcon = new FlxText(songCountX + 12, 21, 24, '\uE8CD', 19);
+		songCountIcon.setFormat(Paths.font('MaterialSymbolsRounded-Filled-Regular.ttf'), 19, FlxColor.WHITE, CENTER);
+		add(songCountIcon);
+
+		songCountText = new FlxText(songCountX + 30, 23, 112, '', 14);
+		songCountText.setFormat(Paths.font('NotoSans-Medium.ttf'), 14, FlxColor.WHITE, CENTER);
+		songCountText.alpha = 0.9;
+		add(songCountText);
 
 		searchField = new MaterialTextField(FlxG.width - 238, 12, 206,
 			Language.getPhrase('freeplay.search.placeholder', Language.getPhrase('new_freeplay_search', 'Search...')));
@@ -645,6 +681,10 @@ class FreeplayState extends MusicBeatState
 			updateSongFilter(value);
 		};
 		add(searchField);
+		searchIcon = new FlxText(searchField.x + 12, searchField.y + 9, 24, '\uE8B6', 20);
+		searchIcon.setFormat(Paths.font('MaterialSymbolsRounded-Filled-Regular.ttf'), 20, FlxColor.WHITE, CENTER);
+		searchIcon.alpha = 0.72;
+		add(searchIcon);
 		createSongInfoCard();
 
 		missingTextCardY = Math.max(90, (FlxG.height * 0.5) - 120);
@@ -665,6 +705,9 @@ class FreeplayState extends MusicBeatState
 			curSelected = 0;
 		bg.color = songs[curSelected].color;
 		intendedColor = bg.color;
+		if (freeplayVinyl != null)
+			freeplayVinyl.color = FlxColor.interpolate(intendedColor, FlxColor.WHITE, 0.28);
+		tintSongInfoPanels(intendedColor);
 		for (i in 0...vizBarsGroup.members.length)
 		{
 			var bar = vizBarsGroup.members[i];
@@ -680,21 +723,28 @@ class FreeplayState extends MusicBeatState
 		final control:String = (controls.mobileC) ? "C" : "CTRL";
 		final reset:String = (controls.mobileC) ? "Y" : "RESET";
 
-		var leText:String = Language.getPhrase('freeplay.tip', Language.getPhrase('new_freeplay_tip',
-			'Press {1} to listen to the Song / Press {2} to open the Gameplay Changers Menu / Press {3} to Reset your Score and Accuracy.',
-			[space, control, reset]),
-			[space, control, reset]);
-		#if (MODS_ALLOWED && sys && !mobile)
-		leText += Language.getPhrase('freeplay.desktop_mod_tip', ' / F5 reloads mods / drop a mod folder to import it.');
-		#end
+		var leText:String = Language.getPhrase('freeplay.actions',
+			'{1} PLAY  •  {2} PREVIEW  •  {3} GAMEPLAY  •  {4} RESET SCORE  •  {5} BACK',
+			[accept, space, control, reset, reject]);
 		bottomString = leText;
-		var size:Int = 16;
-		bottomText = new FlxText(5, FlxG.height - 50, FlxG.width - 10, leText, size);
-		bottomText.setFormat(Paths.font("vcr.ttf"), size, FlxColor.WHITE, CENTER);
+		var size:Int = 14;
+		bottomText = new FlxText(0, FlxG.height - 44, FlxG.width, leText, size);
+		bottomText.setFormat(Paths.font('NotoSans-Medium.ttf'), size, FlxColor.WHITE, CENTER);
 		bottomText.wordWrap = true;
 		bottomText.alignment = CENTER;
 		bottomText.scrollFactor.set();
-		bottomText.y = FlxG.height - bottomText.height - 4;
+		bottomText.y = FlxG.height - bottomText.height - 12;
+		actionBarBg = new FlxSprite();
+		MD3ShapeTools.fillAndStrokeRoundRect(actionBarBg, Std.int(Math.min(760, FlxG.width - 48)), Std.int(bottomText.height + 16), 20, 2,
+			OptionsMenuTheme.cardFill(true), OptionsMenuTheme.cardStroke(false));
+		actionBarBg.x = (FlxG.width - actionBarBg.width) * 0.5;
+		actionBarBg.y = bottomText.y - 8;
+		actionBarBg.alpha = 0.94;
+		add(actionBarBg);
+		actionBarIcon = new FlxText(actionBarBg.x + 16, actionBarBg.y + 7, 24, '\uE037', 22);
+		actionBarIcon.setFormat(Paths.font('MaterialSymbolsRounded-Filled-Regular.ttf'), 22, FlxColor.WHITE, CENTER);
+		actionBarIcon.alpha = 0.9;
+		add(actionBarIcon);
 		add(bottomText);
 
 		player = new MusicPlayer(this);
@@ -904,7 +954,22 @@ class FreeplayState extends MusicBeatState
 		}
 
 		queueSelectedSongDataLoad();
+		refreshSongCount();
 		updateTexts();
+	}
+
+	function refreshSongCount():Void
+	{
+		if (songCountText == null)
+			return;
+
+		var query:String = StringTools.trim(songSearchQuery != null ? songSearchQuery.toLowerCase() : '');
+		var visibleCount:Int = 0;
+		for (song in songs)
+			if (songMatchesFilter(song, query))
+				visibleCount++;
+
+		songCountText.text = Language.getPhrase('freeplay.song_count', '{1} SONGS', [visibleCount]);
 	}
 
 	function updateCurrentBpmFromSelection():Void
@@ -1232,6 +1297,11 @@ class FreeplayState extends MusicBeatState
 		bgZoom = FlxMath.lerp(defaultBgZoom, bgZoom, Math.exp(-elapsed * 3.125));
 		bg.scale.set(bgZoom, bgZoom);
 		centerScaledFreeplayBackground(bg);
+		if (freeplayVinyl != null)
+		{
+			freeplayVinylRotation = (freeplayVinylRotation + elapsed * 12) % 360;
+			freeplayVinyl.angle = freeplayVinylRotation;
+		}
 		if (bgTransition != null)
 		{
 			bgTransition.scale.set(bgZoom, bgZoom);
@@ -1252,9 +1322,7 @@ class FreeplayState extends MusicBeatState
 
 		if (!searchFocused && !player.playingMusic)
 		{
-			// scoreText ya no se muestra, los scores se muestran debajo de cada dificultad
-
-			if (!inDifficultySelect)
+			if (!inDifficultySelect || songs.length > 1)
 			{
 				if (songs.length > 1)
 				{
@@ -1281,19 +1349,13 @@ class FreeplayState extends MusicBeatState
 						holdTime = 0;
 					}
 
-					if (controls.UI_DOWN
-						|| controls.UI_UP
-						|| (touchDown || touchUp))
+					if (controls.UI_DOWN || controls.UI_UP || touchDown || touchUp)
 					{
 						var checkLastHold:Int = Math.floor((holdTime - 0.5) * 10);
 						holdTime += elapsed;
 						var checkNewHold:Int = Math.floor((holdTime - 0.5) * 10);
-
 						if (holdTime > 0.5 && checkNewHold - checkLastHold > 0)
-						{
-							var isUp:Bool = controls.UI_UP || touchUp;
-							changeSelection((checkNewHold - checkLastHold) * (isUp ? -shiftMult : shiftMult));
-						}
+							changeSelection((checkNewHold - checkLastHold) * ((controls.UI_UP || touchUp) ? -shiftMult : shiftMult));
 					}
 					if (FlxG.mouse.wheel != 0)
 					{
@@ -1305,15 +1367,19 @@ class FreeplayState extends MusicBeatState
 			else
 			{
 				if (controls.UI_UP_P || touchUp)
-				{
 					changeDifficultySelection(-1);
-				}
 				if (controls.UI_DOWN_P || touchDown)
-				{
 					changeDifficultySelection(1);
-				}
 				if (FlxG.mouse.wheel != 0)
 					changeDifficultySelection(-FlxG.mouse.wheel);
+			}
+
+			if (inDifficultySelect && difficultySongIndex == curSelected)
+			{
+				if (controls.UI_LEFT_P)
+					changeDifficultySelection(-1);
+				else if (controls.UI_RIGHT_P)
+					changeDifficultySelection(1);
 			}
 		}
 
@@ -1470,6 +1536,12 @@ class FreeplayState extends MusicBeatState
 			{
 				enterDifficultySelect();
 			}
+			else if (difficultySongIndex != curSelected)
+			{
+				// Browsing does not dismiss the inline selector. Confirming a different
+				// song is the explicit action that replaces it.
+				enterDifficultySelect();
+			}
 			else
 			{
 				persistentUpdate = false;
@@ -1572,9 +1644,12 @@ class FreeplayState extends MusicBeatState
 
 	function enterDifficultySelect()
 	{
+		if (inDifficultySelect && difficultySongIndex == curSelected)
+			return;
+
 		inDifficultySelect = true;
+		difficultySongIndex = curSelected;
 		FlxG.sound.play(Paths.sound('scrollMenu'));
-		hideSongInfoCard();
 
 		difficultySelector.loadDifficulties();
 		if (Difficulty.list == null || Difficulty.list.length == 0)
@@ -1583,28 +1658,32 @@ class FreeplayState extends MusicBeatState
 		difficultySelector.curSelected = curDifficulty;
 		difficultySelector.lerpSelected = curDifficulty;
 
-		FlxTween.tween(this, {songsOffsetX: -1000}, 0.3, {ease: FlxEase.expoOut});
-		FlxTween.tween(blackOverlay, {alpha: 0.6}, 1.0, {ease: FlxEase.sineInOut});
-		FlxTween.tween(difficultySelector, {enterProgress: 1}, 0.4, {ease: FlxEase.expoOut, startDelay: 0.1});
+		FlxTween.cancelTweensOf(difficultySelector);
+		difficultySelector.enterProgress = 0;
+		FlxTween.tween(blackOverlay, {alpha: 0.18}, 0.25, {ease: FlxEase.sineOut});
+		FlxTween.tween(difficultySelector, {enterProgress: 1}, 0.28, {ease: FlxEase.expoOut});
 	}
 
-	function exitDifficultySelect()
+	function exitDifficultySelect(?playSound:Bool = true)
 	{
-		FlxG.sound.play(Paths.sound('cancelMenu'));
+		if (!inDifficultySelect && difficultySelector.enterProgress <= 0)
+			return;
+		inDifficultySelect = false;
+		difficultySongIndex = -1;
+		if (playSound)
+			FlxG.sound.play(Paths.sound('cancelMenu'));
 
 		FlxTween.tween(difficultySelector, {enterProgress: 0}, 0.25, {
 			ease: FlxEase.expoIn,
 			onComplete: function(twn:FlxTween)
 			{
-				inDifficultySelect = false;
 				difficultySelector.items.clear();
 				difficultySelector.cards.clear();
+				difficultySelector.scoreTexts.clear();
 			}
 		});
 
-		FlxTween.tween(this, {songsOffsetX: 0}, 0.3, {ease: FlxEase.expoOut});
 		FlxTween.tween(blackOverlay, {alpha: 0.1}, 1.0, {ease: FlxEase.sineInOut});
-		showSongInfoCard();
 	}
 
 	function changeDifficultySelection(change:Int = 0)
@@ -1646,13 +1725,21 @@ class FreeplayState extends MusicBeatState
 
 	function selectTouchSong(index:Int):Void
 	{
-		if (index < 0 || index >= songs.length || index == curSelected)
+		if (index < 0 || index >= songs.length)
 			return;
+		if (index == curSelected)
+		{
+			if (!inDifficultySelect || difficultySongIndex != curSelected)
+				enterDifficultySelect();
+			return;
+		}
 		curSelected = index;
 		// Resolve the visual carousel before the next tap, otherwise the user can
 		// release over a card that moved to another logical index.
 		lerpSelected = curSelected;
 		changeSelection(0);
+		if (inDifficultySelect)
+			enterDifficultySelect();
 	}
 
 	function getTouchDifficultyAt(x:Float, y:Float):Int
@@ -1682,6 +1769,12 @@ class FreeplayState extends MusicBeatState
 			intendedColor = newColor;
 			FlxTween.cancelTweensOf(bg);
 			FlxTween.color(bg, 1, bg.color, intendedColor);
+			if (freeplayVinyl != null)
+			{
+				FlxTween.cancelTweensOf(freeplayVinyl);
+				FlxTween.color(freeplayVinyl, 0.45, freeplayVinyl.color, FlxColor.interpolate(intendedColor, FlxColor.WHITE, 0.28));
+			}
+			tintSongInfoPanels(intendedColor, 0.45);
 			for (bar in 0...vizBarsGroup.members.length)
 			{
 				var vizBar:FlxSprite = vizBarsGroup.members[bar];
@@ -1723,6 +1816,7 @@ class FreeplayState extends MusicBeatState
 		changeDiff();
 		_updateSongLastDifficulty();
 		queueSelectedSongDataLoad();
+		refreshSongCount();
 	}
 
 	function loadBaseDifficultiesForSelection():Void
@@ -1874,14 +1968,16 @@ class FreeplayState extends MusicBeatState
 		var cardX:Float = FlxG.width - cardW - 58;
 
 		var albumX:Float = cardX + (cardW - SONG_INFO_ALBUM_SIZE) * 0.5;
-		songInfoAlbumBg = new FlxSprite(albumX, songInfoCardY);
-		MD3ShapeTools.fillAndStrokeRoundRect(songInfoAlbumBg, SONG_INFO_ALBUM_SIZE, SONG_INFO_ALBUM_SIZE, 24, 3, OptionsMenuTheme.cardFill(true),
-			intendedColor);
+		songInfoAlbumBg = new FlxSprite(albumX, songInfoCardY).loadGraphic(Paths.image('ui/freeplay/album-panel'));
+		songInfoAlbumBg.setGraphicSize(SONG_INFO_ALBUM_SIZE, SONG_INFO_ALBUM_SIZE);
+		songInfoAlbumBg.updateHitbox();
 		songInfoAlbumBg.alpha = 0.94;
 		add(songInfoAlbumBg);
 
-		songInfoCardBg = new FlxSprite(cardX, songInfoCardY + SONG_INFO_ALBUM_SIZE + SONG_INFO_CARD_GAP);
-		MD3ShapeTools.fillAndStrokeRoundRect(songInfoCardBg, cardW, SONG_INFO_DATA_HEIGHT, 24, 3, OptionsMenuTheme.cardFill(true), intendedColor);
+		songInfoCardBg = new FlxSprite(cardX, songInfoCardY + SONG_INFO_ALBUM_SIZE + SONG_INFO_CARD_GAP)
+			.loadGraphic(Paths.image('ui/freeplay/info-panel'));
+		songInfoCardBg.setGraphicSize(cardW, SONG_INFO_DATA_HEIGHT);
+		songInfoCardBg.updateHitbox();
 		songInfoCardBg.alpha = 0.94;
 		add(songInfoCardBg);
 
@@ -1903,6 +1999,10 @@ class FreeplayState extends MusicBeatState
 		songInfoCardStats.setFormat(Paths.font('NotoSans-Medium.ttf'), 15, FlxColor.WHITE, LEFT);
 		songInfoCardStats.alpha = 0.9;
 		add(songInfoCardStats);
+		songInfoStatsIcon = new FlxText(cardX + 20, songInfoCardY + SONG_INFO_ALBUM_SIZE + SONG_INFO_CARD_GAP + 60, 20, '\uE425', 18);
+		songInfoStatsIcon.setFormat(Paths.font('MaterialSymbolsRounded-Filled-Regular.ttf'), 18, FlxColor.WHITE, CENTER);
+		songInfoStatsIcon.alpha = 0.8;
+		add(songInfoStatsIcon);
 
 		songInfoCardDifficulty = new FlxText(cardX + 20, songInfoCardY + SONG_INFO_ALBUM_SIZE + SONG_INFO_CARD_GAP + 128, cardW - 76, "", 13);
 		songInfoCardDifficulty.setFormat(Paths.font('NotoSans-Medium.ttf'), 13, FlxColor.WHITE, LEFT);
@@ -1916,6 +2016,10 @@ class FreeplayState extends MusicBeatState
 		songInfoCardScores.alpha = 0.88;
 		songInfoCardScores.wordWrap = true;
 		add(songInfoCardScores);
+		songInfoScoresIcon = new FlxText(cardX + 20, songInfoCardY + SONG_INFO_ALBUM_SIZE + SONG_INFO_CARD_GAP + 140, 20, '\uE8D2', 18);
+		songInfoScoresIcon.setFormat(Paths.font('MaterialSymbolsRounded-Filled-Regular.ttf'), 18, FlxColor.WHITE, CENTER);
+		songInfoScoresIcon.alpha = 0.8;
+		add(songInfoScoresIcon);
 
 		for (i in 0...FREEPLAY_LINK_PLATFORMS.length)
 		{
@@ -1947,6 +2051,12 @@ class FreeplayState extends MusicBeatState
 		songInfoCardSpinner.alpha = 0.9;
 		songInfoCardSpinner.visible = false;
 		add(songInfoCardSpinner);
+		songInfoAlbumSpinner = new MaterialWavyProgressIndicator(albumX + (SONG_INFO_ALBUM_SIZE * 0.5) - 22,
+			songInfoCardY + (SONG_INFO_ALBUM_SIZE * 0.5) - 22, CIRCULAR, 44);
+		songInfoAlbumSpinner.indeterminate = true;
+		songInfoAlbumSpinner.alpha = 0.9;
+		songInfoAlbumSpinner.visible = false;
+		add(songInfoAlbumSpinner);
 
 		songInfoCardLoadingLabel = new FlxText(FlxG.width * 0.5 - 120, FlxG.height * 0.5 + 42, 240,
 			Language.getPhrase('freeplay.song_info.loading', 'Loading...'), 14);
@@ -1975,6 +2085,34 @@ class FreeplayState extends MusicBeatState
 		});
 	}
 
+	function tintSongInfoPanels(accent:Int, ?duration:Float = 0):Void
+	{
+		var tint:Int = FlxColor.interpolate(accent, FlxColor.WHITE, 0.35);
+		for (panel in [songInfoAlbumBg, songInfoCardBg])
+		{
+			if (panel == null)
+				continue;
+			if (duration > 0)
+			{
+				FlxTween.cancelTweensOf(panel);
+				FlxTween.color(panel, duration, panel.color, tint);
+			}
+			else
+				panel.color = tint;
+		}
+
+		var titleColor:Int = OptionsMenuTheme.readableTextOn(tint);
+		var metaColor:Int = OptionsMenuTheme.readableMetaTextOn(tint);
+		for (text in [songInfoCardTitle, songInfoCardStats, songInfoCardDifficulty, songInfoCardScores, songInfoLicenseText])
+			if (text != null)
+				text.color = metaColor;
+		if (songInfoCardTitle != null)
+			songInfoCardTitle.color = titleColor;
+		for (icon in [songInfoStatsIcon, songInfoScoresIcon])
+			if (icon != null)
+				icon.color = titleColor;
+	}
+
 	function showSongInfoCard():Void
 	{
 		if (songInfoCardTween != null)
@@ -2001,10 +2139,14 @@ class FreeplayState extends MusicBeatState
 			songInfoCardTitle.visible = !active;
 		if (songInfoCardStats != null)
 			songInfoCardStats.visible = !active;
+		if (songInfoStatsIcon != null)
+			songInfoStatsIcon.visible = !active;
 		if (songInfoCardDifficulty != null)
 			songInfoCardDifficulty.visible = false;
 		if (songInfoCardScores != null)
 			songInfoCardScores.visible = !active;
+		if (songInfoScoresIcon != null)
+			songInfoScoresIcon.visible = !active;
 		for (icon in songInfoPlatformIcons)
 			if (icon != null)
 				icon.visible = !active && icon.exists;
@@ -2015,6 +2157,8 @@ class FreeplayState extends MusicBeatState
 			songInfoLicenseText.visible = !active;
 		if (songInfoCardSpinner != null)
 			songInfoCardSpinner.visible = active;
+		if (songInfoAlbumSpinner != null)
+			songInfoAlbumSpinner.visible = active;
 		if (songInfoCardLoadingLabel != null)
 			songInfoCardLoadingLabel.visible = active;
 	}
@@ -2584,13 +2728,11 @@ class FreeplayState extends MusicBeatState
 		{
 			songInfoAlbumBg.x = albumX;
 			songInfoAlbumBg.y = baseY;
-			MD3ShapeTools.fillAndStrokeRoundRect(songInfoAlbumBg, albumSize, albumSize, 24, 3, OptionsMenuTheme.cardFill(true), intendedColor);
 			songInfoAlbumBg.alpha = 0.94;
 		}
 
 		songInfoCardBg.x = cardX;
 		songInfoCardBg.y = dataY;
-		MD3ShapeTools.fillAndStrokeRoundRect(songInfoCardBg, cardW, dataH, 24, 3, OptionsMenuTheme.cardFill(true), intendedColor);
 		songInfoCardBg.alpha = 0.94;
 
 		songInfoCardCover.x = albumX + (albumSize - coverSize) * 0.5;
@@ -2598,16 +2740,26 @@ class FreeplayState extends MusicBeatState
 		songInfoCardTitle.x = cardX + padX;
 		songInfoCardTitle.y = dataY + 18;
 		songInfoCardTitle.fieldWidth = textW;
-		songInfoCardStats.x = cardX + padX;
+		songInfoCardStats.x = cardX + padX + 28;
 		songInfoCardStats.y = dataY + 62;
-		songInfoCardStats.fieldWidth = textW;
+		songInfoCardStats.fieldWidth = textW - 28;
+		if (songInfoStatsIcon != null)
+		{
+			songInfoStatsIcon.x = cardX + padX;
+			songInfoStatsIcon.y = dataY + 62;
+		}
 		songInfoCardDifficulty.x = cardX + padX;
 		songInfoCardDifficulty.y = dataY + 132;
 		songInfoCardDifficulty.fieldWidth = textW;
 		songInfoCardDifficulty.visible = false;
-		songInfoCardScores.x = cardX + padX;
+		songInfoCardScores.x = cardX + padX + 28;
 		songInfoCardScores.y = dataY + 138;
-		songInfoCardScores.fieldWidth = textW;
+		songInfoCardScores.fieldWidth = textW - 28;
+		if (songInfoScoresIcon != null)
+		{
+			songInfoScoresIcon.x = cardX + padX;
+			songInfoScoresIcon.y = dataY + 138;
+		}
 		layoutSongInfoPlatformIcons(cardX + cardW - padX - SONG_INFO_SOCIAL_ICON_SIZE, dataY + 22, dataH - 44);
 		layoutSongInfoLicenseIcons(cardX, dataY, cardW, dataH);
 		if (songInfoCardSpinner != null)
@@ -2615,7 +2767,7 @@ class FreeplayState extends MusicBeatState
 			if (songInfoCardLoading)
 			{
 				songInfoCardSpinner.x = cardX + (cardW * 0.5) - 28;
-				songInfoCardSpinner.y = baseY + (cardH * 0.5) - 54;
+				songInfoCardSpinner.y = dataY + 158;
 			}
 			else
 			{
@@ -2628,13 +2780,18 @@ class FreeplayState extends MusicBeatState
 			if (songInfoCardLoading)
 			{
 				songInfoCardLoadingLabel.x = cardX + (cardW * 0.5) - 120;
-				songInfoCardLoadingLabel.y = baseY + (cardH * 0.5) + 12;
+				songInfoCardLoadingLabel.y = dataY + 218;
 			}
 			else
 			{
 				songInfoCardLoadingLabel.x = cardX + 126;
 				songInfoCardLoadingLabel.y = baseY + 146;
 			}
+		}
+		if (songInfoAlbumSpinner != null)
+		{
+			songInfoAlbumSpinner.x = albumX + (albumSize * 0.5) - 22;
+			songInfoAlbumSpinner.y = baseY + (albumSize * 0.5) - 22;
 		}
 	}
 
@@ -3134,7 +3291,7 @@ class FreeplayState extends MusicBeatState
 		}
 	}
 
-	var _drawDistance:Int = 4;
+	var _drawDistance:Int = 3;
 	var _lastVisibles:Array<Int> = [];
 
 	public function updateTexts(elapsed:Float = 0.0)
@@ -3164,7 +3321,21 @@ class FreeplayState extends MusicBeatState
 		_lastVisibles = [];
 
 		var min:Int = Math.round(Math.max(0, Math.min(songs.length, lerpSelected - _drawDistance)));
-		var max:Int = Math.round(Math.max(0, Math.min(songs.length, lerpSelected + _drawDistance)));
+		var max:Int = Math.round(Math.max(0, Math.min(songs.length, lerpSelected + _drawDistance + 1)));
+		if (inDifficultySelect && difficultySongIndex >= 0)
+		{
+			min = Std.int(Math.min(min, Math.max(0, difficultySongIndex - 1)));
+			max = Std.int(Math.max(max, Math.min(songs.length, difficultySongIndex + 2)));
+		}
+		var carouselTop:Float = 118;
+		var carouselBottom:Float = FlxG.height - 82;
+		var inlineDifficultyProgress:Float = difficultySelector != null ? difficultySelector.enterProgress : 0;
+		var inlineDifficultyHeight:Float = difficultySelector != null ? difficultySelector.getInlineHeight() : 0;
+		var normalSelectedTop:Float = ((carouselTop + carouselBottom) * 0.5) - 55;
+		var openSelectedTop:Float = carouselTop + 42;
+		var carouselStep:Float = 126;
+		var selectedX:Float = 156;
+		var difficultyAnchorVisible:Bool = false;
 		for (i in min...max)
 		{
 			if (i < 0 || i >= songs.length || songs[i] == null)
@@ -3179,46 +3350,60 @@ class FreeplayState extends MusicBeatState
 			item.visible = item.active = true;
 
 			var difference:Float = item.ID - lerpSelected;
-			var baseY:Float = 320;
-			item.y = baseY + (difference * 120);
-
-			var curveOffset:Float = Math.abs(difference) * Math.abs(difference) * 60;
+			var distance:Float = Math.abs(difference);
+			var isSelected = i == curSelected;
+			var isDifficultySong = inDifficultySelect && i == difficultySongIndex;
+			// Keep every song card at the same geometry. Selection is communicated by
+			// hierarchy and accent, while difficulty rows make room below it.
+			var cardScale:Float = 1;
+			var rowAlpha:Float = isSelected ? 1 : Math.max(0.46, 0.78 - distance * 0.11);
+			var curveOffset:Float = Math.min(64, distance * distance * 16);
 			var itemOffset:Float = songsOffsetX;
-			if (inDifficultySelect && item.ID == curSelected)
+			if (isDifficultySong)
 			{
 				itemOffset = 0;
 			}
 
-			var baseX:Float = 90 - curveOffset + itemOffset;
+			var baseX:Float = selectedX - curveOffset + itemOffset;
 			var icon:HealthIcon = iconArray[i];
 			if (icon == null)
 				continue;
 
 			icon.visible = icon.active = true;
-			var visibleAlpha:Float = (i == curSelected) ? 1 : 0.6;
-			item.alpha = visibleAlpha;
-			icon.alpha = visibleAlpha;
-			icon.y = item.y - 20;
+			item.alpha = rowAlpha;
+			icon.alpha = rowAlpha;
 
 			var card:FlxSprite = cardArray[i];
 			if (card == null)
 				continue;
 			card.visible = true;
-			card.x = baseX + 80;
-			card.y = item.y - 10;
-			var isSelected = (i == curSelected) && !inDifficultySelect;
+			card.scale.set(cardScale, cardScale);
+			card.x = baseX;
+			var normalCardY:Float = normalSelectedTop + (difference * carouselStep);
+			var expandedCardY:Float = normalCardY;
+			if (inDifficultySelect)
+			{
+				if (difficultySongIndex == curSelected)
+					expandedCardY = openSelectedTop + (item.ID - difficultySongIndex) * carouselStep;
+				if (item.ID > difficultySongIndex)
+					expandedCardY += inlineDifficultyHeight + 28;
+			}
+			card.y = normalCardY + (expandedCardY - normalCardY) * inlineDifficultyProgress;
+			card.alpha = rowAlpha;
 			var cardColor = songs[i].color;
 			var cardFillColor = OptionsMenuTheme.difficultyCardFill(cardColor, isSelected);
-			var cardStrokeColor = OptionsMenuTheme.difficultyCardStroke(cardColor, isSelected);
 			if (i >= _cardVisualSignatures.length)
 				_cardVisualSignatures.resize(i + 1);
 			var usesCustomListCard:Bool = _cardVisualSignatures[i] != null && _cardVisualSignatures[i].startsWith('custom:');
 			if (!usesCustomListCard)
 			{
-				var cardSignature:String = cardColor + ':' + isSelected;
+				var cardSignature:String = 'surface:' + cardColor + ':' + isSelected;
 				if (_cardVisualSignatures[i] != cardSignature)
 				{
-					MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, isSelected ? 3 : 2, cardFillColor, cardStrokeColor);
+					card.loadGraphic(Paths.image(isSelected ? 'ui/freeplay/song-card-selected' : 'ui/freeplay/song-card-normal'));
+					card.setGraphicSize(470, 110);
+					card.updateHitbox();
+					card.color = cardFillColor;
 					_cardVisualSignatures[i] = cardSignature;
 				}
 			}
@@ -3226,39 +3411,50 @@ class FreeplayState extends MusicBeatState
 			var accentBar:FlxSprite = cardAccentArray[i];
 			if (accentBar != null)
 			{
-				if (Std.int(accentBar.width) != 10 || Std.int(accentBar.height) != 84)
+				if (Std.int(accentBar.frameWidth) != 10 || Std.int(accentBar.frameHeight) != 84)
 					MD3ShapeTools.fillRoundRect(accentBar, 10, 84, 5);
 				accentBar.visible = true;
-				accentBar.x = card.x + 12;
-				accentBar.y = card.y + 13;
+				accentBar.scale.set(cardScale, cardScale);
+				accentBar.x = card.x + 12 * cardScale;
+				accentBar.y = card.y + (card.height - (84 * cardScale)) * 0.5;
 				accentBar.color = OptionsMenuTheme.cardAccent(isSelected);
-				accentBar.alpha = isSelected ? 1.0 : 0.72;
+				accentBar.alpha = isSelected ? 1.0 : rowAlpha * 0.72;
 			}
 
-			icon.x = card.x + 340;
-			item.x = card.x + 50;
+			icon.scale.set(0.8 * cardScale, 0.8 * cardScale);
+			icon.x = card.x + card.width - (118 * cardScale);
+			icon.y = card.y + (card.height - icon.height) * 0.5;
+			item.x = card.x + 48 * cardScale;
+			item.fieldWidth = card.width - (190 * cardScale);
 			item.color = usesCustomListCard ? FlxColor.WHITE : OptionsMenuTheme.readableTextOn(cardFillColor);
 
 			var modText:FlxText = modTextArray[i];
 			if (modText == null)
 				continue;
-			var textBlockHeight:Float = item.height + 4 + modText.height;
-			var textStartY:Float = card.y + Math.max(12, (card.height - textBlockHeight) * 0.5);
+			var textBlockHeight:Float = item.height + 2 + modText.height;
+			var textStartY:Float = card.y + Math.max(8, (card.height - textBlockHeight) * 0.5);
 			item.y = textStartY;
 			modText.visible = true;
 			modText.x = item.x;
-			modText.y = item.y + item.height + 4;
-			modText.alpha = (i == curSelected) ? 0.82 : 0.58;
+			modText.fieldWidth = item.fieldWidth;
+			modText.y = item.y + item.height + 2;
+			modText.alpha = rowAlpha * 0.82;
 			modText.color = usesCustomListCard ? 0xFFD8DEE9 : OptionsMenuTheme.readableMetaTextOn(cardFillColor);
+
+			if (isDifficultySong && inlineDifficultyProgress > 0)
+			{
+				difficultySelector.setInlineAnchor(card.x, card.y + card.height + 14, card.width, FlxG.height - 74);
+				difficultyAnchorVisible = card.y + card.height < FlxG.height - 74 && card.y > carouselTop - card.height;
+			}
 
 			_lastVisibles.push(i);
 		}
 
-		layerFree.color = intendedColor;
-
 		if (inDifficultySelect || difficultySelector.enterProgress > 0)
 		{
-			difficultySelector.update(elapsed);
+			difficultySelector.setVisible(difficultyAnchorVisible);
+			if (difficultyAnchorVisible)
+				difficultySelector.update(elapsed);
 		}
 		else
 		{
@@ -3468,8 +3664,11 @@ class DifficultySelector
 	public var lerpSelected:Float = 0;
 	public var enterProgress:Float = 0;
 
-	private var baseXOffset:Float = 300;
-	private var slideDistance:Float = 500;
+	private var inlineAnchorX:Float = 118;
+	private var inlineAnchorY:Float = 420;
+	private var inlineAnchorWidth:Float = 500;
+	private var inlineBottomY:Float = 640;
+	private var lastVisualSelection:Int = -1;
 	private var selectionTween:FlxTween;
 
 	public function new()
@@ -3484,6 +3683,7 @@ class DifficultySelector
 		items.clear();
 		cards.clear();
 		scoreTexts.clear();
+		lastVisualSelection = -1;
 
 		if (FreeplayState.instance != null && FreeplayState.instance.songs[FreeplayState.curSelected] != null)
 		{
@@ -3495,21 +3695,19 @@ class DifficultySelector
 
 		for (i in 0...Difficulty.list.length)
 		{
-			var diffText:FlxText = new FlxText(0, 0, 500, Difficulty.getString(i), 48);
-			diffText.setFormat(Paths.font("vcr.ttf"), 48, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
-			diffText.borderSize = 2;
+			var diffText:FlxText = new FlxText(0, 0, 500, Difficulty.getString(i), 28);
+			diffText.setFormat(Paths.font('NotoSans-Medium.ttf'), 28, FlxColor.WHITE, LEFT);
 			diffText.ID = i;
 			diffText.alpha = 0;
 			items.add(diffText);
 
-			var card:FlxSprite = new FlxSprite();
-			MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, 2, OptionsMenuTheme.cardFill(false), OptionsMenuTheme.cardStroke(false));
+			var card:FlxSprite = new FlxSprite().loadGraphic(Paths.image('ui/freeplay/song-card-normal'));
+			card.antialiasing = ClientPrefs.data.antialiasing;
 			card.alpha = 0;
 			cards.add(card);
 
-			// Crear texto de score/accuracy debajo de la dificultad
-			var scoreInfoText:FlxText = new FlxText(0, 0, 450, "", 18);
-			scoreInfoText.setFormat(Paths.font("vcr.ttf"), 18, FlxColor.WHITE, CENTER, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
+			var scoreInfoText:FlxText = new FlxText(0, 0, 450, "", 15);
+			scoreInfoText.setFormat(Paths.font('NotoSans-Medium.ttf'), 15, FlxColor.WHITE, LEFT);
 			scoreInfoText.ID = i;
 			scoreInfoText.alpha = 0;
 			scoreTexts.add(scoreInfoText);
@@ -3645,27 +3843,63 @@ class DifficultySelector
 		});
 	}
 
+	public function getInlineHeight():Float
+	{
+		var total:Int = cards.members.length;
+		return total > 0 ? (total * 80) + ((total - 1) * 8) : 0;
+	}
+
+	public function setInlineAnchor(x:Float, y:Float, width:Float, bottomY:Float):Void
+	{
+		inlineAnchorX = x;
+		inlineAnchorY = y;
+		inlineAnchorWidth = width;
+		inlineBottomY = bottomY;
+	}
+
+	public function setVisible(visible:Bool):Void
+	{
+		for (card in cards.members)
+			if (card != null)
+				card.visible = visible;
+		for (item in items.members)
+			if (item != null)
+				item.visible = visible;
+		for (scoreText in scoreTexts.members)
+			if (scoreText != null)
+				scoreText.visible = visible;
+	}
+
 	public function update(elapsed:Float):Void
 	{
+		var total:Int = cards.members.length;
+		if (total == 0)
+			return;
+
+		var gap:Float = 8;
+		var availableHeight:Float = Math.max(48, inlineBottomY - inlineAnchorY);
+		var cardHeight:Float = Math.min(80, Math.max(60, (availableHeight - ((total - 1) * gap)) / total));
+		var cardScaleX:Float = inlineAnchorWidth / 470;
+		var cardScaleY:Float = cardHeight / 110;
+		var visualSelectionChanged:Bool = lastVisualSelection != curSelected;
 		for (i in 0...items.members.length)
 		{
 			var item:FlxText = items.members[i];
 			var card:FlxSprite = cards.members[i];
-			var difference:Float = item.ID - lerpSelected;
-			item.y = (difference * 120) + (FlxG.height * 0.5) - 60;
+			if (item == null || card == null)
+				continue;
 			var difficultyColor:Int = getDifficultyColor(item.text);
-			var isSelected:Bool = (i == curSelected);
-			var cardFillColor:Int = OptionsMenuTheme.difficultyCardFill(difficultyColor, isSelected);
+			var isSelected:Bool = i == curSelected;
+			if (visualSelectionChanged)
+				card.loadGraphic(Paths.image(isSelected ? 'ui/freeplay/song-card-selected' : 'ui/freeplay/song-card-normal'));
+			card.scale.set(cardScaleX, cardScaleY);
+			card.color = OptionsMenuTheme.difficultyCardFill(difficultyColor, isSelected);
+			card.x = inlineAnchorX;
+			card.y = inlineAnchorY + i * (cardHeight + gap);
 
-			var baseX:Float = (FlxG.width * 0.5) - (card.width * 0.5) + baseXOffset;
-			var targetX:Float = FlxMath.lerp(baseX + slideDistance, baseX, enterProgress);
-			card.x = targetX;
-			card.y = item.y - 15;
-			MD3ShapeTools.fillAndStrokeRoundRect(card, 470, 110, 22, isSelected ? 3 : 2, cardFillColor,
-				OptionsMenuTheme.difficultyCardStroke(difficultyColor, isSelected));
-
-			item.x = card.x + (card.width * 0.5) - (item.width * 0.5);
-			card.y = item.y - 15;
+			item.x = card.x + 26 * cardScaleX;
+			item.y = card.y + Math.max(5, cardHeight * 0.16);
+			item.fieldWidth = card.width - 52 * cardScaleX;
 			item.color = OptionsMenuTheme.difficultyTitleColor(difficultyColor, isSelected);
 
 			// Posicionar texto de score/accuracy debajo de la dificultad
@@ -3674,32 +3908,19 @@ class DifficultySelector
 				var scoreText:FlxText = scoreTexts.members[i];
 				if (scoreText != null)
 				{
-					scoreText.x = card.x + (card.width * 0.5) - (scoreText.width * 0.5);
-					scoreText.y = item.y + 50; // Más abajo del nombre de dificultad
 					scoreText.color = OptionsMenuTheme.difficultyMetaColor(difficultyColor, isSelected);
+					scoreText.x = item.x;
+					scoreText.y = item.y + item.height + 1;
+					scoreText.fieldWidth = item.fieldWidth;
 
-					if (isSelected)
-					{
-						scoreText.alpha = 1.0 * enterProgress;
-					}
-					else
-					{
-						scoreText.alpha = 0.6 * enterProgress;
-					}
+					scoreText.alpha = (isSelected ? 1 : 0.48) * enterProgress;
 				}
 			}
 
-			if (isSelected)
-			{
-				item.alpha = 1.0 * enterProgress;
-				card.alpha = 1.0 * enterProgress;
-			}
-			else
-			{
-				item.alpha = 0.6 * enterProgress;
-				card.alpha = 0.6 * enterProgress;
-			}
+			item.alpha = (isSelected ? 1 : 0.56) * enterProgress;
+			card.alpha = (isSelected ? 1 : 0.56) * enterProgress;
 		}
+		lastVisualSelection = curSelected;
 	}
 }
 

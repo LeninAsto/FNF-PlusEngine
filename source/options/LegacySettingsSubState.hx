@@ -29,8 +29,12 @@ class LegacySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		#end
 
-		var option:Option = new Option('Use Psych Freeplay', 'If checked, uses the classic Psych Engine Freeplay state instead of the PlusEngine Freeplay.',
-			'usePsychFreeplay', BOOL);
+		var option:Option = new Option('Main Menu Style', 'Selects the standard layout or the Plus layout. Plus is opt-in.',
+			'mainMenuStyle', STRING, ['Normal', 'Plus']);
+		addOption(option);
+
+		var option:Option = new Option('Freeplay Menu Style', 'Selects the classic Freeplay or the Plus layout. Plus is opt-in.',
+			'freeplayMenuStyle', STRING, ['Normal', 'Plus']);
 		addOption(option);
 
 		var option:Option = new Option('Script Deprecation Warnings',
