@@ -19,9 +19,9 @@ class DiscordClient
 
 	public static function check()
 	{
-		if (ClientPrefs.data.discordRPC)
+		if (ClientPrefs.data.discordRPC && !isInitialized)
 			initialize();
-		else if (isInitialized)
+		else if (!ClientPrefs.data.discordRPC && isInitialized)
 			shutdown();
 	}
 
@@ -56,7 +56,7 @@ class DiscordClient
 			message += '($user)';
 
 		trace(message);
-		changePresence();
+		updatePresence();
 	}
 
 	private static function onError(errorCode:Int, message:cpp.ConstCharStar):Void
@@ -71,6 +71,8 @@ class DiscordClient
 
 	public static function initialize()
 	{
+		if (isInitialized)
+			return;
 		var discordHandlers:DiscordEventHandlers = #if (hxdiscord_rpc > "1.2.4") new DiscordEventHandlers(); #else DiscordEventHandlers.create(); #end
 		discordHandlers.ready = cpp.Function.fromStaticFunction(onReady);
 		discordHandlers.disconnected = cpp.Function.fromStaticFunction(onDisconnected);
@@ -126,6 +128,9 @@ class DiscordClient
 
 	public static function updatePresence()
 	{
+		if (!isInitialized)
+			return;
+		presence.syncStrings();
 		Discord.UpdatePresence(cpp.RawConstPointer.addressOf(presence.__presence));
 	}
 
@@ -186,6 +191,20 @@ private final class DiscordPresence
 	public var endTimestamp(get, set):Int;
 
 	@:noCompletion private var __presence:DiscordRichPresence;
+	private var stateValue:String;
+	private var detailsValue:String;
+	private var smallImageKeyValue:String;
+	private var largeImageKeyValue:String;
+	private var largeImageTextValue:String;
+
+	private function syncStrings():Void
+	{
+		__presence.state = stateValue;
+		__presence.details = detailsValue;
+		__presence.smallImageKey = smallImageKeyValue;
+		__presence.largeImageKey = largeImageKeyValue;
+		__presence.largeImageText = largeImageTextValue;
+	}
 
 	function new()
 	{
@@ -207,52 +226,52 @@ private final class DiscordPresence
 
 	@:noCompletion inline function get_state():String
 	{
-		return __presence.state;
+		return stateValue;
 	}
 
 	@:noCompletion inline function set_state(value:String):String
 	{
-		return __presence.state = value;
+		return stateValue = value;
 	}
 
 	@:noCompletion inline function get_details():String
 	{
-		return __presence.details;
+		return detailsValue;
 	}
 
 	@:noCompletion inline function set_details(value:String):String
 	{
-		return __presence.details = value;
+		return detailsValue = value;
 	}
 
 	@:noCompletion inline function get_smallImageKey():String
 	{
-		return __presence.smallImageKey;
+		return smallImageKeyValue;
 	}
 
 	@:noCompletion inline function set_smallImageKey(value:String):String
 	{
-		return __presence.smallImageKey = value;
+		return smallImageKeyValue = value;
 	}
 
 	@:noCompletion inline function get_largeImageKey():String
 	{
-		return __presence.largeImageKey;
+		return largeImageKeyValue;
 	}
 
 	@:noCompletion inline function set_largeImageKey(value:String):String
 	{
-		return __presence.largeImageKey = value;
+		return largeImageKeyValue = value;
 	}
 
 	@:noCompletion inline function get_largeImageText():String
 	{
-		return __presence.largeImageText;
+		return largeImageTextValue;
 	}
 
 	@:noCompletion inline function set_largeImageText(value:String):String
 	{
-		return __presence.largeImageText = value;
+		return largeImageTextValue = value;
 	}
 
 	@:noCompletion inline function get_startTimestamp():Int

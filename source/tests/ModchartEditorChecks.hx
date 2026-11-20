@@ -1,6 +1,6 @@
 package tests;
 
-#if debug
+#if (debug || modchart_test)
 import backend.Song;
 import backend.SongLoadPlan;
 import modchart.Manager;
@@ -26,6 +26,96 @@ class ModchartEditorChecks
 	}
 	public static function run():Void
 	{
+		report = '3D projection';
+		var view = new modchart.backend.math.View3D();
+		view.useCamera = false;
+		var origin = new Vector3();
+		var projected = view.transformVector(new Vector3(100, 50, -1), origin);
+		check(Math.abs(projected.x - 50) < 0.0001 && Math.abs(projected.y - 25) < 0.0001,
+			'Default projection changed');
+		view.fov = Math.PI / 3;
+		projected = view.transformVector(new Vector3(100, 0, 0), origin);
+		check(projected.x > 170 && projected.x < 175, 'FOV did not update immediately');
+		view.fov = Math.PI / 2;
+		view.near = 0.5;
+		projected = view.transformVector(new Vector3(100, 0, -1), origin);
+		check(Math.abs(projected.x - 25) < 0.0001, 'Depth coefficients did not update immediately');
+		view.near = view.far;
+		check(view.near == 0.5, 'Degenerate depth range was accepted');
+		view.near = 0;
+		view.lookAt(new Vector3(), new Vector3(0, 0, -1), new Vector3(0, 1, 0));
+		view.position.x = 10;
+		view.target.x = 10;
+		projected = view.transformVector(new Vector3(100, 0, 0), origin);
+		check(Math.abs(projected.x - 90) < 0.0001, 'Camera position was not applied');
+		view.target.x = 11;
+		projected = view.transformVector(new Vector3(100, 0, 0), origin);
+		check(projected.x < 2, 'Camera target changes left the basis stale');
+		view.lookAt(new Vector3(), new Vector3(), new Vector3(0, 0, 1));
+		projected = view.transformVector(new Vector3(100, 0, 0), origin);
+		check(Math.isFinite(projected.x) && Math.isFinite(projected.y), 'Degenerate camera basis');
+
+		report = 'triangle batch attributes';
+		var batch = new flixel.graphics.tile.FlxDrawTrianglesItem();
+		batch.colored = true;
+		batch.hasColorOffsets = true;
+		var vertices = new openfl.Vector<Float>(8, true, [0., 0., 20., 0., 0., 20., 20., 20.]);
+		var indices = new openfl.Vector<Int>(6, true, [0, 1, 2, 1, 3, 2]);
+		var uvs = new openfl.Vector<Float>(8, true, [0., 0., 1., 0., 0., 1., 1., 1.]);
+		var transforms = new haxe.ds.Vector<openfl.geom.ColorTransform>(1);
+		transforms[0] = new openfl.geom.ColorTransform(1, 1, 1, 0.25, 0, 0, 0, 0);
+		batch.addGradientTriangles(vertices, indices, uvs, new flixel.math.FlxPoint(), new flixel.math.FlxRect(0, 0, 100, 100), transforms);
+		transforms[0] = new openfl.geom.ColorTransform(0.5, 1, 1, 0.75, 10, 0, 0, 0);
+		batch.addGradientTriangles(vertices, indices, uvs, new flixel.math.FlxPoint(), new flixel.math.FlxRect(0, 0, 100, 100), transforms);
+		@:privateAccess check(batch.alphas.length == 12 && batch.colorMultipliers.length == 48 && batch.colorOffsets.length == 48,
+			'Triangle attributes grew with accumulated batch size');
+		@:privateAccess check(batch.alphas[0] == 0.25 && batch.alphas[6] == 0.75 && batch.colorMultipliers[24] == 0.5
+			&& batch.colorOffsets[24] == 10, 'Triangle attributes lost per-command color or alpha');
+		batch.addGradientTriangles(vertices, indices, uvs, new flixel.math.FlxPoint(1000, 1000), new flixel.math.FlxRect(0, 0, 100, 100), transforms);
+		@:privateAccess check(batch.alphas.length == 12 && batch.indices.length == 12, 'Culled triangles left batch attributes behind');
+		batch.addGradientTriangles(vertices, indices, uvs, new flixel.math.FlxPoint(1000, 1000), new flixel.math.FlxRect(0, 0, 100, 100), transforms, false);
+		@:privateAccess check(batch.alphas.length == 18 && batch.indices.length == 18, 'Unculled projected geometry was discarded');
+		batch.dispose();
+
+		report = 'near plane clipping';
+		{
+			var clipView = new modchart.backend.math.View3D();
+			clipView.useCamera = false;
+			var clipper = new modchart.backend.graphics.NearPlaneClipper();
+			var world = new openfl.Vector<Float>(24, true);
+			var clipDistances = new openfl.Vector<Float>(8, true);
+			var sourceUV = new openfl.Vector<Float>(24, true);
+			var clippedVertices = new openfl.Vector<Float>(32, true);
+			var clippedUV = new openfl.Vector<Float>(48, true);
+			for (quad in 0...2) for (i in 0...4) {
+				var n = quad * 4 + i;
+				world[n * 3] = 500 + (i % 2) * 100;
+				world[n * 3 + 1] = 300 + Std.int(i / 2) * 100;
+				world[n * 3 + 2] = quad == 0 && i % 2 == 1 ? 2 : 0;
+				sourceUV[n * 3] = i % 2;
+				sourceUV[n * 3 + 1] = Std.int(i / 2);
+				sourceUV[n * 3 + 2] = 1;
+				clipView.transformVector(new Vector3(world[n * 3], world[n * 3 + 1], world[n * 3 + 2]));
+				clipDistances[n] = clipView.clipDistance;
+			}
+			check(clipper.clipQuad(clipView, world, clipDistances, sourceUV, 0, clippedVertices, clippedUV, false),
+				'Crossing arrow disappeared');
+			var foundIntersection = false;
+			for (i in 0...8) {
+				check(Math.isFinite(clippedVertices[i * 2]) && Math.isFinite(clippedVertices[i * 2 + 1])
+					&& Math.isFinite(clippedUV[i * 3 + 2]) && clippedUV[i * 3 + 2] > 0, 'Invalid clipped vertex');
+				if (clippedUV[i * 3] > 0.49 && clippedUV[i * 3] < 0.50) foundIntersection = true;
+			}
+			check(foundIntersection, 'Clipped texture intersection is incorrect');
+			check(clipper.clipQuad(clipView, world, clipDistances, sourceUV, 1, clippedVertices, clippedUV, true),
+				'Hold segment was lost');
+			for (i in 8...16) check(clippedUV[i * 3 + 2] == 1, 'Hold texture interpolation changed during clipping');
+			for (i in 0...4) clipDistances[i] = -1;
+			check(!clipper.clipQuad(clipView, world, clipDistances, sourceUV, 0, clippedVertices, clippedUV, true),
+				'Invisible segment was retained');
+		}
+
+
 		SongLoadPlan.clear();
 		Song.chartPath = null;
 		report = 'chart plans';
@@ -136,6 +226,15 @@ class ModchartEditorChecks
 		ModchartEditorPreviewContext.active = {currentBeat: 0, songPosition: 0, scrollSpeed: 0.45, camera: FlxG.camera,
 			strumLineNotes: new FlxTypedGroup<objects.StrumNote>(), opponentStrums: new FlxTypedGroup<objects.StrumNote>(),
 			playerStrums: new FlxTypedGroup<objects.StrumNote>(), notes: new FlxTypedGroup<objects.Note>(), noteSplashes: new FlxTypedGroup<objects.NoteSplash>()};
+		report = 'setAdd respects each player';
+		var addManager = new Manager();
+		addManager.setPercent('transformX', 10, 0);
+		addManager.setPercent('transformX', 20, 1);
+		addManager.setAdd('transformX', 0, 5);
+		addManager.update(0);
+		check(addManager.getPercent('transformX', 0) == 15 && addManager.getPercent('transformX', 1) == 25,
+			'setAdd used one player value for both players');
+		addManager.destroy();
 		report = 'submodifier parent install';
 		var submods = ModchartLuaImporter.parse('set("beatMult",0,2); set("drunkSpeed",0,3); set("bumpyY",0,1); set("x0",0,100); '
 			+ 'set("shrinkToMin",0,0.5); set("noteSkewX",0,0.2); set("mini0",0,0.1); set("schmovinArrowShapeOffset",0,24)');
@@ -152,6 +251,36 @@ class ModchartEditorChecks
 			'Submodifier did not auto-install its compiled parent');
 		parentManager.setPercent('pulseSpeed', 2);
 		check(parentMods.exists('pulse'), 'Immediate submodifier did not auto-install its compiled parent');
+		report = 'modifier timing context';
+		var timingField = parentManager.playfields[0];
+		var timingModifier = new modchart.engine.modifiers.DynamicModifier(timingField);
+		var recorded:Array<Float> = [];
+		var recordedPath:Bool = false;
+		timingModifier.renderFunc = function(pos, params) {
+			recorded = [params.songTime, params.strumTime, params.sampleTime, params.sourceTime, params.hitTime];
+			recordedPath = params.isPath;
+			return pos;
+		};
+		timingField.addScriptedModifier('timingcheck', timingModifier);
+		timingField.beginFrame(77, 500, 1);
+		var timingData:modchart.backend.core.ArrowData = {hitTime: 1120, sourceTime: 1000, strumTime: 1050,
+			sampleTime: 1100, distance: 620, player: 0, lane: 0, isTapArrow: true, isHoldBody: true, isPath: true};
+		var timingPos = new Vector3();
+		var timingVisuals:modchart.backend.core.VisualParameters = {};
+		var timingOut:modchart.backend.core.ModifierOutput = {pos: timingPos, visuals: timingVisuals};
+		timingField.getNotePathInto(new Vector3(), timingData, timingOut, timingPos, timingVisuals, 25);
+		check(recorded.length == 5 && recorded[0] == 500 && recorded[1] == 1050 && recorded[2] == 1125
+			&& recorded[3] == 1000 && recorded[4] == 1145 && recordedPath, 'Modifier timing context lost note or hold sample time');
+		report = 'cached modifier timing';
+		timingData.strumTime = null;
+		timingData.sampleTime = null;
+		timingField.getNotePath(new Vector3(), timingData);
+		check(recorded[1] == 1120 && recorded[2] == 1120, 'Default note times are incorrect');
+		recorded = [];
+		timingData.strumTime = 0;
+		timingData.sampleTime = 0;
+		timingField.getNotePath(new Vector3(), timingData);
+		check(recorded.length == 5 && recorded[1] == 0 && recorded[2] == 0, 'Cached default times hid explicit zero times');
 		report = 'bezier path';
 		parentManager.addModifier('path');
 		var path:PathModifier = cast parentMods.get('path');

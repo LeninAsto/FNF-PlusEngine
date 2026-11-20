@@ -146,14 +146,16 @@ class EventManager {
 	}
 
 	private function getNextEventIndex(curBeat:Float):Int {
-		var index = 0;
-		while (index < eventList.length) {
-			var ev = eventList[index];
-			if (ev == null || ev.beat > curBeat)
-				break;
-			index++;
+		var low = 0;
+		var high = eventList.length;
+		while (low < high) {
+			final mid = (low + high) >> 1;
+			if (eventList[mid].beat <= curBeat)
+				low = mid + 1;
+			else
+				high = mid;
 		}
-		return index;
+		return low;
 	}
 
 	private function resetTimelineState():Void {

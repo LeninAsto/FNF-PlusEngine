@@ -719,7 +719,7 @@ class Note extends FlxSprite
 		if (!myStrum.downScroll)
 			distance *= -1;
 
-		var angleDir = strumDirection * Math.PI / 180;
+		if (copyX || copyY) myStrum.updateDirectionVector();
 		if (copyAngle)
 			angle = strumDirection - 90 + strumAngle + offsetAngle;
 
@@ -727,11 +727,11 @@ class Note extends FlxSprite
 			alpha = strumAlpha * multAlpha;
 
 		if (copyX)
-			x = strumX + offsetX + Math.cos(angleDir) * distance;
+			x = strumX + offsetX + myStrum.directionCos * distance;
 
 		if (copyY)
 		{
-			y = strumY + offsetY + correctionOffset + Math.sin(angleDir) * distance;
+			y = strumY + offsetY + correctionOffset + myStrum.directionSin * distance;
 			if (myStrum.downScroll && isSustainNote)
 			{
 				if (PlayState.isPixelStage)

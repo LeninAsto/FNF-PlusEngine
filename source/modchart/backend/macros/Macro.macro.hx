@@ -1,10 +1,8 @@
 package modchart.backend.macros;
 
-import haxe.ds.StringMap;
 import haxe.macro.Compiler;
 import haxe.macro.Context;
 import haxe.macro.Expr;
-import haxe.macro.Type.ClassField;
 
 class Macro {
 	public static function includeFiles() {
@@ -23,18 +21,6 @@ class Macro {
 		// Include the specific adapter
 		Compiler.include(adapterPackage);
 	}
-
-	// public static function buildFlxShader():Array<Field> {
-	// 	final fields = Context.getBuildFields();
-	// 	final pos = Context.currentPos();
-	// 	fields.push({
-	// 		name: "__fmIdx",
-	// 		kind: FVar(macro :Null<Int>, macro null),
-	// 		access: [APrivate],
-	// 		pos: pos
-	// 	});
-	// 	return fields;
-	// }
 
 	public static function addModchartStorage():Array<Field> {
 		final fields = Context.getBuildFields();
@@ -93,58 +79,7 @@ class Macro {
 	}
 
 	public static function buildFlxCamera():Array<Field> {
-		var fields = Context.getBuildFields();
-
-		// idk why when i dont change the general draw items pooling system, theres so much graphic issues (with colors and uvs)
-		/*
-			var newField:Field = {
-				name: '__fmStartTrianglesBatch',
-				pos: Context.currentPos(),
-				access: [APrivate],
-				kind: FFun({
-					args: [
-						{
-							name: "graphic",
-							type: macro :flixel.graphics.FlxGraphic
-						},
-						{
-							name: "blend",
-							type: macro :openfl.display.BlendMode
-						},
-						{
-							name: "shader",
-							type: macro :flixel.system.FlxAssets.FlxShader
-						},
-						{
-							name: "antialiasing",
-							type: macro :Bool,
-							value: macro $v{false}
-						}
-					],
-					expr: macro {
-						return getNewDrawTrianglesItem(graphic, antialiasing, true, blend, true, shader);
-					},
-					ret: macro :flixel.graphics.tile.FlxDrawTrianglesItem
-				})
-			};
-			fields.push(newField);
-		 */
-
-		//for (f in fields) {
-		//	if (f.name == 'startTrianglesBatch') {
-		//		switch (f.kind) {
-		//			case FFun(fun):
-		//				// we're just removing a if statement cuz causes some color issues
-		//				fun.expr = macro {
-		//					return getNewDrawTrianglesItem(graphic, smoothing, isColored, blend #if (flixel >= "5.2.0"), hasColorOffsets, shader #end);
-		//				};
-		//			default:
-		//				// do nothing
-		//		}
-		//	}
-		//}
-
-		return fields;
+		return Context.getBuildFields();
 	}
 
 	public static function buildFlxDrawTrianglesItem():Array<Field> {
@@ -181,13 +116,14 @@ class Macro {
 						name: 'transforms',
 						type: macro :haxe.ds.Vector<ColorTransform>,
 						opt: true
+					},
+					{
+						name: 'cull',
+						type: macro :Bool,
+						value: macro true
 					}
 				],
 				expr: macro {
-					// hay glitches en el alpha de las holds
-					// no es de aqui, ya llege a la conclusion de que no es dentro de aqui
-					// otra cosa, el alpha que agarran es de los batchs anteriores (no estos)
-					// tipo si yo pongo en el arrow renderer una alpha hardcodeadas, esa alpha se pone en las primeras holds
 					if (position == null)
 						position = point.set();
 
@@ -200,28 +136,29 @@ class Macro {
 					var prevIndicesLength:Int = this.indices.length;
 					var prevUVTDataLength:Int = this.uvtData.length;
 					var prevNumberOfVertices:Int = this.numVertices;
-					var prevColorsPos:Int = colorsPosition;
 					var prevColorsLength:Int = this.colors.length;
 
 					var tempX:Float, tempY:Float;
 					var i:Int = 0;
 					var currentVertexPosition:Int = prevVerticesLength;
 
-					while (i < verticesLength) {
-						tempX = position.x + vertices[i];
-						tempY = position.y + vertices[i + 1];
+					if (cull) {
+						while (i < verticesLength) {
+							tempX = position.x + vertices[i];
+							tempY = position.y + vertices[i + 1];
 
-						if (i == 0) {
-							bounds.set(tempX, tempY, 0, 0);
-						} else {
-							inflateBounds(bounds, tempX, tempY);
+							if (i == 0) {
+								bounds.set(tempX, tempY, 0, 0);
+							} else {
+								inflateBounds(bounds, tempX, tempY);
+							}
+
+							i = i + 2;
 						}
 
-						i = i + 2;
 					}
-
 					var indicesLength:Int = indices.length;
-					if (cameraBounds.overlaps(bounds)) {
+					if (!cull || cameraBounds.overlaps(bounds)) {
 						i = 0;
 						while (i < verticesLength) {
 							this.vertices[currentVertexPosition++] = position.x + vertices[i];

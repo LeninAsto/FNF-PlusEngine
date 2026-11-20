@@ -88,6 +88,13 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		var option:Option = new Option('Hide Sustain Splash', 'If checked, hides Sustain Splash', 'hideSustainSplash', BOOL);
 		addOption(option);
 
+		var option:Option = new Option('Judgement Counter', 'Shows a counter for each judgement and misses during gameplay.', 'showJudgementCounter', BOOL, null, 'judgement_counter');
+		addOption(option);
+		option.onChange = function()
+		{
+			if (PlayState.instance != null) PlayState.instance.refreshJudgementCounter();
+		};
+
 		var option:Option = new Option('Show Key Viewer', 'If checked, shows a key viewer displaying which keys are being pressed.', 'showKeyViewer', BOOL);
 		addOption(option);
 
@@ -181,6 +188,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		var option:Option = new Option('Discord Rich Presence',
 			"Uncheck this to prevent accidental leaks, it will hide the Application from your \"Playing\" box on Discord", 'discordRPC', BOOL);
 		addOption(option);
+		option.onChange = DiscordClient.check;
 		#end
 
 		var option:Option = new Option('Unfriendly Results State',

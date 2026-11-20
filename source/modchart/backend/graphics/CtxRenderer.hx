@@ -1,23 +1,15 @@
 package modchart.backend.graphics;
 
-import flixel.FlxBasic;
 import flixel.FlxObject;
-import flixel.graphics.FlxGraphic;
-import flixel.graphics.tile.FlxDrawTrianglesItem;
 import flixel.math.FlxPoint;
 import flixel.math.FlxRect;
-import flixel.system.FlxAssets.FlxShader;
-import flixel.util.FlxSignal;
-import flixel.util.FlxSort;
 import haxe.ds.IntMap;
 import haxe.ds.ObjectMap;
 import haxe.ds.Vector;
 import modchart.backend.graphics.renderers.*;
 import modchart.engine.PlayField;
-import openfl.display.BlendMode;
 import openfl.geom.ColorTransform;
 
-using modchart.backend.util.SortUtil;
 
 class CtxRenderer {
 	/**
@@ -39,7 +31,8 @@ class CtxRenderer {
 	var suppressedObjects:Array<FlxObject> = [];
 	var pathEnabled:Array<Bool> = [];
 	var cameraColorTransform:ColorTransform = new ColorTransform();
-	var cameraGradientTransforms:NativeVector<ColorTransform> = new NativeVector<ColorTransform>(0);
+	var uniformTransforms:NativeVector<ColorTransform> = new NativeVector<ColorTransform>(1);
+	var cameraGradientTransforms:IntMap<NativeVector<ColorTransform>> = new IntMap();
 
 	/** Debug stats — populated each frame by emit(). */
 	public var dbgDrawCmds:Int = 0;
@@ -105,8 +98,6 @@ class CtxRenderer {
 			dc.zIndex = Std.int(item._z * 1000) + 1;
 		return dc;
 	}
-
-	var emptyVec:openfl.Vector<Int> = new openfl.Vector<Int>(8, true, [for (i in 0...8) 0]);
 
 	public function emit(items:Array<Array<Array<FlxSprite>>>, playfields:Array<PlayField>) {
 		final __emitStart = collectDebugStats ? haxe.Timer.stamp() : 0.0;
@@ -207,7 +198,7 @@ class CtxRenderer {
 				if (curItems == null || curItems.length == 0)
 					continue;
 				final requestedSpawn = playfield.getPercent('spawnTime', player);
-				final spawnWindow = requestedSpawn > 0 ? requestedSpawn : 2000.0;
+				final spawnWindow = requestedSpawn > 0 ? requestedSpawn : Config.DEFAULT_SPAWN_TIME_MS;
 
 				// path stuff
 				if (renderPaths) {
@@ -306,12 +297,12 @@ class CtxRenderer {
 				final cameraScrollY = camera.scroll != null ? camera.scroll.y : 0;
 				final point = FlxPoint.weak(cameraScrollX * -scrollFactorX, cameraScrollY * -scrollFactorY);
 
-				if (item.color != null)
-					dc.addTriangles(item.vertices, item.indices, item.uvs, emptyVec, point, cameraBounds,
-						getCameraColorTransform(item.color, camera.alpha));
-				else if (item.colors != null)
+				if (item.color != null) {
+					uniformTransforms[0] = getCameraColorTransform(item.color, camera.alpha);
+					dc.addGradientTriangles(item.vertices, item.indices, item.uvs, point, cameraBounds, uniformTransforms, false);
+				} else if (item.colors != null)
 					dc.addGradientTriangles(item.vertices, item.indices, item.uvs, point, cameraBounds,
-						getCameraGradientTransforms(item.colors, camera.alpha));
+						getCameraGradientTransforms(item.colors, camera.alpha), false);
 			}
 			i++;
 		}
@@ -395,21 +386,23 @@ class CtxRenderer {
 		if (cameraAlpha >= 0.999)
 			return source;
 
-		if (cameraGradientTransforms == null || cameraGradientTransforms.length != source.length)
+		var transforms = cameraGradientTransforms.get(source.length);
+		if (transforms == null)
 		{
-			cameraGradientTransforms = new NativeVector<ColorTransform>(source.length);
+			transforms = new NativeVector<ColorTransform>(source.length);
 			for (i in 0...source.length)
-				cameraGradientTransforms[i] = new ColorTransform();
+				transforms[i] = new ColorTransform();
+			cameraGradientTransforms.set(source.length, transforms);
 		}
 
 		for (i in 0...source.length)
 		{
 			final from = source[i];
-			var to = cameraGradientTransforms[i];
+			var to = transforms[i];
 			if (to == null)
 			{
 				to = new ColorTransform();
-				cameraGradientTransforms[i] = to;
+				transforms[i] = to;
 			}
 
 			if (from == null)
@@ -435,12 +428,20 @@ class CtxRenderer {
 			to.alphaOffset = from.alphaOffset;
 		}
 
-		return cameraGradientTransforms;
+		return transforms;
 	}
 
 	private function sortActiveQueue():Void {
 		if (count < 2)
 			return;
+		var alreadySorted = true;
+		for (i in 1...count) {
+			if (queue[i - 1].zIndex < queue[i].zIndex) {
+				alreadySorted = false;
+				break;
+			}
+		}
+		if (alreadySorted) return;
 		var width = 1;
 		var source = queue;
 		var target = sortBuffer;
@@ -487,7 +488,7 @@ class CtxRenderer {
 				@:bypassAccessor obj.visible = suppressedVisibility.get(obj);
 		}
 		suppressedObjects.resize(0);
-		suppressedVisibility = new ObjectMap();
+		suppressedVisibility.clear();
 	}
 
 	public function dispose() {

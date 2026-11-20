@@ -70,6 +70,8 @@ class ModchartFunctions
 		__luaArrowData.hitTime = arrowTime;
 		__luaArrowData.distance = arrowDiff;
 		__luaArrowData.sourceTime = Adapter.instance.getTimeFromArrow(strum);
+		__luaArrowData.strumTime = isTapArrow ? __luaArrowData.sourceTime : songPos;
+		__luaArrowData.sampleTime = __luaArrowData.strumTime;
 		__luaArrowData.lane = lane;
 		__luaArrowData.player = player;
 		__luaArrowData.hitten = Adapter.instance.arrowHit(strum);
@@ -1241,6 +1243,7 @@ class ModchartFunctions
 				return false;
 
 			playfield.addScriptedModifier(normalized, new LuaModifier(playfield, normalized, funk, options));
+			Manager.instance.requestRender();
 			return true;
 		}
 
@@ -1255,6 +1258,7 @@ class ModchartFunctions
 				playfield.addScriptedModifier(normalized, new LuaModifier(playfield, normalized, funk, options));
 				added = true;
 			}
+			if (added) Manager.instance.requestRender();
 			return added;
 		}
 
@@ -1263,6 +1267,7 @@ class ModchartFunctions
 			return false;
 
 		playfield.addScriptedModifier(normalized, new LuaModifier(playfield, normalized, funk, options));
+		Manager.instance.requestRender();
 		return true;
 	}
 

@@ -5,9 +5,7 @@ import flixel.FlxG;
 /**
  * Represents a perspective projection for modcharts.
  *
- * This class provides a basic perspective transformation based on OpenGL principles.
- * It allows transforming 3D world coordinates into 2D screen space, taking into account
- * field of view (FOV), aspect ratio, and depth scaling.
+ * Projects modchart coordinates to screen space using the engine's legacy depth convention.
  *
  * Based on OpenGL tutorial:
  * @see https://ogldev.org/www/tutorial12/tutorial12.html
@@ -18,14 +16,12 @@ import flixel.FlxG;
 #end
 final class View3D {
 	/**
-	 * Distance to the near clipping plane.
-	 * Objects closer than this distance will not be rendered.
+	 * Near coefficient used by the legacy depth projection.
 	 */
 	public var near(default, set):Float = 0;
 
 	/**
-	 * Distance to the far clipping plane.
-	 * Objects farther than this distance will not be rendered.
+	 * Far coefficient used by the legacy depth projection.
 	 */
 	public var far(default, set):Float = 1;
 
@@ -46,7 +42,9 @@ final class View3D {
 	/**
 	 * Internal projection components.
 	 */
-	private var __tanHalfFov:Float = 0;
+	public var clipDistance(default, null):Float = 1;
+
+	private var __focalScale:Float = 1;
 
 	private var __depthRange:Float = 1;
 	private var __depthScale:Float = 1;
@@ -84,6 +82,9 @@ final class View3D {
 	private var __right:Vector3 = new Vector3();
 	private var __up:Vector3 = new Vector3();
 	private var __dirtyCamera:Bool = true;
+	private var __lastEye:Vector3 = new Vector3();
+	private var __lastTarget:Vector3 = new Vector3();
+	private var __lastUp:Vector3 = new Vector3();
 
 	public function new() {
 		fov = Math.PI / 2;
@@ -91,18 +92,27 @@ final class View3D {
 	}
 
 	private function set_near(value:Float):Float {
-		updateProperties();
-		return near = value;
+		if (Math.isFinite(value) && value != far) {
+			near = value;
+			updateProperties();
+		}
+		return near;
 	}
 
 	private function set_far(value:Float):Float {
-		updateProperties();
-		return far = value;
+		if (Math.isFinite(value) && value != near) {
+			far = value;
+			updateProperties();
+		}
+		return far;
 	}
 
 	private function set_fov(value:Float):Float {
-		updateProperties();
-		return fov = value;
+		if (Math.isFinite(value) && value > 0.001 && value < Math.PI - 0.001) {
+			fov = value;
+			updateProperties();
+		}
+		return fov;
 	}
 
 	private function get_range():Float {
@@ -113,7 +123,7 @@ final class View3D {
 	 * Updates internal projection properties based on current FOV and depth range.
 	 */
 	public function updateProperties():Void {
-		__tanHalfFov = Math.tan(fov * 0.5);
+		__focalScale = 1 / Math.tan(fov * 0.5);
 		__depthRange = 1 / range;
 		__depthScale = (near + far) * __depthRange;
 		__depthOffset = 2 * near * (far * __depthRange);
@@ -133,22 +143,36 @@ final class View3D {
 
 	private inline function updateCameraBasis():Void {
 		__forward.setTo(position.x - target.x, position.y - target.y, position.z - target.z);
-		__forward.normalize();
+		if (__forward.lengthSquared < 0.00000001)
+			__forward.setTo(0, 0, 1);
+		else
+			__forward.normalize();
 
 		__right.setTo(up.y * __forward.z - up.z * __forward.y,
 			up.z * __forward.x - up.x * __forward.z,
 			up.x * __forward.y - up.y * __forward.x);
+		if (__right.lengthSquared < 0.00000001) {
+			if (Math.abs(__forward.y) < 0.999)
+				__right.setTo(__forward.z, 0, -__forward.x);
+			else
+				__right.setTo(-__forward.y, __forward.x, 0);
+		}
 		__right.normalize();
 
 		__up.setTo(__forward.y * __right.z - __forward.z * __right.y,
 			__forward.z * __right.x - __forward.x * __right.z,
 			__forward.x * __right.y - __forward.y * __right.x);
 
+		__lastEye.copyFrom(position);
+		__lastTarget.copyFrom(target);
+		__lastUp.copyFrom(up);
 		__dirtyCamera = false;
 	}
 
 	private inline function applyViewTransform(v:Vector3):Vector3 {
-		if (__dirtyCamera)
+		if (__dirtyCamera || position.x != __lastEye.x || position.y != __lastEye.y || position.z != __lastEye.z
+			|| target.x != __lastTarget.x || target.y != __lastTarget.y || target.z != __lastTarget.z
+			|| up.x != __lastUp.x || up.y != __lastUp.y || up.z != __lastUp.z)
 			updateCameraBasis();
 
 		final px = v.x - position.x;
@@ -190,6 +214,8 @@ final class View3D {
 		var tz = world.z - origin.z;
 
 		final projectedZ = __depthScale * Math.min(tz - 1, 0) + __depthOffset;
+		clipDistance = ((__depthScale < 0 && __depthOffset < 0.0101) || (__depthScale > 0 && __depthOffset >= 0.0101)
+			? __depthScale * (tz - 1) + __depthOffset : projectedZ) - 0.0101;
 
 		// Guard against degenerate projection (point at or behind the near plane).
 		// Sets world.z to a large sentinel (1e9) so callers (e.g. PathRenderer)
@@ -199,7 +225,7 @@ final class View3D {
 			return world;
 		}
 
-		final projectedFov = (__tanHalfFov / projectedZ);
+		final projectedFov = (__focalScale / projectedZ);
 
 		world.x = tx * projectedFov + origin.x;
 		world.y = ty * projectedFov + origin.y;

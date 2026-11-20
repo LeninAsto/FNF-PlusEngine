@@ -27,6 +27,7 @@ class Tipsy extends Modifier {
 	}
 
 	inline function shift(params:ModifierParameters, axis:Int, amount:Float, baseSpeed:Float, baseOffset:Float):Float {
+		if (amount == 0) return 0;
 		final player = params.player;
 		final speed = hasUnsafeForPlayer(speedIDs[axis], player) ? getUnsafe(speedIDs[axis], player) : baseSpeed;
 		final offset = hasUnsafeForPlayer(offsetIDs[axis], player) ? getUnsafe(offsetIDs[axis], player) : baseOffset;

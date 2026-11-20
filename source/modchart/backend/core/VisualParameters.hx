@@ -18,4 +18,10 @@ final class VisualParameters {
 	var fieldAngleZ:Float = 0;
 	var skewX:Float = 0;
 	var skewY:Float = 0;
+
+	public function copy():VisualParameters {
+		return {scaleX: scaleX, scaleY: scaleY, alpha: alpha, glow: glow, glowR: glowR, glowG: glowG, glowB: glowB,
+			angleX: angleX, angleY: angleY, angleZ: angleZ, fieldAngleX: fieldAngleX, fieldAngleY: fieldAngleY,
+			fieldAngleZ: fieldAngleZ, skewX: skewX, skewY: skewY};
+	}
 }

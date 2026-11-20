@@ -52,7 +52,7 @@ class DynamicModifier extends Modifier {
 			return position;
 
 		final safePos = nullSafety ? position.clone() : position;
-		final safeParams = nullSafety ? Reflect.copy(params) : params;
+		final safeParams = nullSafety ? params.copy() : params;
 
 		final translation:Null<Vector3> = renderFunc(safePos, safeParams);
 
@@ -74,8 +74,8 @@ class DynamicModifier extends Modifier {
 		if (__skipVisuals || visualsFunc == null)
 			return data;
 
-		final safeData = nullSafety ? Reflect.copy(data) : data;
-		final safeParams = nullSafety ? Reflect.copy(params) : params;
+		final safeData = nullSafety ? data.copy() : data;
+		final safeParams = nullSafety ? params.copy() : params;
 
 		final modifiedVisuals:Null<VisualParameters> = visualsFunc(safeData, safeParams);
 

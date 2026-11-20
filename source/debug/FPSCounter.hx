@@ -15,7 +15,6 @@ import haxe.Http;
 import haxe.Json;
 import states.MainMenuState;
 import backend.BuildInfo;
-import backend.MemoryUtil.MemoryStats;
 import backend.Native;
 import backend.ThreadUtil;
 import backend.ui.md3.NetworkCheckToast;
@@ -110,10 +109,6 @@ class FPSCounter extends Sprite
 	private var cachedCurrentState:String = "Unknown";
 
 	private var lastCacheUpdateTime:Float = 0.0;
-	private var cachedMemoryStats:Null<MemoryStats> = null;
-	private var lastMemoryStatsUpdateTime:Float = -9999.0;
-	private var gcCollectionsPerSecond:Float = 0.0;
-	private var gcTimePercent:Float = 0.0;
 
 	/**
 		Text update throttling to reduce overhead in debug mode.
@@ -142,7 +137,6 @@ class FPSCounter extends Sprite
 	@:noCompletion private var frameTimesTotal:Float = 0;
 	@:noCompletion private var deltaTimeout:Float = 0.0;
 	@:noCompletion private static inline final TEXT_UPDATE_MS:Float = 125.0;
-	@:noCompletion private static inline final MEMORY_STATS_UPDATE_SECONDS:Float = 0.25;
 
 	public var os:String = '';
 
@@ -233,7 +227,8 @@ class FPSCounter extends Sprite
 		// Format displayed memory (smoothed values)
 		var currentMemoryStr = flixel.util.FlxStringUtil.formatBytes(displayedMemory);
 		var peakMemoryStr = flixel.util.FlxStringUtil.formatBytes(displayedMemoryPeak);
-		realtimeMemoryLabel = currentMemoryStr + ' / ' + peakMemoryStr;
+		var processMemoryStr = backend.MemoryUtil.supportsTaskMem() ? flixel.util.FlxStringUtil.formatBytes(taskMemory) : 'N/A';
+		realtimeMemoryLabel = currentMemoryStr + ' / ' + peakMemoryStr + ' - RAM: ' + processMemoryStr;
 
 		// White or red color based on FPS
 		var targetFPS = ClientPrefs.data.framerate;
@@ -276,41 +271,8 @@ class FPSCounter extends Sprite
 
 		if (debugLevel >= 3)
 		{
-			var memoryStats:MemoryStats = getCachedMemoryStats();
-			var memoryDebug:String = 'GC Live: ' + currentMemoryStr + '\nGC Current: '
-				+ formatMemoryStat(memoryStats.gcCurrent)
-				+ '\nPeak Live: ' + peakMemoryStr;
-			if (backend.MemoryUtil.supportsTaskMem())
-				memoryDebug += '\nTask Memory: ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.taskMemory);
-			setBox(index++, memoryDebug, true);
-
-			if (debugLevel >= 4)
-			{
-				var gcDebug:String = memoryStats.rootGCStatsAvailable
-					? 'GC Runs: ' + memoryStats.gcCollections
-						+ '\nPause last/max: ' + formatFloat(memoryStats.gcLastDurationMs, 2)
-						+ ' / ' + formatFloat(memoryStats.gcMaxDurationMs, 2) + ' ms'
-						+ '\nThread wait last/max: ' + formatFloat(memoryStats.gcLastThreadWaitMs, 2)
-						+ ' / ' + formatFloat(memoryStats.gcMaxThreadWaitMs, 2) + ' ms'
-						+ '\nTotal GC: ' + formatFloat(memoryStats.gcTotalDurationMs, 1) + ' ms'
-						+ '\nRate/load: ' + formatFloat(gcCollectionsPerSecond, 2) + '/s / '
-						+ formatFloat(gcTimePercent, 2) + '%'
-						+ '\nLast GC: ' + formatGCType(memoryStats.gcLastFlags)
-						+ ' | freed ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.gcLastReclaimedBytes)
-						+ '\nFreed total: ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.gcTotalReclaimedBytes)
-					: 'GC runtime stats: unavailable';
-				gcDebug += '\nRuntime: ' + memoryStats.runtime
-					+ ' | Manual GC: ' + (memoryStats.manualCollectionAvailable ? 'available' : 'automatic only');
-				gcDebug += '\nReserved: ' + formatMemoryStat(memoryStats.gcReserved)
-					+ ' | Large: ' + formatMemoryStat(memoryStats.gcLarge)
-					+ '\nHeap growth: ' + flixel.util.FlxStringUtil.formatBytes(memoryStats.allocationGrowth);
-				gcDebug += '\nGC Policy: ' + backend.MemoryManager.lastCollectionDecision
-					+ '\nScheduler backoff: x' + backend.MemoryManager.collectionBackoff;
-				if (backend.MemoryManager.collectionPending)
-					gcDebug += '\nPending: ' + backend.MemoryManager.pendingCollectionReason
-						+ ' (' + backend.MemoryManager.pendingReleasedAssets + ' assets)';
-				setBox(index++, gcDebug, true);
-			}
+			setBox(index++, 'GC: ' + currentMemoryStr + '\nGC peak: ' + peakMemoryStr
+				+ '\nProcess RAM: ' + processMemoryStr, true);
 
 			var commitText:String = BuildInfo.githubDevBuild && BuildInfo.commit.length > 0 ? BuildInfo.shortCommit() : lastCommit;
 			var buildDebug:String = os.substring(1) + '\nCommit: ' + commitText;
@@ -641,62 +603,6 @@ class FPSCounter extends Sprite
 		}
 	}
 
-	// Función para formatear números flotantes
-	private function formatFloat(value:Float, decimals:Int):String
-	{
-		var multiplier = Math.pow(10, decimals);
-		var rounded = Math.round(value * multiplier) / multiplier;
-		var str = Std.string(rounded);
-
-		// Asegurar que tenga el número correcto de decimales
-		if (str.indexOf('.') == -1)
-		{
-			str += '.';
-		}
-
-		var parts = str.split('.');
-		if (parts.length > 1)
-		{
-			while (parts[1].length < decimals)
-			{
-				parts[1] += '0';
-			}
-			return parts[0] + '.' + parts[1];
-		}
-
-		return str + StringTools.lpad('', '0', decimals);
-	}
-
-	// Función para obtener draw calls aproximados
-	private function getDrawCalls():Int
-	{
-		// Estimación basada en objetos visibles
-		return FlxG.state.members.length * 2; // Aproximación
-	}
-
-	// Función para obtener estadísticas del recolector de basura
-	private function getGCStats():String
-	{
-		#if cpp
-		try
-		{
-			// Obtener información de memoria del GC
-			var totalMem = cpp.vm.Gc.memInfo64(cpp.vm.Gc.MEM_INFO_RESERVED);
-			var usedMem = cpp.vm.Gc.memInfo64(cpp.vm.Gc.MEM_INFO_USAGE);
-			var freeMem = totalMem - usedMem;
-
-			var freePercentage = Math.round((freeMem / totalMem) * 100);
-			return '${freePercentage}% free';
-		}
-		catch (e:Dynamic)
-		{
-			return 'N/A';
-		}
-		#else
-		return 'N/A';
-		#end
-	}
-
 	// Returns the current state name
 	private function getCurrentState():String
 	{
@@ -781,54 +687,6 @@ class FPSCounter extends Sprite
 			cachedCurrentState = getCurrentState();
 		}
 	}
-
-	private function getCachedMemoryStats():MemoryStats
-	{
-		var now:Float = Timer.stamp();
-		var previous:Null<MemoryStats> = cachedMemoryStats;
-		var elapsed:Float = now - lastMemoryStatsUpdateTime;
-		if (previous == null || elapsed >= MEMORY_STATS_UPDATE_SECONDS)
-		{
-			var next:MemoryStats = backend.MemoryUtil.getMemoryStats();
-			if (previous != null && next.rootGCStatsAvailable && elapsed > 0)
-			{
-				var collectionDelta:Int = next.gcCollections - previous.gcCollections;
-				var durationDelta:Float = next.gcTotalDurationMs - previous.gcTotalDurationMs;
-				gcCollectionsPerSecond = Math.max(0, collectionDelta / elapsed);
-				gcTimePercent = Math.max(0, durationDelta / (elapsed * 1000.0) * 100.0);
-			}
-			else
-			{
-				gcCollectionsPerSecond = 0;
-				gcTimePercent = 0;
-			}
-
-			cachedMemoryStats = next;
-			lastMemoryStatsUpdateTime = now;
-			return next;
-		}
-
-		return previous;
-	}
-
-	private static function formatGCType(flags:Int):String
-	{
-		if ((flags & 8) != 0)
-			return 'compact';
-		if ((flags & 4) != 0)
-			return 'generational';
-		if ((flags & 1) != 0)
-			return 'major';
-		if ((flags & 2) != 0)
-			return 'full';
-		return flags == 0 ? 'none yet' : 'minor';
-	}
-
-	// Función optimizada para contar notas sin reflection costosa
-	// ELIMINADA - Ya no se usa para mejor rendimiento
-
-	private static inline function formatMemoryStat(bytes:Float):String
-		return bytes < 0 ? 'unavailable' : flixel.util.FlxStringUtil.formatBytes(bytes);
 
 	inline function get_memoryMegas():Float
 		return Math.max(0, backend.MemoryUtil.getGCMemory());
