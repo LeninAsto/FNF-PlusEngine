@@ -250,7 +250,7 @@ class LoadingState extends MusicBeatState
 		_loaded();
 		transitioning = true;
 		finishedLoading = true;
-		var targetState:FlxState = returnState != null ? returnState : new MainMenuState();
+		var targetState:FlxState = returnState != null ? returnState : MainMenuStateSelector.create();
 		if (stopMusic && FlxG.sound.music != null)
 			FlxG.sound.music.stop();
 		FlxG.camera.fade(FlxColor.BLACK, 0.3, false, () -> MusicBeatState.switchState(targetState));

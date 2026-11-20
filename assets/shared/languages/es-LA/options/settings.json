@@ -197,6 +197,10 @@
     "name": "Animación Hey! al iniciar",
     "description": "Si está marcado, BF y GF automáticamente hacen el ¡Oye! animación cuando la cuenta regresiva dice Go!"
   },
+  "judgement_counter": {
+    "name": "Contador de juicios",
+    "description": "Muestra un contador de cada juicio y de los fallos durante la partida."
+  },
   "hide_hud": {
     "name": "Ocultar HUD",
     "description": "Si está marcado, oculta la mayoría de los elementos del HUD."

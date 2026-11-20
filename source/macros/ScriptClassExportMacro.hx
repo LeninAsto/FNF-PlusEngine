@@ -16,7 +16,6 @@ class ScriptClassExportMacro {
 				'TitleState',
 				'MainMenuState',
 				'FreeplayState',
-				'FreeplayState_Psych'
 			]
 		},
 		{

@@ -2,7 +2,7 @@ package states.editors;
 
 import backend.WeekData;
 import objects.Character;
-import states.MainMenuState;
+import states.MainMenuStateSelector;
 import states.FreeplayState;
 import mobile.input.TouchScrollHandler;
 
@@ -140,7 +140,7 @@ class MasterEditorMenu extends MusicBeatState
 
 		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed) #if android || FlxG.android.justReleased.BACK #end)
 		{
-			MusicBeatState.switchState(new MainMenuState());
+			MusicBeatState.switchState(MainMenuStateSelector.create());
 		}
 
 		if (controls.ACCEPT || (touchPad != null && touchPad.buttonA.justPressed))

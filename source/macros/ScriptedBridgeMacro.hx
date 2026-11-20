@@ -17,7 +17,6 @@ class ScriptedBridgeMacro {
 		{base: 'states.TitleState', state: true},
 		{base: 'states.MainMenuState', state: true},
 		{base: 'states.FreeplayState', state: true},
-		{base: 'states.FreeplayState_Psych', state: true},
 		{base: 'states.PlayState', state: true},
 		{base: 'substates.PauseSubState'},
 		{base: 'substates.GameOverSubstate'},

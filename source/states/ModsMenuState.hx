@@ -718,7 +718,7 @@ class ModsMenuState extends MusicBeatState {
 		FlxG.mouse.visible = false;
 		FlxG.autoPause = ClientPrefs.data.autoPause;
 		if (!scripting.ScriptedStates.launchMod(m.folder))
-			MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
+			MusicBeatState.switchState(MainMenuStateSelector.create());
 		#else
 		FlxG.sound.play(Paths.sound('cancelMenu'));
 		#end
@@ -998,7 +998,7 @@ class ModsMenuState extends MusicBeatState {
 			// bootstrap after its launch context was cleared.
 			FlxG.camera.fade(FlxColor.BLACK, 0.5, false, function() FlxG.switchState(new InitState.InitialState()), false);
 		} else {
-			MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
+			MusicBeatState.switchState(MainMenuStateSelector.create());
 		}
 
 		persistentUpdate = false;

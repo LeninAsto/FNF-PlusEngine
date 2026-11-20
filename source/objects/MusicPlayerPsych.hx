@@ -3,12 +3,12 @@ package objects;
 import flixel.group.FlxGroup;
 import flixel.ui.FlxBar;
 import flixel.util.FlxStringUtil;
-import states.FreeplayState_Psych;
+import states.FreeplayState as FreeplayState_Psych;
 
 /**
  * Music player used for Freeplay
  */
-@:access(states.FreeplayState_Psych)
+@:access(states.FreeplayState)
 class MusicPlayerPsych extends FlxGroup
 {
 	public var instance:FreeplayState_Psych;

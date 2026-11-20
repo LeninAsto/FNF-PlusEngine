@@ -4,6 +4,7 @@ import backend.ClientPrefs;
 import backend.Mods;
 import backend.ScriptableState;
 import flixel.FlxState;
+import states.plus.FreeplayStatePlus;
 
 class FreeplayStateSelector
 {
@@ -15,8 +16,8 @@ class FreeplayStateSelector
 		#end
 
 		return ClientPrefs.data.freeplayMenuStyle == 'Plus'
-			? ScriptableState.tryCreate('FreeplayState', new FreeplayState())
-			: ScriptableState.tryCreate('FreeplayState_Psych', new FreeplayState_Psych());
+			? ScriptableState.tryCreate('FreeplayStatePlus', new FreeplayStatePlus())
+			: ScriptableState.tryCreate('FreeplayState', new FreeplayState());
 	}
 }
 

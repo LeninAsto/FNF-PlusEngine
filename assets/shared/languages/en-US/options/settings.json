@@ -197,6 +197,10 @@
     "name": "Hey Intro",
     "description": "If checked, BF and GF automatically do the Hey! animation when the countdown says Go!"
   },
+  "judgement_counter": {
+    "name": "Judgement Counter",
+    "description": "Shows a counter for each judgement and misses during gameplay."
+  },
   "hide_hud": {
     "name": "Hide HUD",
     "description": "If checked, hides most HUD elements."
