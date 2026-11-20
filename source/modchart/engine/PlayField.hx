@@ -72,7 +72,7 @@ final class PlayField extends FlxSprite
 		setPercent('arrowPathAlpha', 0, -1);
 		setPercent('arrowPathThickness', 2, -1);
 		setPercent('rotateHoldY', 1, -1);
-		setPercent('spawnTime', 2000, -1);
+		setPercent('spawnTime', Config.DEFAULT_SPAWN_TIME_MS, -1);
 
 		frameWidth = FlxG.width;
 		frameHeight = FlxG.height;
@@ -197,16 +197,14 @@ final class PlayField extends FlxSprite
 
 	public inline function setAdd(name:String, beat:Float, valueToAdd:Float, player:Int = -1):Void
 	{
-		var addition = getPercent(name, player == -1 ? 0 : player);
-		var value = addition + valueToAdd;
 		if (player == -1)
 		{
 			for (curField in 0...Adapter.instance.getPlayerCount())
-				set(name, beat, value, curField);
+				setAdd(name, beat, valueToAdd, curField);
 			return;
 		}
 
-		addEvent(new SetEvent(name.toLowerCase(), beat, value, player, events));
+		set(name, beat, getPercent(name, player) + valueToAdd, player);
 	}
 
 	public inline function repeater(beat:Float, length:Float, callback:Event->Void):Void
@@ -306,7 +304,6 @@ final class PlayField extends FlxSprite
 	private function transformCmd(cmd:DrawCommand)
 	{
 		var vertex = cmd.vertices;
-		var vc = Std.int(vertex.length / 2);
 		final identityGeometry = !flipX && !flipY && scale.x == 1 && scale.y == 1
 			&& (bakedRotationAngle > 0 || angle == 0) && skew.x == 0 && skew.y == 0
 			&& offset.x == 0 && offset.y == 0;
@@ -343,11 +340,6 @@ final class PlayField extends FlxSprite
 		_point.set().subtractPoint(offset);
 		_point.add(origin.x, origin.y);
 		matrix.translate(_point.x, _point.y);
-
-		// if (isPixelPerfectRender(camera)) {
-		// 	matrix.tx = Math.floor(matrix.tx);
-		// 	matrix.ty = Math.floor(matrix.ty);
-		// }
 
 		NativeGeometry.affine2D(vertex, matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
 		}
@@ -405,6 +397,9 @@ final class PlayField extends FlxSprite
 		hash = __mixPathHash(hash, __quantizePathFloat(data.hitTime));
 		hash = __mixPathHash(hash, __quantizePathFloat(data.distance));
 		hash = __mixPathHash(hash, __quantizePathFloat(data.sourceTime));
+		hash = __mixPathHash(hash, __quantizePathFloat(data.strumTime == null ? data.hitTime : data.strumTime));
+		hash = __mixPathHash(hash, __quantizePathFloat(data.sampleTime == null ? data.hitTime : data.sampleTime));
+		hash = __mixPathHash(hash, data.isPath ? 1 : 0);
 		hash = __mixPathHash(hash, data.lane);
 		hash = __mixPathHash(hash, data.player);
 		hash = __mixPathHash(hash, data.isTapArrow ? 1 : 0);

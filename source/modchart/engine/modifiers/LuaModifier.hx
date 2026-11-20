@@ -73,8 +73,8 @@ class LuaModifier extends Modifier {
 		if (__skipStraightHolds || allowStraightHoldsCallback == null)
 			return allowStraightHoldsValue;
 
-		final ret = funk.call(allowStraightHoldsCallback, [modifierName]);
-		if (ret == LuaUtils.Function_Continue)
+		final ret:Dynamic = funk.call(allowStraightHoldsCallback, [modifierName]);
+		if (isContinue(ret))
 			return allowStraightHoldsValue;
 
 		if (Std.isOfType(ret, Bool))
@@ -89,8 +89,8 @@ class LuaModifier extends Modifier {
 			return true;
 
 		if (!__skipShouldRun && shouldRunCallback != null) {
-			final ret = funk.call(shouldRunCallback, [Reflect.copy(params), modifierName]);
-			if (ret != LuaUtils.Function_Continue) {
+			final ret:Dynamic = funk.call(shouldRunCallback, [copyParams(params, {}), modifierName]);
+			if (!isContinue(ret)) {
 				if (Std.isOfType(ret, Bool))
 					return cast ret;
 				if (Std.isOfType(ret, Float) || Std.isOfType(ret, Int))
@@ -116,9 +116,9 @@ class LuaModifier extends Modifier {
 		luaPos.z = position.z;
 		luaPos.w = position.w;
 		final luaParams = copyParams(params, nullSafety ? {} : __luaParams);
-		final ret = funk.call(renderCallback, [luaPos, luaParams, modifierName]);
+		final ret:Dynamic = funk.call(renderCallback, [luaPos, luaParams, modifierName]);
 
-		if (ret == LuaUtils.Function_Continue)
+		if (isContinue(ret))
 			return position;
 
 		final resolved = vectorFromDynamic(ret, position);
@@ -140,9 +140,9 @@ class LuaModifier extends Modifier {
 		final luaData:Dynamic = nullSafety ? {} : __luaVisuals;
 		copyVisuals(data, luaData);
 		final luaParams = copyParams(params, nullSafety ? {} : __luaParams);
-		final ret = funk.call(visualsCallback, [luaData, luaParams, modifierName]);
+		final ret:Dynamic = funk.call(visualsCallback, [luaData, luaParams, modifierName]);
 
-		if (ret == LuaUtils.Function_Continue)
+		if (isContinue(ret))
 			return data;
 
 		final resolved = visualsFromDynamic(ret, data);
@@ -162,6 +162,9 @@ class LuaModifier extends Modifier {
 		target.hitTime = params.hitTime;
 		target.distance = params.distance;
 		target.sourceTime = params.sourceTime;
+		target.strumTime = params.strumTime;
+		target.sampleTime = params.sampleTime;
+		target.isPath = params.isPath;
 		target.curBeat = params.curBeat;
 		target.lane = params.lane;
 		target.player = params.player;
@@ -289,6 +292,10 @@ class LuaModifier extends Modifier {
 			}
 		}
 		return out != 0 ? cast out : fallback;
+	}
+
+	static inline function isContinue(value:Dynamic):Bool {
+		return Std.isOfType(value, String) && (cast value:String) == LuaUtils.Function_Continue;
 	}
 
 	static function toFloat(value:Dynamic, fallback:Float = 0):Float {

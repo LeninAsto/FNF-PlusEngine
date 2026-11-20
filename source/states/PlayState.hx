@@ -5055,7 +5055,7 @@ class PlayState extends MusicBeatState
 
 		if (startedCountdown && !inCutscene && !playerChar().stunned && generatedMusic)
 		{
-			if (notes.length > 0) {
+			if (notes.length > 0 && holdArray.contains(true)) {
 				for (n in notes) { // I can't do a filter here, that's kinda awesome
 					var canHit:Bool = (n != null && !strumsBlocked[n.noteData] && n.canBeHit
 						&& n.mustPress && !n.tooLate && !n.wasGoodHit && !n.blockHit);

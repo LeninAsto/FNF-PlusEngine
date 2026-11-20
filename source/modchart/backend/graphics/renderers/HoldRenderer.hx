@@ -6,6 +6,10 @@ private final class HoldSegmentOutput {
 	public final origin:Vector3 = new Vector3();
 	public final left:Vector3 = new Vector3();
 	public final right:Vector3 = new Vector3();
+	public final worldLeft:Vector3 = new Vector3();
+	public final worldRight:Vector3 = new Vector3();
+	public var leftDistance:Float = 0;
+	public var rightDistance:Float = 0;
 	public final modifierPos:Vector3 = new Vector3();
 	public var visuals:VisualParameters = {};
 	public final modifierOutput:ModifierOutput;
@@ -35,6 +39,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 
 	var _indices:openfl.Vector<Int>;
 	var _indicesBySubs:Array<openfl.Vector<Int>> = [];
+	final _clipper:NearPlaneClipper = new NearPlaneClipper();
 	final _segmentA:HoldSegmentOutput = new HoldSegmentOutput();
 	final _segmentB:HoldSegmentOutput = new HoldSegmentOutput();
 	final _rawSegmentA:HoldSegmentOutput = new HoldSegmentOutput();
@@ -64,6 +69,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 
 	public inline function beginFrame():Void {
 		_slotIndex = 0;
+		__lastPlayer = -1;
 		dbgGetPathCalls = 0;
 		dbgSlotsReused = 0;
 	}
@@ -138,6 +144,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		var parentDistance = Math.max(0, parentTime - __cachedSongPos);
 
 		params.hitTime = FlxMath.lerp(parentTime, holdTime, __long);
+		params.sampleTime = FlxMath.lerp(parentTime, params.sampleTime != null ? params.sampleTime : holdTime, __long);
 		params.distance = FlxMath.lerp(parentDistance, holdDistance, __long);
 
 		// not this
@@ -194,8 +201,9 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 				__matrix.b = ModchartUtil.tan(visuals.skewY * FlxAngle.TO_RAD);
 				__matrix.c = ModchartUtil.tan(visuals.skewX * FlxAngle.TO_RAD);
 
-				rotation.x = __matrix.__transformX(rotation.x, rotation.y);
+				final skewedX = __matrix.__transformX(rotation.x, rotation.y);
 				rotation.y = __matrix.__transformY(rotation.x, rotation.y);
+				rotation.x = skewedX;
 			}
 			rotation.x = rotation.x * visuals.scaleX;
 			rotation.y = rotation.y * visuals.scaleY;
@@ -206,8 +214,11 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 			_viewScratch.setTo(rotation.x + worldX, rotation.y + worldY, worldZ + (rotation.z * 0.001 * Config.Z_SCALE));
 			__rotateTailInto(_viewScratch);
 
-			// The result of the perspective projection of rotation
+			final world = i == 0 ? dest.worldLeft : dest.worldRight;
+			world.setTo(_viewScratch.x, _viewScratch.y, _viewScratch.z);
 			var projection = this.view.transformVector(_viewScratch);
+			if (i == 0) dest.leftDistance = this.view.clipDistance;
+			else dest.rightDistance = this.view.clipDistance;
 			quad.x = projection.x;
 			quad.y = projection.y;
 			quad.z = projection.z;
@@ -361,6 +372,8 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		// this fixed the clipping gaps
 		_parentDataBuf.distance = Math.max(0, parentTime - songPosNow);
 		_parentDataBuf.sourceTime = parentTime;
+		_parentDataBuf.strumTime = holdHitTime;
+		_parentDataBuf.sampleTime = parentTime;
 		_parentDataBuf.lane = lane;
 		_parentDataBuf.player = player;
 		_parentDataBuf.hitten = hitten;
@@ -395,6 +408,9 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 
 		var hasC = false;
 		var hasCOff = false;
+		var needsClip = false;
+		var anyVisible = false;
+		var visibleDepth = 1e9;
 		var nextSegment = _segmentA;
 		var spareSegment = _segmentB;
 
@@ -455,6 +471,27 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 			vertices[vertPos + 6] = out2.right.x;
 			vertices[vertPos + 7] = out2.right.y;
 
+			final worldBase = subIndex * 12;
+			writeWorld(slot.world, worldBase, out1.worldLeft);
+			writeWorld(slot.world, worldBase + 3, out1.worldRight);
+			writeWorld(slot.world, worldBase + 6, out2.worldLeft);
+			writeWorld(slot.world, worldBase + 9, out2.worldRight);
+			final distanceBase = subIndex * 4;
+			slot.distances[distanceBase] = out1.leftDistance;
+			slot.distances[distanceBase + 1] = out1.rightDistance;
+			slot.distances[distanceBase + 2] = out2.leftDistance;
+			slot.distances[distanceBase + 3] = out2.rightDistance;
+			if (out1.leftDistance < 0 || out1.rightDistance < 0 || out2.leftDistance < 0 || out2.rightDistance < 0)
+				needsClip = true;
+			if (out1.leftDistance >= 0 || out1.rightDistance >= 0 || out2.leftDistance >= 0 || out2.rightDistance >= 0)
+				anyVisible = true;
+			if (visibleDepth > 1e6) {
+				if (out1.leftDistance >= 0) visibleDepth = out1.left.z;
+				else if (out1.rightDistance >= 0) visibleDepth = out1.right.z;
+				else if (out2.leftDistance >= 0) visibleDepth = out2.left.z;
+				else if (out2.rightDistance >= 0) visibleDepth = out2.right.z;
+			}
+
 			final negGlow = 1 - out1.visuals.glow;
 			final absGlow = out1.visuals.glow * 255;
 
@@ -480,8 +517,20 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 			firstIteration = false;
 		}
 
-		if (!canDraw)
+		if (!canDraw || !anyVisible)
 			return null;
+		if (item._z > 1e8 && visibleDepth < 1e6)
+			item._z = (visibleDepth - 1) * 1000;
+
+		final uv = _getCachedUVT(item, HOLD_SUBDIVISIONS);
+		if (needsClip) {
+			slot.ensureClipped(HOLD_SUBDIVISIONS);
+			var visible = false;
+			for (subIndex in 0...HOLD_SUBDIVISIONS)
+				if (_clipper.clipQuad(this.view, slot.world, slot.distances, uv, subIndex,
+					slot.clippedVertices, slot.clippedUVs, true)) visible = true;
+			if (!visible) return null;
+		}
 
 		final dc = slot.command;
 		dc.parent = item;
@@ -490,9 +539,9 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		dc.blend = item.blend;
 		dc.cameras = ModchartUtil.resolveCameras(parent, item, slot.cameras);
 		dc.shader = item.shader;
-		dc.vertices = vertices;
-		dc.uvs = _getCachedUVT(item, HOLD_SUBDIVISIONS);
-		dc.indices = _indices;
+		dc.vertices = needsClip ? slot.clippedVertices : vertices;
+		dc.uvs = needsClip ? slot.clippedUVs : uv;
+		dc.indices = needsClip ? slot.clippedIndices : _indices;
 		dc.color = null;
 		dc.colors = transfTotal;
 		dc.isColored = hasC;
@@ -502,6 +551,12 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		__lastHoldSubs = HOLD_SUBDIVISIONS;
 
 		return dc;
+	}
+
+	inline private function writeWorld(buffer:openfl.Vector<Float>, offset:Int, point:Vector3):Void {
+		buffer[offset] = point.x;
+		buffer[offset + 1] = point.y;
+		buffer[offset + 2] = point.z;
 	}
 
 	inline private function getArrowParams(arrow:FlxSprite, posOff:Float = 0):ArrowData {
@@ -515,6 +570,8 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		_holdArrowBuf.hitTime = hitTime + posOff + timeC2;
 		_holdArrowBuf.distance = pos;
 		_holdArrowBuf.sourceTime = __cachedHoldParentTime;
+		_holdArrowBuf.strumTime = hitTime;
+		_holdArrowBuf.sampleTime = hitTime + posOff;
 		_holdArrowBuf.lane = __cachedHoldLane;
 		_holdArrowBuf.player = __cachedHoldPlayer;
 		_holdArrowBuf.hitten = __cachedHoldHitten;
@@ -536,6 +593,11 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 private class HoldRenderSlot {
 	public var vertices:openfl.Vector<Float> = new openfl.Vector<Float>(0, true);
 	public var colors:NativeVector<ColorTransform> = new NativeVector<ColorTransform>(0);
+	public var world:openfl.Vector<Float>;
+	public var distances:openfl.Vector<Float>;
+	public var clippedVertices:openfl.Vector<Float>;
+	public var clippedUVs:openfl.Vector<Float>;
+	public var clippedIndices:openfl.Vector<Int>;
 	public final cameras:Array<FlxCamera> = [];
 	public final command:DrawCommand;
 	var capacity:Int = 0;
@@ -545,11 +607,20 @@ private class HoldRenderSlot {
 			vertices: vertices, uvs: null, indices: null, isColored: false, hasColorOffsets: false, color: null, colors: colors, zIndex: 0};
 	}
 
+	public function ensureClipped(subs:Int):Void {
+		if (clippedVertices != null && clippedVertices.length == subs * 16) return;
+		clippedVertices = new openfl.Vector<Float>(subs * 16, true);
+		clippedUVs = new openfl.Vector<Float>(subs * 24, true);
+		clippedIndices = NearPlaneClipper.indices(subs);
+	}
+
 	public function ensureCapacity(subs:Int):Void {
 		if (subs == capacity)
 			return;
 		capacity = subs;
 		vertices = new openfl.Vector<Float>(capacity * 8, true);
+		world = new openfl.Vector<Float>(capacity * 12, true);
+		distances = new openfl.Vector<Float>(capacity * 4, true);
 		colors = new NativeVector<ColorTransform>(capacity);
 		for (i in 0...colors.length) colors[i] = new ColorTransform();
 	}

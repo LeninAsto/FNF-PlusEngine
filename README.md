@@ -129,6 +129,7 @@ You need to have:
 - Variables for window and system management in Lua: Many variables were added, whether to hide the taskbar or window borders, etc.
 - Key Viewer
 - Modchart support and settings.
+
 - New Gameplay Changers (Opponent Mode, No Drop Penalty, Perfect Only).
 - You can choose your default accuracy system. ITG, Psych, DJMax, Wife3, osu!, Simple
 * Support for NotITG levels (without modifiers) and Stepmania, includes UI
@@ -154,6 +155,25 @@ You need to have:
 ![Freeplay](docs/readmes/img/Freeplay.png)
 ![Freeplay Diff](docs/readmes/img/FreeplayDiff.png)
 - More things will continue to be added in the future...
+
+Lua custom modifiers receive a timing context (milliseconds) in their render and visuals callbacks:
+`p.songTime` is the current song position, `p.strumTime` is the current note object's time,
+`p.sourceTime` is the hold head's time, and `p.sampleTime` is the point being sampled along the hold.
+For tap notes the note and sample times normally match; for a rendered trajectory `p.isPath` is true and the sample
+represents a hypothetical future note. Existing `p.hitTime` and `p.distance` retain their modifier offsets.
+Use `getPropertyFromGroup('notes', index, 'strumTime')` outside modifier callbacks.
+
+```lua
+function onInitModchart()
+    createModifier('noteWave', {render = 'noteWaveRender', alwaysRun = true})
+end
+
+function noteWaveRender(pos, p)
+    pos.x = pos.x + 80 * math.sin(p.sampleTime * math.pi / 600)
+    return pos
+end
+```
+
 
 # Main Features
 

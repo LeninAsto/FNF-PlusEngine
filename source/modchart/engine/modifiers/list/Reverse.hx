@@ -7,7 +7,7 @@ import modchart.backend.util.ModchartUtil;
 // Default modifier
 // Handles scroll speed, scroll angle and reverse modifiers
 class Reverse extends Modifier {
-	public static inline var DEFAULT_SPAWN_TIME:Float = 2000;
+	public static inline var DEFAULT_SPAWN_TIME:Float = Config.DEFAULT_SPAWN_TIME_MS;
 
 	// Pre-computed hashed IDs for all lane-specific percent keys. Avoids Std.string(lane) allocation in hot path.
 	var _splitID:Int;

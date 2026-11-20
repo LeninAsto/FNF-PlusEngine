@@ -9,6 +9,8 @@ package modchart;
  */
 class Config
 {
+	public static inline final DEFAULT_SPAWN_TIME_MS:Float = 2000;
+
 	/**
 	 * Enables or disables 3D cameras.
 	 *

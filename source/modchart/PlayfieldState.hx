@@ -19,6 +19,7 @@ final class PlayfieldState
 	public var beat(default, null):Float = 0;
 
 	private var __pathCache:IntMap<ModifierOutput> = new IntMap();
+	private var __hasCachedPaths:Bool = false;
 
 	public function new()
 	{
@@ -27,7 +28,7 @@ final class PlayfieldState
 	public inline function beginFrame(frameId:Int, songPosition:Float, beat:Float):Void
 	{
 		if (this.frameId != frameId)
-			__pathCache.clear();
+			clearPathCache();
 
 		this.frameId = frameId;
 		this.songPosition = songPosition;
@@ -42,7 +43,13 @@ final class PlayfieldState
 	public inline function setCachedPath(key:Int, output:ModifierOutput):ModifierOutput
 	{
 		__pathCache.set(key, output);
+		__hasCachedPaths = true;
 		return output;
+	}
+
+	public inline function clearPathCache():Void
+	{
+		if (__hasCachedPaths) { __pathCache.clear(); __hasCachedPaths = false; }
 	}
 
 	public inline function cloneOutput(output:ModifierOutput):ModifierOutput

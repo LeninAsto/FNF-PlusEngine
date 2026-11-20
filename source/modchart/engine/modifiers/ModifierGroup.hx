@@ -187,6 +187,9 @@ final class ModifierGroup {
 		args.hitTime = hitTime;
 		args.distance = distance;
 		args.sourceTime = data.sourceTime;
+		args.strumTime = data.strumTime != null ? data.strumTime : data.hitTime;
+		args.sampleTime = (data.sampleTime != null ? data.sampleTime : data.hitTime) + posDiff;
+		args.isPath = data.isPath;
 		args.lane = data.lane;
 		args.player = data.player;
 		args.isTapArrow = data.isTapArrow;
@@ -199,6 +202,9 @@ final class ModifierGroup {
 		straightArgs.hitTime = data.sourceTime;
 		straightArgs.distance = Math.max(0, data.sourceTime - songPos);
 		straightArgs.sourceTime = data.sourceTime;
+		straightArgs.strumTime = args.strumTime;
+		straightArgs.sampleTime = data.sourceTime;
+		straightArgs.isPath = data.isPath;
 		straightArgs.lane = data.lane;
 		straightArgs.player = data.player;
 		straightArgs.isTapArrow = data.isTapArrow;
@@ -422,6 +428,7 @@ final class ModifierGroup {
 	}
 
 	public inline function setPercent(name:String, value:Float, player:Int = -1) {
+		playfield.state.clearPathCache();
 		__ensureModifierForValue(name);
 		__activeDirty = true;
 		final id = percents.getID(name);
@@ -472,6 +479,7 @@ final class ModifierGroup {
 	public inline function getRawValue(name:String, player:Int) return getPercent(name, player);
 
 	public function resetPercents(player:Int = -1):Void {
+		playfield.state.clearPathCache();
 		__activeDirty = true;
 		for (i in 0...__knownPercentCount) {
 			final id = __knownPercentIDs[i];
@@ -651,7 +659,7 @@ final class ModifierGroup {
 			case 'suddenglow' | 'hiddenglow':
 				1;
 			case 'spawntime':
-				2000;
+				Config.DEFAULT_SPAWN_TIME_MS;
 			case 'carouselstart' | 'carouselend':
 				Math.NaN;
 			default:

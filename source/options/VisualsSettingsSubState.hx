@@ -188,6 +188,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		var option:Option = new Option('Discord Rich Presence',
 			"Uncheck this to prevent accidental leaks, it will hide the Application from your \"Playing\" box on Discord", 'discordRPC', BOOL);
 		addOption(option);
+		option.onChange = DiscordClient.check;
 		#end
 
 		var option:Option = new Option('Unfriendly Results State',

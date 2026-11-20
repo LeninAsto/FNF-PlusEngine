@@ -5,7 +5,6 @@ import flixel.math.FlxMath;
 using flixel.util.FlxColorTransformUtil;
 
 final matrix:Matrix = new Matrix();
-final fMatrix:FlxMatrix = new FlxMatrix();
 final rotationVector = new Vector3();
 final helperVector = new Vector3();
 
@@ -17,6 +16,9 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 	// Pre-allocated members to avoid per-call heap allocations
 	final _planeVerts:NativeVector<Float> = new NativeVector<Float>(8);
 	final _projZ:NativeVector<Float> = new NativeVector<Float>(4);
+	final _clipWorld:openfl.Vector<Float> = new openfl.Vector<Float>(12, true);
+	final _clipDistances:openfl.Vector<Float> = new openfl.Vector<Float>(4, true);
+	final _clipper:NearPlaneClipper = new NearPlaneClipper();
 	final _arrowData:ArrowData = {
 		hitTime: 0,
 		distance: 0,
@@ -49,6 +51,7 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 	public inline function beginFrame():Void
 	{
 		_slotIndex = 0;
+		__lastPlayer = -1;
 	}
 
 	inline function nextSlot():ArrowRenderSlot
@@ -123,6 +126,8 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		arrowData.hitTime = arrowTime;
 		arrowData.distance = arrowDiff;
 		arrowData.sourceTime = sourceTime;
+		arrowData.strumTime = isTap ? sourceTime : songPos;
+		arrowData.sampleTime = arrowData.strumTime;
 		arrowData.lane = Adapter.instance.getLaneFromArrow(arrow);
 		arrowData.player = player;
 		arrowData.isTapArrow = isTap;
@@ -171,6 +176,8 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		final projectionZ = _projZ;
 
 		var vertPointer = 0;
+		var needsClip = false;
+		var anyVisible = false;
 		final distAbs = Math.abs(arrowData.distance);
 		// Very soft far-distance compensation to keep angles close to target value
 		// while still avoiding extreme over-tilt on very distant notes.
@@ -192,8 +199,9 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 				matrix.b = ModchartUtil.tan(output.visuals.skewY * FlxAngle.TO_RAD);
 				matrix.c = ModchartUtil.tan(output.visuals.skewX * FlxAngle.TO_RAD);
 
-				rotation.x = matrix.__transformX(rotation.x, rotation.y);
+				final skewedX = matrix.__transformX(rotation.x, rotation.y);
 				rotation.y = matrix.__transformY(rotation.x, rotation.y);
+				rotation.x = skewedX;
 			}
 			rotation.x = rotation.x * output.visuals.scaleX;
 			rotation.y = rotation.y * output.visuals.scaleY;
@@ -204,8 +212,15 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 			_viewInput.setTo(rotation.x + arrowPosition.x, rotation.y + arrowPosition.y,
 				(rotation.z * 0.001 * Config.Z_SCALE) + arrowPosition.z);
 
-			// The result of the perspective projection of rotation
+			final vertexIndex = Std.int(vertPointer / 2);
+			final worldIndex = vertexIndex * 3;
+			_clipWorld[worldIndex] = _viewInput.x;
+			_clipWorld[worldIndex + 1] = _viewInput.y;
+			_clipWorld[worldIndex + 2] = _viewInput.z;
 			final projection = this.view.transformVector(_viewInput);
+			_clipDistances[vertexIndex] = this.view.clipDistance;
+			if (this.view.clipDistance < 0) needsClip = true;
+			else anyVisible = true;
 
 			planeVertices[vertPointer] = projection.x;
 			planeVertices[vertPointer + 1] = projection.y;
@@ -215,6 +230,13 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 
 			vertPointer = vertPointer + 2;
 		} while (vertPointer < planeVertices.length);
+		if (!anyVisible) return null;
+		if (output.pos.z > 1e6) {
+			for (i in 0...4) if (_clipDistances[i] >= 0) {
+				arrow._z = (projectionZ[i] - 1) * 1000;
+				break;
+			}
+		}
 
 		// @formatter:off
 		// build directly as openfl.Vector to avoid conversion at render time
@@ -293,6 +315,11 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		#end
 
 		// @formatter:on
+		if (needsClip) {
+			slot.ensureClipped();
+			if (!_clipper.clipQuad(this.view, _clipWorld, _clipDistances, uvData, 0, slot.clippedVertices, slot.clippedUVs, false))
+				return null;
+		}
 		final absGlow = output.visuals.glow * 255;
 		final negGlow = 1 - output.visuals.glow;
 
@@ -317,9 +344,9 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		dc.blend = arrow.blend;
 		dc.cameras = ModchartUtil.resolveCameras(parent, arrow, slot.cameras);
 		dc.shader = arrow.shader;
-		dc.vertices = vertices;
-		dc.indices = _sharedArrowIdx;
-		dc.uvs = uvData;
+		dc.vertices = needsClip ? slot.clippedVertices : vertices;
+		dc.indices = needsClip ? slot.clippedIndices : _sharedArrowIdx;
+		dc.uvs = needsClip ? slot.clippedUVs : uvData;
 		dc.color = color;
 		dc.colors = null;
 		dc.isColored = color.hasRGBMultipliers() || color.alphaMultiplier != 1;
@@ -336,6 +363,16 @@ private class ArrowRenderSlot
 	public final color:ColorTransform;
 	public final cameras:Array<FlxCamera>;
 	public final command:DrawCommand;
+	public var clippedVertices:openfl.Vector<Float>;
+	public var clippedUVs:openfl.Vector<Float>;
+	public var clippedIndices:openfl.Vector<Int>;
+
+	public function ensureClipped():Void {
+		if (clippedVertices != null) return;
+		clippedVertices = new openfl.Vector<Float>(16, true);
+		clippedUVs = new openfl.Vector<Float>(24, true);
+		clippedIndices = NearPlaneClipper.indices(1);
+	}
 
 	public function new()
 	{
