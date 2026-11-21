@@ -870,7 +870,7 @@ class StageEditorState extends MusicBeatState implements PsychUIEventHandler.Psy
 		var animationsButton:PsychUIButton = new PsychUIButton(objX + 90, objY, Language.getPhrase('editors.stage.ui.animations', 'Animations'), function()
 		{
 			var selected = getSelected();
-			if (selected == null)
+			if (selected == null || selected.sprite == null)
 				return;
 
 			if (selected.type != 'animatedSprite')
@@ -878,6 +878,9 @@ class StageEditorState extends MusicBeatState implements PsychUIEventHandler.Psy
 				showOutput('Only Animated Sprites can hold Animation data.', true);
 				return;
 			}
+
+			if (selected.animations == null)
+				selected.animations = [];
 
 			destroySubStates = persistentUpdate = persistentDraw = false;
 			animationEditor.target = selected;
@@ -1410,7 +1413,10 @@ class StageEditorState extends MusicBeatState implements PsychUIEventHandler.Psy
 			createPopup.visible = createPopup.active = false;
 
 		for (basic in stageSprites)
-			basic.update(curFilters, elapsed);
+		{
+			if (basic != null && basic.sprite != null)
+				basic.update(curFilters, elapsed);
+		}
 
 		super.update(elapsed);
 
@@ -1593,7 +1599,7 @@ class StageEditorState extends MusicBeatState implements PsychUIEventHandler.Psy
 		if (persistentDraw || subState == null)
 		{
 			for (basic in stageSprites)
-				if (basic.visible)
+				if (basic != null && basic.sprite != null && basic.visible)
 					basic.draw(curFilters);
 
 			if (showSelectionQuad && spriteListRadioGroup.checkedRadio != null)
