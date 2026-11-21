@@ -548,29 +548,12 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 				}
 			}
 
-			var lastAnim:String = (character.animationsArray[curAnim] != null) ? character.animationsArray[curAnim].anim : '';
-			var lastOffsets:Array<Int> = [0, 0];
-			for (anim in character.animationsArray)
-				if (animationInputText.text == anim.anim)
-				{
-					lastOffsets = anim.offsets;
-					if (character.hasAnimation(animationInputText.text))
-					{
-						if (!character.isAnimateAtlas)
-							character.animation.remove(animationInputText.text);
-						else
-							@:privateAccess character.atlas.anim.animsMap.remove(animationInputText.text);
-					}
-					character.animationsArray.remove(anim);
-				}
-
-			var addedAnim:AnimArray = newAnim(animationInputText.text, animationNameInputText.text);
-			addedAnim.fps = Math.round(animationFramerate.value);
-			addedAnim.loop = animationLoopCheckBox.checked;
+			var addedAnim = newAnim(animationInputText.text, animationNameInputText.text);
+			addedAnim.fps     = Math.round(animationFramerate.value);
+			addedAnim.loop    = animationLoopCheckBox.checked;
 			addedAnim.indices = indices;
-			addedAnim.offsets = lastOffsets;
-			addAnimation(addedAnim.anim, addedAnim.name, addedAnim.fps, addedAnim.loop, addedAnim.indices);
-			character.animationsArray.push(addedAnim);
+
+			upsertAnimation(addedAnim);
 
 			reloadAnimList();
 			@:arrayAccess curAnim = Std.int(Math.max(0, character.animationsArray.indexOf(addedAnim)));
@@ -580,31 +563,20 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 		var removeButton:PsychUIButton = new PsychUIButton(180, animationIndicesInputText.y + 60, Language.getPhrase('editors.character.ui.remove', "Remove"), function()
 		{
-			for (anim in character.animationsArray)
-				if (animationInputText.text == anim.anim)
-				{
-					var resetAnim:Bool = false;
-					if (anim.anim == character.getAnimationName())
-						resetAnim = true;
-					if (character.hasAnimation(anim.anim))
-					{
-						if (!character.isAnimateAtlas)
-							character.animation.remove(anim.anim);
-						else
-							@:privateAccess character.atlas.anim.animsMap.remove(anim.anim);
-						character.animOffsets.remove(anim.anim);
-						character.animationsArray.remove(anim);
-					}
+			var key = animationInputText.text;
+			var wasPlaying = (character.getAnimationName() == key);
 
-					if (resetAnim && character.animationsArray.length > 0)
-					{
-						curAnim = FlxMath.wrap(curAnim, 0, anims.length - 1);
-						character.playAnim(anims[curAnim].anim, true);
-					}
-					reloadAnimList();
-					trace('Removed animation: ' + animationInputText.text);
-					break;
-				}
+			removeAnimation(key);
+			for (anim in character.animationsArray)
+				if (anim.anim == key) { character.animationsArray.remove(anim); break; }
+
+			if (wasPlaying && character.animationsArray.length > 0)
+			{
+				curAnim = FlxMath.wrap(curAnim, 0, anims.length - 1);
+				character.playAnim(anims[curAnim].anim, true);
+			}
+			reloadAnimList();
+			trace('Removed animation: ' + key);
 		});
 		reloadAnimList();
 		animationDropDown.selectedLabel = anims[0] != null ? anims[0].anim : '';
@@ -878,14 +850,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		}
 
 		for (anim in anims)
-		{
-			var animAnim:String = '' + anim.anim;
-			var animName:String = '' + anim.name;
-			var animFps:Int = anim.fps;
-			var animLoop:Bool = !!anim.loop;
-			var animIndices:Array<Int> = anim.indices;
-			addAnimation(animAnim, animName, animFps, animLoop, animIndices, anim.animType, anim.renderType);
-		}
+			addAnimation('${anim.anim}', '${anim.name}', anim.fps, !!anim.loop, anim.indices, anim.animType, anim.renderType);
 
 		if (anims.length > 0)
 		{
@@ -926,6 +891,28 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 	var holdingFrameElapsed:Float = 0;
 	var undoOffsets:Array<Float> = null;
 
+	function commitOffset(?anim:AnimArray = null):Bool
+	{
+		if (anim == null)
+			anim = (curAnim >= 0 && curAnim < anims.length) ? anims[curAnim] : null;
+		if (anim == null || anim.offsets == null)
+			return false;
+
+		anim.offsets[0] = Std.int(character.offset.x);
+		anim.offsets[1] = Std.int(character.offset.y);
+		character.addOffset(anim.anim, anim.offsets[0], anim.offsets[1]);
+		updateText();
+		return true;
+	}
+
+	function setOffset(x:Float, y:Float, ?saveUndo:Bool = false):Void
+	{
+		if (saveUndo)
+			undoOffsets = [character.offset.x, character.offset.y];
+		character.offset.set(x, y);
+		commitOffset();
+	}
+
 	function handleMouseDrag():Void
 	{
 		if (character == null || character.scale.x == 0 || character.scale.y == 0)
@@ -961,14 +948,38 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 		if (FlxG.mouse.justReleased)
 		{
-			anim.offsets[0] = Std.int(character.offset.x);
-			anim.offsets[1] = Std.int(character.offset.y);
-			character.offset.x = anim.offsets[0];
-			character.offset.y = anim.offsets[1];
-			character.addOffset(anim.anim, anim.offsets[0], anim.offsets[1]);
-			updateText();
+			commitOffset(anim);
+			character.offset.set(anim.offsets[0], anim.offsets[1]);
 			draggingCharacter = false;
 		}
+	}
+
+	inline function readAxesPressed():Array<Bool>
+	{
+		return controls.mobileC
+			? [touchPad.buttonLeft.pressed,  touchPad.buttonRight.pressed,
+			touchPad.buttonUp.pressed,    touchPad.buttonDown.pressed]
+			: [FlxG.keys.pressed.LEFT,      FlxG.keys.pressed.RIGHT,
+			FlxG.keys.pressed.UP,        FlxG.keys.pressed.DOWN];
+	}
+
+	inline function readAxesJustPressed():Array<Bool>
+	{
+		return controls.mobileC
+			? [touchPad.buttonLeft.justPressed,  touchPad.buttonRight.justPressed,
+			touchPad.buttonUp.justPressed,    touchPad.buttonDown.justPressed]
+			: [FlxG.keys.justPressed.LEFT,       FlxG.keys.justPressed.RIGHT,
+			FlxG.keys.justPressed.UP,         FlxG.keys.justPressed.DOWN];
+	}
+
+	inline function applyAxisDelta(axes:Array<Bool>, amount:Float):Bool
+	{
+		var dx:Float = ((axes[0] ? 1 : 0) - (axes[1] ? 1 : 0)) * amount;
+		var dy:Float = ((axes[2] ? 1 : 0) - (axes[3] ? 1 : 0)) * amount;
+		if (dx == 0 && dy == 0) return false;
+		character.offset.x += dx;
+		character.offset.y += dy;
+		return true;
 	}
 
 	override function update(elapsed:Float)
@@ -1039,34 +1050,11 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		}
 
 		var changedOffset = false;
-		var moveKeysP = (controls.mobileC) ? [
-			touchPad.buttonLeft.justPressed,
-			touchPad.buttonRight.justPressed,
-			touchPad.buttonUp.justPressed,
-			touchPad.buttonDown.justPressed
-		] : [
-			FlxG.keys.justPressed.LEFT,
-			FlxG.keys.justPressed.RIGHT,
-			FlxG.keys.justPressed.UP,
-			FlxG.keys.justPressed.DOWN
-		];
-		var moveKeys = (controls.mobileC) ? [
-			touchPad.buttonLeft.pressed,
-			touchPad.buttonRight.pressed,
-			touchPad.buttonUp.pressed,
-			touchPad.buttonDown.pressed
-		] : [
-			FlxG.keys.pressed.LEFT,
-			FlxG.keys.pressed.RIGHT,
-			FlxG.keys.pressed.UP,
-			FlxG.keys.pressed.DOWN
-		];
+		var moveKeysP = readAxesJustPressed();
+		var moveKeys  = readAxesPressed();
+
 		if (moveKeysP.contains(true))
-		{
-			character.offset.x += ((moveKeysP[0] ? 1 : 0) - (moveKeysP[1] ? 1 : 0)) * shiftMultBig;
-			character.offset.y += ((moveKeysP[2] ? 1 : 0) - (moveKeysP[3] ? 1 : 0)) * shiftMultBig;
-			changedOffset = true;
-		}
+			changedOffset = applyAxisDelta(moveKeysP, shiftMultBig) || changedOffset;
 
 		if (moveKeys.contains(true))
 		{
@@ -1077,10 +1065,8 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 				var steps:Int = Std.int(holdingArrowsElapsed / (1 / 60));
 				if (steps > 0)
 				{
-					character.offset.x += ((moveKeys[0] ? 1 : 0) - (moveKeys[1] ? 1 : 0)) * shiftMultBig * steps;
-					character.offset.y += ((moveKeys[2] ? 1 : 0) - (moveKeys[3] ? 1 : 0)) * shiftMultBig * steps;
+					changedOffset = applyAxisDelta(moveKeys, shiftMultBig * steps) || changedOffset;
 					holdingArrowsElapsed -= steps * (1 / 60);
-					changedOffset = true;
 				}
 			}
 		}
@@ -1093,48 +1079,23 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			{
 				copiedOffset[0] = character.offset.x;
 				copiedOffset[1] = character.offset.y;
-				changedOffset = true;
 			}
 			else if (FlxG.keys.justPressed.V)
-			{
-				undoOffsets = [character.offset.x, character.offset.y];
-				character.offset.x = copiedOffset[0];
-				character.offset.y = copiedOffset[1];
-				changedOffset = true;
-			}
+				setOffset(copiedOffset[0], copiedOffset[1], true);
 			else if (FlxG.keys.justPressed.R)
-			{
-				undoOffsets = [character.offset.x, character.offset.y];
-				character.offset.set(0, 0);
-				changedOffset = true;
-			}
+				setOffset(0, 0, true);
 			else if (FlxG.keys.justPressed.Z && undoOffsets != null)
-			{
-				character.offset.x = undoOffsets[0];
-				character.offset.y = undoOffsets[1];
-				changedOffset = true;
-			}
+				setOffset(undoOffsets[0], undoOffsets[1], false);
 		}
 		if (touchPad.buttonA.justPressed)
-		{
-			undoOffsets = [character.offset.x, character.offset.y];
-			character.offset.x = copiedOffset[0];
-			character.offset.y = copiedOffset[1];
-			changedOffset = true;
-		}
+			setOffset(copiedOffset[0], copiedOffset[1], true);
 
 		if (ClientPrefs.data.cneStyleDragCharacter)
 			handleMouseDrag();
 
-		var anim = anims[curAnim];
-		if (changedOffset && anim != null && anim.offsets != null)
-		{
-			anim.offsets[0] = Std.int(character.offset.x);
-			anim.offsets[1] = Std.int(character.offset.y);
-
-			character.addOffset(anim.anim, character.offset.x, character.offset.y);
-			updateText();
-		}
+		// The arrow's movement is the only path that sets the value of changedOffset
+		if (changedOffset)
+			commitOffset();
 
 		var txt = Language.getPhrase('editors.character.messages.no_animation', 'ERROR: No Animation Found');
 		var clr = FlxColor.RED;
@@ -1480,6 +1441,45 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 		if (!character.hasAnimation(anim))
 			character.addOffset(anim, 0, 0);
+	}
+
+	function removeAnimation(animKey:String):Void
+	{
+		if (!character.hasAnimation(animKey)) return;
+
+		if (!character.isAnimateAtlas)
+			character.animation.remove(animKey);
+		else
+			@:privateAccess character.atlas.anim.animsMap.remove(animKey);
+
+		character.animOffsets.remove(animKey);
+	}
+
+	function getAnimationOffsets(animKey:String):Array<Int>
+	{
+		for (anim in character.animationsArray)
+			if (anim.anim == animKey)
+				return anim.offsets;
+		return [0, 0];
+	}
+
+	function upsertAnimation(def:AnimArray):AnimArray
+	{
+		var previousOffsets = getAnimationOffsets(def.anim);
+
+		removeAnimation(def.anim);
+		for (anim in character.animationsArray)
+			if (anim.anim == def.anim)
+			{
+				character.animationsArray.remove(anim);
+				break;
+			}
+
+		def.offsets = previousOffsets.copy();
+		addAnimation(def.anim, def.name, def.fps, def.loop, def.indices, def.animType, def.renderType);
+		character.animationsArray.push(def);
+		undoOffsets = null;
+		return def;
 	}
 
 	inline function newAnim(anim:String, name:String):AnimArray
