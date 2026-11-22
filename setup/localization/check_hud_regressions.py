@@ -1,17 +1,18 @@
 """Exercise the real HealthIconHud class with headless sprite stand-ins."""
+
 from pathlib import Path
 import shutil
 import subprocess
 
 ROOT = Path(__file__).resolve().parents[2]
-OUT = ROOT / 'export/localization-hud-check'
+OUT = ROOT / "export/localization-hud-check"
 files = {
-    'flixel/math/FlxMath.hx': '''package flixel.math;
+    "flixel/math/FlxMath.hx": """package flixel.math;
 class FlxMath {
  public static function lerp(a:Float, b:Float, t:Float):Float return a + t * (b - a);
  public static function bound(v:Float, lo:Float, hi:Float):Float return Math.max(lo, Math.min(hi, v));
-}''',
-    'objects/HealthIcon.hx': '''package objects;
+}""",
+    "objects/HealthIcon.hx": """package objects;
 class HealthIcon {
  public var baseScale:Float = 1;
  public var visible:Bool = true;
@@ -32,19 +33,19 @@ class Scale {
  public var y:Float = 1;
  public function new() {}
  public function set(x:Float, y:Float):Void {this.x = x; this.y = y;}
-}''',
-    'objects/Bar.hx': '''package objects;
+}""",
+    "objects/Bar.hx": """package objects;
 class Bar {
  public var enabled:Bool = true;
  public var percent:Float = 50;
  public var barCenter:Float = 0;
  public function new() {}
-}''',
-    'states/play/ClientPrefs.hx': '''package states.play;
-class ClientPrefs {public static var data = {iconBounceType: 'Codename'};}''',
-    'states/play/CoolUtil.hx': '''package states.play;
-class CoolUtil {public static function boundTo(v:Float, a:Float, b:Float):Float return Math.max(a, Math.min(b, v));}''',
-    'HudCheck.hx': '''import objects.HealthIcon;
+}""",
+    "states/play/ClientPrefs.hx": """package states.play;
+class ClientPrefs {public static var data = {iconBounceType: 'Codename'};}""",
+    "states/play/CoolUtil.hx": """package states.play;
+class CoolUtil {public static function boundTo(v:Float, a:Float, b:Float):Float return Math.max(a, Math.min(b, v));}""",
+    "HudCheck.hx": """import objects.HealthIcon;
 import states.play.HealthIconHud;
 class HudCheck {
  static function near(a:Float, b:Float, label:String):Void {
@@ -74,29 +75,40 @@ class HudCheck {
   near(icon.scale.x, 0.6, 'hidden icon is unchanged');
   trace('OK: 8 HealthIconHud regression assertions');
  }
-}''',
+}""",
 }
 for relative, content in files.items():
     path = OUT / relative
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(content, encoding='utf-8')
-shutil.copyfile(ROOT / 'source/states/play/HealthIconHud.hx', OUT / 'states/play/HealthIconHud.hx')
-subprocess.run(['haxe', '-cp', str(OUT), '-main', 'HudCheck', '--interp'], check=True, cwd=OUT)
+    path.write_text(content, encoding="utf-8")
+shutil.copyfile(
+    ROOT / "source/states/play/HealthIconHud.hx", OUT / "states/play/HealthIconHud.hx"
+)
+subprocess.run(
+    ["haxe", "-cp", str(OUT), "-main", "HudCheck", "--interp"], check=True, cwd=OUT
+)
 
 
 # Run the actual receptor layout method against predictable 1280x720 fixtures.
 def extract_method(text, signature):
     start = text.index(signature)
-    opening = text.index('{', start)
+    opening = text.index("{", start)
     depth = 1
     end = opening + 1
     while depth:
-        depth += (text[end] == '{') - (text[end] == '}')
+        depth += (text[end] == "{") - (text[end] == "}")
         end += 1
     return text[start:end]
 
-layout = extract_method((ROOT / 'source/states/PlayState.hx').read_text('utf-8'), 'private function generateStaticArrows(')
-position = extract_method((ROOT / 'source/objects/StrumNote.hx').read_text('utf-8'), 'public function playerPosition(')
+
+layout = extract_method(
+    (ROOT / "source/states/PlayState.hx").read_text("utf-8"),
+    "private function generateStaticArrows(",
+)
+position = extract_method(
+    (ROOT / "source/objects/StrumNote.hx").read_text("utf-8"),
+    "public function playerPosition(",
+)
 fixture = r"""class LayoutCheck {
  static var STRUM_X:Float = 42;
  static var STRUM_X_MIDDLESCROLL:Float = -278;
@@ -164,5 +176,9 @@ class HudSafeZone {
 class FlxTween {public static function tween(a:Dynamic,b:Dynamic,c:Float,d:Dynamic):Void {}}
 class FlxEase {public static var circOut:Float = 0;}
 """
-(OUT / 'LayoutCheck.hx').write_text(fixture.replace('METHOD', layout).replace('POSITION', position), encoding='utf-8')
-subprocess.run(['haxe', '-cp', str(OUT), '-main', 'LayoutCheck', '--interp'], check=True, cwd=OUT)
+(OUT / "LayoutCheck.hx").write_text(
+    fixture.replace("METHOD", layout).replace("POSITION", position), encoding="utf-8"
+)
+subprocess.run(
+    ["haxe", "-cp", str(OUT), "-main", "LayoutCheck", "--interp"], check=True, cwd=OUT
+)
