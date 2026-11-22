@@ -80,7 +80,7 @@ final class ModifierGroup {
 	@:noCompletion private var __activeFrame:Int = -1;
 	@:noCompletion private var __activeDirty:Bool = true;
 	@:noCompletion private var __activeByMode:Array<Array<Array<Modifier>>> = [];
-	static final __MODE_VALUES:Array<Int> = [1, 3, 5, 9, 15];
+	static final __MODE_VALUES:Array<Int> = [1, 3, 5, 9, 13, 15];
 
 	@:noCompletion private var __sortedModifiers:Vector<Modifier> = new Vector<Modifier>(32);
 	@:noCompletion private var __modifierCount:Int = 0;
@@ -163,6 +163,12 @@ final class ModifierGroup {
 		visuals.fieldAngleZ = 0;
 		visuals.skewX = 0;
 		visuals.skewY = 0;
+		visuals.holdDirection = 0;
+		visuals.holdAngle = 0;
+		visuals.holdWidth = 0;
+		visuals.holdSection = 0;
+		visuals.planeXX = visuals.planeYY = 1;
+		visuals.planeXY = visuals.planeXZ = visuals.planeYX = visuals.planeYZ = 0;
 
 		if (!allowVis && !allowPos) {
 			outPos.setTo(pos.x, pos.y, pos.z);
@@ -252,7 +258,7 @@ final class ModifierGroup {
 		__activeFrame = frame;
 		__activeDirty = false;
 		while (__activeByMode.length < players)
-			__activeByMode.push([[], [], [], [], []]);
+			__activeByMode.push([[], [], [], [], [], []]);
 		for (player in 0...players) {
 			final modes = __activeByMode[player];
 			for (active in modes) active.resize(0);
@@ -273,7 +279,8 @@ final class ModifierGroup {
 			case 3: 1;
 			case 5: 2;
 			case 9: 3;
-			default: 4;
+			case 13: 4;
+			default: 5;
 		}
 	}
 

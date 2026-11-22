@@ -33,6 +33,8 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 	var _perLaneUVT:Array<openfl.Vector<Float>>;
 	var _perLaneIndices:Array<openfl.Vector<Int>>;
 	var _perLaneTransforms:Array<NativeVector<ColorTransform>>;
+	var _geometryCache:Array<Map<Int, {vertices:openfl.Vector<Float>, uvt:openfl.Vector<Float>,
+		indices:openfl.Vector<Int>, transforms:NativeVector<ColorTransform>}>>;
 	var _perLaneDivisions:Array<Int>;
 	var _nextLaneDivisions:Array<Int>;
 	var _commands:Array<DrawCommand>;
@@ -89,6 +91,16 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		if (_perLaneDivisions[laneSlot] == divisions)
 			return;
 
+		final cached = _geometryCache[laneSlot].get(divisions);
+		if (cached != null) {
+			_perLaneVertices[laneSlot] = cached.vertices;
+			_perLaneUVT[laneSlot] = cached.uvt;
+			_perLaneIndices[laneSlot] = cached.indices;
+			_perLaneTransforms[laneSlot] = cached.transforms;
+			_perLaneDivisions[laneSlot] = divisions;
+			return;
+		}
+
 		final segs = divisions - 1;
 		final uvt = new openfl.Vector<Float>(segs * 12, true);
 		final indices = new openfl.Vector<Int>(segs * 6, true);
@@ -99,6 +111,7 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		_perLaneIndices[laneSlot] = indices;
 		_perLaneTransforms[laneSlot] = transforms;
 		_perLaneDivisions[laneSlot] = divisions;
+		_geometryCache[laneSlot].set(divisions, {vertices: _perLaneVertices[laneSlot], uvt: uvt, indices: indices, transforms: transforms});
 
 		// The 4px texture is transparent at its sides and opaque in its centre.
 		// Mapping U across the width gives cheap edge smoothing without extra path
@@ -148,6 +161,7 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		_perLaneUVT = [for (_ in 0...MAX_LANES) new openfl.Vector<Float>(0, true)];
 		_perLaneIndices = [for (_ in 0...MAX_LANES) new openfl.Vector<Int>(0, true)];
 		_perLaneTransforms = [for (_ in 0...MAX_LANES) new NativeVector<ColorTransform>(0)];
+		_geometryCache = [for (_ in 0...MAX_LANES) new Map()];
 		_perLaneDivisions = [for (_ in 0...MAX_LANES) 0];
 		_nextLaneDivisions = [for (_ in 0...MAX_LANES) 17];
 		_pathCameras = [for (_ in 0...MAX_LANES) []];
@@ -268,7 +282,7 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		return segments + 1;
 	}
 
-	private function updateAdaptiveDivisions(laneSlot:Int, divisions:Int, pathThickness:Float, applyDepth:Bool):Bool {
+	private function updateAdaptiveDivisions(laneSlot:Int, divisions:Int, pathThickness:Float, applyDepth:Bool, applyVisuals:Bool, applyScale:Bool):Bool {
 		final segs = divisions - 1;
 		var maxError = 0.0;
 
@@ -285,7 +299,7 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		}
 
 		var stylesStable = true;
-		for (i in 1...divisions) {
+		if (applyVisuals) for (i in 1...divisions) {
 			if (Math.abs(_palpha[i] - _palpha[0]) > (1.0 / 255.0)
 				|| Math.abs(_pglow[i] - _pglow[0]) > (1.0 / 255.0)
 				|| Math.abs(_pglowR[i] - _pglowR[0]) > (1.0 / 255.0)
@@ -297,7 +311,7 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 			}
 		}
 		var widthError = 0.0;
-		if (_pz[0] <= 1e6 && _pz[divisions - 1] <= 1e6) {
+		if ((applyDepth || applyScale) && _pz[0] <= 1e6 && _pz[divisions - 1] <= 1e6) {
 			final firstWidth = pathThickness * _pscale[0] * (applyDepth ? 1.0 / _pz[0] : 1.0) * 0.5;
 			final lastWidth = pathThickness * _pscale[divisions - 1] * (applyDepth ? 1.0 / _pz[divisions - 1] : 1.0) * 0.5;
 			for (i in 1...(divisions - 1)) {
@@ -403,7 +417,7 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		// Select next frame's resolution from the curve we just transformed.
 		// Straight paths quickly fall to 8 segments; curved paths gain only the
 		// detail required to keep their screen-space error below one pixel.
-		final straightPath = updateAdaptiveDivisions(laneSlot, divisions, pathThickness, applyDepth) && !hasClippedSamples;
+		final straightPath = updateAdaptiveDivisions(laneSlot, divisions, pathThickness, applyDepth, applyVisuals, applyScale) && !hasClippedSamples;
 		if (hasClippedSamples) _nextLaneDivisions[laneSlot] = divisions;
 		final renderDivisions = straightPath ? 2 : divisions;
 		final renderSegs = renderDivisions - 1;
@@ -412,7 +426,8 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		// --- Phase 2: Compute smooth normals via central differences ---
 		// Using tangent = p[i+1] - p[i-1] (central difference) at interior points
 		// avoids the per-segment zigzag caused by using a single segment direction.
-		for (i in 0...divisions) {
+		for (normalIndex in 0...(straightPath ? 2 : divisions)) {
+			final i = straightPath && normalIndex == 1 ? divisions - 1 : normalIndex;
 			var tx:Float, ty:Float;
 			if (i == 0) {
 				tx = _px[1] - _px[0];

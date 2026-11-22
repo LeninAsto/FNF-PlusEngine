@@ -26,10 +26,102 @@ class ModchartEditorChecks
 	}
 	public static function run():Void
 	{
+		var cyberSummary = '';
+		#if sys
+		if (Sys.getEnv('PLUS_TEST_GALAXY_NOTES') == '1') {
+			report = 'Galaxy real note visuals and release';
+			var previousSong = states.PlayState.SONG;
+			var previousGame = states.PlayState.instance;
+			var previousMod = backend.Mods.currentModDirectory;
+			backend.Mods.currentModDirectory = 'In The Galaxy Port';
+			var testSong = fixture();
+			testSong.notes[0].sectionNotes = [[100, 10, 0], [200, 20, 0], [300, 42.02, 150], [400, 6.01, 0]];
+			testSong.arrowSkin = 'galaxy/NOTE_assets';
+			testSong.disableNoteRGB = true;
+			states.PlayState.SONG = testSong;
+			var testGame = new states.PlayState();
+			states.PlayState.instance = testGame;
+			var galaxyClass = scripting.IrisScriptClassImport.resolve('GalaxyNotes', 'In The Galaxy Port');
+			check(galaxyClass != null, 'Galaxy scripted class did not load');
+			var galaxyHelper:scripting.IrisScriptClassImport.IrisScriptClassInstance = cast galaxyClass.hnew([testGame]);
+			check(galaxyHelper != null && Reflect.callMethod(galaxyHelper, galaxyHelper.hget('isReady'), []) == true,
+				'Galaxy note helper did not activate');
+			var converted = testSong.notes[0].sectionNotes;
+			check(converted[0][1] == converted[1][1] && Math.abs(converted[2][1] - 2.02) < 0.001
+				&& converted[2][3] == 'Galaxy Release Head' && Math.abs(converted[3][1] - 6.01) < 0.001,
+				'Galaxy chart conversion lost random replay, side or release metadata');
+			var first = new objects.Note(1000, 0); first.mustPress = true;
+			var second = new objects.Note(1000, 1); second.mustPress = true;
+			var head = new objects.Note(2000, 2); head.mustPress = true; head.sustainLength = 300;
+			head.noteType = 'Galaxy Release Head';
+			var tail = new objects.Note(2200, 2, head, true); tail.mustPress = true; tail.parent = head; tail.isSustainEnd = true;
+			head.tail.push(tail);
+			var near = new objects.Note(2304.6, 3); near.mustPress = true;
+			var outside = new objects.Note(2305.1, 0); outside.mustPress = true;
+			testGame.unspawnNotes = [first, second, head, tail, near, outside];
+			Reflect.callMethod(galaxyHelper, galaxyHelper.hget('prepare'), []);
+			check(Math.abs(tail.modchartHoldLength - 100) < 0.001 && !tail.isSustainEnd && testGame.totalNotes == 2,
+				'Galaxy release hold did not reach its endpoint or count its segment');
+			check(first.frame.name.indexOf('spurple0') == 0 && second.frame.name.indexOf('sblue0') == 0,
+				'Galaxy chord did not use the yellow atlas frames');
+			check(near.frame.name.indexOf('sred0') == 0 && outside.frame.name.indexOf('purple0') == 0,
+				'Galaxy release synchronization did not use the strict five millisecond window');
+			var release:objects.Note = null;
+			for (note in testGame.unspawnNotes) if (note.noteType == 'Galaxy Release') release = note;
+			check(release != null && release.blockHit && release.frame.name.indexOf('sgreen release') == 0,
+				'Galaxy release note or synchronized atlas frame was not created');
+			var originalScale = first.scale.x;
+			Reflect.callMethod(galaxyHelper, galaxyHelper.hget('setSkin'), ['noteSkins/cyber']);
+			check(first.frame.name.indexOf('spurple0') == 0 && release.frame.name.indexOf('sgreen release') == 0
+				&& Math.abs(first.scale.x - originalScale) < 0.001, 'Galaxy skin change lost a special frame or resized a note');
+			Reflect.callMethod(galaxyHelper, galaxyHelper.hget('setSkin'), ['galaxy/NOTE_assets']);
+			testGame.notes = new FlxTypedGroup<objects.Note>();
+			testGame.notes.add(tail);
+			testGame.updateScore = function(?miss:Bool = false, ?bop:Bool = true) {};
+			Reflect.callMethod(galaxyHelper, galaxyHelper.hget('hitHold'), [0]);
+			check(testGame.songHits == 1 && testGame.combo == 1 && testGame.totalPlayed == 1
+				&& testGame.totalNotesHit == 1 && testGame.songScore == 20, 'Galaxy hold segment was not scored');
+			var count = testGame.unspawnNotes.length;
+			Reflect.callMethod(galaxyHelper, galaxyHelper.hget('prepare'), []);
+			check(testGame.unspawnNotes.length == count, 'Galaxy preparation added duplicate releases');
+			Reflect.callMethod(galaxyHelper, galaxyHelper.hget('clear'), []);
+			#if (LUA_ALLOWED && HSCRIPT_ALLOWED)
+			var galaxyScriptPath = Sys.getEnv('PLUS_TEST_GALAXY_SCRIPT');
+			if (galaxyScriptPath != null && sys.FileSystem.exists(galaxyScriptPath)) {
+				var context = new psychlua.backend.LuaHostContext(psychlua.backend.LuaHostKind.NONE, 'galaxy-notes-test', testGame);
+				var galaxyScript = new psychlua.backend.FunkinLua(galaxyScriptPath, context, false);
+				psychlua.backend.HScript.initHaxeModule(galaxyScript);
+				galaxyScript.hscript.set('game', testGame);
+				galaxyScript.call('onCreate', []);
+				var ready = galaxyScript.hscript.call('galaxyReady', []);
+				check(ready != null && ready.returnValue == true, 'Galaxy Lua could not import or initialize its scripted class');
+				var bridgedHead = new objects.Note(3000, 1); bridgedHead.mustPress = true; bridgedHead.sustainLength = 300;
+				bridgedHead.noteType = 'Galaxy Release Head';
+				var bridgedPeer = new objects.Note(3300, 0); bridgedPeer.mustPress = true;
+				testGame.unspawnNotes.push(bridgedHead);
+				testGame.unspawnNotes.push(bridgedPeer);
+				galaxyScript.call('onCreatePost', []);
+				check(testGame.unspawnNotes.length == count + 3 && bridgedPeer.frame.name.indexOf('spurple0') == 0,
+					'Galaxy Lua did not apply its scripted note helper');
+				galaxyScript.call('onDestroy', []);
+				galaxyScript.stop();
+			}
+			#end
+			for (note in testGame.unspawnNotes) if (note != null) note.destroy();
+			states.PlayState.instance = previousGame;
+			states.PlayState.SONG = previousSong;
+			backend.Mods.currentModDirectory = previousMod;
+		}
+		#end
 		report = '3D projection';
 		var view = new modchart.backend.math.View3D();
 		view.useCamera = false;
 		var origin = new Vector3();
+		check(Math.abs(modchart.backend.graphics.renderers.ArrowRenderer.holdDirectionAngle(0, 1, false)) < 0.001
+			&& Math.abs(modchart.backend.graphics.renderers.ArrowRenderer.holdDirectionAngle(0, -1, true)) < 0.001
+			&& Math.abs(modchart.backend.graphics.renderers.ArrowRenderer.holdDirectionAngle(1, 0, false) + 90) < 0.001
+			&& Math.abs(modchart.backend.graphics.renderers.ArrowRenderer.holdDirectionAngle(-1, 0, true) + 90) < 0.001,
+			'Hold cover direction did not follow the scroll tangent');
 		var projected = view.transformVector(new Vector3(100, 50, -1), origin);
 		check(Math.abs(projected.x - 50) < 0.0001 && Math.abs(projected.y - 25) < 0.0001,
 			'Default projection changed');
@@ -98,6 +190,52 @@ class ModchartEditorChecks
 				clipView.transformVector(new Vector3(world[n * 3], world[n * 3 + 1], world[n * 3 + 2]));
 				clipDistances[n] = clipView.clipDistance;
 			}
+			var projectedHold = new openfl.Vector<Float>(16, true);
+			for (n in 0...8) {
+				var point = clipView.transformVector(new Vector3(world[n * 3], world[n * 3 + 1], world[n * 3 + 2]));
+				projectedHold[n * 2] = point.x;
+				projectedHold[n * 2 + 1] = point.y;
+			}
+			var fastVertices = new openfl.Vector<Float>(32, true);
+			var fastUV = new openfl.Vector<Float>(48, true);
+			for (quad in 0...2) {
+				var reference = clipper.clipQuad(clipView, world, clipDistances, sourceUV, quad, clippedVertices, clippedUV, true);
+				var optimized = clipper.clipHoldQuad(clipView, world, clipDistances, sourceUV, projectedHold, quad, fastVertices, fastUV);
+				check(reference == optimized, 'Optimized hold clipping changed visibility');
+				for (i in quad * 16...(quad + 1) * 16)
+					check(Math.abs(clippedVertices[i] - fastVertices[i]) < 0.0001, 'Optimized hold clipping changed geometry');
+				for (i in quad * 24...(quad + 1) * 24)
+					check(Math.abs(clippedUV[i] - fastUV[i]) < 0.0001, 'Optimized hold clipping changed UVs');
+			}
+			for (mask in 0...16) {
+				for (i in 0...4) {
+					world[i * 3 + 2] = (mask & (1 << i)) != 0 ? 0 : 2;
+					var point = clipView.transformVector(new Vector3(world[i * 3], world[i * 3 + 1], world[i * 3 + 2]));
+					clipDistances[i] = clipView.clipDistance;
+					projectedHold[i * 2] = point.x;
+					projectedHold[i * 2 + 1] = point.y;
+				}
+				var reference = clipper.clipQuad(clipView, world, clipDistances, sourceUV, 0, clippedVertices, clippedUV, true);
+				var optimized = clipper.clipHoldQuad(clipView, world, clipDistances, sourceUV, projectedHold, 0, fastVertices, fastUV);
+				check(reference == optimized, 'Optimized clipping changed a near-plane case');
+				for (i in 0...16) check(Math.abs(clippedVertices[i] - fastVertices[i]) < 0.0001, 'Near-plane geometry mismatch');
+				for (i in 0...24) check(Math.abs(clippedUV[i] - fastUV[i]) < 0.0001, 'Near-plane UV mismatch');
+			}
+			for (i in 0...4) {
+				world[i * 3 + 2] = i % 2 == 1 ? 2 : 0;
+				clipView.transformVector(new Vector3(world[i * 3], world[i * 3 + 1], world[i * 3 + 2]));
+				clipDistances[i] = clipView.clipDistance;
+			}
+			if (Sys.getEnv('PLUS_TEST_HOLD_BENCH') == '1') {
+				var rounds = 20000;
+				var start = haxe.Timer.stamp();
+				for (_ in 0...rounds) clipper.clipQuad(clipView, world, clipDistances, sourceUV, 1, clippedVertices, clippedUV, true);
+				var oldMs = (haxe.Timer.stamp() - start) * 1000;
+				start = haxe.Timer.stamp();
+				for (_ in 0...rounds) clipper.clipHoldQuad(clipView, world, clipDistances, sourceUV, projectedHold, 1, fastVertices, fastUV);
+				var newMs = (haxe.Timer.stamp() - start) * 1000;
+				cyberSummary += '\nVisible clipping benchmark: legacy ' + Std.int(oldMs) + ' ms; fast ' + Std.int(newMs) + ' ms / ' + rounds;
+			}
 			check(clipper.clipQuad(clipView, world, clipDistances, sourceUV, 0, clippedVertices, clippedUV, false),
 				'Crossing arrow disappeared');
 			var foundIntersection = false;
@@ -113,6 +251,22 @@ class ModchartEditorChecks
 			for (i in 0...4) clipDistances[i] = -1;
 			check(!clipper.clipQuad(clipView, world, clipDistances, sourceUV, 0, clippedVertices, clippedUV, true),
 				'Invisible segment was retained');
+			check(!clipper.clipHoldQuad(clipView, world, clipDistances, sourceUV, projectedHold, 0, fastVertices, fastUV),
+				'Optimized clipping retained an invisible segment');
+			for (i in 0...16) check(clippedVertices[i] == fastVertices[i], 'Invisible hold geometry differs');
+			for (i in 0...24) check(clippedUV[i] == fastUV[i], 'Invisible hold UVs differ');
+			for (i in 0...32) {
+				var a = i * 11.3 - 160;
+				var b = i * 7.7 - 90;
+				var left = new Vector3(17 + i, -36 + i * 0.4, 0);
+				var right = new Vector3(-left.x, -left.y, 0);
+				left = modchart.backend.util.ModchartUtil.rotate3DVectorInto(left, 0, a, 0, new Vector3());
+				right = modchart.backend.util.ModchartUtil.rotate3DVectorInto(right, 0, a, 0, new Vector3());
+				left = modchart.backend.util.ModchartUtil.rotate3DVectorInto(left, b, a * 0.3, -b, new Vector3());
+				right = modchart.backend.util.ModchartUtil.rotate3DVectorInto(right, b, a * 0.3, -b, new Vector3());
+				check(Math.abs(left.x + right.x) < 0.000001 && Math.abs(left.y + right.y) < 0.000001
+					&& Math.abs(left.z + right.z) < 0.000001, 'Hold edge rotation lost symmetry');
+			}
 		}
 
 
@@ -239,6 +393,320 @@ class ModchartEditorChecks
 		var submods = ModchartLuaImporter.parse('set("beatMult",0,2); set("drunkSpeed",0,3); set("bumpyY",0,1); set("x0",0,100); '
 			+ 'set("shrinkToMin",0,0.5); set("noteSkewX",0,0.2); set("mini0",0,0.1); set("schmovinArrowShapeOffset",0,24)');
 		var parentManager = new Manager();
+		report = 'managed receptor visibility';
+		var visibilityRenderer = new modchart.backend.graphics.CtxRenderer();
+		var managedStrum = new objects.StrumNote(0, 0, 0, 0);
+		var extraStrum = new objects.StrumNote(0, 0, 0, 2);
+		visibilityRenderer.suppressManagedReceptors([managedStrum, extraStrum], parentManager.playfields);
+		@:bypassAccessor check(!managedStrum.visible && extraStrum.visible, 'Managed receptor prepass hid the wrong strumline');
+		visibilityRenderer.restoreSuppressedVisibility();
+		@:bypassAccessor check(managedStrum.visible && extraStrum.visible, 'Managed receptor visibility was not restored');
+		managedStrum.destroy();
+		extraStrum.destroy();
+		#if (sys && LUA_ALLOWED && MODCHART_ALLOWED)
+		var underworldPath = Sys.getEnv('PLUS_TEST_UNDERWORLD_LUA');
+		if (underworldPath != null && sys.FileSystem.exists(underworldPath)) {
+			report = 'Underworld skin and hexagon Lua';
+			var fakeStrums = new FlxTypedGroup<FlxSprite>();
+			var host = new CyberTestHost(fakeStrums);
+			var context = new psychlua.backend.LuaHostContext(psychlua.backend.LuaHostKind.NONE, 'underworld-test', host);
+			var script = new psychlua.backend.FunkinLua(underworldPath, context, false);
+			check(script.lua != null, 'Underworld Lua failed to load');
+			check(llua.LuaL.dostring(script.lua, 'function makeLuaSprite() end; function makeGraphic() end; '
+				+ 'function setScrollFactor() end; function addLuaSprite() end; function setProperty() end; '
+				+ 'function getObjectOrder() return 1 end; function setObjectOrder() end; function getRandomInt(a,b) return a==1 and 1 or 0 end; '
+				+ 'function callOnLuas(name,args) selectedSkin=args[1] end; '
+				+ 'function underworldProbe() onCreate(); onCreatePost(); curBeat=96; onBeatHit(); onUpdate(0.016); '
+				+ 'local a=selectedSkin; curBeat=160; onBeatHit(); return a..":"..selectedSkin end') == 0,
+				'Underworld Lua test setup failed');
+			check(script.call('underworldProbe', []) == 'noteSkins/cyber:galaxy/NOTE_assets',
+				'Underworld did not switch and restore the Galaxy skin');
+			script.stop();
+			fakeStrums.destroy();
+		}
+		var cyberPath = Sys.getEnv('PLUS_TEST_CYBER_LUA');
+		if (cyberPath != null && sys.FileSystem.exists(cyberPath))
+		{
+			report = 'Cyber real Lua modifier bridge';
+			var fakeStrums = new FlxTypedGroup<FlxSprite>();
+			for (i in 0...8)
+				fakeStrums.add(new FlxSprite((i < 4 ? 50 : 690) + (i % 4) * 112, 50));
+			var fakeHost = new CyberTestHost(fakeStrums);
+			var luaContext = new psychlua.backend.LuaHostContext(psychlua.backend.LuaHostKind.NONE, 'cyber-test', fakeHost);
+			var lua = new psychlua.backend.FunkinLua(cyberPath, luaContext, false);
+			check(lua.lua != null, 'Cyber Lua failed to load');
+			check(lua.context.host == fakeHost && Reflect.field(fakeHost, 'songSpeed') == 2, 'Cyber test host was lost');
+			var otherContext = new psychlua.backend.LuaHostContext(psychlua.backend.LuaHostKind.NONE, 'other-test', {songSpeed: 99});
+			var otherLua = new psychlua.backend.FunkinLua('function unrelated() return true end', otherContext, false);
+			check(otherLua.lua != null, 'Second Lua state failed to load');
+			@:privateAccess var cyberCallbackKey = Lua_helper.callbackKey(lua.lua, 'createModifier');
+			@:privateAccess var otherCallbackKey = Lua_helper.callbackKey(otherLua.lua, 'createModifier');
+			check(cyberCallbackKey != otherCallbackKey, 'Different Lua states shared a callback key');
+			var setup = 'downscroll=false; scrollSpeed=2; function getSongPosition() return 75000 end; '
+				+ 'function cyberProbe() local a,b=pcall(getProperty,"strumLineNotes.length"); local c,d=pcall(getPropertyFromGroup,"strumLineNotes",0,"x"); return tostring(a)..":"..tostring(b).."/"..tostring(c)..":"..tostring(d) end; '
+				+ 'function cyberTestUpdate() local ok,e=pcall(onUpdatePost,0.016); return tostring(ok)..":"..tostring(e) end';
+			check(llua.LuaL.dostring(lua.lua, setup) == 0, 'Cyber test setup failed');
+			lua.call('onCreatePost', []);
+			var updateResult = lua.call('cyberTestUpdate', []);
+			var beforeProbe = lua.call('cyberProbe', []);
+			var targetBefore = psychlua.backend.LuaUtils.getTargetInstance() == fakeHost;
+			var scriptBefore = psychlua.backend.FunkinLua.lastCalledScript == lua;
+			var contextBefore = lua.context == luaContext && lua.context.host == fakeHost;
+			var cyberField = parentManager.playfields[0];
+			check(cyberField.modifiers.modifiers.exists('cybermotion'), 'Cyber Lua modifier did not register');
+			var cyberModifier:modchart.engine.modifiers.LuaModifier = cast cyberField.modifiers.modifiers.get('cybermotion');
+			check(cyberModifier.funk == lua, 'Cyber modifier was bound to a different Lua script');
+			cyberField.beginFrame(75, 75000, 0);
+			var cyberData:modchart.backend.core.ArrowData = {hitTime: 75500, sourceTime: 75500, strumTime: 75500,
+				sampleTime: 75500, distance: 500, player: 0, lane: 0, isTapArrow: true};
+			var cyberOutput = cyberField.getNotePath(new Vector3(106, 106, 0), cyberData);
+			var cyberRow = 300 - Math.sin(((75000 - 70280.899) / 1348.31460674 - 0.5) * Math.PI) * 250;
+			var expectedY = cyberRow + 450 * ((300 - cyberRow) / 250) + 56;
+			var targetMatches = psychlua.backend.LuaUtils.getTargetInstance() == fakeHost;
+			var propertyCallback:Dynamic = Lua_helper.get_callback(lua.lua, 'getProperty');
+			var directProperty:Dynamic = propertyCallback == null ? 'missing' : Reflect.callMethod(null, propertyCallback, ['songSpeed']);
+			check(Math.abs(cyberOutput.rawY - expectedY) < 0.1,
+				'Cyber Lua modifier did not transform a real Manager note: ${cyberOutput.rawY} != $expectedY; update=$updateResult; before=$beforeProbe/$targetBefore/$scriptBefore/$contextBefore; target=$targetMatches; direct=$directProperty; probe=${lua.call("cyberProbe", [])}');
+			cyberSummary += '\nCyber real Lua modifier: PASS';
+			otherLua.stop();
+			check(!Lua_helper.callbacksByState.exists(otherCallbackKey), 'Closed Lua state retained callbacks');
+			cyberField.beginFrame(76, 75000, 0);
+			cyberOutput = cyberField.getNotePath(new Vector3(106, 106, 0), cyberData);
+			check(Math.abs(cyberOutput.rawY - expectedY) < 0.1, 'Closing another Lua state broke Cyber callbacks');
+			report = 'Lua hold direction per sample';
+			check(llua.LuaL.dostring(lua.lua, 'function testHoldVisual(v,p) if p.isHoldBody then v.holdDirection=p.lane+1 end return v end; '
+				+ 'function installHoldTest() return createModifier("holdTest",{visuals="testHoldVisual",target="note",alwaysRun=true}) end') == 0,
+				'Hold direction test script failed to load');
+			lua.call('installHoldTest', []);
+			cyberData.isHoldBody = true;
+			cyberField.beginFrame(77, 75000, 0);
+			cyberOutput = cyberField.getNotePath(new Vector3(106, 106, 0), cyberData);
+			check(cyberOutput.visuals.holdDirection == 1, 'Lua hold direction was not preserved in cached output');
+			cyberData.lane = 1;
+			cyberOutput = cyberField.getNotePath(new Vector3(218, 106, 0), cyberData);
+			check(cyberOutput.visuals.holdDirection == 2, 'Hold direction did not vary per lane');
+			cyberData.isHoldBody = false;
+			cyberField.beginFrame(78, 75000, 0);
+			cyberOutput = cyberField.getNotePath(new Vector3(218, 106, 0), cyberData);
+			check(cyberOutput.visuals.holdDirection == 0, 'Hold direction leaked to another sample');
+			report = 'Lua modifier visual fast path';
+			check(!lua.isKnownMissingHook('missingHoldVisual'), 'Unresolved hook was marked missing prematurely');
+			lua.call('missingHoldVisual', []);
+			check(lua.isKnownMissingHook('missingHoldVisual'), 'Missing hook was not cached');
+			lua.set('missingHoldVisual', 1);
+			check(!lua.isKnownMissingHook('missingHoldVisual'), 'Updating a Lua global did not invalidate its hook cache');
+			check(llua.LuaL.dostring(lua.lua, 'function fastVisualProbe(v,p) return setmetatable({scaleX=2.5,alpha="0.35",holdDirection=3,planeYZ=-0.002,scaleY="invalid"}, {__index={glow=0.9}}) end; '
+				+ 'function fastVisualBenchmark(v,p) v.alpha=0.75; v.planeYZ=-0.002; return v end') == 0,
+				'Lua visual fast path setup failed');
+			var visualFields = ['scaleX', 'scaleY', 'alpha', 'glow', 'glowR', 'glowG', 'glowB', 'angleX', 'angleY', 'angleZ',
+				'fieldAngleX', 'fieldAngleY', 'fieldAngleZ', 'skewX', 'skewY', 'holdDirection', 'holdAngle', 'holdWidth', 'holdSection',
+				'planeXX', 'planeXY', 'planeXZ', 'planeYX', 'planeYY', 'planeYZ'];
+			var fastVisual:modchart.backend.core.VisualParameters = {};
+			var probeArgs:Array<Dynamic> = [{}, {}, 'probe'];
+			lua.callModifierVisuals('fastVisualProbe', probeArgs, fastVisual, visualFields);
+			check(fastVisual.scaleX == 2.5 && fastVisual.scaleY == 1 && Math.abs(fastVisual.alpha - 0.35) < 0.00001
+				&& fastVisual.holdDirection == 3 && fastVisual.planeYZ == -0.002 && fastVisual.glow == 0,
+				'Lua visual fast path changed numeric, string, invalid or metatable handling');
+			if (Sys.getEnv('PLUS_TEST_HOLD_BENCH') == '1') {
+				var source:Dynamic = {};
+				for (field in visualFields) Reflect.setField(source, field, 1.0);
+				var benchArgs:Array<Dynamic> = [source, {songTime: 1000., distance: 100., lane: 1, player: 0}, 'bench'];
+				var rounds = 10000;
+				var start = haxe.Timer.stamp();
+				for (_ in 0...rounds) {
+					var value:Dynamic = lua.call('fastVisualBenchmark', benchArgs);
+					for (field in visualFields) {
+						var v = Reflect.field(value, field);
+						if (v != null) Reflect.setField(fastVisual, field, v);
+					}
+				}
+				var oldMs = (haxe.Timer.stamp() - start) * 1000;
+				start = haxe.Timer.stamp();
+				for (_ in 0...rounds) lua.callModifierVisuals('fastVisualBenchmark', benchArgs, fastVisual, visualFields);
+				var newMs = (haxe.Timer.stamp() - start) * 1000;
+				cyberSummary += '\nLua visuals benchmark: legacy ' + Std.int(oldMs) + ' ms; fast ' + Std.int(newMs) + ' ms / ' + rounds;
+			}
+			lua.stop();
+			fakeStrums.destroy();
+		}
+		var destinyPath = Sys.getEnv('PLUS_TEST_DESTINY_LUA');
+		if (destinyPath != null && sys.FileSystem.exists(destinyPath))
+		{
+			report = 'Destiny Lua phases';
+			var destinyManager = parentManager;
+			var strums = new FlxTypedGroup<FlxSprite>();
+			for (i in 0...8) strums.add(new FlxSprite((i < 4 ? 50 : 690) + (i % 4) * 112, 50));
+			var host = new CyberTestHost(strums);
+			var context = new psychlua.backend.LuaHostContext(psychlua.backend.LuaHostKind.NONE, 'destiny-test', host);
+			var script = new psychlua.backend.FunkinLua(destinyPath, context, false);
+			check(script.lua != null, 'Destiny Lua failed to load');
+			check(llua.LuaL.dostring(script.lua, 'downscroll=false; scrollSpeed=2; screenWidth=1280; screenHeight=720; '
+				+ 'function getSongPosition() return 1000 end') == 0, 'Destiny test setup failed');
+			script.call('onCreatePost', []);
+			script.call('onUpdatePost', []);
+			var field = destinyManager.playfields[0];
+			check(field.modifiers.modifiers.exists('destinymotion'), 'Destiny modifier did not register');
+			for (time in [1000., 18000., 30000., 45000., 70000., 100000., 120000.]) {
+				field.beginFrame(Std.int(time), time, time / (60000 / 151));
+				var data:modchart.backend.core.ArrowData = {hitTime: time + 300, sourceTime: time + 300, strumTime: time + 300,
+					sampleTime: time + 300, distance: 300, player: 0, lane: 0, isTapArrow: true, isHoldBody: true};
+				var output = field.getNotePath(new Vector3(106, 106, 0), data);
+				check(Math.isFinite(output.rawX) && Math.isFinite(output.rawY) && Math.isFinite(output.rawZ),
+					'Destiny produced invalid coordinates at ' + time);
+				if (time == 1000)
+					check(output.visuals.holdDirection == 2 && Math.abs(output.rawX - 106) > 1,
+						'Destiny opening orbit or hold direction did not run');
+				if (time == 30000) {
+					var expected = 640 + (100 + Math.sin(30300 / (120000 / 151) * Math.PI) * 150 - 640) * 0.7;
+					check(Math.abs(output.rawX - expected) < 0.01 && output.visuals.holdDirection == 1,
+						'Destiny orbit did not transform the hold');
+				}
+			}
+			field.beginFrame(999, 15500, 15500 / (60000 / 151));
+			var ringData:modchart.backend.core.ArrowData = {hitTime: 15994, sourceTime: 15894.0397, strumTime: 15994,
+				sampleTime: 15994, distance: 494, player: 0, lane: 0, isTapArrow: true, isHoldBody: true};
+			var ring = field.getNotePath(new Vector3(106, 106, 0), ringData);
+			check(ring.visuals.holdDirection == 3 && ring.visuals.holdAngle > 80 && ring.visuals.holdAngle < 100,
+				'Destiny circular hold did not orient its width radially');
+			check(ring.visuals.holdWidth == 90, 'Destiny circle did not cover the radius');
+			ringData.player = 1;
+			field.beginFrame(1001, 15500, 15500 / (60000 / 151));
+			ring = field.getNotePath(new Vector3(746, 106, 0), ringData);
+			check(ring.visuals.holdDirection == 3 && ring.visuals.holdWidth == 90,
+				'Destiny player circular hold did not match the chart');
+			ringData.isHoldBody = false;
+			ringData.hitTime = ringData.sourceTime = ringData.strumTime = ringData.sampleTime = 16291.3907;
+			field.beginFrame(1004, 16000, 16000 / (60000 / 151));
+			var circleEnd = field.getNotePath(new Vector3(746, 106, 0), ringData);
+			check(Math.abs(circleEnd.rawX - 168) < 0.001 && Math.abs(circleEnd.rawY - 150) < 0.001
+				&& circleEnd.visuals.scaleX < 1, 'Destiny circular hold end used the regular scroll');
+			ringData.player = 0;
+			ringData.isHoldBody = true;
+			ringData.strumTime = 9550;
+			ringData.sourceTime = 9300;
+			ringData.sampleTime = ringData.hitTime = 9520;
+			ringData.distance = 520;
+			field.beginFrame(1002, 9000, 9000 / (60000 / 151));
+			var beforeSplit = field.getNotePath(new Vector3(106, 106, 0), ringData);
+			ringData.sampleTime = ringData.hitTime = 9550;
+			ringData.distance = 550;
+			var afterSplit = field.getNotePath(new Vector3(106, 106, 0), ringData);
+			check(beforeSplit.visuals.holdSection == 0 && afterSplit.visuals.holdSection == 1,
+				'Destiny hold did not split at the trajectory change');
+			check(llua.LuaL.dostring(script.lua, 'function getSongPosition() return 45000 end; function makeLuaStrumLine() return false end') == 0,
+				'Destiny 3D test setup failed');
+			script.call('onUpdatePost', []);
+			field.beginFrame(1000, 45000, 45000 / (60000 / 151));
+			ringData.hitTime = ringData.sourceTime = ringData.strumTime = ringData.sampleTime = 45300;
+			ringData.isHoldBody = false;
+			var plane = field.getNotePath(new Vector3(106, 106, 0), ringData).visuals;
+			var nx = plane.planeXX * plane.planeXX + plane.planeXY * plane.planeXY + Math.pow(plane.planeXZ * 200, 2);
+			var ny = plane.planeYX * plane.planeYX + plane.planeYY * plane.planeYY + Math.pow(plane.planeYZ * 200, 2);
+			var dot = plane.planeXX * plane.planeYX + plane.planeXY * plane.planeYY + plane.planeXZ * plane.planeYZ * 40000;
+			check(Math.abs(nx - 1) < 0.0001 && Math.abs(ny - 1) < 0.0001 && Math.abs(dot) < 0.0001
+				&& Math.abs(plane.planeXZ) + Math.abs(plane.planeYZ) > 0.00001, 'Destiny 3D plane basis was distorted');
+			check(llua.LuaL.dostring(script.lua, 'local oldGet=getProperty; local oldGroup=getPropertyFromGroup; '
+				+ 'function getSongPosition() return 65000 end; function makeLuaStrumLine() return false end; '
+				+ 'function makeLuaSprite() end; function setObjectCamera() end; function addLuaSprite() end; '
+				+ 'function setProperty(k,v) if k=="destinyCount1.x" then counterX=v elseif k=="destinyCount1.y" then counterY=v end end; function scaleObject() end; '
+				+ 'function getProperty(k) if string.find(k,"destinyCount") then '
+				+ 'if string.find(k,"frameWidth") then return 100 elseif string.find(k,"frameHeight") then return 130 '
+				+ 'elseif string.find(k,"origin.x") then return 50 elseif string.find(k,"origin.y") then return 65 else return 0 end end return oldGet(k) end; '
+				+ 'function getPropertyFromGroup(g,i,k) if g=="notes" then if k=="strumTime" then return 65165.5629 elseif k=="mustPress" then return false end end return oldGroup(g,i,k) end; '
+				+ 'function loadGraphic(tag,image) counterResult=tag..":"..image end; '
+				+ 'function testDestinyCounter() local ok,e=pcall(onUpdatePost); if not ok then return tostring(e) end; goodNoteHit(0,3,"",false); return counterResult end; '
+				+ 'function testCounterCenter() local beat=60000/151; local tm=65165.5629; local z=200+1050*((tm-65000)/beat)/2; local s=200/z; '
+				+ 'local x=640+300*math.cos(tm/(beat*2)*math.pi); local y=360+200*math.sin(tm/(beat*2)*math.pi); '
+				+ 'return math.max(math.abs(counterX+50-(640+(x-640)*s)),math.abs(counterY+65-(360+(y-360)*s))) end') == 0,
+				'Destiny counter test setup failed');
+			check(script.call('testDestinyCounter', []) == 'destinyCount1:num3', 'Destiny counter did not update after a hit');
+			check((cast script.call('testCounterCenter', []):Float) < 0.001, 'Destiny counter was not centered on the projected note');
+			field.beginFrame(1003, 65000, 65000 / (60000 / 151));
+			ringData.player = 1; ringData.lane = 3; ringData.isHoldBody = false;
+			ringData.hitTime = ringData.sourceTime = ringData.strumTime = ringData.sampleTime = 65165.5629;
+			var groupedFirst = field.getNotePath(new Vector3(746, 106, 0), ringData);
+			ringData.hitTime = ringData.sourceTime = ringData.strumTime = ringData.sampleTime = 65364.2384;
+			var groupedNext = field.getNotePath(new Vector3(746, 106, 0), ringData);
+			check(Math.abs(groupedFirst.rawX - groupedNext.rawX) < 0.001
+				&& Math.abs(groupedFirst.rawY - groupedNext.rawY) < 0.001 && Math.abs(groupedFirst.rawZ - groupedNext.rawZ) < 0.001,
+				'Destiny grouped player notes did not share their counter position and depth');
+			script.stop();
+			strums.destroy();
+		}
+		var peacePath = Sys.getEnv('PLUS_TEST_PEACE_LUA');
+		if (peacePath != null && sys.FileSystem.exists(peacePath))
+		{
+			report = 'Peace Lua chart markers and echo';
+			var savedSong = states.PlayState.SONG;
+			var peaceSong = fixture(39000);
+			peaceSong.notes[0].sectionNotes = [[39000, 0.01, 300, '']];
+			var peaceChartPath = Sys.getEnv('PLUS_TEST_PEACE_CHART');
+			var realPeaceChart = peaceChartPath != null && sys.FileSystem.exists(peaceChartPath);
+			if (realPeaceChart) {
+				peaceSong = Song.parseJSON(sys.io.File.getContent(peaceChartPath));
+			}
+			states.PlayState.SONG = peaceSong;
+			var strums = new FlxTypedGroup<FlxSprite>();
+			for (i in 0...8) strums.add(new FlxSprite((i < 4 ? 50 : 690) + (i % 4) * 112, 50));
+			var host = new CyberTestHost(strums);
+			var context = new psychlua.backend.LuaHostContext(psychlua.backend.LuaHostKind.NONE, 'peace-test', host);
+			var script = new psychlua.backend.FunkinLua(peacePath, context, false);
+			check(script.lua != null, 'Peace Lua failed to load');
+			check(llua.LuaL.dostring(script.lua, 'difficulty=2; downscroll=false; scrollSpeed=2; screenWidth=1280; screenHeight=720; testTime=1000; '
+				+ 'function getSongPosition() return testTime end; function makeLuaStrumLine() return false end') == 0,
+				'Peace test setup failed');
+			script.call('onCreatePost', []);
+			script.call('onUpdatePost', []);
+			var field = parentManager.playfields[0];
+			check(field.modifiers.modifiers.exists('peacemotion'), 'Peace modifier did not register on main playfield');
+			field.beginFrame(1100, 38500, 38500 / 300);
+			var markerTime = realPeaceChart ? 38625. : 39000.;
+			var data:modchart.backend.core.ArrowData = {hitTime: markerTime, sourceTime: markerTime, strumTime: markerTime,
+				sampleTime: markerTime, distance: 500, player: realPeaceChart ? 0 : 1, lane: realPeaceChart ? 2 : 0,
+				isTapArrow: true, isHoldBody: false};
+			var arc = field.getNotePath(new Vector3(746, 106, 0), data);
+			var expectedX = 640 + Math.cos(markerTime / 600 * Math.PI) * 500;
+			check(Math.abs(arc.rawX - (640 + (expectedX - 640) * 0.7)) < 0.01,
+				'Peace special chart marker did not select the arc');
+			if (realPeaceChart) {
+				field.beginFrame(1102, 136600, 136600 / 300);
+				data.hitTime = data.sourceTime = data.strumTime = data.sampleTime = 136650;
+				data.distance = 50;
+				data.player = 0;
+				data.lane = 1;
+				var lateArc = field.getNotePath(new Vector3(746, 106, 0), data);
+				var lateX = 940 - Math.cos(136650 / 600 * Math.PI) * 200;
+				check(Math.abs(lateArc.rawX - (640 + (lateX - 640) * 0.7)) < 0.01,
+					'Peace restored marker did not select the second late arc');
+			}
+			check(llua.LuaL.dostring(script.lua, 'function peacePhaseProbe() '
+				+ 'for _,t in ipairs({20000,39000,50000,60000,70000,80000,96000,106000,116000,125000,135000,154000,173000}) do '
+				+ 'for side=0,1 do for body=0,1 do local p={player=side,lane=2,songTime=t-100,strumTime=t,sampleTime=t,sourceTime=t-75,distance=100,isTapArrow=true,isHoldBody=body==1}; '
+				+ 'local v={alpha=1,angleZ=0,scaleX=1,scaleY=1,planeXX=1,planeXY=0,planeXZ=0,planeYX=0,planeYY=1,planeYZ=0}; '
+				+ 'local ok,pos=pcall(peaceRender,{x=0,y=0,z=0},p); if not ok or pos.x~=pos.x or pos.y~=pos.y or pos.z~=pos.z then return tostring(pos) end; '
+				+ 'local valid,result=pcall(peaceVisuals,v,p); if not valid then return tostring(result) end end end end return true end') == 0,
+				'Peace phase test setup failed');
+			check(script.call('peacePhaseProbe', []) == true, 'Peace phase callback failed');
+			check(llua.LuaL.dostring(script.lua, 'testTime=115400') == 0, 'Peace echo time setup failed');
+			script.call('onUpdatePost', []);
+			var echo = parentManager.getNamedPlayfield('peaceEcho');
+			check(echo != null && echo.modifiers.modifiers.exists('peaceechomotion'), 'Peace echo playfield did not activate');
+			field.beginFrame(1101, 115400, 115400 / 300);
+			echo.beginFrame(1101, 115400, 115400 / 300);
+			data.hitTime = data.sourceTime = data.strumTime = data.sampleTime = 116000;
+			data.distance = 600;
+			var mainOutput = field.getNotePath(new Vector3(746, 106, 0), data);
+			var echoOutput = echo.getNotePath(new Vector3(746, 106, 0), data);
+			check(Math.abs((mainOutput.rawZ - echoOutput.rawZ) - 5.6) < 0.001
+				&& echoOutput.visuals.alpha > 0, 'Peace echo depth or visibility was incorrect');
+			check(llua.LuaL.dostring(script.lua, 'testTime=140000') == 0, 'Peace echo end setup failed');
+			script.call('onUpdatePost', []);
+			check(parentManager.getNamedPlayfield('peaceEcho') == null, 'Peace echo playfield did not deactivate');
+			script.stop();
+			strums.destroy();
+			states.PlayState.SONG = savedSong;
+		}
+		#end
 		var extraField = parentManager.addPlayerPlayfield('ghost', 2);
 		check(extraField != null && extraField.acceptsPlayer(2) && !extraField.acceptsPlayer(1), 'Extra StrumLine field was not isolated');
 		check(parentManager.playfields[0].acceptsPlayer(0) && parentManager.playfields[0].acceptsPlayer(1)
@@ -251,6 +719,19 @@ class ModchartEditorChecks
 			'Submodifier did not auto-install its compiled parent');
 		parentManager.setPercent('pulseSpeed', 2);
 		check(parentMods.exists('pulse'), 'Immediate submodifier did not auto-install its compiled parent');
+		report = 'splash follows receptor modifiers';
+		var attachmentField = parentManager.playfields[0];
+		attachmentField.setPercent('receptorX', 123, 0);
+		attachmentField.setPercent('noteX', 999, 0);
+		attachmentField.beginFrame(76, 500, 1);
+		var attachmentData:modchart.backend.core.ArrowData = {hitTime: 500, distance: 0, sourceTime: 500,
+			player: 0, lane: 0, isTapArrow: false};
+		var receptorOutput = attachmentField.getReceptorPath(new Vector3(), attachmentData);
+		var splashOutput = attachmentField.getSplashPath(new Vector3(), attachmentData);
+		check(Math.abs(receptorOutput.rawX - splashOutput.rawX) < 0.001 && Math.abs(splashOutput.rawX - 123) < 0.001,
+			'Splash did not follow receptor or picked up note-only transforms');
+		attachmentField.setPercent('receptorX', 0, 0);
+		attachmentField.setPercent('noteX', 0, 0);
 		report = 'modifier timing context';
 		var timingField = parentManager.playfields[0];
 		var timingModifier = new modchart.engine.modifiers.DynamicModifier(timingField);
@@ -308,7 +789,24 @@ class ModchartEditorChecks
 		check(Math.abs(sample(2)) < 0.0001, 'Rewind did not restore defaults');
 		check(Math.abs(sample(10) - 0.75) < 0.0001, 'Seek result depends on previous position');
 		ModchartEditorPreviewContext.active = null;
-		report = '\nSubmodifier parent auto-install: PASS' + anomalySummary;
+		report = '\nSubmodifier parent auto-install: PASS' + cyberSummary + anomalySummary;
+	}
+}
+
+private class CyberTestHost extends flixel.FlxState
+{
+	public var songSpeed:Float = 2;
+	public var strumLineNotes:FlxTypedGroup<FlxSprite>;
+	public var camHUD:FlxCamera = new FlxCamera();
+	public var camGame:FlxCamera = new FlxCamera();
+	public var defaultCamZoom:Float = 1;
+	public var camZooming:Bool = false;
+	public var cameraBopEnabled:Bool = false;
+
+	public function new(strums:FlxTypedGroup<FlxSprite>)
+	{
+		super();
+		strumLineNotes = strums;
 	}
 }
 #end

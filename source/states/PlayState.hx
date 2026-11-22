@@ -988,7 +988,7 @@ class PlayState extends MusicBeatState
 		{
 			var manager:Manager = new Manager();
 			if (noteGroup != null)
-				noteGroup.insert(0, manager);
+				noteGroup.insert(noteGroup.members.indexOf(strumLineNotes) + 1, manager);
 			else
 				add(manager);
 		}
@@ -2778,6 +2778,14 @@ class PlayState extends MusicBeatState
 		denseRatingPending = false;
 		denseRatingHadMiss = false;
 		RecalculateRating(badHit);
+	}
+
+	override public function draw():Void
+	{
+		#if MODCHART_ALLOWED
+		if (Manager.instance != null) Manager.instance.prepareReceptorsForDraw();
+		#end
+		super.draw();
 	}
 
 	override public function update(elapsed:Float)
@@ -4967,7 +4975,8 @@ class PlayState extends MusicBeatState
 		{
 			for (i in 0...arr.length)
 			{
-				var note:Array<FlxKey> = Controls.instance.keyboardBinds[arr[i]];
+				var note:Array<FlxKey> = Controls.instance.getKeyboardBind(arr[i]);
+				if (note == null) continue;
 				for (noteKey in note)
 					if(key == noteKey)
 						return i;

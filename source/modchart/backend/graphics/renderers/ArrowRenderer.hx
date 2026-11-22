@@ -1,6 +1,7 @@
 package modchart.backend.graphics.renderers;
 
 import flixel.math.FlxMath;
+import objects.SustainSplash;
 
 using flixel.util.FlxColorTransformUtil;
 
@@ -38,6 +39,11 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 	final _orientPos:Vector3 = new Vector3();
 	final _orientVisuals:VisualParameters = {};
 	final _orientOutput:ModifierOutput;
+	final _directionData:ArrowData = {hitTime: 0, distance: 0, sourceTime: 0, lane: 0, player: 0, isTapArrow: true, isHoldBody: true};
+	final _directionInput:Vector3 = new Vector3();
+	final _directionPos:Vector3 = new Vector3();
+	final _directionVisuals:VisualParameters = {};
+	final _directionOutput:ModifierOutput;
 	var _slots:Array<ArrowRenderSlot> = [];
 	var _slotIndex:Int = 0;
 
@@ -45,6 +51,14 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		super(parent);
 		_output = {pos: _outputPos, visuals: _outputVisuals};
 		_orientOutput = {pos: _orientPos, visuals: _orientVisuals};
+		_directionOutput = {pos: _directionPos, visuals: _directionVisuals};
+	}
+
+	public static inline function holdDirectionAngle(dx:Float, dy:Float, downscroll:Bool):Float {
+		final sign = downscroll ? -1.0 : 1.0;
+		dx *= sign;
+		dy *= sign;
+		return dx * dx + dy * dy > 0.0001 ? Math.atan2(dy, dx) * FlxAngle.TO_DEG - 90 : 0;
 	}
 
 	/** Reuses command and geometry storage after the previous frame was submitted. */
@@ -143,6 +157,30 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 				: parent.getReceptorPathInto(arrowPosition, arrowData, _output, _outputPos, _outputVisuals));
 		arrowPosition.setTo(output.rawX, output.rawY, output.rawZ);
 		var visualAngleZ = output.visuals.angleZ;
+		if (Std.isOfType(arrow, SustainSplash)) {
+			final directionData = _directionData;
+			directionData.player = player;
+			directionData.lane = arrowData.lane;
+			final originX = Adapter.instance.getDefaultReceptorX(arrowData.lane, player) + Manager.ARROW_SIZEDIV2;
+			final originY = Adapter.instance.getDefaultReceptorY(arrowData.lane, player) + Manager.ARROW_SIZEDIV2;
+			_directionInput.setTo(originX, originY, 0);
+			directionData.hitTime = songPos;
+			directionData.sourceTime = songPos;
+			directionData.strumTime = songPos;
+			directionData.sampleTime = songPos;
+			directionData.distance = 0;
+			final start = parent.getNotePathInto(_directionInput, directionData, _directionOutput, _directionPos, _directionVisuals, 0, false);
+			final startX = start.pos.x;
+			final startY = start.pos.y;
+			_directionInput.setTo(originX, originY, 0);
+			directionData.hitTime = songPos + 10;
+			directionData.sourceTime = songPos + 10;
+			directionData.strumTime = songPos + 10;
+			directionData.sampleTime = songPos + 10;
+			directionData.distance = 10;
+			final end = parent.getNotePathInto(_directionInput, directionData, _directionOutput, _directionPos, _directionVisuals, 0, false);
+			visualAngleZ += holdDirectionAngle(end.pos.x - startX, end.pos.y - startY, Adapter.instance.getDownscroll());
+		}
 
 		// internal mods
 		if (orient != 0) {
@@ -209,8 +247,10 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 				rotation = ModchartUtil.rotate3DVectorInto(rotation, output.visuals.fieldAngleX, output.visuals.fieldAngleY,
 					output.visuals.fieldAngleZ, _fieldRotated);
 
-			_viewInput.setTo(rotation.x + arrowPosition.x, rotation.y + arrowPosition.y,
-				(rotation.z * 0.001 * Config.Z_SCALE) + arrowPosition.z);
+			final vx = rotation.x, vy = rotation.y;
+			_viewInput.setTo(vx * output.visuals.planeXX + vy * output.visuals.planeYX + arrowPosition.x,
+				vx * output.visuals.planeXY + vy * output.visuals.planeYY + arrowPosition.y,
+				vx * output.visuals.planeXZ + vy * output.visuals.planeYZ + (rotation.z * 0.001 * Config.Z_SCALE) + arrowPosition.z);
 
 			final vertexIndex = Std.int(vertPointer / 2);
 			final worldIndex = vertexIndex * 3;

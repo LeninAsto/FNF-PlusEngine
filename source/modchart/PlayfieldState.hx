@@ -80,7 +80,13 @@ final class PlayfieldState
 			fieldAngleY: visuals.fieldAngleY,
 			fieldAngleZ: visuals.fieldAngleZ,
 			skewX: visuals.skewX,
-			skewY: visuals.skewY
+			skewY: visuals.skewY,
+			holdDirection: visuals.holdDirection,
+			holdAngle: visuals.holdAngle,
+			holdWidth: visuals.holdWidth,
+			holdSection: visuals.holdSection,
+			planeXX: visuals.planeXX, planeXY: visuals.planeXY, planeXZ: visuals.planeXZ,
+			planeYX: visuals.planeYX, planeYY: visuals.planeYY, planeYZ: visuals.planeYZ
 		};
 	}
 }

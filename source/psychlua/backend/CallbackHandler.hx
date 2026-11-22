@@ -3,12 +3,29 @@ package psychlua.backend;
 
 class CallbackHandler
 {
+	public static function clearState(l:State):Void
+	{
+		if (l == null) return;
+		@:privateAccess final prefix = Lua_helper.callbackKey(l, '');
+		final keys:Array<String> = [];
+		for (key in Lua_helper.callbacksByState.keys())
+			if (StringTools.startsWith(key, prefix)) keys.push(key);
+		for (key in keys)
+		{
+			final name = key.substr(prefix.length);
+			final callback = Lua_helper.callbacksByState.get(key);
+			if (callback != null && Lua_helper.callbacks.get(name) == callback)
+				Lua_helper.callbacks.remove(name);
+			Lua_helper.callbacksByState.remove(key);
+		}
+	}
+
 	public static inline function call(l:State, fname:String):Int
 	{
 		try
 		{
 			// trace('calling $fname');
-			var cbf:Dynamic = Lua_helper.callbacks.get(fname);
+			var cbf:Dynamic = Lua_helper.get_callback(l, fname);
 
 			// Local functions have the lowest priority
 			// This is to prevent a "for" loop being called in every single operation,

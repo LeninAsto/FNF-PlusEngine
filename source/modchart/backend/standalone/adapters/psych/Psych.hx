@@ -126,6 +126,8 @@ class Psych implements IAdapter {
 	public function isHoldEnd(arrow:FlxSprite) {
 		if (arrow is Note) {
 			final castedNote = cast(arrow, Note);
+			if (castedNote.isSustainNote && castedNote.modchartHoldLength > 0)
+				return false;
 
 			if (castedNote.isSustainEnd)
 				return true;
@@ -254,8 +256,13 @@ class Psych implements IAdapter {
 		__holdSubdivisions = value;
 	}
 
-	public function getHoldLength(item:FlxSprite):Float
+	public function getHoldLength(item:FlxSprite):Float {
+		if (item is Note) {
+			final note:Note = cast item;
+			if (note.modchartHoldLength > 0) return note.modchartHoldLength;
+		}
 		return holdStepLength;
+	}
 
 	public function getHoldParentTime(arrow:FlxSprite) {
 		final note:Note = cast arrow;

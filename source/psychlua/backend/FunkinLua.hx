@@ -2382,6 +2382,9 @@ class FunkinLua
 
 	public static var lastCalledScript:FunkinLua = null;
 
+	public inline function isKnownMissingHook(func:String):Bool
+		return hookCache.get(func) == false;
+
 	public function call(func:String, args:Array<Dynamic>):Dynamic
 	{
 		if (closed)
@@ -2442,6 +2445,55 @@ class FunkinLua
 		return LuaUtils.Function_Continue;
 	}
 
+	public function callModifierVisuals(func:String, args:Array<Dynamic>, data:modchart.backend.core.VisualParameters, fields:Array<String>):Void
+	{
+		if (closed || lua == null) return;
+		var known:Null<Bool> = hookCache.get(func);
+		if (known != null && !known) return;
+		lastCalledFunction = func;
+		lastCalledScript = this;
+		try
+		{
+			Lua.getglobal(lua, func);
+			var type:Int = Lua.type(lua, -1);
+			if (type != Lua.LUA_TFUNCTION)
+			{
+				if (known == null && type > Lua.LUA_TNIL)
+					luaTrace(Language.getPhrase('errors.scripting.lua.non_function_callback', 'ERROR ({1}): attempt to call a {2} value',
+						[func, LuaUtils.typeToString(type)]), false, false, FlxColor.RED);
+				hookCache.set(func, false);
+				Lua.pop(lua, 1);
+				return;
+			}
+			if (known == null) hookCache.set(func, true);
+			for (arg in args) Convert.toLua(lua, arg);
+			var status:Int = Lua.pcall(lua, args.length, 1, 0);
+			if (status != Lua.LUA_OK)
+			{
+				var error:String = getErrorMessage(status);
+				luaTrace(Language.getPhrase('errors.scripting.lua.callback_error', 'ERROR ({1}): {2}', [func, ScriptErrorTranslator.lua(error)]), false, false, FlxColor.RED);
+				return;
+			}
+			if (Lua.type(lua, -1) == Lua.LUA_TTABLE) for (field in fields)
+			{
+				Lua.pushstring(lua, field);
+				Lua.rawget(lua, -2);
+				var fieldType = Lua.type(lua, -1);
+				if (fieldType == Lua.LUA_TNUMBER)
+					Reflect.setField(data, field, Lua.tonumber(lua, -1));
+				else if (fieldType == Lua.LUA_TSTRING)
+				{
+					var parsed = Std.parseFloat(cast Lua.tostring(lua, -1));
+					if (!Math.isNaN(parsed)) Reflect.setField(data, field, parsed);
+				}
+				Lua.pop(lua, 1);
+			}
+			Lua.pop(lua, 1);
+			if (closed) stop();
+		}
+		catch (e:Dynamic) trace(e);
+	}
+
 	public function definesHook(hook:String):Bool
 	{
 		if (closed || lua == null)
@@ -2481,6 +2533,7 @@ class FunkinLua
 		}
 		try
 		{
+			CallbackHandler.clearState(lua);
 			Lua.close(lua);
 		}
 		catch (e:Dynamic)

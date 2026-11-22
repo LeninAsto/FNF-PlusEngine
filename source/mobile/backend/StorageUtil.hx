@@ -8,6 +8,14 @@ import sys.FileSystem;
 import sys.io.File;
 import openfl.utils.Assets as OpenFLAssets;
 
+#if sys
+private enum abstract AssetKind(Int) from Int to Int
+{
+	var Mods = 0;
+	var SM = 1;
+}
+#end
+
 /**
  * A storage class for mobile.
  * @author Karim Akra and Homura Akemi (HomuHomu833)
@@ -28,12 +36,6 @@ class StorageUtil
 
 	private static var createdInternal:Map<AssetKind, Bool> = null;
 	private static var createdExternal:Map<AssetKind, Bool> = null;
-
-	private enum abstract AssetKind(Int) from Int to Int
-	{
-		var Mods = 0;
-		var SM = 1;
-	}
 
 	public static function getStorageDirectory(?force:Bool = false):String
 	{

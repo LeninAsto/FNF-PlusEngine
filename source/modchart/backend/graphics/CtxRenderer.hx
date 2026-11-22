@@ -99,6 +99,22 @@ class CtxRenderer {
 		return dc;
 	}
 
+	public function suppressManagedReceptors(receptors:Array<objects.StrumNote>, playfields:Array<PlayField>):Void {
+		if (receptors == null) return;
+		var playerMask = 0;
+		var acceptsAll = false;
+		for (field in playfields) if (field != null) {
+			if (field.playerMask < 0) acceptsAll = true;
+			else playerMask |= field.playerMask;
+		}
+		for (receptor in receptors) {
+			if (!isRenderable(receptor)) continue;
+			final player = Adapter.instance.getPlayerFromArrow(receptor);
+			if (acceptsAll || (player >= 0 && player < 31 && (playerMask & (1 << player)) != 0))
+				getVisibility(receptor);
+		}
+	}
+
 	public function emit(items:Array<Array<Array<FlxSprite>>>, playfields:Array<PlayField>) {
 		final __emitStart = collectDebugStats ? haxe.Timer.stamp() : 0.0;
 		// Keep references for at most one frame. Objects that left their group are
@@ -239,7 +255,7 @@ class CtxRenderer {
 				// tap arrow
 				if (arrowCount > 0) {
 					for (arrow in curItems[1]) {
-						if (!isRenderable(arrow) || isOutsideSpawnWindow(arrow, playfield, spawnWindow) || !getVisibility(arrow))
+						if (!isRenderable(arrow) || !getVisibility(arrow) || isOutsideSpawnWindow(arrow, playfield, spawnWindow))
 							continue;
 						final arrowStart = collectDebugStats ? haxe.Timer.stamp() : 0.0;
 						var _ = emitArrowCmd(arrow);
@@ -321,7 +337,7 @@ class CtxRenderer {
 		if (holds == null)
 			return;
 		for (hold in holds) {
-			if (!isRenderable(hold) || isOutsideSpawnWindow(hold, playfield, spawnWindow) || !getVisibility(hold))
+			if (!isRenderable(hold) || !getVisibility(hold) || isOutsideSpawnWindow(hold, playfield, spawnWindow))
 				continue;
 			final holdStart = collectDebugStats ? haxe.Timer.stamp() : 0.0;
 			final command = emitHoldCmd(hold);
