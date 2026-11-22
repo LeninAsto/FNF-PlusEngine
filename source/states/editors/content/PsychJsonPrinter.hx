@@ -27,6 +27,24 @@ class PsychJsonPrinter extends JsonPrinter
 		fieldsStringEx(v, fields);
 	}
 
+	/**
+     * Returns true if any value in values is a nested container (object, array, or StringMap).
+     * Checks the values themselves, not the field names as strings.
+     */
+	static inline function containsContainer(values:Iterable<Dynamic>):Bool
+	{
+		for (subv in values)
+		{
+			switch (Type.typeof(subv))
+			{
+				case TObject, TClass(Array), TClass(haxe.ds.StringMap):
+					return true;
+				default:
+			}
+		}
+		return false;
+	}
+
 	function fieldsStringEx(v:Dynamic, fields:Array<String>, ?mapCheck:Bool = false)
 	{
 		addChar('{'.code);
@@ -36,17 +54,17 @@ class PsychJsonPrinter extends JsonPrinter
 		var hasArrayInsideIt:Bool = false;
 		if (_singleLineCheckNext)
 		{
-			for (subv in Reflect.fields(v))
+			var values:Array<Dynamic> = [];
+			for (f in fields)
 			{
-				switch (Type.typeof(subv))
-				{
-					case TObject, TClass(Array):
-						hasArrayInsideIt = true;
-						break;
-					default:
-				}
+				var sv = Reflect.field(v, f);
+				if (!Reflect.isFunction(sv))
+					values.push(sv);
 			}
+			hasArrayInsideIt = containsContainer(values);
 		}
+
+		var singleLine:Bool = _singleLineCheckNext && !hasArrayInsideIt;
 
 		var usedMapCheck:Bool = false;
 		var first = true;
@@ -64,7 +82,7 @@ class PsychJsonPrinter extends JsonPrinter
 			else
 			{
 				addChar(','.code);
-				if (_singleLineCheckNext && !hasArrayInsideIt)
+				if (singleLine)
 					addChar(' '.code);
 			}
 
@@ -80,7 +98,7 @@ class PsychJsonPrinter extends JsonPrinter
 				}
 			}
 
-			if (!_singleLineCheckNext || hasArrayInsideIt || _mapCheck || usedMapCheck)
+			if (!singleLine || hasArrayInsideIt || _mapCheck || usedMapCheck)
 			{
 				newl();
 				ipad();
@@ -91,16 +109,16 @@ class PsychJsonPrinter extends JsonPrinter
 				addChar(' '.code);
 
 			var doContain:Bool = _ignoreTab.contains(f);
+			var prevSingleLine = _singleLineCheckNext;
 			if (doContain)
 				_singleLineCheckNext = true;
 			write(f, value);
-			if (doContain)
-				_singleLineCheckNext = false;
+			_singleLineCheckNext = prevSingleLine;
 
 			if (i == last)
 			{
 				nind--;
-				if (!_singleLineCheckNext)
+				if (!singleLine)
 				{
 					newl();
 					ipad();
@@ -142,33 +160,22 @@ class PsychJsonPrinter extends JsonPrinter
 					var len = v.length;
 					var last = len - 1;
 
-					var hasArrayInsideIt:Bool = false;
-					if (_singleLineCheckNext)
-					{
-						for (subv in v)
-						{
-							switch (Type.typeof(subv))
-							{
-								case TObject, TClass(Array):
-									hasArrayInsideIt = true;
-									break;
-								default:
-							}
-						}
-					}
+					var hasArrayInsideIt:Bool = _singleLineCheckNext && containsContainer(v);
+
+					var singleLine:Bool = _singleLineCheckNext && !hasArrayInsideIt;
 
 					for (i in 0...len)
 					{
 						if (i > 0)
 						{
 							addChar(','.code);
-							if (_singleLineCheckNext && !hasArrayInsideIt)
+							if (singleLine)
 								addChar(' '.code);
 						}
 						else
 							nind++;
 
-						if (!_singleLineCheckNext || hasArrayInsideIt)
+						if (!singleLine || hasArrayInsideIt)
 						{
 							newl();
 							ipad();
@@ -178,7 +185,7 @@ class PsychJsonPrinter extends JsonPrinter
 						if (i == last)
 						{
 							nind--;
-							if (!_singleLineCheckNext)
+							if (!singleLine)
 							{
 								newl();
 								ipad();
@@ -217,4 +224,3 @@ class PsychJsonPrinter extends JsonPrinter
 		}
 	}
 }
-
