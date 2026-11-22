@@ -3,8 +3,10 @@ package mobile.backend;
 import lime.system.System as LimeSystem;
 import haxe.Timer;
 import haxe.io.Path;
-import openfl.utils.Assets as OpenFLAssets;
 import haxe.io.Bytes;
+import sys.FileSystem;
+import sys.io.File;
+import openfl.utils.Assets as OpenFLAssets;
 
 /**
  * A storage class for mobile.
@@ -23,6 +25,15 @@ class StorageUtil
 	private static var cachedInternalDirectory:String = null;
 	private static var cachedPublicDirectory:String = null;
 	#end
+
+	private static var createdInternal:Map<AssetKind, Bool> = null;
+	private static var createdExternal:Map<AssetKind, Bool> = null;
+
+	private enum abstract AssetKind(Int) from Int to Int
+	{
+		var Mods = 0;
+		var SM = 1;
+	}
 
 	public static function getStorageDirectory(?force:Bool = false):String
 	{
@@ -53,7 +64,7 @@ class StorageUtil
 	public static function getSMDirectory():String
 	{
 		final baseDir = #if android getStorageDirectory() #else './' #end;
-		return Path.join([baseDir, 'sm']);
+		return Path.addTrailingSlash(Path.join([baseDir, 'sm']));
 	}
 
 	public static function saveContent(fileName:String, fileData:String, ?alert:Bool = true):Void
@@ -88,6 +99,13 @@ class StorageUtil
 		return Path.join([rootDir, 'storagetype.txt']);
 	}
 
+	/**
+     * Normalizes stored strings of the INTERNAL or EXTERNAL storage type.
+     *
+     * NOTE: The old value EXTERNAL_DATA (used by older versions for
+     * application-scope external directories) is intentionally mapped to INTERNAL, because
+     * that is exactly the directory returned by getInternalStorageDirectory().
+     */
 	private static function normalizeStorageType(storageType:String):String
 	{
 		return switch (storageType)
@@ -302,7 +320,7 @@ class StorageUtil
 		else
 		{
 			return granted.contains('android.permission.READ_EXTERNAL_STORAGE')
-				|| granted.contains('android.permission.WRITE_EXTERNAL_STORAGE');
+				&& granted.contains('android.permission.WRITE_EXTERNAL_STORAGE');
 		}
 	}
 
@@ -355,8 +373,7 @@ class StorageUtil
 			return 'INTERNAL storage: no extra permission required.';
 
 		if (AndroidVersion.SDK_INT >= AndroidVersionCode.TIRAMISU)
-			return
-				AndroidEnvironment.isExternalStorageManager() ? 'EXTERNAL storage: all-files access granted.' : 'EXTERNAL storage: all-files access required.';
+			return AndroidEnvironment.isExternalStorageManager() ? 'EXTERNAL storage: all-files access granted.' : 'EXTERNAL storage: all-files access required.';
 
 		final granted = AndroidPermissions.getGrantedPermissions();
 		final hasLegacyPermission = granted.contains('android.permission.READ_EXTERNAL_STORAGE')
@@ -402,28 +419,22 @@ class StorageUtil
 		}
 		else
 		{
-			#if android
 			Timer.delay(function()
 			{
 				if (hasAssets())
 				{
 					trace('Starting automatic asset copy...');
-					var failed = copyAssets();
+					final failed = copyAssets();
 					if (failed.length > 0)
-					{
 						trace('Asset copy completed with ${failed.length} failures.');
-					}
 					else
-					{
 						trace('Asset copy completed successfully!');
-					}
 				}
 				else
 				{
 					trace('No assets found to copy.');
 				}
 			}, 500);
-			#end
 		}
 	}
 
@@ -436,7 +447,7 @@ class StorageUtil
 		});
 	}
 
-	private static function resolveAssetTarget(assetPath:String):Null<{relativePath:String, internalDir:String, externalDir:String, isMods:Bool}>
+	private static function resolveAssetTarget(assetPath:String):Null<{relativePath:String, internalDir:String, externalDir:String, kind:AssetKind}>
 	{
 		final isModsAsset = assetPath.startsWith('mods/');
 		final isSMAsset = assetPath.startsWith('sm/');
@@ -446,112 +457,145 @@ class StorageUtil
 		var relativePath:String;
 		var internalDir:String;
 		var externalDir:String;
-		var isMods:Bool;
+		var kind:AssetKind;
 
 		if (isModsAsset)
 		{
 			relativePath = assetPath.substring('mods/'.length);
 			internalDir = getScopedModsDirectory();
 			externalDir = getPublicModsDirectory();
-			isMods = true;
+			kind = Mods;
 		}
 		else
 		{
 			relativePath = assetPath.substring('sm/'.length);
 			internalDir = getSMDirectory();
-			externalDir = Path.join([getPublicStorageDirectory(), 'sm']);
-			isMods = false;
+			externalDir = Path.addTrailingSlash(Path.join([getPublicStorageDirectory(), 'sm']));
+			kind = SM;
 		}
 
 		if (relativePath == '' || relativePath == '/')
 			return null;
 
-		return {relativePath: relativePath, internalDir: internalDir, externalDir: externalDir, isMods: isMods};
+		return {relativePath: relativePath, internalDir: internalDir, externalDir: externalDir, kind: kind};
 	}
 
-	private static function ensureAssetDirs(internalDir:String, externalDir:String, useExternal:Bool,
-			created:Array<Bool>):Void
+	private static function resetAssetDirCaches():Void
 	{
-		if (!created[0])
-			created[0] = ensureDirectory(internalDir);
-		if (useExternal && !created[1])
-			created[1] = ensureDirectory(externalDir);
+		createdInternal = new Map<AssetKind, Bool>();
+		createdExternal = new Map<AssetKind, Bool>();
+	}
+
+	private static function ensureAssetDir(kind:AssetKind, isExternal:Bool, dir:String):Bool
+	{
+		var cache = isExternal ? createdExternal : createdInternal;
+		if (cache.exists(kind) && cache.get(kind))
+			return true;
+		final ok = ensureDirectory(dir);
+		cache.set(kind, ok);
+		return ok;
 	}
 
 	private static function copyAssetEverywhere(assetPath:String, target:Dynamic, useExternal:Bool,
-			createdInternal:Array<Bool>, createdExternal:Array<Bool>, failedFiles:Array<String>):Void
+			failedFiles:Array<String>):Bool
 	{
 		if (!OpenFLAssets.exists(assetPath))
 		{
 			failedFiles.push('$assetPath (Asset does not exist in OpenFL)');
-			return;
+			return false;
 		}
 
-		if (!createdInternal[target.isMods ? 0 : 1])
-			createdInternal[target.isMods ? 0 : 1] = ensureDirectory(target.internalDir);
-		final internalSuccess = copyAssetToDirectory(assetPath, target.internalDir, target.relativePath);
-		if (!internalSuccess)
+		var allOk = true;
+
+		if (!ensureAssetDir(target.kind, false, target.internalDir))
+		{
+			failedFiles.push('$assetPath (Failed to create internal directory)');
+			allOk = false;
+		}
+		else if (!copyAssetToDirectory(assetPath, target.internalDir, target.relativePath))
+		{
 			failedFiles.push('$assetPath (Failed to copy to internal storage)');
+			allOk = false;
+		}
 
 		if (useExternal)
 		{
-			if (!createdExternal[target.isMods ? 0 : 1])
-				createdExternal[target.isMods ? 0 : 1] = ensureDirectory(target.externalDir);
-			final externalSuccess = copyAssetToDirectory(assetPath, target.externalDir, target.relativePath);
-			if (!externalSuccess && !failedFiles.contains('$assetPath (Failed to copy to internal storage)'))
+			if (!ensureAssetDir(target.kind, true, target.externalDir))
+			{
+				failedFiles.push('$assetPath (Failed to create external directory)');
+				allOk = false;
+			}
+			else if (!copyAssetToDirectory(assetPath, target.externalDir, target.relativePath))
+			{
 				failedFiles.push('$assetPath (Failed to copy to external storage)');
+				allOk = false;
+			}
 		}
+
+		return allOk;
 	}
 
 	public static function copyAssets():Array<String>
 	{
+		return copyAssetsInternal(null);
+	}
+
+	public static function copyAssetsWithProgress(onProgress:(Int, Int) -> Void):Array<String>
+	{
+		return copyAssetsInternal(onProgress);
+	}
+
+	private static function copyAssetsInternal(?onProgress:(Int, Int) -> Void):Array<String>
+	{
 		var failedFiles:Array<String> = [];
-		var successCount:Int = 0;
-		var totalCount:Int = 0;
 
 		try
 		{
 			final modsAssets = getAssets();
-			totalCount = modsAssets.length;
+			final total:Int = modsAssets.length;
 
-			if (totalCount == 0)
+			if (total == 0)
 			{
 				trace('No assets found in OpenFL assets.');
+				if (onProgress != null)
+					onProgress(0, 0);
 				return [];
 			}
 
-			trace('Found $totalCount assets to copy');
+			trace('Found $total assets to copy');
 
 			final useExternal = useExternalModsStorage();
-			var createdInternal:Array<Bool> = [false, false];
-			var createdExternal:Array<Bool> = [false, false];
+			resetAssetDirCaches();
+
+			var successCount = 0;
+			var current = 0;
 
 			for (assetPath in modsAssets)
 			{
+				current++;
 				try
 				{
 					final target = resolveAssetTarget(assetPath);
-					if (target == null)
-						continue;
-
-					copyAssetEverywhere(assetPath, target, useExternal, createdInternal, createdExternal, failedFiles);
-					successCount++;
+					if (target != null)
+					{
+						if (copyAssetEverywhere(assetPath, target, useExternal, failedFiles))
+							successCount++;
+					}
 				}
 				catch (e:Dynamic)
 				{
 					failedFiles.push('$assetPath (${Std.string(e)})');
 					trace('Failed to copy asset $assetPath: ${Std.string(e)}');
 				}
+
+				if (onProgress != null)
+					onProgress(current, total);
 			}
 
 			if (failedFiles.length > 0)
-			{
-				trace('Copied ${successCount - failedFiles.length}/$totalCount assets. ${failedFiles.length} failed.');
-			}
+				trace('Copied $successCount/$total assets. ${failedFiles.length} failed.');
 			else
-			{
 				trace('Successfully copied all $successCount assets to storage directories.');
-			}
 		}
 		catch (e:Dynamic)
 		{
@@ -566,8 +610,8 @@ class StorageUtil
 	{
 		try
 		{
-			var fullPath:String = Path.join([targetDir, relativePath]);
-			var fileDir:String = Path.directory(fullPath);
+			final fullPath:String = Path.join([targetDir, relativePath]);
+			final fileDir:String = Path.directory(fullPath);
 
 			if (!ensureDirectory(fileDir))
 			{
@@ -581,8 +625,8 @@ class StorageUtil
 				return true;
 			}
 
-			var extension:String = Path.extension(assetPath).toLowerCase();
-			var textExtensions:Array<String> = ['ini', 'txt', 'xml', 'hxs', 'hx', 'lua', 'json', 'frag', 'vert'];
+			final extension:String = Path.extension(assetPath).toLowerCase();
+			final textExtensions:Array<String> = ['ini', 'txt', 'xml', 'hxs', 'hx', 'lua', 'json', 'frag', 'vert'];
 
 			if (textExtensions.contains(extension))
 			{
@@ -593,7 +637,7 @@ class StorageUtil
 			}
 			else
 			{
-				var bytes:Bytes = OpenFLAssets.getBytes(assetPath);
+				final bytes:Bytes = OpenFLAssets.getBytes(assetPath);
 				if (bytes == null)
 				{
 					trace('Failed to get bytes for asset: $assetPath');
@@ -613,19 +657,7 @@ class StorageUtil
 
 	public static function hasAssets():Bool
 	{
-		try
-		{
-			for (asset in OpenFLAssets.list())
-			{
-				if (asset.startsWith('mods/') || asset.startsWith('sm/'))
-					return true;
-			}
-		}
-		catch (e:Dynamic)
-		{
-			trace('Error checking for assets: ${Std.string(e)}');
-		}
-		return false;
+		return getAssetCount() > 0;
 	}
 
 	public static function getAssetCount():Int
@@ -645,66 +677,6 @@ class StorageUtil
 			trace('Error counting assets: ${Std.string(e)}');
 			return 0;
 		}
-	}
-
-	public static function copyAssetsWithProgress(onProgress:(Int, Int) -> Void):Array<String>
-	{
-		var failedFiles:Array<String> = [];
-
-		try
-		{
-			final modsAssets = getAssets();
-			final total:Int = modsAssets.length;
-
-			if (total == 0)
-			{
-				trace('No assets found in OpenFL assets.');
-				onProgress(0, 0);
-				return [];
-			}
-
-			trace('Found $total assets to copy with progress tracking');
-
-			final useExternal = useExternalModsStorage();
-			var createdInternal:Array<Bool> = [false, false];
-			var createdExternal:Array<Bool> = [false, false];
-
-			var current:Int = 0;
-			for (assetPath in modsAssets)
-			{
-				current++;
-				try
-				{
-					final target = resolveAssetTarget(assetPath);
-					if (target != null)
-					{
-						copyAssetEverywhere(assetPath, target, useExternal, createdInternal, createdExternal, failedFiles);
-					}
-				}
-				catch (e:Dynamic)
-				{
-					failedFiles.push('$assetPath (${Std.string(e)})');
-				}
-
-				onProgress(current, total);
-			}
-
-			if (failedFiles.length > 0)
-			{
-				trace('Completed with ${failedFiles.length} failures.');
-			}
-			else
-			{
-				trace('Successfully copied all $total assets.');
-			}
-		}
-		catch (e:Dynamic)
-		{
-			trace('Error during asset copy process: ${Std.string(e)}');
-			failedFiles.push('Global error: ${Std.string(e)}');
-		}
-
-		return failedFiles;
 	}
 
 	public static function verifyAssets():Array<String>
@@ -740,13 +712,9 @@ class StorageUtil
 			}
 
 			if (missingCount > 0)
-			{
 				trace('Found $missingCount missing assets.');
-			}
 			else
-			{
 				trace('All ${modsAssets.length} assets verified successfully.');
-			}
 		}
 		catch (e:Dynamic)
 		{
