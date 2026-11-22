@@ -3,9 +3,7 @@
   "code": "id-ID",
   "name": "Bahasa Indonesia",
   "version": 1,
-  "fallback": [
-    "en-US"
-  ],
+  "fallback": ["en-US"],
   "bundles": [
     "global.json",
     "assets.json",

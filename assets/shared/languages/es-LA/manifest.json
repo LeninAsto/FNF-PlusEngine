@@ -3,9 +3,7 @@
   "code": "es-LA",
   "name": "Español (Latinoamérica)",
   "version": 2,
-  "fallback": [
-    "en-US"
-  ],
+  "fallback": ["en-US"],
   "bundles": [
     "global.json",
     "assets.json",

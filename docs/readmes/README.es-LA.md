@@ -4,7 +4,6 @@
 
 **[EN-US](../../README.md) | ES-LA | [ID-ID](README.id-ID.md)**
 
-
 ![Made with](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Hecho+en&secondaryLabel=Haxe&primaryBGColor=%23689bb1&primaryTextColor=%23ffffff&secondaryBGColor=%23fea948&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&tertiaryBGColor=%23c14dff&tertiaryTextColor=%23FFFFFF&tertiaryFontSize=12&tertiaryFontWeight=700&tertiaryLetterSpacing=2&tertiaryFontFamily=Arial&tertiaryTextTransform=capitalize&tertiaryIconColor=%23FFFFFF&tertiaryIconSize=16&tertiaryIconPosition=left&secondaryIcon=haxe&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)
 [![Design with](https://forthebadge.com/api/badges/generate?panels=2&primaryLabel=Diseñado+con&secondaryLabel=Material+Design&primaryBGColor=%23689bb1&primaryTextColor=%23ffffff&secondaryBGColor=%2300639b&secondaryTextColor=%23ffffff&primaryFontSize=12&primaryFontWeight=700&primaryLetterSpacing=2&primaryFontFamily=Arial&primaryTextTransform=capitalize&secondaryFontSize=12&secondaryFontWeight=700&secondaryLetterSpacing=2&secondaryFontFamily=Arial&secondaryTextTransform=none&secondaryIcon=materialdesign&secondaryIconColor=%23ffffff&secondaryIconSize=16&secondaryIconPosition=left&scale=0.7&borderRadius=10)](https://m3.material.io/)
 
@@ -53,12 +52,14 @@ Porque el código no es un tesoro enterrado —
 🚀 **Construir > restringir**
 
 Realmente no creo en la mentalidad de:
+
 > "No toques mi código, no crees otro motor, no uses las cosas de mi motor, bro..."
 
 Hermano…
 **¡no vas a ir al cielo con tu repositorio privado bajo el brazo!**
 
 El código fuente es:
+
 - conocimiento
 - práctica
 - errores
@@ -69,6 +70,7 @@ Así es como siempre ha funcionado esto:
 aprender del pasado para construir el futuro.
 
 ### ⚠️ Nota importante
+
 No reclames el trabajo de otros como tuyo ni lo vendas como original.
 Respeta el esfuerzo, aprende de ello y crea algo mejor.
 
@@ -79,38 +81,43 @@ relájate — el progreso no espera.
 **Feliz codificación.**
 
 ## Créditos del Desarrollador:
-* Lenin Asto - Programador Principal de Plus Engine
-* sirthegamercoder - Programador auxiliar de Plus Engine
-* Autistic Lulu - Creador de [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) y autor de varias UIs y nuevas funciones para su fork (gracias por dejarme usar tu fork =D)
+
+- Lenin Asto - Programador Principal de Plus Engine
+- sirthegamercoder - Programador auxiliar de Plus Engine
+- Autistic Lulu - Creador de [Psych Continued](https://github.com/MeguminBOT/FNF-PsychEngine) y autor de varias UIs y nuevas funciones para su fork (gracias por dejarme usar tu fork =D)
 
 ## Créditos Originales:
-* Shadow Mario - Programador Principal y Líder de Psych Engine.
-* Riveren - Artista/Animador Principal de Psych Engine.
+
+- Shadow Mario - Programador Principal y Líder de Psych Engine.
+- Riveren - Artista/Animador Principal de Psych Engine.
 
 ## Créditos Mobile:
-* Homura - Portador Principal de Psych Engine Mobile.
-* Karim - Segundo Portador de Psych Engine Mobile.
-* Moxie - Ayudante de Psych Engine Mobile.
+
+- Homura - Portador Principal de Psych Engine Mobile.
+- Karim - Segundo Portador de Psych Engine Mobile.
+- Moxie - Ayudante de Psych Engine Mobile.
 
 ## Agradecimientos Especiales
-* bbpanzu - Ex-Miembro del Equipo (Programador).
-* crowplexus - HScript Iris, Sistema de Input v3, y Otros PRs.
-* Kamizeta - Creador de Pessy, la mascota de Psych Engine.
-* MaxNeton - Artista/Animador del Easter Egg de la Pantalla de Carga.
-* Keoiki - Animaciones de Note Splash y Alfabeto Latino.
-* SqirraRNG - Manejador de Crashes y Código Base para la Forma de Onda del Editor de Charts.
-* EliteMasterEric - Soporte de Shaders en Tiempo de Ejecución y Otros PRs.
-* MAJigsaw77 - Librería de Carga de Videos .MP4 (hxvlc).
-* iFlicky - Compositor de Psync, Tea Time y algunos efectos de sonido.
-* KadeDev - Corrigió algunos problemas en el Editor de Charts y Otros PRs.
-* superpowers04 - Fork de LUA JIT.
-* CheemsAndFriends - Creador de FlxAnimate.
-* Ezhalt - Jingle del Easter Egg de Pessy.
-* MaliciousBunny - Video para la Actualización Final.
 
-***
+- bbpanzu - Ex-Miembro del Equipo (Programador).
+- crowplexus - HScript Iris, Sistema de Input v3, y Otros PRs.
+- Kamizeta - Creador de Pessy, la mascota de Psych Engine.
+- MaxNeton - Artista/Animador del Easter Egg de la Pantalla de Carga.
+- Keoiki - Animaciones de Note Splash y Alfabeto Latino.
+- SqirraRNG - Manejador de Crashes y Código Base para la Forma de Onda del Editor de Charts.
+- EliteMasterEric - Soporte de Shaders en Tiempo de Ejecución y Otros PRs.
+- MAJigsaw77 - Librería de Carga de Videos .MP4 (hxvlc).
+- iFlicky - Compositor de Psync, Tea Time y algunos efectos de sonido.
+- KadeDev - Corrigió algunos problemas en el Editor de Charts y Otros PRs.
+- superpowers04 - Fork de LUA JIT.
+- CheemsAndFriends - Creador de FlxAnimate.
+- Ezhalt - Jingle del Easter Egg de Pessy.
+- MaliciousBunny - Video para la Actualización Final.
+
+---
 
 # Compilar para Mobile:
+
 Necesitas tener:
 
 - Android Build Tools / Android Command Line Tools
@@ -123,11 +130,13 @@ Necesitas tener:
 - Variables para la gestión de ventanas y sistema en Lua: Se agregaron muchas variables, ya sea para ocultar la barra de tareas o los bordes de la ventana, etc.
 - Visor de Teclas
 - Soporte y configuración de Modcharts.
-![Modchart](img/modchart.gif)
+  ![Modchart](img/modchart.gif)
 - Nuevos Modificadores de Gameplay (Modo Oponente, Sin Penalización por Drop, Solo Perfecto).
 - Puedes elegir tu sistema de precisión predeterminado. ITG, Psych, DJMax, Wife3, osu!, Simple
+
 * Soporte para niveles de NotITG (sin modificadores) y Stepmania, incluye UI
-![Stepmania](img/Stepmania.png)
+  ![Stepmania](img/Stepmania.png)
+
 - Soporte para Android
 - Se agregaron los sprites de "miss" y "combo broken"
 - Se agregó la opción para que "bad" y "shit" rompan el combo
@@ -138,16 +147,20 @@ Necesitas tener:
 - Nuevo State de resultados y realmente genial.
 - Compatible con videos hxcodec de mods de Psych 0.6.3 y 0.7.3.
 - Barra de Salud Suave
+
 * +5 Idiomas disponibles
-![Languages](img/Languages.png)
+  ![Languages](img/Languages.png)
+
 - Nueva transición genial
 - Si estás en Modo Charting, el step, beat y section se mostrarán en el gameplay.
 - Rediseño del Contador de FPS
 - Trace en el Juego
 - Rediseño del OutdatedSubstate.hx
+
 * Rediseño del FreeplayState.hx
-![Freeplay](img/Freeplay.png)
-![Freeplay Diff](img/FreeplayDiff.png)
+  ![Freeplay](img/Freeplay.png)
+  ![Freeplay Diff](img/FreeplayDiff.png)
+
 - Se seguirán agregando más cosas en el futuro...
 
 # Características Principales
@@ -157,78 +170,101 @@ Necesitas tener:
 <img src="img/dialogue.gif" width="622" height="348"/>
 
 ## Nuevo Menú Principal
-* ¡Un menú completamente nuevo que hace tu experiencia aún mejor!
-![Main Menu](img/MainMenu.png)
+
+- ¡Un menú completamente nuevo que hace tu experiencia aún mejor!
+  ![Main Menu](img/MainMenu.png)
 
 ## Soporte de Mods
-* Probablemente uno de los puntos principales de este motor, ¡puedes codificar en archivos .lua fuera del código fuente, creando tus propias semanas sin siquiera tocar el código fuente!
-* Viene con un Menú de Organización/Deshabilitación de Mods.
-![Mod Support](img/ModsMenu.png)
 
+- Probablemente uno de los puntos principales de este motor, ¡puedes codificar en archivos .lua fuera del código fuente, creando tus propias semanas sin siquiera tocar el código fuente!
+- Viene con un Menú de Organización/Deshabilitación de Mods.
+  ![Mod Support](img/ModsMenu.png)
 
 ## Al menos un cambio en cada semana:
+
 ### Semana 1:
-  * Nuevo sprite de canto izquierdo de Dad
-  * Las luces del escenario no utilizadas ahora se usan
-  * Dad Battle tiene un efecto de foco para el breakdown
+
+- Nuevo sprite de canto izquierdo de Dad
+- Las luces del escenario no utilizadas ahora se usan
+- Dad Battle tiene un efecto de foco para el breakdown
+
 ### Semana 2:
-  * Tanto BF como Skid & Pump hacen animaciones de "Hey!"
-  * Los truenos hacen un destello de luz rápido y acercan ligeramente la cámara
-  * Se agregó una transición/escena rápida a Monster
+
+- Tanto BF como Skid & Pump hacen animaciones de "Hey!"
+- Los truenos hacen un destello de luz rápido y acercan ligeramente la cámara
+- Se agregó una transición/escena rápida a Monster
+
 ### Semana 3:
-  * BF hace "Hey!" durante Philly Nice
-  * Blammed tiene un nuevo destello de colores genial durante esa parte increíble de la canción
+
+- BF hace "Hey!" durante Philly Nice
+- Blammed tiene un nuevo destello de colores genial durante esa parte increíble de la canción
+
 ### Semana 4:
-  * Mejor física de cabello para Mom/Boyfriend (¿Quizás incluso ligeramente mejor que la de la Semana 7? :eyes:)
-  * Los secuaces mueren durante todas las canciones. Sí :(
+
+- Mejor física de cabello para Mom/Boyfriend (¿Quizás incluso ligeramente mejor que la de la Semana 7? :eyes:)
+- Los secuaces mueren durante todas las canciones. Sí :(
+
 ### Semana 5:
-  * Bottom Boppers y GF hacen animaciones de "Hey!" durante Cocoa y Eggnog
-  * En Winter Horrorland, GF mueve su cabeza más lento en algunas partes de la canción.
+
+- Bottom Boppers y GF hacen animaciones de "Hey!" durante Cocoa y Eggnog
+- En Winter Horrorland, GF mueve su cabeza más lento en algunas partes de la canción.
+
 ### Semana 6:
-  * En Thorns, el HUD está oculto durante la escena
-  * También están las chicas de fondo siendo espeluznantes durante las partes de "Hey!" del Instrumental
+
+- En Thorns, el HUD está oculto durante la escena
+- También están las chicas de fondo siendo espeluznantes durante las partes de "Hey!" del Instrumental
 
 ## Cambios geniales en el Editor de Charts y correcciones de innumerables errores
+
 ![Chart Editor](img/chart.png)
-* Ahora puedes crear notas de "Evento", que son marcadores que activan acciones específicas que generalmente estaban hardcodeadas en la versión vanilla del juego.
-* El BPM de tu canción ahora puede tener valores decimales
-* Puedes ajustar manualmente el tiempo de strum de una Nota si realmente buscas precisión de milisegundos
-* Puedes cambiar el tipo de una nota en el Editor, viene con cinco tipos de ejemplo:
-  * Alt Animation: Fuerza una animación alternativa para reproducirse, útil para canciones como Ugh/Stress
-  * Hey: Fuerza una animación de "Hey" en lugar de la animación de Canto base, si Boyfriend golpea esta nota, Girlfriend también hará un "Hey!".
-  * Hurt Notes: Si Boyfriend golpea esta nota, reproduce una animación de fallo y pierde algo de salud.
-  * GF Sing: En lugar de que el personaje golpee la nota y cante, Girlfriend canta en su lugar.
-  * No Animation: El personaje solo golpea la nota, no se reproduce ninguna animación.
+
+- Ahora puedes crear notas de "Evento", que son marcadores que activan acciones específicas que generalmente estaban hardcodeadas en la versión vanilla del juego.
+- El BPM de tu canción ahora puede tener valores decimales
+- Puedes ajustar manualmente el tiempo de strum de una Nota si realmente buscas precisión de milisegundos
+- Puedes cambiar el tipo de una nota en el Editor, viene con cinco tipos de ejemplo:
+  - Alt Animation: Fuerza una animación alternativa para reproducirse, útil para canciones como Ugh/Stress
+  - Hey: Fuerza una animación de "Hey" en lugar de la animación de Canto base, si Boyfriend golpea esta nota, Girlfriend también hará un "Hey!".
+  - Hurt Notes: Si Boyfriend golpea esta nota, reproduce una animación de fallo y pierde algo de salud.
+  - GF Sing: En lugar de que el personaje golpee la nota y cante, Girlfriend canta en su lugar.
+  - No Animation: El personaje solo golpea la nota, no se reproduce ninguna animación.
 
 ## Múltiples editores para ayudarte a hacer tu propio Mod
+
 ![Master Editor Menu](img/editors.png)
-* ¡Funciona tanto para modding del código fuente como para builds descargadas!
+
+- ¡Funciona tanto para modding del código fuente como para builds descargadas!
 
 ## Rediseño del menú de modo historia:
+
 ![Story Mode Menu](img/storymode.png)
-* Se agregó un BG diferente para cada canción (excepto Tutorial)
-* Todos los personajes del menú ahora están en spritesheets individuales, hace que el modding sea más fácil.
+
+- Se agregó un BG diferente para cada canción (excepto Tutorial)
+- Todos los personajes del menú ahora están en spritesheets individuales, hace que el modding sea más fácil.
 
 ## Menú de créditos
+
 ![Credits Menu](img/credits.png)
-* Puedes agregar un ícono de cabeza, nombre, descripción y un enlace de Redirección para cuando el jugador presione Enter mientras el elemento está seleccionado actualmente.
+
+- Puedes agregar un ícono de cabeza, nombre, descripción y un enlace de Redirección para cuando el jugador presione Enter mientras el elemento está seleccionado actualmente.
 
 ## Premios/Logros
-* El motor viene con 16 logros de ejemplo con los que puedes experimentar y aprender cómo funciona (Revisa Achievements.hx y busca "checkForAchievement" en PlayState.hx)
-![Achievements](img/Achievements.png)
+
+- El motor viene con 16 logros de ejemplo con los que puedes experimentar y aprender cómo funciona (Revisa Achievements.hx y busca "checkForAchievement" en PlayState.hx)
+  ![Achievements](img/Achievements.png)
 
 ## Menú de opciones:
-* Puedes cambiar los colores de las Notas, Delay y Offset de Combo, Controles y Preferencias allí.
- * En Preferencias puedes alternar Downscroll, Middlescroll, Anti-Aliasing, Framerate, Baja Calidad, Note Splashes, Luces Intermitentes, etc.
-![Options](img/Options.png)
+
+- Puedes cambiar los colores de las Notas, Delay y Offset de Combo, Controles y Preferencias allí.
+- En Preferencias puedes alternar Downscroll, Middlescroll, Anti-Aliasing, Framerate, Baja Calidad, Note Splashes, Luces Intermitentes, etc.
+  ![Options](img/Options.png)
 
 ## Otras características de gameplay:
-* Cuando el enemigo golpea una nota, su nota de strum también brilla.
-* El lag ya no impacta el movimiento de la cámara y el escalado del ícono del jugador.
-* Se han incluido algunas cosas basadas en los cambios de la Semana 7 (Colores de fondo en Freeplay, Note splashes)
-* Puedes restablecer tu Puntaje en Freeplay/Modo Historia presionando el botón Reset.
-* Puedes escuchar una canción o ajustar la Velocidad de Scroll/Daño recibido/etc. en Freeplay presionando Espacio.
-* Puedes habilitar "Combo Stacking" en Opciones de Gameplay. Esto hace que los sprites de combo sean solo un sprite con una animación en lugar de sprites que aparecen en cada golpe de nota.
 
+- Cuando el enemigo golpea una nota, su nota de strum también brilla.
+- El lag ya no impacta el movimiento de la cámara y el escalado del ícono del jugador.
+- Se han incluido algunas cosas basadas en los cambios de la Semana 7 (Colores de fondo en Freeplay, Note splashes)
+- Puedes restablecer tu Puntaje en Freeplay/Modo Historia presionando el botón Reset.
+- Puedes escuchar una canción o ajustar la Velocidad de Scroll/Daño recibido/etc. en Freeplay presionando Espacio.
+- Puedes habilitar "Combo Stacking" en Opciones de Gameplay. Esto hace que los sprites de combo sean solo un sprite con una animación en lugar de sprites que aparecen en cada golpe de nota.
 
 #### Psych Engine por ShadowMario, Friday Night Funkin' por ninjamuffin99

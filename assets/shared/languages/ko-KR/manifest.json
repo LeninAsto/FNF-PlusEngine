@@ -3,9 +3,7 @@
   "code": "ko-KR",
   "name": "한국어",
   "version": 1,
-  "fallback": [
-    "en-US"
-  ],
+  "fallback": ["en-US"],
   "bundles": [
     "global.json",
     "assets.json",

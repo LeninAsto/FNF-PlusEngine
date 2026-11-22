@@ -1,12 +1,8 @@
 {
-	
-	"image": "Menu_BF",
-	"position": [
-		15,
-		-40
-	],
-	"scale": 1,
-	"idle_anim": "M BF Idle",
-	"confirm_anim": "M bf HEY",
-	"antialiasing": true
+  "image": "Menu_BF",
+  "position": [15, -40],
+  "scale": 1,
+  "idle_anim": "M BF Idle",
+  "confirm_anim": "M bf HEY",
+  "antialiasing": true
 }
