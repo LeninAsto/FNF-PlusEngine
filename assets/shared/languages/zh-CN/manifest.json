@@ -3,9 +3,7 @@
   "code": "zh-CN",
   "name": "简体中文",
   "version": 1,
-  "fallback": [
-    "en-US"
-  ],
+  "fallback": ["en-US"],
   "bundles": [
     "global.json",
     "assets.json",

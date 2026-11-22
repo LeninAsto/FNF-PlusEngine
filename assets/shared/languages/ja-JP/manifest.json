@@ -3,9 +3,7 @@
   "code": "ja-JP",
   "name": "日本語",
   "version": 1,
-  "fallback": [
-    "en-US"
-  ],
+  "fallback": ["en-US"],
   "bundles": [
     "global.json",
     "assets.json",

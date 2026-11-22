@@ -59,6 +59,7 @@ if (video.load('videos/cutscene.mp4'))
 ### Legacy (Modern hxCodec)
 
 #### FlxVideo
+
 Direct video playback using OpenFL display.
 
 ```haxe
@@ -79,6 +80,7 @@ video.dispose();
 ```
 
 #### FlxVideoSprite
+
 Video playback as a FlxSprite.
 
 ```haxe
@@ -96,6 +98,7 @@ sprite.bitmap.isPlaying; // Bool
 ### v2 (hxCodec 2.x)
 
 #### VideoHandler
+
 VLCBitmap-based video handler.
 
 ```haxe
@@ -124,6 +127,7 @@ handler.dispose();
 ```
 
 #### VideoSprite
+
 Sprite wrapper for VideoHandler.
 
 ```haxe
@@ -148,6 +152,7 @@ sprite.bitmap.resume();
 ### v3 (hxCodec 3.x - Oldest)
 
 #### MP4Handler
+
 Original VLC-based video handler.
 
 ```haxe
@@ -167,6 +172,7 @@ mp4.dispose();
 ```
 
 #### MP4Sprite
+
 Sprite wrapper for MP4Handler.
 
 ```haxe
@@ -185,16 +191,16 @@ sprite.resume();
 
 ## 🔄 Version Comparison
 
-| Feature | Legacy (FlxVideo) | v2 (VideoHandler) | v3 (MP4Handler) |
-|---------|-------------------|-------------------|-----------------|
-| **Base Class** | hxvlc.openfl.Video | hxvlc.openfl.Video | hxvlc.openfl.Video |
-| **Skip Support** | ❌ No | ✅ Yes (keyboard) | ✅ Yes (SPACE/ENTER) |
-| **Auto Resize** | ✅ Yes | ✅ Yes | ⚠️ Manual | 
-| **Loop Method** | Boolean | Boolean | Int (-1=infinite) |
-| **Events** | onOpening, onEndReached, onFormatSetup | Callbacks | Callbacks |
-| **Return Type** | `play():Bool` | `playVideo():Void` | `playVideo():Void` |
-| **Volume Range** | 0-100 | 0-100 | 0-100 |
-| **Canvas Size** | Auto | calcSize() | Constructor params |
+| Feature          | Legacy (FlxVideo)                      | v2 (VideoHandler)  | v3 (MP4Handler)      |
+| ---------------- | -------------------------------------- | ------------------ | -------------------- |
+| **Base Class**   | hxvlc.openfl.Video                     | hxvlc.openfl.Video | hxvlc.openfl.Video   |
+| **Skip Support** | ❌ No                                  | ✅ Yes (keyboard)  | ✅ Yes (SPACE/ENTER) |
+| **Auto Resize**  | ✅ Yes                                 | ✅ Yes             | ⚠️ Manual            |
+| **Loop Method**  | Boolean                                | Boolean            | Int (-1=infinite)    |
+| **Events**       | onOpening, onEndReached, onFormatSetup | Callbacks          | Callbacks            |
+| **Return Type**  | `play():Bool`                          | `playVideo():Void` | `playVideo():Void`   |
+| **Volume Range** | 0-100                                  | 0-100              | 0-100                |
+| **Canvas Size**  | Auto                                   | calcSize()         | Constructor params   |
 
 ## 🚀 Usage Examples
 
@@ -204,11 +210,11 @@ sprite.resume();
 function onCreate() {
     var cutscene = new FlxVideoSprite(0, 0);
     cutscene.play('videos/intro.mp4', false);
-    
+
     cutscene.bitmap.onEndReached.add(function() {
         startCountdown();
     });
-    
+
     add(cutscene);
 }
 ```
@@ -220,11 +226,11 @@ function onCreate() {
     var bg = new VideoSprite(0, 0);
     bg.canvasWidth = 1280;
     bg.canvasHeight = 720;
-    
+
     bg.finishCallback = function() {
         remove(bg);
     };
-    
+
     bg.playVideo('videos/background.mp4', true, false);
     insert(0, bg); // Behind everything
 }
@@ -237,11 +243,11 @@ function onCreate() {
     var handler = new VideoHandler();
     handler.canSkip = true;
     handler.skipKeys = [FlxKey.SPACE, FlxKey.ENTER];
-    
+
     handler.finishCallback = function() {
         startCountdown();
     };
-    
+
     handler.playVideo('videos/intro.mp4', false, true);
 }
 ```
@@ -254,7 +260,7 @@ function onCreate() {
     mp4.readyCallback = function() {
         debugPrint('Video ready!');
     };
-    
+
     mp4.playVideo('videos/loop.mp4', true, false);
     add(mp4);
 }
@@ -281,19 +287,24 @@ set('MP4Sprite', objects.wrappers.v3.MP4Sprite);
 ## ⚠️ Important Notes
 
 ### Skip Functionality
+
 - **Legacy (FlxVideo/FlxVideoSprite)**: Skip disabled by default
 - **v2 (VideoHandler)**: Fully configurable with `canSkip` and `skipKeys`
 - **v3 (MP4Handler)**: Hardcoded to SPACE/ENTER
 
 ### Volume Handling
+
 All wrappers sync with FlxG.sound.volume automatically:
+
 ```haxe
 // Internal volume calculation
 volume = Std.int(FlxG.sound.volume * 100);
 ```
 
 ### Memory Management
+
 Always call `dispose()` or let `finishCallback` handle cleanup:
+
 ```haxe
 handler.finishCallback = function() {
     handler.dispose();
@@ -302,7 +313,9 @@ handler.finishCallback = function() {
 ```
 
 ### Path Resolution
+
 All wrappers automatically check `Sys.getCwd() + path`:
+
 ```haxe
 // These are equivalent:
 video.play('videos/test.mp4');
@@ -312,20 +325,24 @@ video.play(Sys.getCwd() + 'videos/test.mp4');
 ## 🐛 Troubleshooting
 
 ### Video doesn't play
+
 1. Check file exists: `FileSystem.exists(path)`
 2. Verify hxvlc is installed: `#if hxvlc`
 3. Check console for error messages
 
 ### Video plays but no sound
+
 1. Check `FlxG.sound.muted` is false
 2. Verify `canUseSound = true` (v2)
 3. Check FlxG.sound.volume > 0
 
 ### Video loops incorrectly
+
 - **Legacy/v2**: Use boolean `loop` parameter
 - **v3**: Set `mp4.repeat = -1` for infinite loop
 
 ### Skip doesn't work
+
 - **Legacy**: Skip is disabled by design
 - **v2**: Check `canSkip = true` and `skipKeys` array
 - **v3**: Only SPACE/ENTER supported

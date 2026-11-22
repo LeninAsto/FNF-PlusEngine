@@ -9,9 +9,11 @@ These wrappers allow **Psych Engine 0.7.3** mods that used hxCodec to work seaml
 ## Available Classes
 
 ### FlxVideo
+
 Emulates `hxcodec.flixel.FlxVideo` - Direct video playback using FlxG display.
 
 **Usage (legacy mods):**
+
 ```haxe
 var video = new FlxVideo();
 video.play('videos/myVideo.mp4', false); // path, shouldLoop
@@ -19,9 +21,11 @@ video.autoResize = true;
 ```
 
 ### FlxVideoSprite
+
 Emulates `hxcodec.flixel.FlxVideoSprite` - Video playback as a FlxSprite.
 
 **Usage (legacy mods):**
+
 ```haxe
 var videoSprite = new FlxVideoSprite(0, 0);
 videoSprite.play('videos/myVideo.mp4', false);
@@ -29,35 +33,42 @@ add(videoSprite);
 ```
 
 ### Video
+
 Internal wrapper for `hxvlc.openfl.Video` with hxCodec-compatible API.
 
 ## Key Differences from hxCodec
 
 ### Method Signatures
+
 - **hxCodec**: `play(path:String, shouldLoop:Bool):Int`
 - **Wrapper**: `play(location:String, shouldLoop:Bool):Bool`
 
 The wrapper returns `Bool` to indicate success/failure, matching modern expectations.
 
 ### Events
+
 - **hxCodec**: `onOpening`, `onTextureSetup`, `onEndReached`
 - **hxvlc 2.2.5**: `onOpening`, `onFormatSetup`, `onEndReached`
 
 The wrapper handles `onFormatSetup` (hxvlc) internally, which is equivalent to `onTextureSetup` (hxCodec).
 
 ### Volume
-- **hxCodec**: `volume:Int` (0-100) 
+
+- **hxCodec**: `volume:Int` (0-100)
 - **hxvlc**: `volume:Int` (0-100)
 
 Both use the same scale, no conversion needed.
 
 ### Playback Flow
+
 **hxCodec:**
+
 ```haxe
 video.play('path.mp4'); // Loads and plays immediately
 ```
 
 **hxvlc (internal):**
+
 ```haxe
 video.load('path.mp4'); // Loads media
 video.resume();         // Starts playback
@@ -93,14 +104,17 @@ if (video.load('videos/myVideo.mp4'))
 ## Implementation Notes
 
 ### Thread Safety
+
 - Uses `location` property to track current video path for loop functionality
 - Properly cleans up event listeners on dispose
 
 ### Auto-pause Support
+
 - Respects `FlxG.autoPause` setting
 - Automatically pauses/resumes on focus lost/gained
 
 ### Loop Implementation
+
 ```haxe
 if (shouldLoop) {
     bitmap.onEndReached.add(function() {

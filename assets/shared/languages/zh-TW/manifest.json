@@ -3,9 +3,7 @@
   "code": "zh-TW",
   "name": "繁體中文",
   "version": 1,
-  "fallback": [
-    "en-US"
-  ],
+  "fallback": ["en-US"],
   "bundles": [
     "global.json",
     "assets.json",

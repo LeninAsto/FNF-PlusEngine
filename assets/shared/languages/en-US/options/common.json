@@ -58,21 +58,42 @@
     }
   },
   "menus": {
-    "modchart": {"title": "Modchart Settings", "presence": "Modchart Options Menu"},
-    "legacy": {"title": "Legacy Settings", "presence": "Legacy Settings Menu"},
-    "mod_security": {"title": "Mod Security Checks", "presence": "Mod Security Checks"},
-    "gameplay": {"title": "Gameplay Settings", "presence": "Gameplay Settings Menu"},
-    "graphics": {"title": "Graphics Settings", "presence": "Graphics Settings Menu"},
-    "visuals": {"title": "Visuals Settings", "presence": "Visuals Settings Menu"},
-    "language": {"title": "Language", "presence": "Language Menu"},
-    "controls": {"presence": "Controls Menu"},
-    "note_colors": {"presence": "Note Colors Menu"},
+    "modchart": {
+      "title": "Modchart Settings",
+      "presence": "Modchart Options Menu"
+    },
+    "legacy": {
+      "title": "Legacy Settings",
+      "presence": "Legacy Settings Menu"
+    },
+    "mod_security": {
+      "title": "Mod Security Checks",
+      "presence": "Mod Security Checks"
+    },
+    "gameplay": {
+      "title": "Gameplay Settings",
+      "presence": "Gameplay Settings Menu"
+    },
+    "graphics": {
+      "title": "Graphics Settings",
+      "presence": "Graphics Settings Menu"
+    },
+    "visuals": {
+      "title": "Visuals Settings",
+      "presence": "Visuals Settings Menu"
+    },
+    "language": { "title": "Language", "presence": "Language Menu" },
+    "controls": { "presence": "Controls Menu" },
+    "note_colors": { "presence": "Note Colors Menu" },
     "classic_note_colors": {
       "presence": "Classic Note Colors Menu",
       "channels": "Hue        Saturation   Brightness"
     },
-    "offset": {"presence": "Delay/Combo Offset Menu"},
-    "mobile": {"title": "Mobile Settings", "presence": "Mobile Settings Menu"},
-    "mod_settings": {"presence": "Mod Settings ({1})"}
+    "offset": { "presence": "Delay/Combo Offset Menu" },
+    "mobile": {
+      "title": "Mobile Settings",
+      "presence": "Mobile Settings Menu"
+    },
+    "mod_settings": { "presence": "Mod Settings ({1})" }
   }
 }
