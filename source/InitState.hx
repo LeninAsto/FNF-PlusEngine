@@ -79,6 +79,10 @@ class InitialState extends MusicBeatState
 		NativeBackend.init();
 
 		ClientPrefs.loadPrefs();
+		#if mobile
+		mobile.backend.MobileScaleMode.refreshAfterFocus();
+		Main.positionDebugOverlays();
+		#end
 		backend.WindowMode.applyRenderResolution();
 		Highscore.load();
 		Language.reloadPhrases();
