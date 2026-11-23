@@ -277,6 +277,32 @@ class WindowMode
 		#end
 	}
 
+	public static function applyRenderResolution():Void
+	{
+		#if windows
+		var value = ClientPrefs.data.windowResolution;
+		var width = 0;
+		var height = 0;
+		if (value != null && value != 'Default')
+		{
+			var parts = value.split('x');
+			if (parts.length == 2)
+			{
+				var parsedWidth = Std.parseInt(parts[0]);
+				var parsedHeight = Std.parseInt(parts[1]);
+				if (parsedWidth != null && parsedHeight != null && parsedWidth >= 320 && parsedHeight >= 180
+					&& parsedWidth <= 7680 && parsedHeight <= 4320)
+				{
+					width = parsedWidth;
+					height = parsedHeight;
+				}
+			}
+		}
+		if (Lib.current != null && Lib.current.stage != null)
+			Lib.current.stage.setRenderResolution(width, height);
+		#end
+	}
+
 	public static function updateWindowedSize(width:Int, height:Int):Void
 	{
 		if (hasWindowedState)

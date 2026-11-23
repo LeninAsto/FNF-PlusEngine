@@ -317,6 +317,7 @@ class StickerSprite extends FlxSprite
 	{
 		super(x, y);
 		loadGraphic(Paths.image(filePath));
+		antialiasing = backend.ClientPrefs.data.antialiasing;
 		updateHitbox();
 		scrollFactor.set();
 	}

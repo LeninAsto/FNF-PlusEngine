@@ -1443,6 +1443,7 @@ class FunkinLua
 				leSprite.loadGraphic(Paths.image(image));
 			}
 			MusicBeatState.getVariables().set(tag, leSprite);
+			LuaUtils.registerLegacyLuaSprite(tag, leSprite);
 			leSprite.active = true;
 		});
 		Lua_helper.add_callback(lua, "makeAnimatedLuaSprite",
@@ -1457,6 +1458,7 @@ class FunkinLua
 					LuaUtils.loadFrames(leSprite, image, spriteType);
 				}
 				MusicBeatState.getVariables().set(tag, leSprite);
+				LuaUtils.registerLegacyLuaSprite(tag, leSprite);
 			});
 
 		Lua_helper.add_callback(lua, "makeGraphic", function(obj:String, width:Int = 256, height:Int = 256, color:String = 'FFFFFF')
@@ -1667,6 +1669,7 @@ class FunkinLua
 			groupObj.remove(obj, true);
 			if (destroy)
 			{
+				LuaUtils.unregisterLegacyLuaObject(tag, obj);
 				MusicBeatState.getVariables().remove(tag);
 				obj.destroy();
 			}

@@ -177,7 +177,17 @@ class SustainSplash extends FlxSprite
 			offset.set(origin.x + (baseOffsetX - origin.x) * lineScaleX,
 				origin.y + (baseOffsetY - origin.y) * lineScaleY);
 		}
-		angle = strumNote.angle;
+		angle = strumNote.direction - 90 + (strumNote.downScroll ? 180 : 0);
+		if (angle != 0)
+		{
+			final radians = angle * Math.PI / 180;
+			final cos = Math.cos(radians);
+			final sin = Math.sin(radians);
+			final dx = strumNote.width * 0.5 - (origin.x - offset.x);
+			final dy = strumNote.height * 0.5 - (origin.y - offset.y);
+			x += dx - (cos * dx - sin * dy);
+			y += dy - (sin * dx + cos * dy);
+		}
 		scrollFactor.set(strumNote.scrollFactor.x, strumNote.scrollFactor.y);
 	}
 

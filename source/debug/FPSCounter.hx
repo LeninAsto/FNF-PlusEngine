@@ -227,8 +227,8 @@ class FPSCounter extends Sprite
 		// Format displayed memory (smoothed values)
 		var currentMemoryStr = flixel.util.FlxStringUtil.formatBytes(displayedMemory);
 		var peakMemoryStr = flixel.util.FlxStringUtil.formatBytes(displayedMemoryPeak);
-		var processMemoryStr = backend.MemoryUtil.supportsTaskMem() ? flixel.util.FlxStringUtil.formatBytes(taskMemory) : 'N/A';
-		realtimeMemoryLabel = currentMemoryStr + ' / ' + peakMemoryStr + ' - RAM: ' + processMemoryStr;
+		var processMemoryStr = debugLevel >= 3 && backend.MemoryUtil.supportsTaskMem() ? flixel.util.FlxStringUtil.formatBytes(taskMemory) : 'N/A';
+		realtimeMemoryLabel = currentMemoryStr + ' / ' + peakMemoryStr;
 
 		// White or red color based on FPS
 		var targetFPS = ClientPrefs.data.framerate;
@@ -372,8 +372,8 @@ class FPSCounter extends Sprite
 		lastRealtimeAverage = average;
 		lastRealtimeLevel = debugLevel;
 		lastRealtimeMemory = realtimeMemoryLabel;
-		setBox(0, currentFPS + ' FPS - Delay: ' + (delay / 10) + ' / ' + (average / 10)
-			+ ' ms - GC: ' + realtimeMemoryLabel, debugLevel >= 2);
+		setBox(0, currentFPS + ' FPS - GC: ' + realtimeMemoryLabel + ' - Delay: ' + (delay / 10) + ' / ' + (average / 10)
+			+ ' ms', debugLevel >= 2);
 	}
 
 	// Handle the FPS counter shortcut.

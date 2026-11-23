@@ -1038,7 +1038,7 @@ class FreeplayStatePlus extends MusicBeatState
 
 	static function getFreeplayMenuMusicSound():openfl.media.Sound
 	{
-		var sound:openfl.media.Sound = Paths.music('freakyMenu');
+		var sound:openfl.media.Sound = Paths.music(Mods.getMenuMusic(Mods.currentModDirectory));
 		if (sound != null)
 			freeplayMenuMusicSound = sound;
 		return freeplayMenuMusicSound;
@@ -1406,6 +1406,7 @@ class FreeplayStatePlus extends MusicBeatState
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				stopInstPreview(false);
 				destroyFreeplayVocals();
+				Mods.loadTopMod();
 				var menuAlreadyPlaying:Bool = isFreeplayMenuMusicPlaying();
 				if (!menuAlreadyPlaying && FlxG.sound.music != null)
 				{
@@ -3286,8 +3287,13 @@ class FreeplayStatePlus extends MusicBeatState
 		}
 	}
 
-	var _drawDistance:Int = 3;
 	var _lastVisibles:Array<Int> = [];
+	var _lastListSelection:Int = -1;
+	var _lastListPosition:Float = Math.NaN;
+	var _lastListOffset:Float = Math.NaN;
+	var _lastListHeight:Int = -1;
+	var _lastListQuery:String = null;
+	var _lastListDifficulty:Bool = false;
 
 	public function updateTexts(elapsed:Float = 0.0)
 	{
@@ -3299,7 +3305,22 @@ class FreeplayStatePlus extends MusicBeatState
 		}
 
 		lerpSelected = FlxMath.lerp(curSelected, lerpSelected, Math.exp(-elapsed * 9.6));
+		if (Math.abs(lerpSelected - curSelected) < 0.001)
+			lerpSelected = curSelected;
 		var query:String = StringTools.trim(songSearchQuery != null ? songSearchQuery.toLowerCase() : "");
+		if (_lastListSelection == curSelected && _lastListPosition == lerpSelected && _lastListOffset == songsOffsetX
+			&& _lastListHeight == FlxG.height && _lastListQuery == query && _lastListDifficulty == inDifficultySelect
+			&& _cardVisualSignatures.length > 0)
+		{
+			updateDifficultyVisuals(elapsed);
+			return;
+		}
+		_lastListSelection = curSelected;
+		_lastListPosition = lerpSelected;
+		_lastListOffset = songsOffsetX;
+		_lastListHeight = FlxG.height;
+		_lastListQuery = query;
+		_lastListDifficulty = inDifficultySelect;
 		for (i in _lastVisibles)
 		{
 			if (i >= 0 && i < songTextArray.length && songTextArray[i] != null)
@@ -3315,8 +3336,8 @@ class FreeplayStatePlus extends MusicBeatState
 		}
 		_lastVisibles = [];
 
-		var min:Int = Math.round(Math.max(0, Math.min(songs.length, lerpSelected - _drawDistance)));
-		var max:Int = Math.round(Math.max(0, Math.min(songs.length, lerpSelected + _drawDistance)));
+		var min:Int = Std.int(Math.max(0, Math.floor(lerpSelected + (-110 - 310) / 120)));
+		var max:Int = Std.int(Math.min(songs.length, Math.ceil(lerpSelected + (FlxG.height - 310) / 120)));
 		for (i in min...max)
 		{
 			if (i < 0 || i >= songs.length || songs[i] == null)
@@ -3386,7 +3407,8 @@ class FreeplayStatePlus extends MusicBeatState
 				accentBar.alpha = isSelected ? 1.0 : rowAlpha * 0.72;
 			}
 
-			icon.scale.set(0.8 * cardScale, 0.8 * cardScale);
+			var iconScale:Float = (icon.isAnimated ? icon.baseScale : 1) * 0.8 * cardScale;
+			icon.scale.set(iconScale, iconScale);
 			icon.x = card.x + 340;
 			icon.y = card.y + (card.height - icon.height) * 0.5;
 			item.x = card.x + 48 * cardScale;
@@ -3411,6 +3433,11 @@ class FreeplayStatePlus extends MusicBeatState
 			_lastVisibles.push(i);
 		}
 
+		updateDifficultyVisuals(elapsed);
+	}
+
+	function updateDifficultyVisuals(elapsed:Float):Void
+	{
 		if (inDifficultySelect || difficultySelector.enterProgress > 0)
 		{
 			difficultySelector.setVisible(true);

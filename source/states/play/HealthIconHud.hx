@@ -90,7 +90,8 @@ class HealthIconHud
 			return;
 
 		final t:Float = nf ? FlxMath.bound((1 - (elapsed * 9 * rate)) / 1.1, 0, 1) : Math.exp(-elapsed * 9 * rate);
-		final value:Float = FlxMath.lerp(1, icon.scale.x, t);
+		final base:Float = icon.isAnimated ? icon.baseScale : 1;
+		final value:Float = FlxMath.lerp(base, icon.scale.x, t);
 		icon.scale.set(value, value);
 	}
 

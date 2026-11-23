@@ -13,6 +13,7 @@ class HealthIcon extends FlxSprite
 
 	private var isPlayer:Bool = false;
 	private var char:String = '';
+	private var requestedAnimated:Bool = false;
 
 	public var isAnimated:Bool = false;
 	public var animFPS:Int = 24;
@@ -40,12 +41,14 @@ class HealthIcon extends FlxSprite
 
 	public function changeIcon(char:String, ?allowGPU:Bool = true, ?forceAnimated:Bool = false, ?animFPS:Int = 24)
 	{
-		if (this.char != char || this.animFPS != animFPS)
+		if (this.char != char || this.animFPS != animFPS || this.requestedAnimated != forceAnimated)
 		{
-			this.animFPS = animFPS;
+			this.animFPS = animFPS > 0 ? animFPS : 24;
+			this.requestedAnimated = forceAnimated;
 			try
 			{
 				var requestedChar:String = char;
+				var wasAnimated:Bool = isAnimated;
 
 				var name:String = 'icons/' + char;
 				var currentModForTrace:String = '';
@@ -66,7 +69,9 @@ class HealthIcon extends FlxSprite
 				}
 
 				var xmlPath:String = name + '.xml';
-				isAnimated = forceAnimated || Paths.fileExists('images/' + xmlPath, TEXT);
+				isAnimated = forceAnimated && Paths.fileExists('images/' + xmlPath, TEXT);
+				if (forceAnimated && !isAnimated)
+					trace('Animated icon XML not found: images/$xmlPath');
 				iconTrace('  selected "$name" animated=$isAnimated');
 
 				if (isAnimated)
@@ -74,7 +79,7 @@ class HealthIcon extends FlxSprite
 					var atlas:FlxAtlasFrames = null;
 					try
 					{
-						atlas = Paths.getSparrowAtlas(name.substring(6));
+						atlas = Paths.getSparrowAtlas(name, null, allowGPU);
 					}
 					catch (e:Dynamic)
 					{
@@ -84,45 +89,26 @@ class HealthIcon extends FlxSprite
 
 					if (atlas != null && atlas.frames != null && atlas.frames.length > 0)
 					{
-						frames = atlas;
-						var hasNormalAnim:Bool = false;
-						var hasLosingAnim:Bool = false;
-						var hasWinningAnim:Bool = false;
-
-						for (frame in frames.frames)
+						var normalPrefix:String = null;
+						var losingPrefix:String = null;
+						var winningPrefix:String = null;
+						for (frame in atlas.frames)
 						{
-							if (frame.name.startsWith('normal'))
-								hasNormalAnim = true;
-							if (frame.name.startsWith('losing'))
-								hasLosingAnim = true;
-							if (frame.name.startsWith('winning'))
-								hasWinningAnim = true;
-							if (hasNormalAnim && hasLosingAnim && hasWinningAnim)
-								break;
+							if (frame.name == null) continue;
+							var lower = frame.name.toLowerCase();
+							if (normalPrefix == null && (lower.startsWith('normal') || lower.startsWith('neutral')))
+								normalPrefix = frame.name.substr(0, lower.startsWith('neutral') ? 7 : 6);
+							if (losingPrefix == null && (lower.startsWith('losing') || lower.startsWith('defeat')))
+								losingPrefix = frame.name.substr(0, 6);
+							if (winningPrefix == null && lower.startsWith('winning'))
+								winningPrefix = frame.name.substr(0, 7);
 						}
-
-						if (hasNormalAnim)
-						{
-							animation.addByPrefix('normal', 'normal', animFPS, true, isPlayer);
-							if (hasLosingAnim)
-							{
-								animation.addByPrefix('losing', 'losing', animFPS, true, isPlayer);
-							}
-							if (hasWinningAnim)
-							{
-								animation.addByPrefix('winning', 'winning', animFPS, true, isPlayer);
-							}
-
-							animation.play('normal');
-
-							recalculateOffsetsForAnim('normal');
-						}
-						else
-						{
-							animation.addByPrefix(char, '', animFPS, true, isPlayer);
-							animation.play(char);
-							recalculateOffsetsForAnim(char);
-						}
+						frames = normalizeStripAtlas(atlas, normalPrefix != null && losingPrefix != null);
+						animation.addByPrefix('normal', normalPrefix != null ? normalPrefix : '', this.animFPS, true, isPlayer);
+						if (losingPrefix != null) animation.addByPrefix('losing', losingPrefix, this.animFPS, true, isPlayer);
+						if (winningPrefix != null) animation.addByPrefix('winning', winningPrefix, this.animFPS, true, isPlayer);
+						animation.play('normal', true);
+						recalculateOffsetsForAnim('normal');
 					}
 					else
 					{
@@ -135,9 +121,16 @@ class HealthIcon extends FlxSprite
 					loadStaticIcon(name, allowGPU);
 				}
 
+				if (wasAnimated && !isAnimated)
+					scale.set(1, 1);
 				updateHitbox();
 				this.char = char;
 				computeBaseScale();
+				if (isAnimated)
+				{
+					scale.set(baseScale, baseScale);
+					updateHitbox();
+				}
 				iconTrace('loaded "$requestedChar" as "$name" size=${width}x${height}');
 
 				if (char.endsWith('-pixel'))
@@ -172,6 +165,42 @@ class HealthIcon extends FlxSprite
 	{
 		if (verboseIconLoading)
 			trace('[HealthIcon] ' + message);
+	}
+
+	private static function normalizeStripAtlas(atlas:FlxAtlasFrames, hasStates:Bool):FlxAtlasFrames
+	{
+		if (!hasStates || atlas.frames.length == 0)
+			return atlas;
+		var first = atlas.frames[0];
+		var cell = first.sourceSize.y;
+		if (cell <= 0 || Math.abs(first.sourceSize.x - cell * 3) > 0.01)
+			return atlas;
+		for (frame in atlas.frames)
+		{
+			var slot = iconStripSlot(frame.name);
+			var localX = frame.offset.x - slot * cell;
+			if (slot < 0 || frame.sourceSize.x != cell * 3 || frame.sourceSize.y != cell
+				|| localX < -cell * 0.1 || localX + frame.frame.width > cell * 1.1)
+				return atlas;
+		}
+		var normalized = new FlxAtlasFrames(atlas.parent);
+		for (frame in atlas.frames)
+		{
+			var localX = frame.offset.x - iconStripSlot(frame.name) * cell;
+			normalized.addAtlasFrame(flixel.math.FlxRect.get(frame.frame.x, frame.frame.y, frame.frame.width, frame.frame.height), flixel.math.FlxPoint.get(cell, cell),
+				flixel.math.FlxPoint.get(localX, frame.offset.y), frame.name, frame.angle, frame.flipX, frame.flipY, frame.duration);
+		}
+		return normalized;
+	}
+
+	private static function iconStripSlot(name:String):Int
+	{
+		if (name == null) return -1;
+		var lower = name.toLowerCase();
+		if (lower.startsWith('normal') || lower.startsWith('neutral')) return 0;
+		if (lower.startsWith('losing') || lower.startsWith('defeat')) return 1;
+		if (lower.startsWith('winning')) return 2;
+		return -1;
 	}
 
 	private function computeBaseScale():Void
@@ -285,8 +314,8 @@ class HealthIcon extends FlxSprite
 		super.updateHitbox();
 		if (autoAdjustOffset)
 		{
-			offset.x = iconOffsets[0];
-			offset.y = iconOffsets[1];
+			offset.x = isAnimated ? (width - 150) * 0.5 : iconOffsets[0];
+			offset.y = isAnimated ? (height - 150) * 0.5 : iconOffsets[1];
 		}
 	}
 

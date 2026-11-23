@@ -28,6 +28,129 @@ class ModchartEditorChecks
 	{
 		var cyberSummary = '';
 		#if sys
+		if (Sys.getEnv('PLUS_TEST_NOTE_SPLASH') == '1')
+		{
+			report = 'Legacy note splash fallback';
+			var oldSong = states.PlayState.SONG;
+			var oldUI = states.PlayState.stageUI;
+			var oldRGB = backend.ClientPrefs.data.noteRGB;
+			states.PlayState.SONG = fixture();
+			states.PlayState.stageUI = 'normal';
+			backend.ClientPrefs.data.noteRGB = true;
+			Reflect.setField(states.PlayState.SONG, 'disableNoteRGB', true);
+			check(objects.NoteSplash.getDefaultNoteSplashPath(false) == 'noteSplashes', 'Song-disabled RGB did not select the classic splash');
+			var classic = new objects.NoteSplash(0, 0, 'noteSplashes');
+			classic.inEditor = true;
+			classic.spawnSplashNote(200, 300, 0, null, false);
+			check(Math.abs(classic.x - (200 - objects.Note.swagWidth * 0.95)) < 0.001
+				&& Math.abs(classic.y - (300 - objects.Note.swagWidth)) < 0.001
+				&& Math.abs(classic.offset.x - 10) < 0.001 && Math.abs(classic.offset.y - 10) < 0.001,
+				'Classic splash did not use the Psych 0.6.3 position and offset');
+			classic.destroy();
+			Reflect.setField(states.PlayState.SONG, 'disableNoteRGB', false);
+			check(objects.NoteSplash.getDefaultNoteSplashPath(false) == 'noteSplashes/noteSplashes', 'RGB default changed unexpectedly');
+			check(objects.NoteSplash.requestedSplashExists('HURTnoteSplashes', false)
+				&& objects.NoteSplash.resolveNoteSplashPath('HURTnoteSplashes', false, false) == 'HURTnoteSplashes',
+				'Explicit legacy splash path was normalized incorrectly');
+			var strum = new objects.StrumNote(100, 200, 0, 1);
+			var custom = new objects.NoteSplash(0, 0, 'noteSplashes/noteSplashes-vanilla');
+			custom.inEditor = true;
+			custom.babyArrow = strum;
+			custom.spawnSplashNote(100, 200, 0, null, false);
+			var ox = custom.offset.x, oy = custom.offset.y;
+			check(ox != 10 || oy != 10, 'Custom splash offset fixture was not loaded');
+			strum.scale.set(strum.scale.x * 1.5, strum.scale.y * 0.8);
+			strum.updateHitbox();
+			custom.update(0);
+			check(Math.abs(custom.offset.x - ox) < 0.001 && Math.abs(custom.offset.y - oy) < 0.001,
+				'Receptor scaling discarded the splash animation offset');
+			custom.destroy();
+			strum.destroy();
+			backend.ClientPrefs.data.noteRGB = oldRGB;
+			states.PlayState.stageUI = oldUI;
+			states.PlayState.SONG = oldSong;
+		}
+		#end
+		#if sys
+		if (Sys.getEnv('PLUS_TEST_HOLD_SPLASH') == '1')
+		{
+			report = 'Hold splash rotation pivot';
+			var oldSong = states.PlayState.SONG;
+			var oldUI = states.PlayState.stageUI;
+			var oldRGB = backend.ClientPrefs.data.noteRGB;
+			states.PlayState.SONG = fixture();
+			for (pixel in [false, true]) for (rgb in [false, true])
+			{
+				states.PlayState.stageUI = pixel ? 'pixel' : 'normal';
+				backend.ClientPrefs.data.noteRGB = rgb;
+				var strum = new objects.StrumNote(100, 200, 0, 1);
+				strum.scale.set(strum.scale.x * 1.3, strum.scale.y * 0.8);
+				strum.updateHitbox();
+				var splash = new objects.SustainSplash();
+				splash.strumNote = strum;
+				splash.refreshStrumTransform();
+				var pivotX = splash.x + splash.origin.x - splash.offset.x;
+				var pivotY = splash.y + splash.origin.y - splash.offset.y;
+				var targetX = strum.x + strum.width * 0.5;
+				var targetY = strum.y + strum.height * 0.5;
+				for (angle in [90.0, -45.0, 180.0])
+				{
+					strum.angle = angle;
+					splash.refreshStrumTransform();
+					var radians = angle * Math.PI / 180;
+					var dx = targetX - pivotX, dy = targetY - pivotY;
+					var x = splash.x + splash.origin.x - splash.offset.x + Math.cos(radians) * dx - Math.sin(radians) * dy;
+					var y = splash.y + splash.origin.y - splash.offset.y + Math.sin(radians) * dx + Math.cos(radians) * dy;
+					check(Math.abs(x - targetX) < 0.001 && Math.abs(y - targetY) < 0.001,
+						'Hold splash drifted while rotating (pixel=$pixel, RGB=$rgb, angle=$angle)');
+				}
+				strum.angle = 0;
+				strum.direction = 0;
+				splash.refreshStrumTransform();
+				check(Math.abs(splash.angle + 90) < 0.001, 'Hold splash did not follow scroll direction');
+				splash.destroy();
+				strum.destroy();
+			}
+			backend.ClientPrefs.data.noteRGB = oldRGB;
+			states.PlayState.stageUI = oldUI;
+			states.PlayState.SONG = oldSong;
+		}
+		#end
+		#if (sys && LUA_ALLOWED && HSCRIPT_ALLOWED)
+		var legacyPath = Sys.getEnv('PLUS_TEST_LEGACY_LUA');
+		if (legacyPath != null && sys.FileSystem.exists(legacyPath))
+		{
+			report = 'Legacy Lua object maps and HScript';
+			var previousSong = states.PlayState.SONG;
+			var previousGame = states.PlayState.instance;
+			states.PlayState.SONG = fixture();
+			var game = new states.PlayState();
+			game.variables = backend.MusicBeatState.getVariables();
+			states.PlayState.instance = game;
+			var context = new psychlua.backend.LuaHostContext(psychlua.backend.LuaHostKind.PLAYSTATE, 'legacy-test', game);
+			var script = new psychlua.backend.FunkinLua(legacyPath, context, false);
+			check(script.lua != null, 'Legacy Lua fixture could not be loaded');
+			psychlua.backend.HScript.initHaxeModule(script);
+			script.hscript.set('game', game);
+			check(llua.LuaL.dostring(script.lua, "function testLegacyMaps() makeLuaText('legacyText','hello',100,0,0); makeLuaSprite('legacySprite'); return runHaxeCode([[var text = game.modchartTexts.get('legacyText'); var sprite = game.modchartSprites.get('legacySprite'); if (text == null || sprite == null) return false; text.scrollFactor.set(1, 1); return text.scrollFactor.x == 1 && sprite == game.getLuaObject('legacySprite');]]) end; function cleanLegacyMaps() removeLuaText('legacyText', true); removeLuaSprite('legacySprite', true); end") == 0,
+				'Could not prepare legacy Lua regression');
+			var legacyResult = script.call('testLegacyMaps', []);
+			check(legacyResult == true, 'Legacy HScript result=' + Std.string(legacyResult) + ', text=' + game.modchartTexts.exists('legacyText') + ', sprite=' + game.modchartSprites.exists('legacySprite') + ', interpreter=' + (script.hscript != null));
+			check(script.call('testLegacyMaps', []) == true, 'Repeated legacy HScript calls lost their Lua objects');
+			check(game.modchartTexts.exists('legacyText') && game.modchartSprites.exists('legacySprite'), 'Legacy maps were not populated');
+			report = 'Legacy HScript tween destruction';
+			check(llua.LuaL.dostring(script.lua, "function testLegacyTween() return runHaxeCode([[var sprite = game.modchartSprites.get('legacySprite'); var tween = FlxTween.tween(sprite, {x: 5}, 1); tween.destroy(); FlxTween.cancelTweensOf(sprite); return true;]]) end; function testCompletedTween() return runHaxeCode([[var sprite = game.modchartSprites.get('legacySprite'); FlxTween.tween(sprite, {x: 8}, 0.01, {onComplete: function(tween) { tween.destroy(); }}); FlxTween.globalManager.update(0.1); FlxTween.cancelTweensOf(sprite); return true;]]) end") == 0,
+				'Could not prepare legacy tween regression');
+			check(script.call('testLegacyTween', []) == true, 'Destroying an active HScript tween corrupted the manager');
+			check(script.call('testCompletedTween', []) == true, 'Destroying an HScript tween in onComplete corrupted the manager');
+			script.call('cleanLegacyMaps', []);
+			check(!game.modchartTexts.exists('legacyText') && !game.modchartSprites.exists('legacySprite'), 'Legacy maps retained destroyed objects');
+			script.stop();
+			states.PlayState.instance = previousGame;
+			states.PlayState.SONG = previousSong;
+		}
+		#end
+		#if sys
 		if (Sys.getEnv('PLUS_TEST_GALAXY_NOTES') == '1') {
 			report = 'Galaxy real note visuals and release';
 			var previousSong = states.PlayState.SONG;

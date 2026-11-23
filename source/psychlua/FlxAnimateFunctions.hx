@@ -13,6 +13,7 @@ class FlxAnimateFunctions
 			var lastSprite = MusicBeatState.getVariables().get(tag);
 			if(lastSprite != null)
 			{
+				LuaUtils.unregisterLegacyLuaObject(tag, lastSprite);
 				MusicBeatState.getVariables().remove(tag);
 				lastSprite.kill();
 				PlayState.instance.remove(lastSprite);
@@ -23,6 +24,7 @@ class FlxAnimateFunctions
 			mySprite.luaTag = tag;
 			if(loadFolder != null) Paths.loadAnimateAtlas(mySprite, loadFolder);
 			MusicBeatState.getVariables().set(tag, mySprite);
+			LuaUtils.registerLegacyLuaSprite(tag, mySprite);
 			mySprite.active = true;
 		});
 

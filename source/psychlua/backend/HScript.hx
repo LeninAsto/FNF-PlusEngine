@@ -1797,6 +1797,16 @@ class CustomInterp extends crowplexus.hscript.Interp
 			return null;
 		}
 
+		if (funcToRun == 'destroy' && args.length == 0 && Std.isOfType(o, flixel.tweens.FlxTween))
+		{
+			var tween:flixel.tweens.FlxTween = cast o;
+			if (tween.manager != null)
+				tween.cancelChain();
+			else
+				tween.destroy();
+			return null;
+		}
+
 		for (_using in usings)
 		{
 			var v = _using.call(o, funcToRun, args);

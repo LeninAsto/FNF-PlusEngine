@@ -35,6 +35,7 @@ import mobile.backend.PsychJNI;
 	public var naughtynessResults:Bool = true;
 	public var gameOverVibration:Bool = false;
 	#if windows
+	public var windowResolution:String = 'Default';
 	public var fullscreenMode:String = 'Borderless'; // 'Borderless', 'Borderless Fix', 'Exclusive'
 	public var windowsGDIEffects:Bool = false; // Requires manual user consent in Gameplay Settings
 	public var maxInstanceSlots:Int = 1; // Maximum simultaneous Plus Engine windows allowed

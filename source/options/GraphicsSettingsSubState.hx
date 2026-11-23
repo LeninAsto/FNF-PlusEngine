@@ -108,6 +108,12 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		#end
 
 		#if windows
+		var option:Option = new Option('Render Resolution',
+			'Sets the internal render resolution without resizing the window. Default uses native resolution.', 'windowResolution', STRING,
+			['Default', '960x540', '1280x720', '1600x900', '1920x1080', '2560x1440', '3840x2160']);
+		option.onChange = backend.WindowMode.applyRenderResolution;
+		addOption(option);
+
 		var option:Option = new Option('Fullscreen Mode',
 			'Borderless is capped to 1080p for better shader performance. Borderless Fix uses native monitor resolution.', 'fullscreenMode', STRING,
 			['Borderless', 'Borderless Fix', 'Exclusive']);

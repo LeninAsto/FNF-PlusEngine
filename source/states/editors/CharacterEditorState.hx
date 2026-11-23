@@ -131,6 +131,8 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		healthBar.cameras = [camHUD];
 
 		healthIcon = new HealthIcon(character.healthIcon, false, false, character.iconFps);
+		if (character.animatedIcon)
+			healthIcon.changeIcon(character.healthIcon, false, true, character.iconFps);
 		healthIcon.y = FlxG.height - 150;
 		healthIcon.cameras = [camHUD];
 
@@ -650,6 +652,9 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		{
 			character.animatedIcon = animatedIconCheckBox.checked;
 			healthIcon.changeIcon(character.healthIcon, false, character.animatedIcon, character.iconFps);
+			if (character.animatedIcon && !healthIcon.isAnimated)
+				FlxG.stage.window.alert('Could not load the animated icon XML for ${character.healthIcon}. Check images/icons.', 'Animated Icon');
+			unsavedProgress = true;
 		};
 
 		iconFpsStepper = new PsychUINumericStepper(animatedIconCheckBox.x, animatedIconCheckBox.y + 30, 1, character.iconFps, 1, 120, 0);
@@ -1574,6 +1579,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			"sing_duration": character.singDuration,
 			"healthicon": character.healthIcon,
 			"fpsicon": character.iconFps,
+			"animatedIcon": character.animatedIcon,
 
 			"position": character.positionArray,
 			"camera_position": character.cameraPosition,

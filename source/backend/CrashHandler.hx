@@ -165,7 +165,11 @@ class CrashHandler
 		#end
 
 		#if DISCORD_ALLOWED DiscordClient.shutdown(); #end
+		#if desktop
+		showCrashAndExit(errorMsg, phrase('titles.error', 'Error!'));
+		#else
 		showCrashAndExit(buildCrashLog(errorMsg, priorTrace), phrase('titles.error', 'Error!'));
+		#end
 	}
 
 	#if (cpp || hl)
@@ -200,7 +204,11 @@ class CrashHandler
 		#end
 
 		#if DISCORD_ALLOWED DiscordClient.shutdown(); #end
+		#if desktop
+		showCrashAndExit(errorLog, phrase('titles.critical_error', 'Critical Error!'));
+		#else
 		showCrashAndExit(buildCrashLog(errorLog, priorTrace), phrase('titles.critical_error', 'Critical Error!'));
+		#end
 	}
 	#end
 

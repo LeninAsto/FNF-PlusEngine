@@ -827,7 +827,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		// SONG TAB
 		songNameInputText.text = PlayState.SONG.song;
 		allowVocalsCheckBox.checked = (PlayState.SONG.needsVoices != false); // If the song for some reason does not have this value, it will be set to true
-		animatedIconsCheckBox.checked = (PlayState.SONG.isAnimated == false);
 
 		bpmStepper.value = PlayState.SONG.bpm;
 		scrollSpeedStepper.value = PlayState.SONG.speed;
@@ -3054,12 +3053,27 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			}
 			var data:CharacterFile = loadCharacterFile(character);
 			Reflect.setField(characterData, 'iconP$i', data != null && data.healthicon != null ? data.healthicon : 'face');
+			Reflect.setField(characterData, 'animatedP$i', data != null && data.animatedIcon == true);
+			Reflect.setField(characterData, 'iconFpsP$i', data != null && data.fpsicon != null ? data.fpsicon : 24);
 			Reflect.setField(characterData, 'vocalsP$i', data != null && data.vocals_file != null ? data.vocals_file : '');
 		}
+		var gfData:CharacterFile = loadCharacterFile(PlayState.SONG.gfVersion);
+		Reflect.setField(characterData, 'gfIcon', gfData != null && gfData.healthicon != null ? gfData.healthicon : 'gf');
+		Reflect.setField(characterData, 'gfAnimated', gfData != null && gfData.animatedIcon == true);
+		Reflect.setField(characterData, 'gfIconFps', gfData != null && gfData.fpsicon != null ? gfData.fpsicon : 24);
 	}
 
 	var _lastSec:Int = -1;
 	var _lastGfSection:Null<Bool> = null;
+
+	function setGfEditorIcon(icon:HealthIcon):Void
+	{
+		icon.changeIcon(Reflect.field(characterData, 'gfIcon'), true, Reflect.field(characterData, 'gfAnimated') == true,
+			Reflect.field(characterData, 'gfIconFps'));
+		var scale:Float = 0.3 * (icon.isAnimated ? icon.baseScale : 1);
+		icon.scale.set(scale, scale);
+		icon.updateHitbox();
+	}
 
 	function updateHeads(ignoreCheck:Bool = false):Void
 	{
@@ -3076,7 +3090,11 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			if (!icon.visible) continue;
 			// trace('changing iconP${icon.ID}');
 			var iconName:String = Reflect.field(characterData, 'iconP${icon.ID}');
-			icon.changeIcon(iconName);
+			icon.changeIcon(iconName, true, Reflect.field(characterData, 'animatedP${icon.ID}') == true,
+				Reflect.field(characterData, 'iconFpsP${icon.ID}'));
+			var scale:Float = 0.3 * (icon.isAnimated ? icon.baseScale : 1);
+			icon.scale.set(scale, scale);
+			icon.updateHitbox();
 		}
 		for (i in 0...strumLineNotes.length)
 		{
@@ -3092,9 +3110,9 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			if (isGfSection)
 			{
 				if (mustHitSection)
-					iconP1.changeIcon('gf');
+					setGfEditorIcon(iconP1);
 				else
-					iconP2.changeIcon('gf');
+					setGfEditorIcon(iconP2);
 			}
 
 			if (mustHitSection)
@@ -4063,7 +4081,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 	var songNameInputText:PsychUIInputText;
 	var allowVocalsCheckBox:PsychUICheckBox;
-	var animatedIconsCheckBox:PsychUICheckBox;
 
 	var bpmStepper:PsychUINumericStepper;
 	var scrollSpeedStepper:PsychUINumericStepper;
@@ -4191,11 +4208,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			trace('selected $stage');
 		});
 
-		animatedIconsCheckBox = new PsychUICheckBox(objX + 120, objY + -85, chartPhrase('ui.animated_icons', 'Animated Icons'), 100, function()
-		{
-			PlayState.SONG.isAnimated = animatedIconsCheckBox.checked;
-			updateHeads(true);
-		});
 
 		opponentDropDown = new PsychUIDropDownMenu(objX, objY + 40, [''], function(id:Int, character:String)
 		{
@@ -4209,6 +4221,8 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		girlfriendDropDown = new PsychUIDropDownMenu(objX, objY + 80, [''], function(id:Int, character:String)
 		{
 			PlayState.SONG.gfVersion = character;
+			updateJsonData();
+			updateHeads(true);
 			trace('selected $character');
 		});
 
@@ -4225,7 +4239,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		tab_group.add(new FlxText(opponentDropDown.x, opponentDropDown.y - 15, 80, chartPhrase('ui.opponent', 'Opponent:')));
 		tab_group.add(new FlxText(girlfriendDropDown.x, girlfriendDropDown.y - 15, 80, chartPhrase('ui.girlfriend', 'Girlfriend:')));
 		tab_group.add(stageDropDown);
-		tab_group.add(animatedIconsCheckBox);
 		tab_group.add(girlfriendDropDown);
 		tab_group.add(opponentDropDown);
 		tab_group.add(playerDropDown);
