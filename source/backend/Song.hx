@@ -103,7 +103,6 @@ class Song
 	static var chartCacheOrder:Array<String> = [];
 	static inline final MAX_CHART_CACHE_ENTRIES:Int = 4;
 	static inline final MAX_CACHED_CHART_BYTES:Int = 2 * 1024 * 1024;
-	static inline final MAX_AUTO_CONVERT_SAVE_BYTES:Int = 2 * 1024 * 1024;
 
 	public var song:String;
 	public var notes:Array<SwagSection>;
@@ -196,36 +195,6 @@ class Song
 		chartPath = chartPath.replace('/', '\\');
 		#end
 		StageData.loadDirectory(PlayState.SONG);
-
-		// Auto-save psych_v2 -> psych_v1
-		#if MODS_ALLOWED
-		if (PlayState.SONG != null && _lastPath != null && sys.FileSystem.exists(_lastPath))
-		{
-			var needsSave:Bool = false;
-			var conversionMsg:String = '';
-
-			if (lastDetectedSourceFormat != null && lastDetectedSourceFormat.startsWith('psych_v2'))
-			{
-				conversionMsg = 'psych_v2 -> psych_v1';
-				needsSave = true;
-			}
-			else if (lastDetectedSourceFormat == 'non_formatted')
-			{
-				conversionMsg = 'non_formatted -> psych_v1';
-				needsSave = true;
-			}
-
-			var canAutoSave:Bool = sys.FileSystem.stat(_lastPath).size <= MAX_AUTO_CONVERT_SAVE_BYTES;
-			if (needsSave && canAutoSave)
-			{
-				trace('Saving converted chart: $conversionMsg');
-				PlayState.SONG.format = 'psych_v1';
-				saveChart(PlayState.SONG, _lastPath);
-			}
-			else if (needsSave)
-				trace('Skipping converted chart rewrite because the source is too large: $_lastPath');
-		}
-		#end
 
 		return PlayState.SONG;
 	}
@@ -537,117 +506,6 @@ class Song
 			}
 		}
 		return songJson;
-	}
-
-	/**
-	 * Saves a SwagSong to disk as psych_v1 JSON
-	 */
-	private static function saveChart(song:SwagSong, filePath:String):Void
-	{
-		#if MODS_ALLOWED
-		try
-		{
-			var jsonStr:String = haxe.Json.stringify(song);
-			// Pretty-print the JSON
-			var obj:Dynamic = haxe.Json.parse(jsonStr);
-			var prettyJson:String = formatJson(obj, 0);
-
-			sys.io.File.saveContent(filePath, prettyJson);
-			invalidateChartCache(filePath);
-			trace('Chart saved: $filePath');
-		}
-		catch (e:Dynamic)
-		{
-			trace('Error saving chart: $e');
-		}
-		#end
-	}
-
-	/**
-	 * Format JSON object as pretty-printed string
-	 */
-	private static function formatJson(obj:Dynamic, indent:Int = 0):String
-	{
-		var indentStr:String = '';
-		for (i in 0...indent)
-			indentStr += '\t';
-		var nextIndentStr:String = '';
-		for (i in 0...indent + 1)
-			nextIndentStr += '\t';
-
-		if (obj == null)
-			return 'null';
-
-		var type = Type.typeof(obj);
-
-		switch (type)
-		{
-			case TInt | TFloat | TBool:
-				return Std.string(obj);
-
-			case TClass(String):
-				return haxe.Json.stringify(Std.string(obj));
-
-			case TObject:
-				var fields:Array<String> = Reflect.fields(obj);
-				if (fields.length == 0)
-					return '{}';
-
-				var result:String = '{\n';
-				for (i in 0...fields.length)
-				{
-					var field:String = fields[i];
-					var value:Dynamic = Reflect.field(obj, field);
-					result += nextIndentStr + '"' + field + '": ' + formatJson(value, indent + 1);
-					if (i < fields.length - 1)
-						result += ',';
-					result += '\n';
-				}
-				result += indentStr + '}';
-				return result;
-
-			default:
-		}
-
-		if (Std.isOfType(obj, Array))
-		{
-			var arr:Array<Dynamic> = cast obj;
-			if (arr.length == 0)
-				return '[]';
-
-			var result:String = '[\n';
-			for (i in 0...arr.length)
-			{
-				result += nextIndentStr + formatJson(arr[i], indent + 1);
-				if (i < arr.length - 1)
-					result += ',';
-				result += '\n';
-			}
-			result += indentStr + ']';
-			return result;
-		}
-
-		if (type == TObject)
-		{
-			var fields:Array<String> = Reflect.fields(obj);
-			if (fields.length == 0)
-				return '{}';
-
-			var result:String = '{\n';
-			for (i in 0...fields.length)
-			{
-				var field:String = fields[i];
-				var value:Dynamic = Reflect.field(obj, field);
-				result += nextIndentStr + '"' + field + '": ' + formatJson(value, indent + 1);
-				if (i < fields.length - 1)
-					result += ',';
-				result += '\n';
-			}
-			result += indentStr + '}';
-			return result;
-		}
-
-		return haxe.Json.stringify(obj);
 	}
 
 	/**

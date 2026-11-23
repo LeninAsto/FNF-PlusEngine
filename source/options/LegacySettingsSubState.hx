@@ -7,6 +7,14 @@ class LegacySettingsSubState extends BaseOptionsMenu
 		title = Language.getPhrase('options.menus.legacy.title', Language.getPhrase('legacy_menu', 'Legacy Settings'));
 		rpcTitle = Language.getPhrase('options.menus.legacy.presence', 'Legacy Settings Menu');
 
+		var option:Option = new Option('FPS Rainbow Color', 'Cycles the FPS counter through rainbow colors.', 'fpsRainbowColor', BOOL);
+		option.onChange = function() { if (ClientPrefs.data.fpsRainbowColor) ClientPrefs.data.fpsInterpolateColor = false; };
+		addOption(option);
+
+		var option:Option = new Option('FPS Interpolate Color', 'Colors the FPS counter green, orange or red based on performance.', 'fpsInterpolateColor', BOOL);
+		option.onChange = function() { if (ClientPrefs.data.fpsInterpolateColor) ClientPrefs.data.fpsRainbowColor = false; };
+		addOption(option);
+
 		var option:Option = new Option('Use Psych Score Text', 'If checked, keeps the original Psych Engine score text format during gameplay.',
 			'psychScoreText', BOOL);
 		addOption(option);

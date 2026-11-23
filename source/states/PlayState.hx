@@ -637,6 +637,16 @@ class PlayState extends MusicBeatState
 			timeTxt.y += 3;
 		}
 
+		#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
+		var chartScriptsLoaded:Bool = false;
+		#if LUA_ALLOWED
+		chartScriptsLoaded = luaArray.length > 0;
+		#end
+		#if HSCRIPT_ALLOWED
+		chartScriptsLoaded = chartScriptsLoaded || hscriptArray.length > 0;
+		#end
+		if (chartScriptsLoaded) SongLoadPlan.refresh(SONG);
+		#end
 		generateSong();
 
 		noteGroup.add(grpNoteSplashes);
@@ -691,16 +701,15 @@ class PlayState extends MusicBeatState
 		reloadHealthBarColors();
 		uiGroup.add(healthBar);
 
-		var animatedIcon:Bool = (SONG.isAnimated == true);
 		iconP1 = new HealthIcon(boyfriend.healthIcon, true, true, boyfriend.iconFps);
-		if (animatedIcon || boyfriend.animatedIcon) iconP1.changeIcon(iconP1.getCharacter(), true, true, boyfriend.iconFps);
+		if (boyfriend.animatedIcon) iconP1.changeIcon(iconP1.getCharacter(), true, true, boyfriend.iconFps);
 		iconP1.y = ClientPrefs.data.iconBounceType == 'Old' ? healthBar.y - (iconP1.height / 2) : healthBar.y - 75;
 		iconP1.visible = !ClientPrefs.data.hideHud;
 		iconP1.alpha = ClientPrefs.data.healthBarAlpha;
 		uiGroup.add(iconP1);
 
 		iconP2 = new HealthIcon(dad.healthIcon, false, true, dad.iconFps);
-		if (animatedIcon || dad.animatedIcon) iconP2.changeIcon(iconP2.getCharacter(), true, true, dad.iconFps);
+		if (dad.animatedIcon) iconP2.changeIcon(iconP2.getCharacter(), true, true, dad.iconFps);
 		iconP2.y = ClientPrefs.data.iconBounceType == 'Old' ? healthBar.y - (iconP2.height / 2) : healthBar.y - 75;
 		iconP2.visible = !ClientPrefs.data.hideHud;
 		iconP2.alpha = ClientPrefs.data.healthBarAlpha;
@@ -709,7 +718,7 @@ class PlayState extends MusicBeatState
 		if(eventsPushed.contains('Add Secondary Icon'))
 		{
 			iconGF = new HealthIcon(gf != null ? gf.healthIcon : 'gf', true, false, gf != null ? gf.iconFps : 24);
-			if (animatedIcon || (gf != null && gf.animatedIcon)) iconGF.changeIcon(iconGF.getCharacter(), false, true, gf != null ? gf.iconFps : 24);
+			if (gf != null && gf.animatedIcon) iconGF.changeIcon(iconGF.getCharacter(), false, true, gf != null ? gf.iconFps : 24);
 			iconGF.y = ClientPrefs.data.iconBounceType == 'Old' ? healthBar.y - (iconGF.height / 2) : healthBar.y - 75;
 			iconGF.visible = false;
 			iconGF.alpha = ClientPrefs.data.healthBarAlpha;
@@ -865,6 +874,7 @@ class PlayState extends MusicBeatState
 		initBreakTimerHud();
 
 		if(eventNotes.length < 1) checkEventNote();
+		versionText.cameras = [camOther];
 	}
 
 	function relayoutHud():Void
@@ -978,7 +988,7 @@ class PlayState extends MusicBeatState
 		{
 			var manager:Manager = new Manager();
 			if (noteGroup != null)
-				noteGroup.insert(0, manager);
+				noteGroup.insert(noteGroup.members.indexOf(strumLineNotes) + 1, manager);
 			else
 				add(manager);
 		}
@@ -2126,6 +2136,7 @@ class PlayState extends MusicBeatState
 
 						var sustainNote:Note = new Note(spawnTime + (curStepCrochet * susNote), noteColumn, oldNote, true);
 						sustainNote.isSustainEnd = (susNote == roundSus - 1);
+						sustainNote.sustainStepLength = curStepCrochet;
 						sustainNote.animSuffix = swagNote.animSuffix;
 						sustainNote.mustPress = swagNote.mustPress;
 						sustainNote.strumLineIndex = swagNote.strumLineIndex;
@@ -2768,6 +2779,14 @@ class PlayState extends MusicBeatState
 		denseRatingPending = false;
 		denseRatingHadMiss = false;
 		RecalculateRating(badHit);
+	}
+
+	override public function draw():Void
+	{
+		#if MODCHART_ALLOWED
+		if (Manager.instance != null) Manager.instance.prepareReceptorsForDraw();
+		#end
+		super.draw();
 	}
 
 	override public function update(elapsed:Float)
@@ -3460,7 +3479,7 @@ class PlayState extends MusicBeatState
 							boyfriend.alpha = 0.00001;
 							boyfriend = boyfriendMap.get(value2);
 							boyfriend.alpha = lastAlpha;
-							iconP1.changeIcon(boyfriend.healthIcon, true, SONG.isAnimated == true || boyfriend.animatedIcon, boyfriend.iconFps);
+							iconP1.changeIcon(boyfriend.healthIcon, true, boyfriend.animatedIcon, boyfriend.iconFps);
 							updateIconAnimations();
 						}
 						setOnScripts('boyfriendName', boyfriend.curCharacter);
@@ -3483,7 +3502,7 @@ class PlayState extends MusicBeatState
 								gf.visible = false;
 							}
 							dad.alpha = lastAlpha;
-							iconP2.changeIcon(dad.healthIcon, true, SONG.isAnimated == true || dad.animatedIcon, dad.iconFps);
+							iconP2.changeIcon(dad.healthIcon, true, dad.animatedIcon, dad.iconFps);
 							updateIconAnimations();
 						}
 						setOnScripts('dadName', dad.curCharacter);
@@ -3502,7 +3521,7 @@ class PlayState extends MusicBeatState
 								gf = gfMap.get(value2);
 								gf.alpha = lastAlpha;
 								if(iconGF != null)
-									iconGF.changeIcon(gf.healthIcon, false, SONG.isAnimated == true || gf.animatedIcon, gf.iconFps);
+									iconGF.changeIcon(gf.healthIcon, false, gf.animatedIcon, gf.iconFps);
 								updateIconAnimations();
 							}
 							setOnScripts('gfName', gf.curCharacter);
@@ -4957,7 +4976,8 @@ class PlayState extends MusicBeatState
 		{
 			for (i in 0...arr.length)
 			{
-				var note:Array<FlxKey> = Controls.instance.keyboardBinds[arr[i]];
+				var note:Array<FlxKey> = Controls.instance.getKeyboardBind(arr[i]);
+				if (note == null) continue;
 				for (noteKey in note)
 					if(key == noteKey)
 						return i;
@@ -5605,9 +5625,9 @@ class PlayState extends MusicBeatState
 		switch (ClientPrefs.data.iconBounceType)
 		{
 			case 'NF':
-				iconP1.scale.set(1.3, 1.3);
-				iconP2.scale.set(1.3, 1.3);
-				if (iconGF != null) iconGF.scale.set(1.3, 1.3);
+				iconP1.scale.set(iconP1.isAnimated ? iconP1.baseScale * 1.3 : 1.3, iconP1.isAnimated ? iconP1.baseScale * 1.3 : 1.3);
+				iconP2.scale.set(iconP2.isAnimated ? iconP2.baseScale * 1.3 : 1.3, iconP2.isAnimated ? iconP2.baseScale * 1.3 : 1.3);
+				if (iconGF != null) iconGF.scale.set(iconGF.isAnimated ? iconGF.baseScale * 1.3 : 1.3, iconGF.isAnimated ? iconGF.baseScale * 1.3 : 1.3);
 				iconP1.updateHitbox();
 				iconP2.updateHitbox();
 				if (iconGF != null) iconGF.updateHitbox();
@@ -5627,9 +5647,9 @@ class PlayState extends MusicBeatState
                 bumpIconsCodename();
 
 			default:
-				iconP1.scale.set(1.2, 1.2);
-				iconP2.scale.set(1.2, 1.2);
-				if (iconGF != null) iconGF.scale.set(1.2, 1.2);
+				iconP1.scale.set(iconP1.isAnimated ? iconP1.baseScale * 1.2 : 1.2, iconP1.isAnimated ? iconP1.baseScale * 1.2 : 1.2);
+				iconP2.scale.set(iconP2.isAnimated ? iconP2.baseScale * 1.2 : 1.2, iconP2.isAnimated ? iconP2.baseScale * 1.2 : 1.2);
+				if (iconGF != null) iconGF.scale.set(iconGF.isAnimated ? iconGF.baseScale * 1.2 : 1.2, iconGF.isAnimated ? iconGF.baseScale * 1.2 : 1.2);
 				iconP1.updateHitbox();
 				iconP2.updateHitbox();
 				if (iconGF != null) iconGF.updateHitbox();
@@ -5679,10 +5699,11 @@ class PlayState extends MusicBeatState
 			FlxTween.cancelTweensOf(icon);
 			FlxTween.cancelTweensOf(icon.scale);
 			icon.angle = iconTurn;
-			icon.scale.set(1.2, 0.3);
+			final base:Float = icon.isAnimated ? icon.baseScale : 1;
+			icon.scale.set(base * 1.2, base * 0.3);
 			icon.updateHitbox();
 			FlxTween.tween(icon, {angle: 0}, Conductor.crochet / 1000, {ease: FlxEase.circOut});
-			FlxTween.tween(icon.scale, {x: 1, y: 1}, Conductor.crochet / 1000, {
+			FlxTween.tween(icon.scale, {x: base, y: base}, Conductor.crochet / 1000, {
 				ease: FlxEase.circOut,
 				onComplete: function(twn:FlxTween) icon.updateHitbox()
 			});

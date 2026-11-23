@@ -1797,14 +1797,26 @@ class CustomInterp extends crowplexus.hscript.Interp
 			return null;
 		}
 
+		if (funcToRun == 'destroy' && args.length == 0 && Std.isOfType(o, flixel.tweens.FlxTween))
+		{
+			var tween:flixel.tweens.FlxTween = cast o;
+			if (tween.manager != null)
+				tween.cancelChain();
+			else
+				tween.destroy();
+			return null;
+		}
+
+		var f = get(o, funcToRun);
+		if (f != null && Reflect.isFunction(f))
+			return IrisScriptClassImport.wrap(Reflect.callMethod(o, f, IrisScriptClassImport.unwrapArgs(args)));
+
 		for (_using in usings)
 		{
 			var v = _using.call(o, funcToRun, args);
 			if (v != null)
 				return v;
 		}
-
-		var f = get(o, funcToRun);
 
 		if (f == null)
 		{
@@ -2161,15 +2173,14 @@ class CustomInterp extends crowplexus.hscript.Interp
 		{
 			try
 			{
-				Reflect.setField(o, field, value);
+				Reflect.setProperty(o, field, value);
 				return value;
 			}
 			catch (e:Dynamic)
 			{
-				// Si falla setField, intentar setProperty
 				try
 				{
-					Reflect.setProperty(o, field, value);
+					Reflect.setField(o, field, value);
 					return value;
 				}
 				catch (e2:Dynamic)

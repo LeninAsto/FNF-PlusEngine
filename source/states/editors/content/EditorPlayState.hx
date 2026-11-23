@@ -411,6 +411,7 @@ class EditorPlayState extends MusicBeatSubstate
 
 					var sustainNote:Note = new Note(swagNote.strumTime + (curStepCrochet * susNote), note.noteData, oldNote, true, this);
 					sustainNote.isSustainEnd = (susNote == roundSus - 1);
+						sustainNote.sustainStepLength = curStepCrochet;
 					sustainNote.mustPress = swagNote.mustPress;
 					sustainNote.gfNote = swagNote.gfNote;
 					sustainNote.noteType = swagNote.noteType;

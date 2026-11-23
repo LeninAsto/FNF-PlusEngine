@@ -85,6 +85,8 @@ class Note extends FlxSprite
 
 	public var sustainLength:Float = 0;
 	public var isSustainNote:Bool = false;
+	public var modchartHoldLength:Float = -1;
+	public var sustainStepLength:Float = 0;
 	public var isSustainEnd:Bool = false;
 	public var noteType(default, set):String = null;
 

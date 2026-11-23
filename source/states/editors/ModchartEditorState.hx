@@ -464,7 +464,7 @@ class ModchartEditorState extends MusicBeatState
 			else {
 				var head = createHead(data.head);
 				note = new Note(data.strumTime, data.lane, head, true, true);
-				note.parent = head; note.mustPress = data.mustPress; note.isSustainEnd = data.end;
+				note.parent = head; note.mustPress = data.mustPress; note.isSustainEnd = data.end; note.sustainStepLength = data.step;
 				if (!data.end) {
 					note.animation.play(Note.colArray[data.lane] + 'hold');
 					note.scale.y *= data.step / 100 * 1.05 * song.speed;

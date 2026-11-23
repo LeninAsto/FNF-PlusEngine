@@ -15,6 +15,9 @@ class NativeBuild
 		var geometryPath = Path.normalize(FileSystem.fullPath(Context.resolvePath('backend/native/cpp/PlusNativeGeometry.cpp')));
 		var audioPath = Path.normalize(FileSystem.fullPath(Context.resolvePath('backend/native/cpp/PlusNativeAudio.cpp')));
 		var notesPath = Path.normalize(FileSystem.fullPath(Context.resolvePath('backend/native/cpp/PlusNativeNotes.cpp')));
+		var projectDir = cppPath;
+		for (_ in 0...5)
+			projectDir = Path.directory(projectDir);
 		if (!FileSystem.exists(cppPath))
 			Context.fatalError('Missing native source: $cppPath', Context.currentPos());
 		if (!FileSystem.exists(geometryPath))
@@ -37,6 +40,14 @@ class NativeBuild
 			+ '<target id="haxe">'
 			+ '<files id="plus-native"/>'
 			+ '</target>';
+		if (Context.defined('windows'))
+		{
+			var iconDir = xmlPath(Path.join([projectDir, 'art/icons']));
+			var iconPath = xmlPath(Path.join([projectDir, 'art/icons/PlusEngine.ico']));
+			var resourcePath = xmlPath(Path.join([projectDir, 'art/icons/PlusEngine.rc']));
+			xml += '<files id="rc"><compilerflag value="-I$iconDir"/>'
+				+ '<file name="$resourcePath"><depend name="$iconPath"/></file></files>';
+		}
 
 		Context.getLocalClass().get().meta.add(':buildXml', [macro $v{xml}], Context.currentPos());
 		return Context.getBuildFields();

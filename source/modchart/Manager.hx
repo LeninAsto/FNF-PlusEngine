@@ -699,6 +699,14 @@ final class Manager extends FlxBasic
 		iteratePlayfields(pf -> pf.beginFrame(__frameToken, songPos, beat));
 	}
 
+	public function prepareReceptorsForDraw():Void
+	{
+		final state = PlayState.instance;
+		if (!__primary || !exists || !visible || Adapter.instance == null || renderer == null || state == null
+			|| state.strumLineNotes == null || !shouldRenderModchart()) return;
+		renderer.suppressManagedReceptors(state.strumLineNotes.members, playfields);
+	}
+
 	/**
 	 * Draws all playfields, sorting them by z-order before drawing.
 	 */

@@ -18,6 +18,9 @@ using StringTools;
  * or return a table like `{x = pos.x + 10, y = pos.y, z = pos.z}`.
  */
 class LuaModifier extends Modifier {
+	static final visualFields:Array<String> = ['scaleX', 'scaleY', 'alpha', 'glow', 'glowR', 'glowG', 'glowB', 'angleX', 'angleY', 'angleZ',
+		'fieldAngleX', 'fieldAngleY', 'fieldAngleZ', 'skewX', 'skewY', 'holdDirection', 'holdAngle', 'holdWidth', 'holdSection',
+		'planeXX', 'planeXY', 'planeXZ', 'planeYX', 'planeYY', 'planeYZ'];
 	public var modifierName(default, null):String;
 	public var funk(default, null):FunkinLua;
 	public var renderCallback:String;
@@ -37,12 +40,16 @@ class LuaModifier extends Modifier {
 	var __luaPos:Dynamic = {x: 0.0, y: 0.0, z: 0.0, w: 0.0};
 	var __luaParams:Dynamic = {};
 	var __luaVisuals:Dynamic = {};
+	var __renderCallArgs:Array<Dynamic>;
+	var __visualCallArgs:Array<Dynamic>;
 
 	public function new(pf:PlayField, modifierName:String, funk:FunkinLua, ?options:Dynamic) {
 		super(pf);
 
 		this.modifierName = modifierName;
 		this.funk = funk;
+		__renderCallArgs = [__luaPos, __luaParams, modifierName];
+		__visualCallArgs = [__luaVisuals, __luaParams, modifierName];
 
 		if (Std.isOfType(options, String)) {
 			renderCallback = Std.string(options);
@@ -104,7 +111,7 @@ class LuaModifier extends Modifier {
 	}
 
 	override public function render(position:Vector3, params:ModifierParameters):Vector3 {
-		if (__skipRender || renderCallback == null)
+		if (__skipRender || renderCallback == null || funk.isKnownMissingHook(renderCallback))
 			return position;
 
 		// llua.Convert cannot serialize Vector3D/class instances. Always bridge
@@ -116,7 +123,7 @@ class LuaModifier extends Modifier {
 		luaPos.z = position.z;
 		luaPos.w = position.w;
 		final luaParams = copyParams(params, nullSafety ? {} : __luaParams);
-		final ret:Dynamic = funk.call(renderCallback, [luaPos, luaParams, modifierName]);
+		final ret:Dynamic = funk.call(renderCallback, nullSafety ? [luaPos, luaParams, modifierName] : __renderCallArgs);
 
 		if (isContinue(ret))
 			return position;
@@ -134,12 +141,16 @@ class LuaModifier extends Modifier {
 	}
 
 	override public function visuals(data:VisualParameters, params:ModifierParameters):VisualParameters {
-		if (__skipVisuals || visualsCallback == null)
+		if (__skipVisuals || visualsCallback == null || funk.isKnownMissingHook(visualsCallback))
 			return data;
 
 		final luaData:Dynamic = nullSafety ? {} : __luaVisuals;
 		copyVisuals(data, luaData);
 		final luaParams = copyParams(params, nullSafety ? {} : __luaParams);
+		if (!nullSafety) {
+			funk.callModifierVisuals(visualsCallback, __visualCallArgs, data, visualFields);
+			return data;
+		}
 		final ret:Dynamic = funk.call(visualsCallback, [luaData, luaParams, modifierName]);
 
 		if (isContinue(ret))
@@ -193,6 +204,16 @@ class LuaModifier extends Modifier {
 		target.fieldAngleZ = data.fieldAngleZ;
 		target.skewX = data.skewX;
 		target.skewY = data.skewY;
+		target.holdDirection = data.holdDirection;
+		target.holdAngle = data.holdAngle;
+		target.holdWidth = data.holdWidth;
+		target.holdSection = data.holdSection;
+		target.planeXX = data.planeXX;
+		target.planeXY = data.planeXY;
+		target.planeXZ = data.planeXZ;
+		target.planeYX = data.planeYX;
+		target.planeYY = data.planeYY;
+		target.planeYZ = data.planeYZ;
 	}
 
 	static function vectorFromDynamic(value:Dynamic, fallback:Vector3):Null<Vector3> {
@@ -226,13 +247,17 @@ class LuaModifier extends Modifier {
 		if (value == null)
 			return fallback;
 
-		final fields = ['scaleX', 'scaleY', 'alpha', 'glow', 'glowR', 'glowG', 'glowB', 'angleX', 'angleY', 'angleZ',
-			'fieldAngleX', 'fieldAngleY', 'fieldAngleZ', 'skewX', 'skewY'];
 		var copied = false;
-		for (field in fields) {
-			if (!Reflect.hasField(value, field))
+		for (field in visualFields) {
+			final fieldValue = Reflect.field(value, field);
+			if (fieldValue == null && !Reflect.hasField(value, field))
 				continue;
-			Reflect.setField(fallback, field, toFloat(Reflect.field(value, field), Reflect.field(fallback, field)));
+			if (fieldValue != null) {
+				if (Std.isOfType(fieldValue, Float) || Std.isOfType(fieldValue, Int))
+					Reflect.setField(fallback, field, fieldValue);
+				else
+					Reflect.setField(fallback, field, toFloat(fieldValue, Reflect.field(fallback, field)));
+			}
 			copied = true;
 		}
 

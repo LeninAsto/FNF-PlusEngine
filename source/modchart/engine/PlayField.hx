@@ -136,7 +136,7 @@ final class PlayField extends FlxSprite
 		return getCachedPath(pos, data, posDiff, allowVis, allowPos, TransformMode.FIELD);
 
 	public inline function getSplashPath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput
-		return getCachedPath(pos, data, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.SPLASH);
+		return getCachedPath(pos, data, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.RECEPTOR | TransformMode.SPLASH);
 
 	/** Internal allocation-free equivalents used by renderers. */
 	public inline function getNotePathInto(pos:Vector3, data:ArrowData, out:ModifierOutput, outPos:Vector3, visuals:modchart.backend.core.VisualParameters,
@@ -149,7 +149,7 @@ final class PlayField extends FlxSprite
 
 	public inline function getSplashPathInto(pos:Vector3, data:ArrowData, out:ModifierOutput, outPos:Vector3, visuals:modchart.backend.core.VisualParameters,
 			?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput
-		return modifiers.getPathInto(pos, data, out, outPos, visuals, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.SPLASH);
+		return modifiers.getPathInto(pos, data, out, outPos, visuals, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.RECEPTOR | TransformMode.SPLASH);
 
 	public inline function addEvent(event:Event)
 	{

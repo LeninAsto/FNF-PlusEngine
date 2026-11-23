@@ -574,6 +574,36 @@ class LuaUtils
 		}
 	}
 
+	#if LUA_ALLOWED
+	static function isLegacyPlayStateContext(game:PlayState):Bool {
+		var context = getCurrentContext();
+		return context != null ? context.isPlayState() : MusicBeatState.getState() == game;
+	}
+	#end
+
+	public static function registerLegacyLuaSprite(tag:String, sprite:FlxSprite):Void {
+		#if LUA_ALLOWED
+		var game = PlayState.instance;
+		if (game != null && isLegacyPlayStateContext(game)) game.modchartSprites.set(tag, sprite);
+		#end
+	}
+
+	public static function registerLegacyLuaText(tag:String, text:FlxText):Void {
+		#if LUA_ALLOWED
+		var game = PlayState.instance;
+		if (game != null && isLegacyPlayStateContext(game)) game.modchartTexts.set(tag, text);
+		#end
+	}
+
+	public static function unregisterLegacyLuaObject(tag:String, object:Dynamic):Void {
+		#if LUA_ALLOWED
+		var game = PlayState.instance;
+		if (game == null || !isLegacyPlayStateContext(game)) return;
+		if (game.modchartSprites.get(tag) == object) game.modchartSprites.remove(tag);
+		if (game.modchartTexts.get(tag) == object) game.modchartTexts.remove(tag);
+		#end
+	}
+
 	public static function destroyObject(tag:String) {
 		#if (LUA_ALLOWED && VIDEOS_ALLOWED)
 		if(psychlua.VideoFunctions.destroyLuaVideoSprite(tag))
@@ -586,6 +616,7 @@ class LuaUtils
 			return;
 
 		LuaUtils.getTargetInstance().remove(obj, true);
+		unregisterLegacyLuaObject(tag, obj);
 		obj.destroy();
 		variables.remove(tag);
 	}

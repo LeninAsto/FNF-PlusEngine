@@ -182,6 +182,7 @@ class CustomFadeTransition extends MusicBeatSubstate
 
 		iconSprite = new FlxSprite();
 		iconSprite.loadGraphic(Paths.image('loading_screen/icon'));
+		iconSprite.antialiasing = ClientPrefs.data.antialiasing;
 		iconSprite.scrollFactor.set();
 		iconSprite.scale.set(0.5, 0.5);
 		iconSprite.screenCenter();

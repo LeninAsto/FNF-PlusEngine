@@ -31,7 +31,7 @@ class PsychJsonPrinter extends JsonPrinter
      * Returns true if any value in values is a nested container (object, array, or StringMap).
      * Checks the values themselves, not the field names as strings.
      */
-	static inline function containsContainer(values:Iterable<Dynamic>):Bool
+	static function containsContainer(values:Iterable<Dynamic>):Bool
 	{
 		for (subv in values)
 		{

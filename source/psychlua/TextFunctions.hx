@@ -15,6 +15,7 @@ class TextFunctions
 			leText.scrollFactor.set();
 			leText.borderSize = 2;
 			MusicBeatState.getVariables().set(tag, leText);
+			LuaUtils.registerLegacyLuaText(tag, leText);
 		});
 
 		Lua_helper.add_callback(lua, "setTextString", function(tag:String, text:String) {
@@ -195,6 +196,7 @@ class TextFunctions
 			instance.remove(text, true);
 			if(destroy)
 			{
+				LuaUtils.unregisterLegacyLuaObject(tag, text);
 				text.destroy();
 				variables.remove(tag);
 			}

@@ -14,6 +14,38 @@ final class NearPlaneClipper {
 
 	public function new() {}
 
+	public function clipHoldQuad(view:View3D, world:Vector<Float>, distances:Vector<Float>, uv:Vector<Float>, projected:Vector<Float>,
+		quad:Int, vertices:Vector<Float>, uvt:Vector<Float>):Bool {
+		final base = quad * 4;
+		var inside = 0;
+		for (i in 0...4) if (distances[base + i] >= 0) inside++;
+		if (inside > 0 && inside < 4)
+			return clipQuad(view, world, distances, uv, quad, vertices, uvt, true);
+
+		final output = quad * 8;
+		for (i in 0...8) {
+			final dest = output + i;
+			if (inside == 0) {
+				vertices[dest * 2] = vertices[dest * 2 + 1] = 0;
+				uvt[dest * 3] = uvt[dest * 3 + 1] = 0;
+			} else {
+				final corner = switch (i) {
+					case 0, 4: 0;
+					case 1: 1;
+					case 5: 2;
+					default: 3;
+				};
+				final source = base + corner;
+				vertices[dest * 2] = projected[source * 2];
+				vertices[dest * 2 + 1] = projected[source * 2 + 1];
+				uvt[dest * 3] = uv[source * 3];
+				uvt[dest * 3 + 1] = uv[source * 3 + 1];
+			}
+			uvt[dest * 3 + 2] = 1;
+		}
+		return inside == 4;
+	}
+
 	public function clipQuad(view:View3D, world:Vector<Float>, distances:Vector<Float>, uv:Vector<Float>, quad:Int,
 		vertices:Vector<Float>, uvt:Vector<Float>, hold:Bool):Bool {
 		final vertexOffset = quad * 4;
