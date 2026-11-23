@@ -15,6 +15,9 @@ class ScriptGlobals {
 	static var keepScriptBytes:Class<ScriptBytes> = ScriptBytes;
 	static var keepScriptDraw:Class<ScriptDraw> = ScriptDraw;
 	static var keepAssetLoader:Class<backend.AssetLoader> = backend.AssetLoader;
+	#if (desktop || mobile)
+	static var keepAwayScene:Class<backend.AwayScene> = backend.AwayScene;
+	#end
 	static var keepScriptHttp:Class<backend.ScriptHttp> = backend.ScriptHttp;
 	static var keepBuildInfo:Class<backend.BuildInfo> = backend.BuildInfo;
 	static var keepSecurityReview:Class<backend.SecurityReview> = backend.SecurityReview;
@@ -46,6 +49,14 @@ class ScriptGlobals {
 
 	public static final TYPE_IMPORTS:Array<String> = [
 		'backend.Paths',
+		#if (desktop || mobile)
+		'backend.AwayScene',
+		'away3d.containers.View3D',
+		'away3d.cameras.Camera3D',
+		'away3d.entities.Mesh',
+		'away3d.primitives.PlaneGeometry',
+		'away3d.materials.ColorMaterial',
+		#end
 		'backend.Achievements',
 		'backend.AssetLoader',
 			'backend.ScriptHttp',

@@ -19,6 +19,8 @@ class Field extends Modifier {
 	var fieldOriginXID:Int;
 	var fieldOriginYID:Int;
 	var fieldOriginZID:Int;
+	var fieldScaleXID:Int;
+	var fieldScaleYID:Int;
 	final _origin:Vector3 = new Vector3();
 	final _rotation:Vector3 = new Vector3();
 
@@ -38,6 +40,10 @@ class Field extends Modifier {
 		fieldOriginXID = findID('fieldOriginX');
 		fieldOriginYID = findID('fieldOriginY');
 		fieldOriginZID = findID('fieldOriginZ');
+		fieldScaleXID = findID('fieldScaleX');
+		fieldScaleYID = findID('fieldScaleY');
+		setPercent('fieldScaleX', 1, -1);
+		setPercent('fieldScaleY', 1, -1);
 	}
 
 	override public function render(curPos:Vector3, params:ModifierParameters) {
@@ -49,13 +55,15 @@ class Field extends Modifier {
 		final fieldPitch = getUnsafe(fieldPitchID, player) + getUnsafe(fieldRotateXID, player);
 		final fieldYaw = getUnsafe(fieldYawID, player) + getUnsafe(fieldRotateYID, player);
 		final fieldRoll = getUnsafe(fieldRollID, player) + getUnsafe(fieldRotateZID, player);
+		final scaleX = getUnsafe(fieldScaleXID, player);
+		final scaleY = getUnsafe(fieldScaleYID, player);
 
-		if (fieldX == 0 && fieldY == 0 && fieldZ == 0 && fieldPitch == 0 && fieldYaw == 0 && fieldRoll == 0)
+		if (fieldX == 0 && fieldY == 0 && fieldZ == 0 && fieldPitch == 0 && fieldYaw == 0 && fieldRoll == 0 && scaleX == 1 && scaleY == 1)
 			return curPos;
 
-		if (fieldPitch != 0 || fieldYaw != 0 || fieldRoll != 0) {
+		if (fieldPitch != 0 || fieldYaw != 0 || fieldRoll != 0 || scaleX != 1 || scaleY != 1) {
 			final origin = getFieldOrigin(params);
-			_rotation.setTo(curPos.x - origin.x, curPos.y - origin.y, curPos.z - origin.z);
+			_rotation.setTo((curPos.x - origin.x) * scaleX, (curPos.y - origin.y) * scaleY, curPos.z - origin.z);
 			final out = ModchartUtil.rotate3DVectorInto(_rotation, fieldPitch, fieldYaw, fieldRoll, _rotation);
 
 			origin.addToOutput(out, curPos);
@@ -70,6 +78,8 @@ class Field extends Modifier {
 
 	override public function visuals(data:VisualParameters, params:ModifierParameters):VisualParameters {
 		final player = params.player;
+		data.scaleX *= getUnsafe(fieldScaleXID, player);
+		data.scaleY *= getUnsafe(fieldScaleYID, player);
 		data.fieldAngleX += getUnsafe(fieldPitchID, player) + getUnsafe(fieldRotateXID, player);
 		data.fieldAngleY += getUnsafe(fieldYawID, player) + getUnsafe(fieldRotateYID, player);
 		data.fieldAngleZ += getUnsafe(fieldRollID, player) + getUnsafe(fieldRotateZID, player);
@@ -100,7 +110,8 @@ class Field extends Modifier {
 		return getUnsafe(fieldXID, player) != 0 || getUnsafe(fieldYID, player) != 0
 			|| getUnsafe(fieldZID, player) != 0 || getUnsafe(fieldDepthID, player) != 0
 			|| getUnsafe(fieldPitchID, player) != 0 || getUnsafe(fieldYawID, player) != 0 || getUnsafe(fieldRollID, player) != 0
-			|| getUnsafe(fieldRotateXID, player) != 0 || getUnsafe(fieldRotateYID, player) != 0 || getUnsafe(fieldRotateZID, player) != 0;
+			|| getUnsafe(fieldRotateXID, player) != 0 || getUnsafe(fieldRotateYID, player) != 0 || getUnsafe(fieldRotateZID, player) != 0
+			|| getUnsafe(fieldScaleXID, player) != 1 || getUnsafe(fieldScaleYID, player) != 1;
 
 	override public function transformMode():TransformMode
 		return TransformMode.FIELD;

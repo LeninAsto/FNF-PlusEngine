@@ -160,7 +160,7 @@ class PathModifier extends Modifier {
 	 */
 	public function computePathAt(pos:Vector3, lane:Int, distance:Float, percent:Float, relative:Bool = false, extraZ:Float = 0,
 			originDistance:Float = 0, originWeight:Float = 0, useAnchor:Bool = false, anchorX:Float = 0, anchorY:Float = 0,
-			anchorZ:Float = 0):Vector3 {
+			anchorZ:Float = 0, frozenOriginX:Float = -1, frozenOriginY:Float = -1, frozenOriginZ:Float = -1):Vector3 {
 		if (percent == 0 || !Math.isFinite(percent) || !Math.isFinite(distance) || __pathBound <= 0 || __boundDiv == 0)
 			return pos;
 
@@ -173,9 +173,18 @@ class PathModifier extends Modifier {
 		var pathZ = __sample.z;
 		if (originWeight != 0 && Math.isFinite(originDistance) && samplePathInto(activePath, originDistance, __originSample)) {
 			final weight = FlxMath.bound(originWeight, 0, 1);
-			pathX -= __originSample.x * weight;
-			pathY -= __originSample.y * weight;
-			pathZ -= __originSample.z * weight;
+			var originX = __originSample.x;
+			var originY = __originSample.y;
+			var originZ = __originSample.z;
+			if (frozenOriginX >= 0 && Math.isFinite(frozenOriginX) && samplePathInto(activePath, frozenOriginX, __originSample))
+				originX = __originSample.x;
+			if (frozenOriginY >= 0 && Math.isFinite(frozenOriginY) && samplePathInto(activePath, frozenOriginY, __originSample))
+				originY = __originSample.y;
+			if (frozenOriginZ >= 0 && Math.isFinite(frozenOriginZ) && samplePathInto(activePath, frozenOriginZ, __originSample))
+				originZ = __originSample.z;
+			pathX -= originX * weight;
+			pathY -= originY * weight;
+			pathZ -= originZ * weight;
 		}
 
 		if (relative) {

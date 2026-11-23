@@ -168,7 +168,7 @@ class Reverse extends Modifier {
 		var centerPercent = getUnsafe(_centeredID, params.player);
 		shift = FlxMath.lerp(shift, (HEIGHT * 0.5) - ARROW_SIZEDIV2, centerPercent);
 
-		var distance = params.distance;
+		var distance = getVisualDistance(params);
 		final spawnTime = getSpawnTime(player);
 		if (spawnTime > 0)
 			distance = distance < 0 ? Math.max(distance, -spawnTime) : Math.min(distance, spawnTime);

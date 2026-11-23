@@ -50,6 +50,8 @@ haxelib git linc_luajit https://github.com/Psych-Plus-Haxelib/linc_luajit --quie
 echo "[Plus/Psych] flxanimate 4.0.0"
 haxelib install flxanimate 4.0.0 --quiet
 
+haxelib git away3d https://github.com/openfl/away3d.git c93eecfa8183f0cf26b9489d62e49cb17f278d9a --quiet
+
 echo "[Plus/Psych] moonchart 0.5.1"
 haxelib install moonchart 0.5.1 --quiet
 
