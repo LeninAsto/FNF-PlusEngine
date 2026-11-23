@@ -1,0 +1,28 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.dialogue_character",
+  "ui": {
+    "add_update": "추가/업데이트",
+    "animation_name": "애니메이션 이름:",
+    "animations": "애니메이션",
+    "idle_finished_name_on_xml_file": ".XML 파일의 비활성/완료된 이름:",
+    "image_file_name": "이미지 파일 이름:",
+    "load_character": "캐릭터 불러오기",
+    "loop_name_on_xml_file": ".XML 파일의 루프 이름:",
+    "no_antialiasing": "안티알라이징이 없습니다",
+    "position_offset": "위치 오프셋:",
+    "reload_image": "이미지 재충전",
+    "remove": "제거",
+    "save_character": "캐릭터 저장",
+    "scale": "규모:"
+  },
+  "presence": {
+    "title": "대화 캐릭터 편집기",
+    "editing": "편집: {1}"
+  },
+  "tabs": {
+    "animations": "애니메이션",
+    "character": "성격",
+    "character_type": "캐릭터 타입"
+  }
+}

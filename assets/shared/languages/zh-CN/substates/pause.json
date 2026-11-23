@@ -1,0 +1,28 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.pause",
+  "deaths": "失败次数：{1}",
+  "author": "通过: {1}",
+  "practice_mode": "练习模式",
+  "charting_mode": "谱面编辑模式",
+  "time": "{1} / {2}",
+  "menu": {
+    "resume": "继续",
+    "restart_song": "重新开始歌曲",
+    "chart_editor": "谱面编辑器",
+    "change_difficulty": "更改难度",
+    "options": "设置",
+    "exit_to_menu": "返回菜单",
+    "leave_charting_mode": "退出谱面编辑",
+    "skip_time": "跳转时间",
+    "end_song": "结束歌曲",
+    "toggle_practice_mode": "切换练习模式",
+    "toggle_botplay": "切换自动游玩",
+    "skip_video": "跳过视频",
+    "back": "返回"
+  },
+  "errors": {
+    "missing_file": "失踪文件: {1}",
+    "chart": "加载谱面时出错：\n{1}"
+  }
+}

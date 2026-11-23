@@ -1,0 +1,10 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.prompt",
+  "unsaved": "未保存の進行状況があります。\n終了してもよろしいですか?",
+  "actions": {
+    "exit": "出口",
+    "ok": "わかりました",
+    "cancel": "キャンセル"
+  }
+}

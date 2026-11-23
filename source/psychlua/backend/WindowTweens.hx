@@ -7,6 +7,8 @@ import flixel.tweens.FlxTween;
 import flixel.tweens.misc.NumTween;
 import flixel.tweens.FlxEase;
 import flixel.system.scaleModes.RatioScaleMode;
+import flixel.system.scaleModes.FixedScaleMode;
+import flixel.system.scaleModes.BaseScaleMode;
 import flixel.util.FlxColor;
 import states.PlayState;
 #if windows
@@ -17,6 +19,44 @@ import slushithings.windows.WindowsAPI;
 // Based on Slushi Engine implementation
 class WindowTweens
 {
+	static var previousScaleMode:Null<BaseScaleMode>;
+	static var scriptScaleMode:String = '';
+
+	public static function setGameScaleMode(mode:String):Void
+	{
+		final normalized = mode == null ? '' : mode.toLowerCase();
+		if ((normalized != 'fixed' && normalized != 'ratio') || normalized == scriptScaleMode)
+			return;
+		if (previousScaleMode == null)
+			previousScaleMode = FlxG.scaleMode;
+		FlxG.scaleMode = normalized == 'fixed' ? new FixedScaleMode() : new RatioScaleMode();
+		scriptScaleMode = normalized;
+	}
+
+	public static function restoreGameScaleMode():Void
+	{
+		if (previousScaleMode != null)
+			FlxG.scaleMode = previousScaleMode;
+		previousScaleMode = null;
+		scriptScaleMode = '';
+	}
+
+	public static function resizeGame(width:Int, height:Int):Void
+	{
+		if (width > 0 && height > 0)
+			FlxG.resizeGame(width, height);
+	}
+
+	public static function setWindowBounds(x:Int, y:Int, width:Int, height:Int):Void
+	{
+		#if windows
+		var window = Lib.current.stage.window;
+		if (width > 0 && height > 0 && (window.width != width || window.height != height))
+			window.resize(width, height);
+		if (window.x != x || window.y != y)
+			window.move(x, y);
+		#end
+	}
 	public static function winTweenX(tag:String, targetX:Int, duration:Float = 1, ease:String = "linear", ?onComplete:Void->Void)
 	{
 		#if windows

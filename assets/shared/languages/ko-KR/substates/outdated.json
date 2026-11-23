@@ -1,0 +1,17 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.outdated",
+  "title": "업데이트 가능!",
+  "version": "현재 버전: {1} => 새 버전: {2}",
+  "loading_changelog": "로딩 셔블로그...",
+  "controls": "압력 ENTER 최신 버전으로 업데이트\n올바른 엔진 버전을 사용하는 경우 ESCAPE를 누르세요\n옵션 메뉴에서 이 경고를 비활성화 할 수 있습니다",
+  "controls_mobile": "A를 누르면 최신 버전으로 업데이트 됩니다\n엔진 버전이 맞다면 B를 누르세요\n옵션 메뉴에서 이 경고를 비활성화 할 수 있습니다",
+  "no_changelog": "변경 기록이 없습니다",
+  "changelog_error": "로딩 변경 오류: {1}",
+  "changelog_title": "새로운 게 뭐야?\n{1}",
+  "network": {
+    "checking": "변경록 확인",
+    "retrieved": "복원",
+    "no_connection": "연결이 없어"
+  }
+}

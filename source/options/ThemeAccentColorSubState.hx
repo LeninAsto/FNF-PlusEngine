@@ -90,7 +90,7 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 		super.create();
 
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence(Language.getPhrase('theme_accent_picker', 'Theme Accent Picker'), null);
+		DiscordClient.changePresence(themePhrase('presence', 'theme_accent_picker', 'Theme Accent Picker'), null);
 		#end
 
 		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
@@ -104,13 +104,13 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 		grid.alpha = 0.65;
 		add(grid);
 
-		var title:FlxText = new FlxText(72, 42, 1136, Language.getPhrase('theme_accent_color_title', 'Theme Accent Color'), 30);
+		var title:FlxText = new FlxText(72, 42, 1136, themePhrase('title', 'theme_accent_color_title', 'Theme Accent Color'), 30);
 		title.setFormat(Paths.font("vcr.ttf"), 30, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		title.borderSize = 2;
 		add(title);
 
 		var hint:FlxText = new FlxText(72, 82, 1136,
-			Language.getPhrase('theme_accent_color_hint', 'Preview real MD3 widgets while you drag the picker. ENTER confirms, BACK cancels.'), 16);
+			themePhrase('hint', 'theme_accent_color_hint', 'Preview real MD3 widgets while you drag the picker. ENTER confirms, BACK cancels.'), 16);
 		hint.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		hint.borderSize = 1.5;
 		hint.alpha = 0.8;
@@ -136,20 +136,20 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 
 	function buildPanels():Void
 	{
-		previewBox = new MaterialBox(36, 124, 420, 556, Language.getPhrase('theme_preview_box', 'Theme Preview'));
+		previewBox = new MaterialBox(36, 124, 420, 556, themePhrase('boxes.preview', 'theme_preview_box', 'Theme Preview'));
 		add(previewBox);
 
-		pickerBox = new MaterialBox(472, 124, 360, 556, Language.getPhrase('accent_picker_box', 'Accent Picker'));
+		pickerBox = new MaterialBox(472, 124, 360, 556, themePhrase('boxes.picker', 'accent_picker_box', 'Accent Picker'));
 		add(pickerBox);
 
-		componentsBox = new MaterialBox(848, 124, 396, 556, Language.getPhrase('md3_components_preview_box', 'MD3 Components Preview'));
+		componentsBox = new MaterialBox(848, 124, 396, 556, themePhrase('boxes.components', 'md3_components_preview_box', 'MD3 Components Preview'));
 		add(componentsBox);
 	}
 
 	function buildPicker():Void
 	{
 		var pickerHint:FlxText = new FlxText(18, 10, 320,
-			Language.getPhrase('theme_accent_picker_hint', 'Wheel + luminance strip + palette, without turning into visual soup.'), 16);
+			themePhrase('picker_hint', 'theme_accent_picker_hint', 'Wheel + luminance strip + palette, without turning into visual soup.'), 16);
 		pickerHint.setFormat(Paths.font("vcr.ttf"), 16, MD3Theme.onSurfaceVariant, LEFT);
 		pickerBox.content.add(pickerHint);
 
@@ -186,33 +186,33 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 		previewAccent = new FlxSprite(38, 50).makeGraphic(8, 78, currentColor);
 		previewBox.content.add(previewAccent);
 
-		previewTitle = new FlxText(64, 68, 300, Language.getPhrase('theme_accent_preview_title', 'FREEPLAY SAMPLE'), 28);
+		previewTitle = new FlxText(64, 68, 300, themePhrase('preview.title', 'theme_accent_preview_title', 'FREEPLAY SAMPLE'), 28);
 		previewTitle.setFormat(Paths.font("vcr.ttf"), 30, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		previewTitle.borderSize = 2;
 		previewBox.content.add(previewTitle);
 
-		previewMeta = new FlxText(64, 110, 300, Language.getPhrase('theme_accent_preview_meta', 'Custom Accent Preview'), 18);
+		previewMeta = new FlxText(64, 110, 300, themePhrase('preview.meta', 'theme_accent_preview_meta', 'Custom Accent Preview'), 18);
 		previewMeta.setFormat(Paths.font("vcr.ttf"), 18, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		previewMeta.borderSize = 1.5;
 		previewBox.content.add(previewMeta);
 
-		accentChip = new MaterialChip(24, 170, Language.getPhrase('theme_accent_chip_active', 'Accent active'), ChipType.FILTER, true);
+		accentChip = new MaterialChip(24, 170, themePhrase('chips.active', 'theme_accent_chip_active', 'Accent active'), ChipType.FILTER, true);
 		previewBox.content.add(accentChip);
 
-		customChip = new MaterialChip(180, 170, Language.getPhrase('theme_accent_chip_custom', 'Custom token'), ChipType.ASSIST, false);
+		customChip = new MaterialChip(180, 170, themePhrase('chips.custom', 'theme_accent_chip_custom', 'Custom token'), ChipType.ASSIST, false);
 		previewBox.content.add(customChip);
 
-		livePreviewCheck = new MaterialCheckbox(24, 220, Language.getPhrase('theme_accent_live_preview', 'Live preview enabled'), true);
+		livePreviewCheck = new MaterialCheckbox(24, 220, themePhrase('live_preview', 'theme_accent_live_preview', 'Live preview enabled'), true);
 		previewBox.content.add(livePreviewCheck);
 
-		copyButton = new MaterialButton(24, 278, Language.getPhrase('theme_accent_copy_hex', 'Copy HEX'), ButtonType.OUTLINED, 140, function()
+		copyButton = new MaterialButton(24, 278, themePhrase('actions.copy_hex', 'theme_accent_copy_hex', 'Copy HEX'), ButtonType.OUTLINED, 140, function()
 		{
 			Clipboard.text = currentColor.toHexString(false, false);
 			FlxG.sound.play(Paths.sound('scrollMenu'), 0.6);
 		});
 		previewBox.content.add(copyButton);
 
-		pasteButton = new MaterialButton(176, 278, Language.getPhrase('theme_accent_paste_hex', 'Paste HEX'), ButtonType.OUTLINED, 140, function()
+		pasteButton = new MaterialButton(176, 278, themePhrase('actions.paste_hex', 'theme_accent_paste_hex', 'Paste HEX'), ButtonType.OUTLINED, 140, function()
 		{
 			var formattedText = Clipboard.text.trim().toUpperCase().replace('#', '').replace('0x', '');
 			var newColor:Null<FlxColor> = FlxColor.fromString('#' + formattedText);
@@ -226,20 +226,20 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 		});
 		previewBox.content.add(pasteButton);
 
-		confirmButton = new MaterialButton(24, 344, Language.getPhrase('theme_accent_apply', 'Apply'), ButtonType.FILLED, 140, function()
+		confirmButton = new MaterialButton(24, 344, themePhrase('actions.apply', 'theme_accent_apply', 'Apply'), ButtonType.FILLED, 140, function()
 		{
 			confirmSelection();
 		});
 		previewBox.content.add(confirmButton);
 
-		cancelButton = new MaterialButton(176, 344, Language.getPhrase('theme_accent_cancel', 'Cancel'), ButtonType.OUTLINED, 140, function()
+		cancelButton = new MaterialButton(176, 344, themePhrase('actions.cancel', 'theme_accent_cancel', 'Cancel'), ButtonType.OUTLINED, 140, function()
 		{
 			cancelSelection();
 		});
 		previewBox.content.add(cancelButton);
 
 		var miniHint:FlxText = new FlxText(24, 416, 350,
-			Language.getPhrase('theme_accent_mini_hint',
+			themePhrase('mini_hint', 'theme_accent_mini_hint',
 				'The right side shows stock engine widgets tinted with your accent. If it looks cursed here, it would look cursed in menus too.'),
 			16);
 		miniHint.setFormat(Paths.font("vcr.ttf"), 16, OptionsMenuTheme.bodyTextColor(), LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
@@ -250,7 +250,7 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 
 	function buildComponentsPreview():Void
 	{
-		var section1:FlxText = new FlxText(20, 16, 340, Language.getPhrase('theme_accent_section_standard', 'Standard Progress'), 20);
+		var section1:FlxText = new FlxText(20, 16, 340, themePhrase('sections.standard', 'theme_accent_section_standard', 'Standard Progress'), 20);
 		section1.setFormat(Paths.font("vcr.ttf"), 20, MD3Theme.onSurface, LEFT);
 		componentsBox.content.add(section1);
 
@@ -268,7 +268,7 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 		circularIndeterminate.indeterminate = true;
 		componentsBox.content.add(circularIndeterminate);
 
-		var section2:FlxText = new FlxText(20, 182, 340, Language.getPhrase('theme_accent_section_wavy', 'Wavy Progress'), 20);
+		var section2:FlxText = new FlxText(20, 182, 340, themePhrase('sections.wavy', 'theme_accent_section_wavy', 'Wavy Progress'), 20);
 		section2.setFormat(Paths.font("vcr.ttf"), 20, MD3Theme.onSurface, LEFT);
 		componentsBox.content.add(section2);
 
@@ -286,33 +286,33 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 		wavyCircularIndeterminate.indeterminate = true;
 		componentsBox.content.add(wavyCircularIndeterminate);
 
-		var section3:FlxText = new FlxText(20, 350, 340, Language.getPhrase('theme_accent_section_widgets', 'Other Engine Widgets'), 20);
+		var section3:FlxText = new FlxText(20, 350, 340, themePhrase('sections.widgets', 'theme_accent_section_widgets', 'Other Engine Widgets'), 20);
 		section3.setFormat(Paths.font("vcr.ttf"), 20, MD3Theme.onSurface, LEFT);
 		componentsBox.content.add(section3);
 
 		loadingIndicator = new MaterialLoadingIndicator(24, 390, 44, true);
 		componentsBox.content.add(loadingIndicator);
 
-		var infoChip = new MaterialChip(90, 396, Language.getPhrase('theme_accent_chip_preset_safe', 'Preset-safe'), ChipType.SUGGESTION, false);
+		var infoChip = new MaterialChip(90, 396, themePhrase('chips.preset_safe', 'theme_accent_chip_preset_safe', 'Preset-safe'), ChipType.SUGGESTION, false);
 		componentsBox.content.add(infoChip);
 
-		var filterChip = new MaterialChip(230, 396, Language.getPhrase('theme_accent_chip_selected', 'Selected'), ChipType.FILTER, true);
+		var filterChip = new MaterialChip(230, 396, themePhrase('chips.selected', 'theme_accent_chip_selected', 'Selected'), ChipType.FILTER, true);
 		componentsBox.content.add(filterChip);
 
-		var inputChip = new MaterialChip(90, 434, Language.getPhrase('theme_accent_chip_hex', 'HEX token'), ChipType.INPUT, false, null, function()
+		var inputChip = new MaterialChip(90, 434, themePhrase('chips.hex', 'theme_accent_chip_hex', 'HEX token'), ChipType.INPUT, false, null, function()
 		{
 			Clipboard.text = currentColor.toHexString(false, false);
 		});
 		componentsBox.content.add(inputChip);
 
-		var componentCheck = new MaterialCheckbox(24, 486, Language.getPhrase('theme_accent_use_custom', 'Use custom accent'), true);
+		var componentCheck = new MaterialCheckbox(24, 486, themePhrase('use_custom', 'theme_accent_use_custom', 'Use custom accent'), true);
 		componentsBox.content.add(componentCheck);
 
-		var outlineButton = new MaterialButton(196, 478, Language.getPhrase('theme_accent_preview', 'Preview'), ButtonType.OUTLINED, 84);
+		var outlineButton = new MaterialButton(196, 478, themePhrase('actions.preview', 'theme_accent_preview', 'Preview'), ButtonType.OUTLINED, 84);
 		outlineButton.allowMouseInput = false;
 		componentsBox.content.add(outlineButton);
 
-		var filledButton = new MaterialButton(292, 478, Language.getPhrase('theme_accent_accent', 'Accent'), ButtonType.FILLED, 84);
+		var filledButton = new MaterialButton(292, 478, themePhrase('actions.accent', 'theme_accent_accent', 'Accent'), ButtonType.FILLED, 84);
 		filledButton.allowMouseInput = false;
 		componentsBox.content.add(filledButton);
 	}
@@ -473,7 +473,7 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 
 	function updatePreview(?fullRefresh:Bool = true):Void
 	{
-		customChip.label = Language.getPhrase('theme_accent_hex_label', 'HEX {1}', [currentColor.toHexString(false, false)]);
+		customChip.label = themePhrase('hex_label', 'theme_accent_hex_label', 'HEX {1}', [currentColor.toHexString(false, false)]);
 		updatePickerVisuals();
 		if (!fullRefresh)
 			return;
@@ -581,6 +581,11 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 	function pointerFlxPoint():FlxPoint
 	{
 		return !controls.controllerMode ? FlxG.mouse.getScreenPosition() : controllerPointer.getScreenPosition();
+	}
+
+	inline function themePhrase(key:String, legacyKey:String, fallback:String, ?values:Array<Dynamic>):String
+	{
+		return Language.getPhrase('options.theme_accent.$key', Language.getPhrase(legacyKey, fallback, values), values);
 	}
 }
 

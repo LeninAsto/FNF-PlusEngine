@@ -1,0 +1,26 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.song_checker",
+  "title": "PEMERIKSA LAGU",
+  "prefix": {
+    "error": "[KESALAHAN]",
+    "warning": "[MEMPERINGATKAN]",
+    "fix": "[MEMPERBAIKI]"
+  },
+  "more": "...dan {1} lainnya.",
+  "issues": {
+    "missing_chart": "chart tidak ditemukan untuk kesulitan ini.",
+    "invalid_chart": "chart ada tetapi tidak dapat diuraikan.",
+    "repaired_song_name": "Nama lagu yang hilang dipulihkan dari foldernya.",
+    "missing_notes": "chart tidak memiliki susunan not.",
+    "repaired_events": "Rangkaian acara yang hilang diganti dengan yang kosong.",
+    "invalid_bpm": "BPM harus lebih besar dari nol.",
+    "repaired_speed": "Kecepatan gulir yang tidak valid dikembalikan ke 1.",
+    "repaired_gf": "Karakter pacar yang hilang dikembalikan ke \"gf\".",
+    "missing_inst": "Audio instrumental tidak ada.",
+    "missing_voices": "Suara diaktifkan, tetapi tidak ditemukan file vokal default atau terpisah.",
+    "invalid_section": "Bagian {1} tidak memiliki daftar not.",
+    "invalid_note": "not salah di bagian {1} , indeks {2} .",
+    "invalid_note_values": "Data not non-numerik di bagian {1} , indeks {2} ."
+  }
+}

@@ -51,5 +51,9 @@
 	<string name="plus_crash_details">Technical details</string>
 	<string name="plus_crash_show_details">Show details</string>
 	<string name="plus_crash_hide_details">Hide details</string>
+	<string name="plus_crash_show_recent_logs">View recent traces / logs</string>
+	<string name="plus_crash_hide_recent_logs">Hide recent traces / logs</string>
 	<string name="plus_crash_empty">No crash report was written. The app stopped before Android could save the details.</string>
+	<string name="plus_crash_send_logs">Send logs to the creator</string>
+	<string name="plus_crash_share_subject">Plus Engine crash report</string>
 </resources>

@@ -14,11 +14,12 @@ class PreparedChartNote
 	public final gfNote:Bool;
 	public final altAnim:Bool;
 	public final stepCrochet:Float;
+	public final strumLineIndex:Int;
 	/** Number of sub-frame taps represented by this runtime note. */
 	public var density:Int;
 
 	public function new(strumTime:Float, column:Int, sustainLength:Float, noteType:String, gottaHit:Bool, gfNote:Bool, altAnim:Bool,
-		stepCrochet:Float, ?density:Int = 1)
+		stepCrochet:Float, ?density:Int = 1, ?strumLineIndex:Int = -1)
 	{
 		this.strumTime = strumTime;
 		this.column = column;
@@ -28,6 +29,7 @@ class PreparedChartNote
 		this.gfNote = gfNote;
 		this.altAnim = altAnim;
 		this.stepCrochet = stepCrochet;
+		this.strumLineIndex = strumLineIndex;
 		this.density = density;
 	}
 }
@@ -35,11 +37,14 @@ class PreparedChartNote
 /** Pure chart data prepared off the render thread before PlayState starts. */
 class SongLoadPlan
 {
-	public static inline final DENSE_CHART_THRESHOLD:Int = 50000;
-	public static inline final DENSE_TAP_BUCKET_MS:Float = 1000 / 120;
+	public static inline final DENSE_CHART_THRESHOLD:Int = 20000;
+	public static inline final EXTREME_CHART_THRESHOLD:Int = 250000;
+	public static inline final ULTRA_DENSE_CHART_THRESHOLD:Int = 1000000;
+	static inline final MAX_CACHED_PLANS:Int = 3;
 
 	public static var current(default, null):SongLoadPlan;
 	static var plans:Map<String, SongLoadPlan> = [];
+	static var planOrder:Array<String> = [];
 
 	public final source:SwagSong;
 	public final cacheKey:String;
@@ -49,6 +54,7 @@ class SongLoadPlan
 	public var compileMs(default, null):Float = 0;
 	public var cacheHit(default, null):Bool = false;
 	public var denseChart(default, null):Bool = false;
+	public var ultraDenseChart(default, null):Bool = false;
 	public var sourceNoteCount(default, null):Int = 0;
 
 	public function new(song:SwagSong, cacheKey:String, ?columns:Int = 4)
@@ -56,14 +62,20 @@ class SongLoadPlan
 		source = song;
 		this.cacheKey = cacheKey;
 		var started:Float = Timer.stamp();
-		var bpm:Float = song.bpm;
+		var bpm:Float = Math.isFinite(song.bpm) && song.bpm > 0 ? song.bpm : 100;
 		if (song.notes == null)
 			return;
 
 		for (section in song.notes)
 			if (section != null && section.sectionNotes != null)
 				sourceNoteCount += section.sectionNotes.length;
+		if (song.extraStrumLines != null)
+			for (line in song.extraStrumLines)
+				if (line != null && line.notes != null)
+					sourceNoteCount += line.notes.length;
 		denseChart = sourceNoteCount >= DENSE_CHART_THRESHOLD;
+		ultraDenseChart = sourceNoteCount >= ULTRA_DENSE_CHART_THRESHOLD;
+		var tapBucketMs:Float = 1000 / (ultraDenseChart ? 30 : (sourceNoteCount >= EXTREME_CHART_THRESHOLD ? 60 : 120));
 		var denseTaps:Map<Int, Array<PreparedChartNote>> = denseChart ? [] : null;
 
 		for (section in song.notes)
@@ -82,21 +94,26 @@ class SongLoadPlan
 					continue;
 				var strumTime:Float = raw[0];
 				var rawColumn:Int = Std.int(raw[1]);
+				if (rawColumn < 0 || !Math.isFinite(strumTime)) continue;
 				var column:Int = Std.int(rawColumn % columns);
 				var sustain:Float = raw[2];
-				if (Math.isNaN(sustain))
+				if (!Math.isFinite(sustain) || sustain < 0)
 					sustain = 0;
 				var type:String = Std.isOfType(raw[3], String) ? raw[3] : Note.defaultNoteTypes[raw[3]];
 				if (type == null)
 					type = '';
+				// psych_v1 stores an absolute side after Song.convert():
+				// 0...columns = player, columns...columns * 2 = opponent.
+				// Applying mustHitSection again here would invert converted charts twice.
 				var gottaHit:Bool = rawColumn < columns;
+				var lineIndex:Int = gottaHit ? 1 : 0;
 				var gf:Bool = section.gfSection == true && gottaHit == section.mustHitSection;
 				var alt:Bool = section.altAnim == true && !gottaHit;
 				if (denseChart && sustain <= 0)
 				{
 					// Several taps in this window occupy the same screen pixel/input frame.
 					// Keep one sprite and retain their gameplay weight in density.
-					var bucket:Int = Math.floor(strumTime / DENSE_TAP_BUCKET_MS);
+					var bucket:Int = Math.floor(strumTime / tapBucketMs);
 					var bucketNotes:Array<PreparedChartNote> = denseTaps.get(bucket);
 					if (bucketNotes == null)
 					{
@@ -106,14 +123,14 @@ class SongLoadPlan
 					var packed:PreparedChartNote = null;
 					for (candidate in bucketNotes)
 						if (candidate.column == column && candidate.gottaHit == gottaHit && candidate.gfNote == gf && candidate.altAnim == alt
-							&& candidate.noteType == type)
+							&& candidate.noteType == type && candidate.strumLineIndex == lineIndex)
 						{
 							packed = candidate;
 							break;
 						}
 					if (packed == null)
 					{
-						packed = new PreparedChartNote(strumTime, column, sustain, type, gottaHit, gf, alt, stepCrochet);
+						packed = new PreparedChartNote(strumTime, column, sustain, type, gottaHit, gf, alt, stepCrochet, 1, lineIndex);
 						bucketNotes.push(packed);
 						notes.push(packed);
 					}
@@ -121,21 +138,105 @@ class SongLoadPlan
 						packed.density++;
 				}
 				else
-					notes.push(new PreparedChartNote(strumTime, column, sustain, type, gottaHit, gf, alt, stepCrochet));
+					notes.push(new PreparedChartNote(strumTime, column, sustain, type, gottaHit, gf, alt, stepCrochet, 1, lineIndex));
 				tapCount++;
 				sustainCount += Std.int(Math.max(0, Math.round(sustain / stepCrochet)));
 			}
 		}
+
+		if (song.extraStrumLines != null)
+		{
+			var timing:Array<{start:Float, step:Float}> = [];
+			var timingTime:Float = 0;
+			var timingBpm:Float = Math.isFinite(song.bpm) && song.bpm > 0 ? song.bpm : 100;
+			for (section in song.notes)
+			{
+				if (section.changeBPM == true && section.bpm != null && section.bpm > 0) timingBpm = section.bpm;
+				var step = 60 / timingBpm * 1000 / 4;
+				timing.push({start: timingTime, step: step});
+				timingTime += step * 4 * (section.sectionBeats > 0 ? section.sectionBeats : 4);
+			}
+			var seen:Map<String, Bool> = [];
+			var extraCount:Int = 0;
+			var skippedLines:Int = 0;
+			var skippedNotes:Int = 0;
+			for (line in song.extraStrumLines)
+			{
+				if (line == null || extraCount >= 5) { skippedLines++; continue; }
+				var id = line.id == null ? '' : line.id.trim().toLowerCase();
+				if (id.length == 0 || seen.exists(id)) { skippedLines++; continue; }
+				seen.set(id, true);
+				var lineIndex = 2 + extraCount++;
+				if (line.notes == null) continue;
+				for (raw in line.notes)
+				{
+					if (raw == null || raw.length < 3) { skippedNotes++; continue; }
+					var time:Float = raw[0];
+					var lane:Int = Std.int(raw[1]);
+					if (!Math.isFinite(time) || lane < 0 || lane >= columns) { skippedNotes++; continue; }
+					var sustain:Float = raw[2];
+					if (!Math.isFinite(sustain) || sustain < 0) sustain = 0;
+					var type:String = Std.isOfType(raw[3], String) ? raw[3] : Note.defaultNoteTypes[raw[3]];
+					if (type == null) type = '';
+					var step:Float = 60 / (song.bpm > 0 ? song.bpm : 100) * 1000 / 4;
+					for (timingIndex in 0...timing.length)
+						if (timing[timingIndex].start <= time) step = timing[timingIndex].step; else break;
+					if (denseChart && sustain <= 0)
+					{
+						var bucket:Int = Math.floor(time / tapBucketMs);
+						var bucketNotes = denseTaps.get(bucket);
+						if (bucketNotes == null)
+						{
+							bucketNotes = [];
+							denseTaps.set(bucket, bucketNotes);
+						}
+						var packed:PreparedChartNote = null;
+						for (candidate in bucketNotes)
+							if (candidate.column == lane && candidate.noteType == type && candidate.strumLineIndex == lineIndex)
+							{
+								packed = candidate;
+								break;
+							}
+						if (packed == null)
+						{
+							packed = new PreparedChartNote(time, lane, sustain, type, false, false, false, step, 1, lineIndex);
+							bucketNotes.push(packed);
+							notes.push(packed);
+						}
+						else packed.density++;
+					}
+					else notes.push(new PreparedChartNote(time, lane, sustain, type, false, false, false, step, 1, lineIndex));
+					tapCount++;
+					sustainCount += Std.int(Math.max(0, Math.round(sustain / step)));
+				}
+			}
+			if (skippedLines > 0 || skippedNotes > 0)
+				trace('[SongLoadPlan] Ignored $skippedLines invalid/duplicate extra StrumLines and $skippedNotes invalid extra notes.');
+		}
+		notes.sort(function(a:PreparedChartNote, b:PreparedChartNote):Int
+			return a.strumTime < b.strumTime ? -1 : (a.strumTime > b.strumTime ? 1 : 0));
 		compileMs = (Timer.stamp() - started) * 1000;
 	}
 
 	public static function prepare(song:SwagSong):SongLoadPlan
 	{
+		if (current != null && current.source == song)
+		{
+			current.cacheHit = true;
+			SongLoadMetrics.recordPlan(current);
+			return current;
+		}
+		if (current != null && current.ultraDenseChart)
+		{
+			plans.remove(current.cacheKey);
+			planOrder.remove(current.cacheKey);
+		}
 		var key:String = makeCacheKey(song);
 		var cached:SongLoadPlan = plans.get(key);
-		if (cached != null)
+		if (cached != null && cached.source == song)
 		{
 			cached.cacheHit = true;
+			touch(key);
 			current = cached;
 			SongLoadMetrics.recordPlan(current);
 			return current;
@@ -143,21 +244,45 @@ class SongLoadPlan
 
 		current = new SongLoadPlan(song, key);
 		plans.set(key, current);
+		touch(key);
+		while (planOrder.length > MAX_CACHED_PLANS)
+			plans.remove(planOrder.shift());
 		SongLoadMetrics.recordPlan(current);
 		return current;
 	}
 
 	public static function get(song:SwagSong):SongLoadPlan
 	{
-		if (current == null || current.cacheKey != makeCacheKey(song))
+		if (current != null && current.source == song)
+			return current;
+		if (current == null || current.source != song)
 			return prepare(song);
 		return current;
+	}
+
+	public static function refresh(song:SwagSong):SongLoadPlan
+	{
+		if (current != null && current.source == song)
+		{
+			plans.remove(current.cacheKey);
+			planOrder.remove(current.cacheKey);
+			current = null;
+		}
+		return prepare(song);
 	}
 
 	public static function clear():Void
 	{
 		current = null;
 		plans.clear();
+		planOrder.resize(0);
+	}
+
+
+	static function touch(key:String):Void
+	{
+		planOrder.remove(key);
+		planOrder.push(key);
 	}
 
 	static function makeCacheKey(song:SwagSong):String
@@ -173,6 +298,15 @@ class SongLoadPlan
 			for (section in song.notes)
 				if (section != null && section.sectionNotes != null)
 					entries += section.sectionNotes.length;
-		return '$path|${song.song}|${song.bpm}|$sections|$entries';
+		var extraLines:Int = 0;
+		var extraEntries:Int = 0;
+		if (song.extraStrumLines != null)
+			for (line in song.extraStrumLines)
+				if (line != null)
+				{
+					extraLines++;
+					if (line.notes != null) extraEntries += line.notes.length;
+				}
+		return '$path|${song.song}|${song.bpm}|$sections|$entries|$extraLines|$extraEntries';
 	}
 }

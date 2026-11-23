@@ -661,6 +661,10 @@ class Paths
 			if (parentFolder == 'songs')
 				modKey = 'songs/$key';
 
+			if (Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0
+				&& safeModPathExists(mods(Mods.currentModDirectory + '/' + modKey)))
+				return true;
+
 			for (mod in Mods.getGlobalMods())
 				if (safeModPathExists(mods('$mod/$modKey')))
 					return true;
@@ -669,7 +673,7 @@ class Paths
 				return true;
 			#end
 
-			if (safeModPathExists(mods(Mods.currentModDirectory + '/' + modKey)) || safeModPathExists(mods(modKey)))
+			if (safeModPathExists(mods(modKey)))
 				return true;
 			#if linux
 			else if (safeModPathExists(findFile(modKey)))

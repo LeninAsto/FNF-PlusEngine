@@ -1,0 +1,10 @@
+{
+  "$schema": 1,
+  "$namespace": "states.story_menu",
+  "presence": "在菜单中",
+  "score": "周计数: {1}",
+  "errors": {
+    "no_weeks": "没有更多的故事模式\n\n打压 {1} 进入\"周编辑菜单\".\n打压 {2} 返回主菜单.",
+    "no_visible_weeks": "没有可见的星期可供故事模式\n\n打压 {1} 返回主菜单."
+  }
+}

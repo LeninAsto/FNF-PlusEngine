@@ -1,11 +1,11 @@
 package modchart.backend.graphics.renderers;
 
 import flixel.math.FlxMath;
+import objects.SustainSplash;
 
 using flixel.util.FlxColorTransformUtil;
 
 final matrix:Matrix = new Matrix();
-final fMatrix:FlxMatrix = new FlxMatrix();
 final rotationVector = new Vector3();
 final helperVector = new Vector3();
 
@@ -17,6 +17,9 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 	// Pre-allocated members to avoid per-call heap allocations
 	final _planeVerts:NativeVector<Float> = new NativeVector<Float>(8);
 	final _projZ:NativeVector<Float> = new NativeVector<Float>(4);
+	final _clipWorld:openfl.Vector<Float> = new openfl.Vector<Float>(12, true);
+	final _clipDistances:openfl.Vector<Float> = new openfl.Vector<Float>(4, true);
+	final _clipper:NearPlaneClipper = new NearPlaneClipper();
 	final _arrowData:ArrowData = {
 		hitTime: 0,
 		distance: 0,
@@ -28,6 +31,7 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 	};
 	final _orientInput:Vector3 = new Vector3();
 	final _rotated:Vector3 = new Vector3();
+	final _fieldRotated:Vector3 = new Vector3();
 	final _viewInput:Vector3 = new Vector3();
 	final _outputPos:Vector3 = new Vector3();
 	final _outputVisuals:VisualParameters = {};
@@ -35,6 +39,11 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 	final _orientPos:Vector3 = new Vector3();
 	final _orientVisuals:VisualParameters = {};
 	final _orientOutput:ModifierOutput;
+	final _directionData:ArrowData = {hitTime: 0, distance: 0, sourceTime: 0, lane: 0, player: 0, isTapArrow: true, isHoldBody: true};
+	final _directionInput:Vector3 = new Vector3();
+	final _directionPos:Vector3 = new Vector3();
+	final _directionVisuals:VisualParameters = {};
+	final _directionOutput:ModifierOutput;
 	var _slots:Array<ArrowRenderSlot> = [];
 	var _slotIndex:Int = 0;
 
@@ -42,12 +51,21 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		super(parent);
 		_output = {pos: _outputPos, visuals: _outputVisuals};
 		_orientOutput = {pos: _orientPos, visuals: _orientVisuals};
+		_directionOutput = {pos: _directionPos, visuals: _directionVisuals};
+	}
+
+	public static inline function holdDirectionAngle(dx:Float, dy:Float, downscroll:Bool):Float {
+		final sign = downscroll ? -1.0 : 1.0;
+		dx *= sign;
+		dy *= sign;
+		return dx * dx + dy * dy > 0.0001 ? Math.atan2(dy, dx) * FlxAngle.TO_DEG - 90 : 0;
 	}
 
 	/** Reuses command and geometry storage after the previous frame was submitted. */
 	public inline function beginFrame():Void
 	{
 		_slotIndex = 0;
+		__lastPlayer = -1;
 	}
 
 	inline function nextSlot():ArrowRenderSlot
@@ -95,6 +113,8 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 			return null;
 
 		final arrowPosition = helperVector;
+		final isTap = Adapter.instance.isTapNote(arrow);
+		final isSplash = Adapter.instance.isSplash(arrow);
 
 		final player = Adapter.instance.getPlayerFromArrow(arrow);
 		final sourceTime = Adapter.instance.getTimeFromArrow(arrow);
@@ -110,7 +130,7 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		final orient = canUseLast ? __lastOrient : (__lastOrient = parent.getPercent('orient', player));
 
 		// apply centered 2 (aka centered path)
-		if (Adapter.instance.isTapNote(arrow)) {
+		if (isTap) {
 			arrowDiff += FlxG.height * 0.25 * centered2;
 		} else {
 			arrowTime = songPos + (FlxG.height * 0.25 * centered2);
@@ -120,23 +140,57 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		arrowData.hitTime = arrowTime;
 		arrowData.distance = arrowDiff;
 		arrowData.sourceTime = sourceTime;
+		arrowData.strumTime = isTap ? sourceTime : songPos;
+		arrowData.sampleTime = arrowData.strumTime;
 		arrowData.lane = Adapter.instance.getLaneFromArrow(arrow);
 		arrowData.player = player;
-		arrowData.isTapArrow = Adapter.instance.isTapNote(arrow);
+		arrowData.isTapArrow = isTap;
 		arrowData.isHoldBody = false;
 
 		arrowPosition.setTo(Adapter.instance.getDefaultReceptorX(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2,
 			Adapter.instance.getDefaultReceptorY(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2, 0);
 
-		final output = parent.getNotePathInto(arrowPosition, arrowData, _output, _outputPos, _outputVisuals);
+		final output = isSplash
+			? parent.getSplashPathInto(arrowPosition, arrowData, _output, _outputPos, _outputVisuals)
+			: (isTap
+				? parent.getNotePathInto(arrowPosition, arrowData, _output, _outputPos, _outputVisuals)
+				: parent.getReceptorPathInto(arrowPosition, arrowData, _output, _outputPos, _outputVisuals));
 		arrowPosition.setTo(output.rawX, output.rawY, output.rawZ);
 		var visualAngleZ = output.visuals.angleZ;
+		if (Std.isOfType(arrow, SustainSplash)) {
+			final directionData = _directionData;
+			directionData.player = player;
+			directionData.lane = arrowData.lane;
+			final originX = Adapter.instance.getDefaultReceptorX(arrowData.lane, player) + Manager.ARROW_SIZEDIV2;
+			final originY = Adapter.instance.getDefaultReceptorY(arrowData.lane, player) + Manager.ARROW_SIZEDIV2;
+			_directionInput.setTo(originX, originY, 0);
+			directionData.hitTime = songPos;
+			directionData.sourceTime = songPos;
+			directionData.strumTime = songPos;
+			directionData.sampleTime = songPos;
+			directionData.distance = 0;
+			final start = parent.getNotePathInto(_directionInput, directionData, _directionOutput, _directionPos, _directionVisuals, 0, false);
+			final startX = start.pos.x;
+			final startY = start.pos.y;
+			_directionInput.setTo(originX, originY, 0);
+			directionData.hitTime = songPos + 10;
+			directionData.sourceTime = songPos + 10;
+			directionData.strumTime = songPos + 10;
+			directionData.sampleTime = songPos + 10;
+			directionData.distance = 10;
+			final end = parent.getNotePathInto(_directionInput, directionData, _directionOutput, _directionPos, _directionVisuals, 0, false);
+			visualAngleZ += holdDirectionAngle(end.pos.x - startX, end.pos.y - startY, Adapter.instance.getDownscroll());
+		}
 
 		// internal mods
 		if (orient != 0) {
 			_orientInput.setTo(Adapter.instance.getDefaultReceptorX(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2,
 				Adapter.instance.getDefaultReceptorY(arrowData.lane, arrowData.player) + Manager.ARROW_SIZEDIV2, 0);
-			final nextOutput = parent.getNotePathInto(_orientInput, arrowData, _orientOutput, _orientPos, _orientVisuals, 1, false, true);
+			final nextOutput = isSplash
+				? parent.getSplashPathInto(_orientInput, arrowData, _orientOutput, _orientPos, _orientVisuals, 1, false, true)
+				: (isTap
+					? parent.getNotePathInto(_orientInput, arrowData, _orientOutput, _orientPos, _orientVisuals, 1, false, true)
+					: parent.getReceptorPathInto(_orientInput, arrowData, _orientOutput, _orientPos, _orientVisuals, 1, false, true));
 			final thisPos = output.pos;
 			final nextPos = nextOutput.pos;
 
@@ -160,6 +214,8 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		final projectionZ = _projZ;
 
 		var vertPointer = 0;
+		var needsClip = false;
+		var anyVisible = false;
 		final distAbs = Math.abs(arrowData.distance);
 		// Very soft far-distance compensation to keep angles close to target value
 		// while still avoiding extreme over-tilt on very distant notes.
@@ -181,17 +237,30 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 				matrix.b = ModchartUtil.tan(output.visuals.skewY * FlxAngle.TO_RAD);
 				matrix.c = ModchartUtil.tan(output.visuals.skewX * FlxAngle.TO_RAD);
 
-				rotation.x = matrix.__transformX(rotation.x, rotation.y);
+				final skewedX = matrix.__transformX(rotation.x, rotation.y);
 				rotation.y = matrix.__transformY(rotation.x, rotation.y);
+				rotation.x = skewedX;
 			}
 			rotation.x = rotation.x * output.visuals.scaleX;
 			rotation.y = rotation.y * output.visuals.scaleY;
+			if (output.visuals.fieldAngleX != 0 || output.visuals.fieldAngleY != 0 || output.visuals.fieldAngleZ != 0)
+				rotation = ModchartUtil.rotate3DVectorInto(rotation, output.visuals.fieldAngleX, output.visuals.fieldAngleY,
+					output.visuals.fieldAngleZ, _fieldRotated);
 
-			_viewInput.setTo(rotation.x + arrowPosition.x, rotation.y + arrowPosition.y,
-				(rotation.z * 0.001 * Config.Z_SCALE) + arrowPosition.z);
+			final vx = rotation.x, vy = rotation.y;
+			_viewInput.setTo(vx * output.visuals.planeXX + vy * output.visuals.planeYX + arrowPosition.x,
+				vx * output.visuals.planeXY + vy * output.visuals.planeYY + arrowPosition.y,
+				vx * output.visuals.planeXZ + vy * output.visuals.planeYZ + (rotation.z * 0.001 * Config.Z_SCALE) + arrowPosition.z);
 
-			// The result of the perspective projection of rotation
+			final vertexIndex = Std.int(vertPointer / 2);
+			final worldIndex = vertexIndex * 3;
+			_clipWorld[worldIndex] = _viewInput.x;
+			_clipWorld[worldIndex + 1] = _viewInput.y;
+			_clipWorld[worldIndex + 2] = _viewInput.z;
 			final projection = this.view.transformVector(_viewInput);
+			_clipDistances[vertexIndex] = this.view.clipDistance;
+			if (this.view.clipDistance < 0) needsClip = true;
+			else anyVisible = true;
 
 			planeVertices[vertPointer] = projection.x;
 			planeVertices[vertPointer + 1] = projection.y;
@@ -201,6 +270,13 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 
 			vertPointer = vertPointer + 2;
 		} while (vertPointer < planeVertices.length);
+		if (!anyVisible) return null;
+		if (output.pos.z > 1e6) {
+			for (i in 0...4) if (_clipDistances[i] >= 0) {
+				arrow._z = (projectionZ[i] - 1) * 1000;
+				break;
+			}
+		}
 
 		// @formatter:off
 		// build directly as openfl.Vector to avoid conversion at render time
@@ -279,6 +355,11 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		#end
 
 		// @formatter:on
+		if (needsClip) {
+			slot.ensureClipped();
+			if (!_clipper.clipQuad(this.view, _clipWorld, _clipDistances, uvData, 0, slot.clippedVertices, slot.clippedUVs, false))
+				return null;
+		}
 		final absGlow = output.visuals.glow * 255;
 		final negGlow = 1 - output.visuals.glow;
 
@@ -303,9 +384,9 @@ final class ArrowRenderer extends BaseRenderer<FlxSprite> {
 		dc.blend = arrow.blend;
 		dc.cameras = ModchartUtil.resolveCameras(parent, arrow, slot.cameras);
 		dc.shader = arrow.shader;
-		dc.vertices = vertices;
-		dc.indices = _sharedArrowIdx;
-		dc.uvs = uvData;
+		dc.vertices = needsClip ? slot.clippedVertices : vertices;
+		dc.indices = needsClip ? slot.clippedIndices : _sharedArrowIdx;
+		dc.uvs = needsClip ? slot.clippedUVs : uvData;
 		dc.color = color;
 		dc.colors = null;
 		dc.isColored = color.hasRGBMultipliers() || color.alphaMultiplier != 1;
@@ -322,6 +403,16 @@ private class ArrowRenderSlot
 	public final color:ColorTransform;
 	public final cameras:Array<FlxCamera>;
 	public final command:DrawCommand;
+	public var clippedVertices:openfl.Vector<Float>;
+	public var clippedUVs:openfl.Vector<Float>;
+	public var clippedIndices:openfl.Vector<Int>;
+
+	public function ensureClipped():Void {
+		if (clippedVertices != null) return;
+		clippedVertices = new openfl.Vector<Float>(16, true);
+		clippedUVs = new openfl.Vector<Float>(24, true);
+		clippedIndices = NearPlaneClipper.indices(1);
+	}
 
 	public function new()
 	{

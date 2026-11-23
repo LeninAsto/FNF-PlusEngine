@@ -16,10 +16,27 @@ class StrumNote extends FlxSprite
 	private var noteData:Int = 0;
 
 	public var direction:Float = 90;
+	public var directionCos(default, null):Float = 0;
+	public var directionSin(default, null):Float = 1;
+	var cachedDirection:Float = Math.NaN;
+
+	public inline function updateDirectionVector():Void
+	{
+		if (cachedDirection != direction)
+		{
+			cachedDirection = direction;
+			var radians = direction * Math.PI / 180;
+			directionCos = Math.cos(radians);
+			directionSin = Math.sin(radians);
+		}
+	}
 	public var downScroll:Bool = false;
 	public var sustainReduce:Bool = true;
+	/** Scale applied by the song-wide StrumLine layout. */
+	public var layoutScale:Float = 1;
 
 	private var player:Int;
+	public var strumLineIndex(default, null):Int;
 
 	public var texture(default, set):String = null;
 
@@ -43,6 +60,7 @@ class StrumNote extends FlxSprite
 
 		noteData = leData;
 		this.player = player;
+		this.strumLineIndex = player;
 		this.noteData = leData;
 		this.ID = noteData;
 		super(x, y);

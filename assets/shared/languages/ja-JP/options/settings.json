@@ -1,0 +1,493 @@
+{
+  "$schema": 1,
+  "$namespace": "options.settings",
+  "abbreviate_score": {
+    "name": "スコアを省略表示",
+    "description": "有効であれば,スコアは短縮されます (例えば 10,00K, 1,00M)."
+  },
+  "accent_color": {
+    "name": "アクセントカラー:",
+    "description": "プリセットのアクセントカラーを選ぶか、カスタム色の選択画面を開きます。",
+    "values": {
+      "purple": "紫",
+      "teal": "青緑",
+      "rose": "ローズ",
+      "amber": "琥珀色",
+      "indigo": "藍色",
+      "green": "緑",
+      "red": "赤",
+      "black": "黒",
+      "custom": "カスタム"
+    }
+  },
+  "align_receptors_to_hitbox": {
+    "name": "レセプターをヒットボックスに合わせる",
+    "description": "チェックされたら 携帯受容器を ヒットボックスの レーンと並べます レイアウトには便利ですが スクリプトを壊します"
+  },
+  "allow_phone_screensaver": {
+    "name": "端末のスリープを許可",
+    "description": "チェックすると 数秒間無効になった後 電話が眠ります\n(時間は電話の選択肢に依存する)"
+  },
+  "anti_aliasing": {
+    "name": "アンチエイリアス",
+    "description": "無効にすると輪郭のなめらかさを抑え、処理負荷を軽減します。"
+  },
+  "auto_pause": {
+    "name": "自動ポーズ",
+    "description": "ゲームウィンドウからフォーカスが外れると自動でポーズします。"
+  },
+  "bad_shit_combo_break": {
+    "name": "BadとShitでコンボを切る",
+    "description": "BadまたはShitの判定でコンボが途切れ、コンボ切断として記録されます。"
+  },
+  "bad_hit_window": {
+    "name": "Badの判定幅",
+    "description": "「Bad」判定になる時間幅をミリ秒で調整します。"
+  },
+  "break_timer": {
+    "name": "ノーツ待機タイマー",
+    "description": "チェックすると 次のメモがまだ遠くにある時 タイマーが表示されます"
+  },
+  "camera_zooms": {
+    "name": "カメラズーム",
+    "description": "無効にするとビートに合わせたカメラズームを止めます。"
+  },
+  "window_border_on_hit": {
+    "name": "ヒット時にウィンドウ枠の色を変更",
+    "description": "ノーツを叩いたときにウィンドウ枠の色を変えます。Windows 11のみ対応。"
+  },
+  "check_for_updates": {
+    "name": "更新を確認",
+    "description": "リリース版の起動時に更新を確認します。"
+  },
+  "color_accessibility": {
+    "name": "色覚サポート",
+    "description": "見やすさに合わせて色覚サポートのフィルターを選びます。",
+    "values": {
+      "none": "なし",
+      "protanopia": "Protanopia",
+      "protanomaly": "Protanomaly",
+      "deuteranopia": "Deuteranopia",
+      "deuteranomaly": "Deuteranomaly",
+      "tritanopia": "Tritanopia",
+      "tritanomaly": "Tritanomaly",
+      "achromatopsia": "Achromatopsia",
+      "achromatomaly": "Achromatomaly"
+    }
+  },
+  "combo_and_rating_in_camgame": {
+    "name": "コンボと判定をcamGameに表示",
+    "description": "設定された場合,コンボと評価は camGame 層ではなく camHUD."
+  },
+  "combo_stacking": {
+    "name": "コンボと判定の重ね表示",
+    "description": "無効にすると前のコンボ・判定表示を消してから次を表示し、読みやすさとメモリ使用量を改善します。"
+  },
+  "disable_reset_button": {
+    "name": "リセットボタンを無効化",
+    "description": "チェックするとリセットを押すと 何も起きません"
+  },
+  "discord_rich_presence": {
+    "name": "Discordのアクティビティ表示",
+    "description": "無効にするとDiscordのアクティビティにゲームを表示しません。"
+  },
+  "downscroll": {
+    "name": "下スクロール",
+    "description": "ノーツが上ではなく下に流れます。"
+  },
+  "drag_character": {
+    "name": "キャラクターをドラッグ",
+    "description": "Codename Engineのように、マウスやタッチでキャラクターをドラッグして動かせます。"
+  },
+  "drag_stage_camera": {
+    "name": "ステージカメラをドラッグ",
+    "description": "チェックされていない場合,ステージカメラはマウス/タッチスクリーンで引っ張ることはできません.\n古いものを好むなら チェックを解除する Psych スタイル"
+  },
+  "dynamic_combo_digits": {
+    "name": "コンボ桁数の自動調整",
+    "description": "最初のコンボには2桁が表示されます.\n100のコンボに達すると 3桁になります"
+  },
+  "dynamic_controls_color": {
+    "name": "操作ボタンの色を動的に変更",
+    "description": "チェックすると,モバイル制御の色が設定中のメモの色に設定されます.\n(ゲームプレイ期間のみ有効)"
+  },
+  "enable_3d_cameras": {
+    "name": "3Dカメラを有効化",
+    "description": "3Dカメラ機能を有効または無効にする.\n3D変換をスキップすることで性能を向上させる可能性があります."
+  },
+  "end_countdown_seconds": {
+    "name": "終了カウントダウンの秒数",
+    "description": "歌が終わるまで数秒前に倒計が表示されます (10-30)."
+  },
+  "extra_controls": {
+    "name": "追加ボタン",
+    "description": "どれだけの追加ボタンを選ぶか?\nLUAまたは HScript.",
+    "values": {
+      "none": "誰もいない",
+      "single": "シングル",
+      "double": "2倍"
+    }
+  },
+  "flashing_lights": {
+    "name": "点滅表現",
+    "description": "光の点滅に敏感な場合は無効にしてください。"
+  },
+  "flawless_hit_window": {
+    "name": "Flawless!!の判定幅",
+    "description": "「Flawless!!」判定になる時間幅をミリ秒で調整します。"
+  },
+  "fps_counter_mode": {
+    "name": "FPS表示モード",
+    "description": "左上のオーバーレイでパフォーマンスの情報が表示されます.",
+    "values": {
+      "hidden": "非表示",
+      "visible_no_background": "見える 背景 の ない",
+      "visible_with_background": "背景 を 見える",
+      "basic_debug": "基本デバッグ",
+      "extended_debug": "拡張デバッグ"
+    }
+  },
+  "framerate": {
+    "name": "フレームレート",
+    "description": "自分で説明できるのか?"
+  },
+  "framerate_mode": {
+    "name": "フレームレートモード",
+    "description": "エンジンが更新/抽出のタイミングをどのように処理するかを選択します.\nPsych クラシックなエンジンの動作に一致します",
+    "values": {
+      "psych": "Psych",
+      "fixed": "固定された",
+      "interpolated": "インターポレーション"
+    }
+  },
+  "fullscreen_mode": {
+    "name": "全画面モード",
+    "description": "Borderless Fixは,ネイティブモニター解像度を使用します.",
+    "values": {
+      "borderless": "ボーダーレス",
+      "borderless_fix": "国境なき修正",
+      "exclusive": "排他フルスクリーン"
+    }
+  },
+  "game_over_vibration": {
+    "name": "ゲームオーバー時の振動",
+    "description": "チェックすると デバイスはゲーム終了時に振動します"
+  },
+  "ghost_tapping": {
+    "name": "空打ちのミス判定を無効化",
+    "description": "叩けるノーツがないときのキー入力をミスにしません。"
+  },
+  "good_hit_window": {
+    "name": "Goodの判定幅",
+    "description": "「Good」判定になる時間幅をミリ秒で調整します。"
+  },
+  "gradient_time_bar": {
+    "name": "時間バーのグラデーション",
+    "description": "チェックされた場合,時間バーは文字アイコンの色に応じてシェンドされます."
+  },
+  "hardware_acceleration": {
+    "name": "ハードウェアアクセラレーション",
+    "description": "対応した画像を直接 GPU 減らし RAM 使用とレンダリングの安定性を向上させ,特に Android.\nほとんどのデバイスに推奨されます."
+  },
+  "health_bar_opacity": {
+    "name": "体力バーの不透明度",
+    "description": "体力バーとキャラクターアイコンの不透明度を調整します。"
+  },
+  "hey_intro": {
+    "name": "開始時にHey!アニメーション",
+    "description": "確認されたら BF そして GF 逆数値が\"行け\"と言ったら自動的にHey!アニメーションを動かす"
+  },
+  "hide_hud": {
+    "name": "HUDを非表示",
+    "description": "HUDの大部分を非表示にします。"
+  },
+  "hide_sustain_splash": {
+    "name": "ロングノーツのエフェクトを非表示",
+    "description": "確認された場合,Sustain Splashを隠す"
+  },
+  "hitbox_design": {
+    "name": "ヒットボックスのデザイン",
+    "description": "チェックボックスの外観を決める",
+    "values": {
+      "no_gradient": "グラディエントがない",
+      "no_gradient_old": "グラディエントがない (旧)",
+      "gradient": "グラディエント",
+      "hidden": "非表示"
+    }
+  },
+  "hitbox_position": {
+    "name": "ヒットボックスの位置",
+    "description": "チェックされた場合,ヒットボックスは画面の下部に置かれ,そうでなければ上部にとどまります."
+  },
+  "icon_bounce_type": {
+    "name": "アイコンの跳ね方",
+    "description": "体力アイコンのビートに合わせた跳ね方を選びます。",
+    "values": {
+      "old": "旧式",
+      "d_b": "D&B",
+      "nf": "NF",
+      "default": "デフォルト",
+      "codename": "Codename"
+    }
+  },
+  "infinity_display": {
+    "name": "縦長画面に対応",
+    "description": "チェックされた場合 視野を垂直的に拡張して 高い画面を表示し クラシックな 16:9 プレイエリアを維持します"
+  },
+  "instant_window_close": {
+    "name": "ウィンドウを即時終了",
+    "description": "チェックされた場合 窓を消す代わりに ゲームを閉めるとすぐに終了します"
+  },
+  "key_viewer_color": {
+    "name": "キー表示の色:",
+    "description": "キービューアボタンの色を選択します.",
+    "values": {
+      "gray": "灰色",
+      "red": "赤",
+      "blue": "青",
+      "green": "緑",
+      "purple": "紫",
+      "orange": "オレンジ",
+      "pink": "ピンク",
+      "cyan": "シアン",
+      "white": "白",
+      "black": "黒"
+    }
+  },
+  "launcher_auto_start": {
+    "name": "ランチャーの自動起動",
+    "description": "確認された場合, Android ロンサーは3秒後に自動的にエンジンを起動します."
+  },
+  "lighter_hit_path": {
+    "name": "軽量ヒット処理",
+    "description": "制御されない場合,光視路ではなく全視路が実行されます.\nチェックされていない場合,このことがLAGのパフォーマンスを引き起こす可能性があります."
+  },
+  "low_quality": {
+    "name": "低品質",
+    "description": "確認された場合,背景の詳細を無効にします\n充電時間を短縮し,性能を向上させる."
+  },
+  "middlescroll": {
+    "name": "ノーツを中央に配置",
+    "description": "自分のノーツを画面中央に配置します。"
+  },
+  "mobile_controls_opacity": {
+    "name": "モバイル操作の不透明度",
+    "description": "モバイルボタンの不透明性を選択します (ボタンを0に設定して,ボタンの追跡を失わないように注意してください)."
+  },
+  "mobile_trace_button": {
+    "name": "モバイルのデバッグボタン",
+    "description": "確認された場合,モバイルビルドの追跡タッチボタンを表示します."
+  },
+  "mod_security": {
+    "name": "Modのセキュリティ",
+    "description": "チェックされた場合,スキャンモッド Lua/HScript 信頼されていない敏感なAPIの モードからスクリプトをスキップします"
+  },
+  "modchart_debug_overlay": {
+    "name": "Modchartのデバッグ表示",
+    "description": "モッド譜面レンダー統計を表示します\n性能コストがあるため,デフォルトで無効です."
+  },
+  "mods_storage_location": {
+    "name": "Modの保存先",
+    "description": "どこで選ぶか Android モードと保存されたファイルが 稼働すべきです\n内部はスケープ付きアプリストレージを使用し 外部は公開ストレージを使用します",
+    "values": {
+      "internal": "内部",
+      "external": "外部"
+    }
+  },
+  "nf_rating_style": {
+    "name": "NF風の判定表示",
+    "description": "チェックされた場合,評価とコンボ番号は,飛ぶ/消える代わりに,そのままです."
+  },
+  "note_skins": {
+    "name": "ノーツスキン:",
+    "description": "好みのノーツスキンを選びます。"
+  },
+  "note_splash_opacity": {
+    "name": "ヒットエフェクトの不透明度",
+    "description": "ノーツのヒットエフェクトの不透明度を調整します。"
+  },
+  "note_splashes": {
+    "name": "ノーツヒットエフェクト:",
+    "description": "ノーツを叩いたときのエフェクトを選びます。"
+  },
+  "opponent_notes": {
+    "name": "相手のノーツ",
+    "description": "無効にすると相手のノーツを非表示にします。"
+  },
+  "optimize_hold_rendering": {
+    "name": "ロングノーツの描画を最適化",
+    "description": "より良いパフォーマンスのために 矢印レンダリングを最適化します\nコンプレックスなモッド譜面では推奨されない."
+  },
+  "options_menu_style": {
+    "name": "設定メニューのスタイル",
+    "description": "+カードと+カードの間のオプションメニューを変更します Psych クラシックだ",
+    "values": {
+      "plus": "さらに",
+      "psych": "Psych"
+    }
+  },
+  "over_accuracy": {
+    "name": "100%を超える精度",
+    "description": "曲の終わりまでに 200%まで 精度が100%を超えることができます"
+  },
+  "pause_countdown": {
+    "name": "再開時のカウントダウン",
+    "description": "ポーズから再開する前にカウントダウンを表示します。"
+  },
+  "pause_music": {
+    "name": "ポーズ中の音楽:",
+    "description": "ポーズ画面で流す曲を選びます。",
+    "values": {
+      "none": "なし",
+      "tea_time": "Tea Time",
+      "breakfast": "Breakfast",
+      "breakfast_(pico)": "Breakfast (Pico)"
+    }
+  },
+  "pop_up_score": {
+    "name": "スコアのポップアップ",
+    "description": "チェックされない場合,メモを入力すると 評価やコンボポップアップが表示されません. 低端デバイスでは便利です."
+  },
+  "rating_offset": {
+    "name": "判定タイミング調整",
+    "description": "\"無欠\"の為に 遅い/早い打撃をする必要が変わります\nより高い値は 後で撃つ必要があるということです"
+  },
+  "results_state_at_end": {
+    "name": "終了時にリザルト表示",
+    "description": "チェックされていない場合 endSong 移行しない ResultsState 中 Freeplay/ ストーリーモード"
+  },
+  "rgb_notes": {
+    "name": "RGBノーツ",
+    "description": "チェックされていない場合,Classicを使用します Psych 0.6.3型ノート色とルーツノート資産"
+  },
+  "safe_frames": {
+    "name": "入力猶予フレーム",
+    "description": "フレームがいくつあるかを変化させる\n遅かれ早かれメモを押す"
+  },
+  "score_text_grow_on_hit": {
+    "name": "ヒット時にスコアを拡大",
+    "description": "チェックされていない場合は,スコアテキストの成長を無効にする\nいつでもメモを押すたびに"
+  },
+  "script_deprecation_warnings": {
+    "name": "非推奨APIの警告",
+    "description": "チェックされた場合,廃止された Lua/HScript デバッグコンソールに警告を印刷します 騒音なモッドを黙らせるように無効にします"
+  },
+  "shaders": {
+    "name": "シェーダー",
+    "description": "シャダーは視覚効果のために使用され, CPU 弱体装置に集中する"
+  },
+  "show_android_launcher": {
+    "name": "Androidランチャーを表示",
+    "description": "確認された場合, Android 発射機はエンジンの前に開きます\n打ち上げ機から無効にしたなら 戻して"
+  },
+  "show_combo_numbers": {
+    "name": "コンボ数を表示",
+    "description": "チェックされていない場合は,ノートを入力するときにコンボ番号ポップアップを隠します."
+  },
+  "show_combo_sprite": {
+    "name": "COMBO画像を表示",
+    "description": "チェックされていない場合,ノートを押すときに COMBO スプリートポップアップを隠します."
+  },
+  "show_early_late": {
+    "name": "Early/Lateを表示",
+    "description": "入力が早いか遅いかに応じてEarlyまたはLateを表示します。"
+  },
+  "show_end_countdown": {
+    "name": "終了カウントダウンを表示",
+    "description": "チェックされたら,歌の最後の秒のカウントダウンを表示します."
+  },
+  "show_hit_ms": {
+    "name": "入力のずれをミリ秒で表示",
+    "description": "判定の横に入力タイミングのずれをミリ秒で表示します。"
+  },
+  "show_key_viewer": {
+    "name": "キー入力を表示",
+    "description": "現在押されているキーを表示します。"
+  },
+  "show_rating_sprite": {
+    "name": "判定画像を表示",
+    "description": "チェックされていない場合は,ノートを打るときに 評価スプリートポップアップを隠します."
+  },
+  "gameplay_version": {
+    "name": "プレイ中にバージョンを表示",
+    "description": "チェックされた場合,ゲームプレイ中にバージョンテキストが表示されます."
+  },
+  "show_watermark": {
+    "name": "ウォーターマークを表示",
+    "description": "チェックすると,水印が画面に表示されます."
+  },
+  "sick_hit_window": {
+    "name": "Sick!の判定幅",
+    "description": "「Sick!」判定になる時間幅をミリ秒で調整します。"
+  },
+  "smooth_health_bar": {
+    "name": "体力バーを滑らかに動かす",
+    "description": "体力バーを瞬時に切り替えず、滑らかに動かします。"
+  },
+  "sustains_as_one_note": {
+    "name": "ロングノーツを1ノーツとして扱う",
+    "description": "チェックされたら 記録を押すことはできません\n単一のヒット・ミスとして数えられる.\n古い入力システムを好むなら このチェックを消します."
+  },
+  "system_score_multiplier": {
+    "name": "スコア計算方式",
+    "description": "音符ヒットのためのスコアシステムを選択する",
+    "values": {
+      "psych": "Psych",
+      "codename": "Codename"
+    }
+  },
+  "time_bar": {
+    "name": "時間バー:",
+    "description": "タイムバーに何が表示されるべきか?",
+    "values": {
+      "time_left": "残り時間",
+      "time_elapsed": "経過時間",
+      "song_name": "曲名",
+      "disabled": "無効"
+    }
+  },
+  "time_text_bump": {
+    "name": "時間表示をビートに合わせて動かす",
+    "description": "チェックされていない場合は,タイムテキストブンブンアニメーションをビートで無効にする."
+  },
+  "title_intro_video": {
+    "name": "タイトル前の動画",
+    "description": "チェックされた場合,発売ごとに1回タイトル紹介前に紹介ビデオを再生します."
+  },
+  "touch_pointer": {
+    "name": "タッチ位置を表示",
+    "description": "チェックされた場合,タッチポインタがタップとドラッグ用のオーバーレイを表示します."
+  },
+  "uncap_fps": {
+    "name": "FPS制限を解除",
+    "description": "確認された場合 レンダーが可能な限り速く動作させ 更新を制限しながら\n高いリフレッシュなディスプレイに役立つが,バッテリーを増やすことができます.GPU 使い方"
+  },
+  "use_flawless_rating": {
+    "name": "Flawless判定を使用",
+    "description": "チェックされたら 病気より\"不完全!!\"という判断が加えられます"
+  },
+  "use_psych_freeplay": {
+    "name": "PsychのFreeplayを使用",
+    "description": "チェックされた場合,クラシックを使用します Psych Engine Freeplay 州ではなく PlusEngine Freeplay."
+  },
+  "use_psych_score_text": {
+    "name": "Psychのスコア表示を使用",
+    "description": "確認された場合,オリジナルを保持します Psych Engine ゲーム中にテキストフォーマットをスコアする."
+  },
+  "vanilla_transition": {
+    "name": "従来のPsychトランジション",
+    "description": "チェックされた場合 バニラを使用します Psych Engine 慣習ではなく 移行です"
+  },
+  "vsync": {
+    "name": "VSync",
+    "description": "確認された場合, VSync固定し,キャピングコストでスクリーン撕裂を FPS モニターのリフレッシュ率に\nゲームを再開して 完全に適用します"
+  },
+  "windows_gdi_effects": {
+    "name": "WindowsのGDIエフェクト",
+    "description": "許可する Windows デスクトップGDIエフェクト. モッドがそれらを使用することを明示的に望まない限り,無効にしておく."
+  },
+  "z_axis_scale": {
+    "name": "Z軸の倍率",
+    "description": "感知深さを制御するために Z軸の値をスケールする.\nより高い値は深さを増やし,より低い値はそれを平ら化します."
+  }
+}

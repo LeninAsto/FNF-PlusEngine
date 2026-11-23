@@ -1,0 +1,10 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.playtest",
+  "ui": {
+    "section_0": "섹션: 0"
+  },
+  "presence": {
+    "title": "채보 편집기에서 플레이 테스트"
+  }
+}

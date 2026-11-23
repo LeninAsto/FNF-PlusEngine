@@ -1,0 +1,18 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.popups",
+  "common": {
+    "none": "無"
+  },
+  "mod_settings": {
+    "title": "這種名字: {1}",
+    "parse_error": "發生了一個錯誤: {1}"
+  },
+  "achievements": {
+    "mod_title": "這種名字: {1}",
+    "invalid_entry": "取得成就 #{1} 是無效的.",
+    "entry_title": "取得的錯誤: {1}",
+    "missing_save": "沒有有效的\"儲存\"值.",
+    "load_error": "錯誤載入 achievements.json: {1}"
+  }
+}

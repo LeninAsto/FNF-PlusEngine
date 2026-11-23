@@ -1,0 +1,20 @@
+{
+  "$schema": 1,
+  "$namespace": "states.loading",
+  "title": "이제 로딩{1}",
+  "cancelling": "로딩 취소...",
+  "timeout": "로딩이 너무 오래 걸리는데...\n압력 ESC 돌아오는 것",
+  "progress": "{1}%  ({2}/{3})",
+  "progress_item": "{1}  {2}",
+  "items": {
+    "atlas": "아틀라스 {1}",
+    "preparing_audio": "오디오 재생 준비",
+    "preparing_song": "노래 자료를 준비",
+    "compiling_chart": "채보 자료를 작성",
+    "finishing": "완공",
+    "sound": "소음 {1}",
+    "music": "음악 {1}",
+    "song": "노래 {1}",
+    "image": "이미지 {1}"
+  }
+}

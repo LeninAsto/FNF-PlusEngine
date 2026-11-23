@@ -1,0 +1,15 @@
+{
+  "$schema": 1,
+  "$namespace": "options.note_colors",
+  "reset_tip": "打压 {1} 为重置选择的注释部分.",
+  "full_reset_tip": "停下来 {1} + 按下 RESET 按键完全重新设置所选择的注释.",
+  "shift": "Shift",
+  "press": "按下",
+  "ctrl": "Ctrl",
+  "left_shoulder": "左肩键",
+  "mode": "颜色模式: {1}",
+  "modes": {
+    "classic": "经典 H/S/B",
+    "rgb": "RGB"
+  }
+}

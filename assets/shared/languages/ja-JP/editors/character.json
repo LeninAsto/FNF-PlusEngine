@@ -1,0 +1,53 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.character",
+  "ui": {
+    "add_update": "追加・更新",
+    "advanced_animation_indices": "上級 - アニメーション インデックス:",
+    "animated_icon": "アニメーションアイコン",
+    "animation_name": "アニメ名：",
+    "animation_symbol_name_tag": "アニメーションシンボル名/タグ:",
+    "animations": "アニメーション:",
+    "camera_x_y": "カメラ X/Y :",
+    "character": "キャラクター:",
+    "character_x_y": "文字 X/Y :",
+    "flip_x": "フリップX",
+    "framerate": "フレームレート:",
+    "get_icon_color": "アイコンの色の取得",
+    "health_bar_r_g_b": "ヘルスバー R/G/B :",
+    "health_icon_name": "ヘルスアイコン名:",
+    "highlight_ghost": "ハイライトゴースト",
+    "image_file_name": "画像ファイル名：",
+    "load_template": "テンプレートのロード",
+    "make_ghost": "ゴーストを作る",
+    "no_antialiasing": "アンチエイリアスなし",
+    "playable_character": "プレイアブルキャラクター",
+    "reload_char": "キャラクターを再読み込み",
+    "reload_image": "画像のリロード",
+    "remove": "削除",
+    "save_character": "キャラクターを保存",
+    "scale": "規模：",
+    "should_it_loop": "ループするべきですか?",
+    "sing_animation_length": "歌うアニメーションの長さ:",
+    "vocals_file_postfix": "ボーカル ファイルの接尾辞:",
+    "zoom_1x": "ズーム: 1倍"
+  },
+  "presence": {
+    "title": "キャラクターエディター",
+    "character": "キャラクター: {1}"
+  },
+  "help": {
+    "open": "ヘルプについては、{1} を押してください",
+    "mobile": "カメラ\nX/Y - カメラのズームイン/ズームアウト\nG + 矢印ボタン - カメラを移動\nZ - カメラのズームをリセット\n\nキャラクター\nA - 現在のオフセットをリセット\nV/D - 前/次のアニメーション\n矢印ボタン - オフセットを移動\n\n他の\nS - シルエットの切り替え\nC を押し続ける - オフセットの移動が 10 倍、カメラの移動が 4 倍速くなります",
+    "desktop": "カメラ\nE/Q - カメラのズームイン/ズームアウト\nJ/K/L/I - カメラの移動\nR - カメラのズームをリセット\n\nキャラクター\nCtrl + R - 現在のオフセットをリセット\nCtrl + C - 現在のオフセットをコピー\nCtrl + V - コピーしたオフセットを現在のアニメーションに貼り付け\nCtrl + Z - 最後の貼り付けまたはリセットを元に戻す\nW/S - 前/次のアニメーション\nスペース - リプレイアニメーション\n矢印キー - オフセットを移動\nA/D - フレーム送り (戻る/進む)\n\n他の\nF12 - シルエットの切り替え\nShift を押し続ける - オフセットを 10 倍速く移動し、カメラを 4 倍速く移動します\nコントロールを押し続ける - カメラを 4 倍遅く動かします"
+  },
+  "messages": {
+    "no_animation": "エラー: アニメーションが見つかりませんでした"
+  },
+  "tabs": {
+    "animations": "アニメーション",
+    "character": "キャラクター",
+    "ghost": "おばけ",
+    "settings": "設定"
+  }
+}

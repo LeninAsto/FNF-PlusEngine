@@ -50,6 +50,7 @@ import backend.BaseStage;
 import backend.Difficulty;
 import backend.Mods;
 import backend.Language;
+import backend.ScriptErrorTranslator;
 import backend.BuildInfo;
 import backend.ClassResolver;
 import mobile.backend.StorageUtil;

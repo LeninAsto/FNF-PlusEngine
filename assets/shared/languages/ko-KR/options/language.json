@@ -1,0 +1,19 @@
+{
+  "$schema": 1,
+  "$namespace": "options.language",
+  "hint": "ACCCEPT는 선택된 언어를 적용합니다.",
+  "applied_badge": "활동",
+  "selector": {
+    "name": "언어",
+    "description": "{1} 언어 팩을 적용합니다.",
+    "active": "{1} (사용 중)"
+  },
+  "sync": {
+    "name": "언어 다운로드 및 업데이트",
+    "description": "공식 카탈로그를 확인하고 새로운 또는 업데이트 된 언어 패키지를 안전하게 설치합니다.",
+    "success_title": "언어 업데이트 완료",
+    "error_title": "언어 업데이트 실패",
+    "success": "설치: {1}. 이미 최신: {2}.",
+    "error": "언어 팩을 업데이트할 수 없습니다:\n{1}"
+  }
+}

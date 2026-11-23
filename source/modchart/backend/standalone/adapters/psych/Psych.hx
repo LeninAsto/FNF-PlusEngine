@@ -5,6 +5,7 @@ import backend.Conductor;
 //import funkin.ui.debug.modcharting.ModchartEditorState;
 import objects.Note;
 import objects.NoteSplash;
+import objects.SustainSplash;
 import objects.StrumNote as Strum;
 import states.PlayState;
 import flixel.FlxCamera;
@@ -36,17 +37,25 @@ class Psych implements IAdapter {
 		if (__cachedFrame == frameId)
 			return;
 		__cachedFrame = frameId;
+		if (ModchartEditorPreviewContext.active != null) {
+			final preview = ModchartEditorPreviewContext.active;
+			__cachedScrollSpeed = preview.scrollSpeed;
+			cacheReceptors(preview.opponentStrums, 0);
+			cacheReceptors(preview.playerStrums, 1);
+			return;
+		}
 		if (PlayState.instance == null)
 			return;
 
 		__cachedScrollSpeed = PlayState.instance.songSpeed * .45;
-		cacheReceptors(PlayState.instance.opponentStrums, 0);
-		cacheReceptors(PlayState.instance.playerStrums, 1);
+		for (line in PlayState.instance.strumLines)
+			cacheReceptors(line.receptors, line.index);
 	}
 
 	private function cacheReceptors(group:Dynamic, player:Int):Void {
 		if (group == null || group.members == null)
 			return;
+		while (__receptorX.length <= player) { __receptorX.push([]); __receptorY.push([]); }
 		final xs = __receptorX[player];
 		final ys = __receptorY[player];
 		final members:Array<Dynamic> = group.members;
@@ -59,17 +68,21 @@ class Psych implements IAdapter {
 				continue;
 			while (xs.length <= lane) { xs.push(0); ys.push(0); }
 			xs[lane] = strum.x;
-			ys[lane] = getDownscroll() ? FlxG.height - strum.y - Note.swagWidth : strum.y;
+			ys[lane] = getDownscroll() ? FlxG.height - strum.y - strum.height : strum.y;
 		}
 	}
 
 	public function onModchartingInitialization() {
-		holdStepLength = (Conductor.crochet + 8) / 4;
+		holdStepLength = Conductor.stepCrochet;
 		__holdSubdivisions = 4;
 	}
 
 	public function isTapNote(sprite:FlxSprite) {
 		return sprite is Note;
+	}
+
+	public function isSplash(sprite:FlxSprite) {
+		return sprite is NoteSplash || sprite is SustainSplash;
 	}
 
 	// Song related
@@ -86,10 +99,8 @@ class Psych implements IAdapter {
 		var editorState = getEditorState();
 		if (editorState != null)
 			return editorState.getModchartCurrentBeat();
-		/*
 		if (ModchartEditorPreviewContext.active != null)
 			return ModchartEditorPreviewContext.active.currentBeat;
-		 */
 		if (PlayState.instance != null) {
 			@:privateAccess
 			return PlayState.instance.curDecBeat;
@@ -98,6 +109,8 @@ class Psych implements IAdapter {
 	}
 
 	public function getCurrentCrochet():Float {
+		if (ModchartEditorPreviewContext.active != null)
+			return Conductor.getCrotchetAtTime(ModchartEditorPreviewContext.active.songPosition);
 		return Conductor.crochet;
 	}
 
@@ -113,8 +126,16 @@ class Psych implements IAdapter {
 	public function isHoldEnd(arrow:FlxSprite) {
 		if (arrow is Note) {
 			final castedNote = cast(arrow, Note);
+			if (castedNote.isSustainNote && castedNote.modchartHoldLength > 0)
+				return false;
 
 			if (castedNote.isSustainEnd)
+				return true;
+			// Old/runtime-created notes may not have the explicit flag. The active
+			// animation is a safer fallback than relying only on chart order.
+			if (castedNote.isSustainNote && castedNote.animation != null
+				&& castedNote.animation.curAnim != null
+				&& castedNote.animation.curAnim.name.endsWith('holdend'))
 				return true;
 			if (castedNote.nextNote != null)
 				return !castedNote.nextNote.isSustainNote;
@@ -129,17 +150,24 @@ class Psych implements IAdapter {
 			return cast(arrow, Strum).noteData;
 		if (arrow is NoteSplash) @:privateAccess
 			return cast(arrow, NoteSplash).babyArrow.noteData;
+		if (arrow is SustainSplash) @:privateAccess
+			return cast(arrow, SustainSplash).strumNote.noteData;
 
 		return 0;
 	}
 
 	public function getPlayerFromArrow(arrow:FlxSprite) {
 		if (arrow is Note)
-			return cast(arrow, Note).mustPress ? 1 : 0;
+		{
+			var note:Note = cast arrow;
+			return note.strumLineIndex >= 0 ? note.strumLineIndex : (note.mustPress ? 1 : 0);
+		}
 		if (arrow is Strum)
 			return resolveStrumPlayer(cast arrow);
 		if (arrow is NoteSplash)
 			return resolveSplashPlayer(cast arrow);
+		if (arrow is SustainSplash)
+			return resolveStrumPlayer(cast(arrow, SustainSplash).strumNote);
 		return 0;
 	}
 
@@ -155,14 +183,12 @@ class Psych implements IAdapter {
 		if (strum == null)
 			return 0;
 
-		/*
 		if (ModchartEditorPreviewContext.active != null) {
 			if (groupContainsStrum(ModchartEditorPreviewContext.active.opponentStrums, strum))
 				return 0;
 			if (groupContainsStrum(ModchartEditorPreviewContext.active.playerStrums, strum))
 				return 1;
 		}
-					 */
 
 		if (PlayState.instance != null) {
 			if (groupContainsStrum(PlayState.instance.opponentStrums, strum))
@@ -171,7 +197,7 @@ class Psych implements IAdapter {
 				return 1;
 		}
 
-		@:privateAccess return strum.player;
+		return strum.strumLineIndex;
 	}
 
 	private inline function resolveSplashPlayer(splash:NoteSplash):Int {
@@ -186,7 +212,7 @@ class Psych implements IAdapter {
 	}
 
 	public function getPlayerCount():Int {
-		return 2;
+		return PlayState.instance != null && PlayState.instance.strumLines != null ? PlayState.instance.strumLines.length : 2;
 	}
 
 	private function ensurePlayerItems(items:Array<Array<Array<FlxSprite>>>, player:Int):Array<Array<FlxSprite>> {
@@ -216,6 +242,8 @@ class Psych implements IAdapter {
 	public function getTimeFromArrow(arrow:FlxSprite) {
 		if (arrow is Note)
 			return cast(arrow, Note).strumTime;
+		if (isSplash(arrow))
+			return getSongPosition();
 
 		return 0;
 	}
@@ -228,8 +256,21 @@ class Psych implements IAdapter {
 		__holdSubdivisions = value;
 	}
 
-	public function getHoldLength(item:FlxSprite):Float
+	public function getHoldLength(item:FlxSprite):Float {
+		if (item is Note) {
+			final note:Note = cast item;
+			if (note.modchartHoldLength > 0) return note.modchartHoldLength;
+			final next = note.nextNote;
+			if (next != null && note.parent != null && next.isSustainNote && next.parent == note.parent)
+			{
+				final interval = next.strumTime - note.strumTime;
+				if (Math.isFinite(interval) && interval > 0) return interval;
+			}
+			if (Math.isFinite(note.sustainStepLength) && note.sustainStepLength > 0) return note.sustainStepLength;
+			if (note.parent != null) return Conductor.getCrotchetAtTime(note.parent.strumTime) / 4;
+		}
 		return holdStepLength;
+	}
 
 	public function getHoldParentTime(arrow:FlxSprite) {
 		final note:Note = cast arrow;
@@ -240,6 +281,8 @@ class Psych implements IAdapter {
 	}
 
 	public function getDownscroll():Bool {
+		var preview = ModchartEditorPreviewContext.active;
+		if (preview != null && preview.downScroll != null) return preview.downScroll;
 		return ClientPrefs.data.downScroll;
 	}
 
@@ -248,7 +291,6 @@ class Psych implements IAdapter {
 		if (editorState != null)
 			return editorState.getModchartStrumFromInfo(lane, player);
 
-		/*
 		if (ModchartEditorPreviewContext.active != null)
 		{
 			var previewGroup = player == 0 ? ModchartEditorPreviewContext.active.opponentStrums : ModchartEditorPreviewContext.active.playerStrums;
@@ -260,9 +302,10 @@ class Psych implements IAdapter {
 			});
 			return previewStrum;
 		}
-			*/
 
-		var group = player == 0 ? PlayState.instance.opponentStrums : PlayState.instance.playerStrums;
+		var group = player >= 0 && player < PlayState.instance.strumLines.length
+			? PlayState.instance.strumLines[player].receptors : null;
+		if (group == null) return null;
 		var strum = null;
 		group.forEach(str -> {
 			@:privateAccess
@@ -289,14 +332,14 @@ class Psych implements IAdapter {
 		{
 			var cameras = editorState.getModchartArrowCamera();
 			var camHeight = (cameras != null && cameras.length > 0 && cameras[0] != null) ? cameras[0].height : FlxG.height;
-			return getDownscroll() ? camHeight - strum.y - Note.swagWidth : strum.y;
+			return getDownscroll() ? camHeight - strum.y - strum.height : strum.y;
 		}
-		//if (ModchartEditorPreviewContext.active != null)
-		//{
-		//	var camHeight = ModchartEditorPreviewContext.active.camera.height;
-		//	return getDownscroll() ? camHeight - strum.y - Note.swagWidth : strum.y;
-		//}
-		return getDownscroll() ? FlxG.height - strum.y - Note.swagWidth : strum.y;
+		if (ModchartEditorPreviewContext.active != null)
+		{
+			var camHeight = ModchartEditorPreviewContext.active.camera.height;
+			return getDownscroll() ? camHeight - strum.y - strum.height : strum.y;
+		}
+		return getDownscroll() ? FlxG.height - strum.y - strum.height : strum.y;
 	}
 
 	public function getArrowCamera():Array<FlxCamera>
@@ -304,8 +347,8 @@ class Psych implements IAdapter {
 		var editorState = getEditorState();
 		if (editorState != null)
 			return editorState.getModchartArrowCamera();
-		//if (ModchartEditorPreviewContext.active != null)
-		//	return [ModchartEditorPreviewContext.active.camera];
+		if (ModchartEditorPreviewContext.active != null)
+			return [ModchartEditorPreviewContext.active.camera];
 		return [PlayState.instance.camHUD];
 	}
 
@@ -313,8 +356,8 @@ class Psych implements IAdapter {
 		var editorState = getEditorState();
 		if (editorState != null)
 			return editorState.getModchartScrollSpeed();
-		//if (ModchartEditorPreviewContext.active != null)
-		//	return ModchartEditorPreviewContext.active.scrollSpeed;
+		if (ModchartEditorPreviewContext.active != null)
+			return ModchartEditorPreviewContext.active.scrollSpeed;
 		return __cachedFrame >= 0 ? __cachedScrollSpeed : PlayState.instance.songSpeed * .45;
 	}
 
@@ -326,7 +369,6 @@ class Psych implements IAdapter {
 		if (editorState != null)
 			return editorState.getModchartArrowItems();
 
-		/*
 		if (ModchartEditorPreviewContext.active != null)
 		{
 			var preview:Array<Array<Array<FlxSprite>>> = [[[], [], [], []], [[], [], [], []]];
@@ -362,7 +404,6 @@ class Psych implements IAdapter {
 
 			return preview;
 		}
-	     */
 
 		var pspr = arrowItemsByPlayer;
 		for (playerItems in pspr)
@@ -387,7 +428,7 @@ class Psych implements IAdapter {
 			final note = notes[i];
 			if (note == null || !note.exists || !note.alive || note.frame == null || note.graphic == null)
 				continue;
-			final player = note.mustPress ? 1 : 0;
+			final player = getPlayerFromArrow(note);
 			ensurePlayerItems(pspr, player)[note.isSustainNote ? 2 : 1].push(note);
 		}
 		final splashes = PlayState.instance.grpNoteSplashes.members;
@@ -396,6 +437,14 @@ class Psych implements IAdapter {
 			@:privateAccess if (splash == null || !splash.exists || !splash.alive || splash.babyArrow == null || !splash.active)
 				continue;
 			final player = resolveSplashPlayer(splash);
+			ensurePlayerItems(pspr, player)[3].push(splash);
+		}
+		final holdSplashes = PlayState.instance.grpHoldSplashes.members;
+		for (i in 0...holdSplashes.length) {
+			final splash = holdSplashes[i];
+			@:privateAccess if (splash == null || !splash.exists || !splash.alive || splash.strumNote == null || !splash.active)
+				continue;
+			final player = resolveStrumPlayer(splash.strumNote);
 			ensurePlayerItems(pspr, player)[3].push(splash);
 		}
 

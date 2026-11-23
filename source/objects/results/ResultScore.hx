@@ -90,6 +90,7 @@ class ScoreNum extends FlxSprite
 		baseY = y;
 		baseX = x;
 		frames = Paths.getSparrowAtlas('resultScreen/score-digital-numbers');
+		antialiasing = ClientPrefs.data.antialiasing;
 
 		for (i in 0...10)
 		{

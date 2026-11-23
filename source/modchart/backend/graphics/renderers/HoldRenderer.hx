@@ -6,6 +6,10 @@ private final class HoldSegmentOutput {
 	public final origin:Vector3 = new Vector3();
 	public final left:Vector3 = new Vector3();
 	public final right:Vector3 = new Vector3();
+	public final worldLeft:Vector3 = new Vector3();
+	public final worldRight:Vector3 = new Vector3();
+	public var leftDistance:Float = 0;
+	public var rightDistance:Float = 0;
 	public final modifierPos:Vector3 = new Vector3();
 	public var visuals:VisualParameters = {};
 	public final modifierOutput:ModifierOutput;
@@ -18,9 +22,6 @@ private final class HoldSegmentOutput {
 }
 
 final __matrix:Matrix = new Matrix();
-
-/** Reusable unit-up vector for OPTIMIZE_HOLDS path — avoids allocating `new Vector3(0,1,0)` per segment. */
-final __holdUnitUp:Vector3 = new Vector3(0, 1, 0);
 
 #if !openfl_debug
 @:fileXml('tags="haxe,release"')
@@ -35,18 +36,25 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 
 	var _indices:openfl.Vector<Int>;
 	var _indicesBySubs:Array<openfl.Vector<Int>> = [];
+	final _clipper:NearPlaneClipper = new NearPlaneClipper();
 	final _segmentA:HoldSegmentOutput = new HoldSegmentOutput();
 	final _segmentB:HoldSegmentOutput = new HoldSegmentOutput();
+	final _rawSegmentA:HoldSegmentOutput = new HoldSegmentOutput();
+	final _rawSegmentB:HoldSegmentOutput = new HoldSegmentOutput();
 	final _directionPos:Vector3 = new Vector3();
 	final _directionVisuals:VisualParameters = {};
 	final _directionOutput:ModifierOutput;
 	final _rotationScratch:Vector3 = new Vector3();
+	final _fieldRotationScratch:Vector3 = new Vector3();
 	final _viewScratch:Vector3 = new Vector3();
 	final _tailScratch:Vector3 = new Vector3();
 	final _basePos:Vector3 = new Vector3();
 	final _parentPos:Vector3 = new Vector3();
 	final _parentVisuals:VisualParameters = {};
 	final _parentOutputBuffer:ModifierOutput;
+	var _optimizedUnitX:Float = 0;
+	var _optimizedUnitY:Float = 1;
+	var _optimizedDirectionReady:Bool = false;
 
 	// UVT cache: avoids re-computing identical UV data every frame for the same hold tile
 	var _uvtCacheKeys:Array<Dynamic> = [];
@@ -61,6 +69,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 
 	public inline function beginFrame():Void {
 		_slotIndex = 0;
+		__lastPlayer = -1;
 		dbgGetPathCalls = 0;
 		dbgSlotsReused = 0;
 	}
@@ -105,6 +114,18 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		return pos;
 	}
 
+	/** Screen-space length between the centers of two hold cross-sections. */
+	@:noCompletion
+	inline private function getSegmentScreenLength(first:HoldSegmentOutput, second:HoldSegmentOutput):Float {
+		final startX = (first.left.x + first.right.x) * 0.5;
+		final startY = (first.left.y + first.right.y) * 0.5;
+		final endX = (second.left.x + second.right.x) * 0.5;
+		final endY = (second.left.y + second.right.y) * 0.5;
+		final deltaX = endX - startX;
+		final deltaY = endY - startY;
+		return Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+	}
+
 	/**
 	 * Returns the normal points along the hold path at specific hitTime using.
 	 *
@@ -113,9 +134,8 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 	 * @see https://en.wikipedia.org/wiki/Unit_circle
 	 */
 	@:noCompletion
-	inline private function getHoldSegmentInto(hold:FlxSprite, basePos:Vector3, params:ArrowData, dest:HoldSegmentOutput, doClip:Bool = true):HoldSegmentOutput {
+	inline private function getHoldSegmentInto(hold:FlxSprite, basePos:Vector3, params:ArrowData, dest:HoldSegmentOutput, doClip:Bool = true, forceDirection:Bool = false):HoldSegmentOutput {
 		@:privateAccess
-		final holdIsEnd = Adapter.instance.isHoldEnd(hold);
 		var holdTime = params.hitTime;
 		var parentTime = Adapter.instance.getHoldParentTime(hold);
 		var clipped = false;
@@ -124,19 +144,22 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		var parentDistance = Math.max(0, parentTime - __cachedSongPos);
 
 		params.hitTime = FlxMath.lerp(parentTime, holdTime, __long);
+		params.sampleTime = FlxMath.lerp(parentTime, params.sampleTime != null ? params.sampleTime : holdTime, __long);
 		params.distance = FlxMath.lerp(parentDistance, holdDistance, __long);
 
 		// not this
 		if (doClip && params.hitten && params.distance < 0) {
+			final shift = -params.distance;
+			params.hitTime += shift;
+			params.sampleTime += shift;
 			params.distance = 0;
 			clipped = true;
 		}
 
-		final size = hold.frame.frame.width * hold.scale.x * .5;
-
 		if (collectDebugStats) dbgGetPathCalls++;
 		var origin:ModifierOutput = parent.getNotePathInto(copyVec3(basePos, _pathInputA), params, dest.modifierOutput, dest.modifierPos, dest.visuals);
 		dest.visuals = origin.visuals;
+		final size = origin.visuals.holdWidth > 0 ? origin.visuals.holdWidth * .5 : hold.frame.frame.width * hold.scale.x * .5;
 		final curPoint = dest.origin;
 		curPoint.setTo(origin.pos.x, origin.pos.y, 0);
 		final depth = (origin.pos.z - 1) * 1000;
@@ -144,14 +167,20 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		final worldY = origin.rawY;
 		final worldZ = origin.rawZ;
 
-		// before this, bc it fails with optimiz eholds too
 		var unitX = 0.0;
 		var unitY = 1.0;
 
-		if (Config.OPTIMIZE_HOLDS) {
-			unitX = __holdUnitUp.x;
-			unitY = __holdUnitUp.y;
-		} else {
+		if (origin.visuals.holdDirection == 1) {
+			unitX = 0;
+			unitY = 1;
+		} else if (origin.visuals.holdDirection == 2) {
+			unitX = 1;
+			unitY = 0;
+		} else if (origin.visuals.holdDirection == 3) {
+			final angle = origin.visuals.holdAngle * FlxAngle.TO_RAD;
+			unitX = Math.cos(angle);
+			unitY = Math.sin(angle);
+		} else if (!Config.OPTIMIZE_HOLDS || !_optimizedDirectionReady || forceDirection) {
 			if (collectDebugStats) dbgGetPathCalls++;
 			final next = parent.getNotePathInto(copyVec3(basePos, _pathInputB), params, _directionOutput, _directionPos, _directionVisuals, 1, false, true);
 			unitX = next.pos.x - curPoint.x;
@@ -159,6 +188,14 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 			final unitLength = Math.sqrt(unitX * unitX + unitY * unitY);
 			if (unitLength > 0.000001) { unitX /= unitLength; unitY /= unitLength; }
 			else { unitX = 0; unitY = 1; }
+			if (Config.OPTIMIZE_HOLDS && !forceDirection) {
+				_optimizedUnitX = unitX;
+				_optimizedUnitY = unitY;
+				_optimizedDirectionReady = true;
+			}
+		} else {
+			unitX = _optimizedUnitX;
+			unitY = _optimizedUnitY;
 		}
 
 		final quad0 = dest.left;
@@ -167,35 +204,45 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		quad1.setTo(unitY * size, -unitX * size, 0);
 
 		final visuals = origin.visuals;
-		@:privateAccess
+		var rotation = quad0;
+		if (__dizzy != 0 && visuals.angleY != 0)
+			rotation = ModchartUtil.rotate3DVectorInto(quad0, 0, visuals.angleY * __dizzy, 0, _rotationScratch);
+
+		if (visuals.skewX != 0 || visuals.skewY != 0) {
+			__matrix.identity();
+			__matrix.b = ModchartUtil.tan(visuals.skewY * FlxAngle.TO_RAD);
+			__matrix.c = ModchartUtil.tan(visuals.skewX * FlxAngle.TO_RAD);
+			@:privateAccess final skewedX = __matrix.__transformX(rotation.x, rotation.y);
+			@:privateAccess rotation.y = __matrix.__transformY(rotation.x, rotation.y);
+			rotation.x = skewedX;
+		}
+		rotation.x *= visuals.scaleX;
+		rotation.y *= visuals.scaleY;
+		if (visuals.fieldAngleX != 0 || visuals.fieldAngleY != 0 || visuals.fieldAngleZ != 0)
+			rotation = ModchartUtil.rotate3DVectorInto(rotation, visuals.fieldAngleX, visuals.fieldAngleY,
+				visuals.fieldAngleZ, _fieldRotationScratch);
+
+		final edgeX = rotation.x;
+		final edgeY = rotation.y;
+		final edgeZ = rotation.z;
+		final worldEdgeX = edgeX * visuals.planeXX + edgeY * visuals.planeYX;
+		final worldEdgeY = edgeX * visuals.planeXY + edgeY * visuals.planeYY;
+		final worldEdgeZ = edgeX * visuals.planeXZ + edgeY * visuals.planeYZ + (edgeZ * 0.001 * Config.Z_SCALE);
 		for (i in 0...2) {
+			final sign = i == 0 ? 1.0 : -1.0;
 			var quad = i == 0 ? quad0 : quad1;
-			var rotation = quad;
-			if (__dizzy != 0)
-				rotation = ModchartUtil.rotate3DVectorInto(quad, 0, visuals.angleY * __dizzy, 0, _rotationScratch);
-
-			if (visuals.skewX != 0 || visuals.skewY != 0) {
-				__matrix.identity();
-
-				__matrix.b = ModchartUtil.tan(visuals.skewY * FlxAngle.TO_RAD);
-				__matrix.c = ModchartUtil.tan(visuals.skewX * FlxAngle.TO_RAD);
-
-				rotation.x = __matrix.__transformX(rotation.x, rotation.y);
-				rotation.y = __matrix.__transformY(rotation.x, rotation.y);
-			}
-			rotation.x = rotation.x * visuals.scaleX;
-			rotation.y = rotation.y * visuals.scaleY;
-
-			_viewScratch.setTo(rotation.x + worldX, rotation.y + worldY, worldZ + (rotation.z * 0.001 * Config.Z_SCALE));
+			_viewScratch.setTo(worldX + sign * worldEdgeX, worldY + sign * worldEdgeY, worldZ + sign * worldEdgeZ);
 			__rotateTailInto(_viewScratch);
 
-			// The result of the perspective projection of rotation
+			final world = i == 0 ? dest.worldLeft : dest.worldRight;
+			world.setTo(_viewScratch.x, _viewScratch.y, _viewScratch.z);
 			var projection = this.view.transformVector(_viewScratch);
+			if (i == 0) dest.leftDistance = this.view.clipDistance;
+			else dest.rightDistance = this.view.clipDistance;
 			quad.x = projection.x;
 			quad.y = projection.y;
 			quad.z = projection.z;
 		}
-
 		dest.depth = depth;
 		dest.clipped = clipped;
 		return dest;
@@ -290,6 +337,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 	}
 
 	override public function prepare(item:FlxSprite):Null<DrawCommand> {
+		_optimizedDirectionReady = false;
 		if (item == null || item.graphic == null || item.frame == null) {
 			return null;
 		}
@@ -344,6 +392,8 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		// this fixed the clipping gaps
 		_parentDataBuf.distance = Math.max(0, parentTime - songPosNow);
 		_parentDataBuf.sourceTime = parentTime;
+		_parentDataBuf.strumTime = holdHitTime;
+		_parentDataBuf.sampleTime = parentTime;
 		_parentDataBuf.lane = lane;
 		_parentDataBuf.player = player;
 		_parentDataBuf.hitten = hitten;
@@ -359,7 +409,10 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		// Match FunkinModchart's fixed subdivision flow. Reducing a hold to one
 		// adaptive quad changes modifier curves and creates blocky alpha patterns.
 		final HOLD_SUBDIVISIONS = REQUESTED_SUBDIVISIONS;
-		final holdTimeScale = holdIsEnd ? 0.5 * Config.HOLD_END_SCALE : 1.0;
+		// Preserve the authored cap aspect ratio. Many note skins are not square
+		// (the default hold end is 54x22), so using item.width stretches the tail.
+		final holdHeight:Float = item.frame.frame.height * Math.abs(item.scale.y) * Config.HOLD_END_SCALE;
+		final holdTimeScale = holdIsEnd ? Config.HOLD_END_SCALE : 1.0;
 		final fullHoldTime:Float = Adapter.instance.getHoldLength(item) * holdTimeScale;
 
 		if (HOLD_SUBDIVISIONS != __lastHoldSubs)
@@ -370,15 +423,19 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		var tID = 0;
 		var vertPointer = 0;
 		final holdTimeInterval:Float = fullHoldTime / HOLD_SUBDIVISIONS;
+		var timeScale:Float = 1;
 		var firstIteration:Bool = true;
 
 		var hasC = false;
 		var hasCOff = false;
+		var needsClip = false;
+		var anyVisible = false;
+		var visibleDepth = 1e9;
 		var nextSegment = _segmentA;
 		var spareSegment = _segmentB;
 
 		for (subIndex in 0...HOLD_SUBDIVISIONS) {
-			var holdTimeProgress = holdTimeInterval * subIndex;
+			var holdTimeProgress = holdTimeInterval * subIndex * timeScale;
 
 			var out1:HoldSegmentOutput;
 			var out2:HoldSegmentOutput;
@@ -386,10 +443,34 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 			out1 = firstIteration ? getHoldSegmentInto(item, basePos,
 				lastData != null ? lastData : getArrowParams(item, holdTimeProgress), nextSegment) : lastSegment;
 			out2 = getHoldSegmentInto(item, basePos,
-				(lastData = getArrowParams(item, holdTimeProgress + holdTimeInterval)), spareSegment);
+				(lastData = getArrowParams(item, holdTimeProgress + holdTimeInterval * timeScale)), spareSegment, true,
+					subIndex == HOLD_SUBDIVISIONS - 1);
 
-			if (firstIteration)
+			if (firstIteration) {
 				item._z = out1.depth;
+
+				if (holdIsEnd) {
+					var segmentLength = getSegmentScreenLength(out1, out2);
+
+					// Clipping collapses the rendered endpoint onto the receptor. Measure
+					// the unclipped cap so pressing a hold cannot inflate its tail.
+					if (out1.clipped || out2.clipped) {
+						final rawStart = getHoldSegmentInto(item, basePos, getArrowParams(item, holdTimeProgress), _rawSegmentA, false);
+						final rawEnd = getHoldSegmentInto(item, basePos,
+							getArrowParams(item, holdTimeProgress + holdTimeInterval), _rawSegmentB, false);
+						segmentLength = getSegmentScreenLength(rawStart, rawEnd);
+					}
+
+					if (segmentLength > 0.000001) {
+						final targetSegmentLength = holdHeight / HOLD_SUBDIVISIONS;
+						// Compress the cap to its authored size, but never enlarge it.
+						timeScale = Math.min(targetSegmentLength / segmentLength, 1.0);
+						if (timeScale < 1.0)
+							out2 = getHoldSegmentInto(item, basePos,
+								(lastData = getArrowParams(item, holdTimeInterval * timeScale)), spareSegment);
+					}
+				}
+			}
 
 			__lastPlayer = player;
 			lastSegment = out2;
@@ -403,14 +484,36 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 				canDraw = true;
 
 			var vertPos = (vertPointer++) * 8;
+			final breakSection = out1.visuals.holdSection != out2.visuals.holdSection;
 			vertices[vertPos] = out1.left.x;
 			vertices[vertPos + 1] = out1.left.y;
 			vertices[vertPos + 2] = out1.right.x;
 			vertices[vertPos + 3] = out1.right.y;
-			vertices[vertPos + 4] = out2.left.x;
-			vertices[vertPos + 5] = out2.left.y;
-			vertices[vertPos + 6] = out2.right.x;
-			vertices[vertPos + 7] = out2.right.y;
+			vertices[vertPos + 4] = breakSection ? out1.left.x : out2.left.x;
+			vertices[vertPos + 5] = breakSection ? out1.left.y : out2.left.y;
+			vertices[vertPos + 6] = breakSection ? out1.right.x : out2.right.x;
+			vertices[vertPos + 7] = breakSection ? out1.right.y : out2.right.y;
+
+			final worldBase = subIndex * 12;
+			writeWorld(slot.world, worldBase, out1.worldLeft);
+			writeWorld(slot.world, worldBase + 3, out1.worldRight);
+			writeWorld(slot.world, worldBase + 6, breakSection ? out1.worldLeft : out2.worldLeft);
+			writeWorld(slot.world, worldBase + 9, breakSection ? out1.worldRight : out2.worldRight);
+			final distanceBase = subIndex * 4;
+			slot.distances[distanceBase] = out1.leftDistance;
+			slot.distances[distanceBase + 1] = out1.rightDistance;
+			slot.distances[distanceBase + 2] = breakSection ? out1.leftDistance : out2.leftDistance;
+			slot.distances[distanceBase + 3] = breakSection ? out1.rightDistance : out2.rightDistance;
+			if (out1.leftDistance < 0 || out1.rightDistance < 0 || out2.leftDistance < 0 || out2.rightDistance < 0)
+				needsClip = true;
+			if (out1.leftDistance >= 0 || out1.rightDistance >= 0 || out2.leftDistance >= 0 || out2.rightDistance >= 0)
+				anyVisible = true;
+			if (visibleDepth > 1e6) {
+				if (out1.leftDistance >= 0) visibleDepth = out1.left.z;
+				else if (out1.rightDistance >= 0) visibleDepth = out1.right.z;
+				else if (out2.leftDistance >= 0) visibleDepth = out2.left.z;
+				else if (out2.rightDistance >= 0) visibleDepth = out2.right.z;
+			}
 
 			final negGlow = 1 - out1.visuals.glow;
 			final absGlow = out1.visuals.glow * 255;
@@ -437,8 +540,20 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 			firstIteration = false;
 		}
 
-		if (!canDraw)
+		if (!canDraw || !anyVisible)
 			return null;
+		if (item._z > 1e8 && visibleDepth < 1e6)
+			item._z = (visibleDepth - 1) * 1000;
+
+		final uv = _getCachedUVT(item, HOLD_SUBDIVISIONS);
+		if (needsClip) {
+			slot.ensureClipped(HOLD_SUBDIVISIONS);
+			var visible = false;
+			for (subIndex in 0...HOLD_SUBDIVISIONS)
+				if (_clipper.clipHoldQuad(this.view, slot.world, slot.distances, uv, vertices, subIndex,
+					slot.clippedVertices, slot.clippedUVs)) visible = true;
+			if (!visible) return null;
+		}
 
 		final dc = slot.command;
 		dc.parent = item;
@@ -447,9 +562,9 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		dc.blend = item.blend;
 		dc.cameras = ModchartUtil.resolveCameras(parent, item, slot.cameras);
 		dc.shader = item.shader;
-		dc.vertices = vertices;
-		dc.uvs = _getCachedUVT(item, HOLD_SUBDIVISIONS);
-		dc.indices = _indices;
+		dc.vertices = needsClip ? slot.clippedVertices : vertices;
+		dc.uvs = needsClip ? slot.clippedUVs : uv;
+		dc.indices = needsClip ? slot.clippedIndices : _indices;
 		dc.color = null;
 		dc.colors = transfTotal;
 		dc.isColored = hasC;
@@ -459,6 +574,12 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		__lastHoldSubs = HOLD_SUBDIVISIONS;
 
 		return dc;
+	}
+
+	inline private function writeWorld(buffer:openfl.Vector<Float>, offset:Int, point:Vector3):Void {
+		buffer[offset] = point.x;
+		buffer[offset + 1] = point.y;
+		buffer[offset + 2] = point.z;
 	}
 
 	inline private function getArrowParams(arrow:FlxSprite, posOff:Float = 0):ArrowData {
@@ -472,6 +593,8 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 		_holdArrowBuf.hitTime = hitTime + posOff + timeC2;
 		_holdArrowBuf.distance = pos;
 		_holdArrowBuf.sourceTime = __cachedHoldParentTime;
+		_holdArrowBuf.strumTime = hitTime;
+		_holdArrowBuf.sampleTime = hitTime + posOff;
 		_holdArrowBuf.lane = __cachedHoldLane;
 		_holdArrowBuf.player = __cachedHoldPlayer;
 		_holdArrowBuf.hitten = __cachedHoldHitten;
@@ -493,6 +616,11 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 private class HoldRenderSlot {
 	public var vertices:openfl.Vector<Float> = new openfl.Vector<Float>(0, true);
 	public var colors:NativeVector<ColorTransform> = new NativeVector<ColorTransform>(0);
+	public var world:openfl.Vector<Float>;
+	public var distances:openfl.Vector<Float>;
+	public var clippedVertices:openfl.Vector<Float>;
+	public var clippedUVs:openfl.Vector<Float>;
+	public var clippedIndices:openfl.Vector<Int>;
 	public final cameras:Array<FlxCamera> = [];
 	public final command:DrawCommand;
 	var capacity:Int = 0;
@@ -502,11 +630,20 @@ private class HoldRenderSlot {
 			vertices: vertices, uvs: null, indices: null, isColored: false, hasColorOffsets: false, color: null, colors: colors, zIndex: 0};
 	}
 
+	public function ensureClipped(subs:Int):Void {
+		if (clippedVertices != null && clippedVertices.length == subs * 16) return;
+		clippedVertices = new openfl.Vector<Float>(subs * 16, true);
+		clippedUVs = new openfl.Vector<Float>(subs * 24, true);
+		clippedIndices = NearPlaneClipper.indices(subs);
+	}
+
 	public function ensureCapacity(subs:Int):Void {
 		if (subs == capacity)
 			return;
 		capacity = subs;
 		vertices = new openfl.Vector<Float>(capacity * 8, true);
+		world = new openfl.Vector<Float>(capacity * 12, true);
+		distances = new openfl.Vector<Float>(capacity * 4, true);
 		colors = new NativeVector<ColorTransform>(capacity);
 		for (i in 0...colors.length) colors[i] = new ColorTransform();
 	}

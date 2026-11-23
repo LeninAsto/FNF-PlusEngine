@@ -1,0 +1,17 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.outdated",
+  "title": "Atualização Disponível!",
+  "version": "Versão atual: {1} => Nova versão: {2}",
+  "loading_changelog": "Carregando changelog...",
+  "controls": "Pressione ENTER para atualizar para a versão mais recente\nPressione ESCAPE se você estiver na versão correta do motor\nVocê pode desativar este aviso no Menu Opções",
+  "controls_mobile": "Pressione A para atualizar para a versão mais recente\nPressione B se você estiver na versão correta do motor\nVocê pode desativar este aviso no Menu Opções",
+  "no_changelog": "Nenhum changelog disponível",
+  "changelog_error": "Erro ao carregar o changelog: {1}",
+  "changelog_title": "O que há de novo?\n{1}",
+  "network": {
+    "checking": "Verificando o changelog",
+    "retrieved": "Recuperado",
+    "no_connection": "Sem ligação"
+  }
+}

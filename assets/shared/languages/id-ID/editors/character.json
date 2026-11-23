@@ -1,0 +1,53 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.character",
+  "ui": {
+    "add_update": "Tambah/Perbarui",
+    "advanced_animation_indices": "LANJUTAN - Indeks Animasi:",
+    "animated_icon": "Ikon Animasi",
+    "animation_name": "Nama animasi:",
+    "animation_symbol_name_tag": "Nama/Tag Simbol Animasi:",
+    "animations": "Animasi:",
+    "camera_x_y": "Kamera X/Y :",
+    "character": "Karakter:",
+    "character_x_y": "Karakter X/Y :",
+    "flip_x": "Balik X",
+    "framerate": "Kecepatan bingkai:",
+    "get_icon_color": "Dapatkan Warna Ikon",
+    "health_bar_r_g_b": "Bar Kesehatan R/G/B :",
+    "health_icon_name": "Nama ikon kesehatan:",
+    "highlight_ghost": "Sorot Hantu",
+    "image_file_name": "Nama file gambar:",
+    "load_template": "Muat Templat",
+    "make_ghost": "Membuat Hantu",
+    "no_antialiasing": "Tidak ada Antialiasing",
+    "playable_character": "Karakter yang Dapat Dimainkan",
+    "reload_char": "Muat Ulang Karakter",
+    "reload_image": "Muat Ulang Gambar",
+    "remove": "Hapus",
+    "save_character": "Simpan Karakter",
+    "scale": "Skala:",
+    "should_it_loop": "Haruskah Berulang?",
+    "sing_animation_length": "Durasi Nyanyikan Animasi:",
+    "vocals_file_postfix": "Postfix File Vokal:",
+    "zoom_1x": "Perbesar: 1x"
+  },
+  "presence": {
+    "title": "Editor Karakter",
+    "character": "Karakter: {1}"
+  },
+  "help": {
+    "open": "Tekan {1} untuk Bantuan",
+    "mobile": "KAMERA\nX/Y - Perbesar/Perkecil Kamera\nTombol G + Panah - Pindahkan Kamera\nZ - Atur Ulang Zoom Kamera\n\nKARAKTER\nA - Atur Ulang Offset Saat Ini\nV/D - Animasi Sebelumnya/Berikutnya\nTombol Panah - Pindahkan Offset\n\nLAINNYA\nS - Beralih Siluet\nTahan C - Pindahkan Offset 10x lebih cepat dan Kamera 4x lebih cepat",
+    "desktop": "KAMERA\nE/Q - Perbesar/Perkecil Kamera\nJ/K/L/I - Pindahkan Kamera\nR - Atur Ulang Zoom Kamera\n\nKARAKTER\nCtrl + R - Atur Ulang Offset Saat Ini\nCtrl + C - Salin Offset Saat Ini\nCtrl + V - Tempel Offset yang Disalin pada Animasi Saat Ini\nCtrl + Z - Membatalkan Tempel Terakhir atau Reset\nW/S - Animasi Sebelumnya/Berikutnya\nLuar Angkasa - Putar Ulang Animasi\nTombol Panah - Pindahkan Offset\nA/D - Bingkai Maju (Mundur/Maju)\n\nLAINNYA\nF12 - Beralih Siluet\nTahan Shift - Pindahkan Offset 10x lebih cepat dan Kamera 4x lebih cepat\nTahan Kontrol - Gerakkan kamera 4x lebih lambat"
+  },
+  "messages": {
+    "no_animation": "KESALAHAN: Tidak Ditemukan Animasi"
+  },
+  "tabs": {
+    "animations": "Animasi",
+    "character": "Karakter",
+    "ghost": "Hantu",
+    "settings": "Pengaturan"
+  }
+}

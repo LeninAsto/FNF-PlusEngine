@@ -1,6 +1,7 @@
 package states;
 
 import backend.LoadTaskGroup;
+import backend.AssetResolver;
 import haxe.Json;
 import lime.utils.Assets;
 import openfl.display.BitmapData;
@@ -14,6 +15,7 @@ import backend.StageData;
 import backend.Rating;
 import backend.SongLoadPlan;
 import backend.SongLoadMetrics;
+import backend.CompiledChartCache;
 import sys.thread.Mutex;
 import objects.GlobalLoadingOverlay;
 import objects.Note;
@@ -160,7 +162,8 @@ class LoadingState extends MusicBeatState
 		bg.updateHitbox();
 		addBehindBar(bg);
 
-		loadingText = new FlxText(520, 580, 400, Language.getPhrase('now_loading', 'Now Loading', ['...']), 32);
+		loadingText = new FlxText(520, 580, 400, Language.getPhrase('states.loading.title',
+			Language.getPhrase('now_loading', 'Now Loading{1}', ['...']), ['...']), 32);
 		loadingText.setFormat(Paths.font("vcr.ttf"), 32, FlxColor.WHITE, LEFT, OUTLINE_FAST, FlxColor.BLACK);
 		loadingText.borderSize = 2;
 		addBehindBar(loadingText);
@@ -200,7 +203,8 @@ class LoadingState extends MusicBeatState
 		add(timeoutWarning);
 		if (cancelling)
 		{
-			timeoutWarning.text = Language.getPhrase('loading_cancelling', 'Cancelling loading...', []);
+			timeoutWarning.text = Language.getPhrase('states.loading.cancelling',
+				Language.getPhrase('loading_cancelling', 'Cancelling loading...'));
 			timeoutWarning.visible = true;
 		}
 
@@ -236,7 +240,8 @@ class LoadingState extends MusicBeatState
 		SongLoadMetrics.cancel();
 		if (threadPool != null)
 			threadPool.cancel();
-		timeoutWarning.text = Language.getPhrase('loading_cancelling', 'Cancelling loading...', []);
+		timeoutWarning.text = Language.getPhrase('states.loading.cancelling',
+			Language.getPhrase('loading_cancelling', 'Cancelling loading...'));
 		timeoutWarning.visible = true;
 	}
 
@@ -245,7 +250,7 @@ class LoadingState extends MusicBeatState
 		_loaded();
 		transitioning = true;
 		finishedLoading = true;
-		var targetState:FlxState = returnState != null ? returnState : new MainMenuState();
+		var targetState:FlxState = returnState != null ? returnState : MainMenuStateSelector.create();
 		if (stopMusic && FlxG.sound.music != null)
 			FlxG.sound.music.stop();
 		FlxG.camera.fade(FlxColor.BLACK, 0.3, false, () -> MusicBeatState.switchState(targetState));
@@ -254,6 +259,7 @@ class LoadingState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+		AssetResolver.flushDiagnostics();
 		if (dontUpdate)
 			return;
 		GlobalLoadingOverlay.showPersistent();
@@ -261,6 +267,13 @@ class LoadingState extends MusicBeatState
 		{
 			if (!transitioning && !hasPendingTasks())
 				finishCancellation();
+			return;
+		}
+		if (songLoadError != null && initialThreadCompleted && !hasPendingTasks())
+		{
+			timeoutWarning.text = songLoadError;
+			timeoutWarning.visible = true;
+			cancelLoading();
 			return;
 		}
 
@@ -273,7 +286,8 @@ class LoadingState extends MusicBeatState
 			if (loadingTimer >= TIMEOUT_DURATION && !canEscape)
 			{
 				canEscape = true;
-				timeoutWarning.text = Language.getPhrase('loading_timeout', 'Loading is taking too long...\nPress ESC to return', []);
+				timeoutWarning.text = Language.getPhrase('states.loading.timeout',
+					Language.getPhrase('loading_timeout', 'Loading is taking too long...\nPress ESC to return'));
 				timeoutWarning.visible = true;
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 			}
@@ -354,7 +368,8 @@ class LoadingState extends MusicBeatState
 			case 2:
 				dots = '...';
 		}
-		loadingText.text = Language.getPhrase('now_loading', 'Now Loading{1}', [dots]);
+		loadingText.text = Language.getPhrase('states.loading.title',
+			Language.getPhrase('now_loading', 'Now Loading{1}', [dots]), [dots]);
 
 		if (!spawnedPessy)
 		{
@@ -422,9 +437,10 @@ class LoadingState extends MusicBeatState
 		var item:String = getLoadItem();
 		if (item.length > 88)
 			item = '...' + item.substr(item.length - 85);
-		var detail:String = '${getLoadPercent(progressLoaded)}%  (${progressLoaded}/${loadMax})';
+		var detail:String = Language.getPhrase('states.loading.progress', '{1}%  ({2}/{3})',
+			[getLoadPercent(progressLoaded), progressLoaded, loadMax]);
 		if (item.length > 0)
-			detail += '  $item';
+			detail = Language.getPhrase('states.loading.progress_item', '{1}  {2}', [detail, item]);
 
 		if (detail != lastLoadDetail)
 		{
@@ -490,6 +506,9 @@ class LoadingState extends MusicBeatState
 		loadMax = 0;
 		initialThreadCompleted = true;
 		isIntrusive = false;
+		pendingChartName = null;
+		pendingChartFolder = null;
+		songLoadError = null;
 
 		FlxTransitionableState.skipNextTransIn = true;
 		if (threadPool != null)
@@ -508,6 +527,9 @@ class LoadingState extends MusicBeatState
 		currentItem = item == null ? '' : item;
 		progressMutex.release();
 	}
+
+	static inline function setLoadPhrase(key:String, fallback:String, ?values:Array<Dynamic>):Void
+		setLoadItem(Language.getPhrase(key, fallback, values));
 
 	public static function getLoadItem():String
 	{
@@ -570,7 +592,7 @@ class LoadingState extends MusicBeatState
 		if (tasksIdle && initialThreadCompleted && getLoadedCount() >= workerLoadMax && atlasesToPrepare.length > 0)
 		{
 			var atlas:String = atlasesToPrepare.shift();
-			setLoadItem('atlas $atlas');
+		setLoadPhrase('states.loading.items.atlas', 'atlas {1}', [atlas]);
 			try
 			{
 				Paths.getSparrowAtlas(atlas);
@@ -585,7 +607,7 @@ class LoadingState extends MusicBeatState
 		}
 		if (tasksIdle && soundsToWarm.length > 0)
 		{
-			setLoadItem('Preparing audio playback');
+		setLoadPhrase('states.loading.items.preparing_audio', 'Preparing audio playback');
 			try backend.AssetLoader.warmAudio(soundsToWarm.shift())
 			catch (error:Dynamic) trace('Audio warmup failed: $error');
 		}
@@ -610,13 +632,18 @@ class LoadingState extends MusicBeatState
 
 	static function getNextState(target:FlxState, stopMusic = false, intrusive:Bool = true):FlxState
 	{
+		var hasPendingChart:Bool = pendingChartName != null && PlayState.SONG == null;
 		#if !SHOW_LOADING_SCREEN
-		intrusive = false;
+		if (!hasPendingChart)
+			intrusive = false;
 		#end
 
 		LoadingState.isIntrusive = intrusive;
-		_startPool();
 		loadNextDirectory();
+		if (hasPendingChart)
+			prepareToSong();
+		else
+			_startPool();
 
 		if (intrusive)
 			return new LoadingState(target, stopMusic);
@@ -675,6 +702,17 @@ class LoadingState extends MusicBeatState
 
 	static var initialThreadCompleted:Bool = true;
 	static var dontPreloadDefaultVoices:Bool = false;
+	static var pendingChartName:String = null;
+	static var pendingChartFolder:String = null;
+	static var songLoadError:String = null;
+
+	public static function setPendingSongChart(chartName:String, folder:String):Void
+	{
+		pendingChartName = chartName;
+		pendingChartFolder = folder;
+		songLoadError = null;
+		PlayState.SONG = null;
+	}
 
 	static function _startPool()
 	{
@@ -745,8 +783,8 @@ class LoadingState extends MusicBeatState
 			throw 'A song load is already running';
 		if (threadPool != null)
 			_loaded();
-		setLoadItem('Preparing song data');
-		if (PlayState.SONG == null)
+		setLoadPhrase('states.loading.items.preparing_song', 'Preparing song data');
+		if (PlayState.SONG == null && pendingChartName == null)
 		{
 			SongLoadMetrics.cancel();
 			imagesToPrepare = [];
@@ -760,7 +798,8 @@ class LoadingState extends MusicBeatState
 			isIntrusive = false;
 			return;
 		}
-		SongLoadMetrics.markLoading();
+		if (PlayState.SONG != null)
+			SongLoadMetrics.markLoading();
 
 		_startPool();
 		imagesToPrepare = [];
@@ -771,17 +810,39 @@ class LoadingState extends MusicBeatState
 
 		initialThreadCompleted = false;
 		var song:SwagSong = PlayState.SONG;
-		var folder:String = Paths.formatToSongPath(Song.loadedSongName);
+		var folder:String = song != null ? Paths.formatToSongPath(Song.loadedSongName) : Paths.formatToSongPath(pendingChartFolder);
+		var chartName:String = pendingChartName;
+		var chartFolder:String = pendingChartFolder;
+		pendingChartName = null;
+		pendingChartFolder = null;
 		threadPool.run(() ->
 		{
 			try
 			{
-				setLoadItem('compiling chart data');
+				if (song == null)
+				{
+					setLoadPhrase('states.loading.items.parsing_chart', 'Reading chart data');
+					song = Song.loadFromJson(chartName, chartFolder);
+					if (song == null)
+						throw 'Chart failed to load';
+					folder = Paths.formatToSongPath(Song.loadedSongName);
+					SongLoadMetrics.markLoading();
+				}
+				setLoadPhrase('states.loading.items.compiling_chart', 'Compiling chart data');
 				SongLoadPlan.prepare(song);
+				CompiledChartCache.flushPending();
 
 				if (song.stage == null || song.stage.length < 1)
 					song.stage = StageData.vanillaSongStage(folder);
 				var stageData:StageFile = StageData.getStageFile(song.stage);
+				var stageDirectory:String = stageData != null && stageData.directory != null ? stageData.directory.trim() : '';
+				if (stageDirectory.length == 0)
+					stageDirectory = StageData.DEFAULT_STAGE_DIRECTORY;
+				if (Paths.currentLevel != stageDirectory)
+				{
+					Paths.setCurrentLevel(stageDirectory);
+					AssetResolver.queueDiagnostic('Loading stage "${song.stage}" from asset folder "$stageDirectory"');
+				}
 				var stageUI:String = stageData != null && stageData.stageUI != null ? stageData.stageUI.trim() : '';
 				var pixelStage:Bool = stageUI == 'pixel' || stageUI.endsWith('-pixel') || (stageUI.length == 0 && stageData != null && stageData.isPixelStage == true);
 				if (stageUI.length == 0)
@@ -880,6 +941,8 @@ class LoadingState extends MusicBeatState
 									imgs.push(sprite.image);
 						}
 					}
+					for (image in imgs)
+						AssetResolver.reportStageImageFallback(image);
 					prepare(imgs, snds, mscs);
 				}
 
@@ -930,6 +993,7 @@ class LoadingState extends MusicBeatState
 			catch (err:Dynamic)
 			{
 				trace('ERROR! while preparing song: $err');
+				songLoadError = Std.string(err);
 			}
 			if (!threadPool.isCancelled())
 			{
@@ -1033,7 +1097,7 @@ class LoadingState extends MusicBeatState
 		SongLoadMetrics.beginAssets(loadMax);
 		loaded = 0;
 		if (loadMax == 0)
-			setLoadItem('Finishing');
+			setLoadPhrase('states.loading.items.finishing', 'Finishing');
 
 		// then start threads
 		_threadFunc();
@@ -1043,15 +1107,15 @@ class LoadingState extends MusicBeatState
 	{
 		_startPool();
 		for (sound in soundsToPrepare)
-			initThread(() -> preloadSound('sounds/$sound'), 'sound $sound');
+			initThread(() -> preloadSound('sounds/$sound'), Language.getPhrase('states.loading.items.sound', 'sound {1}', [sound]));
 		for (music in musicToPrepare)
-			initThread(() -> preloadSound('music/$music'), 'music $music');
+			initThread(() -> preloadSound('music/$music'), Language.getPhrase('states.loading.items.music', 'music {1}', [music]));
 		for (song in songsToPrepare)
-			initThread(() -> preloadSound(song, 'songs', true, false, true), 'song $song');
+			initThread(() -> preloadSound(song, 'songs', true, false, true), Language.getPhrase('states.loading.items.song', 'song {1}', [song]));
 
 		// for images, they get to have their own thread
 		for (image in imagesToPrepare)
-			initThread(() -> preloadGraphic(image), 'image $image');
+			initThread(() -> preloadGraphic(image), Language.getPhrase('states.loading.items.image', 'image {1}', [image]));
 	}
 
 	static function initThread(func:Void->Dynamic, traceData:String)

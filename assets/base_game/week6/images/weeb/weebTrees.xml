@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+Created with Heroic Packer v0.1.5 https://heroicpacker.heroeyad.dev/
+-->
+<TextureAtlas imagePath="weebTrees.png" width="314" height="631" spritePadding="3" borderPadding="1">
+	<SubTexture name="treeLoop0000" x="1" y="1" width="312" height="82" frameX="-1" frameY="0" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0001" x="1" y="86" width="312" height="82" frameX="-1" frameY="0" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0002" x="1" y="416" width="311" height="20" frameX="-1" frameY="-12" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0003" x="1" y="256" width="312" height="79" frameX="0" frameY="-3" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0004" x="1" y="171" width="312" height="82" frameX="0" frameY="0" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0005" x="1" y="338" width="312" height="75" frameX="0" frameY="0" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0006" x="1" y="439" width="311" height="20" frameX="0" frameY="-45" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0007" x="1" y="462" width="311" height="20" frameX="0" frameY="-35" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0008" x="1" y="485" width="311" height="20" frameX="0" frameY="-25" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0009" x="1" y="531" width="311" height="19" frameX="0" frameY="-16" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0010" x="1" y="553" width="311" height="19" frameX="0" frameY="-6" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0011" x="1" y="595" width="311" height="16" frameX="0" frameY="0" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0012" x="1" y="614" width="311" height="6" frameX="0" frameY="0" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0013" x="1" y="623" width="295" height="7" frameX="-1" frameY="-75" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0014" x="1" y="575" width="311" height="17" frameX="-1" frameY="-65" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0015" x="1" y="508" width="311" height="20" frameX="-1" frameY="-55" frameWidth="313" frameHeight="82"/>
+	<SubTexture name="treeLoop0016" x="1" y="439" width="311" height="20" frameX="-1" frameY="-45" frameWidth="313" frameHeight="82"/>
+</TextureAtlas>

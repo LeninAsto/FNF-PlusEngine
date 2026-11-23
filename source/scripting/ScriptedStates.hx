@@ -6,6 +6,7 @@ import backend.MusicBeatState;
 import backend.MusicBeatSubstate;
 import backend.Mods;
 import backend.Paths;
+import states.MainMenuStateSelector;
 import flixel.FlxG;
 import flixel.FlxState;
 import flixel.FlxSubState;
@@ -125,7 +126,14 @@ class ScriptedStates {
 		#end
 	}
 
-	public static function exitToEngine():Void {
+	/**
+	 * Drops the session-only launch context without choosing a destination state.
+	 *
+	 * Enabling a mod is not the same operation as launching it.  Callers that
+	 * restart the engine after changing the enabled list need this so InitState
+	 * does not attempt to reopen an old scripted entry point.
+	 */
+	public static function clearLaunchedModContext():Void {
 		states.PlayState.returnToScriptedState = null;
 		activeScriptedState = null;
 		activeScriptedMod = null;
@@ -141,6 +149,15 @@ class ScriptedStates {
 		Mods.resetWindowBrand();
 		backend.Language.reloadPhrases();
 		#end
+	}
+
+	public static function exitToEngine():Void {
+		clearLaunchedModContext();
+		MusicBeatState.switchState(new states.ModsMenuState());
+	}
+
+	/** Opens the mod browser without ending an active launched-mod session. */
+	public static function openModsMenu():Void {
 		MusicBeatState.switchState(new states.ModsMenuState());
 	}
 
@@ -169,14 +186,15 @@ class ScriptedStates {
 
 	static function resolveScript(pack:String, name:String, scope:ResolveScope):ScriptedStateFile {
 		var candidates:Array<String> = candidateFullNames(pack, name);
+		var launchedMod:String = Mods.launchedMod;
+		var hasLaunchedMod:Bool = launchedMod != null && launchedMod.length > 0;
 		return switch (scope) {
 			case LAUNCHED:
-				resolveInModCandidates(candidates, Mods.launchedMod != null && Mods.launchedMod.length > 0 ? Mods.launchedMod : Mods.currentModDirectory);
+				hasLaunchedMod ? resolveInModCandidates(candidates, launchedMod) : null;
 			case ENGINE:
 				resolveEngineCandidates(candidates);
 			case PRIORITY:
-				var launched:ScriptedStateFile = resolveInModCandidates(candidates, Mods.launchedMod != null && Mods.launchedMod.length > 0 ? Mods.launchedMod : Mods.currentModDirectory);
-				launched != null ? launched : resolveEngineCandidates(candidates);
+				hasLaunchedMod ? resolveInModCandidates(candidates, launchedMod) : null;
 			case ANY:
 				resolveAnyCandidate(candidates);
 		}
@@ -226,7 +244,7 @@ class ScriptedStates {
 		}
 		#end
 
-		return resolveEngineCandidates(candidates);
+		return null;
 	}
 
 	static function playMenuMusic(folder:String):Void {
@@ -291,7 +309,7 @@ class ScriptedReturnState extends MusicBeatState {
 
 		done = true;
 		if (!ScriptedStates.switchToState(target, args, scope))
-			MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new states.MainMenuState()));
+			MusicBeatState.switchState(MainMenuStateSelector.create());
 	}
 }
 #end

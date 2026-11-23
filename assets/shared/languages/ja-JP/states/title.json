@@ -1,0 +1,17 @@
+{
+  "$schema": 1,
+  "$namespace": "states.title",
+  "intro": {
+    "psych_engine_by": "Psych Engine による",
+    "psych_continued_by": "Psych 継続する",
+    "plus_engine_by": "Plus Engine による",
+    "not_associated": "関連していない",
+    "with": "と",
+    "newgrounds": "newgrounds",
+    "friday": "Friday",
+    "night": "Night",
+    "funkin": "Funkin",
+    "fallback_first": "Psych Engine",
+    "fallback_second": "Plus Engine"
+  }
+}

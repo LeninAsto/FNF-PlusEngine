@@ -4,8 +4,16 @@ class LegacySettingsSubState extends BaseOptionsMenu
 {
 	public function new()
 	{
-		title = Language.getPhrase('legacy_menu', 'Legacy Settings');
-		rpcTitle = 'Legacy Settings Menu';
+		title = Language.getPhrase('options.menus.legacy.title', Language.getPhrase('legacy_menu', 'Legacy Settings'));
+		rpcTitle = Language.getPhrase('options.menus.legacy.presence', 'Legacy Settings Menu');
+
+		var option:Option = new Option('FPS Rainbow Color', 'Cycles the FPS counter through rainbow colors.', 'fpsRainbowColor', BOOL);
+		option.onChange = function() { if (ClientPrefs.data.fpsRainbowColor) ClientPrefs.data.fpsInterpolateColor = false; };
+		addOption(option);
+
+		var option:Option = new Option('FPS Interpolate Color', 'Colors the FPS counter green, orange or red based on performance.', 'fpsInterpolateColor', BOOL);
+		option.onChange = function() { if (ClientPrefs.data.fpsInterpolateColor) ClientPrefs.data.fpsRainbowColor = false; };
+		addOption(option);
 
 		var option:Option = new Option('Use Psych Score Text', 'If checked, keeps the original Psych Engine score text format during gameplay.',
 			'psychScoreText', BOOL);
@@ -13,6 +21,10 @@ class LegacySettingsSubState extends BaseOptionsMenu
 
 		var option:Option = new Option('Vanilla Transition', 'If checked, uses the vanilla Psych Engine transition instead of the custom one.',
 			'vanillaTransition', BOOL);
+		addOption(option);
+
+		var option:Option = new Option('Sticker Transition', 'If unchecked, stickers are won\'t show when exit',
+		    'stickerTransition', BOOL);
 		addOption(option);
 
 		var option:Option = new Option('Options Menu Style', 'Changes the Options menus between Plus cards and Psych classic.', 'optionsMenuStyle',
@@ -25,25 +37,18 @@ class LegacySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		#end
 
-		var option:Option = new Option('Use Psych Freeplay', 'If checked, uses the classic Psych Engine Freeplay state instead of the PlusEngine Freeplay.',
-			'usePsychFreeplay', BOOL);
+		var option:Option = new Option('Main Menu Style', 'Selects the standard layout or the Plus layout. Plus is opt-in.',
+			'mainMenuStyle', STRING, ['Normal', 'Plus']);
+		addOption(option);
+
+		var option:Option = new Option('Freeplay Menu Style', 'Selects the classic Freeplay or the Plus layout. Plus is opt-in.',
+			'freeplayMenuStyle', STRING, ['Normal', 'Plus']);
 		addOption(option);
 
 		var option:Option = new Option('Script Deprecation Warnings',
 			'If checked, deprecated Lua/HScript compatibility APIs will print warnings to the debug console. Disable to silence noisy mods.',
 			'scriptWarns', BOOL);
 		addOption(option);
-
-		#if MODS_ALLOWED
-		var option:Option = new Option('Mod Security',
-			'If checked, scans mod Lua/HScript and skips scripts from mods with untrusted sensitive APIs.', 'modSecure', BOOL);
-		option.onChange = function()
-		{
-			ClientPrefs.saveSettings();
-			backend.ModSecurity.rescanAll();
-		};
-		addOption(option);
-		#end
 
 		var option:Option = new Option('Drag Character',
 			'If checked, holding a character with mouse/touch screen will move the position, just like in Codename Engine.', 'cneStyleDragCharacter', BOOL);

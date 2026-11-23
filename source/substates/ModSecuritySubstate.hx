@@ -182,7 +182,8 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 		headerBar.scrollFactor.set();
 		add(headerBar);
 
-		titleTxt = new FlxText(px + 18, py + 10, PANEL_W - 200, "Sensitive API Warning", 22);
+		titleTxt = new FlxText(px + 18, py + 10, PANEL_W - 200,
+			Language.getPhrase('substates.mod_security.title.warning', 'Sensitive API Warning'), 22);
 		titleTxt.setFormat(Paths.font("vcr.ttf"), 22, 0xFFFFD24A, LEFT, OUTLINE, FlxColor.BLACK);
 		titleTxt.borderSize = 1.5;
 		titleTxt.scrollFactor.set();
@@ -206,7 +207,8 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 		bodyTxt.scrollFactor.set();
 		add(bodyTxt);
 
-		listHeaderTxt = new FlxText(px + 18, py + LIST_TOP - 22, PANEL_W - 36, "Detected calls (UP/DOWN or wheel to scroll):", 13);
+		listHeaderTxt = new FlxText(px + 18, py + LIST_TOP - 22, PANEL_W - 36,
+			Language.getPhrase('substates.mod_security.detected_calls', 'Detected calls (UP/DOWN or wheel to scroll):'), 13);
 		listHeaderTxt.setFormat(Paths.font("vcr.ttf"), 13, 0xFFB0B0B0, LEFT, OUTLINE, FlxColor.BLACK);
 		listHeaderTxt.borderSize = 1;
 		listHeaderTxt.scrollFactor.set();
@@ -241,11 +243,11 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 		blockBg.visible = false;
 		add(blockBg);
 
-		trustTxt = new Alphabet(0, btnY, "TRUST", true);
+		trustTxt = new Alphabet(0, btnY, Language.getPhrase('substates.mod_security.actions.trust', 'TRUST'), true);
 		trustTxt.scrollFactor.set();
 		add(trustTxt);
 
-		blockTxt = new Alphabet(0, btnY, "BLOCK", true);
+		blockTxt = new Alphabet(0, btnY, Language.getPhrase('substates.mod_security.actions.block', 'BLOCK'), true);
 		blockTxt.scrollFactor.set();
 		add(blockTxt);
 
@@ -261,7 +263,8 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 		selectArrowR.scrollFactor.set();
 		add(selectArrowR);
 
-		hintTxt = new FlxText(px, py + PANEL_H - 28, PANEL_W, "Left/Right to choose -- Enter to confirm", 14);
+		hintTxt = new FlxText(px, py + PANEL_H - 28, PANEL_W,
+			Language.getPhrase('substates.mod_security.hint', 'Left/Right to choose -- Enter to confirm'), 14);
 		hintTxt.setFormat(Paths.font("vcr.ttf"), 14, 0xFFB0B0B0, CENTER, OUTLINE, FlxColor.BLACK);
 		hintTxt.borderSize = 1;
 		hintTxt.scrollFactor.set();
@@ -286,7 +289,7 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 		ModSecurity.isBlocked(folder);
 		final rec = ModSecurity.records.get(folder);
 
-		counterTxt.text = 'Mod ${currentIdx + 1} / ${pending.length}';
+		counterTxt.text = Language.getPhrase('substates.mod_security.counter', 'Mod {1} / {2}', [currentIdx + 1, pending.length]);
 		subTitleTxt.text = '"$folder"';
 
 		// Collect categories present and build the displayable findings list.
@@ -313,23 +316,25 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 		if (!hasFindings) {
 			// Clean mod (or all findings filtered): this reads as a settings view,
 			// letting the user proactively trust/block even with nothing flagged.
-			titleTxt.text = 'Mod Security';
-			body.add('No sensitive APIs were detected in this mod\'s scripts.\n\n');
+			titleTxt.text = Language.getPhrase('substates.mod_security.title.clean', 'Mod Security');
+			body.add(Language.getPhrase('substates.mod_security.body.clean', "No sensitive APIs were detected in this mod's scripts.\n\n"));
 			if (activationPrompt) {
-				body.add('TRUST = enable the mod.\n');
-				body.add('BLOCK = keep the mod disabled.');
+				body.add(Language.getPhrase('substates.mod_security.body.clean_activation',
+					'TRUST = enable the mod.\nBLOCK = keep the mod disabled.'));
 			} else {
-				body.add('TRUST = scripts run normally.\n');
-				body.add('BLOCK = mod stays enabled, scripts skipped.');
+				body.add(Language.getPhrase('substates.mod_security.body.clean_review',
+					'TRUST = scripts run normally.\nBLOCK = mod stays enabled, scripts skipped.'));
 			}
 		} else {
-			titleTxt.text = 'Sensitive API Warning';
-			body.add('This mod\'s scripts use APIs that can be abused for harm.\n');
+			titleTxt.text = Language.getPhrase('substates.mod_security.title.warning', 'Sensitive API Warning');
+			body.add(Language.getPhrase('substates.mod_security.body.warning', "This mod's scripts use APIs that can be abused for harm.\n"));
 			if (activationPrompt)
-				body.add('TRUST = enable the mod and run scripts.   BLOCK = keep the mod disabled.\n');
+				body.add(Language.getPhrase('substates.mod_security.body.warning_activation',
+					'TRUST = enable the mod and run scripts.   BLOCK = keep the mod disabled.\n'));
 			else
-				body.add('TRUST = scripts run normally.   BLOCK = mod stays enabled, scripts skipped.\n');
-			body.add('\nThis mod can:');
+				body.add(Language.getPhrase('substates.mod_security.body.warning_review',
+					'TRUST = scripts run normally.   BLOCK = mod stays enabled, scripts skipped.\n'));
+			body.add(Language.getPhrase('substates.mod_security.body.capabilities', '\nThis mod can:'));
 			var anyCat:Bool = false;
 			final orderLen = CATEGORY_ORDER.length;
 			for (i in 0...orderLen) {
@@ -337,14 +342,16 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 				if (!seenCat.exists(cat)) continue;
 				anyCat = true;
 				body.add('\n  ');
-				body.add(CATEGORY_LABELS.get(cat));
+				body.add(Language.getPhrase('substates.mod_security.categories.$cat', CATEGORY_LABELS.get(cat)));
 			}
 			if (seenCat.exists("other")) {
-				body.add('\n  [*] Other sensitive APIs (see list below)');
+				body.add(Language.getPhrase('substates.mod_security.categories.other',
+					'\n  [*] Other sensitive APIs (see list below)'));
 				anyCat = true;
 			}
 			if (!anyCat)
-				body.add('\n  (only common APIs found -- review the list below)');
+				body.add(Language.getPhrase('substates.mod_security.categories.common_only',
+					'\n  (only common APIs found -- review the list below)'));
 		}
 
 		bodyTxt.text = body.toString();
@@ -361,7 +368,7 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 	function refreshList():Void {
 		final total:Int = displayFindings.length;
 		if (total == 0) {
-			listTxt.text = '  (no sensitive APIs detected)';
+			listTxt.text = Language.getPhrase('substates.mod_security.no_findings', '  (no sensitive APIs detected)');
 			listScrollHint.text = '';
 			return;
 		}
@@ -383,14 +390,16 @@ class ModSecuritySubstate extends MusicBeatSubstate {
 			final detail = PATTERN_DETAILS.get(f.pattern);
 			if (detail != null) {
 				buf.add(' - ');
-				buf.add(detail);
+				buf.add(Language.getPhrase('substates.mod_security.details.${f.pattern}', detail));
 			}
 		}
 		listTxt.text = buf.toString();
 		if (total > LIST_LINES) {
-			listScrollHint.text = '${listScroll + 1}-${endIdx} of ${total}';
+			listScrollHint.text = Language.getPhrase('substates.mod_security.list_range', '{1}-{2} of {3}',
+				[listScroll + 1, endIdx, total]);
 		} else {
-			listScrollHint.text = '${total} item' + (total == 1 ? '' : 's');
+			listScrollHint.text = Language.getPhrase(total == 1 ? 'substates.mod_security.item' : 'substates.mod_security.items',
+				total == 1 ? '{1} item' : '{1} items', [total]);
 		}
 	}
 

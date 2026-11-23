@@ -16,6 +16,7 @@ enum OptionType
 	PERCENT;
 	STRING;
 	KEYBIND;
+	ACTION;
 }
 
 class Option
@@ -51,8 +52,10 @@ class Option
 	{
 		_name = name;
 		_translationKey = translation != null ? translation : _name;
-		this.name = Language.getPhrase('setting_$_translationKey', name);
-		this.description = Language.getPhrase('description_$_translationKey', description);
+		var namespacedKey:String = getNamespacedKey();
+		this.name = Language.getPhrase('options.settings.$namespacedKey.name', Language.getPhrase('setting_$_translationKey', name));
+		this.description = Language.getPhrase('options.settings.$namespacedKey.description',
+			Language.getPhrase('description_$_translationKey', description));
 		this.variable = variable;
 		this.type = type;
 		this.options = options != null ? options : [];
@@ -86,6 +89,8 @@ class Option
 				defaultValue = '';
 				defaultKeys = {gamepad: 'NONE', keyboard: 'NONE'};
 				keys = {gamepad: 'NONE', keyboard: 'NONE'};
+			case ACTION:
+				defaultValue = null;
 		}
 
 		try
@@ -122,6 +127,8 @@ class Option
 
 	dynamic public function getValue():Dynamic
 	{
+		if (type == ACTION)
+			return '';
 		var value = Reflect.getProperty(ClientPrefs.data, variable);
 		if (type == KEYBIND)
 			return !Controls.instance.controllerMode ? value.keyboard : value.gamepad;
@@ -130,6 +137,8 @@ class Option
 
 	dynamic public function setValue(value:Dynamic)
 	{
+		if (type == ACTION)
+			return value;
 		if (type == KEYBIND)
 		{
 			var keys = Reflect.getProperty(ClientPrefs.data, variable);
@@ -146,6 +155,19 @@ class Option
 	var _text:String = null;
 	var _translationKey:String = null;
 
+	public static function normalizeTranslationKey(value:Dynamic):String
+	{
+		var key:String = Paths.formatToSongPath(Std.string(value));
+		while (key.startsWith('-'))
+			key = key.substr(1);
+		while (key.endsWith('-'))
+			key = key.substr(0, key.length - 1);
+		return key.replace('-', '_').replace('/', '').replace('\\', '');
+	}
+
+	inline function getNamespacedKey():String
+		return normalizeTranslationKey(_translationKey);
+
 	private function get_text()
 		return _text;
 
@@ -156,7 +178,10 @@ class Option
 		{
 			try
 			{
-				Reflect.setProperty(child, 'text', Language.getPhrase('setting_$_translationKey-${getValue()}', _text));
+				var value:Dynamic = getValue();
+				var valueKey:String = normalizeTranslationKey(value);
+				Reflect.setProperty(child, 'text', Language.getPhrase('options.settings.${getNamespacedKey()}.values.$valueKey',
+					Language.getPhrase('setting_$_translationKey-$value', _text)));
 			}
 			catch (e)
 			{

@@ -1,45 +1,84 @@
 package objects;
 
 import backend.ClientPrefs;
+import shaders.ColorSwap;
 
 class SustainSplash extends FlxSprite
 {
 	public static var startCrochet:Float;
 	public static var frameRate:Int;
-	static var atlasCache:Map<String, Dynamic> = new Map();
 
 	public var strumNote:StrumNote;
 
 	var timer:FlxTimer;
+	var colorSwap:ColorSwap;
+	var loadedPath:String;
+	var loadedLane:Int = -1;
+	var atlasScaleX:Float = 1;
+	var atlasScaleY:Float = 1;
+	var baseOffsetX:Float = 106.25;
+	var baseOffsetY:Float = 100;
+	var opponentHold:Bool = false;
 
 	public function new():Void
 	{
 		super();
 
 		x = -50000;
+		colorSwap = new ColorSwap();
+		loadHoldCover(0);
+	}
 
-		var atlasPath = getHoldCoverPath();
+	function loadHoldCover(noteData:Int):Bool
+	{
+		final lane:Int = Note.normalizeNoteData(noteData);
+		final atlasPath:String = getHoldCoverPath();
+		if (loadedPath == atlasPath && loadedLane == lane && frames != null)
+			return animation.exists('holdStart') && animation.exists('hold') && animation.exists('holdEnd');
+
+		loadedPath = null;
+		loadedLane = -1;
+		frames = null;
+		@:privateAccess animation.clearAnimations();
+
 		if (Paths.fileExists('images/$atlasPath.png', IMAGE) && Paths.fileExists('images/$atlasPath.xml', TEXT))
 		{
-			var cacheKey:String = 'images/$atlasPath';
-			if (atlasCache.exists(cacheKey))
-				frames = atlasCache.get(cacheKey);
-			else
+			// Paths owns the graphic cache. Keeping FlxAtlasFrames in another static
+			// cache leaves them pointing at destroyed graphics after changing songs/mods.
+			frames = Paths.getSparrowAtlas(atlasPath);
+			if (frames == null)
+				return false;
+			scale.set(1, 1);
+			updateHitbox();
+			if (PlayState.isPixelStage)
 			{
-				frames = Paths.getSparrowAtlas(atlasPath);
-				if (frames != null)
-					atlasCache.set(cacheKey, frames);
+				setGraphicSize(Std.int(width * PlayState.daPixelZoom));
+				updateHitbox();
 			}
-			animation.addByPrefix('hold', 'holdCover0', 24, true);
-			animation.addByPrefix('end', 'holdCoverEnd0', 24, false);
-			if (!animation.getNameList().contains("hold"))
-				trace("Hold splash is missing 'hold' anim!");
+			atlasScaleX = scale.x;
+			atlasScaleY = scale.y;
+			antialiasing = ClientPrefs.data.antialiasing && !PlayState.isPixelStage;
+
+			final suffix:String = getAnimationColor(lane);
+			// The shader atlas has no color suffix. `holdCover` alone would also
+			// swallow holdCoverStart/holdCoverEnd and replay the whole atlas as a GIF.
+			final holdPrefix:String = suffix.length > 0 ? 'holdCover$suffix' : 'holdCover0';
+			animation.addByPrefix('holdStart', 'holdCoverStart$suffix', 24, false);
+			animation.addByPrefix('hold', holdPrefix, 24, true);
+			animation.addByPrefix('holdEnd', 'holdCoverEnd$suffix', 24, false);
+			if (!animation.exists('holdStart') || !animation.exists('hold') || !animation.exists('holdEnd'))
+			{
+				trace('Hold splash atlas is missing animations for lane $lane: $atlasPath');
+				return false;
+			}
+			loadedPath = atlasPath;
+			loadedLane = lane;
+			return true;
 		}
-		else
-		{
-			trace('Hold splash atlas not found: $atlasPath');
-			makeGraphic(1, 1, 0x00000000);
-		}
+
+		trace('Hold splash atlas not found: $atlasPath');
+		makeGraphic(1, 1, 0x00000000);
+		return false;
 	}
 
 	public static function warmupHoldCover():Void
@@ -50,16 +89,46 @@ class SustainSplash extends FlxSprite
 
 	function getHoldCoverPath():String
 	{
-		return 'holdCovers/holdCover-Vanilla';
+		final pixelPrefix:String = PlayState.isPixelStage ? 'pixelUI/' : '';
+		return pixelPrefix + (Note.usesRGBShader() ? 'holdCovers/holdCover-Vanilla' : 'holdCover-vanilla');
+	}
+
+	function getAnimationColor(lane:Int):String
+	{
+		// The pixel RGB atlas uses blue as its recolorable source; desktop RGB is neutral.
+		if (Note.usesRGBShader())
+			return PlayState.isPixelStage ? 'Blue' : '';
+
+		final color:String = Note.colArray[lane];
+		return color.charAt(0).toUpperCase() + color.substr(1);
 	}
 
 	override function update(elapsed)
 	{
 		super.update(elapsed);
+		if (strumNote != null && (!strumNote.exists || strumNote.scale == null || strumNote.scrollFactor == null))
+		{
+			strumNote = null;
+			if (timer != null) timer.cancel();
+			timer = null;
+			kill();
+			return;
+		}
+		// Opponent covers have a deliberately smaller state machine than player
+		// covers: they may only render the looping body.  A recycled sprite (or a
+		// script that changes its animation) must never leak a start/end frame into
+		// the modchart renderer, which does not consult FlxSprite.visible.
+		if (opponentHold && alive && animation.curAnim?.name != 'hold')
+			playHoldLoop();
 
 		if (strumNote != null)
 		{
-			setPosition(strumNote.x, strumNote.y);
+			var parentCameras = strumNote.cameras;
+			if ((parentCameras == null || parentCameras.length == 0) && PlayState.instance != null && PlayState.instance.grpHoldSplashes != null)
+				parentCameras = PlayState.instance.grpHoldSplashes.cameras;
+			if (cameras != parentCameras)
+				cameras = parentCameras;
+			syncToStrumLayout();
 
 			if (ClientPrefs.data.hideSustainSplash)
 			{
@@ -68,21 +137,143 @@ class SustainSplash extends FlxSprite
 			}
 			else
 			{
+				// Manager restores renderer-suppressed sprites before this update.
+				// Reading the normal property also keeps the native/no-manager path valid.
 				visible = strumNote.visible;
-				alpha = 1;
+				alpha = strumNote.alpha;
 			}
 
-			if (animation.curAnim?.name == "hold" && strumNote.animation.curAnim?.name == "static")
-			{
-				x = -50000;
-				kill();
-			}
 		}
+	}
+
+	function syncToStrumLayout():Void
+	{
+		if (strumNote == null || !strumNote.exists || strumNote.scale == null || strumNote.scrollFactor == null)
+			return;
+
+		// Lua modcharts often change strum.scale directly. layoutScale only tracks
+		// the engine's StrumLine layout, so it would leave this cover at its old size.
+		var baseStrumScale:Float = PlayState.isPixelStage ? PlayState.daPixelZoom : 0.7;
+		var lineScaleX:Float = Math.isFinite(strumNote.scale.x) && strumNote.scale.x > 0 ? strumNote.scale.x / baseStrumScale : strumNote.layoutScale;
+		var lineScaleY:Float = Math.isFinite(strumNote.scale.y) && strumNote.scale.y > 0 ? strumNote.scale.y / baseStrumScale : strumNote.layoutScale;
+		if (!Math.isFinite(lineScaleX) || lineScaleX <= 0) lineScaleX = 1;
+		if (!Math.isFinite(lineScaleY) || lineScaleY <= 0) lineScaleY = 1;
+		var targetScaleX:Float = atlasScaleX * lineScaleX;
+		var targetScaleY:Float = atlasScaleY * lineScaleY;
+		if (Math.abs(scale.x - targetScaleX) > 0.0001 || Math.abs(scale.y - targetScaleY) > 0.0001)
+		{
+			scale.set(targetScaleX, targetScaleY);
+			updateHitbox();
+		}
+		// Pixel hold-cover frames change from a 46x36 end frame to 14x9/16x10
+		// start/loop frames. Keep their origin current or each phase inherits the
+		// previous frame's geometry and jumps away from the receptor.
+		if (PlayState.isPixelStage)
+			updateHitbox();
+		setPosition(strumNote.x, strumNote.y);
+		// Flixel applies offset after scaling the frame. Scale only the distance
+		// from the frame origin, otherwise scaled receptors pull the cover away
+		// from their anchor instead of keeping it attached.
+		if (PlayState.isPixelStage)
+		{
+			// Pixel covers are authored around the receptor centre, unlike the
+			// desktop atlas that needs its historical visual offset.
+			offset.set(origin.x - strumNote.width * 0.5, origin.y - strumNote.height * 0.5);
+		}
+		else
+		{
+			offset.set(origin.x + (baseOffsetX - origin.x) * lineScaleX,
+				origin.y + (baseOffsetY - origin.y) * lineScaleY);
+		}
+		angle = strumNote.direction - 90 + (strumNote.downScroll ? 180 : 0);
+		if (angle != 0)
+		{
+			final radians = angle * Math.PI / 180;
+			final cos = Math.cos(radians);
+			final sin = Math.sin(radians);
+			final dx = strumNote.width * 0.5 - (origin.x - offset.x);
+			final dy = strumNote.height * 0.5 - (origin.y - offset.y);
+			x += dx - (cos * dx - sin * dy);
+			y += dy - (sin * dx + cos * dy);
+		}
+		scrollFactor.set(strumNote.scrollFactor.x, strumNote.scrollFactor.y);
+	}
+
+	public inline function refreshStrumTransform():Void
+		syncToStrumLayout();
+
+	function playHoldLoop():Void
+	{
+		if (!alive || animation.curAnim?.name == 'holdEnd')
+			return;
+
+		animation.finishCallback = null;
+		animation.play('hold', true, false, 0);
+		if (animation.curAnim != null)
+		{
+			animation.curAnim.frameRate = frameRate;
+			animation.curAnim.looped = true;
+		}
+		// Atlas animations do not necessarily share the same source size/offset.
+		// The native FlxSprite renderer honors clipRect, so keeping holdStart's
+		// smaller rectangle can clip the classic-color hold loop completely. The
+		// modchart renderer draws its own geometry and used to hide this problem.
+		refreshHoldClip();
+	}
+
+	inline function refreshHoldClip():Void
+	{
+		// Do not crop hold covers. Pixel atlas frames are very small and the old
+		// negative-Y RGB crop clipped their complete render on the Android native
+		// path, making pixel sustain splashes disappear.
+		clipRect = null;
+	}
+
+	public function finishHold():Void
+	{
+		if (!alive || animation.curAnim?.name == 'holdEnd')
+			return;
+		// Opponent covers never use the player release punctuation.  Finishing an
+		// opponent hold means removing it immediately, rather than exposing the
+		// final hold-end frame for a tick.
+		if (opponentHold)
+		{
+			if (timer != null)
+			{
+				timer.cancel();
+				timer = null;
+			}
+			visible = false;
+			alpha = 0;
+			x = -50000;
+			kill();
+			return;
+		}
+
+		if (timer != null)
+		{
+			timer.cancel();
+			timer = null;
+		}
+
+		clipRect = null;
+		animation.finishCallback = null;
+		animation.play('holdEnd', true, false, 0);
+		if (animation.curAnim != null)
+		{
+			animation.curAnim.looped = false;
+			animation.curAnim.frameRate = 24;
+		}
+		animation.finishCallback = (_:Dynamic) ->
+		{
+			x = -50000;
+			kill();
+		};
 	}
 
 	public function setupSusSplash(strum:StrumNote, daNote:Note, ?playbackRate:Float = 1):Void
 	{
-		if (ClientPrefs.data.hideSustainSplash)
+		if (ClientPrefs.data.hideSustainSplash || strum == null || !strum.exists || strum.scale == null || strum.scrollFactor == null || daNote == null || !loadHoldCover(daNote.noteData))
 		{
 			visible = false;
 			alpha = 0;
@@ -90,23 +281,56 @@ class SustainSplash extends FlxSprite
 			return;
 		}
 
-		final lengthToGet:Int = !daNote.isSustainNote ? daNote.tail.length : daNote.parent.tail.length;
-		final timeToGet:Float = !daNote.isSustainNote ? daNote.strumTime : daNote.parent.strumTime;
-		final timeThingy:Float = (startCrochet * lengthToGet + (timeToGet - Conductor.songPosition + ClientPrefs.data.ratingOffset)) / playbackRate * .001;
+		final root:Note = daNote.isSustainNote ? daNote.parent : daNote;
+		final safeRate:Float = playbackRate > 0 ? playbackRate : 1;
+		final endTime:Float = root.strumTime + Math.max(0, root.sustainLength);
+		final timeThingy:Float = Math.max(0.01, (endTime - Conductor.songPosition + ClientPrefs.data.ratingOffset) / safeRate * .001);
+		final splashDisabled:Bool = root.noteSplashData.disabled;
 
-		var tailEnd:Note = !daNote.isSustainNote ? daNote.tail[daNote.tail.length - 1] : daNote.parent.tail[daNote.parent.tail.length - 1];
-
-		animation.play('hold', true, false, 0);
-		if (animation.curAnim != null)
+		strumNote = strum;
+		// Opponent holds are ambience behind the receptors. Psych-style charts
+		// expect their cover to stay in its loop; only the player gets the
+		// start/end punctuation tied to press and release.
+		opponentHold = !root.mustPress;
+		syncToStrumLayout();
+		visible = true;
+		active = true;
+		animation.finishCallback = null;
+		if (opponentHold)
 		{
-			animation.curAnim.frameRate = frameRate;
-			animation.curAnim.looped = true;
+			playHoldLoop();
 		}
-		clipRect = new flixel.math.FlxRect(0, !PlayState.isPixelStage ? 0 : -210, frameWidth, frameHeight);
-
-		if (daNote.rgbShader != null && daNote.rgbShader.enabled && daNote.shader != null)
+		else
 		{
-			shader = new objects.NoteSplash.PixelSplashShaderRef().shader;
+			animation.play('holdStart', true, false, 0);
+			if (animation.curAnim != null)
+			{
+				animation.curAnim.frameRate = 24;
+				animation.curAnim.looped = false;
+			}
+			animation.finishCallback = (name:Dynamic) ->
+			{
+				if (name == 'holdStart')
+					playHoldLoop();
+			};
+		}
+		refreshHoldClip();
+
+		if (!Note.usesRGBShader())
+		{
+			shader = colorSwap.shader;
+			Note.applyHSVToColorSwap(colorSwap, daNote.noteData);
+		}
+		else if (daNote.rgbShader != null && daNote.rgbShader.enabled && daNote.shader != null)
+		{
+			var holdShader = new objects.NoteSplash.PixelSplashShaderRef();
+			// The pixel hold-cover atlas is already authored at the pixel UI scale
+			// and this sprite is enlarged by daPixelZoom. PixelSplashShaderRef
+			// defaults to a 6x6 sample block on pixel stages, which applies that
+			// enlargement a second time and turns each source pixel into a 36px block.
+			// Keep the RGB palette transform but sample the cover at native texels.
+			holdShader.pixelAmount = 1;
+			shader = holdShader.shader;
 			shader.data.r.value = daNote.shader.data.r.value;
 			shader.data.g.value = daNote.shader.data.g.value;
 			shader.data.b.value = daNote.shader.data.b.value;
@@ -115,30 +339,21 @@ class SustainSplash extends FlxSprite
 		else
 			shader = null;
 
-		strumNote = strum;
-		alpha = 1;
-		offset.set(PlayState.isPixelStage ? 112.5 : 106.25, 100);
+		alpha = strum.alpha;
+		baseOffsetX = PlayState.isPixelStage ? 112.5 : 106.25;
+		baseOffsetY = 100;
+		syncToStrumLayout();
 
 		if (timer != null)
 			timer.cancel();
 
-		if (!daNote.hitByOpponent && alpha != 0 && !ClientPrefs.data.hideSustainSplash)
-			timer = new FlxTimer().start(timeThingy, (idk:FlxTimer) ->
+		timer = new FlxTimer().start(timeThingy, (idk:FlxTimer) ->
 			{
-				if (!(daNote.isSustainNote ? daNote.parent.noteSplashData.disabled : daNote.noteSplashData.disabled) && animation != null)
+				timer = null;
+				if (!opponentHold && !splashDisabled && animation != null && !ClientPrefs.data.hideSustainSplash)
 				{
-					alpha = 1;
-					animation.play('end', true, false, 0);
-					if (animation.curAnim != null)
-					{
-						animation.curAnim.looped = false;
-						animation.curAnim.frameRate = 24;
-					}
-					clipRect = null;
-					animation.finishCallback = (idkEither:Dynamic) ->
-					{
-						kill();
-					}
+					alpha = strumNote != null ? strumNote.alpha : 1;
+					finishHold();
 					return;
 				}
 				kill();

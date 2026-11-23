@@ -1,0 +1,7 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.shader",
+  "title": "シェーダーのエラー:「 {1} 」",
+  "log_saved": "{1} - エラー ログの保存場所: {2}",
+  "log_save_failed": "{1} - シェーダー エラー ログの保存に失敗しました: {2}"
+}

@@ -1,0 +1,25 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.menu_character",
+  "ui": {
+    "0_0": "[0, 0]",
+    "antialiasing": "抗锯齿",
+    "controls_help": "箭头键 - 变换抵消 (保持转移速度为10倍)\n\t\t\t\nSpace - 播放\"Start Press\"动画 (Boyfriend 字符类型)",
+    "flip_x": "翻转X",
+    "idle_animation_on_the_xml": "在 . XML 上空动画:",
+    "image_file_name": "图片文件名称:",
+    "load_character": "加载角色",
+    "reload_char": "重新加载角色",
+    "save_character": "保存角色",
+    "scale": "规模:",
+    "start_press_animation_on_the_xml": ".XML 中的 Start Press 动画："
+  },
+  "presence": {
+    "title": "菜单角色编辑器",
+    "editing": "编辑: {1}"
+  },
+  "tabs": {
+    "character": "性格",
+    "character_type": "字符类型"
+  }
+}

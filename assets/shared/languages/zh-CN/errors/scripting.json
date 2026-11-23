@@ -1,0 +1,24 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.scripting",
+  "lua": {
+    "load_error_title": "错误 Lua 剧本!",
+    "load_error_message": "{1}\n\n{2}",
+    "non_function_callback": "错误 ({1}):试图调用一个 {2} 价值",
+    "callback_error": "错误 ({1}): {2}",
+    "playstate_only": "{1} 是 PlayState- 只有,不能从一个 {2} Lua 接待者."
+  },
+  "hscript": {
+    "warning": "警告: {1}",
+    "null_field": "零引用:试图访问\"{1}\"在零对象上",
+    "script_warning": "警告 ({1}): {2}",
+    "unsupported": "HScript 在这个平台上没有支持!"
+  },
+  "mod_settings": {
+    "title": "模特名称: {1}",
+    "parse_error": "发生错误: {1}",
+    "file_missing": "getModSetting: {1} 没有找到!",
+    "setting_missing": "getModSetting: \"{1}\"不能在里面找到 {2}设置!"
+  },
+  "raw_error_with_source": "{1}\n{2}"
+}

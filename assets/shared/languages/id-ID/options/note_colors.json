@@ -1,0 +1,15 @@
+{
+  "$schema": 1,
+  "$namespace": "options.note_colors",
+  "reset_tip": "Tekan {1} untuk Mengatur Ulang Bagian not yang dipilih.",
+  "full_reset_tip": "Tahan {1} + Tekan tombol RESET untuk mereset sepenuhnya not yang dipilih.",
+  "shift": "Shift",
+  "press": "TEKAN",
+  "ctrl": "Ctrl",
+  "left_shoulder": "Kancing Bahu Kiri",
+  "mode": "Mode Warna: {1}",
+  "modes": {
+    "classic": "H/S/B klasik",
+    "rgb": "RGB"
+  }
+}

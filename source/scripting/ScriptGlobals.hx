@@ -9,6 +9,7 @@ class ScriptGlobals {
 	public static var registeredCount(default, null):Int = 0;
 	public static var skippedCount(default, null):Int = 0;
 	static var modSaveCache:Map<String, flixel.util.FlxSave> = new Map();
+	static var warnedMissingModchartManager:Bool = false;
 
 	static var keepScriptError:Class<ScriptError> = ScriptError;
 	static var keepScriptBytes:Class<ScriptBytes> = ScriptBytes;
@@ -23,7 +24,7 @@ class ScriptGlobals {
 	static var keepCursor:Class<objects.Cursor> = objects.Cursor;
 	static var keepPsychFlxAnimate:Class<backend.PsychFlxAnimate> = backend.PsychFlxAnimate;
 	#if DISCORD_ALLOWED
-	static var keepDiscordClient:Class<backend.DiscordClient> = backend.DiscordClient;
+	static var keepDiscordClient:Class<backend.Discord.DiscordClient> = backend.Discord.DiscordClient;
 	#end
 	static var keepCutsceneHandler:Class<cutscenes.CutsceneHandler> = cutscenes.CutsceneHandler;
 	static var keepRainShader:Class<shaders.RainShader> = shaders.RainShader;
@@ -64,7 +65,7 @@ class ScriptGlobals {
 		'backend.BaseStage',
 		'backend.PsychFlxAnimate',
 		#if DISCORD_ALLOWED
-		'backend.DiscordClient',
+		'backend.Discord.DiscordClient',
 		#end
 		'backend.Difficulty',
 		'backend.Mods',
@@ -226,8 +227,8 @@ class ScriptGlobals {
 		set('BINARY', openfl.utils.AssetType.BINARY);
 		set('FONT', openfl.utils.AssetType.FONT);
 		#if DISCORD_ALLOWED
-		set('DiscordClient', backend.DiscordClient);
-		set('Discord', backend.DiscordClient);
+		set('DiscordClient', backend.Discord.DiscordClient);
+		set('Discord', backend.Discord.DiscordClient);
 		#end
 		set('getVar', getVar);
 		set('setVar', setVar);
@@ -263,6 +264,12 @@ class ScriptGlobals {
 		});
 		set('buildScripted', function(path:String, ?args:Array<Dynamic>):Dynamic return ScriptRegistry.instantiate(path, args, mod));
 		set('scriptedClass', function(path:String):Dynamic return ScriptRegistry.resolveClass(path, mod));
+		set('modchartAddModifier', modchartAddModifier);
+		set('modchartAddModifiers', modchartAddModifiers);
+		set('modchartAddPlayfield', modchartAddPlayfield);
+		set('modchartSetModifier', modchartSetModifier);
+		set('modchartEaseModifier', modchartEaseModifier);
+		set('modchartEaseModifierNamed', modchartEaseModifierNamed);
 		set('getModSetting', function(saveTag:String, ?modName:String):Dynamic {
 			if (modName == null)
 				modName = mod;
@@ -277,6 +284,56 @@ class ScriptGlobals {
 		set('Function_StopHScript', psychlua.backend.LuaUtils.Function_StopHScript);
 		set('Function_StopAll', psychlua.backend.LuaUtils.Function_StopAll);
 	}
+
+	/** Stable HScript bridge for class-based modcharts. Avoids static-class access,
+	 * which hxscript exposes differently from native Haxe. */
+	public static function modchartAddModifier(name:String, ?field:Int = -1):Void {
+		var manager = getModchartManager('addModifier("$name")');
+		if (manager != null) manager.addModifier(name, field);
+	}
+
+	public static function modchartAddModifiers(names:Array<String>, ?field:Int = -1):Void {
+		var manager = getModchartManager('addModifiers');
+		if (manager == null || names == null)
+			return;
+		for (name in names)
+			if (name != null && name.length > 0)
+				manager.addModifier(name, field);
+	}
+
+	/** Creates an additional Manager playfield for a class-based modchart.
+	 * The returned index can be passed to the other modchart bridge calls. */
+	public static function modchartAddPlayfield(?name:String):Int {
+		var manager = getModchartManager('addPlayfield');
+		return manager != null ? manager.addPlayfield(name) : -1;
+	}
+
+	public static function modchartSetModifier(name:String, beat:Float, value:Float, ?player:Int = -1, ?field:Int = -1):Void {
+		var manager = getModchartManager('set("$name")');
+		if (manager != null) manager.set(name, beat, value, player, field);
+	}
+
+	public static function modchartEaseModifier(name:String, beat:Float, length:Float, value:Float, ?player:Int = -1, ?field:Int = -1):Void {
+		var manager = getModchartManager('ease("$name")');
+		if (manager != null) manager.ease(name, beat, length, value, flixel.tweens.FlxEase.linear, player, field);
+	}
+
+	public static function modchartEaseModifierNamed(name:String, beat:Float, length:Float, value:Float, easeName:String, ?player:Int = -1,
+			?field:Int = -1):Void {
+		var manager = getModchartManager('ease("$name")');
+		if (manager != null) manager.ease(name, beat, length, value, psychlua.backend.LuaUtils.getTweenEaseByString(easeName), player, field);
+	}
+
+	static function getModchartManager(action:String):Null<modchart.Manager> {
+		var manager = modchart.Manager.instance;
+		if (manager != null) { warnedMissingModchartManager = false; return manager; }
+		if (!warnedMissingModchartManager) {
+			warnedMissingModchartManager = true;
+			ScriptError.warn('modchart bridge', '$action was called before Manager initialization. Use onInitModchart(), not onCreate().');
+		}
+		return null;
+	}
+
 
 	public static function getVar(name:String):Dynamic
 		return backend.MusicBeatState.getVariables().get(name);

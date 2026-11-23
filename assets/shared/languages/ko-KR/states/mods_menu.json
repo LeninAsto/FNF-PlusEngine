@@ -1,0 +1,47 @@
+{
+  "$schema": 1,
+  "$namespace": "states.mods_menu",
+  "presence": "모드 브라우저",
+  "title": "MODS",
+  "filter": "필터: {1}",
+  "filters": {
+    "all": "모든 것",
+    "enabled": "가능함",
+    "disabled": "장애인",
+    "launchable": "발사 가능"
+  },
+  "search": "검색",
+  "search_query": "검색: {1}{2}",
+  "sections": {
+    "description": "설명",
+    "features": "특징",
+    "changelog": "변경 내역"
+  },
+  "restart_notice": "* 이 모드를 움직이면 게임을 다시 시작할 수 있습니다.",
+  "buttons": {
+    "launch": "발사",
+    "enable": "활성화",
+    "enabled": "가능함",
+    "disable": "장애인",
+    "settings": "설정",
+    "reload": "재충전"
+  },
+  "hint": "위/아래 선택   L/R 순서 변경   ENTER 실행   SPACE 켜기/끄기 (SHIFT=전체)   TAB 설정   Y 보안   F 필터   / 검색   ESC 나가기",
+  "empty": "설치된 모드가 없습니다\nPRESS BACK 출력 또는 모드를 설치하기",
+  "unknown_mod": "미지의 모드",
+  "no_description": "설명은 없습니다.",
+  "status": {
+    "disabled": "비활성 - 발사 할 수 있습니다",
+    "launch": "> 압력 ENTER 발사",
+    "no_launchable_states": "발사 가능한 상태가 없습니다",
+    "base_game_global": "베이스게임은 항상 글로벌 로드",
+    "sensitive_scripts": "민감한 스크립트를 감지합니다.",
+    "activation_denied": "활성화 거부 - 모드 장애가 유지되었습니다",
+    "trusted": "신뢰할 수 있는 - 모드가 가능",
+    "security_disabled": "모드 보안이 비활성화되어 있습니다."
+  },
+  "settings_error": {
+    "title": "모드 이름: {1}",
+    "message": "오류가 발생했습니다. {1}"
+  }
+}

@@ -1,0 +1,40 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.note_splash",
+  "ui": {
+    "add_update": "新增/更新",
+    "animation_name": "動畫名稱:",
+    "animation_prefix": "動畫字首：",
+    "animations": "動畫:",
+    "blue": "藍色:",
+    "color_to_replace": "取代的顏色:",
+    "convert_txt": "轉換為 TXT",
+    "do_not_replace": "沒有更換",
+    "green": "綠色:",
+    "image": "照片:",
+    "indices_optional": "索引 (可選擇):",
+    "maximum_fps": "最高的時間 FPS:",
+    "minimum_fps": "最低的數量 FPS:",
+    "note_data": "記錄資料:",
+    "red": "紅色:",
+    "reload_image": "轉載圖片",
+    "remove": "移除",
+    "replacing_color": "取代顏色:",
+    "save": "儲存",
+    "scale": "規模:",
+    "template": "模板"
+  },
+  "presence": {
+    "title": "註釋 閃光編輯器"
+  },
+  "help": {
+    "open": "請按一下 {1} 求助",
+    "mobile": "觸控判定箭頭\n以生成命中特效\n\n方向鍵 - 移動偏移\n按住 Z - 偏移速度變為 10 倍\n\n\nC - 複製當前偏移\nV - 將複製的偏移貼上到當前特效\n每增加 4 個音符資料編號\n會額外新增一組動畫",
+    "desktop": "單擊判定箭頭或按 Space\n以生成命中特效\n\n方向鍵 - 移動偏移\n按住 Shift - 偏移速度變為 10 倍\n\n\nCtrl + C - 複製當前偏移\nCtrl + V - 將複製的偏移貼上到當前特效\nCtrl + R - 重置當前偏移\n每增加 4 個音符資料編號\n會額外新增一組動畫"
+  },
+  "tabs": {
+    "animation": "動畫",
+    "properties": "產品",
+    "shader": "這樣的情況"
+  }
+}

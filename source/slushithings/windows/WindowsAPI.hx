@@ -52,12 +52,13 @@ class WindowsAPI
 	 * Captures a screenshot and saves it to the specified path
 	 * @param path Absolute path where to save the screenshot
 	 */
-	public static function capture(path:String):Void
+	public static function capture(path:String):Bool
 	{
 		#if windows
-		WindowsCPP.captureGameWindow(path);
+		return WindowsCPP.captureGameWindow(path);
 		#else
 		trace("[Screenshot]: Screenshot capture is only available on Windows");
+		return false;
 		#end
 	}
 

@@ -7,6 +7,8 @@ class WindowMode
 {
 	public static var borderlessFullscreen(default, null):Bool = false;
 	public static var exclusiveFullscreen(default, null):Bool = false;
+	/** Prevents InitState from overwriting the fullscreen value before TitleState restores it. */
+	public static var fullscreenPreferenceReady(default, null):Bool = false;
 
 	static var lastWindowedX:Int = 0;
 	static var lastWindowedY:Int = 0;
@@ -33,6 +35,7 @@ class WindowMode
 
 	public static function applyFullscreenPreference(enable:Bool):Void
 	{
+		fullscreenPreferenceReady = true;
 		#if desktop
 		#if windows
 		var mode = ClientPrefs.data.fullscreenMode;
@@ -46,6 +49,11 @@ class WindowMode
 		setBorderlessFullscreen(enable);
 		#end
 		#end
+	}
+
+	public static function markFullscreenPreferenceReady():Void
+	{
+		fullscreenPreferenceReady = true;
 	}
 
 	public static function reapplyFullscreenPreference():Void
@@ -266,6 +274,32 @@ class WindowMode
 		borderlessFullscreen = enable;
 		ClientPrefs.applyFramePacing();
 		RenderInterpolation.syncAllCameras();
+		#end
+	}
+
+	public static function applyRenderResolution():Void
+	{
+		#if windows
+		var value = ClientPrefs.data.windowResolution;
+		var width = 0;
+		var height = 0;
+		if (value != null && value != 'Default')
+		{
+			var parts = value.split('x');
+			if (parts.length == 2)
+			{
+				var parsedWidth = Std.parseInt(parts[0]);
+				var parsedHeight = Std.parseInt(parts[1]);
+				if (parsedWidth != null && parsedHeight != null && parsedWidth >= 320 && parsedHeight >= 180
+					&& parsedWidth <= 7680 && parsedHeight <= 4320)
+				{
+					width = parsedWidth;
+					height = parsedHeight;
+				}
+			}
+		}
+		if (Lib.current != null && Lib.current.stage != null)
+			Lib.current.stage.setRenderResolution(width, height);
 		#end
 	}
 

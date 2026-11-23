@@ -4,8 +4,8 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 {
 	public function new()
 	{
-		title = Language.getPhrase('gameplay_menu', 'Gameplay Settings');
-		rpcTitle = 'Gameplay Settings Menu'; // for Discord Rich Presence
+		title = Language.getPhrase('options.menus.gameplay.title', Language.getPhrase('gameplay_menu', 'Gameplay Settings'));
+		rpcTitle = Language.getPhrase('options.menus.gameplay.presence', 'Gameplay Settings Menu'); // for Discord Rich Presence
 
 		// I'd suggest using "Downscroll" as an example for making your own option since it is the simplest here
 		var option:Option = new Option('Downscroll', // Name
@@ -31,6 +31,14 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		var option:Option = new Option('Auto Pause', "If checked, the game automatically pauses if the screen isn't on focus.", 'autoPause', BOOL);
 		addOption(option);
 		option.onChange = onChangeAutoPause;
+
+		#if MODS_ALLOWED
+		var option:Option = new Option('Mod & Script Security',
+			'Optional protection that scans mod .lua/.hx scripts before they run.\nYou can still play normally and stay safer, but false positives may block some safe scripts.',
+			'modSecure', BOOL);
+		option.onChange = onChangeModSecurity;
+		addOption(option);
+		#end
 
 		#if windows
 		var option:Option = new Option('Windows GDI Effects',
@@ -124,6 +132,15 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 
 	function onChangeAutoPause()
 		FlxG.autoPause = ClientPrefs.data.autoPause;
+
+	#if MODS_ALLOWED
+	function onChangeModSecurity()
+	{
+		ClientPrefs.saveSettings();
+		if (ClientPrefs.data.modSecure)
+			backend.ModSecurity.rescanAll();
+	}
+	#end
 
 	#if windows
 	function onChangeWindowsGDIEffects()

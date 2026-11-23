@@ -3,6 +3,7 @@ package substates;
 import backend.WeekData;
 import backend.Highscore;
 import objects.HealthIcon;
+import mobile.input.TouchScrollHandler;
 
 class ResetScoreSubState extends MusicBeatSubstate
 {
@@ -16,6 +17,7 @@ class ResetScoreSubState extends MusicBeatSubstate
 	public var song:String;
 	public var difficulty:Int;
 	public var week:Int;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	// Week -1 = Freeplay
 	public function new(song:String, difficulty:Int, character:String, week:Int = -1)
@@ -41,7 +43,8 @@ class ResetScoreSubState extends MusicBeatSubstate
 		add(bg);
 
 		var tooLong:Float = (name.length > 18) ? 0.8 : 1; // Fucking Winter Horrorland
-		var text:Alphabet = new Alphabet(0, 180, Language.getPhrase('reset_score', 'Reset the score of'), true);
+		var text:Alphabet = new Alphabet(0, 180, Language.getPhrase('substates.reset_score.title',
+			Language.getPhrase('reset_score', 'Reset the score of')), true);
 		text.screenCenter(X);
 		alphabetArray.push(text);
 		text.alpha = 0;
@@ -64,11 +67,11 @@ class ResetScoreSubState extends MusicBeatSubstate
 			add(icon);
 		}
 
-		yesText = new Alphabet(0, text.y + 150, Language.getPhrase('Yes'), true);
+		yesText = new Alphabet(0, text.y + 150, Language.getPhrase('global.answers.yes', Language.getPhrase('Yes', 'Yes')), true);
 		yesText.screenCenter(X);
 		yesText.x -= 200;
 		add(yesText);
-		noText = new Alphabet(0, text.y + 150, Language.getPhrase('No'), true);
+		noText = new Alphabet(0, text.y + 150, Language.getPhrase('global.answers.no', Language.getPhrase('No', 'No')), true);
 		noText.screenCenter(X);
 		noText.x += 200;
 		add(noText);
@@ -146,6 +149,24 @@ class ResetScoreSubState extends MusicBeatSubstate
 		noText.scale.set(scales[1 - confirmInt], scales[1 - confirmInt]);
 		if (week == -1)
 			icon.animation.curAnim.curFrame = confirmInt;
+	}
+
+	function setChoice(yes:Bool):Void
+	{
+		if (onYes == yes)
+			return;
+		FlxG.sound.play(Paths.sound('scrollMenu'), 1);
+		onYes = yes;
+		updateOptions();
+	}
+
+	function getTouchChoiceAt(x:Float, y:Float):Int
+	{
+		if (yesText != null && x >= yesText.x && x <= yesText.x + yesText.width && y >= yesText.y && y <= yesText.y + yesText.height)
+			return 0;
+		if (noText != null && x >= noText.x && x <= noText.x + noText.width && y >= noText.y && y <= noText.y + noText.height)
+			return 1;
+		return TouchScrollHandler.NO_TARGET;
 	}
 
 	override function destroy()

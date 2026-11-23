@@ -91,6 +91,8 @@ class DialogueEditorState extends MusicBeatState implements PsychUIEventHandler.
 	function addEditorBox()
 	{
 		UI_box = new PsychUIBox(FlxG.width - 260, 10, 250, 210, ['Dialogue Line']);
+		for (tab in UI_box.tabs)
+			tab.text.text = Language.getPhrase('editors.dialogue.tabs.${options.Option.normalizeTranslationKey(tab.name)}', tab.name);
 		UI_box.scrollFactor.set();
 		addDialogueLineUI();
 		add(UI_box);
@@ -109,7 +111,7 @@ class DialogueEditorState extends MusicBeatState implements PsychUIEventHandler.
 		characterInputText = new PsychUIInputText(10, 20, 80, DialogueCharacter.DEFAULT_CHARACTER, 8);
 		speedStepper = new PsychUINumericStepper(10, characterInputText.y + 40, 0.005, 0.05, 0, 0.5, 3);
 
-		angryCheckbox = new PsychUICheckBox(speedStepper.x + 120, speedStepper.y, "Angry Textbox", 200);
+		angryCheckbox = new PsychUICheckBox(speedStepper.x + 120, speedStepper.y, Language.getPhrase('editors.dialogue.ui.angry_textbox', "Angry Textbox"), 200);
 		angryCheckbox.onClick = function()
 		{
 			updateTextBox();
@@ -130,7 +132,7 @@ class DialogueEditorState extends MusicBeatState implements PsychUIEventHandler.
 		};
 
 		#if !mobile
-		var loadButton:PsychUIButton = new PsychUIButton(20, lineInputText.y + 25, "Load Dialogue", function()
+		var loadButton:PsychUIButton = new PsychUIButton(20, lineInputText.y + 25, Language.getPhrase('editors.dialogue.ui.load_dialogue', "Load Dialogue"), function()
 		{
 			loadDialogue();
 		});
@@ -141,10 +143,10 @@ class DialogueEditorState extends MusicBeatState implements PsychUIEventHandler.
 				saveDialogue();
 			});
 
-		tab_group.add(new FlxText(10, speedStepper.y - 18, 0, 'Interval/Speed (ms):'));
-		tab_group.add(new FlxText(10, characterInputText.y - 18, 0, 'Character:'));
-		tab_group.add(new FlxText(10, soundInputText.y - 18, 0, 'Sound file name:'));
-		tab_group.add(new FlxText(10, lineInputText.y - 18, 0, 'Text:'));
+		tab_group.add(new FlxText(10, speedStepper.y - 18, 0, Language.getPhrase('editors.dialogue.ui.interval_speed_ms', 'Interval/Speed (ms):')));
+		tab_group.add(new FlxText(10, characterInputText.y - 18, 0, Language.getPhrase('editors.dialogue.ui.character', 'Character:')));
+		tab_group.add(new FlxText(10, soundInputText.y - 18, 0, Language.getPhrase('editors.dialogue.ui.sound_file_name', 'Sound file name:')));
+		tab_group.add(new FlxText(10, lineInputText.y - 18, 0, Language.getPhrase('editors.dialogue.ui.text', 'Text:')));
 		tab_group.add(characterInputText);
 		tab_group.add(angryCheckbox);
 		tab_group.add(speedStepper);
@@ -262,10 +264,10 @@ class DialogueEditorState extends MusicBeatState implements PsychUIEventHandler.
 		// Updating Discord Rich Presence
 		var rpcText:String = lineInputText.text;
 		if (rpcText == null || rpcText.length < 1)
-			rpcText = '(Empty)';
+			rpcText = Language.getPhrase('editors.dialogue.presence.empty', '(Empty)');
 		if (rpcText.length < 3)
 			rpcText += '   '; // Fixes a bug on RPC that triggers an error when the text is too short
-		DiscordClient.changePresence("Dialogue Editor", rpcText);
+		DiscordClient.changePresence(Language.getPhrase('editors.dialogue.presence.title', 'Dialogue Editor'), rpcText);
 		#end
 	}
 

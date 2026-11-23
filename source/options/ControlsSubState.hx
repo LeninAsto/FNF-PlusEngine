@@ -11,6 +11,7 @@ import flixel.input.gamepad.FlxGamepadManager;
 
 class ControlsSubState extends MusicBeatSubstate
 {
+	public static var isRebinding:Bool = false;
 	var curSelected:Int = 0;
 	var curAlt:Bool = false;
 
@@ -41,9 +42,12 @@ class ControlsSubState extends MusicBeatSubstate
 		[false, 'DEBUG'],
 		[false, 'Key 1', 'debug_1', 'Debug Key #1'],
 		[false, 'Key 2', 'debug_2', 'Debug Key #2'],
+		[false, 'FPS Counter', 'fps_counter', 'Toggle FPS Counter'],
+		[false, 'Trace Display', 'trace_display', 'Toggle Trace Display'],
 		[false,],
 		[false, 'WINDOW'],
-		[false, 'Fullscreen', 'fullscreen', 'Fullscreen Toggel']
+		[false, 'Fullscreen', 'fullscreen', 'Fullscreen Toggel'],
+		[false, 'Screenshot', 'screenshot', 'Take Screenshot']
 	];
 	var curOptions:Array<Int>;
 	var curOptionsValid:Array<Int>;
@@ -65,12 +69,13 @@ class ControlsSubState extends MusicBeatSubstate
 
 	public function new()
 	{
+		isRebinding = false;
 		controls.isInSubstate = true;
 
 		super();
 
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("Controls Menu", null);
+		DiscordClient.changePresence(Language.getPhrase('options.menus.controls.presence', 'Controls Menu'), null);
 		#end
 
 		options.push([true]);
@@ -109,7 +114,7 @@ class ControlsSubState extends MusicBeatSubstate
 		controllerSpr.animation.add('gamepad', [1], 1, false);
 		add(controllerSpr);
 
-		var text:Alphabet = new Alphabet(60, 90, 'CTRL', false);
+		var text:Alphabet = new Alphabet(60, 90, Language.getPhrase('options.controls.keyboard_short', 'CTRL'), false);
 		text.alignment = CENTERED;
 		text.setScale(0.4);
 		add(text);
@@ -334,7 +339,9 @@ class ControlsSubState extends MusicBeatSubstate
 					add(bindingBlack);
 
 					bindingText = new Alphabet(FlxG.width / 2, 160,
-						Language.getPhrase('controls_rebinding', 'Rebinding {1}', [options[curOptions[curSelected]][3]]), false);
+						Language.getPhrase('options.controls.rebinding',
+							Language.getPhrase('controls_rebinding', 'Rebinding {1}', [options[curOptions[curSelected]][3]]),
+							[options[curOptions[curSelected]][3]]), false);
 					bindingText.alignment = CENTERED;
 					add(bindingText);
 
@@ -342,11 +349,14 @@ class ControlsSubState extends MusicBeatSubstate
 					final backspace:String = (controls.mobileC) ? "C" : "Backspace";
 
 					bindingText2 = new Alphabet(FlxG.width / 2, 340,
-						Language.getPhrase('controls_rebinding2', 'Hold {1} to Cancel\nHold {2} to Delete', [escape, backspace]), true);
+						Language.getPhrase('options.controls.rebinding_help',
+							Language.getPhrase('controls_rebinding2', 'Hold {1} to Cancel\nHold {2} to Delete', [escape, backspace]),
+							[escape, backspace]), true);
 					bindingText2.alignment = CENTERED;
 					add(bindingText2);
 
 					binding = true;
+					isRebinding = true;
 					holdingEsc = 0;
 					ClientPrefs.toggleVolumeKeys(false);
 					FlxG.sound.play(Paths.sound('scrollMenu'));
@@ -501,6 +511,7 @@ class ControlsSubState extends MusicBeatSubstate
 	function closeBinding()
 	{
 		binding = false;
+		isRebinding = false;
 		bindingBlack.destroy();
 		remove(bindingBlack);
 

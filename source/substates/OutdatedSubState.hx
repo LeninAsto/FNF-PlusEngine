@@ -37,7 +37,8 @@ class OutdatedSubState extends MusicBeatSubstate
 		add(bg);
 
 		// Title text - "Update Available!"
-		titleText = new FlxText(0, 50, FlxG.width, Language.getPhrase('update_available_title', "Update Available!"));
+		titleText = new FlxText(0, 50, FlxG.width, Language.getPhrase('substates.outdated.title',
+			Language.getPhrase('update_available_title', 'Update Available!')));
 		titleText.setFormat(Paths.font('vcr.ttf'), 48, FlxColor.YELLOW, CENTER);
 		titleText.scrollFactor.set();
 		titleText.alpha = 0.0;
@@ -45,14 +46,17 @@ class OutdatedSubState extends MusicBeatSubstate
 
 		// Version comparison text
 		versionText = new FlxText(0, 120, FlxG.width,
-			Language.getPhrase('version_comparison', "Current Version: {1} => New Version: {2}", [MainMenuState.plusEngineVersion, updateVersion]));
+			Language.getPhrase('substates.outdated.version',
+				Language.getPhrase('version_comparison', 'Current Version: {1} => New Version: {2}', [MainMenuState.plusEngineVersion, updateVersion]),
+				[MainMenuState.plusEngineVersion, updateVersion]));
 		versionText.setFormat(Paths.font('vcr.ttf'), 24, FlxColor.WHITE, CENTER);
 		versionText.scrollFactor.set();
 		versionText.alpha = 0.0;
 		add(versionText);
 
 		// Changelog text (will be loaded from GitHub)
-		changelogText = new FlxText(50, 180, FlxG.width - 100, Language.getPhrase('loading_changelog', "Loading changelog..."));
+		changelogText = new FlxText(50, 180, FlxG.width - 100, Language.getPhrase('substates.outdated.loading_changelog',
+			Language.getPhrase('loading_changelog', 'Loading changelog...')));
 		changelogText.setFormat(Paths.font('vcr.ttf'), 22, FlxColor.CYAN, LEFT);
 		changelogText.scrollFactor.set();
 		changelogText.alpha = 0.0;
@@ -61,12 +65,12 @@ class OutdatedSubState extends MusicBeatSubstate
 		// Controls text - Diferentes instrucciones para móvil y PC
 		#if mobile
 		controlsText = new FlxText(0, FlxG.height - 120, FlxG.width,
-			Language.getPhrase('update_controls_mobile',
-				"Press A to update to the latest version\nPress B if you're on the correct engine version\nYou can disable this warning in Options Menu"));
+			Language.getPhrase('substates.outdated.controls_mobile', Language.getPhrase('update_controls_mobile',
+				"Press A to update to the latest version\nPress B if you're on the correct engine version\nYou can disable this warning in Options Menu")));
 		#else
 		controlsText = new FlxText(0, FlxG.height - 120, FlxG.width,
-			Language.getPhrase('update_controls',
-				"Press ENTER to update to the latest version\nPress ESCAPE if you're on the correct engine version\nYou can disable this warning in Options Menu"));
+			Language.getPhrase('substates.outdated.controls', Language.getPhrase('update_controls',
+				"Press ENTER to update to the latest version\nPress ESCAPE if you're on the correct engine version\nYou can disable this warning in Options Menu")));
 		#end
 		controlsText.setFormat(Paths.font('vcr.ttf'), 20, FlxColor.WHITE, CENTER);
 		controlsText.scrollFactor.set();
@@ -92,7 +96,7 @@ class OutdatedSubState extends MusicBeatSubstate
 
 	function loadChangelog():Void
 	{
-		NetworkCheckToast.requestShow('Checking changelog');
+		NetworkCheckToast.requestShow(Language.getPhrase('substates.outdated.network.checking', 'Checking changelog'));
 		#if (target.threaded && sys)
 		ThreadUtil.execAsync(loadChangelogBlocking);
 		#else
@@ -111,12 +115,16 @@ class OutdatedSubState extends MusicBeatSubstate
 			var lines:Array<String> = data.replace('\r\n', '\n').replace('\r', '\n').split('\n');
 			pendingChangelog = lines.length > 2 ? lines.slice(2).join('\n').trim() : "";
 			if (pendingChangelog.length <= 0)
-				pendingChangelog = Language.getPhrase('changelog_error', "Error loading changelog: {1}", ["No changelog available"]);
+				pendingChangelog = Language.getPhrase('substates.outdated.changelog_error',
+					Language.getPhrase('changelog_error', 'Error loading changelog: {1}',
+						[Language.getPhrase('substates.outdated.no_changelog', 'No changelog available')]),
+					[Language.getPhrase('substates.outdated.no_changelog', 'No changelog available')]);
 		};
 
 		http.onError = function(error:String)
 		{
-			pendingChangelog = Language.getPhrase('changelog_error', "Error loading changelog: {1}", [error]);
+			pendingChangelog = Language.getPhrase('substates.outdated.changelog_error',
+				Language.getPhrase('changelog_error', 'Error loading changelog: {1}', [error]), [error]);
 		};
 
 		try
@@ -125,16 +133,19 @@ class OutdatedSubState extends MusicBeatSubstate
 		}
 		catch (e:Dynamic)
 		{
-			pendingChangelog = Language.getPhrase('changelog_error', "Error loading changelog: {1}", [Std.string(e)]);
+			pendingChangelog = Language.getPhrase('substates.outdated.changelog_error',
+				Language.getPhrase('changelog_error', 'Error loading changelog: {1}', [Std.string(e)]), [Std.string(e)]);
 		}
-		NetworkCheckToast.requestDone(loaded ? 'Retrieved' : 'No connection');
+		NetworkCheckToast.requestDone(loaded ? Language.getPhrase('substates.outdated.network.retrieved', 'Retrieved') :
+			Language.getPhrase('substates.outdated.network.no_connection', 'No connection'));
 	}
 
 	function updateChangelogDisplay():Void
 	{
 		if (changelogLoaded && changelogText != null)
 		{
-			changelogText.text = Language.getPhrase('changelog_title', "What's New:\n{1}", [changelog]);
+			changelogText.text = Language.getPhrase('substates.outdated.changelog_title',
+				Language.getPhrase('changelog_title', "What's New:\n{1}", [changelog]), [changelog]);
 		}
 	}
 

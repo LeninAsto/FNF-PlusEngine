@@ -20,6 +20,11 @@ class HealthIconHud
 				lerpScale(elapsed, rate, p2, true);
 				lerpScale(elapsed, rate, gf, true);
 
+			case 'Codename':
+				codenameScale(elapsed, rate, p1);
+				codenameScale(elapsed, rate, p2);
+				codenameScale(elapsed, rate, gf);
+
 			default:
 				lerpScale(elapsed, rate, p1, false);
 				lerpScale(elapsed, rate, p2, false);
@@ -55,14 +60,14 @@ class HealthIconHud
 		}
 	}
 
-	public static function frames(bar:Bar, opponentMode:Bool, side:String, p1:HealthIcon, p2:HealthIcon, gf:HealthIcon):Void
+	public static function frames(bar:Bar, side:String, p1:HealthIcon, p2:HealthIcon, gf:HealthIcon):Void
 	{
 		if (bar == null || !bar.enabled)
 			return;
 
 		final pct:Float = FlxMath.bound(bar.percent / 100, 0, 1);
-		final bf:Float = opponentMode ? 1 - pct : pct;
-		final dad:Float = opponentMode ? pct : 1 - pct;
+		final bf:Float = pct;
+		final dad:Float = 1 - pct;
 		setFrame(p1, bf);
 		setFrame(p2, dad);
 		if (gf != null && gf.visible)
@@ -77,11 +82,27 @@ class HealthIconHud
 
 	static function lerpScale(elapsed:Float, rate:Float, icon:HealthIcon, nf:Bool):Void
 	{
-		if (icon == null || !icon.visible)
+		// Mods such as Mario Madness replace a native icon with a Lua sprite that
+		// follows its transform. The native icon is intentionally invisible there,
+		// but it must still complete its scale decay or the proxy gets stuck at
+		// the first beat's scale and no longer bops.
+		if (icon == null)
 			return;
 
 		final t:Float = nf ? FlxMath.bound((1 - (elapsed * 9 * rate)) / 1.1, 0, 1) : Math.exp(-elapsed * 9 * rate);
-		final value:Float = FlxMath.lerp(1, icon.scale.x, t);
+		final base:Float = icon.isAnimated ? icon.baseScale : 1;
+		final value:Float = FlxMath.lerp(base, icon.scale.x, t);
+		icon.scale.set(value, value);
+	}
+
+	static inline final CODENAME_LERP:Float = 0.33;
+	static function codenameScale(elapsed:Float, rate:Float, icon:HealthIcon):Void
+	{
+		if (icon == null) return;
+
+		final base:Float = icon.baseScale > 0 ? icon.baseScale : 1.0;
+		final t:Float = 1.0 - Math.pow(1.0 - CODENAME_LERP, elapsed * 60.0 * rate);
+		final value:Float = FlxMath.lerp(icon.scale.x, base, t);
 		icon.scale.set(value, value);
 	}
 

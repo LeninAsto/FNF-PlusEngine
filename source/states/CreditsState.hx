@@ -7,6 +7,7 @@ import flixel.math.FlxMath;
 import flixel.text.FlxText;
 import flixel.tweens.FlxTween;
 import flixel.tweens.FlxEase;
+import mobile.input.TouchScrollHandler;
 
 class CreditsState extends MusicBeatState
 {
@@ -21,6 +22,7 @@ class CreditsState extends MusicBeatState
 	public var descBg:FlxSprite;
 	public var intendedColor:FlxColor;
 	public var colorTween:FlxTween;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	public var offsetThing:Float = -75;
 
@@ -36,7 +38,7 @@ class CreditsState extends MusicBeatState
 		#end
 
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("In the Menus", null);
+		DiscordClient.changePresence(Language.getPhrase('states.credits.presence', 'In the Menus'), null);
 		#end
 
 		persistentUpdate = true;
@@ -61,200 +63,207 @@ class CreditsState extends MusicBeatState
 
 		var defaultList:Array<Array<String>> = [
 			// Name - Icon name - Description - Link - BG Color
-			['Plus Engine Team'],
+			[Language.getPhrase('states.credits.sections.plus_engine', 'Plus Engine Team')],
 			[
 				'Lenin Asto',
 				"len",
-				"Programmer of Plus Engine",
+				Language.getPhrase('states.credits.roles.lenin_asto', 'Programmer of Plus Engine'),
 				"https://www.youtube.com/@Lenin_Anonimo_Of",
 				"03FC88"
 			],
 			[
 				'sirthegamercoder',
 				'sir',
-				'Indonesian translation and Helper coder of Plus Engine',
+				Language.getPhrase('states.credits.roles.sirthegamercoder', 'Indonesian translation and Helper coder of Plus Engine'),
 				'https://bsky.app/profile/stgmd.bsky.social',
 				'7FDBFF'
 			],
 			[
 				'Andres',
 				'slushi',
-				'Creator and owner of several codes used based on the Slushi Engine',
+				Language.getPhrase('states.credits.roles.andres', 'Creator and owner of several codes used based on the Slushi Engine'),
 				'https://github.com/Slushi-Github',
 				'8FD9D1'
 			],
 			[
 				'TheoDev',
 				"theo",
-				"Owner, Lead coder of Funkin Modchart",
+				Language.getPhrase('states.credits.roles.theodev', 'Owner, Lead coder of Funkin Modchart'),
 				"https://github.com/TheoDevelops",
 				"FFB347"
 			],
 			[
+				"Rozebud",
+				"",
+				Language.getPhrase('states.credits.roles.rozebud', "Creator of the Chart Editor's Lil' Buddies"),
+				"https://github.com/ThatRozebudDude/FPS-Plus-Public",
+				"E08B40"
+			],
+			[
 				"AutisticLulu",
 				"lulu",
-				"Psych Engine 1.0.x fixes and maintenance",
+				Language.getPhrase('states.credits.roles.autistic_lulu', 'Psych Engine 1.0.x fixes and maintenance'),
 				"https://github.com/MeguminBOT/FNF-PsychEngine",
 				"C7A0FF"
 			],
 			[''],
-			['Mobile Porting Team'],
+			[Language.getPhrase('states.credits.sections.mobile', 'Mobile Porting Team')],
 			[
 				'HomuHomu833',
 				'homura',
-				'Head Porter of Psych Engine and Author of linc_luajit-rewriten',
+				Language.getPhrase('states.credits.roles.homuhomu833', 'Head Porter of Psych Engine and Author of linc_luajit-rewriten'),
 				'https://youtube.com/@HomuHomu833',
 				'FFE7C0'
 			],
 			[
 				'Karim Akra',
 				'karim',
-				'Second Porter of Psych Engine',
+				Language.getPhrase('states.credits.roles.karim_akra', 'Second Porter of Psych Engine'),
 				'https://youtube.com/@Karim0690',
 				'FFB4F0'
 			],
 			[
 				'Moxie',
 				'moxie',
-				'Helper of Psych Engine Mobile',
+				Language.getPhrase('states.credits.roles.moxie', 'Helper of Psych Engine Mobile'),
 				'https://twitter.com/moxie_specalist',
 				'F592C4'
 			],
 			[''],
-			["Psych Engine Team"],
+			[Language.getPhrase('states.credits.sections.psych_engine', 'Psych Engine Team')],
 			[
 				"Shadow Mario",
 				"shadowmario",
-				"Main Programmer and Head of Psych Engine",
+				Language.getPhrase('states.credits.roles.shadow_mario', 'Main Programmer and Head of Psych Engine'),
 				"https://ko-fi.com/shadowmario",
 				"444444"
 			],
 			[
 				"Riveren",
 				"riveren",
-				"Main Artist/Animator of Psych Engine",
+				Language.getPhrase('states.credits.roles.riveren', 'Main Artist/Animator of Psych Engine'),
 				"https://x.com/riverennn",
 				"14967B"
 			],
 			[
 				"bb-panzu",
 				"bb",
-				"Ex-Programmer of Psych Engine",
+				Language.getPhrase('states.credits.roles.bb_panzu', 'Ex-Programmer of Psych Engine'),
 				"https://x.com/bbsub3",
 				"3E813A"
 			],
 			[""],
-			["Engine Contributors"],
+			[Language.getPhrase('states.credits.sections.contributors', 'Engine Contributors')],
 			[
 				"crowplexus",
 				"crowplexus",
-				"Linux Support, HScript Iris, Input System v3, and Other PRs",
+				Language.getPhrase('states.credits.roles.crowplexus', 'Linux Support, HScript Iris, Input System v3, and Other PRs'),
 				"https://twitter.com/IamMorwen",
 				"CFCFCF"
 			],
 			[
 				"Kamizeta",
 				"kamizeta",
-				"Creator of Pessy, Psych Engine's mascot.",
+				Language.getPhrase('states.credits.roles.kamizeta', "Creator of Pessy, Psych Engine's mascot."),
 				"https://www.instagram.com/cewweey/",
 				"D21C11"
 			],
 			[
 				"MaxNeton",
 				"maxneton",
-				"Loading Screen Easter Egg Artist/Animator.",
+				Language.getPhrase('states.credits.roles.maxneton', 'Loading Screen Easter Egg Artist/Animator.'),
 				"https://bsky.app/profile/maxneton.bsky.social",
 				"3C2E4E"
 			],
 			[
 				"Keoiki",
 				"keoiki",
-				"Note Splash Animations and Latin Alphabet",
+				Language.getPhrase('states.credits.roles.keoiki', 'Note Splash Animations and Latin Alphabet'),
 				"https://x.com/Keoiki_",
 				"D2D2D2"
 			],
 			[
 				"SqirraRNG",
 				"sqirra",
-				"Crash Handler and Base code for\nChart Editor's Waveform",
+				Language.getPhrase('states.credits.roles.sqirrarng', "Crash Handler and Base code for\nChart Editor's Waveform"),
 				"https://x.com/gedehari",
 				"E1843A"
 			],
 			[
 				"EliteMasterEric",
 				"mastereric",
-				"Runtime Shaders support and Other PRs",
+				Language.getPhrase('states.credits.roles.elitemastereric', 'Runtime Shaders support and Other PRs'),
 				"https://x.com/EliteMasterEric",
 				"FFBD40"
 			],
 			[
 				"MAJigsaw77",
 				"majigsaw",
-				".MP4 Video Loader Library (hxvlc)",
+				Language.getPhrase('states.credits.roles.majigsaw77', '.MP4 Video Loader Library (hxvlc)'),
 				"https://x.com/MAJigsaw77",
 				"5F5F5F"
 			],
 			[
 				"iFlicky",
 				"flicky",
-				"Composer of Psync and Tea Time\nAnd some sound effects",
+				Language.getPhrase('states.credits.roles.iflicky', 'Composer of Psync and Tea Time\nAnd some sound effects'),
 				"https://x.com/flicky_i",
 				"9E29CF"
 			],
 			[
 				"KadeDev",
 				"kade",
-				"Fixed some issues on Chart Editor and Other PRs",
+				Language.getPhrase('states.credits.roles.kadedev', 'Fixed some issues on Chart Editor and Other PRs'),
 				"https://x.com/kade0912",
 				"64A250"
 			],
 			[
 				"superpowers04",
 				"superpowers04",
-				"LUA JIT Fork",
+				Language.getPhrase('states.credits.roles.superpowers04', 'LUA JIT Fork'),
 				"https://x.com/superpowers04",
 				"B957ED"
 			],
 			[
 				"CheemsAndFriends",
 				"cheems",
-				"Creator of FlxAnimate",
+				Language.getPhrase('states.credits.roles.cheems_and_friends', 'Creator of FlxAnimate'),
 				"https://x.com/CheemsnFriendos",
 				"E1E1E1"
 			],
 			[""],
-			["Funkin' Crew"],
+			[Language.getPhrase('states.credits.sections.funkin', "Funkin' Crew")],
 			[
 				"ninjamuffin99",
 				"ninjamuffin99",
-				"Programmer of Friday Night Funkin'",
+				Language.getPhrase('states.credits.roles.ninjamuffin99', "Programmer of Friday Night Funkin'"),
 				"https://x.com/ninja_muffin99",
 				"CF2D2D"
 			],
 			[
 				"PhantomArcade",
 				"phantomarcade",
-				"Animator of Friday Night Funkin'",
+				Language.getPhrase('states.credits.roles.phantom_arcade', "Animator of Friday Night Funkin'"),
 				"https://x.com/PhantomArcade3K",
 				"FADC45"
 			],
 			[
 				"evilsk8r",
 				"evilsk8r",
-				"Artist of Friday Night Funkin'",
+				Language.getPhrase('states.credits.roles.evilsk8r', "Artist of Friday Night Funkin'"),
 				"https://x.com/evilsk8r",
 				"5ABD4B"
 			],
 			[
 				"kawaisprite",
 				"kawaisprite",
-				"Composer of Friday Night Funkin'",
+				Language.getPhrase('states.credits.roles.kawaisprite', "Composer of Friday Night Funkin'"),
 				"https://x.com/kawaisprite",
 				"378FC7"
 			],
 			[""],
-			["Psych Engine Discord"],
-			["Join the Psych Ward!", "discord", "", "https://discord.gg/2ka77eMXDv", "5165F6"]
+			[Language.getPhrase('states.credits.sections.psych_discord', 'Psych Engine Discord')],
+			[Language.getPhrase('states.credits.psych_discord_join', 'Join the Psych Ward!'), "discord", "", "https://discord.gg/2ka77eMXDv", "5165F6"]
 		];
 
 		for (i in defaultList)
@@ -324,9 +333,10 @@ class CreditsState extends MusicBeatState
 		intendedColor = bg.color;
 		changeSelection();
 
-		addTouchPad('UP_DOWN', 'A_B');
-
 		super.create();
+
+		addTouchPad('UP_DOWN', 'A_B');
+		addTouchPadCamera();
 
 		#if MODS_ALLOWED
 		Mods.currentModDirectory = (Mods.launchedMod != null && Mods.launchedMod.length > 0) ? Mods.launchedMod : previousModDirectory;
@@ -403,7 +413,7 @@ class CreditsState extends MusicBeatState
 
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				quitting = true;
-				MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
+				MusicBeatState.switchState(MainMenuStateSelector.create());
 			}
 		}
 
@@ -427,6 +437,27 @@ class CreditsState extends MusicBeatState
 	}
 
 	var moveTween:FlxTween = null;
+
+	function getTouchCreditAt(x:Float, y:Float):Int
+	{
+		for (index => item in grpOptions.members)
+			if (item != null && !unselectableCheck(index) && x >= 0 && x <= FlxG.width
+				&& y >= item.y - 18 && y <= item.y + Math.max(item.height, 68) + 18)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
+	}
+
+	function onTouchCredit(index:Int, x:Float, y:Float):Void
+	{
+		if (index != curSelected)
+		{
+			changeSelection(index - curSelected);
+			return;
+		}
+		var link = creditsStuff[curSelected][3];
+		if (link != null && link.length > 4)
+			CoolUtil.browserLoad(link);
+	}
 
 	function changeSelection(change:Int = 0)
 	{

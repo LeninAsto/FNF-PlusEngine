@@ -1,0 +1,28 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.dialogue_character",
+  "ui": {
+    "add_update": "添加/更新",
+    "animation_name": "动画名称:",
+    "animations": "动画:",
+    "idle_finished_name_on_xml_file": "在 .XML 文件中空置/完成的名称:",
+    "image_file_name": "图片文件名称:",
+    "load_character": "加载角色",
+    "loop_name_on_xml_file": "在 . XML 文件中循环名称:",
+    "no_antialiasing": "关闭抗锯齿",
+    "position_offset": "位置抵消:",
+    "reload_image": "重载图像",
+    "remove": "移除",
+    "save_character": "保存角色",
+    "scale": "规模:"
+  },
+  "presence": {
+    "title": "对话角色编辑器",
+    "editing": "编辑: {1}"
+  },
+  "tabs": {
+    "animations": "动画",
+    "character": "性格",
+    "character_type": "字符类型"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.song_checker",
+  "title": "這樣的歌曲,",
+  "prefix": {
+    "error": "沒有任何問題.",
+    "warning": "沒有任何問題.",
+    "fix": "沒有任何問題."
+  },
+  "more": "...和他們 {1} 更多的.",
+  "issues": {
+    "missing_chart": "沒有找到譜面.",
+    "invalid_chart": "這張譜面存在,",
+    "repaired_song_name": "缺失的歌曲名稱已從資料夾名稱恢復。",
+    "missing_notes": "譜面沒有記錄列表.",
+    "repaired_events": "沒有事件列被取代為空格列.",
+    "invalid_bpm": "BPM 必須超過零.",
+    "repaired_speed": "已恢復到1號.",
+    "repaired_gf": "失蹤的女友角色被恢復為\"GF\".",
+    "missing_inst": "沒有任何工具音訊.",
+    "missing_voices": "但沒有找到預設或分割的聲音檔案.",
+    "invalid_section": "部分 {1} 沒有留言名單.",
+    "invalid_note": "在節目中出現錯誤的記錄 {1},指數 {2}.",
+    "invalid_note_values": "在部分的非數字筆記資料 {1},指數 {2}."
+  }
+}

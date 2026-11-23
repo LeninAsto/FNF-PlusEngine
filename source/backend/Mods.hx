@@ -52,13 +52,9 @@ class Mods
 	public static function pushGlobalMods() // prob a better way to do this but idc
 	{
 		globalMods = [];
-		// A launched mod is an isolated runtime context. Keep it first so
-		// merged asset lookups and global scripts cannot silently fall back to
-		// another enabled mod while that context is active.
-		if (launchedMod != null && launchedMod.length > 0)
-			pushGlobalMod(launchedMod);
-		pushGlobalMod(BASE_GAME_MOD_FOLDER);
-
+		// The active/top mod is resolved separately by Paths.modFolders().
+		// Keep the engine/base-game pack at the end so it remains a fallback,
+		// instead of shadowing assets from enabled global mods.
 		for (mod in parseList().enabled)
 		{
 			if (isBaseGameMod(mod) || mod == launchedMod)
@@ -68,6 +64,7 @@ class Mods
 			if (pack != null && pack.runsGlobally)
 				pushGlobalMod(mod);
 		}
+		pushGlobalMod(BASE_GAME_MOD_FOLDER);
 		return globalMods;
 	}
 
@@ -137,7 +134,10 @@ class Mods
 		#if MODS_ALLOWED
 		if (mods)
 		{
-			// Global mods first
+			// Psych's merge order is important for script compatibility: globals
+			// load first and the song's active mod loads last, so its callbacks and
+			// definitions can override the shared ones. The active mod is resolved
+			// separately below; do not also insert a launched mod into globalMods.
 			for (mod in Mods.getGlobalMods())
 			{
 				var folder:String = Paths.mods(mod + '/' + fileToFind);
@@ -145,18 +145,19 @@ class Mods
 					foldersToCheck.push(folder);
 			}
 
-			// Then "PsychEngine/mods/" main folder
+			// Then Psych's loose mods/ root.
 			var folder:String = Paths.mods(fileToFind);
 			if (AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder))
 				foldersToCheck.push(Paths.mods(fileToFind));
 
-			// And lastly, the loaded mod's folder
+			// Finally the active song mod, matching vanilla Psych Engine.
 			if (Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0)
 			{
 				var folder:String = Paths.mods(Mods.currentModDirectory + '/' + fileToFind);
 				if (AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder))
 					foldersToCheck.push(folder);
 			}
+
 		}
 		#end
 		return foldersToCheck;
@@ -391,26 +392,29 @@ class Mods
 
 	public static function loadTopMod()
 	{
+		var resolvedMod:String = '';
+
 		#if MODS_ALLOWED
 		if (launchedMod != null && launchedMod.length > 0)
+			resolvedMod = launchedMod;
+		else
 		{
-			currentModDirectory = launchedMod;
-			return;
+			var list:Array<String> = Mods.parseList().enabled;
+			if (list != null)
+				for (mod in list)
+					if (mod != null && mod.length > 0 && !isRequiredGlobalMod(mod))
+					{
+						resolvedMod = mod;
+						break;
+					}
 		}
 		#end
 
-		Mods.currentModDirectory = '';
-
-		#if MODS_ALLOWED
-		var list:Array<String> = Mods.parseList().enabled;
-		if (list != null)
-			for (mod in list)
-				if (mod != null && mod.length > 0 && !isRequiredGlobalMod(mod))
-				{
-					Mods.currentModDirectory = mod;
-					break;
-				}
-		#end
+		// Keep Psych Engine's global UI context deterministic: a launched mod
+		// owns the context, otherwise the first enabled (top) mod does. Global
+		// fallbacks are rebuilt afterwards so runsGlobally mods remain available.
+		currentModDirectory = resolvedMod;
+		pushGlobalMods();
 	}
 
 	public static function getLaunchState(folder:String):String

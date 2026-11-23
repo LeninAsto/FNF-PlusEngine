@@ -1,0 +1,18 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.popups",
+  "common": {
+    "none": "无"
+  },
+  "mod_settings": {
+    "title": "模特名称: {1}",
+    "parse_error": "发生错误: {1}"
+  },
+  "achievements": {
+    "mod_title": "模特名称: {1}",
+    "invalid_entry": "成就#{1} 是无效的.",
+    "entry_title": "实现错误: {1}",
+    "missing_save": "没有有效的\"保存\"值.",
+    "load_error": "错误加载 achievements.json: {1}"
+  }
+}

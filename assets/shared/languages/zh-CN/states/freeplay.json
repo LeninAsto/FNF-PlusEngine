@@ -1,0 +1,59 @@
+{
+  "$schema": 1,
+  "$namespace": "freeplay",
+  "presence": "在菜单中",
+  "title": "免费播放",
+  "score": {
+    "personal_best": "个人最好的: {1} ({2})",
+    "details": "评分: {1}\n准确度: {2}",
+    "none": "没有得分."
+  },
+  "errors": {
+    "no_weeks": "没有额外的自由播放周\n\n打压 {1} 进入\"周编辑菜单\".\n打压 {2} 返回主菜单.",
+    "chart_load_exception": "在加载谱面时发生意外错误: {1}",
+    "no_chart": "此难度没有可用谱面。",
+    "invalid_bpm": "谱面的 BPM 无效，无法游玩。"
+  },
+  "search": {
+    "placeholder": "搜索...",
+    "helper": "按B来集中, ESC 退出"
+  },
+  "tip": "打压 {1} 为了听歌曲/新闻 {2} 打开玩法变更菜单 / 点击 {3} 要重新设置你的分数和精度.",
+  "desktop_mod_tip": " / F5 重新加载模组 / 拖入模组文件夹以导入。",
+  "song_info": {
+    "loading": "装载...",
+    "scores": "难度与分数：\n{1}",
+    "time": "时长：{1}",
+    "bpm": "BPM: {1}",
+    "author": "通过: {1}"
+  },
+  "licenses": {
+    "no-licenses": "没有许可证",
+    "creative-commons": "Creative Commons",
+    "cc-by": "CC BY",
+    "cc-by-sa": "CC BY-SA",
+    "cc-by-nd": "CC BY-ND",
+    "cc-by-nc": "CC BY-NC",
+    "cc-by-nc-sa": "CC BY-NC-SA",
+    "cc-by-nc-nd": "CC BY-NC-ND",
+    "public-domain": "公共领域",
+    "royalty-free": "免费版权",
+    "copyright": "版权所有",
+    "permission-required": "需要许可",
+    "comercial-use": "商业用途",
+    "no-comercial": "非商业",
+    "no-derivatives": "没有衍生品",
+    "share-alike": "分享相似",
+    "atribution-required": "需要归因",
+    "redistribution-allow": "允许重新分配",
+    "modify-allow": "允许修改",
+    "streaming-allow": "允许播放",
+    "public-access": "公众访问",
+    "public-execution": "公众表现",
+    "sync": "同步"
+  },
+  "psych": {
+    "tip": "打压 {1} 为了听歌曲/新闻 {2} 打开玩法变更菜单 / 点击 {3} 要重新设置你的分数和精度.",
+    "desktop_mod_tip": " / F5 重新加载模组 / 拖入模组文件夹以导入。"
+  }
+}

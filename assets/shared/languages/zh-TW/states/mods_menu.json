@@ -1,0 +1,47 @@
+{
+  "$schema": 1,
+  "$namespace": "states.mods_menu",
+  "presence": "在模特瀏覽器中",
+  "title": "其他方式",
+  "filter": "篩選：{1}",
+  "filters": {
+    "all": "所有的國家",
+    "enabled": "啟動",
+    "disabled": "殘疾人",
+    "launchable": "推出可能"
+  },
+  "search": "搜尋結果",
+  "search_query": "搜尋: {1}{2}",
+  "sections": {
+    "description": "描述",
+    "features": "功能",
+    "changelog": "改變"
+  },
+  "restart_notice": "這種模式將重新啟動遊戲.",
+  "buttons": {
+    "launch": "開始",
+    "enable": "沒有任何問題",
+    "enabled": "啟動",
+    "disable": "殘疾人",
+    "settings": "設定方式",
+    "reload": "轉載"
+  },
+  "hint": "上/下 選擇   L/R 排序   ENTER 啟動   SPACE 啟用/禁用（SHIFT=全部）   TAB 設定   Y 安全   F 篩選   / 搜尋   ESC 退出",
+  "empty": "沒有安裝模式\n媒體報導 BACK 如何退出或安裝模式",
+  "unknown_mod": "不知名的模式",
+  "no_description": "沒有提供描述.",
+  "status": {
+    "disabled": "禁用 - 啟動",
+    "launch": "> 按一下 ENTER 為了發射",
+    "no_launchable_states": "沒有可發射狀態",
+    "base_game_global": "基本遊戲總是在全球上載的",
+    "sensitive_scripts": "檢測敏感指令碼 - 選擇 TRUST 才能啟用",
+    "activation_denied": "啟動被拒絕 - 暫停使用",
+    "trusted": "值得信賴的模式啟用",
+    "security_disabled": "Mod 安全已被禁用 (在選項中啟用)"
+  },
+  "settings_error": {
+    "title": "這種名字: {1}",
+    "message": "發生了一個錯誤: {1}"
+  }
+}

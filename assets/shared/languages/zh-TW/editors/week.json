@@ -1,0 +1,36 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.week",
+  "ui": {
+    "background_asset": "背景資產:",
+    "characters": "角色：",
+    "copy_color": "複製顏色",
+    "default_difficulties_help": "預設問題是\"簡單,正常,困難\"\n沒有引用.",
+    "difficulties": "困難:",
+    "display_name": "顯示名稱:",
+    "freeplay": "Freeplay",
+    "hidden_until_unlocked": "隱藏至解鎖",
+    "hide_week_from_freeplay": "隱藏一個禮拜 Freeplay?",
+    "hide_week_from_story_mode": "隱藏一個星期的故事模式?",
+    "load_week": "載入週目",
+    "paste_color": "貼上顏色",
+    "save_week": "儲存週目",
+    "selected_background_color_r_g_b": "選擇背景顏色 R/G/B:",
+    "selected_icon": "選擇的圖示:",
+    "songs": "其他歌曲:",
+    "story_mode": "故事模式",
+    "week_file": "週檔案:",
+    "unlock_week_file": "週 您的週檔案名稱\n在開關時完成:",
+    "week_name_for_reset_score_menu": "週名稱 (為重置分數選單):",
+    "week_starts_locked": "週開始 鎖定"
+  },
+  "presence": {
+    "title": "週刊編輯",
+    "editing": "編輯: {1}"
+  },
+  "tabs": {
+    "freeplay": "Freeplay",
+    "other": "其他",
+    "week": "年 月 日"
+  }
+}

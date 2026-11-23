@@ -70,6 +70,8 @@ class ModchartFunctions
 		__luaArrowData.hitTime = arrowTime;
 		__luaArrowData.distance = arrowDiff;
 		__luaArrowData.sourceTime = Adapter.instance.getTimeFromArrow(strum);
+		__luaArrowData.strumTime = isTapArrow ? __luaArrowData.sourceTime : songPos;
+		__luaArrowData.sampleTime = __luaArrowData.strumTime;
 		__luaArrowData.lane = lane;
 		__luaArrowData.player = player;
 		__luaArrowData.hitten = Adapter.instance.arrowHit(strum);
@@ -89,20 +91,18 @@ class ModchartFunctions
 		var lua:State = funk.lua;
 
 		// Add modifier
-		Lua_helper.add_callback(lua, "addModifier", function(name:String, ?field:Dynamic = -1)
+		Lua_helper.add_callback(lua, "addModifier", function(name:String, ?field:Dynamic = "all", ?beat:Null<Float>)
 		{
 			if (Manager.instance == null)
 				return;
 
 			if (isNamedPlayfield(field))
 			{
-				final playfield = requireNamedPlayfield(field, 'addModifier');
-				if (playfield != null)
-					playfield.addModifier(name);
+				Manager.instance.addModifierToNamedPlayfield(Std.string(field), name, beat);
 				return;
 			}
 
-			Manager.instance.addModifier(name, resolveFieldIndex(field, -1));
+			Manager.instance.addModifier(name, resolveFieldIndex(field, -1), beat);
 		});
 
 		// Set modifier percent
@@ -591,12 +591,20 @@ class ModchartFunctions
 			}
 		});
 
-		// PathModifier helpers (works for any modifier that extends PathModifier, e.g. arrowshape, luapath)
+		// Path helpers work with any PathModifier, such as arrowshape or path.
 		Lua_helper.add_callback(lua, "setModifierPath", function(modName:String, nodes:Array<Dynamic>, ?field:Dynamic = -1, ?lane:Int = -1)
 		{
 			if (Manager.instance == null)
 				return;
 			final parsed = parsePathNodes(nodes);
+			if (isNamedPlayfield(field))
+			{
+				final named = requireNamedPlayfield(field, 'setModifierPath');
+				if (named == null)
+					return;
+				setPath(named, modName, parsed, lane, 'setModifierPath');
+				return;
+			}
 			final fieldIndex = resolveFieldIndex(field, -1);
 
 			if (fieldIndex == -1)
@@ -622,34 +630,52 @@ class ModchartFunctions
 			if (pf == null)
 				return;
 
-			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
-			if (mod == null)
-			{
-				PlayState.instance.addTextToDebug('setModifierPath: modifier not found: ' + modName, 0xFFFF0000);
+			setPath(pf, modName, parsed, lane, 'setModifierPath');
+		});
+
+		Lua_helper.add_callback(lua, "setBezierPath", function(modName:String, start:Dynamic, controlA:Dynamic, controlB:Dynamic, finish:Dynamic,
+				?samples:Int = 24, ?field:Dynamic = -1, ?lane:Int = -1)
+		{
+			if (Manager.instance == null)
 				return;
-			}
-			if (!Std.isOfType(mod, PathModifier))
+
+			final points = parsePathNodes([start, controlA, controlB, finish]);
+			if (points.length != 4)
+				return;
+			if (isNamedPlayfield(field))
 			{
-				PlayState.instance.addTextToDebug('setModifierPath: modifier is not a PathModifier: ' + modName, 0xFFFF0000);
+				final named = requireNamedPlayfield(field, 'setBezierPath');
+				if (named != null)
+					setBezier(named, modName, points[0], points[1], points[2], points[3], samples, lane, 'setBezierPath');
 				return;
 			}
 
-			if (lane >= 0)
+			final fieldIndex = resolveFieldIndex(field, -1);
+			if (fieldIndex == -1)
 			{
-				// Set path for specific lane
-				cast(mod, PathModifier).loadPathForLane(parsed, lane);
+				for (pf in Manager.instance.playfields)
+					if (pf != null)
+						setBezier(pf, modName, points[0], points[1], points[2], points[3], samples, lane, 'setBezierPath', false);
+				return;
 			}
-			else
-			{
-				// Set global path (affects all lanes without specific paths)
-				cast(mod, PathModifier).loadPath(parsed);
-			}
+
+			final pf = resolvePlayfield(fieldIndex, 0, 'setBezierPath');
+			if (pf != null)
+				setBezier(pf, modName, points[0], points[1], points[2], points[3], samples, lane, 'setBezierPath');
 		});
+
 
 		Lua_helper.add_callback(lua, "setModifierPathOffset", function(modName:String, x:Float, y:Float, ?z:Float = 0, ?field:Dynamic = -1)
 		{
 			if (Manager.instance == null)
 				return;
+			if (isNamedPlayfield(field))
+			{
+				final named = requireNamedPlayfield(field, 'setModifierPathOffset');
+				if (named != null)
+					setPathOffset(named, modName, x, y, z, 'setModifierPathOffset');
+				return;
+			}
 
 			final fieldIndex = resolveFieldIndex(field, -1);
 			if (fieldIndex == -1)
@@ -670,20 +696,20 @@ class ModchartFunctions
 			if (pf == null)
 				return;
 
-			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
-			if (mod == null || !Std.isOfType(mod, PathModifier))
-			{
-				PlayState.instance.addTextToDebug('setModifierPathOffset: PathModifier not found: ' + modName, 0xFFFF0000);
-				return;
-			}
-
-			cast(mod, PathModifier).pathOffset.setTo(x, y, z);
+			setPathOffset(pf, modName, x, y, z, 'setModifierPathOffset');
 		});
 
 		Lua_helper.add_callback(lua, "setModifierPathBound", function(modName:String, bound:Float, ?field:Dynamic = -1)
 		{
 			if (Manager.instance == null)
 				return;
+			if (isNamedPlayfield(field))
+			{
+				final named = requireNamedPlayfield(field, 'setModifierPathBound');
+				if (named != null)
+					setPathBound(named, modName, bound, 'setModifierPathBound');
+				return;
+			}
 
 			final fieldIndex = resolveFieldIndex(field, -1);
 			if (fieldIndex == -1)
@@ -704,14 +730,43 @@ class ModchartFunctions
 			if (pf == null)
 				return;
 
-			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
-			if (mod == null || !Std.isOfType(mod, PathModifier))
+			setPathBound(pf, modName, bound, 'setModifierPathBound');
+		});
+
+		// Removes lane-specific overrides so the global path becomes authoritative
+		// again. Useful when a chart switches from independent rails to one path.
+		Lua_helper.add_callback(lua, "clearModifierLanePaths", function(modName:String, ?field:Dynamic = -1)
+		{
+			if (Manager.instance == null)
+				return;
+			if (isNamedPlayfield(field))
 			{
-				PlayState.instance.addTextToDebug('setModifierPathBound: PathModifier not found: ' + modName, 0xFFFF0000);
+				final named = requireNamedPlayfield(field, 'clearModifierLanePaths');
+				if (named != null)
+					clearPathLanes(named, modName);
 				return;
 			}
 
-			cast(mod, PathModifier).setPathBound(bound);
+			final fieldIndex = resolveFieldIndex(field, -1);
+			if (fieldIndex == -1)
+			{
+				for (pf in Manager.instance.playfields)
+				{
+					if (pf == null)
+						continue;
+					final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
+					if (mod != null && Std.isOfType(mod, PathModifier))
+						cast(mod, PathModifier).clearLanePaths();
+				}
+				return;
+			}
+
+			final pf = resolvePlayfield(fieldIndex, 0, 'clearModifierLanePaths');
+			if (pf == null)
+				return;
+			final mod = pf.modifiers.modifiers.get(modName.toLowerCase());
+			if (mod != null && Std.isOfType(mod, PathModifier))
+				cast(mod, PathModifier).clearLanePaths();
 		});
 
 		Lua_helper.add_callback(lua, "changeControls", function(bindings:Dynamic)
@@ -1033,7 +1088,7 @@ class ModchartFunctions
 			var swagSong = Song.getChart(chartName, songName);
 			if (swagSong == null)
 			{
-				PlayState.instance.addTextToDebug('ERROR: chart "$chartName" not found in song "$songName"', 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.error_chart_value_not_found_in_song_value', "ERROR: chart \"{1}\" not found in song \"{2}\"", [chartName, songName]), 0xFFFF0000);
 				return null;
 			}
 
@@ -1130,7 +1185,17 @@ class ModchartFunctions
 
 	private static function isNamedPlayfield(field:Dynamic):Bool
 	{
-		return false;
+		if (!Std.isOfType(field, String))
+			return false;
+
+		final name = Std.string(field).trim();
+		if (name.length <= 0)
+			return false;
+		if (name.toLowerCase() == 'all')
+			return false;
+
+		// Numeric strings are reserved for beat/index-compatible Lua calls.
+		return Math.isNaN(toFloat(name, Math.NaN));
 	}
 
 	private static function resolveFieldIndex(field:Dynamic, defaultField:Int = -1):Int
@@ -1161,7 +1226,7 @@ class ModchartFunctions
 		final name = Std.string(field).trim();
 		final playfield = Manager.instance.getNamedPlayfield(name);
 		if (playfield == null && reportMissing && PlayState.instance != null)
-			PlayState.instance.addTextToDebug(context + ': playfield not found: ' + name, 0xFFFF0000);
+			PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_playfield_not_found_value', "{1}: playfield not found: {2}", [context, name]), 0xFFFF0000);
 		return playfield;
 	}
 
@@ -1178,6 +1243,7 @@ class ModchartFunctions
 				return false;
 
 			playfield.addScriptedModifier(normalized, new LuaModifier(playfield, normalized, funk, options));
+			Manager.instance.requestRender();
 			return true;
 		}
 
@@ -1192,6 +1258,7 @@ class ModchartFunctions
 				playfield.addScriptedModifier(normalized, new LuaModifier(playfield, normalized, funk, options));
 				added = true;
 			}
+			if (added) Manager.instance.requestRender();
 			return added;
 		}
 
@@ -1200,6 +1267,7 @@ class ModchartFunctions
 			return false;
 
 		playfield.addScriptedModifier(normalized, new LuaModifier(playfield, normalized, funk, options));
+		Manager.instance.requestRender();
 		return true;
 	}
 
@@ -1305,13 +1373,13 @@ class ModchartFunctions
 		if (fieldIndex < 0 || fieldIndex >= Manager.instance.playfields.length)
 		{
 			if (PlayState.instance != null)
-				PlayState.instance.addTextToDebug(context + ': invalid playfield index: ' + fieldIndex, 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_invalid_playfield_index_value', "{1}: invalid playfield index: {2}", [context, fieldIndex]), 0xFFFF0000);
 			return null;
 		}
 
 		final playfield = Manager.instance.playfields[fieldIndex];
 		if (playfield == null && PlayState.instance != null)
-			PlayState.instance.addTextToDebug(context + ': removed playfield index: ' + fieldIndex, 0xFFFF0000);
+			PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_removed_playfield_index_value', "{1}: removed playfield index: {2}", [context, fieldIndex]), 0xFFFF0000);
 		return playfield;
 	}
 
@@ -1355,7 +1423,7 @@ class ModchartFunctions
 			final fields = Reflect.fields(bindings);
 			if (fields == null || fields.length <= 0)
 			{
-				PlayState.instance.addTextToDebug(context + ': expected a table/object with left/down/up/right bindings', 0xFFFFAA00);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_invalid_bindings', "{1}: expected a table/object with left/down/up/right bindings", [context]), 0xFFFFAA00);
 				return;
 			}
 
@@ -1364,7 +1432,7 @@ class ModchartFunctions
 				final controlName = normalizeGameplayControlName(fieldName);
 				if (controlName == null)
 				{
-					PlayState.instance.addTextToDebug(context + ': invalid control "' + fieldName + '"', 0xFFFF0000);
+					PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_invalid_control_value', "{1}: invalid control \"{2}\"", [context, fieldName]), 0xFFFF0000);
 					continue;
 				}
 
@@ -1381,7 +1449,7 @@ class ModchartFunctions
 		catch (e:Dynamic)
 		{
 			if (PlayState.instance != null)
-				PlayState.instance.addTextToDebug(context + ': failed to apply controls: ' + Std.string(e), 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_failed_to_apply_controls_value', "{1}: failed to apply controls: {2}", [context, Std.string(e)]), 0xFFFF0000);
 		}
 	}
 
@@ -1395,7 +1463,7 @@ class ModchartFunctions
 		catch (e:Dynamic)
 		{
 			if (PlayState.instance != null)
-				PlayState.instance.addTextToDebug('restoreGameplayControls: failed to restore controls: ' + Std.string(e), 0xFFFF0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.restoregameplaycontrols_restore_failed', "restoreGameplayControls: failed to restore controls: {1}", [Std.string(e)]), 0xFFFF0000);
 		}
 	}
 
@@ -1443,7 +1511,7 @@ class ModchartFunctions
 			if (!isValidLuaKeyNameText(text))
 			{
 				if (PlayState.instance != null)
-					PlayState.instance.addTextToDebug(context + ': ignored corrupt key value for ' + fieldName, 0xFFFFAA00);
+					PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_ignored_corrupt_key_value_for_value', "{1}: ignored corrupt key value for {2}", [context, fieldName]), 0xFFFFAA00);
 				return null;
 			}
 
@@ -1455,14 +1523,14 @@ class ModchartFunctions
 			catch (e:Dynamic)
 			{
 				if (PlayState.instance != null)
-					PlayState.instance.addTextToDebug(context + ': invalid key "' + text + '" for ' + fieldName + ' (' + Std.string(e) + ')', 0xFFFF0000);
+					PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_invalid_key_value_for_value_value', "{1}: invalid key \"{2}\" for {3} ({4})", [context, text, fieldName, Std.string(e)]), 0xFFFF0000);
 				return null;
 			}
 
 			if (key == NONE)
 			{
 				if (PlayState.instance != null)
-					PlayState.instance.addTextToDebug(context + ': invalid key "' + text + '" for ' + fieldName, 0xFFFF0000);
+					PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.psychlua_modchartfunctions.value_invalid_key_value_for_value', "{1}: invalid key \"{2}\" for {3}", [context, text, fieldName]), 0xFFFF0000);
 				return null;
 			}
 
@@ -1485,6 +1553,85 @@ class ModchartFunctions
 				return false;
 		}
 		return true;
+	}
+
+	private static function setPath(playfield:PlayField, modName:String, nodes:Array<PathNode>, lane:Int, context:String,
+			reportMissing:Bool = true):Bool
+	{
+		if (playfield == null || modName == null)
+			return false;
+
+		final mod = playfield.modifiers.modifiers.get(modName.toLowerCase());
+		if (mod == null || !Std.isOfType(mod, PathModifier))
+		{
+			if (reportMissing && PlayState.instance != null)
+				PlayState.instance.addTextToDebug(context + ': PathModifier not found: ' + modName, 0xFFFF0000);
+			return false;
+		}
+
+		final pathModifier:PathModifier = cast mod;
+		if (lane >= 0)
+			pathModifier.loadPathForLane(nodes, lane);
+		else
+			pathModifier.loadPath(nodes);
+		return true;
+	}
+
+	private static function setPathOffset(playfield:PlayField, modName:String, x:Float, y:Float, z:Float, context:String):Bool
+	{
+		if (playfield == null || modName == null)
+			return false;
+		final mod = playfield.modifiers.modifiers.get(modName.toLowerCase());
+		if (mod == null || !Std.isOfType(mod, PathModifier))
+		{
+			if (PlayState.instance != null)
+				PlayState.instance.addTextToDebug(context + ': PathModifier not found: ' + modName, 0xFFFF0000);
+			return false;
+		}
+		cast(mod, PathModifier).pathOffset.setTo(x, y, z);
+		return true;
+	}
+
+	private static function setBezier(playfield:PlayField, modName:String, start:PathNode, controlA:PathNode, controlB:PathNode, finish:PathNode,
+			samples:Int, lane:Int, context:String, reportMissing:Bool = true):Bool
+	{
+		if (playfield == null || modName == null)
+			return false;
+		final mod = playfield.modifiers.modifiers.get(modName.toLowerCase());
+		if (mod == null || !Std.isOfType(mod, PathModifier))
+		{
+			if (reportMissing && PlayState.instance != null)
+				PlayState.instance.addTextToDebug(context + ': PathModifier not found: ' + modName, 0xFFFF0000);
+			return false;
+		}
+		final path:PathModifier = cast mod;
+		return lane >= 0
+			? path.loadBezierForLane(start, controlA, controlB, finish, samples, lane)
+			: path.loadBezier(start, controlA, controlB, finish, samples);
+	}
+
+	private static function setPathBound(playfield:PlayField, modName:String, bound:Float, context:String):Bool
+	{
+		if (playfield == null || modName == null)
+			return false;
+		final mod = playfield.modifiers.modifiers.get(modName.toLowerCase());
+		if (mod == null || !Std.isOfType(mod, PathModifier))
+		{
+			if (PlayState.instance != null)
+				PlayState.instance.addTextToDebug(context + ': PathModifier not found: ' + modName, 0xFFFF0000);
+			return false;
+		}
+		cast(mod, PathModifier).setPathBound(bound);
+		return true;
+	}
+
+	private static function clearPathLanes(playfield:PlayField, modName:String):Void
+	{
+		if (playfield == null || modName == null)
+			return;
+		final mod = playfield.modifiers.modifiers.get(modName.toLowerCase());
+		if (mod != null && Std.isOfType(mod, PathModifier))
+			cast(mod, PathModifier).clearLanePaths();
 	}
 
 	private static function parsePathNodes(nodes:Array<Dynamic>):Array<PathNode>

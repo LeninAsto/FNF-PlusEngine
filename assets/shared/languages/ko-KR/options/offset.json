@@ -1,0 +1,24 @@
+{
+  "$schema": 1,
+  "$namespace": "options.offset",
+  "beat_hit": "타자!",
+  "current_offset": "전류 오프셋: {1} MS",
+  "switch": "(프레스) {1} 스위치로)",
+  "modes": {
+    "note_delay": "노트/비트 지연",
+    "combo": "콤보 오프셋",
+    "keyviewer": "KeyViewer 보상금",
+    "hit_ms": "MS 오프셋을 누르"
+  },
+  "combo": {
+    "rating_offset": "순위 상쇄:",
+    "numbers_offset": "숫자 오프셋:"
+  },
+  "keyviewer": {
+    "position_offset": "KeyViewer 위치:",
+    "color": "KeyViewer 색상:"
+  },
+  "hit_ms": {
+    "preview": "미리 보기:"
+  }
+}

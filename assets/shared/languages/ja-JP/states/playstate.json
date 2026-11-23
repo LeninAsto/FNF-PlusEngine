@@ -1,0 +1,29 @@
+{
+  "$schema": 1,
+  "$namespace": "playstate",
+  "presence": {
+    "story": "ストーリーモード: {1}",
+    "freeplay": "Freeplay",
+    "paused": "止まった - {1}",
+    "chart_editor": "譜面エディター",
+    "game_over": "ゲーム終了 - {1}"
+  },
+  "hud": {
+    "version": "{1} ({2}) - Plus Engine V{3}",
+    "botplay_mode": "BOTPLAY モード",
+    "botplay": "ボトルプレイ",
+    "botplay_cpu": "ボトルプレイ CPU: {1}",
+    "milliseconds": "{1}Ms",
+    "score": {
+      "psych": "スコア: {1} 失いました {2} ランキング: {3}",
+      "psych_instakill": "スコア: {1} ランキング: {2}",
+      "plus": "スコア: {1} 失いました {2} 組み合わせる {3} | TPS: {4} ランキング: {5}",
+      "plus_instakill": "スコア: {1} 組み合わせる {2} | TPS: {3} ランキング: {4}"
+    }
+  },
+  "modes": {
+    "perfect": "パーフェクトモード",
+    "opponent": "相手側でプレイ",
+    "practice": "練習モード"
+  }
+}

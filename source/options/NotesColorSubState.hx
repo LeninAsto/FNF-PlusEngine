@@ -55,7 +55,7 @@ class NotesColorSubState extends MusicBeatSubstate
 		super();
 
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("Note Colors Menu", null);
+		DiscordClient.changePresence(Language.getPhrase('options.menus.note_colors.presence', 'Note Colors Menu'), null);
 		#end
 
 		onPixel = PlayState.isPixelStage;
@@ -95,7 +95,8 @@ class NotesColorSubState extends MusicBeatSubstate
 		bg.alpha = 0.25;
 		add(bg);
 
-		var text:Alphabet = new Alphabet((controls.mobileC) ? 44 : 50, 86, (controls.mobileC) ? 'PRESS' : 'CTRL', false);
+		var text:Alphabet = new Alphabet((controls.mobileC) ? 44 : 50, 86,
+			Language.getPhrase(controls.mobileC ? 'options.note_colors.press' : 'options.note_colors.ctrl', controls.mobileC ? 'PRESS' : 'CTRL'), false);
 		text.alignment = CENTERED;
 		text.setScale(0.4);
 		add(text);
@@ -168,7 +169,9 @@ class NotesColorSubState extends MusicBeatSubstate
 		else
 			reset = "RESET";
 
-		var tip:FlxText = new FlxText(tipX, tipY, 0, Language.getPhrase('note_colors_tip', 'Press {1} to Reset the selected Note Part.', [reset]), 16);
+		var tip:FlxText = new FlxText(tipX, tipY, 0,
+			Language.getPhrase('options.note_colors.reset_tip',
+				Language.getPhrase('note_colors_tip', 'Press {1} to Reset the selected Note Part.', [reset]), [reset]), 16);
 		tip.setFormat(Paths.font("vcr.ttf"), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		tip.borderSize = 2;
 		add(tip);
@@ -205,17 +208,21 @@ class NotesColorSubState extends MusicBeatSubstate
 
 	function updateTip()
 	{
-		var key:String = !controls.controllerMode ? Language.getPhrase('note_colors_shift',
-			'Shift') : Language.getPhrase('note_colors_lb', 'Left Shoulder Button');
+		var key:String = !controls.controllerMode ? Language.getPhrase('options.note_colors.shift',
+			Language.getPhrase('note_colors_shift', 'Shift')) : Language.getPhrase('options.note_colors.left_shoulder',
+			Language.getPhrase('note_colors_lb', 'Left Shoulder Button'));
 		if (!controls.mobileC)
-			tipTxt.text = Language.getPhrase('note_colors_hold_tip', 'Hold {1} + Press RESET key to fully reset the selected Note.', [key]);
+			tipTxt.text = Language.getPhrase('options.note_colors.full_reset_tip',
+				Language.getPhrase('note_colors_hold_tip', 'Hold {1} + Press RESET key to fully reset the selected Note.', [key]), [key]);
 	}
 
 	function updateColorModeText()
 	{
 		if (colorModeText == null)
 			return;
-		colorModeText.text = 'Color Mode: ' + (classicMode ? 'Classic H/S/B' : 'RGB');
+		colorModeText.text = Language.getPhrase('options.note_colors.mode', 'Color Mode: {1}',
+			[Language.getPhrase(classicMode ? 'options.note_colors.modes.classic' : 'options.note_colors.modes.rgb',
+				classicMode ? 'Classic H/S/B' : 'RGB')]);
 	}
 
 	var _storedColor:FlxColor;

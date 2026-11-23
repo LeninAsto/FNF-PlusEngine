@@ -4,6 +4,9 @@ import debug.TraceDisplay;
 import flixel.FlxState;
 import objects.GlobalLoadingOverlay;
 import backend.ui.md3.NetworkCheckToast;
+#if LUA_ALLOWED
+import psychlua.backend.FunkinLua;
+#end
 #if HSCRIPT_ALLOWED
 import psychlua.backend.HScript;
 import crowplexus.hscript.Expr.Error as IrisError;
@@ -31,7 +34,12 @@ class MusicBeatState extends BaseMusicBeatState
 		return false;
 
 	public static inline function stateScriptHooksEnabled():Bool
-		return false;
+		return true;
+
+	#if LUA_ALLOWED
+	public static var globalLuaScript:FunkinLua = null;
+	#end
+	static var globalScriptMod:String = null;
 
 	#if HSCRIPT_ALLOWED
 	public static var globalScript:HScript = null;
@@ -96,6 +104,7 @@ class MusicBeatState extends BaseMusicBeatState
 		}
 
 		super.create();
+		initGlobalScript();
 
 		if (!skip)
 		{
@@ -195,16 +204,17 @@ class MusicBeatState extends BaseMusicBeatState
 		}
 
 		var fullscreen:Bool = backend.WindowMode.isFullscreen();
-		if (FlxG.save.data != null && (!_hasSavedFullscreen || _lastSavedFullscreen != fullscreen))
+		if (backend.WindowMode.fullscreenPreferenceReady && FlxG.save.data != null && (!_hasSavedFullscreen || _lastSavedFullscreen != fullscreen))
 		{
 			FlxG.save.data.fullscreen = fullscreen;
 			_lastSavedFullscreen = fullscreen;
 			_hasSavedFullscreen = true;
+			FlxG.save.flush();
 		}
 
-		// Screenshot support with F10 (F5 is used by Freeplay reload)
+		// Screenshot support with a user-configurable Windows shortcut.
 		#if desktop
-		if (FlxG.keys.justPressed.F10)
+		if (FlxG.keys.anyJustPressed(ClientPrefs.keyBinds.get('screenshot')))
 		{
 			backend.Screenshot.capture();
 		}
@@ -213,7 +223,7 @@ class MusicBeatState extends BaseMusicBeatState
 		{
 			persistentUpdate = persistentDraw = true;
 			#if HSCRIPT_ALLOWED
-			scripting.ScriptedStates.exitToEngine();
+			scripting.ScriptedStates.openModsMenu();
 			#else
 			#if MODS_ALLOWED
 			Mods.launchedMod = null;
@@ -522,7 +532,7 @@ class MusicBeatState extends BaseMusicBeatState
 		}
 		catch (e:crowplexus.hscript.Expr.Error)
 		{
-			var msg = crowplexus.hscript.Printer.errorToString(e, false);
+			var msg = ScriptErrorTranslator.hscript(crowplexus.hscript.Printer.errorToString(e, false));
 			trace('[CompanionScript] HScript error in $path:\n$msg');
 			addStateScriptTextToDebug('$path: $msg', FlxColor.RED);
 		}
@@ -604,19 +614,68 @@ class MusicBeatState extends BaseMusicBeatState
 
 	public static function initGlobalScript():Void
 	{
-		if (!stateScriptHooksEnabled())
-			return;
+		var activeMod:String = '';
+		#if MODS_ALLOWED
+		// Enabled mods may provide assets, but only an explicit Launch may run
+		// their global code. This keeps the normal Psych Plus menus script-free.
+		activeMod = Mods.launchedMod != null ? Mods.launchedMod : '';
+		#end
+		if (globalScriptMod != activeMod)
+		{
+			#if LUA_ALLOWED
+			if (globalLuaScript != null)
+			{
+				globalLuaScript.stop();
+				globalLuaScript = null;
+			}
+			#end
+			#if HSCRIPT_ALLOWED
+			if (globalScript != null)
+			{
+				globalScript.destroy();
+				globalScript = null;
+			}
+			#end
+			globalScriptMod = activeMod;
+		}
+
+		#if (LUA_ALLOWED && sys)
+		if (globalLuaScript == null)
+		{
+			#if MODS_ALLOWED
+			var luaPath:String = activeMod.length > 0 ? Paths.mods(activeMod + '/scripts/GlobalScript.lua') : null;
+			if (luaPath == null || !FileSystem.exists(luaPath))
+				luaPath = Paths.getSharedPath('scripts/GlobalScript.lua');
+			#else
+			var luaPath:String = Paths.getSharedPath('scripts/GlobalScript.lua');
+			#end
+
+			if (luaPath != null && FileSystem.exists(luaPath))
+			{
+				try
+				{
+					// Psych compatibility: global scripts use the normal FunkinLua host.
+					globalLuaScript = new FunkinLua(luaPath);
+					#if LUA_ALLOWED
+					// It is dispatched by callOnGlobalScript, never as a local song script.
+					if (PlayState.instance != null && PlayState.instance.luaArray != null)
+						PlayState.instance.luaArray.remove(globalLuaScript);
+					#end
+					trace('GlobalScript: loaded Lua script from $luaPath');
+				}
+				catch (e:Dynamic)
+					trace('GlobalScript: failed loading Lua script $luaPath: $e');
+			}
+		}
+		#end
 
 		#if HSCRIPT_ALLOWED
-		#if MODS_ALLOWED
-		Mods.loadTopMod();
-		#end
 
 		if (globalScript != null)
 			return; // Already initialized
 
 		#if MODS_ALLOWED
-		var scriptPath:String = Paths.modFolders('scripts/GlobalScript.hx');
+		var scriptPath:String = activeMod.length > 0 ? Paths.mods(activeMod + '/scripts/GlobalScript.hx') : null;
 		if (scriptPath == null || !FileSystem.exists(scriptPath))
 			scriptPath = Paths.getSharedPath('scripts/GlobalScript.hx');
 		#else
@@ -824,7 +883,7 @@ class MusicBeatState extends BaseMusicBeatState
 					trace('GlobalScript IrisError caught');
 					try
 					{
-						var errorMsg = Printer.errorToString(e, false);
+						var errorMsg = ScriptErrorTranslator.hscript(Printer.errorToString(e, false));
 						trace('GlobalScript Error: $errorMsg');
 						addScriptTextToDebug('$scriptPath: $errorMsg', FlxColor.RED);
 					}
@@ -860,8 +919,17 @@ class MusicBeatState extends BaseMusicBeatState
 			public static function callOnGlobalScript(funcToCall:String, args:Array<Dynamic> = null):Dynamic
 			{
 				var returnVal:Dynamic = LuaUtils.Function_Continue;
-				if (!stateScriptHooksEnabled())
-					return returnVal;
+				if (args == null)
+					args = [];
+
+				#if LUA_ALLOWED
+				if (globalLuaScript != null)
+				{
+					var luaValue:Dynamic = globalLuaScript.call(funcToCall, args);
+					if (luaValue != null && luaValue != LuaUtils.Function_Continue)
+						returnVal = luaValue;
+				}
+				#end
 
 				#if HSCRIPT_ALLOWED
 				if (globalScript != null && globalScript.exists(funcToCall))

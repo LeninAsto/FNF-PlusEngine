@@ -1,0 +1,19 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.dialogue",
+  "ui": {
+    "angry_textbox": "怒っているテキストボックス",
+    "character": "キャラクター:",
+    "interval_speed_ms": "間隔/速度 (ミリ秒):",
+    "load_dialogue": "会話を読み込み",
+    "sound_file_name": "音声ファイル名：",
+    "text": "文章："
+  },
+  "presence": {
+    "title": "ダイアログエディター",
+    "empty": "（空の）"
+  },
+  "tabs": {
+    "dialogue_line": "ダイアログライン"
+  }
+}

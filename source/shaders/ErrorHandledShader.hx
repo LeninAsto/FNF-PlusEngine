@@ -2,6 +2,7 @@ package shaders;
 
 import flixel.addons.display.FlxRuntimeShader;
 import lime.graphics.opengl.GLProgram;
+import openfl.display.ShaderParameter;
 
 class ErrorHandledShader extends FlxShader implements IErrorHandler
 {
@@ -45,7 +46,7 @@ class ErrorHandledShader extends FlxShader implements IErrorHandler
 		if (shaderName == null)
 			shaderName = 'unnamed';
 		brokenShaders.set(shaderName, true);
-		var alertTitle:String = 'Error on Shader: "$shaderName"';
+		var alertTitle:String = Language.getPhrase('errors.shader.title', 'Error on Shader: "{1}"', [shaderName]);
 
 		trace(error);
 
@@ -57,11 +58,11 @@ class ErrorHandledShader extends FlxShader implements IErrorHandler
 
 			var crashLogPath:String = './logs/shader_${shaderName}_${dateNow}.txt';
 			File.saveContent(crashLogPath, Std.string(error));
-			trace('$alertTitle - error log saved at: $crashLogPath');
+			trace(Language.getPhrase('errors.shader.log_saved', '{1} - error log saved at: {2}', [alertTitle, crashLogPath]));
 		}
 		catch (logError:Dynamic)
 		{
-			trace('$alertTitle - failed to save shader error log: $logError');
+			trace(Language.getPhrase('errors.shader.log_save_failed', '{1} - failed to save shader error log: {2}', [alertTitle, logError]));
 		}
 
 		onError(error);
@@ -83,6 +84,51 @@ class ErrorHandledRuntimeShader extends FlxRuntimeShader implements IErrorHandle
 		this.shaderName = shaderName;
 		super(ShaderCompatibility.adaptRuntimeShaderCode(fragmentSource, shaderName, "fragment"),
 			ShaderCompatibility.adaptRuntimeShaderCode(vertexSource, shaderName, "vertex"));
+	}
+
+	// FlxRuntimeShader's scalar setters replace the value with a fresh one-item
+	// Array. Uniforms such as time are commonly updated every frame, so reuse
+	// the existing storage to avoid steady GC pressure on mobile.
+	override public function setFloat(name:String, value:Float):Void
+	{
+		var parameter:ShaderParameter<Float> = Reflect.field(data, name);
+		if (parameter == null)
+		{
+			super.setFloat(name, value);
+			return;
+		}
+		if (parameter.value == null || parameter.value.length == 0)
+			parameter.value = [value];
+		else
+			parameter.value[0] = value;
+	}
+
+	override public function setInt(name:String, value:Int):Void
+	{
+		var parameter:ShaderParameter<Int> = Reflect.field(data, name);
+		if (parameter == null)
+		{
+			super.setInt(name, value);
+			return;
+		}
+		if (parameter.value == null || parameter.value.length == 0)
+			parameter.value = [value];
+		else
+			parameter.value[0] = value;
+	}
+
+	override public function setBool(name:String, value:Bool):Void
+	{
+		var parameter:ShaderParameter<Bool> = Reflect.field(data, name);
+		if (parameter == null)
+		{
+			super.setBool(name, value);
+			return;
+		}
+		if (parameter.value == null || parameter.value.length == 0)
+			parameter.value = [value];
+		else
+			parameter.value[0] = value;
 	}
 
 	override function __createGLProgram(vertexSource:String, fragmentSource:String):GLProgram

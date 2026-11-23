@@ -1,0 +1,25 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.menu_character",
+  "ui": {
+    "0_0": "[0, 0]",
+    "antialiasing": "Antialiasing",
+    "controls_help": "Flechas - Cambiar desplazamiento (mantén Shift para velocidad x10)\n\t\t\t\nEspacio - Reproducir la animación \"Start Press\" (tipo de personaje Boyfriend)",
+    "flip_x": "Voltear X",
+    "idle_animation_on_the_xml": "Animación idle en el archivo .XML:",
+    "image_file_name": "Archivo de imagen:",
+    "load_character": "Cargar personaje",
+    "reload_char": "Recargar personaje",
+    "save_character": "Guardar personaje",
+    "scale": "Escala:",
+    "start_press_animation_on_the_xml": "Animación Start Press en el archivo .XML:"
+  },
+  "presence": {
+    "title": "Editor de personajes del menú",
+    "editing": "Edición: {1}"
+  },
+  "tabs": {
+    "character": "Personaje",
+    "character_type": "Tipo de personaje"
+  }
+}

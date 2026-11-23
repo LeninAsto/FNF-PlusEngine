@@ -33,12 +33,33 @@ class Achievements
 	public static function init()
 	{
 		createAchievement('friday_night_play', {name: "Freaky on a Friday Night", description: "Play on a Friday... Night.", hidden: true});
+		#if BASE_GAME_FILES
+		createAchievement('week1_nomiss', {name: "She Calls Me Daddy Too", description: "Beat Week 1 on Hard with no Misses."});
+		createAchievement('week2_nomiss', {name: "No More Tricks", description: "Beat Week 2 on Hard with no Misses."});
+		createAchievement('week3_nomiss', {name: "Call Me The Hitman", description: "Beat Week 3 on Hard with no Misses."});
+		createAchievement('week4_nomiss', {name: "Lady Killer", description: "Beat Week 4 on Hard with no Misses."});
+		createAchievement('week5_nomiss', {name: "Missless Christmas", description: "Beat Week 5 on Hard with no Misses."});
+		createAchievement('week6_nomiss', {name: "Highscore!!", description: "Beat Week 6 on Hard with no Misses."});
+		createAchievement('week7_nomiss', {name: "God Effing Damn It!", description: "Beat Week 7 on Hard with no Misses."});
+		createAchievement('weekend1_nomiss', {name: "Just a Friendly Sparring", description: "Beat Weekend 1 on Hard with no Misses."});
+		#end
 		createAchievement('ur_bad', {name: "What a Funkin' Disaster!", description: "Complete a Song with a rating lower than 20%."});
 		createAchievement('ur_good', {name: "Perfectionist", description: "Complete a Song with a rating of 100%."});
+		#if BASE_GAME_FILES
+		createAchievement('roadkill_enthusiast', {
+			name: "Roadkill Enthusiast",
+			description: "Watch the Henchmen die 50 times.",
+			maxScore: 50,
+			maxDecimals: 0
+		});
+		#end
 		createAchievement('oversinging', {name: "Oversinging Much...?", description: "Sing for 10 seconds without going back to Idle."});
 		createAchievement('hype', {name: "Hyperactive", description: "Finish a Song without going back to Idle."});
 		createAchievement('two_keys', {name: "Just the Two of Us", description: "Finish a Song pressing only two keys."});
 		createAchievement('toastie', {name: "Toaster Gamer", description: "Have you tried to run the game on a toaster?"});
+		#if BASE_GAME_FILES
+		createAchievement('debugger', {name: "Debugger", description: "Beat the \"Test\" Stage from the Chart Editor.", hidden: true});
+		#end
 		#if (TITLE_SCREEN_EASTER_EGG || PSYCH_WATERMARKS)
 		createAchievement('pessy_easter_egg', {name: "Engine Gal Pal", description: "Teehee, you found me~!", hidden: true});
 		#end
@@ -253,8 +274,9 @@ class Achievements
 						var achieve:Dynamic = retVal[i];
 						if (achieve == null)
 						{
-							var errorTitle = 'Mod name: ' + Mods.currentModDirectory != null ? Mods.currentModDirectory : "None";
-							var errorMsg = 'Achievement #${i + 1} is invalid.';
+							var modName:String = Mods.currentModDirectory != null ? Mods.currentModDirectory : Language.getPhrase('errors.popups.common.none', 'None');
+							var errorTitle = Language.getPhrase('errors.popups.achievements.mod_title', 'Mod name: {1}', [modName]);
+							var errorMsg = Language.getPhrase('errors.popups.achievements.invalid_entry', 'Achievement #{1} is invalid.', [i + 1]);
 							CoolUtil.showPopUp(errorMsg, errorTitle);
 							continue;
 						}
@@ -262,8 +284,9 @@ class Achievements
 						var key:String = achieve.save;
 						if (key == null || key.trim().length < 1)
 						{
-							var errorTitle = 'Error on Achievement: ' + (achieve.name != null ? achieve.name : achieve.save);
-							var errorMsg = 'Missing valid "save" value.';
+							var errorTitle = Language.getPhrase('errors.popups.achievements.entry_title', 'Error on Achievement: {1}',
+								[achieve.name != null ? achieve.name : achieve.save]);
+							var errorMsg = Language.getPhrase('errors.popups.achievements.missing_save', 'Missing valid "save" value.');
 							CoolUtil.showPopUp(errorMsg, errorTitle);
 							continue;
 						}
@@ -277,8 +300,9 @@ class Achievements
 			}
 			catch (e:Dynamic)
 			{
-				var errorTitle = 'Mod name: ' + Mods.currentModDirectory != null ? Mods.currentModDirectory : "None";
-				var errorMsg = 'Error loading achievements.json: $e';
+				var modName:String = Mods.currentModDirectory != null ? Mods.currentModDirectory : Language.getPhrase('errors.popups.common.none', 'None');
+				var errorTitle = Language.getPhrase('errors.popups.achievements.mod_title', 'Mod name: {1}', [modName]);
+				var errorMsg = Language.getPhrase('errors.popups.achievements.load_error', 'Error loading achievements.json: {1}', [e]);
 				CoolUtil.showPopUp(errorMsg, errorTitle);
 			}
 		}
@@ -293,7 +317,7 @@ class Achievements
 		{
 			if (!achievements.exists(name))
 			{
-				FunkinLua.luaTrace('getAchievementScore: Couldnt find achievement: $name', false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.getachievementscore_missing_achievement', "getAchievementScore: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
 				return -1;
 			}
 			return getScore(name);
@@ -302,7 +326,7 @@ class Achievements
 		{
 			if (!achievements.exists(name))
 			{
-				FunkinLua.luaTrace('setAchievementScore: Couldnt find achievement: $name', false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.setachievementscore_missing_achievement', "setAchievementScore: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
 				return -1;
 			}
 			return setScore(name, value, saveIfNotUnlocked);
@@ -311,7 +335,7 @@ class Achievements
 		{
 			if (!achievements.exists(name))
 			{
-				FunkinLua.luaTrace('addAchievementScore: Couldnt find achievement: $name', false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.addachievementscore_missing_achievement', "addAchievementScore: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
 				return -1;
 			}
 			return addScore(name, value, saveIfNotUnlocked);
@@ -320,7 +344,7 @@ class Achievements
 		{
 			if (!achievements.exists(name))
 			{
-				FunkinLua.luaTrace('unlockAchievement: Couldnt find achievement: $name', false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.unlockachievement_missing_achievement', "unlockAchievement: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
 				return null;
 			}
 			return unlock(name);
@@ -329,7 +353,7 @@ class Achievements
 		{
 			if (!achievements.exists(name))
 			{
-				FunkinLua.luaTrace('isAchievementUnlocked: Couldnt find achievement: $name', false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_achievements.isachievementunlocked_missing_achievement', "isAchievementUnlocked: Couldnt find achievement: {1}", [name]), false, false, FlxColor.RED);
 				return null;
 			}
 			return isUnlocked(name);

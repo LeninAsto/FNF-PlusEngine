@@ -1,0 +1,17 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.outdated",
+  "title": "¡Actualización disponible!",
+  "version": "Versión actual: {1} => Nueva versión: {2}",
+  "loading_changelog": "Cargando registro de cambios...",
+  "controls": "Presione ENTER para actualizar a la última versión\nPresione ESCAPE si está en la versión de motor correcta\nPuede desactivar esta advertencia en el menú de opciones.",
+  "controls_mobile": "Presione A para actualizar a la última versión\nPresione B si está en la versión de motor correcta\nPuede desactivar esta advertencia en el menú de opciones.",
+  "no_changelog": "No hay registro de cambios disponible",
+  "changelog_error": "Error al cargar el registro de cambios: {1}",
+  "changelog_title": "Qué hay de nuevo:\n{1}",
+  "network": {
+    "checking": "Comprobando el registro de cambios",
+    "retrieved": "Recuperado",
+    "no_connection": "Sin conexión"
+  }
+}

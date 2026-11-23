@@ -1,0 +1,25 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.menu_character",
+  "ui": {
+    "0_0": "[0, 0]",
+    "antialiasing": "안티앨리어싱",
+    "controls_help": "화살표 키 - 변경 오프셋 (속도가 10x를 유지)\n\t\t\t\nSpace - \"Start Press\" 애니메이션을 재생 (Boyfriend 캐릭터 타입)",
+    "flip_x": "좌우 반전",
+    "idle_animation_on_the_xml": ".XML에서 비동기 애니메이션:",
+    "image_file_name": "이미지 파일 이름:",
+    "load_character": "캐릭터 불러오기",
+    "reload_char": "캐릭터 다시 불러오기",
+    "save_character": "캐릭터 저장",
+    "scale": "규모:",
+    "start_press_animation_on_the_xml": ".XML에서 애니메이션을 누르기 시작"
+  },
+  "presence": {
+    "title": "메뉴 캐릭터 편집기",
+    "editing": "편집: {1}"
+  },
+  "tabs": {
+    "character": "성격",
+    "character_type": "캐릭터 타입"
+  }
+}

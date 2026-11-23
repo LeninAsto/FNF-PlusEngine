@@ -1,0 +1,25 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.menu_character",
+  "ui": {
+    "0_0": "[0, 0]",
+    "antialiasing": "アンチエイリアス",
+    "controls_help": "矢印キー - オフセットの変更 (シフトを押し続けると 10 倍速になります)\n\t\t\t\nスペース - 「スタート プレス」アニメーションを再生します ( Boyfriend 文字タイプ)",
+    "flip_x": "フリップX",
+    "idle_animation_on_the_xml": ".XML 上のアイドル アニメーション:",
+    "image_file_name": "画像ファイル名：",
+    "load_character": "キャラクターを読み込み",
+    "reload_char": "キャラクターを再読み込み",
+    "save_character": "キャラクターを保存",
+    "scale": "規模：",
+    "start_press_animation_on_the_xml": ".XML 上の Start Press アニメーション:"
+  },
+  "presence": {
+    "title": "メニューキャラクターエディター",
+    "editing": "編集: {1}"
+  },
+  "tabs": {
+    "character": "キャラクター",
+    "character_type": "文字の種類"
+  }
+}

@@ -60,12 +60,17 @@ class ClassResolver
 		'CustomFadeTransition' => 'backend.CustomFadeTransition',
 		'FlxGUtils' => 'backend.FlxGUtils',
 		'ALSoftConfig' => 'backend.ALSoftConfig',
+		// Compatibility facade: old Lua/HScript HUDs use Main.fpsVar. Keep the
+		// actual boot class blocked while exposing only its safe FPS properties.
+		'Main' => 'psychlua.backend.LegacyMain',
 		'CrashHandler' => 'backend.CrashHandler',
 		'InputFormatter' => 'backend.InputFormatter',
 		'NoteTypesConfig' => 'backend.NoteTypesConfig',
 		'PlayState' => 'states.PlayState',
 		'MainMenuState' => 'states.MainMenuState',
+		'MainMenuStatePlus' => 'states.plus.MainMenuStatePlus',
 		'FreeplayState' => 'states.FreeplayState',
+		'FreeplayStatePlus' => 'states.plus.FreeplayStatePlus',
 		'StoryMenuState' => 'states.StoryMenuState',
 		'TitleState' => 'states.TitleState',
 		'LoadingState' => 'states.LoadingState',
@@ -334,7 +339,7 @@ class ClassResolver
 
 		#if LUA_ALLOWED
 		if (FunkinLua.getBool('luaDebugMode') && FunkinLua.getBool('luaDeprecatedWarnings'))
-			FunkinLua.luaTrace('Legacy compatibility: "$oldApi" redirects to "$newApi". Use the exact Psych 1.0+ API/path or this mod may fail on vanilla Psych.',
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.backend_classresolver.legacy_redirect', "Legacy compatibility: \"{1}\" redirects to \"{2}\". Use the exact Psych 1.0+ API/path or this mod may fail on vanilla Psych.", [oldApi, newApi]),
 				false,
 				true, flixel.util.FlxColor.YELLOW);
 		#elseif debug

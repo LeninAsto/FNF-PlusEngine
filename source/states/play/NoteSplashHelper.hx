@@ -20,10 +20,11 @@ class NoteSplashHelper
 		if (!ClientPrefs.data.hideSustainSplash && !ClientPrefs.data.lowQuality)
 		{
 			SustainSplash.startCrochet = Conductor.stepCrochet;
-			SustainSplash.frameRate = Math.floor(24 / 100 * saneBpm(PlayState.SONG != null ? PlayState.SONG.bpm : Conductor.bpm));
+			SustainSplash.frameRate = Std.int(Math.max(1, Math.floor(24 / 100 * saneBpm(PlayState.SONG != null ? PlayState.SONG.bpm : Conductor.bpm))));
 			var sus = new SustainSplash();
 			sus.alpha = 0.000001;
 			state.grpHoldSplashes.add(sus);
+			sus.kill();
 		}
 	}
 
@@ -32,7 +33,7 @@ class NoteSplashHelper
 		if (state == null || note == null)
 			return;
 
-		var strum:StrumNote = state.playerStrums.members[note.noteData];
+		var strum:StrumNote = state.getStrumForNote(note);
 		if (strum != null)
 			spawn(state, strum.x, strum.y, note.noteData, note, strum);
 	}

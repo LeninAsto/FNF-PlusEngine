@@ -1,0 +1,10 @@
+{
+  "$schema": 1,
+  "$namespace": "states.story_menu",
+  "presence": "在選單中",
+  "score": "週成績: {1}",
+  "errors": {
+    "no_weeks": "沒有增加故事模式的星期\n\n請按一下 {1} 進入週編輯選單.\n請按一下 {2} 返回主選單.",
+    "no_visible_weeks": "沒有可見的星期可供故事模式.\n\n請按一下 {1} 返回主選單."
+  }
+}

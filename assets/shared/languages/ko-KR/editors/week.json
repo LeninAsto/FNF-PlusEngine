@@ -1,0 +1,36 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.week",
+  "ui": {
+    "background_asset": "배경 자산:",
+    "characters": "캐릭터:",
+    "copy_color": "복사 색상",
+    "default_difficulties_help": "기본 문제 는 \"단순, 정상, 어려운 것\"입니다\n인용도 없이",
+    "difficulties": "어려움:",
+    "display_name": "표시 이름:",
+    "freeplay": "Freeplay",
+    "hidden_until_unlocked": "잠자리 풀기 전까지 숨겨져 있다",
+    "hide_week_from_freeplay": "숨기기 주 Freeplay?",
+    "hide_week_from_story_mode": "스토리 모드에서 숨기기 주?",
+    "load_week": "주차 불러오기",
+    "paste_color": "페이스트 색상",
+    "save_week": "주차 저장",
+    "selected_background_color_r_g_b": "선택된 배경 색상 R/G/B:",
+    "selected_icon": "선택된 아이콘:",
+    "songs": "노래:",
+    "story_mode": "스토리 모드",
+    "week_file": "주 파일:",
+    "unlock_week_file": "주 주 파일 이름\n잠금을 풀기 위해 완료:",
+    "week_name_for_reset_score_menu": "주 이름 (부턴 설정 점수 메뉴):",
+    "week_starts_locked": "주 시작  잠금"
+  },
+  "presence": {
+    "title": "주간 편집자",
+    "editing": "편집: {1}"
+  },
+  "tabs": {
+    "freeplay": "Freeplay",
+    "other": "기타",
+    "week": "주"
+  }
+}

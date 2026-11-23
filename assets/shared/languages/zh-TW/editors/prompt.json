@@ -1,0 +1,10 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.prompt",
+  "unsaved": "沒有任何預期的進展,\n你真的想離開嗎?",
+  "actions": {
+    "exit": "出口",
+    "ok": "沒有問題.",
+    "cancel": "取消"
+  }
+}

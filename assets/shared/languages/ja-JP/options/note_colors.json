@@ -1,0 +1,15 @@
+{
+  "$schema": 1,
+  "$namespace": "options.note_colors",
+  "reset_tip": "押す {1} 選択したメモ部分をリセットする.",
+  "full_reset_tip": "待って {1} + 押す RESET 選択したメモを完全にリセットするキー.",
+  "shift": "Shift",
+  "press": "押す",
+  "ctrl": "Ctrl",
+  "left_shoulder": "左肩ボタン",
+  "mode": "カラーモード: {1}",
+  "modes": {
+    "classic": "クラシック H/S/B",
+    "rgb": "RGB"
+  }
+}

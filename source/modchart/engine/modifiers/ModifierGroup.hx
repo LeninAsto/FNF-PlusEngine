@@ -64,6 +64,10 @@ final class ModifierGroup {
 	}
 
 	@:noCompletion private var __modifierRegistrery:StringMap<Class<Modifier>> = new StringMap();
+	@:noCompletion private var __loadingModifiers:StringMap<Bool> = new StringMap();
+	static final __TRANSFORM_LANE_VALUE:EReg = ~/^(x|y|z|transformx|transformy|transformz|movex|movey|movez)[0-9]+$/;
+	static final __COLUMN_ROTATE_VALUE:EReg = ~/^[0-9]+rotate[xyz]$/;
+	static final __REVERSE_LANE_VALUE:EReg = ~/^(reverse|xmod|cmod|mmod)[0-9]+$/;
 
 	/** Pre-allocated args struct to avoid per-call heap allocation in getPath(). */
 	@:noCompletion private var __cachedArgs:ModifierParameters;
@@ -76,7 +80,7 @@ final class ModifierGroup {
 	@:noCompletion private var __activeFrame:Int = -1;
 	@:noCompletion private var __activeDirty:Bool = true;
 	@:noCompletion private var __activeByMode:Array<Array<Array<Modifier>>> = [];
-	static final __MODE_VALUES:Array<Int> = [1, 3, 5, 9, 15];
+	static final __MODE_VALUES:Array<Int> = [1, 3, 5, 9, 13, 15];
 
 	@:noCompletion private var __sortedModifiers:Vector<Modifier> = new Vector<Modifier>(32);
 	@:noCompletion private var __modifierCount:Int = 0;
@@ -154,8 +158,17 @@ final class ModifierGroup {
 		visuals.angleX = 0;
 		visuals.angleY = 0;
 		visuals.angleZ = 0;
+		visuals.fieldAngleX = 0;
+		visuals.fieldAngleY = 0;
+		visuals.fieldAngleZ = 0;
 		visuals.skewX = 0;
 		visuals.skewY = 0;
+		visuals.holdDirection = 0;
+		visuals.holdAngle = 0;
+		visuals.holdWidth = 0;
+		visuals.holdSection = 0;
+		visuals.planeXX = visuals.planeYY = 1;
+		visuals.planeXY = visuals.planeXZ = visuals.planeYX = visuals.planeYZ = 0;
 
 		if (!allowVis && !allowPos) {
 			outPos.setTo(pos.x, pos.y, pos.z);
@@ -180,6 +193,9 @@ final class ModifierGroup {
 		args.hitTime = hitTime;
 		args.distance = distance;
 		args.sourceTime = data.sourceTime;
+		args.strumTime = data.strumTime != null ? data.strumTime : data.hitTime;
+		args.sampleTime = (data.sampleTime != null ? data.sampleTime : data.hitTime) + posDiff;
+		args.isPath = data.isPath;
 		args.lane = data.lane;
 		args.player = data.player;
 		args.isTapArrow = data.isTapArrow;
@@ -192,6 +208,9 @@ final class ModifierGroup {
 		straightArgs.hitTime = data.sourceTime;
 		straightArgs.distance = Math.max(0, data.sourceTime - songPos);
 		straightArgs.sourceTime = data.sourceTime;
+		straightArgs.strumTime = args.strumTime;
+		straightArgs.sampleTime = data.sourceTime;
+		straightArgs.isPath = data.isPath;
 		straightArgs.lane = data.lane;
 		straightArgs.player = data.player;
 		straightArgs.isTapArrow = data.isTapArrow;
@@ -239,7 +258,7 @@ final class ModifierGroup {
 		__activeFrame = frame;
 		__activeDirty = false;
 		while (__activeByMode.length < players)
-			__activeByMode.push([[], [], [], [], []]);
+			__activeByMode.push([[], [], [], [], [], []]);
 		for (player in 0...players) {
 			final modes = __activeByMode[player];
 			for (active in modes) active.resize(0);
@@ -260,25 +279,36 @@ final class ModifierGroup {
 			case 3: 1;
 			case 5: 2;
 			case 9: 3;
-			default: 4;
+			case 13: 4;
+			default: 5;
 		}
 	}
 
 	public inline function addScriptedModifier(name:String, instance:Modifier)
 		__addModifier(name, instance);
 
-	public inline function addModifier(name:String) {
+	public function addModifier(name:String) {
 		var lowerName = __normalizeModifierName(name);
-		if (modifiers.exists(lowerName))
+		if (modifiers.exists(lowerName) || __loadingModifiers.exists(lowerName))
 			return;
 
 		var modifierClass:Null<Class<Modifier>> = __modifierRegistrery.get(lowerName);
 		if (modifierClass == null) {
-			trace('$name modifier was not found !');
-
+			if (!__ensureModifierForValue(name))
+				trace('$name modifier was not found !');
 			return;
 		}
-		var newModifier = Type.createInstance(modifierClass, [playfield]);
+
+		// Constructors may assign defaults to their own submods. Mark the parent as
+		// loading so setPercent() cannot recursively instantiate it again.
+		__loadingModifiers.set(lowerName, true);
+		var newModifier:Modifier;
+		try newModifier = Type.createInstance(modifierClass, [playfield])
+		catch (error:Dynamic) {
+			__loadingModifiers.remove(lowerName);
+			throw error;
+		}
+		__loadingModifiers.remove(lowerName);
 		__addModifier(lowerName, newModifier);
 	}
 
@@ -286,11 +316,127 @@ final class ModifierGroup {
 		final lowerName = name.toLowerCase();
 		return switch (lowerName) {
 			case 'fieldrotate': 'field';
+			case 'notex' | 'notey' | 'notez' | 'noteanglex' | 'noteangley' | 'noteanglez'
+				| 'notescale' | 'notescalex' | 'notescaley'
+				| 'holdx' | 'holdy' | 'holdz' | 'holdanglex' | 'holdangley' | 'holdanglez'
+				| 'holdscale' | 'holdscalex' | 'holdscaley'
+				| 'receptorx' | 'receptory' | 'receptorz' | 'receptoranglex' | 'receptorangley' | 'receptoranglez'
+				| 'receptorscale' | 'receptorscalex' | 'receptorscaley': 'objecttransform';
+			case 'swayx' | 'swayy' | 'swayz': 'sway';
+			case 'distancescalex' | 'distancescaley': 'distancescale';
+			case 'shrinktomult' | 'shrinktolinear': 'shrink';
+			case 'pulseinner' | 'pulseouter': 'pulse';
+			case 'tanexpand': 'expand';
+			case 'digitaly' | 'digitalz' | 'tandigital' | 'tandigitaly' | 'tandigitalz': 'digital';
+			case 'vibratex' | 'vibratey' | 'vibratez': 'vibrate';
+			case 'cosecant': 'tangent';
+			case 'snapx' | 'snapy' | 'snapz': 'snap';
+			case 'spiralx' | 'spiraly' | 'spiralz': 'spiralaxis';
+			case 'columnrotater' | 'columnrotatex' | 'columnrotatey' | 'columnrotatez': 'columnrotate';
+			case 'incoming' | 'space' | 'hallway' | 'distant' | 'tilt' | 'perspectiveskew': 'perspective';
+			case 'drunktan' | 'tipsytan' | 'bumpytan': 'tangent';
 			default: lowerName;
 		}
 	}
 
+	/** Ensures the compiled modifier that consumes a value/submod is installed. */
+	function __ensureModifierForValue(name:String):Bool {
+		final lowerName = name.toLowerCase();
+		final normalized = __normalizeModifierName(lowerName);
+		if (modifiers.exists(normalized) || __loadingModifiers.exists(normalized))
+			return true;
+		if (__modifierRegistrery.exists(normalized)) {
+			addModifier(normalized);
+			// `mini` drives both Scale's per-lane sizing and Zoom's field sizing.
+			if (lowerName == 'mini') addModifier('scale');
+			return true;
+		}
+
+		var parent:Null<String> = switch (lowerName) {
+			case 'flip': 'invert';
+			case 'brake' | 'wave' | 'wavemult' | 'waveperiod': 'boost';
+			case 'dark' | 'alpha' | 'sudden' | 'suddenstart' | 'suddenend' | 'suddenglow' | 'suddenoffset'
+				| 'hidden' | 'hiddenstart' | 'hiddenend' | 'hiddenglow' | 'hiddenoffset'
+				| 'notealpha' | 'receptoralpha' | 'holdalpha' | 'blink' | 'blinkspeed' | 'blinkoffset'
+				| 'blinkduty' | 'randomvanish' | 'randomvanishstart' | 'randomvanishend': 'stealth';
+			case 'split' | 'alternate' | 'cross' | 'unboundedreverse' | 'centered' | 'xmod' | 'cmod' | 'mmod'
+				| 'randomspeed' | 'spawntime' | 'curvedscrollperiod' | 'boomerangheight': 'reverse';
+			case 'dizzy' | 'dizzyspeed' | 'roll' | 'rollspeed' | 'twirl' | 'twirlspeed': 'confusion';
+			case 'mini':
+				addModifier('zoom');
+				'scale';
+			case 'localmini' | 'localzoom': 'zoom';
+			case 'spiraldist': 'spiral';
+			default:
+				if (StringTools.startsWith(lowerName, 'drunktan') || StringTools.startsWith(lowerName, 'tipsytan')
+					|| StringTools.startsWith(lowerName, 'bumpytan') || lowerName == 'cosecant'
+					|| lowerName == 'tangentlimit') 'tangent';
+				else if (StringTools.startsWith(lowerName, 'beat')) 'beat';
+				else if (StringTools.startsWith(lowerName, 'boost') || StringTools.startsWith(lowerName, 'brake')
+					|| StringTools.startsWith(lowerName, 'wave')) 'boost';
+				else if (StringTools.startsWith(lowerName, 'drunk')) 'drunk';
+				else if (StringTools.startsWith(lowerName, 'tipsy')) 'tipsy';
+				else if (StringTools.startsWith(lowerName, 'bumpyangle') || StringTools.startsWith(lowerName, 'bumpy')) 'bumpy';
+				else if (StringTools.startsWith(lowerName, 'bounce')) 'bounce';
+				else if (StringTools.startsWith(lowerName, 'asymptote')) 'asymptote';
+				else if (StringTools.startsWith(lowerName, 'carousel')) 'carousel';
+				else if (StringTools.startsWith(lowerName, 'distancescale')) 'distancescale';
+				else if (StringTools.startsWith(lowerName, 'fieldrotate') || StringTools.startsWith(lowerName, 'fieldorigin')
+					|| lowerName == 'fieldx' || lowerName == 'fieldy' || lowerName == 'fieldz' || lowerName == 'fielddepth'
+					|| lowerName == 'fieldpitch' || lowerName == 'fieldyaw' || lowerName == 'fieldroll') 'field';
+				else if (StringTools.startsWith(lowerName, 'path')) 'path';
+				else if (StringTools.startsWith(lowerName, 'spline')) 'modspline';
+				else if (StringTools.startsWith(lowerName, 'pulse')) 'pulse';
+				else if (StringTools.startsWith(lowerName, 'vibrate')) 'vibrate';
+				else if (StringTools.startsWith(lowerName, 'sway')) 'sway';
+				else if (StringTools.startsWith(lowerName, 'sawtooth')) 'sawtooth';
+				else if (StringTools.startsWith(lowerName, 'square')) 'square';
+				else if (StringTools.startsWith(lowerName, 'zigzag')) 'zigzag';
+				else if (StringTools.startsWith(lowerName, 'tornado')) 'tornado';
+				else if (StringTools.startsWith(lowerName, 'snap')) 'snap';
+				else if (StringTools.startsWith(lowerName, 'spiralx') || StringTools.startsWith(lowerName, 'spiraly')
+					|| StringTools.startsWith(lowerName, 'spiralz')) 'spiralaxis';
+				else if (StringTools.startsWith(lowerName, 'scale') || StringTools.startsWith(lowerName, 'tiny')
+					|| StringTools.startsWith(lowerName, 'mini') || StringTools.startsWith(lowerName, 'squish')
+					|| StringTools.startsWith(lowerName, 'stretch')) 'scale';
+				else if (StringTools.startsWith(lowerName, 'confusion') || StringTools.startsWith(lowerName, 'angle')) 'confusion';
+				else if (StringTools.startsWith(lowerName, 'invert') || StringTools.startsWith(lowerName, 'flip')) 'invert';
+				else if (StringTools.startsWith(lowerName, 'shrinkto')) 'shrink';
+				else if (StringTools.startsWith(lowerName, 'digital') || StringTools.startsWith(lowerName, 'tandigital')) 'digital';
+				else if (StringTools.startsWith(lowerName, 'noteskew') || StringTools.startsWith(lowerName, 'fieldskew')) 'skew';
+				else if (StringTools.startsWith(lowerName, 'perspective')) 'perspective';
+				else if (StringTools.startsWith(lowerName, 'schmovinarrowshape')) 'schmovinarrowshape';
+				else if (StringTools.startsWith(lowerName, 'stealth') || StringTools.startsWith(lowerName, 'dark')
+					|| StringTools.startsWith(lowerName, 'sudden') || StringTools.startsWith(lowerName, 'hidden')
+					|| StringTools.startsWith(lowerName, 'notealpha') || StringTools.startsWith(lowerName, 'receptoralpha')
+					|| StringTools.startsWith(lowerName, 'holdalpha') || StringTools.startsWith(lowerName, 'blink')
+					|| StringTools.startsWith(lowerName, 'randomvanish')) 'stealth';
+				else if (StringTools.startsWith(lowerName, 'scrollangle') || StringTools.startsWith(lowerName, 'curvedscroll')
+					|| StringTools.startsWith(lowerName, 'boomerang') || StringTools.startsWith(lowerName, 'tanexpand')
+					|| StringTools.startsWith(lowerName, 'expand') || __REVERSE_LANE_VALUE.match(lowerName)) 'reverse';
+				else if (StringTools.startsWith(lowerName, 'parabola')) 'parabola';
+				else if (StringTools.startsWith(lowerName, 'cubic')) 'cubic';
+				else if (StringTools.startsWith(lowerName, 'attenuate')) 'attenuate';
+				else if (StringTools.startsWith(lowerName, 'rotate')) 'rotate';
+				else if (StringTools.startsWith(lowerName, 'centerrotate')) 'centerrotate';
+				else if (StringTools.startsWith(lowerName, 'localrotate')) 'localrotate';
+				else if (__COLUMN_ROTATE_VALUE.match(lowerName)) 'columnrotate';
+				else if (__TRANSFORM_LANE_VALUE.match(lowerName) || lowerName == 'x' || lowerName == 'y' || lowerName == 'z'
+					|| lowerName == 'transformx' || lowerName == 'transformy' || lowerName == 'transformz'
+					|| lowerName == 'movex' || lowerName == 'movey' || lowerName == 'movez'
+					|| lowerName == 'xoffset' || lowerName == 'yoffset' || lowerName == 'zoffset') 'transform';
+				else null;
+		}
+
+		if (parent == null)
+			return false;
+		addModifier(parent);
+		return true;
+	}
+
 	public inline function setPercent(name:String, value:Float, player:Int = -1) {
+		playfield.state.clearPathCache();
+		__ensureModifierForValue(name);
 		__activeDirty = true;
 		final id = percents.getID(name);
 		final lowerName = name.toLowerCase();
@@ -340,6 +486,7 @@ final class ModifierGroup {
 	public inline function getRawValue(name:String, player:Int) return getPercent(name, player);
 
 	public function resetPercents(player:Int = -1):Void {
+		playfield.state.clearPathCache();
 		__activeDirty = true;
 		for (i in 0...__knownPercentCount) {
 			final id = __knownPercentIDs[i];
@@ -466,8 +613,47 @@ final class ModifierGroup {
 
 	function __getDefaultPercent(name:String):Float {
 		return switch (name) {
-			case 'xmod' | 'scale' | 'scalex' | 'scaley' | 'alpha' | 'wavemult':
+			case 'xmod' | 'scale' | 'scalex' | 'scaley' | 'alpha' | 'notealpha' | 'receptoralpha' | 'holdalpha' | 'wavemult'
+				| 'notescale' | 'notescalex' | 'notescaley' | 'holdscale' | 'holdscalex' | 'holdscaley'
+				| 'receptorscale' | 'receptorscalex' | 'receptorscaley' | 'perspectivestrength'
+				| 'swayspeed' | 'vibratespeed':
 				1;
+			case 'cmod' | 'mmod':
+				-1;
+			case 'blinkspeed':
+				10;
+			case 'blinkduty':
+				0.5;
+			case 'randomvanishstart':
+				80;
+			case 'randomvanishend':
+				160;
+			case 'expandperiod' | 'tanexpandperiod':
+				3;
+			case 'expandmin' | 'tanexpandmin' | 'pulsemin':
+				0.75;
+			case 'expandmax' | 'tanexpandmax':
+				1.75;
+			case 'pulsemax':
+				1.25;
+			case 'pulsespeed':
+				1;
+			case 'swayperiod' | 'tangentlimit' | 'distancescalemax':
+				4;
+			case 'distancescalerange':
+				640;
+			case 'distancescalemin':
+				0.05;
+			case 'shrinktomin':
+				0.01;
+			case 'shrinktomax':
+				8;
+			case 'vibratefrequency':
+				30;
+			case 'boomerangheight':
+				1;
+			case 'snapxinterval' | 'snapyinterval' | 'snapzinterval':
+				64;
 			case 'beatspeed' | 'beatxspeed' | 'beatyspeed' | 'beatzspeed':
 				1;
 			case 'bumpymult' | 'bumpyxmult' | 'bumpyymult' | 'bumpyzmult'
@@ -480,12 +666,13 @@ final class ModifierGroup {
 			case 'suddenglow' | 'hiddenglow':
 				1;
 			case 'spawntime':
-				2000;
+				Config.DEFAULT_SPAWN_TIME_MS;
 			case 'carouselstart' | 'carouselend':
 				Math.NaN;
 			default:
-				if (__isXmodLane(name) || __isScaleLane(name) || __isAlphaLane(name) || __isBumpyMultLane(name))
-					1;
+				if (__isXmodLane(name) || __isScaleLane(name) || __isAlphaLane(name) || __isDirectAlphaLane(name)
+					|| __isNegativeSpeedLane(name) || __isBumpyMultLane(name))
+					__isNegativeSpeedLane(name) ? -1 : 1;
 				else
 					0;
 		}
@@ -493,6 +680,9 @@ final class ModifierGroup {
 
 	inline function __isXmodLane(name:String):Bool
 		return name.length > 4 && name.indexOf('xmod') == 0 && __isUnsignedInt(name.substr(4));
+
+	inline function __isNegativeSpeedLane(name:String):Bool
+		return name.length > 4 && (name.indexOf('cmod') == 0 || name.indexOf('mmod') == 0) && __isUnsignedInt(name.substr(4));
 
 	function __isScaleLane(name:String):Bool {
 		if (name.indexOf('scale') != 0)
@@ -508,6 +698,13 @@ final class ModifierGroup {
 
 	inline function __isAlphaLane(name:String):Bool
 		return name.length > 5 && name.indexOf('alpha') == 0 && __isUnsignedInt(name.substr(5));
+
+	function __isDirectAlphaLane(name:String):Bool {
+		for (prefix in ['notealpha', 'receptoralpha', 'holdalpha'])
+			if (name.length > prefix.length && name.indexOf(prefix) == 0 && __isUnsignedInt(name.substr(prefix.length)))
+				return true;
+		return false;
+	}
 
 	function __isBumpyMultLane(name:String):Bool {
 		if (name.indexOf('bumpy') != 0 || name.length <= 9)

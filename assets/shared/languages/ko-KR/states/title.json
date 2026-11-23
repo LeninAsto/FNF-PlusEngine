@@ -1,0 +1,17 @@
+{
+  "$schema": 1,
+  "$namespace": "states.title",
+  "intro": {
+    "psych_engine_by": "Psych Engine 에 의해",
+    "psych_continued_by": "Psych 계속된",
+    "plus_engine_by": "Plus Engine 에 의해",
+    "not_associated": "연관되지 않은",
+    "with": "과",
+    "newgrounds": "newgrounds",
+    "friday": "Friday",
+    "night": "Night",
+    "funkin": "Funkin",
+    "fallback_first": "Psych Engine",
+    "fallback_second": "Plus Engine"
+  }
+}

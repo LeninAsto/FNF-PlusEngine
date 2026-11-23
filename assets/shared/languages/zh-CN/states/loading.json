@@ -1,0 +1,20 @@
+{
+  "$schema": 1,
+  "$namespace": "states.loading",
+  "title": "现在加载{1}",
+  "cancelling": "取消加载...",
+  "timeout": "装载时间太长了...\n打压 ESC 返回",
+  "progress": "{1}%  ({2}/{3})",
+  "progress_item": "{1}  {2}",
+  "items": {
+    "atlas": "亚特拉斯 {1}",
+    "preparing_audio": "编制音频播放",
+    "preparing_song": "编制歌曲数据",
+    "compiling_chart": "编译谱面数据",
+    "finishing": "完成",
+    "sound": "声音 {1}",
+    "music": "音乐 {1}",
+    "song": "的歌曲 {1}",
+    "image": "图片 {1}"
+  }
+}

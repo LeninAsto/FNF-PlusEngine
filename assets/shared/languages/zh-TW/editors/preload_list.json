@@ -1,0 +1,14 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.preload_list",
+  "ui": {
+    "high_qual": "高畫質",
+    "load_file": "負載檔案",
+    "load_folder": "載入資料夾",
+    "low_qual": "低畫質",
+    "preload_list": "預載清單",
+    "save": "儲存",
+    "story_mode": "故事模式",
+    "x": "X"
+  }
+}

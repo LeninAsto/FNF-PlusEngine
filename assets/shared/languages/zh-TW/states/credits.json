@@ -1,0 +1,42 @@
+{
+  "$schema": 1,
+  "$namespace": "states.credits",
+  "presence": "在選單中",
+  "sections": {
+    "plus_engine": "Plus Engine 團隊",
+    "mobile": "移動運輸團隊",
+    "psych_engine": "Psych Engine 團隊",
+    "contributors": "引擎的參與者",
+    "funkin": "這裡有許多人.",
+    "psych_discord": "Psych Engine Discord"
+  },
+  "roles": {
+    "lenin_asto": "程式設計者 Plus Engine",
+    "sirthegamercoder": "印尼語翻譯和助手編碼器 Plus Engine",
+    "andres": "建立和擁有使用的多個程式碼, Slushi Engine",
+    "theodev": "主持人,主要編碼器 Funkin Modchart",
+    "autistic_lulu": "Psych Engine 1.0.x 修改和維修",
+    "homuhomu833": "領導人: Psych Engine 及作者 linc_luajit-rewriten",
+    "karim_akra": "沒有任何樓磁碟機代號合此規則 Psych Engine",
+    "moxie": "助手 Psych Engine 移動方式",
+    "shadow_mario": "首席編輯及總監 Psych Engine",
+    "riveren": "主要藝術家/動畫家 Psych Engine",
+    "bb_panzu": "曾是該組織的編輯 Psych Engine",
+    "crowplexus": "Linux 支援, HScript 其他公關",
+    "kamizeta": "沒有任何樓磁碟機代號合您的搜尋 Psych Engine這就是他的吉祥物.",
+    "maxneton": "收納螢幕 復活節蛋藝術家/動畫家",
+    "keoiki": "註釋 Splash 動畫及拉丁字母",
+    "sqirrarng": "崩潰處理程式及\n譜面編輯器波形功能的基礎程式碼",
+    "elitemastereric": "執行時間遮光器支援及其他公關",
+    "majigsaw77": ".MP4 影片載入器圖書館 (hxvlc)",
+    "iflicky": "組成 Psync 和 Tea Time\n還有一些聲音效果",
+    "kadedev": "解決了譜面編輯及其他公關問題",
+    "superpowers04": "LuaJIT 分支",
+    "cheems_and_friends": "創始人 FlxAnimate",
+    "ninjamuffin99": "程式設計者 Friday Night Funkin'",
+    "phantom_arcade": "動畫家 Friday Night Funkin'",
+    "evilsk8r": "藝術家 Friday Night Funkin'",
+    "kawaisprite": "組成者 Friday Night Funkin'"
+  },
+  "psych_discord_join": "加入我們 Psych 這裡是一個很棒的地方."
+}

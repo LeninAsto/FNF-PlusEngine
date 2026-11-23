@@ -1,0 +1,5 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.reset_score",
+  "title": "請重新設定這個分數"
+}

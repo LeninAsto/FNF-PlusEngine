@@ -10,6 +10,7 @@ import objects.MenuCharacter;
 import options.GameplayChangersSubstate;
 import substates.ResetScoreSubState;
 import backend.StageData;
+import mobile.input.TouchScrollHandler;
 #if mobile
 import mobile.backend.MobileScaleMode;
 #end
@@ -42,6 +43,9 @@ class StoryMenuState extends MusicBeatState
 	public var rightArrow:FlxSprite;
 
 	public var loadedWeeks:Array<WeekData> = [];
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
+	static inline final TOUCH_DIFFICULTY_LEFT:Int = -2;
+	static inline final TOUCH_DIFFICULTY_RIGHT:Int = -3;
 
 	inline function safeX(x:Float):Float
 	{
@@ -72,7 +76,7 @@ class StoryMenuState extends MusicBeatState
 
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("In the Menus", null);
+		DiscordClient.changePresence(Language.getPhrase('states.story_menu.presence', 'In the Menus'), null);
 		#end
 
 		final accept:String = (controls.mobileC) ? "A" : "ACCEPT";
@@ -83,17 +87,18 @@ class StoryMenuState extends MusicBeatState
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
 			MusicBeatState.switchState(backend.ScriptableState.tryCreate('ErrorState',
-				new states.ErrorState("NO WEEKS ADDED FOR STORY MODE\n\nPress " + accept + " to go to the Week Editor Menu.\nPress " + reject
-					+ " to return to Main Menu.",
+				new states.ErrorState(Language.getPhrase('states.story_menu.errors.no_weeks',
+					'NO WEEKS ADDED FOR STORY MODE\n\nPress {1} to go to the Week Editor Menu.\nPress {2} to return to Main Menu.', [accept, reject]),
 					function() MusicBeatState.switchState(new states.editors.WeekEditorState()),
-					function() MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new states.MainMenuState())))));
+					function() MusicBeatState.switchState(MainMenuStateSelector.create()))));
 			return;
 		}
 
 		if (curWeek >= WeekData.weeksList.length)
 			curWeek = 0;
 
-		scoreText = new FlxText(safeX(10), 10, 0, Language.getPhrase('week_score', 'WEEK SCORE: {1}', [lerpScore]), 36);
+		scoreText = new FlxText(safeX(10), 10, 0,
+			Language.getPhrase('states.story_menu.score', Language.getPhrase('week_score', 'WEEK SCORE: {1}'), [lerpScore]), 36);
 		scoreText.setFormat(Paths.font("vcr.ttf"), 32);
 
 		txtWeekTitle = new FlxText(safeX(safeWidth() * 0.7), 10, 0, "", 32);
@@ -157,8 +162,9 @@ class StoryMenuState extends MusicBeatState
 			FlxTransitionableState.skipNextTransIn = true;
 			persistentUpdate = false;
 			MusicBeatState.switchState(backend.ScriptableState.tryCreate('ErrorState',
-				new states.ErrorState("NO VISIBLE WEEKS AVAILABLE FOR STORY MODE\n\nPress " + reject + " to return to Main Menu.", null,
-					function() MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new states.MainMenuState())))));
+				new states.ErrorState(Language.getPhrase('states.story_menu.errors.no_visible_weeks',
+					'NO VISIBLE WEEKS AVAILABLE FOR STORY MODE\n\nPress {1} to return to Main Menu.', [reject]), null,
+					function() MusicBeatState.switchState(MainMenuStateSelector.create()))));
 			return;
 		}
 
@@ -221,9 +227,9 @@ class StoryMenuState extends MusicBeatState
 		changeWeek();
 		changeDifficulty();
 
-		addTouchPad('LEFT_FULL', 'A_B_X_Y');
-
 		super.create();
+		addTouchPad('LEFT_FULL', 'A_B_X_Y');
+		addTouchPadCamera();
 	}
 
 	override function closeSubState()
@@ -233,19 +239,19 @@ class StoryMenuState extends MusicBeatState
 		super.closeSubState();
 		removeTouchPad();
 		addTouchPad('LEFT_FULL', 'A_B_X_Y');
+		addTouchPadCamera();
 	}
 
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-
 		if (WeekData.weeksList.length < 1)
 		{
 			if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed) && !movedBack && !selectedWeek)
 			{
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				movedBack = true;
-				MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
+				MusicBeatState.switchState(MainMenuStateSelector.create());
 			}
 			return;
 		}
@@ -256,7 +262,7 @@ class StoryMenuState extends MusicBeatState
 			if (Math.abs(intendedScore - lerpScore) < 10)
 				lerpScore = intendedScore;
 
-			scoreText.text = Language.getPhrase('week_score', 'WEEK SCORE: {1}', [lerpScore]);
+			scoreText.text = Language.getPhrase('states.story_menu.score', Language.getPhrase('week_score', 'WEEK SCORE: {1}'), [lerpScore]);
 		}
 
 		// FlxG.watch.addQuick('font', scoreText.font);
@@ -322,7 +328,7 @@ class StoryMenuState extends MusicBeatState
 		{
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			movedBack = true;
-			MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
+			MusicBeatState.switchState(MainMenuStateSelector.create());
 		}
 
 		var selectedItem:MenuItem = grpWeekText.members[curWeek];
@@ -368,6 +374,9 @@ class StoryMenuState extends MusicBeatState
 			{
 				PlayState.storyPlaylist = songArray;
 				PlayState.isStoryMode = true;
+				// A previous freeplay or week song must not suppress this week's
+				// first legacy cutscene.
+				PlayState.seenCutscene = false;
 				selectedWeek = true;
 
 				var diffic = Difficulty.getFilePath(curDifficulty);
@@ -482,7 +491,8 @@ class StoryMenuState extends MusicBeatState
 		var leWeek:WeekData = loadedWeeks[curWeek];
 		WeekData.setDirectoryFromWeek(leWeek);
 
-		var leName:String = Language.getPhrase('storyname_${leWeek.fileName}', leWeek.storyName);
+		var leName:String = Language.getPhrase('states.story_menu.weeks.${leWeek.fileName}.name',
+			Language.getPhrase('storyname_${leWeek.fileName}', leWeek.storyName));
 		txtWeekTitle.text = leName.toUpperCase();
 		txtWeekTitle.x = safeX(safeWidth() - (txtWeekTitle.width + 10));
 
@@ -535,6 +545,29 @@ class StoryMenuState extends MusicBeatState
 		return (!leWeek.startUnlocked
 			&& leWeek.weekBefore.length > 0
 			&& (!weekCompleted.exists(leWeek.weekBefore) || !weekCompleted.get(leWeek.weekBefore)));
+	}
+
+	function getTouchWeekAt(x:Float, y:Float):Int
+	{
+		if (grpWeekText == null)
+			return TouchScrollHandler.NO_TARGET;
+		for (index => item in grpWeekText.members)
+			if (item != null && x >= 0 && x <= FlxG.width
+				&& y >= item.y - 18 && y <= item.y + Math.max(item.height, 68) + 18)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
+	}
+
+	function getTouchStoryTargetAt(x:Float, y:Float):Int
+	{
+		if (difficultySelectors != null && difficultySelectors.visible)
+		{
+			if (leftArrow != null && x >= leftArrow.x && x <= leftArrow.x + leftArrow.width && y >= leftArrow.y && y <= leftArrow.y + leftArrow.height)
+				return TOUCH_DIFFICULTY_LEFT;
+			if (rightArrow != null && x >= rightArrow.x && x <= rightArrow.x + rightArrow.width && y >= rightArrow.y && y <= rightArrow.y + rightArrow.height)
+				return TOUCH_DIFFICULTY_RIGHT;
+		}
+		return getTouchWeekAt(x, y);
 	}
 
 	function updateText()

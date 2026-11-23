@@ -75,11 +75,13 @@ class VideoSprite extends FlxSpriteGroup
 	}
 
 	var alreadyDestroyed:Bool = false;
+	var finishing:Bool = false;
 
 	override function destroy()
 	{
 		if (alreadyDestroyed)
 			return;
+		alreadyDestroyed = true;
 
 		trace('Video destroyed');
 		if (cover != null)
@@ -100,18 +102,25 @@ class VideoSprite extends FlxSpriteGroup
 				FlxG.state.subState.remove(this);
 		}
 		super.destroy();
-		alreadyDestroyed = true;
 	}
 
 	function finishVideo()
 	{
-		if (!alreadyDestroyed)
-		{
-			if (finishCallback != null)
-				finishCallback();
+		completeVideo(false);
+	}
 
-			destroy();
-		}
+	function completeVideo(skipped:Bool):Void
+	{
+		if (alreadyDestroyed || finishing)
+			return;
+
+		finishing = true;
+		var callback:Void->Void = skipped ? onSkip : finishCallback;
+		finishCallback = null;
+		onSkip = null;
+		if (callback != null)
+			callback();
+		destroy();
 	}
 
 	override function update(elapsed:Float)
@@ -134,10 +143,7 @@ class VideoSprite extends FlxSpriteGroup
 
 			if (holdingTime >= _timeToSkip)
 			{
-				if (onSkip != null)
-					onSkip();
-				finishCallback = null;
-				videoSprite.bitmap.onEndReached.dispatch();
+				completeVideo(true);
 				trace('Skipped video');
 				return;
 			}
@@ -155,15 +161,7 @@ class VideoSprite extends FlxSpriteGroup
 		if (!canSkipFromPause())
 			return false;
 
-		if (onSkip != null)
-			onSkip();
-		finishCallback = null;
-
-		if (videoSprite != null && videoSprite.bitmap != null && videoSprite.bitmap.onEndReached != null)
-			videoSprite.bitmap.onEndReached.dispatch();
-		else
-			destroy();
-
+		completeVideo(true);
 		trace('Skipped video from pause menu');
 		return true;
 	}

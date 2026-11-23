@@ -1,0 +1,26 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.song_checker",
+  "title": "ソングチェッカー",
+  "prefix": {
+    "error": "[エラー]",
+    "warning": "[警告]",
+    "fix": "[修理]"
+  },
+  "more": "...そして {1} もっと",
+  "issues": {
+    "missing_chart": "この難易度の譜面は見つかりません。",
+    "invalid_chart": "譜面は存在しますが、解析できませんでした。",
+    "repaired_song_name": "失われた曲名はそのフォルダーから復元されました.",
+    "missing_notes": "図表にはノート配列がない.",
+    "repaired_events": "欠落しているイベントの配列は空の配列に置き換えられました。",
+    "invalid_bpm": "BPM ゼロより大きい必要があります.",
+    "repaired_speed": "無効なスクロール速度が 1 に戻されました。",
+    "repaired_gf": "欠落していたガールフレンドのキャラクターが「gf」に復元されました。",
+    "missing_inst": "インストゥルメンタルオーディオが欠落しています。",
+    "missing_voices": "音声は有効ですが、デフォルトまたは分割された音声ファイルが見つかりませんでした。",
+    "invalid_section": "セクション {1} ノートリストがない",
+    "invalid_note": "部分の誤ったメモ {1},インデックス {2}.",
+    "invalid_note_values": "セクション {1} 、インデックス {2} の非数値メモ データ。"
+  }
+}

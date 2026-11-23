@@ -1,0 +1,24 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.scripting",
+  "lua": {
+    "load_error_title": "Kesalahan pada skrip Lua!",
+    "load_error_message": "{1}\n\n{2}",
+    "non_function_callback": "ERROR ( {1} ): mencoba memanggil nilai {2}",
+    "callback_error": "KESALAHAN ( {1} ): {2}",
+    "playstate_only": "{1} hanya untuk PlayState dan tidak dapat dijalankan dari host {2} Lua."
+  },
+  "hscript": {
+    "warning": "PERINGATAN: {1}",
+    "null_field": "Referensi nol: mencoba mengakses \" {1} \" pada objek nol",
+    "script_warning": "PERINGATAN ( {1} ): {2}",
+    "unsupported": "HScript tidak didukung pada platform ini!"
+  },
+  "mod_settings": {
+    "title": "Nama mod: {1}",
+    "parse_error": "Terjadi kesalahan: {1}",
+    "file_missing": "getModSetting : {1} tidak dapat ditemukan!",
+    "setting_missing": "getModSetting : \" {1} \" tidak dapat ditemukan di dalam pengaturan {2}!"
+  },
+  "raw_error_with_source": "{1}\n{2}"
+}

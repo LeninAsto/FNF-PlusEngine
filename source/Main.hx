@@ -50,6 +50,7 @@ class Main extends Sprite
 	public static var traceDisplay:TraceDisplay;
 	public static var traceButton:TraceButton;
 	public static var modsButton:ModsButton;
+	public static var debugButtonLayer:Sprite;
 	public static var materialVolumeTray:MaterialVolumeTray;
 
 	public static final platform:String = #if mobile "Phones" #else "PCs" #end;
@@ -68,6 +69,27 @@ class Main extends Sprite
 		// Install the handlers before constructing Main so startup/storage failures
 		// on mobile also reach the recovery screen.
 		backend.CrashHandler.init();
+
+		#if (sys && (debug || NATIVE_BACKEND_TEST))
+		if (Sys.args().indexOf('--native-backend-self-test') != -1)
+		{
+			var exitCode:Int = 0;
+			try
+			{
+				tests.NativeBackendChecks.run();
+				sys.io.File.saveContent('native-backend-checks.txt',
+					'PASS: native batch parity and benchmark.' + tests.NativeBackendChecks.report);
+			}
+			catch (error:Dynamic)
+			{
+				exitCode = 1;
+				sys.io.File.saveContent('native-backend-checks.txt', 'FAIL: ' + error + '\n'
+					+ haxe.CallStack.toString(haxe.CallStack.exceptionStack()));
+			}
+			tests.NativeBackendChecks.exitProcess(exitCode);
+			return;
+		}
+		#end
 
 		#if (cpp && windows)
 		final maxInstanceSlots:Int = ClientPrefs.loadMaxInstanceSlotsEarly();
@@ -109,12 +131,9 @@ class Main extends Sprite
 		#end
 
 		#if VIDEOS_ALLOWED
-		hxvlc.util.Handle.init(#if (hxvlc >= "1.8.0") ['--no-lua'] #end);
+		initHxvlc();
 		#end
 
-		#if LUA_ALLOWED
-		Mods.pushGlobalMods();
-		#end
 		Mods.loadTopMod();
 
 		FlxG.save.bind('funkin', CoolUtil.getSavePath());
@@ -141,7 +160,7 @@ class Main extends Sprite
 			}
 			msgInfo += ' $x';
 			if (PlayState.instance != null)
-				PlayState.instance.addTextToDebug('WARNING: $msgInfo', FlxColor.YELLOW);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.main.warning_value', "WARNING: {1}", [msgInfo]), FlxColor.YELLOW);
 		}
 		Iris.error = function(x, ?pos:haxe.PosInfos)
 		{
@@ -163,7 +182,7 @@ class Main extends Sprite
 			}
 			msgInfo += ' $x';
 			if (PlayState.instance != null)
-				PlayState.instance.addTextToDebug('ERROR: $msgInfo', FlxColor.RED);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.main.error_value', "ERROR: {1}", [msgInfo]), FlxColor.RED);
 		}
 		Iris.fatal = function(x, ?pos:haxe.PosInfos)
 		{
@@ -185,7 +204,7 @@ class Main extends Sprite
 			}
 			msgInfo += ' $x';
 			if (PlayState.instance != null)
-				PlayState.instance.addTextToDebug('FATAL: $msgInfo', 0xFFBB0000);
+				PlayState.instance.addTextToDebug(Language.getPhrase('errors.script_debug.main.fatal_value', "FATAL: {1}", [msgInfo]), 0xFFBB0000);
 		}
 		scripting.ScriptBackend.setup();
 		#end
@@ -199,6 +218,14 @@ class Main extends Sprite
 		FlxG.signals.postGameStart.addOnce(() ->
 		{
 			FlxG.scaleMode = new mobile.backend.MobileScaleMode();
+			positionDebugOverlays();
+		});
+		FlxG.signals.focusGained.add(() ->
+		{
+			// The surface can be recreated after Android returns from background.
+			// Recreate the scale mode after it has settled so Infinity Display never
+			// keeps the invalid dimensions from the paused surface.
+			new FlxTimer().start(0.12, function(_) mobile.backend.MobileScaleMode.refreshAfterFocus());
 		});
 		#end
 
@@ -236,22 +263,20 @@ class Main extends Sprite
 		traceDisplay = new TraceDisplay(10, 100, 0xFFFFFF);
 		addChild(traceDisplay);
 
-		// Agregar los botones de TraceDisplay y Debug para móvil
 		#if mobile
+		debugButtonLayer = new Sprite();
+		Lib.current.stage.addChild(debugButtonLayer);
 		traceButton = new TraceButton();
-		addChild(traceButton);
+		debugButtonLayer.addChild(traceButton);
 		modsButton = new ModsButton();
-		addChild(modsButton);
+		debugButtonLayer.addChild(modsButton);
 		#end
 
 		Lib.current.stage.align = "tl";
 		Lib.current.stage.scaleMode = StageScaleMode.NO_SCALE;
 		if (fpsVar != null)
 		{
-			// Posicionamiento inicial con márgenes constantes
-			var marginX = 10;
-			var marginY = 3;
-			fpsVar.positionFPS(marginX, marginY, 1.0);
+			positionDebugOverlays();
 		}
 
 		#if (linux || mac) // fix the app icon not showing up on the Linux Panel / Mac Dock
@@ -299,32 +324,14 @@ class Main extends Sprite
 
 		// shader coords fix
 		var resizeDebounceTimer:FlxTimer = null;
+		var lastResizeWidth:Int = -1;
+		var lastResizeHeight:Int = -1;
 		function handleGameResized():Void
 		{
-			ClientPrefs.applyFramePacing();
 			backend.RenderInterpolation.syncAllCameras();
 
-			// Only reposition the FPS counter, no scaling.
-			if (fpsVar != null)
-			{
-				var marginX = 10;
-				var marginY = 3;
-				fpsVar.positionFPS(marginX, marginY, 1.0);
-			}
-
-			// Reposition TraceDisplay button.
-			#if mobile
-			if (traceButton != null)
-			{
-				traceButton.updatePosition();
-			}
-			if (modsButton != null)
-			{
-				modsButton.updatePosition();
-			}
-			#end
-
-			// Only reposition the watermark, no scaling.
+			// Reapply the final positions after the window has settled.
+			positionDebugOverlays();
 			positionWatermark();
 
 			if (FlxG.cameras != null)
@@ -342,11 +349,19 @@ class Main extends Sprite
 
 		FlxG.signals.gameResized.add(function(w, h)
 		{
+			if (w == lastResizeWidth && h == lastResizeHeight)
+				return;
+			lastResizeWidth = w;
+			lastResizeHeight = h;
+
+			// Keep lightweight overlays responsive while dragging the border. Camera
+			// interpolation and bitmap-cache invalidation wait until resizing settles.
+			positionDebugOverlays();
+			positionWatermark();
+
 			if (resizeDebounceTimer == null)
-			{
 				resizeDebounceTimer = new FlxTimer();
-			}
-			resizeDebounceTimer.start(0.05, function(_)
+			resizeDebounceTimer.start(0.15, function(_)
 			{
 				handleGameResized();
 			});
@@ -354,6 +369,69 @@ class Main extends Sprite
 
 		setupGame();
 	}
+
+	public static function positionDebugOverlays():Void
+	{
+		var bounds = debug.DebugOverlayLayout.gameBounds();
+
+		if (fpsVar != null)
+			fpsVar.positionFPS(bounds.left + debug.DebugOverlayLayout.FPS_MARGIN_X,
+				bounds.top + debug.DebugOverlayLayout.FPS_MARGIN_Y, 1.0);
+		if (traceDisplay != null)
+			traceDisplay.positionTrace(bounds.left + debug.DebugOverlayLayout.MARGIN,
+				bounds.top + 112);
+
+		#if mobile
+		if (traceButton != null)
+			traceButton.updatePosition();
+		if (modsButton != null)
+			modsButton.updatePosition();
+		bringDebugButtonsToFront();
+		#end
+	}
+
+	public static function bringDebugButtonsToFront():Void
+	{
+		#if mobile
+		if (debugButtonLayer != null && debugButtonLayer.parent != null)
+			debugButtonLayer.parent.setChildIndex(debugButtonLayer, debugButtonLayer.parent.numChildren - 1);
+		#end
+	}
+
+	public static function refreshWatermark():Void
+	{
+		if (watermarkSprite == null || openfl.Lib.current == null || openfl.Lib.current.stage == null)
+			return;
+		watermarkSprite.visible = ClientPrefs.data.showWatermark;
+		var stage = openfl.Lib.current.stage;
+		if (watermarkSprite.parent != stage)
+			stage.addChild(watermarkSprite);
+		stage.setChildIndex(watermarkSprite, stage.numChildren - 1);
+		positionWatermark();
+	}
+
+	#if VIDEOS_ALLOWED
+	static function initHxvlc():Void
+	{
+		try
+		{
+			var options = hxvlc.impl.Instance.defaultArgs();
+			#if windows
+			// hxvlc 2.3.1 ships a plugins.dat whose recorded timestamps can differ
+			// after Lime copies the DLLs. Rebuild it instead of trusting a stale cache.
+			options.remove('--no-plugins-scan');
+			if (!options.contains('--reset-plugins-cache'))
+				options.push('--reset-plugins-cache');
+			#end
+			hxvlc.util.Handle.init(options);
+			trace('hxvlc initialized successfully');
+		}
+		catch (e:Dynamic)
+		{
+			trace('hxvlc initialization failed: $e');
+		}
+	}
+	#end
 
 	function initializeMaterialVolumeTray():Void
 	{
@@ -415,7 +493,7 @@ class Main extends Sprite
 			backend.WindowMode.toggleFullscreen();
 	}
 
-	function positionWatermark():Void
+	public static function positionWatermark():Void
 	{
 		if (watermarkSprite != null && watermark != null)
 		{
@@ -424,13 +502,6 @@ class Main extends Sprite
 			var stageW = openfl.Lib.current.stage.stageWidth;
 			watermarkSprite.x = stageW - watermark.width * Math.abs(watermark.scaleX) - marginX;
 			watermarkSprite.y = marginY;
-		}
-		if (watermark != null && watermark.parent == this)
-		{
-			var stageW = Lib.current.stage.stageWidth;
-			var stageH = Lib.current.stage.stageHeight;
-			watermark.x = stageW - watermark.width * Math.abs(watermark.scaleX) + 110;
-			watermark.y = stageH - watermark.height * Math.abs(watermark.scaleY) - 30;
 		}
 	}
 
@@ -461,18 +532,6 @@ class Main extends Sprite
 	{
 		trace('\n\n' + backend.Native.buildSystemInfo());
 
-		#if hxvlc
-		try
-		{
-			hxvlc.util.Handle.init();
-			trace('hxvlc initialized successfully');
-		}
-		catch (e:Dynamic)
-		{
-			trace('hxvlc initialization failed: $e');
-		}
-		#end
-
 		var flxGraphic = backend.Paths.image("watermark");
 		if (flxGraphic != null)
 		{
@@ -498,25 +557,7 @@ class Main extends Sprite
 			trace('The watermark could not be loaded using backend.Paths.image("watermark").');
 		}
 
-		var imagePath = backend.Paths.getPath('images/watermark.png', IMAGE);
-		if (sys.FileSystem.exists(imagePath))
-		{
-			if (watermark != null && watermark.parent != null)
-				removeChild(watermark);
-			var bmpData = openfl.display.BitmapData.fromFile(imagePath);
-			watermark = new openfl.display.Bitmap(bmpData);
-			var scale = 0.85;
-			watermark.scaleX = -scale;
-			watermark.scaleY = scale;
-			watermark.alpha = 0.5;
-			addChild(watermark);
-			positionWatermark();
-			Lib.current.stage.addEventListener(openfl.events.Event.RESIZE, function(_) positionWatermark());
-		}
-		if (watermark != null)
-		{
-			watermark.visible = ClientPrefs.data.showWatermark;
-		}
+		refreshWatermark();
 	}
 }
 

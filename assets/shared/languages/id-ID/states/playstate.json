@@ -1,0 +1,29 @@
+{
+  "$schema": 1,
+  "$namespace": "playstate",
+  "presence": {
+    "story": "Mode Cerita: {1}",
+    "freeplay": "Freeplay",
+    "paused": "Dijeda - {1}",
+    "chart_editor": "Editor Chart",
+    "game_over": "Permainan Berakhir - {1}"
+  },
+  "hud": {
+    "version": "{1} ( {2} ) - Plus Engine v {3}",
+    "botplay_mode": "MODE BOTPLAY",
+    "botplay": "BOTPLAY",
+    "botplay_cpu": "BOTPLAY CPU : {1}",
+    "milliseconds": "{1} ms",
+    "score": {
+      "psych": "Skor: {1} | Hilang: {2} | Peringkat: {3}",
+      "psych_instakill": "Skor: {1} | Peringkat: {2}",
+      "plus": "Skor: {1} | Hilang: {2} | Kombo: {3} | TPS : {4} | Peringkat: {5}",
+      "plus_instakill": "Skor: {1} | Kombo: {2} | TPS : {3} | Peringkat: {4}"
+    }
+  },
+  "modes": {
+    "perfect": "Mode Sempurna",
+    "opponent": "Mode Lawan",
+    "practice": "Mode Latihan"
+  }
+}

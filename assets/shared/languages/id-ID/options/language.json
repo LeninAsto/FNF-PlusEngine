@@ -1,0 +1,19 @@
+{
+  "$schema": 1,
+  "$namespace": "options.language",
+  "hint": "ACCEPT menerapkan bahasa yang dipilih.",
+  "applied_badge": "Aktif",
+  "selector": {
+    "name": "Bahasa",
+    "description": "Gunakan paket bahasa {1}.",
+    "active": "{1} (Aktif)"
+  },
+  "sync": {
+    "name": "Unduh atau Perbarui Bahasa",
+    "description": "Periksa katalog resmi dan instal paket bahasa baru atau yang diperbarui dengan aman.",
+    "success_title": "Bahasa Diperbarui",
+    "error_title": "Pembaruan Bahasa Gagal",
+    "success": "Terpasang: {1}. Sudah terbaru: {2}.",
+    "error": "Gagal memperbarui paket bahasa:\n{1}"
+  }
+}

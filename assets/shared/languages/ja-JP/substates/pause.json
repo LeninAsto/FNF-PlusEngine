@@ -1,0 +1,28 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.pause",
+  "deaths": "ミス終了回数: {1}",
+  "author": "による: {1}",
+  "practice_mode": "練習モード",
+  "charting_mode": "譜面編集モード",
+  "time": "{1} / {2}",
+  "menu": {
+    "resume": "再開",
+    "restart_song": "曲をやり直す",
+    "chart_editor": "譜面エディター",
+    "change_difficulty": "難易度を変更",
+    "options": "設定",
+    "exit_to_menu": "メニューに戻る",
+    "leave_charting_mode": "譜面編集を終了",
+    "skip_time": "時間をスキップ",
+    "end_song": "曲を終了",
+    "toggle_practice_mode": "練習モードを切り替え",
+    "toggle_botplay": "Botplayを切り替え",
+    "skip_video": "動画をスキップ",
+    "back": "戻る"
+  },
+  "errors": {
+    "missing_file": "失踪ファイル: {1}",
+    "chart": "譜面の読み込みエラー:\n{1}"
+  }
+}

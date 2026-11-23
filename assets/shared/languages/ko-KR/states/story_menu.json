@@ -1,0 +1,10 @@
+{
+  "$schema": 1,
+  "$namespace": "states.story_menu",
+  "presence": "메뉴에서",
+  "score": "주간 점수: {1}",
+  "errors": {
+    "no_weeks": "STORY MODE에 추가된 몇 주가 없습니다\n\n압력 {1} 주간 편집자 메뉴로 이동합니다.\n압력 {2} 메인 메뉴로 돌아갑니다.",
+    "no_visible_weeks": "스토리 모드로 사용할 수 있는 보이지 않는 주\n\n압력 {1} 메인 메뉴로 돌아갑니다."
+  }
+}

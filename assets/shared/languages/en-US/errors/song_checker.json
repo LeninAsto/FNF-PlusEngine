@@ -1,0 +1,26 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.song_checker",
+  "title": "SONG CHECKER",
+  "prefix": {
+    "error": "[ERROR]",
+    "warning": "[WARN]",
+    "fix": "[FIX]"
+  },
+  "more": "...and {1} more.",
+  "issues": {
+    "missing_chart": "Chart not found for this difficulty.",
+    "invalid_chart": "The chart exists but could not be parsed.",
+    "repaired_song_name": "Missing song name was restored from its folder.",
+    "missing_notes": "Chart has no notes array.",
+    "repaired_events": "Missing events array was replaced with an empty one.",
+    "invalid_bpm": "BPM must be greater than zero.",
+    "repaired_speed": "Invalid scroll speed was restored to 1.",
+    "repaired_gf": "Missing girlfriend character was restored to \"gf\".",
+    "missing_inst": "Instrumental audio is missing.",
+    "missing_voices": "Voices are enabled, but no default or split vocal files were found.",
+    "invalid_section": "Section {1} has no note list.",
+    "invalid_note": "Malformed note at section {1}, index {2}.",
+    "invalid_note_values": "Non-numeric note data at section {1}, index {2}."
+  }
+}

@@ -25,6 +25,7 @@ import backend.Paths;
 import backend.Language;
 import backend.AssetLoader;
 import haxe.Json;
+import mobile.input.TouchScrollHandler;
 #if mobile
 import mobile.backend.MobileScaleMode;
 #end
@@ -54,6 +55,7 @@ class PauseSubState extends MusicBeatSubstate
 	public var missingTextBG:FlxSprite;
 	public var missingText:FlxText;
 	public var dateTimeText:FlxText;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	private var lastDateTimeMinute:Int = -1;
 
@@ -129,7 +131,7 @@ class PauseSubState extends MusicBeatSubstate
 			var diff:String = Difficulty.getString(i);
 			difficultyChoices.push(diff);
 		}
-		difficultyChoices.push('BACK');
+		difficultyChoices.push('BACK'); // Internal action ID; translated only when rendered.
 
 		pauseMusic = new FlxSound();
 		var pauseSong:String = getPauseSong();
@@ -175,7 +177,9 @@ class PauseSubState extends MusicBeatSubstate
 		levelDifficulty.updateHitbox();
 		add(levelDifficulty);
 
-		var blueballedTxt:FlxText = new FlxText(safeX(20), safeY(15 + 56), 0, Language.getPhrase("blueballed", "Blueballed: {1}", [PlayState.deathCounter]),
+		var blueballedTxt:FlxText = new FlxText(safeX(20), safeY(15 + 56), 0,
+			Language.getPhrase('substates.pause.deaths', Language.getPhrase('blueballed', 'Blueballed: {1}', [PlayState.deathCounter]),
+				[PlayState.deathCounter]),
 			20);
 		blueballedTxt.scrollFactor.set();
 		blueballedTxt.setFormat(Paths.font('vcr.ttf'), 20);
@@ -183,14 +187,16 @@ class PauseSubState extends MusicBeatSubstate
 		add(blueballedTxt);
 
 		var author:String = getCurrentSongAuthor();
-		var authorTxt:FlxText = new FlxText(safeX(20), safeY(15 + 80), 0, author != null ? 'By: $author' : '', 16);
+		var authorTxt:FlxText = new FlxText(safeX(20), safeY(15 + 80), 0,
+			author != null ? Language.getPhrase('substates.pause.author', 'By: {1}', [author]) : '', 16);
 		authorTxt.scrollFactor.set();
 		authorTxt.setFormat(Paths.font('vcr.ttf'), 16);
 		authorTxt.updateHitbox();
 		authorTxt.visible = author != null;
 		add(authorTxt);
 
-		practiceText = new FlxText(safeX(20), safeY(15 + 101), 0, Language.getPhrase("Practice Mode").toUpperCase(), 32);
+		practiceText = new FlxText(safeX(20), safeY(15 + 101), 0,
+			Language.getPhrase('substates.pause.practice_mode', Language.getPhrase('Practice Mode', 'Practice Mode')).toUpperCase(), 32);
 		practiceText.scrollFactor.set();
 		practiceText.setFormat(Paths.font('vcr.ttf'), 24);
 		practiceText.x = safeX(safeWidth() - (practiceText.width + 20));
@@ -198,7 +204,8 @@ class PauseSubState extends MusicBeatSubstate
 		practiceText.visible = PlayState.instance.practiceMode;
 		add(practiceText);
 
-		var chartingText:FlxText = new FlxText(safeX(20), safeY(15 + 101), 0, Language.getPhrase("Charting Mode").toUpperCase(), 32);
+		var chartingText:FlxText = new FlxText(safeX(20), safeY(15 + 101), 0,
+			Language.getPhrase('substates.pause.charting_mode', Language.getPhrase('Charting Mode', 'Charting Mode')).toUpperCase(), 32);
 		chartingText.scrollFactor.set();
 		chartingText.setFormat(Paths.font('vcr.ttf'), 24);
 		chartingText.x = safeX(safeWidth() - (chartingText.width + 20));
@@ -244,7 +251,7 @@ class PauseSubState extends MusicBeatSubstate
 		regenMenu();
 		cameras = [FlxG.cameras.list[FlxG.cameras.list.length - 1]];
 
-		addTouchPad(menuItems.contains('Skip Time') ? 'LEFT_FULL' : 'UP_DOWN', 'A');
+		addTouchPad(menuItems.contains('Skip Time') ? 'LEFT_FULL' : 'UP_DOWN', 'A_B');
 		addTouchPadCamera();
 
 		super.create();
@@ -323,13 +330,13 @@ class PauseSubState extends MusicBeatSubstate
 
 		super.update(elapsed);
 
-		if (controls.BACK #if android || FlxG.android.justReleased.BACK #end)
+		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed) #if android || FlxG.android.justReleased.BACK #end)
 		{
 			close();
 			return;
 		}
 
-		if (FlxG.keys.justPressed.F5)
+		if (FlxG.keys.justPressed.F5 && !FlxG.keys.anyJustPressed(ClientPrefs.keyBinds.get('screenshot')))
 		{
 			FlxTransitionableState.skipNextTransIn = true;
 			FlxTransitionableState.skipNextTransOut = true;
@@ -405,11 +412,12 @@ class PauseSubState extends MusicBeatSubstate
 
 					var errorStr:String = e.message;
 					if (errorStr.startsWith('[lime.utils.Assets] ERROR:'))
-						errorStr = 'Missing file: ' + errorStr.substring(errorStr.indexOf(songLowercase), errorStr.length - 1); // Missing chart
+							errorStr = Language.getPhrase('substates.pause.errors.missing_file', 'Missing file: {1}',
+								[errorStr.substring(errorStr.indexOf(songLowercase), errorStr.length - 1)]); // Missing chart
 					else
 						errorStr += '\n\n' + e.stack;
 
-					missingText.text = 'ERROR WHILE LOADING CHART:\n$errorStr';
+					missingText.text = Language.getPhrase('substates.pause.errors.chart', 'ERROR WHILE LOADING CHART:\n{1}', [errorStr]);
 					missingText.screenCenter(Y);
 					missingText.visible = true;
 					missingTextBG.visible = true;
@@ -504,15 +512,24 @@ class PauseSubState extends MusicBeatSubstate
 						var target = PlayState.isStoryMode ?
 							() -> backend.ScriptableState.tryCreate('StoryMenuState', new StoryMenuState()) :
 							() -> states.FreeplayStateSelector.create();
-						openSubState(new StickerSubState({
-							targetState: _ ->
-							{
-								FlxG.sound.playMusic(Paths.music('freakyMenu'));
-								return target();
-							},
-							stickerPack: StickerSubState.randomPack(),
-							playOutOnTarget: true
-						}));
+
+						if (ClientPrefs.data.stickerTransition)
+						{
+							openSubState(new StickerSubState({
+								targetState: _ ->
+								{
+									FlxG.sound.playMusic(Paths.music('freakyMenu'));
+									return target();
+								},
+								stickerPack: StickerSubState.randomPack(),
+								playOutOnTarget: true
+							}));
+						}
+						else
+						{
+							FlxG.sound.playMusic(Paths.music('freakyMenu'));
+							MusicBeatState.switchState(target());
+						}
 					}
 					PlayState.changedDifficulty = false;
 					PlayState.chartingMode = false;
@@ -522,7 +539,7 @@ class PauseSubState extends MusicBeatSubstate
 
 		if (touchPad == null) // sometimes it dosent add the tpad, hopefully this fixes it
 		{
-			addTouchPad(PlayState.chartingMode ? 'LEFT_FULL' : 'UP_DOWN', 'A');
+			addTouchPad(menuItems.contains('Skip Time') ? 'LEFT_FULL' : 'UP_DOWN', 'A_B');
 			addTouchPadCamera();
 		}
 	}
@@ -599,6 +616,17 @@ class PauseSubState extends MusicBeatSubstate
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 	}
 
+	function getTouchMenuItemAt(x:Float, y:Float):Int
+	{
+		if (grpMenuShit == null)
+			return TouchScrollHandler.NO_TARGET;
+		for (index => item in grpMenuShit.members)
+			if (item != null && x >= 0 && x <= FlxG.width
+				&& y >= item.y - 18 && y <= item.y + Math.max(item.height, 68) + 18)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
+	}
+
 	function regenMenu():Void
 	{
 		for (i in 0...grpMenuShit.members.length)
@@ -611,7 +639,9 @@ class PauseSubState extends MusicBeatSubstate
 
 		for (num => str in menuItems)
 		{
-			var item = new Alphabet(safeX(90), safeY(320), Language.getPhrase('pause_$str', str), true);
+			var key:String = str.toLowerCase().replace(' ', '_');
+			var item = new Alphabet(safeX(90), safeY(320), Language.getPhrase('substates.pause.menu.$key',
+				Language.getPhrase('pause_$str', str)), true);
 			item.isMenuItem = true;
 			item.targetY = num;
 			grpMenuShit.add(item);
@@ -644,9 +674,10 @@ class PauseSubState extends MusicBeatSubstate
 	}
 
 	function updateSkipTimeText()
-		skipTimeText.text = FlxStringUtil.formatTime(Math.max(0, Math.floor(curTime / 1000)), false)
-			+ ' / '
-			+ FlxStringUtil.formatTime(Math.max(0, Math.floor(FlxG.sound.music.length / 1000)), false);
+		skipTimeText.text = Language.getPhrase('substates.pause.time', '{1} / {2}', [
+			FlxStringUtil.formatTime(Math.max(0, Math.floor(curTime / 1000)), false),
+			FlxStringUtil.formatTime(Math.max(0, Math.floor(FlxG.sound.music.length / 1000)), false)
+		]);
 
 	function hasSkippableVideo():Bool
 	{

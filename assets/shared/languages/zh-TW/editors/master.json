@@ -1,0 +1,18 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.master",
+  "presence": "編輯主選單",
+  "note_rgb_disabled": "預覽 RGB 是無功能的!!!",
+  "no_mod_directory": "沒有 MOD目錄載入 >",
+  "loaded_mod_directory": "< 載入的模組目錄: {1} >",
+  "items": {
+    "chart_editor": "譜面編輯器",
+    "character_editor": "角色編輯器",
+    "stage_editor": "舞臺編輯",
+    "week_editor": "週刊編輯",
+    "menu_character_editor": "選單角色編輯器",
+    "dialogue_editor": "討論區編輯",
+    "dialogue_portrait_editor": "圖片編輯器",
+    "note_splash_editor": "註釋 閃光編輯器"
+  }
+}

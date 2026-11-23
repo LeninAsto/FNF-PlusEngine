@@ -1,0 +1,29 @@
+{
+  "$schema": 1,
+  "$namespace": "playstate",
+  "presence": {
+    "story": "스토리 모드: {1}",
+    "freeplay": "Freeplay",
+    "paused": "멈춰 - {1}",
+    "chart_editor": "채보 편집기",
+    "game_over": "경기가 끝났어 {1}"
+  },
+  "hud": {
+    "version": "{1} ({2}) - Plus Engine v{3}",
+    "botplay_mode": "BOTPLAY 모드",
+    "botplay": "배틀그라운드",
+    "botplay_cpu": "배틀그라운드 CPU: {1}",
+    "milliseconds": "{1}MS",
+    "score": {
+      "psych": "점수: {1} 맙소사 {2} 랭킹: {3}",
+      "psych_instakill": "점수: {1} 랭킹: {2}",
+      "plus": "점수: {1} 맙소사 {2} 콤보: {3} | TPS: {4} 랭킹: {5}",
+      "plus_instakill": "점수: {1} 콤보: {2} | TPS: {3} 랭킹: {4}"
+    }
+  },
+  "modes": {
+    "perfect": "퍼펙트 모드",
+    "opponent": "상대 모드",
+    "practice": "연습 모드"
+  }
+}

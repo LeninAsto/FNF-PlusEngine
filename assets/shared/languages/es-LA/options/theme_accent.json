@@ -1,0 +1,41 @@
+{
+  "$schema": 1,
+  "$namespace": "options.theme_accent",
+  "presence": "Selector de color de acento",
+  "title": "Color de acento del tema",
+  "hint": "Vista previa de los controles mientras ajustas el color. ENTER confirma y Atr?s cancela.",
+  "picker_hint": "Rueda + tira luminosa + paleta, sin convertirse en sopa visual.",
+  "live_preview": "Vista previa en vivo habilitada",
+  "use_custom": "Usar color personalizado",
+  "mini_hint": "A la derecha se muestran los controles del motor con el color elegido. As? se ver?n tambi?n en los men?s.",
+  "hex_label": "HEXAGONAL {1}",
+  "boxes": {
+    "preview": "Vista previa del tema",
+    "picker": "Selector de acento",
+    "components": "Vista previa de los componentes MD3"
+  },
+  "preview": {
+    "title": "VISTA PREVIA",
+    "meta": "Vista previa del color de acento"
+  },
+  "chips": {
+    "active": "Acento activo",
+    "custom": "Color personalizado",
+    "preset_safe": "Color predefinido",
+    "selected": "Seleccionado",
+    "hex": "Valor HEX"
+  },
+  "sections": {
+    "standard": "Progreso estándar",
+    "wavy": "Progreso ondulado",
+    "widgets": "Otros controles del motor"
+  },
+  "actions": {
+    "copy_hex": "Copiar hexadecimal",
+    "paste_hex": "Pegar HEX",
+    "apply": "Aplicar",
+    "cancel": "Cancelar",
+    "preview": "Avance",
+    "accent": "Acento"
+  }
+}

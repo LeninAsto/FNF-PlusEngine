@@ -9,8 +9,8 @@ class ModchartSettingsSubState extends BaseOptionsMenu
 {
 	public function new()
 	{
-		title = Language.getPhrase('modchart_menu', 'Modchart Settings');
-		rpcTitle = 'Modchart Options Menu'; // for Discord Rich Presence
+		title = Language.getPhrase('options.menus.modchart.title', Language.getPhrase('modchart_menu', 'Modchart Settings'));
+		rpcTitle = Language.getPhrase('options.menus.modchart.presence', 'Modchart Options Menu'); // for Discord Rich Presence
 
 		var option:Option = new Option('Modchart Debug Overlay',
 			'Shows modchart renderer stats.\nDisabled by default because it has a performance cost.', 'modchartDebug', BOOL);

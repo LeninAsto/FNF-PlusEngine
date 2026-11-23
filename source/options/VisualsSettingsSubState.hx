@@ -11,6 +11,8 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 	var splashSkinOption:Option = null;
 	var themeModeOption:Option = null;
 	var accentColorOption:Option = null;
+	var nfRatingOption:Option = null;
+	var comboStackingOption:Option = null;
 	var notes:FlxTypedGroup<StrumNote>;
 	var splashes:FlxTypedGroup<NoteSplash>;
 	var noteY:Float = 90;
@@ -18,8 +20,8 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 	public function new()
 	{
-		title = Language.getPhrase('visuals_menu', 'Visuals Settings');
-		rpcTitle = 'Visuals Settings Menu'; // for Discord Rich Presence
+		title = Language.getPhrase('options.menus.visuals.title', Language.getPhrase('visuals_menu', 'Visuals Settings'));
+		rpcTitle = Language.getPhrase('options.menus.visuals.presence', 'Visuals Settings Menu'); // for Discord Rich Presence
 		lastNonCustomAccent = OptionsMenuTheme.normalizeAccent(ClientPrefs.data.menuAccentColor);
 		if (lastNonCustomAccent == 'Custom')
 			lastNonCustomAccent = 'Purple';
@@ -86,6 +88,13 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		var option:Option = new Option('Hide Sustain Splash', 'If checked, hides Sustain Splash', 'hideSustainSplash', BOOL);
 		addOption(option);
 
+		var option:Option = new Option('Judgement Counter', 'Shows a counter for each judgement and misses during gameplay.', 'showJudgementCounter', BOOL, null, 'judgement_counter');
+		addOption(option);
+		option.onChange = function()
+		{
+			if (PlayState.instance != null) PlayState.instance.refreshJudgementCounter();
+		};
+
 		var option:Option = new Option('Show Key Viewer', 'If checked, shows a key viewer displaying which keys are being pressed.', 'showKeyViewer', BOOL);
 		addOption(option);
 
@@ -125,7 +134,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Icon Bounce Type', "Changes the way the health icons bounce.", 'iconBounceType', STRING,
-			['Old', 'D&B', 'NF', 'Default']);
+			['Old', 'D&B', 'NF', 'Codename', 'Default']);
 		addOption(option);
 
 		var option:Option = new Option('Time Text Bump', 'If unchecked, disables the time text bump animation on beat.', 'timeBump', BOOL);
@@ -144,6 +153,9 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 		var option:Option = new Option('NF Rating Style', 'If checked, ratings and combo numbers bop in place instead of flying/fading.', 'nfRatingStyle',
 			BOOL);
+		nfRatingOption = option;
+		option.selectableCondition = () -> !ClientPrefs.data.runOnLightVisual;
+		option.onChange = syncPerformanceHitEffects;
 		addOption(option);
 
 		var option:Option = new Option('Health Bar Opacity', 'How much transparent should the health bar and icons be.', 'healthBarAlpha', PERCENT);
@@ -176,10 +188,18 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		var option:Option = new Option('Discord Rich Presence',
 			"Uncheck this to prevent accidental leaks, it will hide the Application from your \"Playing\" box on Discord", 'discordRPC', BOOL);
 		addOption(option);
+		option.onChange = DiscordClient.check;
 		#end
+
+		var option:Option = new Option('Unfriendly Results State',
+		    "Uncheck this to show friendly version of PERFECT result instead of unfriendly version on ResultsState", 'naughtynessResults', BOOL);
+		addOption(option);
 
 		var option:Option = new Option('Combo Stacking',
 			"If unchecked, Ratings and Combo won't stack, saving on System Memory and making them easier to read", 'comboStacking', BOOL);
+		comboStackingOption = option;
+		option.selectableCondition = () -> !ClientPrefs.data.runOnLightVisual;
+		option.onChange = syncPerformanceHitEffects;
 		addOption(option);
 
 		var option:Option = new Option('Show Rating Sprite', 'If unchecked, hides the rating sprite popup when hitting notes.', 'showRating', BOOL);
@@ -199,17 +219,26 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		option.onChange = syncPopupVisibility;
 
+		var option:Option = new Option('Show Minus, Dot, K and M Sprites',
+		    'Shows Minus, Dot, K and M at the rating sprite.', 'showMinusDotKM', BOOL);
+		addOption(option);
+		option.onChange = syncPopupVisibility;
+
 		var option:Option = new Option('Show Hit MS', 'Shows the millisecond timing error next to judgement popups.', 'showHitMs', BOOL);
 		addOption(option);
 		option.onChange = syncPopupVisibility;
 
 		#if android
-		var option:Option = new Option('Lighter Hit Path', 'If unchecked, the full visual path will run instead of light visual path.\nUnchecked this may cause LAG performance.', 'runOnLightVisual', BOOL);
+		var option:Option = new Option('Performance Hit Effects', 'Uses pooled hit effects for smoother gameplay on mobile. NF Rating Style and Combo Stacking are unavailable while it is enabled.', 'runOnLightVisual', BOOL);
+		option.selectableCondition = () -> !ClientPrefs.data.nfRatingStyle && !ClientPrefs.data.comboStacking;
 		option.onChange = function()
 		{
-			ClientPrefs.saveSettings();
+			syncPerformanceHitEffects();
 		};
 		addOption(option);
+		// The base menu has not built its checkbox groups yet, so this constructor
+		// path must normalize data only; visual refresh belongs to onChange.
+		normalizePerformanceHitEffects();
 		#end
 
 		var option:Option = new Option('Combo and Rating in camGame',
@@ -530,10 +559,24 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 	function onChangeWatermark()
 	{
-		if (Main.watermarkSprite != null)
-			Main.watermarkSprite.visible = ClientPrefs.data.showWatermark;
-		if (Main.watermark != null)
-			Main.watermark.visible = ClientPrefs.data.showWatermark;
+		Main.refreshWatermark();
+	}
+
+	function syncPerformanceHitEffects():Void
+	{
+		normalizePerformanceHitEffects();
+		reloadCheckboxes();
+		refreshOptionAlphas();
+		ClientPrefs.saveSettings();
+	}
+
+	inline function normalizePerformanceHitEffects():Void
+	{
+		if (ClientPrefs.data.runOnLightVisual)
+		{
+			ClientPrefs.data.nfRatingStyle = false;
+			ClientPrefs.data.comboStacking = false;
+		}
 	}
 
 	function onChangeKeyViewerColor()

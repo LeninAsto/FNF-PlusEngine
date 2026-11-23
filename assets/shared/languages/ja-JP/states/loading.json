@@ -1,0 +1,20 @@
+{
+  "$schema": 1,
+  "$namespace": "states.loading",
+  "title": "現在 読み込み{1}",
+  "cancelling": "荷物をキャンセルする...",
+  "timeout": "荷物は時間がかかる...\n押す ESC 戻る",
+  "progress": "{1}%  ({2}/{3})",
+  "progress_item": "{1}  {2}",
+  "items": {
+    "atlas": "アトラス {1}",
+    "preparing_audio": "音声再生を準備する",
+    "preparing_song": "曲のデータを準備する",
+    "compiling_chart": "グラフデータを収集する",
+    "finishing": "仕上げ",
+    "sound": "音声 {1}",
+    "music": "音楽 {1}",
+    "song": "楽曲 {1}",
+    "image": "画像 {1}"
+  }
+}

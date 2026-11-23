@@ -5,6 +5,9 @@ final class ArrowData {
 	public var hitTime:Float = 0;
 	public var distance:Float = 0;
 	public var sourceTime:Float = 0;
+	public var strumTime:Null<Float> = null;
+	public var sampleTime:Null<Float> = null;
+	public var isPath:Bool = false;
 
 	public var lane:Int = 0;
 	public var player:Int = 0;

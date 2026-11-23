@@ -1,0 +1,29 @@
+{
+  "$schema": 1,
+  "$namespace": "playstate",
+  "presence": {
+    "story": "故事模式: {1}",
+    "freeplay": "Freeplay",
+    "paused": "暫停 - {1}",
+    "chart_editor": "譜面編輯器",
+    "game_over": "這場遊戲已結束. {1}"
+  },
+  "hud": {
+    "version": "{1} ({2}) - Plus Engine 沒有任何問題{3}",
+    "botplay_mode": "排放模式",
+    "botplay": "自動遊玩",
+    "botplay_cpu": "自動遊玩 CPU：{1}",
+    "milliseconds": "{1}年 月 日",
+    "score": {
+      "psych": "數值: {1} 沒有任何問題. {2} 您的位置: 首頁 {3}",
+      "psych_instakill": "數值: {1} 您的位置: 首頁 {2}",
+      "plus": "數值: {1} 沒有任何問題. {2} 沒有任何問題. {3} | TPS: {4} 您的位置: 首頁 {5}",
+      "plus_instakill": "數值: {1} 沒有任何問題. {2} | TPS: {3} 您的位置: 首頁 {4}"
+    }
+  },
+  "modes": {
+    "perfect": "完美模式",
+    "opponent": "對手模式",
+    "practice": "練習模式"
+  }
+}

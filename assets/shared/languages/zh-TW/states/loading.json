@@ -1,0 +1,20 @@
+{
+  "$schema": 1,
+  "$namespace": "states.loading",
+  "title": "現在正在載入{1}",
+  "cancelling": "取消載入...",
+  "timeout": "接送時間太長了.\n請按一下 ESC 還要回來",
+  "progress": "{1}%  ({2}/{3})",
+  "progress_item": "{1}  {2}",
+  "items": {
+    "atlas": "年 月 日 {1}",
+    "preparing_audio": "準備播放音訊",
+    "preparing_song": "準備歌曲資料",
+    "compiling_chart": "收集譜面資料",
+    "finishing": "完成",
+    "sound": "聲音 {1}",
+    "music": "音樂 {1}",
+    "song": "這首歌 {1}",
+    "image": "圖片 {1}"
+  }
+}

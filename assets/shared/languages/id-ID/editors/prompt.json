@@ -1,0 +1,10 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.prompt",
+  "unsaved": "Ada kemajuan yang belum disimpan,\napakah kamu yakin ingin keluar?",
+  "actions": {
+    "exit": "KELUAR",
+    "ok": "OKE",
+    "cancel": "Batal"
+  }
+}

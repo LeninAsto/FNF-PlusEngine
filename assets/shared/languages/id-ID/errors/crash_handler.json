@@ -1,0 +1,63 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.crash_handler",
+  "titles": {
+    "error": "Kesalahan!",
+    "critical_error": "Kesalahan Kritis!"
+  },
+  "kinds": {
+    "hardcoded": "Kesalahan Kode Keras",
+    "critical_hardcoded": "Kesalahan Hardcode Kritis"
+  },
+  "format": {
+    "error_kind": "KESALAHAN: {1}",
+    "message": "Pesan:",
+    "trace": "Jejak:",
+    "tips": "Kiat:",
+    "need_help": "Butuh bantuan? Mengunjungi:"
+  },
+  "stack": {
+    "non_haxe_function": "Fungsi Non-Haxe (C).",
+    "module": "Modul {1}",
+    "source_line": "{1} . {2} () [baris {3} ]",
+    "file_line": "{1} [baris {2} ]",
+    "local_function": "Fungsi Lokal {1}",
+    "method": "{1} - {2}"
+  },
+  "tips": {
+    "hardcoded_origin": "Ini mogok di luar hxscript, jadi mungkin itu adalah mesin/kode sumber atau jalur perpustakaan yang dikompilasi.",
+    "first_source_line": "Periksa baris sumber pertama di tumpukan sebelum putaran mesin; itu biasanya merupakan penyebab yang berguna.",
+    "rebuild_assets": "Jika ini hanya terjadi setelah mengedit skrip/kelas, bangun kembali dan pastikan aset yang diekspor tidak basi.",
+    "native_crash": "Ini adalah jalur kerusakan asli/kritis, sehingga aplikasi tidak dapat pulih dengan baik.",
+    "close_running_build": "Jika ini muncul selama pengujian build, tutup setiap PlusEngine .exe yang berjalan sebelum membangun kembali.",
+    "disable_mod_scripts": "Jika mod diaktifkan, coba lagi dengan skrip dinonaktifkan untuk memisahkan kerusakan mesin dari kerusakan sisi mod."
+  },
+  "null_messages": {
+    "0": "Ups! Para dewa kode tidak senang... referensi nol ditemukan!",
+    "1": "Houston, kita punya masalah nol!",
+    "2": "Kesalahan 404: Objek tidak ditemukan (hanya nol)",
+    "3": "Selamat! Anda telah menemukan kekosongan! (batal)",
+    "4": "Objek memutuskan untuk berlibur (null)",
+    "5": "*trombon sedih* batal terjadi",
+    "6": "Batal? Lebih tepatnya... tidak keren!",
+    "7": "Benda tersebut pergi untuk membeli rokok dan tidak pernah kembali (null)",
+    "8": "Pencapaian Tidak Terkunci: Temukan referensi nol!",
+    "9": "Referensi nol disimpan di dalam bola",
+    "10": "Momen Bruh: referensi nol terdeteksi",
+    "11": "Masalah keterampilan: Anda mencoba menggunakan objek nol",
+    "12": "Objeknya berkata 'aight imma head out' (null)",
+    "13": "Kesalahan: object.exe berhenti bekerja (null)",
+    "14": "Selamat, kamu memecahkannya! (referensi nol)",
+    "15": "Objeknya ada pada tanggal dengan tidak terdefinisi (null)",
+    "16": "Referensi nol? Di mesin SAYA? Kemungkinannya lebih besar dari yang Anda kira",
+    "17": "Objek tidak ditemukan. Apakah Anda memeriksa di bawah sofa? (batal)"
+  },
+  "null_error_message": "Pesan kesalahan nol (ironis, bukan?)",
+  "original_error": "{1}\n\nKesalahan asli: {2}",
+  "unknown_error": "Kesalahan tidak diketahui",
+  "unknown_critical_error": "Kesalahan kritis tidak diketahui",
+  "help_inline": "Untuk bantuan, kunjungi: {1}",
+  "recursive_handler": "Penangan kerusakan dipanggil lagi saat sedang menangani kesalahan.",
+  "android_dispatch_failed": "Pengiriman aktivitas kerusakan Android gagal: {1}",
+  "save_failed": "Tidak dapat menyimpan pesan kesalahan. ( {1} )"
+}

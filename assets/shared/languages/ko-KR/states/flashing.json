@@ -1,0 +1,5 @@
+{
+  "$schema": 1,
+  "$namespace": "states.flashing",
+  "warning": "조심해!\n\n이 모드는 깜빡이는 빛을 담고 있어요!\n\n당신은 그들을 비활성화하고 싶습니까?"
+}

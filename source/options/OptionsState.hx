@@ -1,7 +1,8 @@
 package options;
 
-import states.MainMenuState;
+import states.MainMenuStateSelector;
 import backend.StageData;
+import mobile.input.TouchScrollHandler;
 import flixel.util.FlxSpriteUtil;
 
 class OptionsState extends MusicBeatState
@@ -49,6 +50,7 @@ class OptionsState extends MusicBeatState
 
 	var optionsIntroActive:Bool = true;
 	var substateInputBlocked:Bool = false;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler(42);
 
 	public static function normalizeMenuStyle(style:String):String
 	{
@@ -76,7 +78,7 @@ class OptionsState extends MusicBeatState
 
 	function getDisplayLabel(label:String):String
 	{
-		return switch (label)
+		var fallback:String = switch (label)
 		{
 			case 'Note Colors': Language.getPhrase('notes', 'Note Colors');
 			case 'Controls': Language.getPhrase('controls', 'Controls');
@@ -89,12 +91,14 @@ class OptionsState extends MusicBeatState
 			case 'Language': Language.getPhrase('language_menu', 'Language');
 			case 'Mobile': Language.getPhrase('mobile_settings', 'Mobile Settings');
 			default: Language.getPhrase('options_$label', label);
-		}
+		};
+		var key:String = label.toLowerCase().replace(' ', '_');
+		return Language.getPhrase('options.categories.$key.name', fallback);
 	}
 
 	function getOptionDescription(label:String):String
 	{
-		return switch (label)
+		var fallback:String = switch (label)
 		{
 			case 'Note Colors': Language.getPhrase('description_notes', 'Change note colors and note splash colors.');
 			case 'Controls': Language.getPhrase('description_controls', 'Change keyboard and gamepad binds.');
@@ -108,7 +112,9 @@ class OptionsState extends MusicBeatState
 			case 'Language': Language.getPhrase('description_language_menu', 'Change the active language.');
 			case 'Mobile': Language.getPhrase('description_mobile_settings', 'Change mobile controls and layout settings.');
 			default: '';
-		}
+		};
+		var key:String = label.toLowerCase().replace(' ', '_');
+		return Language.getPhrase('options.categories.$key.description', fallback);
 	}
 
 	function restoreOptionTexts():Void
@@ -120,7 +126,7 @@ class OptionsState extends MusicBeatState
 			var item = grpOptions.members[i];
 			if (item != null && i < options.length)
 			{
-				item.text = Language.getPhrase('options_${options[i]}', options[i]);
+				item.text = getDisplayLabel(options[i]);
 				item.setScale(1);
 			}
 		}
@@ -199,7 +205,7 @@ class OptionsState extends MusicBeatState
 	override function create()
 	{
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("Options Menu", null);
+		DiscordClient.changePresence(Language.getPhrase('options.common.presence', 'Options Menu'), null);
 		#end
 		OptionsMenuTheme.syncAccent();
 		menuStyle = normalizeMenuStyle(ClientPrefs.data.optionsMenuStyle);
@@ -215,7 +221,9 @@ class OptionsState extends MusicBeatState
 		if (controls.mobileC)
 		{
 			var tipText:FlxText = new FlxText(150, FlxG.height - 24, 0,
-				Language.getPhrase('mobile_controls_tip', 'Press {1} to Go Mobile Controls Menu', [(FlxG.onMobile ? 'C' : 'CTRL or C')]), 16);
+				Language.getPhrase('options.mobile_controls_tip',
+					Language.getPhrase('mobile_controls_tip', 'Press {1} to Go Mobile Controls Menu'),
+					[(FlxG.onMobile ? 'C' : 'CTRL or C')]), 16);
 			tipText.setFormat("VCR OSD Mono", 17, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 			tipText.borderSize = 1.25;
 			tipText.scrollFactor.set();
@@ -261,7 +269,7 @@ class OptionsState extends MusicBeatState
 			}
 			}
 
-		addTouchPad('UP_DOWN', 'A_B_C');
+		applyTouchPadLayout();
 
 		super.create();
 		callOnCompanionScript('onOptionsMenuCreatePost', [getOptionsCopy()]);
@@ -273,7 +281,7 @@ class OptionsState extends MusicBeatState
 		super.closeSubState();
 		ClientPrefs.saveSettings();
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("Options Menu", null);
+		DiscordClient.changePresence(Language.getPhrase('options.common.presence', 'Options Menu'), null);
 		#end
 		controls.isInSubstate = false;
 		substateInputBlocked = false;
@@ -297,8 +305,14 @@ class OptionsState extends MusicBeatState
 				item.alpha = 0;
 			}
 		removeTouchPad();
-		addTouchPad('UP_DOWN', 'A_B_C');
+		applyTouchPadLayout();
 		persistentUpdate = true;
+	}
+
+	function applyTouchPadLayout():Void
+	{
+		addTouchPad('UP_DOWN', 'A_B_C');
+		addTouchPadCamera();
 	}
 
 	var exiting = false;
@@ -402,12 +416,43 @@ class OptionsState extends MusicBeatState
 				else
 				{
 					clearSubstateTransition();
-					MusicBeatState.switchState(new MainMenuState());
+					MusicBeatState.switchState(MainMenuStateSelector.create());
 				}
 			}
 			else if (controls.ACCEPT && options != null && options.length > 0)
 				openSelectedSubstate(options[curSelected]);
 		}
+	}
+
+	function handleTouchNavigation():Bool
+	{
+		if (exiting || substateInputBlocked || optionsIntroActive || options == null || options.length < 1)
+			return false;
+		return touchHandler.update(true, !isPlusStyle(), getTouchOptionAt, function(index:Int, x:Float, y:Float)
+		{
+			selectOption(index);
+			openSelectedSubstate(options[index]);
+		}, changeSelection);
+	}
+
+	function getTouchOptionAt(x:Float, y:Float):Int
+	{
+		if (isPlusStyle())
+		{
+			if (plusCards == null)
+				return -1;
+			for (card in plusCards.members)
+				if (card != null && card.containsTouchPoint(x, y))
+					return card.index;
+		}
+		else if (grpOptions != null)
+		{
+			for (index => item in grpOptions.members)
+				if (item != null && x >= 0 && x <= FlxG.width
+					&& y >= item.y - 18 && y <= item.y + Math.max(item.height, 68) + 18)
+					return index;
+		}
+		return -1;
 	}
 
 	function handleInput():Void
@@ -448,7 +493,7 @@ class OptionsState extends MusicBeatState
 			else
 			{
 				clearSubstateTransition();
-				MusicBeatState.switchState(new MainMenuState());
+				MusicBeatState.switchState(MainMenuStateSelector.create());
 			}
 		}
 		else if (controls.ACCEPT && options != null && options.length > 0)
@@ -461,7 +506,6 @@ class OptionsState extends MusicBeatState
 			return;
 
 		var moveLerp:Float = Math.exp(-elapsed * (optionsIntroActive ? 7.2 : 10.2));
-		var selectedRow:Int = Std.int(curSelected / 2);
 		for (card in plusCards.members)
 		{
 			if (card == null)
@@ -471,7 +515,9 @@ class OptionsState extends MusicBeatState
 			var col:Int = card.index % 2;
 			var row:Int = Std.int(card.index / 2);
 			var targetX:Float = (FlxG.width - 1024) * 0.5 + col * 524;
-			var targetY:Float = 96 + (row - selectedRow) * 104;
+			// The Plus dashboard deliberately keeps every category in a stable grid.
+			// Selection changes emphasis only; it must never make the whole page scroll.
+			var targetY:Float = 96 + row * 104;
 			var targetScale:Float = selected ? 1.035 : 1;
 			var targetAlpha:Float = selected ? 1 : 0.68;
 
@@ -629,7 +675,7 @@ class OptionsState extends MusicBeatState
 		else
 			for (num => option in options)
 			{
-				var optionText:Alphabet = new Alphabet(0, 0, Language.getPhrase('options_$option', option), true);
+				var optionText:Alphabet = new Alphabet(0, 0, getDisplayLabel(option), true);
 				optionText.targetY = num;
 				optionText.isMenuItem = false;
 				optionText.changeX = false;
@@ -701,6 +747,9 @@ private class PlusOptionCard extends FlxSpriteGroup
 		add(arrow);
 		applyTheme(false, false);
 	}
+
+	public inline function containsTouchPoint(x:Float, y:Float):Bool
+		return x >= this.x && x <= this.x + CARD_W && y >= this.y && y <= this.y + CARD_H;
 
 	public function applyTheme(selected:Bool, headerMode:Bool):Void
 	{

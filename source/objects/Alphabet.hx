@@ -192,6 +192,7 @@ class Alphabet extends FlxSpriteGroup
 
 	private function createLetters(newText:String)
 	{
+		var fallbackFont:String = Language.getFontForText(newText);
 		var consecutiveSpaces:Int = 0;
 
 		var xPos:Float = 0;
@@ -200,6 +201,8 @@ class Alphabet extends FlxSpriteGroup
 		for (i in 0...newText.length)
 		{
 			var character:String = newText.charAt(i);
+			if (character == '\r' || character == '\t')
+				continue;
 			if (character != '\n')
 			{
 				var spaceChar:Bool = (character == " " || (bold && character == "_"));
@@ -207,7 +210,7 @@ class Alphabet extends FlxSpriteGroup
 					consecutiveSpaces++;
 
 				var isAlphabet:Bool = AlphaCharacter.isTypeAlphabet(character.toLowerCase());
-				if (AlphaCharacter.allLetters.exists(character.toLowerCase()) && (!bold || !spaceChar))
+				if ((!spaceChar && character != '\r') || (!bold && AlphaCharacter.allLetters.exists(character)))
 				{
 					if (consecutiveSpaces > 0)
 					{
@@ -222,6 +225,7 @@ class Alphabet extends FlxSpriteGroup
 					consecutiveSpaces = 0;
 
 					var letter:AlphaCharacter = cast recycle(AlphaCharacter, true);
+					letter.fallbackFont = fallbackFont;
 					letter.scale.x = scaleX;
 					letter.scale.y = scaleY;
 					letter.rowWidth = 0;
@@ -427,6 +431,7 @@ class AlphaCharacter extends FlxSprite
 	public var row:Int = 0;
 	public var rowWidth:Float = 0;
 	public var character:String = '?';
+	public var fallbackFont:String = null;
 
 	public function new()
 	{
@@ -453,6 +458,30 @@ class AlphaCharacter extends FlxSprite
 		if (character != null)
 		{
 			this.character = character;
+			// Atlas alphabets only contain a small set of Latin glyphs. Rasterize
+			// missing glyphs with the bundled font, including native language names.
+			if (!allLetters.exists(character.toLowerCase()))
+			{
+				var font:String = fallbackFont != null ? fallbackFont : Language.getFontForText(character);
+				var cacheKey:String = 'alphabet-glyph:$font:$character:$bold';
+				var graphic = FlxG.bitmap.get(cacheKey);
+				if (graphic == null)
+				{
+					var glyph = new flixel.text.FlxText(0, 0, 0, character, 64);
+					glyph.setFormat(font, 64, FlxColor.WHITE);
+					glyph.bold = bold == true;
+					glyph.drawFrame(true);
+					graphic = FlxG.bitmap.add(glyph.pixels.clone(), false, cacheKey);
+					glyph.destroy();
+				}
+				loadGraphic(graphic);
+				letterOffset = [0, 0];
+				updateHitbox();
+				return;
+			}
+			// Recycled sprites may previously have held a rasterized glyph.
+			if (frames != getAlphabetFrames('alphabet'))
+				frames = getAlphabetFrames('alphabet');
 			curLetter = null;
 			var lowercase:String = this.character.toLowerCase();
 			if (allLetters.exists(lowercase))

@@ -1,0 +1,26 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.song_checker",
+  "title": "音乐检查员",
+  "prefix": {
+    "error": "[错误]",
+    "warning": "[警告]",
+    "fix": "现在,我们要做什么呢?"
+  },
+  "more": "...和 {1} 还有更多.",
+  "issues": {
+    "missing_chart": "没有找到谱面.",
+    "invalid_chart": "谱面存在,但无法分析.",
+    "repaired_song_name": "缺失的歌曲名称已从文件夹名称恢复。",
+    "missing_notes": "谱面没有笔记阵列.",
+    "repaired_events": "失踪事件阵列被空置.",
+    "invalid_bpm": "BPM 必须大于零.",
+    "repaired_speed": "无效滚动速度恢复到1.",
+    "repaired_gf": "失踪的女友角色被恢复为\"gf\".",
+    "missing_inst": "仪器音频缺失.",
+    "missing_voices": "但没有找到默认或分割的声音文件.",
+    "invalid_section": "部分 {1} 没有笔记列表.",
+    "invalid_note": "部分的错误说明 {1},指数 {2}.",
+    "invalid_note_values": "部分的非数字笔记数据 {1},指数 {2}."
+  }
+}

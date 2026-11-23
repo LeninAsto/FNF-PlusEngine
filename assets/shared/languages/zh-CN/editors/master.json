@@ -1,0 +1,18 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.master",
+  "presence": "编辑主菜单",
+  "note_rgb_disabled": "注意事项 RGB 是残疾的!!!",
+  "no_mod_directory": "< 没有载载Mod目录 >",
+  "loaded_mod_directory": "< 载载模式目录: {1} >",
+  "items": {
+    "chart_editor": "谱面编辑器",
+    "character_editor": "角色编辑器",
+    "stage_editor": "阶段编辑",
+    "week_editor": "周编辑",
+    "menu_character_editor": "菜单角色编辑器",
+    "dialogue_editor": "对话编辑器",
+    "dialogue_portrait_editor": "对话肖像编辑器",
+    "note_splash_editor": "备注 闪光编辑器"
+  }
+}

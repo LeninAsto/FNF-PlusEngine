@@ -3,7 +3,7 @@ package states.stages;
 import states.stages.objects.*;
 import substates.GameOverSubstate;
 import cutscenes.DialogueBox;
-import openfl.utils.Assets as OpenFlAssets;
+import backend.AssetLoader;
 
 class School extends BaseStage
 {
@@ -46,9 +46,8 @@ class School extends BaseStage
 		}
 
 		var bgTrees:FlxSprite = new FlxSprite(repositionShit - 380, -800);
-		bgTrees.frames = Paths.getPackerAtlas('weeb/weebTrees');
-		bgTrees.animation.add('treeLoop', [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18], 12);
-		bgTrees.animation.play('treeLoop');
+		bgTrees.frames = Paths.getSparrowAtlas('weeb/weebTrees');
+		bgTrees.animation.addByPrefix('idle', 'treeLoop', 12, true);
 		bgTrees.scrollFactor.set(0.85, 0.85);
 		add(bgTrees);
 		bgTrees.antialiasing = false;
@@ -104,7 +103,7 @@ class School extends BaseStage
 	}
 
 	// For events
-	override function eventCalled(eventName:String, value1:String, value2:String, value3:String, value4:String, flValue1:Null<Float> = null, flValue2:Null<Float> = null, flValue3:Null<Float> = null, flValue4:Null<Float> = null, strumTime:Float)
+	override function eventCalled(eventName:String, value1:String, value2:String, flValue1:Null<Float>, flValue2:Null<Float>, strumTime:Float)
 	{
 		switch (eventName)
 		{
@@ -119,24 +118,15 @@ class School extends BaseStage
 	function initDoof()
 	{
 		var file:String = Paths.txt('$songName/${songName}Dialogue_${ClientPrefs.data.language}'); // Checks for vanilla/Senpai dialogue
-		#if MODS_ALLOWED
-		if (!FileSystem.exists(file))
-		#else
-		if (!OpenFlAssets.exists(file))
-		#end
+		// FileSystem.exists is false for assets packaged inside Android APKs.
+		// AssetLoader checks both extracted/mod files and bundled OpenFL assets.
+		if (!AssetLoader.exists(file, TEXT))
 		{
 			file = Paths.txt('$songName/${songName}Dialogue');
 		}
 
-		#if MODS_ALLOWED
-		if (!FileSystem.exists(file))
-		#else
-		if (!OpenFlAssets.exists(file))
-		#end
-		{
-			startCountdown();
+		if (!AssetLoader.exists(file, TEXT))
 			return;
-		}
 
 		doof = new DialogueBox(false, CoolUtil.coolTextFile(file));
 		doof.cameras = [camHUD];

@@ -1,0 +1,53 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.mod_security",
+  "title": {
+    "warning": "敏感的API警告",
+    "clean": "模組安全"
+  },
+  "detected_calls": "檢測的呼叫 (上/下或滾輪):",
+  "actions": {
+    "trust": "相信他們",
+    "block": "區塊"
+  },
+  "hint": "選擇左/右, Enter 確認",
+  "counter": "這種方式 {1} / {2}",
+  "body": {
+    "clean": "沒有任何敏感的API被檢測到.\n\n",
+    "clean_activation": "這種模式是可行的.\n這種情況下,",
+    "clean_review": "經常執行的指令碼.\n預覽 預覽 預覽 預覽",
+    "warning": "這種模式的指令碼使用可濫用的API.\n",
+    "warning_activation": "預覽 預覽 預覽 預覽 預覽\n",
+    "warning_review": "經常執行指令碼. BLOCK = mod 仍然啟用,\n",
+    "capabilities": "\n這種模式可以:"
+  },
+  "categories": {
+    "tamper": "[!!] 嘗試篡改模組安全系統本身",
+    "exec": "[!] 在您的電腦上執行外部程式/命令",
+    "gdi_effects": "[!] 可以開始 Windows 在遊戲以外的GDI畫面效果",
+    "desktop_control": "[!] 可以更改桌面圖示、工作列、透明度或桌布",
+    "window_control": "[*] 可以拍攝截圖,通知 Windows 或改變遊戲視窗",
+    "fs_write": "[!] 在您的電腦上寫,修改或刪除檔案",
+    "haxe_eval": "[!] 執行任意的 Haxe/Lua 在執行時間內的程式碼",
+    "fs_read": "[*] 從您的電腦讀取檔案",
+    "reflect": "[*] 使用反射/動態級搜尋",
+    "exit": "[*] 可以強制停止遊戲過程",
+    "recon": "[*] 閱讀環境變數 /系統資訊",
+    "other": "\n  [*] 其他敏感的API (檢視下列列表)",
+    "common_only": "\n  (只有常見的API被發現 - 檢視下面的列表)"
+  },
+  "no_findings": "  (沒有發現敏感的API)",
+  "list_range": "{1}-{2} 的 {3}",
+  "item": "{1} 這項專案",
+  "items": "{1} 年 月 日",
+  "details": {
+    "windows_gdi_effects": "負責人: initGDIThread/prepareGDIEffect/enableGDIEffect;可執行桌面級的GDI視覺效果",
+    "windows_gdi_internals": "負責人: SlushiWinGDI/WinGDIThread;可以直接訪問GDI效果字串或帳號",
+    "windows_desktop_control": "負責人: hideDesktopIcons/hideTaskBar/moveDesktopElements;可以隱藏/移動桌面UI或改變透明度",
+    "windows_wallpaper_control": "負責人: changeWindowsWallpaper/setDesktopWallpaper;可以更改或恢復 Windows 桌布",
+    "windows_shellwindow_control": "負責人: captureScreenshot/showNotification/setWindowOpacity能捕捉螢幕,通知 Windows或改變視窗的視覺",
+    "windowsapi": "負責人: 滑鼠.窗戶.WindowsAPI能達到 Plus Engine Windows 原住民的助手",
+    "windowscpp": "負責人: 滑鼠.窗戶.WindowsCPP能打低階電話; Windows 原始功能",
+    "import_windows_native_apis": "負責:進口 slushithings.windows.*; 可解鎖 Windows/GDI助手從 HScript"
+  }
+}

@@ -1,0 +1,53 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.mod_security",
+  "title": {
+    "warning": "민감한 API 경고",
+    "clean": "모드 보안"
+  },
+  "detected_calls": "검출된 호출 (UP/DoWN 또는 스롤 할 수 있는 바퀴):",
+  "actions": {
+    "trust": "신뢰",
+    "block": "블록"
+  },
+  "hint": "왼쪽/우측 선택-- Enter 확인하기 위해",
+  "counter": "모드 {1} / {2}",
+  "body": {
+    "clean": "이 모드의 스크립트에 민감한 API가 발견되지 않았습니다.\n\n",
+    "clean_activation": "트러스트 = 모드를 활성화하십시오.\nBLOCK = 모드를 비활성화하십시오.",
+    "clean_review": "신뢰 = 스크립트가 정상적으로 실행됩니다.\nBLOCK = MOD는 활성화되어 있고 스크립트가 생략됩니다.",
+    "warning": "이 모드의 스크립트는 악용 가능한 API를 사용합니다.\n",
+    "warning_activation": "TRUST = 모드를 활성화하고 스크립트를 실행하십시오. BLOCK = 모드를 비활성화하십시오.\n",
+    "warning_review": "TRUST = 스크립트가 정상적으로 실행됩니다. BLOCK = MOD는 활성화되어 있고, 스크립트가 생략됩니다.\n",
+    "capabilities": "\n이 모드는"
+  },
+  "categories": {
+    "tamper": "[!!] 모드 보안 시스템 자체를 조작하려는 시도",
+    "exec": "[!] 컴퓨터에서 외부 프로그램 / 명령을 실행",
+    "gdi_effects": "[!] 시작 할 수 있습니다 Windows 게임 밖의 GDI 화면 효과",
+    "desktop_control": "[!] 데스크톱 아이콘, 작업줄, 투명성 또는 벽지를 변경할 수 있습니다",
+    "window_control": "[*] 스크린샷을 촬영할 수 있고, 알릴 수 있습니다 Windows 또는 게임 창을 변경",
+    "fs_write": "[!] PC에서 파일을 작성하거나 수정하거나 삭제합니다",
+    "haxe_eval": "[!] 임의적인 해크스를 집행합니다Lua 실행 시점에 코드",
+    "fs_read": "[*] 컴퓨터에서 파일을 읽습니다",
+    "reflect": "[*] 반사 / 동적 클래스 검색을 사용합니다",
+    "exit": "[*] 게임 프로세스를 강제로 중단할 수 있습니다",
+    "recon": "[*] 환경 변수 / 시스템 정보를 읽습니다",
+    "other": "\n  [*] 다른 민감한 API (이하 목록 참조)",
+    "common_only": "\n  (일반적인 API만 발견 - 아래 목록을 참조하십시오)"
+  },
+  "no_findings": "  (감각적인 API가 발견되지 않았다)",
+  "list_range": "{1}-{2} 의 {3}",
+  "item": "{1} 항목",
+  "items": "{1} 항목",
+  "details": {
+    "windows_gdi_effects": "책임자: initGDIThread/prepareGDIEffect/enableGDIEffect; 데스크톱 수준의 GDI 시각 효과를 실행할 수 있습니다.",
+    "windows_gdi_internals": "책임자: SlushiWinGDI/WinGDIThread; GDI 효과 스레드 또는 레지스트리를 직접 액세스 할 수 있습니다",
+    "windows_desktop_control": "책임자: hideDesktopIcons/hideTaskBar/moveDesktopElements; 데스크톱 UI를 숨기거나 이동하거나 투명성을 변경할 수 있습니다",
+    "windows_wallpaper_control": "책임자: changeWindowsWallpaper/setDesktopWallpaper; 변경 또는 복원 할 수 있습니다 Windows 벽화",
+    "windows_shellwindow_control": "책임자: captureScreenshot/showNotification/setWindowOpacity; 화면을 캡처하고, 알릴 수 있습니다. Windows, 또는 창의 시각을 변경",
+    "windowsapi": "책임자: slushithings.windowsWindowsAPI; 도달할 수 있습니다 Plus Engine Windows 원주민 지원자",
+    "windowscpp": "책임자: slushithings.windowsWindowsCPP; 낮은 수준의 호출을 할 수 있습니다 Windows 네이티브 함수",
+    "import_windows_native_apis": "책임자: 수입 slushithings.windows.*; 잠금을 해제할 수 있습니다 Windows/GDI 도움말 접근 HScript"
+  }
+}

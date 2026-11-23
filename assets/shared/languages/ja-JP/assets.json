@@ -1,0 +1,8 @@
+{
+  "$schema": 1,
+  "$namespace": "",
+  "fonts/vcr.ttf": "fonts/NotoSansJP-Medium.ttf",
+  "fonts/pixel-latin.ttf": "fonts/NotoSansJP-Medium.ttf",
+  "fonts/aller.ttf": "fonts/NotoSansJP-Medium.ttf",
+  "fonts/NotoSans-Medium.ttf": "fonts/NotoSansJP-Medium.ttf"
+}

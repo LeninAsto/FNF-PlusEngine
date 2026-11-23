@@ -51,5 +51,9 @@
 	<string name="plus_crash_details">Detail teknis</string>
 	<string name="plus_crash_show_details">Tampilkan detail</string>
 	<string name="plus_crash_hide_details">Sembunyikan detail</string>
+	<string name="plus_crash_show_recent_logs">Lihat trace / log terakhir</string>
+	<string name="plus_crash_hide_recent_logs">Sembunyikan trace / log terakhir</string>
 	<string name="plus_crash_empty">Laporan crash tidak tersimpan. Aplikasi berhenti sebelum Android sempat menyimpan detailnya.</string>
+	<string name="plus_crash_send_logs">Kirim log ke pembuat</string>
+	<string name="plus_crash_share_subject">Laporan crash Plus Engine</string>
 </resources>

@@ -16,7 +16,7 @@ import openfl.text.TextFormatAlign;
 import states.ModsMenuState;
 
 /**
- * Small mobile button that exits a scripted/custom state back to ModsMenuState.
+	 * Small mobile button that opens ModsMenuState from a scripted/custom state.
  */
 class ModsButton extends Sprite
 {
@@ -24,7 +24,7 @@ class ModsButton extends Sprite
 	private var buttonText:TextField;
 	private var isPressed:Bool = false;
 	private var buttonSize:Float = 40;
-	private var padding:Float = 10;
+	private var padding:Float = DebugOverlayLayout.MARGIN;
 	private var spacing:Float = 8;
 
 	public function new()
@@ -161,7 +161,7 @@ class ModsButton extends Sprite
 		}
 
 		#if HSCRIPT_ALLOWED
-		scripting.ScriptedStates.exitToEngine();
+		scripting.ScriptedStates.openModsMenu();
 		#else
 		#if MODS_ALLOWED
 		backend.Mods.launchedMod = null;
@@ -181,11 +181,9 @@ class ModsButton extends Sprite
 
 	private function positionButton():Void
 	{
-		if (FlxG.stage != null)
-		{
-			x = FlxG.stage.stageWidth - buttonSize - padding;
-			y = padding + buttonSize + spacing;
-		}
+		var bounds = DebugOverlayLayout.gameBounds();
+		x = bounds.right - buttonSize - padding;
+		y = bounds.top + padding + buttonSize + spacing;
 	}
 
 	public function updatePosition():Void

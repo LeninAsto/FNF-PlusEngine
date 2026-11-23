@@ -1,0 +1,63 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.crash_handler",
+  "titles": {
+    "error": "Error!",
+    "critical_error": "Critical Error!"
+  },
+  "kinds": {
+    "hardcoded": "Hardcoded Error",
+    "critical_hardcoded": "Critical Hardcoded Error"
+  },
+  "format": {
+    "error_kind": "ERROR: {1}",
+    "message": "Message:",
+    "trace": "Trace:",
+    "tips": "Tips:",
+    "need_help": "Need help? Visit:"
+  },
+  "stack": {
+    "non_haxe_function": "Non-Haxe (C) Function",
+    "module": "Module {1}",
+    "source_line": "{1}.{2}() [line {3}]",
+    "file_line": "{1} [line {2}]",
+    "local_function": "Local Function {1}",
+    "method": "{1} - {2}"
+  },
+  "tips": {
+    "hardcoded_origin": "This crashed outside hxscript, so it is probably engine/source code or a compiled library path.",
+    "first_source_line": "Check the first source line in the stack before the engine loop; that is usually the useful culprit.",
+    "rebuild_assets": "If this only happens after editing scripts/classes, rebuild and make sure the exported assets are not stale.",
+    "native_crash": "This is a native/critical crash path, so the app could not recover cleanly.",
+    "close_running_build": "If this appeared during build testing, close every running PlusEngine.exe before rebuilding.",
+    "disable_mod_scripts": "If mods are enabled, retry with scripts disabled to separate engine crashes from mod-side crashes."
+  },
+  "null_messages": {
+    "0": "Oops! The code gods are not pleased... null reference found!",
+    "1": "Houston, we have a null problem!",
+    "2": "Error 404: Object not found (it's just null)",
+    "3": "Congrats! You've discovered the void! (null)",
+    "4": "The object decided to take a vacation (null)",
+    "5": "*sad trombone* null happened",
+    "6": "Null? More like... not cool!",
+    "7": "The object went to buy cigarettes and never came back (null)",
+    "8": "Achievement Unlocked: Find a null reference!",
+    "9": "Null references are stored in the balls",
+    "10": "Bruh moment: null reference detected",
+    "11": "Skill issue: you tried to use a null object",
+    "12": "The object said 'aight imma head out' (null)",
+    "13": "Error: object.exe has stopped working (null)",
+    "14": "Congratulations, you broke it! (null reference)",
+    "15": "The object is on a date with undefined (null)",
+    "16": "Null reference? In MY engine? It's more likely than you think",
+    "17": "Object not found. Did you check under the couch? (null)"
+  },
+  "null_error_message": "Null error message (ironic, isn't it?)",
+  "original_error": "{1}\n\nOriginal error: {2}",
+  "unknown_error": "Unknown error",
+  "unknown_critical_error": "Unknown critical error",
+  "help_inline": "For help, visit: {1}",
+  "recursive_handler": "Crash handler was invoked again while already handling an error.",
+  "android_dispatch_failed": "Android crash activity dispatch failed: {1}",
+  "save_failed": "Couldn't save error message. ({1})"
+}

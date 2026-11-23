@@ -1,0 +1,18 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.popups",
+  "common": {
+    "none": "Tidak Ada"
+  },
+  "mod_settings": {
+    "title": "Nama mod: {1}",
+    "parse_error": "Terjadi kesalahan: {1}"
+  },
+  "achievements": {
+    "mod_title": "Nama mod: {1}",
+    "invalid_entry": "Pencapaian # {1} tidak valid.",
+    "entry_title": "Kesalahan pada Pencapaian: {1}",
+    "missing_save": "Nilai \"simpan\" yang valid tidak ada.",
+    "load_error": "Kesalahan saat memuat achievements.json : {1}"
+  }
+}

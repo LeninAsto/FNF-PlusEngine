@@ -1,0 +1,9 @@
+{
+  "$schema": 1,
+  "$namespace": "states.achievements",
+  "discord": "成就菜单",
+  "progress": "{1} / {2}",
+  "reset": {
+    "title": "恢复成绩:"
+  }
+}

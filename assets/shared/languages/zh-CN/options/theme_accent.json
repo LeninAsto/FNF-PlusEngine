@@ -1,0 +1,41 @@
+{
+  "$schema": 1,
+  "$namespace": "options.theme_accent",
+  "presence": "主题口音挑选器",
+  "title": "主题口音颜色",
+  "hint": "在拖动选手时,先查看真正的MD3插件. ENTER 确认, BACK 取消了.",
+  "picker_hint": "通过色轮、亮度条和调色板选择颜色。",
+  "live_preview": "现场预览启用",
+  "use_custom": "使用定制的口音",
+  "mini_hint": "在右侧显示了用你的口音染色的股票引擎插件.如果它看起来诅咒,它也会在菜单中看起来诅咒.",
+  "hex_label": "电子设备 {1}",
+  "boxes": {
+    "preview": "主题预览",
+    "picker": "强调色选择器",
+    "components": "MD3 组件预览"
+  },
+  "preview": {
+    "title": "免费玩法样本",
+    "meta": "定制口音预览"
+  },
+  "chips": {
+    "active": "当前强调色",
+    "custom": "定制代币",
+    "preset_safe": "预设安全",
+    "selected": "选择",
+    "hex": "HEX代币"
+  },
+  "sections": {
+    "standard": "标准进展",
+    "wavy": "波动的进步",
+    "widgets": "其他引擎工具"
+  },
+  "actions": {
+    "copy_hex": "复制 HEX",
+    "paste_hex": "粘贴HEX",
+    "apply": "应用",
+    "cancel": "取消",
+    "preview": "预览",
+    "accent": "强调色"
+  }
+}

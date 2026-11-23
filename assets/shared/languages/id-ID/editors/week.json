@@ -1,0 +1,36 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.week",
+  "ui": {
+    "background_asset": "Aset Latar Belakang:",
+    "characters": "Karakter:",
+    "copy_color": "Salin Warna",
+    "default_difficulties_help": "Tingkat kesulitan defaultnya adalah \"Mudah, Normal, Keras\"\ntanpa tanda kutip.",
+    "difficulties": "Kesulitan:",
+    "display_name": "Nama Tampilan:",
+    "freeplay": "Freeplay",
+    "hidden_until_unlocked": "Tersembunyi hingga Tidak Terkunci",
+    "hide_week_from_freeplay": "Sembunyikan Minggu dari Freeplay ?",
+    "hide_week_from_story_mode": "Sembunyikan Minggu dari Mode Cerita?",
+    "load_week": "Muat Minggu",
+    "paste_color": "Tempel Warna",
+    "save_week": "Simpan Minggu",
+    "selected_background_color_r_g_b": "Latar belakang yang dipilih Warna R/G/B :",
+    "selected_icon": "Ikon yang dipilih:",
+    "songs": "Lagu:",
+    "story_mode": "Modus Cerita",
+    "week_file": "Berkas Minggu:",
+    "unlock_week_file": "Minggu Nama file Minggu yang Anda miliki\nuntuk menyelesaikan untuk Membuka Kunci:",
+    "week_name_for_reset_score_menu": "Nama Minggu (untuk Menu Reset Skor):",
+    "week_starts_locked": "Minggu dimulai Terkunci"
+  },
+  "presence": {
+    "title": "Editor Minggu",
+    "editing": "Pengeditan: {1}"
+  },
+  "tabs": {
+    "freeplay": "Freeplay",
+    "other": "Lainnya",
+    "week": "Pekan"
+  }
+}

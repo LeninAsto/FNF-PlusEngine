@@ -1,0 +1,19 @@
+{
+  "$schema": 1,
+  "$namespace": "options.language",
+  "hint": "選擇的語言應用.",
+  "applied_badge": "活動",
+  "selector": {
+    "name": "語言",
+    "description": "套用 {1} 語言套件。",
+    "active": "{1}（已啟用）"
+  },
+  "sync": {
+    "name": "下載或更新語言",
+    "description": "檢查官方目錄,並安全安裝新的或更新的語言包.",
+    "success_title": "語言已更新",
+    "error_title": "語言更新失敗",
+    "success": "已安裝：{1}。已是最新：{2}。",
+    "error": "無法更新語言套件：\n{1}"
+  }
+}

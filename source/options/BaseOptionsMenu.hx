@@ -8,6 +8,7 @@ import objects.CheckboxThingie;
 import objects.AttachedText;
 import options.Option;
 import backend.InputFormatter;
+import mobile.input.TouchScrollHandler;
 #if mobile
 import mobile.backend.MobileScaleMode;
 #end
@@ -57,9 +58,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 		super();
 		if (title == null)
-			title = 'Options';
+			title = Language.getPhrase('options.common.title', 'Options');
 		if (rpcTitle == null)
-			rpcTitle = 'Options Menu';
+			rpcTitle = Language.getPhrase('options.common.presence', 'Options Menu');
 
 		#if DISCORD_ALLOWED
 		DiscordClient.changePresence(rpcTitle, null);
@@ -133,7 +134,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 						checkbox.alpha = 0;
 					checkboxGroup.add(checkbox);
 				}
-				else
+				else if (optionsArray[i].type != ACTION)
 				{
 					optionText.x -= 80;
 					optionText.startPosition.x -= 80;
@@ -156,6 +157,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		setupIntroTransition();
 
 		addTouchPad('LEFT_FULL', 'A_B_C');
+		addTouchPadCamera();
 	}
 
 	function isPlusStyle():Bool
@@ -220,6 +222,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	var bindingBlack:FlxSprite;
 	var bindingText:Alphabet;
 	var bindingText2:Alphabet;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler(38);
 
 	override function update(elapsed:Float)
 	{
@@ -289,7 +292,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 						FlxTween.tween(bindingBlack, {alpha: 0.6}, 0.35, {ease: FlxEase.linear});
 						add(bindingBlack);
 
-						bindingText = new Alphabet(FlxG.width / 2, 160, Language.getPhrase('controls_rebinding', 'Rebinding {1}', [curOption.name]), false);
+						bindingText = new Alphabet(FlxG.width / 2, 160,
+							Language.getPhrase('options.controls.rebinding',
+								Language.getPhrase('controls_rebinding', 'Rebinding {1}', [curOption.name]), [curOption.name]), false);
 						bindingText.alignment = CENTERED;
 						add(bindingText);
 
@@ -297,7 +302,9 @@ class BaseOptionsMenu extends MusicBeatSubstate
 						final backspace:String = (controls.mobileC) ? "C" : "Backspace";
 
 						bindingText2 = new Alphabet(FlxG.width / 2, 340,
-							Language.getPhrase('controls_rebinding2', 'Hold {1} to Cancel\nHold {2} to Delete', [escape, backspace]), true);
+							Language.getPhrase('options.controls.rebinding_help',
+								Language.getPhrase('controls_rebinding2', 'Hold {1} to Cancel\nHold {2} to Delete', [escape, backspace]),
+								[escape, backspace]), true);
 						bindingText2.alignment = CENTERED;
 						add(bindingText2);
 
@@ -305,6 +312,16 @@ class BaseOptionsMenu extends MusicBeatSubstate
 						holdingEsc = 0;
 						ClientPrefs.toggleVolumeKeys(false);
 						FlxG.sound.play(Paths.sound('scrollMenu'));
+					}
+
+			case ACTION:
+					if (controls.ACCEPT)
+					{
+						var actionStop = callOnCompanionScript('onOptionAccept', [getCurrentOption(), curSelected]);
+						if (actionStop == Function_Stop)
+							return;
+						FlxG.sound.play(Paths.sound('confirmMenu'));
+						curOption.change();
 					}
 
 				default:
@@ -398,7 +415,11 @@ class BaseOptionsMenu extends MusicBeatSubstate
 			if (controls.RESET || touchPad.buttonC.justPressed)
 			{
 				var leOption:Option = optionsArray[curSelected];
-				if (leOption.type != KEYBIND)
+				if (leOption.type == ACTION)
+				{
+					// Actions have no persistent value to reset.
+				}
+				else if (leOption.type != KEYBIND)
 				{
 					leOption.setValue(leOption.defaultValue);
 					if (leOption.type != BOOL)
@@ -413,9 +434,12 @@ class BaseOptionsMenu extends MusicBeatSubstate
 					leOption.setValue(!Controls.instance.controllerMode ? leOption.defaultKeys.keyboard : leOption.defaultKeys.gamepad);
 					updateBind(null, leOption);
 				}
-				leOption.change();
-				FlxG.sound.play(Paths.sound('cancelMenu'));
-				reloadCheckboxes();
+				if (leOption.type != ACTION)
+				{
+					leOption.change();
+					FlxG.sound.play(Paths.sound('cancelMenu'));
+					reloadCheckboxes();
+				}
 			}
 		}
 
@@ -423,6 +447,146 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		{
 			nextAccept -= 1;
 		}
+	}
+
+	function handleTouchOptions():Bool
+	{
+		if (optionsArray == null || optionsArray.length < 1 || nextAccept > 0)
+			return false;
+		return touchHandler.update(true, true, getTouchOptionAt, handleTouchOptionTap, changeSelection);
+	}
+
+	function handleTouchOptionTap(index:Int, x:Float, y:Float):Void
+	{
+		selectOption(index);
+		// Resolve from the tapped index. A visual refresh may be deferred for a
+		// frame, so relying on curOption here made Psych-style BOOL rows appear
+		// selected without actually toggling.
+		var option = getOptionAt(index);
+		if (option == null || !isOptionSelectable(option))
+			return;
+
+		var direction:Int = getTouchValueDirection(index, x, y);
+		if (direction != 0 && option.type != BOOL && option.type != ACTION && option.type != KEYBIND)
+			touchChangeValue(option, direction);
+		else if (option.type == BOOL)
+			touchToggleBoolean(option);
+		else if (option.type == ACTION)
+			touchRunAction(option);
+	}
+
+	function getTouchOptionAt(x:Float, y:Float):Int
+	{
+		if (isPlusStyle())
+		{
+			if (plusRows != null)
+				for (row in plusRows.members)
+					if (row != null && row.containsTouchPoint(x, y))
+						return row.index;
+		}
+		else if (grpOptions != null)
+		{
+			var closest:Int = -1;
+			var closestDistance:Float = Math.POSITIVE_INFINITY;
+			for (index => item in grpOptions.members)
+			{
+				if (item == null || x < 0 || x > FlxG.width)
+					continue;
+				// Alphabet is a sprite group: its own height is not the rendered text
+				// bounds. Using it put BOOL hitboxes above the visible label whenever
+				// its checkbox tracker applied its vertical offset.
+				var textCenterY = getOptionTextCenterY(item);
+				var textDistance:Float = textCenterY != null ? Math.abs(y - textCenterY) : Math.POSITIVE_INFINITY;
+				var checkboxDistance:Float = getOptionCheckboxDistance(index, y);
+				var distance:Float = Math.min(textDistance, checkboxDistance);
+				if (distance <= 38 && distance < closestDistance)
+				{
+					closest = index;
+					closestDistance = distance;
+				}
+			}
+			if (closest != -1)
+				return closest;
+		}
+		return -1;
+	}
+
+	function getOptionTextCenterY(item:Alphabet):Null<Float>
+	{
+		var top:Float = Math.POSITIVE_INFINITY;
+		var bottom:Float = Math.NEGATIVE_INFINITY;
+		for (letter in item.members)
+		{
+			if (letter == null || !letter.exists || !letter.visible)
+				continue;
+			top = Math.min(top, letter.y);
+			bottom = Math.max(bottom, letter.y + letter.height);
+		}
+		return top <= bottom ? (top + bottom) * 0.5 : null;
+	}
+
+	function getOptionCheckboxDistance(index:Int, y:Float):Float
+	{
+		if (checkboxGroup == null)
+			return Math.POSITIVE_INFINITY;
+		for (checkbox in checkboxGroup.members)
+		{
+			if (checkbox == null || checkbox.ID != index || !checkbox.exists || !checkbox.visible)
+				continue;
+			var centerY:Float = checkbox.y + checkbox.height * 0.5;
+			return Math.abs(y - centerY);
+		}
+		return Math.POSITIVE_INFINITY;
+	}
+
+	function getTouchValueDirection(index:Int, x:Float, y:Float):Int
+	{
+		if (isPlusStyle() && plusRows != null && index >= 0 && index < plusRows.members.length)
+		{
+			var row = plusRows.members[index];
+			if (row != null && row.isValueTouchPoint(x, y))
+				return row.valueTouchDirection(x);
+		}
+		else if (!isPlusStyle() && x >= FlxG.width * 0.55)
+			return x < FlxG.width * 0.75 ? -1 : 1;
+		return 0;
+	}
+
+	function touchToggleBoolean(option:Option):Void
+	{
+		if (callOnCompanionScript('onOptionAccept', [getCurrentOption(), curSelected]) == Function_Stop)
+			return;
+		option.setValue(option.getValue() != true);
+		option.change();
+		reloadCheckboxes();
+		FlxG.sound.play(Paths.sound('scrollMenu'));
+	}
+
+	function touchRunAction(option:Option):Void
+	{
+		if (callOnCompanionScript('onOptionAccept', [getCurrentOption(), curSelected]) == Function_Stop)
+			return;
+		option.change();
+		FlxG.sound.play(Paths.sound('confirmMenu'));
+	}
+
+	function touchChangeValue(option:Option, direction:Int):Void
+	{
+		switch (option.type)
+		{
+			case STRING:
+				var next = FlxMath.wrap(option.curOption + direction, 0, option.options.length - 1);
+				option.curOption = next;
+				option.setValue(option.options[next]);
+			case INT, FLOAT, PERCENT:
+				var value:Float = FlxMath.bound(option.getValue() + option.changeValue * direction, option.minValue, option.maxValue);
+				option.setValue(option.type == INT ? Math.round(value) : FlxMath.roundDecimal(value, option.decimals));
+			default:
+				return;
+		}
+		updateTextFrom(option);
+		option.change();
+		FlxG.sound.play(Paths.sound('scrollMenu'));
 	}
 
 	function refreshThemeVisuals():Void
@@ -757,6 +921,8 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	{
 		if (option == null)
 			return;
+		if (option.type == ACTION)
+			return;
 
 		if (option.type == KEYBIND)
 		{
@@ -804,6 +970,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 		if (!isPlusStyle())
 		{
+			descText.font = Language.getFontForText(optionsArray[curSelected].description, 'vcr.ttf');
 			descText.text = optionsArray[curSelected].description;
 			descText.screenCenter(Y);
 			descText.y += 270;
@@ -906,6 +1073,13 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	public function getOptionsCopy():Array<Option>
 		return optionsArray != null ? optionsArray.copy() : [];
 
+	public function setMenuTitle(value:String):Void
+	{
+		title = value;
+		if (titleText != null)
+			titleText.text = value;
+	}
+
 	public function getCurrentOption():Option
 		return curOption;
 
@@ -939,6 +1113,8 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 	public function rebuildOptionsVisuals():Void
 	{
+		// The language screen can rebuild in place after changing the font pack.
+		descText.font = Paths.font('vcr.ttf');
 		if (optionsArray == null)
 			optionsArray = [];
 
@@ -994,7 +1170,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 					checkbox.ID = i;
 					checkboxGroup.add(checkbox);
 				}
-				else
+				else if (optionsArray[i].type != ACTION)
 				{
 					optionText.x -= 80;
 					optionText.startPosition.x -= 80;
@@ -1056,12 +1232,12 @@ private class PlusOptionRow extends FlxSpriteGroup
 		add(bg);
 
 		title = new FlxText(TITLE_X, 8, ROW_W - 250, option.name, 22);
-		title.setFormat(Paths.font("vcr.ttf"), 22, FlxColor.WHITE, LEFT);
+		title.setFormat(Language.getFontForText(option.name, 'vcr.ttf'), 22, FlxColor.WHITE, LEFT);
 		title.antialiasing = ClientPrefs.data.antialiasing;
 		add(title);
 
 		desc = new FlxText(TITLE_X, 38, ROW_W - 250, compactDescription(option.description), 15);
-		desc.setFormat(Paths.font("vcr.ttf"), 15, FlxColor.WHITE, LEFT);
+		desc.setFormat(Language.getFontForText(option.description, 'vcr.ttf'), 15, FlxColor.WHITE, LEFT);
 		desc.antialiasing = ClientPrefs.data.antialiasing;
 		add(desc);
 
@@ -1110,6 +1286,15 @@ private class PlusOptionRow extends FlxSpriteGroup
 		syncLayout();
 	}
 
+	public inline function containsTouchPoint(x:Float, y:Float):Bool
+		return x >= this.x && x <= this.x + ROW_W && y >= this.y && y <= this.y + ROW_H;
+
+	public inline function isValueTouchPoint(x:Float, y:Float):Bool
+		return containsTouchPoint(x, y) && x >= this.x + ROW_W - 250;
+
+	public inline function valueTouchDirection(x:Float):Int
+		return x < this.x + ROW_W - 110 ? -1 : 1;
+
 	public function refreshFromOption():Void
 	{
 		if (option == null)
@@ -1122,11 +1307,13 @@ private class PlusOptionRow extends FlxSpriteGroup
 		{
 			case BOOL:
 				setValueLabel(Std.string(option.getValue()) == 'true' ? 'ON' : 'OFF');
+			case ACTION:
+				setValueLabel('');
 			default:
 				var value:String = option.text;
 				if (value == null || value.length < 1)
 					value = Std.string(option.getValue());
-				setValueLabel(value);
+				setValueLabel(option.type == KEYBIND ? value : '<  ' + value + '  >');
 		}
 	}
 

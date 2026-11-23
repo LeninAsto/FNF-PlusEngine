@@ -1,0 +1,17 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.outdated",
+  "title": "更新可用!",
+  "version": "目前版本: {1} => 新版本: {2}",
+  "loading_changelog": "装载变量记录...",
+  "controls": "打压 ENTER 更新至最新版本\n如果您使用正确的发动机版本,请按ESCAPE\n你可以在选项菜单中禁用此警告",
+  "controls_mobile": "按A更新至最新版本\n如果是正确的发动机版本,请按B.\n你可以在选项菜单中禁用此警告",
+  "no_changelog": "没有变更记录",
+  "changelog_error": "错误加载变更记录: {1}",
+  "changelog_title": "什么是新的:\n{1}",
+  "network": {
+    "checking": "检查变更记录",
+    "retrieved": "获取",
+    "no_connection": "没有连接"
+  }
+}

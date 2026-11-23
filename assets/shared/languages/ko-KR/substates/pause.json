@@ -1,0 +1,28 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.pause",
+  "deaths": "실패 횟수: {1}",
+  "author": "다음 각 호의 경우 {1}",
+  "practice_mode": "연습 모드",
+  "charting_mode": "채보 편집 모드",
+  "time": "{1} / {2}",
+  "menu": {
+    "resume": "계속하기",
+    "restart_song": "곡 다시 시작",
+    "chart_editor": "채보 편집기",
+    "change_difficulty": "난이도 변경",
+    "options": "설정",
+    "exit_to_menu": "메뉴로 나가기",
+    "leave_charting_mode": "채보 편집 종료",
+    "skip_time": "시간 건너뛰기",
+    "end_song": "곡 종료",
+    "toggle_practice_mode": "연습 모드 전환",
+    "toggle_botplay": "자동 플레이 전환",
+    "skip_video": "영상 건너뛰기",
+    "back": "뒤로"
+  },
+  "errors": {
+    "missing_file": "실종 파일: {1}",
+    "chart": "채보를 불러오는 중 오류:\n{1}"
+  }
+}

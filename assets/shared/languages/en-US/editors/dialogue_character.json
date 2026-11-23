@@ -1,0 +1,28 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.dialogue_character",
+  "ui": {
+    "add_update": "Add/Update",
+    "animation_name": "Animation name:",
+    "animations": "Animations:",
+    "idle_finished_name_on_xml_file": "Idle/Finished name on .XML file:",
+    "image_file_name": "Image file name:",
+    "load_character": "Load Character",
+    "loop_name_on_xml_file": "Loop name on .XML file:",
+    "no_antialiasing": "No Antialiasing",
+    "position_offset": "Position Offset:",
+    "reload_image": "Reload Image",
+    "remove": "Remove",
+    "save_character": "Save Character",
+    "scale": "Scale:"
+  },
+  "presence": {
+    "title": "Dialogue Character Editor",
+    "editing": "Editing: {1}"
+  },
+  "tabs": {
+    "animations": "Animations",
+    "character": "Character",
+    "character_type": "Character Type"
+  }
+}

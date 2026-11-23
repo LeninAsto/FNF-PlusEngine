@@ -1,0 +1,18 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.master",
+  "presence": "편집자 메인 메뉴",
+  "note_rgb_disabled": "참고 RGB 장애인입니다!!!",
+  "no_mod_directory": "< 모드 디렉토리 로딩이 없습니다 >",
+  "loaded_mod_directory": "< 로드된 모드 디렉토리: {1} >",
+  "items": {
+    "chart_editor": "채보 편집기",
+    "character_editor": "캐릭터 편집기",
+    "stage_editor": "스테이지 편집자",
+    "week_editor": "주간 편집자",
+    "menu_character_editor": "메뉴 캐릭터 편집기",
+    "dialogue_editor": "대화 편집자",
+    "dialogue_portrait_editor": "대화 초상편집자",
+    "note_splash_editor": "참고 스플래시 편집자"
+  }
+}

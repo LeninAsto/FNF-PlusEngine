@@ -2,8 +2,9 @@ package states.editors;
 
 import backend.WeekData;
 import objects.Character;
-import states.MainMenuState;
+import states.MainMenuStateSelector;
 import states.FreeplayState;
+import mobile.input.TouchScrollHandler;
 
 class MasterEditorMenu extends MusicBeatState
 {
@@ -19,8 +20,8 @@ class MasterEditorMenu extends MusicBeatState
 		'menu_character_editor',
 		'dialogue_editor',
 		'dialogue_portrait_editor',
-		'note_splash_editor' // ,
-		// 'modchart_converter'
+		'note_splash_editor',
+		'modchart_editor'
 	];
 	private var grpTexts:FlxTypedGroup<Alphabet>;
 	private var directories:Array<String> = [null];
@@ -29,13 +30,14 @@ class MasterEditorMenu extends MusicBeatState
 	private var curDirectory = 0;
 	private var directoryTxt:FlxText;
 	private var disabledTxt:FlxText;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	override function create()
 	{
 		FlxG.camera.bgColor = FlxColor.BLACK;
 		#if DISCORD_ALLOWED
 		// Updating Discord Rich Presence
-		DiscordClient.changePresence("Editors Main Menu", null);
+		DiscordClient.changePresence(Language.getPhrase('editors.master.presence', 'Editors Main Menu'), null);
 		#end
 
 		// ← NUEVO: Construir array de opciones traducidas
@@ -58,7 +60,8 @@ class MasterEditorMenu extends MusicBeatState
 			leText.snapToPosition();
 		}
 
-		disabledTxt = new FlxText(90, 0, FlxG.width - 180, Language.getPhrase('note_rgb_disabled_editor', 'Note RGB is disabled!!!'), 24);
+		disabledTxt = new FlxText(90, 0, FlxG.width - 180,
+			Language.getPhrase('editors.master.note_rgb_disabled', Language.getPhrase('note_rgb_disabled_editor', 'Note RGB is disabled!!!')), 24);
 		disabledTxt.setFormat(Paths.font("vcr.ttf"), 24, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		disabledTxt.borderSize = 2;
 		disabledTxt.alpha = 0.75;
@@ -89,30 +92,33 @@ class MasterEditorMenu extends MusicBeatState
 
 		FlxG.mouse.visible = false;
 
-		addTouchPad(#if MODS_ALLOWED 'LEFT_FULL' #else 'UP_DOWN' #end, 'A_B');
-
 		super.create();
+
+		addTouchPad('LEFT_FULL', 'A_B');
+		addTouchPadCamera();
 	}
 
 	// ← NUEVO: Función para construir opciones traducidas
 	function buildOptions():Void
 	{
 		options = [
-			Language.getPhrase('chart_editor', 'Chart Editor'),
-			Language.getPhrase('character_editor', 'Character Editor'),
-			Language.getPhrase('stage_editor', 'Stage Editor'),
-			Language.getPhrase('week_editor', 'Week Editor'),
-			Language.getPhrase('menu_character_editor', 'Menu Character Editor'),
-			Language.getPhrase('dialogue_editor', 'Dialogue Editor'),
-			Language.getPhrase('dialogue_portrait_editor', 'Dialogue Portrait Editor'),
-			Language.getPhrase('note_splash_editor', 'Note Splash Editor') // ,
-				// Language.getPhrase('modchart_converter', 'Modchart Converter')
+			Language.getPhrase('editors.master.items.chart_editor', Language.getPhrase('chart_editor', 'Chart Editor')),
+			Language.getPhrase('editors.master.items.character_editor', Language.getPhrase('character_editor', 'Character Editor')),
+			Language.getPhrase('editors.master.items.stage_editor', Language.getPhrase('stage_editor', 'Stage Editor')),
+			Language.getPhrase('editors.master.items.week_editor', Language.getPhrase('week_editor', 'Week Editor')),
+			Language.getPhrase('editors.master.items.menu_character_editor', Language.getPhrase('menu_character_editor', 'Menu Character Editor')),
+			Language.getPhrase('editors.master.items.dialogue_editor', Language.getPhrase('dialogue_editor', 'Dialogue Editor')),
+			Language.getPhrase('editors.master.items.dialogue_portrait_editor', Language.getPhrase('dialogue_portrait_editor', 'Dialogue Portrait Editor')),
+			Language.getPhrase('editors.master.items.note_splash_editor', Language.getPhrase('note_splash_editor', 'Note Splash Editor')),
+			Language.getPhrase('editors.master.items.modchart_editor', 'Modchart Editor')
 		];
 	}
 
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
+		if (FlxG.mouse.wheel != 0)
+			changeSelection(-FlxG.mouse.wheel);
 		if (controls.UI_UP_P || (touchPad != null && touchPad.buttonUp.justPressed))
 		{
 			changeSelection(-1);
@@ -134,7 +140,7 @@ class MasterEditorMenu extends MusicBeatState
 
 		if (controls.BACK || (touchPad != null && touchPad.buttonB.justPressed) #if android || FlxG.android.justReleased.BACK #end)
 		{
-			MusicBeatState.switchState(new MainMenuState());
+			MusicBeatState.switchState(MainMenuStateSelector.create());
 		}
 
 		if (controls.ACCEPT || (touchPad != null && touchPad.buttonA.justPressed))
@@ -164,8 +170,8 @@ class MasterEditorMenu extends MusicBeatState
 					LoadingState.loadAndSwitchState(new DialogueCharacterEditorState(), false);
 				case 7: // Note Splash Editor
 					MusicBeatState.switchState(new NoteSplashEditorState());
-				case 8: // Modchart Converter
-					MusicBeatState.switchState(new ModchartConverterState());
+				case 8: // Modchart Editor
+					MusicBeatState.switchState(new ModchartEditorState());
 			}
 			FlxG.sound.music.volume = 0;
 			FreeplayState.destroyFreeplayVocals();
@@ -173,6 +179,8 @@ class MasterEditorMenu extends MusicBeatState
 
 		for (num => item in grpTexts.members)
 		{
+			if (item == null)
+				continue;
 			item.targetY = num - curSelected;
 			item.alpha = canSelect(num) ? 0.6 : 0.25;
 			if (item.targetY == 0)
@@ -191,6 +199,8 @@ class MasterEditorMenu extends MusicBeatState
 
 	function changeSelection(change:Int = 0)
 	{
+		if (options == null || options.length == 0)
+			return;
 		FlxG.sound.play(Paths.sound('scrollMenu'), 0.4);
 		var direction:Int = change < 0 ? -1 : 1;
 		var target:Int = curSelected + change;
@@ -204,6 +214,43 @@ class MasterEditorMenu extends MusicBeatState
 			}
 		}
 		curSelected = FlxMath.wrap(curSelected + change, 0, options.length - 1);
+	}
+
+	function getTouchOptionAt(x:Float, y:Float):Int
+	{
+		if (grpTexts == null)
+			return TouchScrollHandler.NO_TARGET;
+		for (index => item in grpTexts.members)
+			if (item != null && x >= 0 && x <= FlxG.width
+				&& y >= item.y - 18 && y <= item.y + Math.max(item.height, 68) + 18)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
+	}
+
+	function onTouchOption(index:Int, x:Float, y:Float):Void
+	{
+		if (index != curSelected)
+		{
+			changeSelection(index - curSelected);
+			return;
+		}
+		if (!canSelect(curSelected))
+			return;
+
+		switch (curSelected)
+		{
+			case 0: LoadingState.loadAndSwitchState(new ChartingState(), false);
+			case 1: LoadingState.loadAndSwitchState(new CharacterEditorState(Character.DEFAULT_CHARACTER, false));
+			case 2: LoadingState.loadAndSwitchState(new StageEditorState());
+			case 3: MusicBeatState.switchState(new WeekEditorState());
+			case 4: MusicBeatState.switchState(new MenuCharacterEditorState());
+			case 5: LoadingState.loadAndSwitchState(new DialogueEditorState(), false);
+			case 6: LoadingState.loadAndSwitchState(new DialogueCharacterEditorState(), false);
+			case 7: MusicBeatState.switchState(new NoteSplashEditorState());
+			case 8: MusicBeatState.switchState(new ModchartEditorState());
+		}
+		FlxG.sound.music.volume = 0;
+		FreeplayState.destroyFreeplayVocals();
 	}
 
 	function canSelect(index:Int):Bool
@@ -223,11 +270,13 @@ class MasterEditorMenu extends MusicBeatState
 
 		WeekData.setDirectoryFromWeek();
 		if (directories[curDirectory] == null || directories[curDirectory].length < 1)
-			directoryTxt.text = Language.getPhrase('no_mod_directory_loaded', '< No Mod Directory Loaded >');
+			directoryTxt.text = Language.getPhrase('editors.master.no_mod_directory',
+				Language.getPhrase('no_mod_directory_loaded', '< No Mod Directory Loaded >'));
 		else
 		{
 			Mods.currentModDirectory = directories[curDirectory];
-			directoryTxt.text = Language.getPhrase('loaded_mod_directory', '< Loaded Mod Directory: {1} >', [Mods.currentModDirectory]);
+			directoryTxt.text = Language.getPhrase('editors.master.loaded_mod_directory',
+				Language.getPhrase('loaded_mod_directory', '< Loaded Mod Directory: {1} >'), [Mods.currentModDirectory]);
 		}
 		directoryTxt.text = directoryTxt.text.toUpperCase();
 	}

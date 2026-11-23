@@ -1,0 +1,14 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.preload_list",
+  "ui": {
+    "high_qual": "Kualitas Tinggi",
+    "load_file": "Muat Berkas",
+    "load_folder": "Muat Folder",
+    "low_qual": "Kualitas Rendah",
+    "preload_list": "Daftar Pramuat",
+    "save": "Simpan",
+    "story_mode": "Modus Cerita",
+    "x": "X"
+  }
+}

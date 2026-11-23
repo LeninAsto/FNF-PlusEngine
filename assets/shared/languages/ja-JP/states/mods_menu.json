@@ -1,0 +1,47 @@
+{
+  "$schema": 1,
+  "$namespace": "states.mods_menu",
+  "presence": "モッドブラウザ",
+  "title": "MODS",
+  "filter": "フィルター: {1}",
+  "filters": {
+    "all": "全員",
+    "enabled": "活性化",
+    "disabled": "障害者",
+    "launchable": "開始可能"
+  },
+  "search": "検索",
+  "search_query": "検索 {1}{2}",
+  "sections": {
+    "description": "記述",
+    "features": "特徴",
+    "changelog": "チェンゲログ"
+  },
+  "restart_notice": "* このモッドを移動/タグするとゲームが再起動します.",
+  "buttons": {
+    "launch": "打ち上げ",
+    "enable": "アナブル",
+    "enabled": "活性化",
+    "disable": "障害者",
+    "settings": "設定",
+    "reload": "リロード"
+  },
+  "hint": "上/下 選択する   L/R リオーダー   ENTER SPACE ON/OFF (SHIFT=All) TAB設定 Yセキュリティ F フィルター / 検索   ESC 出口",
+  "empty": "モードがインストールされていない\nプレス BACK MODを外出またはインストールする",
+  "unknown_mod": "未知のモッド",
+  "no_description": "記述はない.",
+  "status": {
+    "disabled": "起動を有効にする",
+    "launch": "> プレス ENTER 打ち上げ",
+    "no_launchable_states": "発射可能な状態はない",
+    "base_game_global": "ベースゲームは常にグローバルに読み込まれています",
+    "sensitive_scripts": "敏感なスクリプトが検出される - 有効にするには TRUST を選択する",
+    "activation_denied": "アクティベーション拒否 - モードが無効になりました",
+    "trusted": "信頼性 - モードが有効",
+    "security_disabled": "モッドセキュリティが無効 (オプションで有効)"
+  },
+  "settings_error": {
+    "title": "MOD名: {1}",
+    "message": "エラーが発生しました: {1}"
+  }
+}

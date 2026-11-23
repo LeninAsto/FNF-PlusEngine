@@ -1,0 +1,48 @@
+name: Build summary
+
+on:
+  workflow_call:
+    inputs:
+      results:
+        required: true
+        type: string
+
+jobs:
+  summary:
+    name: Platform results
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Build tree summary
+        env:
+          BUILD_RESULTS: ${{ inputs.results }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          import sys
+
+          needs = json.loads(os.environ['BUILD_RESULTS'])
+          groups = [
+              ('Ubuntu', [('build_linux_x64', 'Linux x64'), ('build_linux_wayland', 'Linux Wayland x64'), ('build_android', 'Android')]),
+              ('Windows', [('build_windows_x64', 'Windows x64')]),
+              ('macOS', [('build_macos_arm64', 'macOS ARM64'), ('build_macos_intel', 'macOS Intel'), ('build_ios', 'iOS')]),
+          ]
+          icons = {'success': '[ok]', 'failure': '[fail]', 'cancelled': '[stop]', 'skipped': '[skip]'}
+          lines = ['## Build results', '', '```text', 'Build']
+          failed = [] if needs['check_platforms']['result'] == 'success' else ['Platform selection']
+          for group_index, (group, jobs) in enumerate(groups):
+              last_group = group_index == len(groups) - 1
+              lines.append(f'{"`--" if last_group else "|--"} {group}')
+              for index, (job_id, label) in enumerate(jobs):
+                  result = needs[job_id]['result']
+                  prefix = '    ' if last_group else '|   '
+                  branch = '`--' if index == len(jobs) - 1 else '|--'
+                  lines.append(f'{prefix}{branch} {label}: {icons.get(result, "[?]")} {result}')
+                  if result not in ('success', 'skipped'):
+                      failed.append(label)
+          lines.append('```')
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as handle:
+              handle.write('\n'.join(lines) + '\n')
+          if failed:
+              sys.exit(1)
+          PY

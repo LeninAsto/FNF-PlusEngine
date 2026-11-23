@@ -27,7 +27,7 @@ class NotesSubState extends MusicBeatSubstate
 		super();
 
 		#if DISCORD_ALLOWED
-		DiscordClient.changePresence("Classic Note Colors Menu", null);
+		DiscordClient.changePresence(Language.getPhrase('options.menus.classic_note_colors.presence', 'Classic Note Colors Menu'), null);
 		#end
 
 		ensureHSV();
@@ -70,7 +70,8 @@ class NotesSubState extends MusicBeatSubstate
 			applyShader(i);
 		}
 
-		hsbText = new Alphabet(valueX, -20, "Hue        Saturation   Brightness", false);
+		hsbText = new Alphabet(valueX, -20,
+			Language.getPhrase('options.menus.classic_note_colors.channels', 'Hue        Saturation   Brightness'), false);
 		hsbText.scaleX = 0.5;
 		hsbText.scaleY = 0.5;
 		add(hsbText);

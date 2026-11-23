@@ -1,0 +1,59 @@
+{
+  "$schema": 1,
+  "$namespace": "freeplay",
+  "presence": "メニュー",
+  "title": "フリープレイ",
+  "score": {
+    "personal_best": "パーソナルベスト {1} ({2})",
+    "details": "スコア: {1}\n精度: {2}",
+    "none": "まだスコアはない"
+  },
+  "errors": {
+    "no_weeks": "フリープレイに追加された週間はない\n\n押す {1} 週編集者メニューへ\n押す {2} メインメニューに戻る",
+    "chart_load_exception": "グラフをロードする際に予想外のエラー: {1}",
+    "no_chart": "この難易度の譜面がありません。",
+    "invalid_bpm": "譜面のBPMが無効なため、再生できません。"
+  },
+  "search": {
+    "placeholder": "捜索...",
+    "helper": "Bを押して集中する ESC 出発する"
+  },
+  "tip": "押す {1} 歌 / プレスを聴くために {2} ゲームプレイ変更メニュー / 押す {3} スコアと精度をリセットする",
+  "desktop_mod_tip": " / F5 モッドをリロード/モッドフォルダを輸入する.",
+  "song_info": {
+    "loading": "荷物...",
+    "scores": "難易度とスコア:\n{1}",
+    "time": "長さ: {1}",
+    "bpm": "BPM: {1}",
+    "author": "による: {1}"
+  },
+  "licenses": {
+    "no-licenses": "免許なし",
+    "creative-commons": "Creative Commons",
+    "cc-by": "CC BY",
+    "cc-by-sa": "CC BY-SA",
+    "cc-by-nd": "CC BY-ND",
+    "cc-by-nc": "CC BY-NC",
+    "cc-by-nc-sa": "CC BY-NC-SA",
+    "cc-by-nc-nd": "CC BY-NC-ND",
+    "public-domain": "公共の領域",
+    "royalty-free": "ロイヤリティフリー",
+    "copyright": "著作権",
+    "permission-required": "許可が必要",
+    "comercial-use": "商業用使用",
+    "no-comercial": "商業的でない",
+    "no-derivatives": "衍生品はない",
+    "share-alike": "共有する",
+    "atribution-required": "属性 要求",
+    "redistribution-allow": "再配分許可",
+    "modify-allow": "変更許可",
+    "streaming-allow": "ストリーミング許可",
+    "public-access": "公衆へのアクセス",
+    "public-execution": "公衆でのパフォーマンス",
+    "sync": "同期する"
+  },
+  "psych": {
+    "tip": "押す {1} 歌 / プレスを聴くために {2} ゲームプレイ変更メニュー / 押す {3} スコアと精度をリセットする",
+    "desktop_mod_tip": " / F5 モッドをリロード/モッドフォルダを輸入する."
+  }
+}

@@ -39,6 +39,22 @@ class WindowsFunctions
 			WindowTweens.setWindowSize(width, height);
 		});
 
+		Lua_helper.add_callback(lua, "setWindowBounds", function(x:Int, y:Int, width:Int, height:Int) {
+			WindowTweens.setWindowBounds(x, y, width, height);
+		});
+
+		Lua_helper.add_callback(lua, "resizeGame", function(width:Int, height:Int) {
+			WindowTweens.resizeGame(width, height);
+		});
+
+		Lua_helper.add_callback(lua, "setGameScaleMode", function(mode:String) {
+			WindowTweens.setGameScaleMode(mode);
+		});
+
+		Lua_helper.add_callback(lua, "restoreGameScaleMode", function() {
+			WindowTweens.restoreGameScaleMode();
+		});
+
 		// Window Information Functions
 		Lua_helper.add_callback(lua, "getWindowX", function() {
 			return WindowTweens.getWindowX();

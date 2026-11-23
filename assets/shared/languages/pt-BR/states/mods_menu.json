@@ -1,0 +1,47 @@
+{
+  "$schema": 1,
+  "$namespace": "states.mods_menu",
+  "presence": "No Navegador Mod",
+  "title": "MODS",
+  "filter": "FILTRO: {1}",
+  "filters": {
+    "all": "TODOS",
+    "enabled": "ATIVADOS",
+    "disabled": "DESATIVADOS",
+    "launchable": "COM INÍCIO PRÓPRIO"
+  },
+  "search": "BUSCAR",
+  "search_query": "BUSCA: {1}{2}",
+  "sections": {
+    "description": "DESCRIÇÃO",
+    "features": "CARACTERÍSTICAS",
+    "changelog": "ALTERAÇÕES"
+  },
+  "restart_notice": "* Movendo/Alternando este mod irá reiniciar o jogo.",
+  "buttons": {
+    "launch": "INICIAR",
+    "enable": "ATIVAR",
+    "enabled": "ATIVADO",
+    "disable": "DESATIVAR",
+    "settings": "CONFIGURAÇÕES",
+    "reload": "RECARREGAR"
+  },
+  "hint": "CIMA/BAIXO Selecionar  L/R Reordenar  ENTER Iniciar  ESPAÇO Ativar/Desativar (SHIFT=Todos)  TAB Configurações  Y Segurança  F Filtro  / Buscar  ESC Sair",
+  "empty": "NENHUM MOD INSTALADO\nPRESSIONE VOLTAR PARA SAIR OU INSTALE UM MOD",
+  "unknown_mod": "Mod Desconhecido",
+  "no_description": "Nenhuma descrição fornecida.",
+  "status": {
+    "disabled": "Desativado: ative para iniciar",
+    "launch": "> Pressione ENTER para iniciar",
+    "no_launchable_states": "Sem telas de início próprias",
+    "base_game_global": "O jogo base é sempre carregado globalmente",
+    "sensitive_scripts": "APIs sensíveis detectadas: escolha CONFIAR para ativar",
+    "activation_denied": "Ativação negada - o mod ficou desativado",
+    "trusted": "Mod confiável: ativado",
+    "security_disabled": "Segurança de mods desativada (ative em Opções)"
+  },
+  "settings_error": {
+    "title": "Nome do mod: {1}",
+    "message": "Ocorreu um erro: {1}"
+  }
+}

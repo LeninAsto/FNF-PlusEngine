@@ -1,78 +1,54 @@
 {
-	"animations": [
-		{
-			"offsets": [
-				-218,
-				-280
-			],
-			"loop": false,
-			"anim": "idle",
-			"fps": 24,
-			"name": "idle spirit_",
-			"indices": []
-		},
-		{
-			"offsets": [
-				-200,
-				-280
-			],
-			"loop": false,
-			"anim": "singLEFT",
-			"fps": 24,
-			"name": "left_",
-			"indices": []
-		},
-		{
-			"offsets": [
-				170,
-				110
-			],
-			"loop": false,
-			"anim": "singDOWN",
-			"fps": 24,
-			"name": "spirit down_",
-			"indices": []
-		},
-		{
-			"offsets": [
-				-220,
-				-280
-			],
-			"loop": false,
-			"anim": "singRIGHT",
-			"fps": 24,
-			"name": "right_",
-			"indices": []
-		},
-		{
-			"offsets": [
-				-220,
-				-240
-			],
-			"loop": false,
-			"anim": "singUP",
-			"fps": 24,
-			"name": "up_",
-			"indices": []
-		}
-	],
-	"no_antialiasing": true,
-	"image": "characters/spirit",
-	"position": [
-		-150,
-		100
-	],
-	"healthicon": "spirit-pixel",
-	"flip_x": false,
-	"healthbar_colors": [
-		255,
-		60,
-		110
-	],
-	"camera_position": [
-		0,
-		0
-	],
-	"sing_duration": 4,
-	"scale": 6
+  "animations": [
+    {
+      "offsets": [-218, -280],
+      "loop": false,
+      "fps": 24,
+      "anim": "idle",
+      "indices": [],
+      "name": "idle spirit"
+    },
+    {
+      "offsets": [-200, -280],
+      "loop": false,
+      "fps": 24,
+      "anim": "singLEFT",
+      "indices": [],
+      "name": "left"
+    },
+    {
+      "offsets": [170, 110],
+      "loop": false,
+      "fps": 24,
+      "anim": "singDOWN",
+      "indices": [],
+      "name": "spirit down"
+    },
+    {
+      "offsets": [-220, -280],
+      "loop": false,
+      "fps": 24,
+      "anim": "singRIGHT",
+      "indices": [],
+      "name": "right"
+    },
+    {
+      "offsets": [-220, -240],
+      "loop": false,
+      "fps": 24,
+      "anim": "singUP",
+      "indices": [],
+      "name": "up"
+    }
+  ],
+  "vocals_file": "",
+  "no_antialiasing": true,
+  "image": "characters/spirit",
+  "position": [170, 420],
+  "healthicon": "spirit-pixel",
+  "flip_x": false,
+  "healthbar_colors": [255, 60, 110],
+  "camera_position": [-700, -690],
+  "sing_duration": 4,
+  "scale": 6
 }

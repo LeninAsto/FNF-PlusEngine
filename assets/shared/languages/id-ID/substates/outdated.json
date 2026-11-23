@@ -1,0 +1,17 @@
+{
+  "$schema": 1,
+  "$namespace": "substates.outdated",
+  "title": "Pembaruan Tersedia!",
+  "version": "Versi Saat Ini: {1} => Versi Baru: {2}",
+  "loading_changelog": "Memuat log perubahan...",
+  "controls": "Tekan ENTER untuk memperbarui ke versi terbaru\nTekan ESCAPE jika Anda berada di versi mesin yang benar\nAnda dapat menonaktifkan peringatan ini dalam Opsi Menu",
+  "controls_mobile": "Tekan A untuk memperbarui ke versi terakhir\nTekan B jika Anda berada di versi mesin yang benar\nAnda dapat menonaktifkan peringatan ini dalam Opsi Menu",
+  "no_changelog": "Tidak ada log perubahan yang tersedia",
+  "changelog_error": "Kesalahan saat memuat log perubahan: {1}",
+  "changelog_title": "Apa yang Baru:\n{1}",
+  "network": {
+    "checking": "Memeriksa log perubahan",
+    "retrieved": "Diperoleh",
+    "no_connection": "Tidak ada koneksi"
+  }
+}

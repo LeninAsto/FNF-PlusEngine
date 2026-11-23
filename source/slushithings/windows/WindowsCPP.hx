@@ -28,6 +28,7 @@ package slushithings.windows;
 #include <wingdi.h>
 #include <winuser.h>
 #include <dwmapi.h>
+#include <wincodec.h>
 #include <winternl.h>
 #include <Shlobj.h>
 #include <commctrl.h>
@@ -69,6 +70,8 @@ package slushithings.windows;
 #pragma comment(lib, "Shell32.lib")
 #pragma comment(lib, "gdi32.lib")
 #pragma comment(lib, "psapi.lib")
+#pragma comment(lib, "ole32.lib")
+#pragma comment(lib, "windowscodecs.lib")
 
 // This is so that all window-related functions ALWAYS apply to the engine window.
 static std::string globalWindowTitle = "Friday Night Funkin\': Plus Engine";
@@ -108,107 +111,41 @@ static void SET_LAYERED(HWND hwnd, bool enabled) {
 
 //////////////////////////////////////////////////////////////////////////////////////////////////////
 
-static BOOL SaveToFile(HBITMAP hBitmap3, LPCTSTR lpszFileName)
-{   
-	HDC hDC;
-	int iBits;
-	WORD wBitCount;
-	DWORD dwPaletteSize=0, dwBmBitsSize=0, dwDIBSize=0, dwWritten=0;
-	BITMAP Bitmap0;
-	BITMAPFILEHEADER bmfHdr;
-	BITMAPINFOHEADER bi;
-	LPBITMAPINFOHEADER lpbi;
-	HANDLE fh, hDib, hPal,hOldPal2=NULL;
-	hDC = CreateDC("DISPLAY", NULL, NULL, NULL);
-	if (!hDC) return 0;
-	iBits = GetDeviceCaps(hDC, BITSPIXEL) * GetDeviceCaps(hDC, PLANES);
-	DeleteDC(hDC);
-	if (iBits <= 1)
-		wBitCount = 1;
-	else if (iBits <= 4)
-		wBitCount = 4;
-	else if (iBits <= 8)
-		wBitCount = 8;
-	else
-		wBitCount = 24; 
-	GetObject(hBitmap3, sizeof(Bitmap0), (LPSTR)&Bitmap0);
-	bi.biSize = sizeof(BITMAPINFOHEADER);
-	bi.biWidth = Bitmap0.bmWidth;
-	bi.biHeight =-Bitmap0.bmHeight;
-	bi.biPlanes = 1;
-	bi.biBitCount = wBitCount;
-	bi.biCompression = BI_RGB;
-	bi.biSizeImage = 0;
-	bi.biXPelsPerMeter = 0;
-	bi.biYPelsPerMeter = 0;
-	bi.biClrImportant = 0;
-	bi.biClrUsed = 256;
-	dwBmBitsSize = ((Bitmap0.bmWidth * wBitCount +31) & ~31) /8
-													* Bitmap0.bmHeight; 
-	hDib = GlobalAlloc(GHND,dwBmBitsSize + dwPaletteSize + sizeof(BITMAPINFOHEADER));
-	if (!hDib) return 0;
-	lpbi = (LPBITMAPINFOHEADER)GlobalLock(hDib);
-	if (!lpbi) {
-		GlobalFree(hDib);
-		return 0;
-	}
-	*lpbi = bi;
+static BOOL SaveToFile(HBITMAP hBitmap, LPCWSTR filename)
+{
+	// The previous implementation wrote a BMP header while callers named the
+	// file .png. File Explorer accepts that disguise; Discord correctly does not.
+	const HRESULT initResult = CoInitializeEx(NULL, COINIT_MULTITHREADED);
+	const bool shouldUninitialize = SUCCEEDED(initResult);
+	IWICImagingFactory* factory = NULL;
+	IWICBitmap* bitmap = NULL;
+	IWICStream* stream = NULL;
+	IWICBitmapEncoder* encoder = NULL;
+	IWICBitmapFrameEncode* frame = NULL;
+	BOOL saved = 0;
 
-	hDC = NULL;
-	hPal = GetStockObject(DEFAULT_PALETTE);
-	if (hPal)
-	{ 
-		hDC = GetDC(NULL);
-		if (!hDC) {
-			GlobalUnlock(hDib);
-			GlobalFree(hDib);
-			return 0;
-		}
-		hOldPal2 = SelectPalette(hDC, (HPALETTE)hPal, 0);
-		RealizePalette(hDC);
-	}
+	HRESULT hr = CoCreateInstance(CLSID_WICImagingFactory, NULL, CLSCTX_INPROC_SERVER,
+		__uuidof(IWICImagingFactory), reinterpret_cast<void**>(&factory));
+	if (SUCCEEDED(hr)) hr = factory->CreateBitmapFromHBITMAP(hBitmap, NULL, WICBitmapUsePremultipliedAlpha, &bitmap);
+	if (SUCCEEDED(hr)) hr = factory->CreateStream(&stream);
+	if (SUCCEEDED(hr)) hr = stream->InitializeFromFilename(filename, GENERIC_WRITE);
+	if (SUCCEEDED(hr)) hr = factory->CreateEncoder(GUID_ContainerFormatPng, NULL, &encoder);
+	if (SUCCEEDED(hr)) hr = encoder->Initialize(stream, WICBitmapEncoderNoCache);
+	if (SUCCEEDED(hr)) hr = encoder->CreateNewFrame(&frame, NULL);
+	if (SUCCEEDED(hr)) hr = frame->Initialize(NULL);
+	if (SUCCEEDED(hr)) hr = frame->WriteSource(bitmap, NULL);
+	if (SUCCEEDED(hr)) hr = frame->Commit();
+	if (SUCCEEDED(hr)) hr = encoder->Commit();
+	if (SUCCEEDED(hr)) saved = 1;
 
-
-	if (!hDC || !GetDIBits(hDC, hBitmap3, 0, (UINT) Bitmap0.bmHeight, (LPSTR)lpbi + sizeof(BITMAPINFOHEADER)
-		+dwPaletteSize, (BITMAPINFO *)lpbi, DIB_RGB_COLORS)) {
-		if (hDC) ReleaseDC(NULL, hDC);
-		GlobalUnlock(hDib);
-		GlobalFree(hDib);
-		return 0;
-	}
-
-	if (hOldPal2)
-	{
-		SelectPalette(hDC, (HPALETTE)hOldPal2, 1);
-		RealizePalette(hDC);
-	}
-	if (hDC) ReleaseDC(NULL, hDC);
-
-	fh = CreateFile(lpszFileName, GENERIC_WRITE,0, NULL, CREATE_ALWAYS, 
-		FILE_ATTRIBUTE_NORMAL | FILE_FLAG_SEQUENTIAL_SCAN, NULL); 
-
-	if (fh == INVALID_HANDLE_VALUE) {
-		GlobalUnlock(hDib);
-		GlobalFree(hDib);
-		return 0; 
-	}
-
-	bmfHdr.bfType = 0x4D42; // "BM"
-	dwDIBSize = sizeof(BITMAPFILEHEADER) + sizeof(BITMAPINFOHEADER) + dwPaletteSize + dwBmBitsSize;
-	bmfHdr.bfSize = dwDIBSize;
-	bmfHdr.bfReserved1 = 0;
-	bmfHdr.bfReserved2 = 0;
-	bmfHdr.bfOffBits = (DWORD)sizeof(BITMAPFILEHEADER) + (DWORD)sizeof(BITMAPINFOHEADER) + dwPaletteSize;
-
-	WriteFile(fh, (LPSTR)&bmfHdr, sizeof(BITMAPFILEHEADER), &dwWritten, NULL);
-
-	WriteFile(fh, (LPSTR)lpbi, dwDIBSize, &dwWritten, NULL);
-	GlobalUnlock(hDib);
-	GlobalFree(hDib);
-	CloseHandle(fh);
-
-	return 1;
-} 
+	if (frame) frame->Release();
+	if (encoder) encoder->Release();
+	if (stream) stream->Release();
+	if (bitmap) bitmap->Release();
+	if (factory) factory->Release();
+	if (shouldUninitialize) CoUninitialize();
+	return saved;
+}
 
 static int screenCapture(int x, int y, int w, int h, LPCSTR fname)
 {
@@ -240,7 +177,14 @@ static int screenCapture(int x, int y, int w, int h, LPCSTR fname)
     DeleteDC(hdcMemory);
 
     HPALETTE hpal = NULL;
-    int saved = SaveToFile(hBitmap, fname) ? 1 : 0;
+	int wideLength = MultiByteToWideChar(CP_UTF8, 0, fname, -1, NULL, 0);
+	if (wideLength <= 0) {
+		DeleteObject(hBitmap);
+		return 0;
+	}
+	std::wstring widePath(wideLength, 0);
+	MultiByteToWideChar(CP_UTF8, 0, fname, -1, &widePath[0], wideLength);
+	int saved = SaveToFile(hBitmap, widePath.c_str()) ? 1 : 0;
     DeleteObject(hBitmap);
     return saved;
 }
@@ -370,21 +314,24 @@ class WindowsCPP
 	 */
 	@:functionCode('
 		HWND hwnd = GET_ENGINE_WINDOW();
-		if (hwnd) {
+		if (!hwnd) return false;
+		{
 			RECT rc;
 			GetClientRect(hwnd, &rc);
 			int width = rc.right - rc.left;
 			int height = rc.bottom - rc.top;
-			if (width <= 0 || height <= 0) return;
+			if (width <= 0 || height <= 0) return false;
 			
 			POINT pt = {0, 0};
 			ClientToScreen(hwnd, &pt);
 			
-			screenCapture(pt.x, pt.y, width, height, path);
+			return screenCapture(pt.x, pt.y, width, height, path) != 0;
 		}
+		return false;
 	')
-	public static function captureGameWindow(path:String):Void
+	public static function captureGameWindow(path:String):Bool
 	{
+		return false;
 	}
 
 	/**

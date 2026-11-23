@@ -1,0 +1,41 @@
+{
+  "$schema": 1,
+  "$namespace": "options.theme_accent",
+  "presence": "テーマアクセントピック",
+  "title": "テーマアクセント カラー",
+  "hint": "選択器を引っ張っている間に本物のMD3ウィジェットを プレビューしてください. ENTER 確認する BACK キャンセルする",
+  "picker_hint": "ホイール+ライトナンスストライプ+パレット,視覚的なスープに変わることなく.",
+  "live_preview": "ライブプレビューが有効",
+  "use_custom": "カスタムアクセントを使用",
+  "mini_hint": "右側には,あなたのアクセントで染められた ストックエンジンのウィジェットが表示されています. ここに呪われているように見えるなら,メニューにも呪われているように見えるでしょう.",
+  "hex_label": "HEX {1}",
+  "boxes": {
+    "preview": "テーマプレビュー",
+    "picker": "アクセントピッカー",
+    "components": "MD3 コンポーネントのプレビュー"
+  },
+  "preview": {
+    "title": "フリープレイ サンプル",
+    "meta": "カスタムアクセントプレビュー"
+  },
+  "chips": {
+    "active": "アクセントアクティブ",
+    "custom": "カスタムトークン",
+    "preset_safe": "預設安全",
+    "selected": "選択した",
+    "hex": "HEXトークン"
+  },
+  "sections": {
+    "standard": "標準的な進歩",
+    "wavy": "波動 的 な 進歩",
+    "widgets": "他のエンジンウィジェット"
+  },
+  "actions": {
+    "copy_hex": "コピー HEX",
+    "paste_hex": "パスタHEX",
+    "apply": "適用する",
+    "cancel": "キャンセル",
+    "preview": "プレビュー",
+    "accent": "アクセント"
+  }
+}

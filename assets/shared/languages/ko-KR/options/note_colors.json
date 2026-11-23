@@ -1,0 +1,15 @@
+{
+  "$schema": 1,
+  "$namespace": "options.note_colors",
+  "reset_tip": "압력 {1} 선택된 노트 파트를 다시 설정합니다.",
+  "full_reset_tip": "잠깐만요 {1} + 누르 RESET 선택된 메모를 완전히 재설정하는 키",
+  "shift": "Shift",
+  "press": "누르기",
+  "ctrl": "Ctrl",
+  "left_shoulder": "왼쪽 어깨 버튼",
+  "mode": "색상 모드: {1}",
+  "modes": {
+    "classic": "클래식 H/S/B",
+    "rgb": "RGB"
+  }
+}

@@ -17,7 +17,8 @@ import mobile.backend.PsychJNI;
 	public var dynamicColors:Bool = true; // yes cause its cool -Karim
 	public var controlsAlpha:Float = FlxG.onMobile ? 0.6 : 0;
 	public var showTouchPointer:Bool = true; // show touch pointer indicator (like Android dev option)
-	public var showMobileDebugButtons:Bool = false; // show the trace button on mobile
+	public var showMobileDebugButtons:Bool = true; // show the trace/mod-state buttons on mobile
+	public var mobileScrollSensitivity:Float = 1.0; // Touch menu swipe response multiplier
 	public var mobileReceptorAlign:Bool = false; // Align receptors with hitbox lanes (mobile only, may break scripts)
 	public var hitboxType:String = "Gradient";
 
@@ -34,6 +35,7 @@ import mobile.backend.PsychJNI;
 	public var naughtynessResults:Bool = true;
 	public var gameOverVibration:Bool = false;
 	#if windows
+	public var windowResolution:String = 'Default';
 	public var fullscreenMode:String = 'Borderless'; // 'Borderless', 'Borderless Fix', 'Exclusive'
 	public var windowsGDIEffects:Bool = false; // Requires manual user consent in Gameplay Settings
 	public var maxInstanceSlots:Int = 1; // Maximum simultaneous Plus Engine windows allowed
@@ -45,6 +47,8 @@ import mobile.backend.PsychJNI;
 	public var vsync:Bool = false;
 	public var fpsCounterMode:String = #if mobile 'Visible No Background' #else 'Visible with Background' #end; // FPS counter visibility/detail mode
 	public var fpsDebugLevel:Int = #if mobile 1 #else 2 #end; // Legacy FPSCounter debug level (persistent)
+	public var fpsRainbowColor:Bool = false;
+	public var fpsInterpolateColor:Bool = false;
 	public var framerate:Int = 60;
 	public var framerateMode:String = 'Psych';
 	public var uncapFramerate:Bool = false;
@@ -89,7 +93,6 @@ import mobile.backend.PsychJNI;
 		'botplayType' => 'Normal',
 		'botplayCPUProfile' => 'Skilled',
 		'opponentdrain' => false, // JS Engine-style: opponent note hits drain player health
-		'opponentplay' => false,
 		'perfect' => false, // Perfect Mode - insta-kill on any judgement below Sick
 		'nodroppenalty' => false // Hold drops don't cause misses
 	];
@@ -110,17 +113,19 @@ import mobile.backend.PsychJNI;
 	public var timeBump:Bool = false;
 	public var psychScoreText:Bool = true;
 	public var abbreviateScore:Bool = true;
-	public var hideSustainSplash:Bool = true;
+	public var hideSustainSplash:Bool = false;
 	public var showKeyViewer:Bool = false;
+	public var showJudgementCounter:Bool = false;
 	public var iconBounceType:String = 'Default';
 	public var showRating:Bool = true;
 	public var showCombo:Bool = false;
 	public var showComboNum:Bool = true;
 	public var showTimingTags:Bool = false;
+	public var showMinusDotKM:Bool = false;
 	public var showHitMs:Bool = false;
-	#if android
-	public var runOnLightVisual:Bool = true;
-	#end
+	// The pooled hit-visual path is an Android performance fallback. Desktop
+	// keeps the normal renderer so modcharts and desktop visuals stay faithful.
+	public var runOnLightVisual:Bool = #if android true #else false #end;
 	public var comboInGame:Bool = false;
 	public var nfRatingStyle:Bool = false;
 	public var endCountdown:Bool = false; // Enables/disables the end countdown
@@ -185,17 +190,20 @@ import mobile.backend.PsychJNI;
 	public var dynamicCombo:Bool = false;
 	public var resultsStateAtEnd:Bool = true;
 	public var vanillaTransition:Bool = false; // Use vanilla Psych Engine transition instead of custom
+	public var stickerTransition:Bool = true; // Show sticker transition when exit
 	public var optionsMenuStyle:String = 'Plus'; // Plus, Psych
 	public var pauseCountdown:Bool = false; // Enable countdown when resuming from pause
 	public var heyIntro:Bool = false; // Boyfriend and Girlfriend do Hey! animation on countdown Go!
 	public var breakTimer:Bool = false; // Show timer when next notes are approaching
-	public var usePsychFreeplay:Bool = true; // Use Psych-style legacy Freeplay instead of PlusEngine Freeplay
+	public var usePsychFreeplay:Bool = true; // Legacy compatibility mirror for freeplayMenuStyle
+	public var mainMenuStyle:String = 'Normal'; // Normal, Plus
+	public var freeplayMenuStyle:String = 'Normal'; // Normal, Plus
 	public var cneStyleDragCharacter:Bool = false;
 	public var canDragCameraStage:Bool = true;
 
 	// Mod compatibility / security
 	public var scriptWarns:Bool = true; // Show warnings for deprecated Lua/HScript compatibility APIs
-	public var modSecure:Bool = true; // Scan mod Lua/HScript before allowing sensitive APIs to run
+	public var modSecure:Bool = false; // Opt-in scan for mod Lua/HScript sensitive APIs
 	public var modSecurityChecks:Map<String, Bool> = new Map();
 }
 
@@ -247,6 +255,9 @@ class ClientPrefs
 		'debug_1' => [SEVEN],
 		'debug_2' => [EIGHT],
 		'debug_3' => [SIX],
+		'fps_counter' => [F2],
+		'trace_display' => [F4],
+		'screenshot' => [F5],
 		'fullscreen' => [F11]
 	];
 	public static var gamepadBinds:Map<String, Array<FlxGamepadInputID>> = [
@@ -394,6 +405,7 @@ class ClientPrefs
 	public static function saveSettings()
 	{
 		syncThemeModeFlags();
+		normalizeMenuStyles();
 		normalizeFPSCounterPrefs();
 		#if windows
 		data.maxInstanceSlots = normalizeMaxInstanceSlots(data.maxInstanceSlots);
@@ -427,6 +439,25 @@ class ClientPrefs
 			if (key != 'gameplaySettings' && Reflect.hasField(FlxG.save.data, key))
 				Reflect.setField(data, key, Reflect.field(FlxG.save.data, key));
 
+		#if android
+		try
+		{
+			var launcherPrefs:String = PsychJNI.getLauncherPrefs();
+			var values:Array<String> = launcherPrefs != null ? launcherPrefs.split('|') : [];
+			if (values.length == 2)
+			{
+				data.showAndroidLauncher = values[0] == '1';
+				data.androidLauncherAutoStart = values[1] == '1';
+			}
+		}
+		catch (_:Dynamic) {}
+		#end
+
+		#if !android
+		// Ignore an old/mobile save value when opening the desktop build.
+		data.runOnLightVisual = false;
+		#end
+
 		if (!Reflect.hasField(FlxG.save.data, 'hardwareAccelerationDefaulted'))
 		{
 			data.cacheOnGPU = true;
@@ -434,6 +465,29 @@ class ClientPrefs
 			Reflect.setField(FlxG.save.data, 'hardwareAccelerationDefaulted', true);
 			FlxG.save.flush();
 		}
+
+		// Sustain splashes used to ship disabled while their renderer/atlas support was incomplete.
+		// Enable the finished implementation once; the option remains user-controllable afterwards.
+		if (!Reflect.hasField(FlxG.save.data, 'sustainSplashDefaulted'))
+		{
+			data.hideSustainSplash = false;
+			Reflect.setField(FlxG.save.data, 'hideSustainSplash', false);
+			Reflect.setField(FlxG.save.data, 'sustainSplashDefaulted', true);
+			FlxG.save.flush();
+		}
+
+		#if mobile
+		// The buttons previously shipped hidden by default, which left trace and
+		// scripted-state recovery inaccessible on touch-only devices. Enable them
+		// once; the mobile option remains user-controllable afterwards.
+		if (!Reflect.hasField(FlxG.save.data, 'mobileDebugButtonsDefaulted'))
+		{
+			data.showMobileDebugButtons = true;
+			Reflect.setField(FlxG.save.data, 'showMobileDebugButtons', true);
+			Reflect.setField(FlxG.save.data, 'mobileDebugButtonsDefaulted', true);
+			FlxG.save.flush();
+		}
+		#end
 
 		if (!Reflect.hasField(FlxG.save.data, 'fpsCounterMode'))
 		{
@@ -458,6 +512,9 @@ class ClientPrefs
 		if (!Reflect.hasField(FlxG.save.data, 'menuThemeMode'))
 			data.menuThemeMode = data.menuDarkTheme ? 'Dark' : 'Light';
 		syncThemeModeFlags();
+		if (!Reflect.hasField(FlxG.save.data, 'freeplayMenuStyle'))
+			data.freeplayMenuStyle = data.usePsychFreeplay ? 'Normal' : 'Plus';
+		normalizeMenuStyles();
 
 		if (Main.fpsVar != null)
 			Main.fpsVar.applyPrefs();
@@ -695,6 +752,18 @@ class ClientPrefs
 		};
 		data.menuDarkTheme = data.menuThemeMode == 'Dark';
 		data.menuAccentColorCustom = 0xFF000000 | (data.menuAccentColorCustom & 0x00FFFFFF);
+	}
+
+	public static function normalizeMenuStyles():Void
+	{
+		data.mainMenuStyle = normalizeMenuStyle(data.mainMenuStyle);
+		data.freeplayMenuStyle = normalizeMenuStyle(data.freeplayMenuStyle);
+		data.usePsychFreeplay = data.freeplayMenuStyle != 'Plus';
+	}
+
+	static function normalizeMenuStyle(style:String):String
+	{
+		return style != null && style.toLowerCase() == 'plus' ? 'Plus' : 'Normal';
 	}
 
 	static function getInterpolatedDrawFramerate(safeFramerate:Int):Int

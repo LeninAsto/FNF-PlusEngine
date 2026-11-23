@@ -33,6 +33,8 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 	var _perLaneUVT:Array<openfl.Vector<Float>>;
 	var _perLaneIndices:Array<openfl.Vector<Int>>;
 	var _perLaneTransforms:Array<NativeVector<ColorTransform>>;
+	var _geometryCache:Array<Map<Int, {vertices:openfl.Vector<Float>, uvt:openfl.Vector<Float>,
+		indices:openfl.Vector<Int>, transforms:NativeVector<ColorTransform>}>>;
 	var _perLaneDivisions:Array<Int>;
 	var _nextLaneDivisions:Array<Int>;
 	var _commands:Array<DrawCommand>;
@@ -55,6 +57,10 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 	var _px:Array<Float> = [];
 	var _py:Array<Float> = [];
 	var _pz:Array<Float> = [];
+	var _wx:Array<Float> = [];
+	var _wy:Array<Float> = [];
+	var _wz:Array<Float> = [];
+	var _clipDistance:Array<Float> = [];
 	var _palpha:Array<Float> = [];
 	var _pglow:Array<Float> = [];
 	var _pglowR:Array<Float> = [];
@@ -85,6 +91,16 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		if (_perLaneDivisions[laneSlot] == divisions)
 			return;
 
+		final cached = _geometryCache[laneSlot].get(divisions);
+		if (cached != null) {
+			_perLaneVertices[laneSlot] = cached.vertices;
+			_perLaneUVT[laneSlot] = cached.uvt;
+			_perLaneIndices[laneSlot] = cached.indices;
+			_perLaneTransforms[laneSlot] = cached.transforms;
+			_perLaneDivisions[laneSlot] = divisions;
+			return;
+		}
+
 		final segs = divisions - 1;
 		final uvt = new openfl.Vector<Float>(segs * 12, true);
 		final indices = new openfl.Vector<Int>(segs * 6, true);
@@ -95,6 +111,7 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		_perLaneIndices[laneSlot] = indices;
 		_perLaneTransforms[laneSlot] = transforms;
 		_perLaneDivisions[laneSlot] = divisions;
+		_geometryCache[laneSlot].set(divisions, {vertices: _perLaneVertices[laneSlot], uvt: uvt, indices: indices, transforms: transforms});
 
 		// The 4px texture is transparent at its sides and opaque in its centre.
 		// Mapping U across the width gives cheap edge smoothing without extra path
@@ -121,6 +138,7 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		if (_px.length >= divisions)
 			return;
 		_px.resize(divisions); _py.resize(divisions); _pz.resize(divisions);
+		_wx.resize(divisions); _wy.resize(divisions); _wz.resize(divisions); _clipDistance.resize(divisions);
 		_palpha.resize(divisions); _pglow.resize(divisions);
 		_pglowR.resize(divisions); _pglowG.resize(divisions); _pglowB.resize(divisions);
 		_pscale.resize(divisions); _nx.resize(divisions); _ny.resize(divisions);
@@ -143,6 +161,7 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		_perLaneUVT = [for (_ in 0...MAX_LANES) new openfl.Vector<Float>(0, true)];
 		_perLaneIndices = [for (_ in 0...MAX_LANES) new openfl.Vector<Int>(0, true)];
 		_perLaneTransforms = [for (_ in 0...MAX_LANES) new NativeVector<ColorTransform>(0)];
+		_geometryCache = [for (_ in 0...MAX_LANES) new Map()];
 		_perLaneDivisions = [for (_ in 0...MAX_LANES) 0];
 		_nextLaneDivisions = [for (_ in 0...MAX_LANES) 17];
 		_pathCameras = [for (_ in 0...MAX_LANES) []];
@@ -263,7 +282,7 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		return segments + 1;
 	}
 
-	private function updateAdaptiveDivisions(laneSlot:Int, divisions:Int, pathThickness:Float, applyDepth:Bool):Bool {
+	private function updateAdaptiveDivisions(laneSlot:Int, divisions:Int, pathThickness:Float, applyDepth:Bool, applyVisuals:Bool, applyScale:Bool):Bool {
 		final segs = divisions - 1;
 		var maxError = 0.0;
 
@@ -280,7 +299,7 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		}
 
 		var stylesStable = true;
-		for (i in 1...divisions) {
+		if (applyVisuals) for (i in 1...divisions) {
 			if (Math.abs(_palpha[i] - _palpha[0]) > (1.0 / 255.0)
 				|| Math.abs(_pglow[i] - _pglow[0]) > (1.0 / 255.0)
 				|| Math.abs(_pglowR[i] - _pglowR[0]) > (1.0 / 255.0)
@@ -292,7 +311,7 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 			}
 		}
 		var widthError = 0.0;
-		if (_pz[0] <= 1e6 && _pz[divisions - 1] <= 1e6) {
+		if ((applyDepth || applyScale) && _pz[0] <= 1e6 && _pz[divisions - 1] <= 1e6) {
 			final firstWidth = pathThickness * _pscale[0] * (applyDepth ? 1.0 / _pz[0] : 1.0) * 0.5;
 			final lastWidth = pathThickness * _pscale[divisions - 1] * (applyDepth ? 1.0 / _pz[divisions - 1] : 1.0) * 0.5;
 			for (i in 1...(divisions - 1)) {
@@ -360,10 +379,12 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		_paramBuf.lane = lane;
 		_paramBuf.player = fn;
 		_paramBuf.isTapArrow = true;
+		_paramBuf.isPath = true;
 
 		// Phase 1: Sample all N positions, storing results in flat arrays.
 		// index=0 → distance=0 (exactly at the receptor);
 		// index=divisions-1 → distance=limit (furthest point ahead).
+		var hasClippedSamples = false;
 		for (index in 0...divisions) {
 			final hitTime = interval * index; // [0 .. limit]
 			_scratch.x = baseX;
@@ -372,12 +393,19 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 			_paramBuf.hitTime = songPos + hitTime;
 			_paramBuf.distance = hitTime;
 			_paramBuf.sourceTime = songPos + hitTime;
+			_paramBuf.strumTime = songPos + hitTime;
+			_paramBuf.sampleTime = songPos + hitTime;
 
-			final output = parent.getReceptorPathInto(_scratch, _paramBuf, _output, _outputPos, _outputVisuals, 0, applyVisuals, true);
+			final output = parent.getNotePathInto(_scratch, _paramBuf, _output, _outputPos, _outputVisuals, 0, applyVisuals, true);
 
 			_px[index] = output.pos.x;
 			_py[index] = output.pos.y;
 			_pz[index] = output.pos.z; // 1e9 = degenerate / behind camera
+			_wx[index] = output.rawX;
+			_wy[index] = output.rawY;
+			_wz[index] = output.rawZ;
+			_clipDistance[index] = parent.view.clipDistance;
+			if (_clipDistance[index] < 0) hasClippedSamples = true;
 			_palpha[index] = applyAlpha ? output.visuals.alpha : 1.0;
 			_pglow[index] = colored ? output.visuals.glow : 0.0;
 			_pglowR[index] = output.visuals.glowR;
@@ -389,7 +417,8 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		// Select next frame's resolution from the curve we just transformed.
 		// Straight paths quickly fall to 8 segments; curved paths gain only the
 		// detail required to keep their screen-space error below one pixel.
-		final straightPath = updateAdaptiveDivisions(laneSlot, divisions, pathThickness, applyDepth);
+		final straightPath = updateAdaptiveDivisions(laneSlot, divisions, pathThickness, applyDepth, applyVisuals, applyScale) && !hasClippedSamples;
+		if (hasClippedSamples) _nextLaneDivisions[laneSlot] = divisions;
 		final renderDivisions = straightPath ? 2 : divisions;
 		final renderSegs = renderDivisions - 1;
 		updateTris(laneSlot, renderDivisions);
@@ -397,7 +426,8 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 		// --- Phase 2: Compute smooth normals via central differences ---
 		// Using tangent = p[i+1] - p[i-1] (central difference) at interior points
 		// avoids the per-segment zigzag caused by using a single segment direction.
-		for (i in 0...divisions) {
+		for (normalIndex in 0...(straightPath ? 2 : divisions)) {
+			final i = straightPath && normalIndex == 1 ? divisions - 1 : normalIndex;
 			var tx:Float, ty:Float;
 			if (i == 0) {
 				tx = _px[1] - _px[0];
@@ -433,10 +463,9 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 			final i0 = straightPath ? 0 : seg;
 			final i1 = straightPath ? divisions - 1 : seg + 1;
 
-			// Skip segments touching a degenerate (behind-camera) point.
-			final clipped = _pz[i0] > 1e6 || _pz[i1] > 1e6;
-
-			if (clipped) {
+			final d0 = _clipDistance[i0];
+			final d1 = _clipDistance[i1];
+			if (d0 < 0 && d1 < 0) {
 				// Emit a zero-area quad at the receptor to keep vertex count stable.
 				final rx = _px[0];
 				final ry = _py[0];
@@ -461,18 +490,37 @@ final class PathRenderer extends BaseRenderer<FlxSprite> {
 				continue;
 			}
 
-			final t0 = pathThickness * _pscale[i0] * (applyDepth ? 1.0 / _pz[i0] : 1.0) * 0.5;
-			final t1 = pathThickness * _pscale[i1] * (applyDepth ? 1.0 / _pz[i1] : 1.0) * 0.5;
-
-			// Use the smooth normal at each endpoint for a clean miter join.
-			final a1x = _px[i0] + _nx[i0] * t0;
-			final a1y = _py[i0] + _ny[i0] * t0;
-			final a2x = _px[i0] - _nx[i0] * t0;
-			final a2y = _py[i0] - _ny[i0] * t0;
-			final b1x = _px[i1] + _nx[i1] * t1;
-			final b1y = _py[i1] + _ny[i1] * t1;
-			final b2x = _px[i1] - _nx[i1] * t1;
-			final b2y = _py[i1] - _ny[i1] * t1;
+			var x0 = _px[i0], y0 = _py[i0], z0 = _pz[i0], scale0 = _pscale[i0];
+			var x1 = _px[i1], y1 = _py[i1], z1 = _pz[i1], scale1 = _pscale[i1];
+			var nx0 = _nx[i0], ny0 = _ny[i0], nx1 = _nx[i1], ny1 = _ny[i1];
+			if (d0 < 0 || d1 < 0) {
+				final ratio = d0 / (d0 - d1);
+				_scratch.setTo(_wx[i0] + (_wx[i1] - _wx[i0]) * ratio,
+					_wy[i0] + (_wy[i1] - _wy[i0]) * ratio, _wz[i0] + (_wz[i1] - _wz[i0]) * ratio);
+				parent.view.transformVector(_scratch);
+				final clippedScale = _pscale[i0] + (_pscale[i1] - _pscale[i0]) * ratio;
+				if (d0 < 0) {
+					x0 = _scratch.x; y0 = _scratch.y; z0 = _scratch.z; scale0 = clippedScale;
+				} else {
+					x1 = _scratch.x; y1 = _scratch.y; z1 = _scratch.z; scale1 = clippedScale;
+				}
+				final dx = x1 - x0, dy = y1 - y0;
+				final len = Math.sqrt(dx * dx + dy * dy);
+				if (len > 0.0001) {
+					nx0 = nx1 = -dy / len;
+					ny0 = ny1 = dx / len;
+				}
+			}
+			final t0 = pathThickness * scale0 * (applyDepth ? 1.0 / z0 : 1.0) * 0.5;
+			final t1 = pathThickness * scale1 * (applyDepth ? 1.0 / z1 : 1.0) * 0.5;
+			final a1x = x0 + nx0 * t0;
+			final a1y = y0 + ny0 * t0;
+			final a2x = x0 - nx0 * t0;
+			final a2y = y0 - ny0 * t0;
+			final b1x = x1 + nx1 * t1;
+			final b1y = y1 + ny1 * t1;
+			final b2x = x1 - nx1 * t1;
+			final b2y = y1 - ny1 * t1;
 
 			laneVerts.set(vi++, a1x);
 			laneVerts.set(vi++, a1y);

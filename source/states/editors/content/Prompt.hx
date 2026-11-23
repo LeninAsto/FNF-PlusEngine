@@ -7,14 +7,14 @@ class ExitConfirmationPrompt extends Prompt
 {
 	public function new(?finishCallback:Void->Void)
 	{
-		super('There\'s unsaved progress,\nare you sure you want to exit?', function()
+		super(Language.getPhrase('editors.prompt.unsaved', 'There\'s unsaved progress,\nare you sure you want to exit?'), function()
 		{
 			FlxG.mouse.visible = false;
 			MusicBeatState.switchState(new states.editors.MasterEditorMenu());
 			FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			if (finishCallback != null)
 				finishCallback();
-		}, 'Exit');
+		}, Language.getPhrase('editors.prompt.actions.exit', 'Exit'));
 	}
 }
 
@@ -23,11 +23,13 @@ class Prompt extends BasePrompt
 {
 	var yesFunction:Void->Void;
 	var noFunction:Void->Void;
-	var _yesTxt:String = 'OK';
-	var _noTxt:String = 'Cancel';
+	var _yesTxt:String;
+	var _noTxt:String;
 
 	public function new(title:String, yesFunction:Void->Void, ?noFunction:Void->Void, ?_yesTxt:String, ?_noTxt:String)
 	{
+		this._yesTxt = Language.getPhrase('editors.prompt.actions.ok', 'OK');
+		this._noTxt = Language.getPhrase('editors.prompt.actions.cancel', 'Cancel');
 		if (_yesTxt != null)
 			this._yesTxt = _yesTxt;
 		if (_noTxt != null)

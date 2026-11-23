@@ -1,0 +1,18 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.master",
+  "presence": "エディターのメインメニュー",
+  "note_rgb_disabled": "RGB は無効になっていることに注意してください。",
+  "no_mod_directory": "< Mod ディレクトリがロードされていません >",
+  "loaded_mod_directory": "< ロードされた Mod ディレクトリ: {1} >",
+  "items": {
+    "chart_editor": "譜面エディター",
+    "character_editor": "キャラクターエディター",
+    "stage_editor": "ステージエディター",
+    "week_editor": "週編集者",
+    "menu_character_editor": "メニューキャラクターエディター",
+    "dialogue_editor": "ダイアログエディター",
+    "dialogue_portrait_editor": "ダイアログポートレートエディター",
+    "note_splash_editor": "ノートスプラッシュエディター"
+  }
+}

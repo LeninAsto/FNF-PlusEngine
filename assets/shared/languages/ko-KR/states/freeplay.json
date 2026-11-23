@@ -1,0 +1,59 @@
+{
+  "$schema": 1,
+  "$namespace": "freeplay",
+  "presence": "메뉴에서",
+  "title": "프리플레이",
+  "score": {
+    "personal_best": "개인 최고: {1} ({2})",
+    "details": "점수: {1}\n정확성: {2}",
+    "none": "아직 점수가 없습니다."
+  },
+  "errors": {
+    "no_weeks": "프리플레이에 추가된 몇 주도 없습니다\n\n압력 {1} 주간 편집자 메뉴로 이동합니다.\n압력 {2} 메인 메뉴로 돌아갑니다.",
+    "chart_load_exception": "채보를 로드할 때 예상치 못한 오류: {1}",
+    "no_chart": "이 난이도에 사용할 수 있는 채보가 없습니다.",
+    "invalid_bpm": "채보의 BPM이 올바르지 않아 플레이할 수 없습니다."
+  },
+  "search": {
+    "placeholder": "검색...",
+    "helper": "B를 누르면 집중할 수 있어요 ESC 출입"
+  },
+  "tip": "압력 {1} 노래 / 언론을 듣기 위해 {2} 게임 플레이 변경 메뉴 / 누르기를 열기 {3} 스코어와 정확성을 재설정합니다.",
+  "desktop_mod_tip": " / F5 모드를 다시 로드/모드를 가져오기 위해 모드 폴더를 내려 놓습니다.",
+  "song_info": {
+    "loading": "로딩...",
+    "scores": "난이도 및 점수:\n{1}",
+    "time": "길이: {1}",
+    "bpm": "BPM: {1}",
+    "author": "다음 각 호의 경우 {1}"
+  },
+  "licenses": {
+    "no-licenses": "면허가 없습니다",
+    "creative-commons": "Creative Commons",
+    "cc-by": "CC BY",
+    "cc-by-sa": "CC BY-SA",
+    "cc-by-nd": "CC BY-ND",
+    "cc-by-nc": "CC BY-NC",
+    "cc-by-nc-sa": "CC BY-NC-SA",
+    "cc-by-nc-nd": "CC BY-NC-ND",
+    "public-domain": "공공 영역",
+    "royalty-free": "로열티 무료",
+    "copyright": "저작권",
+    "permission-required": "허가 필요",
+    "comercial-use": "상업적 사용",
+    "no-comercial": "비상용",
+    "no-derivatives": "파생 상품은 없습니다",
+    "share-alike": "공유 하는 것",
+    "atribution-required": "인정 의 필요성",
+    "redistribution-allow": "재배포 허용",
+    "modify-allow": "변경 사항은 허용된다",
+    "streaming-allow": "스트리밍 허용",
+    "public-access": "공공의 접근",
+    "public-execution": "공중 성능",
+    "sync": "동기화"
+  },
+  "psych": {
+    "tip": "압력 {1} 노래 / 언론을 듣기 위해 {2} 게임 플레이 변경 메뉴 / 누르기를 열기 {3} 스코어와 정확성을 재설정합니다.",
+    "desktop_mod_tip": " / F5 모드를 다시 로드/모드를 가져오기 위해 모드 폴더를 내려 놓습니다."
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.dialogue",
+  "ui": {
+    "angry_textbox": "憤怒的文字箱",
+    "character": "角色：",
+    "interval_speed_ms": "接觸時間:",
+    "load_dialogue": "載入對話",
+    "sound_file_name": "音訊檔案名稱:",
+    "text": "標籤:"
+  },
+  "presence": {
+    "title": "討論區編輯",
+    "empty": "沒有任何問題."
+  },
+  "tabs": {
+    "dialogue_line": "對話線"
+  }
+}

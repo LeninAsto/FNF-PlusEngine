@@ -1,0 +1,10 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.playtest",
+  "ui": {
+    "section_0": "部分: 0"
+  },
+  "presence": {
+    "title": "在谱面编辑器上进行测试"
+  }
+}

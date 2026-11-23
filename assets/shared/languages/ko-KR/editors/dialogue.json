@@ -1,0 +1,19 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.dialogue",
+  "ui": {
+    "angry_textbox": "화난 텍스트 박스",
+    "character": "캐릭터:",
+    "interval_speed_ms": "간격/속도는 (ms):",
+    "load_dialogue": "대화 불러오기",
+    "sound_file_name": "사운드 파일 이름:",
+    "text": "본문:"
+  },
+  "presence": {
+    "title": "대화 편집자",
+    "empty": "(공허)"
+  },
+  "tabs": {
+    "dialogue_line": "대화 라인"
+  }
+}

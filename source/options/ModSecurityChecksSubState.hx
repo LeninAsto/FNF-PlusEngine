@@ -60,8 +60,9 @@ class ModSecurityChecksSubState extends BaseOptionsMenu {
 	static var pendingChanged:Bool = false;
 
 	public function new() {
-		title = Language.getPhrase('mod_security_checks_menu', 'Mod Security Checks');
-		rpcTitle = 'Mod Security Checks';
+		title = Language.getPhrase('options.menus.mod_security.title',
+			Language.getPhrase('mod_security_checks_menu', 'Mod Security Checks'));
+		rpcTitle = Language.getPhrase('options.menus.mod_security.presence', 'Mod Security Checks');
 		for (o in buildOptions())
 			addOption(o);
 		super();
@@ -79,7 +80,9 @@ class ModSecurityChecksSubState extends BaseOptionsMenu {
 			final name = names[i];
 			if (name == "ModSecurity (tamper)")
 				continue; // not user-toggleable
-			final desc = DESCRIPTIONS.exists(name) ? DESCRIPTIONS.get(name) : 'Scan mod scripts for usage of "$name".';
+			final key:String = Option.normalizeTranslationKey(name);
+			final fallback:String = DESCRIPTIONS.exists(name) ? DESCRIPTIONS.get(name) : 'Scan mod scripts for usage of "$name".';
+			final desc = Language.getPhrase('options.mod_security_checks.$key', fallback, [name]);
 			final opt = new Option(name, desc, name, BOOL);
 			opt.defaultValue = true;
 			// Missing map entries default to enabled (matches ModSecurity.isCheckEnabled).

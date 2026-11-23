@@ -141,7 +141,7 @@ class TraceDisplay extends Sprite
 			setupErrorCapture();
 		}
 
-		// Configurar listener para F4
+		// Configurar listener para el atajo personalizable del Trace Display.
 		if (FlxG.stage != null)
 		{
 			FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
@@ -539,11 +539,16 @@ class TraceDisplay extends Sprite
 	}
 
 	/**
-	 * Toggle del display con F4
+	 * Toggle del display con su atajo personalizable.
 	 */
 	private function onKeyDown(event:KeyboardEvent):Void
 	{
-		if (event.keyCode == Keyboard.F4)
+		// Only suppress the key while Controls is actively capturing a new bind.
+		// Error, pause and debug substates must still be able to reveal traces.
+		if (options.ControlsSubState.isRebinding)
+			return;
+		var keys = ClientPrefs.keyBinds.get('trace_display');
+		if (keys != null && keys.contains(event.keyCode))
 		{
 			toggleDisplay();
 		}

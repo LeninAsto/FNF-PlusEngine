@@ -1,0 +1,59 @@
+{
+  "$schema": 1,
+  "$namespace": "freeplay",
+  "presence": "Di Menu",
+  "title": "BERMAIN GRATIS",
+  "score": {
+    "personal_best": "PRIBADI TERBAIK: {1} ( {2} )",
+    "details": "Skor: {1}\nAkurasi: {2}",
+    "none": "Belum ada skor"
+  },
+  "errors": {
+    "no_weeks": "TIDAK ADA MINGGU YANG DITAMBAHKAN UNTUK FREEPLAY\n\nTekan {1} untuk membuka Menu Editor Minggu.\nTekan {2} untuk kembali ke Menu Utama.",
+    "chart_load_exception": "Kesalahan tak terduga saat memuat chart: {1}",
+    "no_chart": "Tidak ada chart untuk tingkat kesulitan ini.",
+    "invalid_bpm": "BPM chart ini tidak valid, sehingga tidak dapat dimainkan."
+  },
+  "search": {
+    "placeholder": "Mencari...",
+    "helper": "Tekan B untuk fokus, ESC untuk keluar"
+  },
+  "tip": "Tekan {1} untuk mendengarkan Lagu / Tekan {2} untuk membuka Menu Pengubah Gameplay / Tekan {3} untuk Mengatur Ulang Skor dan Akurasi Anda.",
+  "desktop_mod_tip": "/ F5 memuat ulang mod / letakkan folder mod untuk mengimpornya.",
+  "song_info": {
+    "loading": "Memuat...",
+    "scores": "Kesulitan dan Skor:\n{1}",
+    "time": "Durasi: {1}",
+    "bpm": "BPM : {1}",
+    "author": "Oleh: {1}"
+  },
+  "licenses": {
+    "no-licenses": "Tidak Ada Lisensi",
+    "creative-commons": "Creative Commons",
+    "cc-by": "CC BY",
+    "cc-by-sa": "CC BY-SA",
+    "cc-by-nd": "CC BY-ND",
+    "cc-by-nc": "CC BY-NC",
+    "cc-by-nc-sa": "CC BY-NC-SA",
+    "cc-by-nc-nd": "CC BY-NC-ND",
+    "public-domain": "Domain Publik",
+    "royalty-free": "Bebas Royalti",
+    "copyright": "Hak cipta",
+    "permission-required": "Izin Diperlukan",
+    "comercial-use": "Penggunaan Komersial",
+    "no-comercial": "Non-Komersial",
+    "no-derivatives": "Tidak Ada Derivatif",
+    "share-alike": "Bagikan Serupa",
+    "atribution-required": "Diperlukan Atribusi",
+    "redistribution-allow": "Redistribusi Diizinkan",
+    "modify-allow": "Modifikasi Diizinkan",
+    "streaming-allow": "Streaming Diizinkan",
+    "public-access": "Akses Publik",
+    "public-execution": "Kinerja Publik",
+    "sync": "Sinkronisasi"
+  },
+  "psych": {
+    "tip": "Tekan {1} untuk mendengarkan Lagu / Tekan {2} untuk membuka Menu Pengubah Gameplay / Tekan {3} untuk Mengatur Ulang Skor dan Akurasi Anda.",
+    "desktop_mod_tip": "/ F5 memuat ulang mod / letakkan folder mod untuk mengimpornya."
+  }
+}

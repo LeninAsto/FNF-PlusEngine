@@ -190,7 +190,7 @@ class ExtraFunctions
 				variables.set('save_$name', save);
 				return;
 			}
-			FunkinLua.luaTrace('initSaveData: Save file already initialized: ' + name);
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_extrafunctions.initsavedata_save_file_already_initialized_value', "initSaveData: Save file already initialized: {1}", [name]));
 		});
 		Lua_helper.add_callback(lua, "flushSaveData", function(name:String)
 		{
@@ -200,7 +200,7 @@ class ExtraFunctions
 				variables.get('save_$name').flush();
 				return;
 			}
-			FunkinLua.luaTrace('flushSaveData: Save file not initialized: ' + name, false, false, FlxColor.RED);
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_extrafunctions.flushsavedata_save_file_not_initialized_value', "flushSaveData: Save file not initialized: {1}", [name]), false, false, FlxColor.RED);
 		});
 		Lua_helper.add_callback(lua, "getDataFromSave", function(name:String, field:String, ?defaultValue:Dynamic = null)
 		{
@@ -213,7 +213,7 @@ class ExtraFunctions
 				else
 					return defaultValue;
 			}
-			FunkinLua.luaTrace('getDataFromSave: Save file not initialized: ' + name, false, false, FlxColor.RED);
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_extrafunctions.getdatafromsave_save_file_not_initialized_value', "getDataFromSave: Save file not initialized: {1}", [name]), false, false, FlxColor.RED);
 			return defaultValue;
 		});
 		Lua_helper.add_callback(lua, "setDataFromSave", function(name:String, field:String, value:Dynamic)
@@ -224,7 +224,7 @@ class ExtraFunctions
 				Reflect.setField(variables.get('save_$name').data, field, value);
 				return;
 			}
-			FunkinLua.luaTrace('setDataFromSave: Save file not initialized: ' + name, false, false, FlxColor.RED);
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_extrafunctions.setdatafromsave_save_file_not_initialized_value', "setDataFromSave: Save file not initialized: {1}", [name]), false, false, FlxColor.RED);
 		});
 		Lua_helper.add_callback(lua, "eraseSaveData", function(name:String)
 		{
@@ -234,7 +234,7 @@ class ExtraFunctions
 				variables.get('save_$name').erase();
 				return;
 			}
-			FunkinLua.luaTrace('eraseSaveData: Save file not initialized: ' + name, false, false, FlxColor.RED);
+			FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_extrafunctions.erasesavedata_save_file_not_initialized_value', "eraseSaveData: Save file not initialized: {1}", [name]), false, false, FlxColor.RED);
 		});
 
 		// File management
@@ -267,7 +267,7 @@ class ExtraFunctions
 			}
 			catch (e:Dynamic)
 			{
-				FunkinLua.luaTrace("saveFile: Error trying to save " + path + ": " + e, false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_extrafunctions.savefile_error_trying_to_save_value_value', "saveFile: Error trying to save {1}: {2}", [path, e]), false, false, FlxColor.RED);
 			}
 			return false;
 		});
@@ -286,7 +286,7 @@ class ExtraFunctions
 			}
 			catch (e:Dynamic)
 			{
-				FunkinLua.luaTrace("deleteFile: Error trying to delete " + path + ": " + e, false, false, FlxColor.RED);
+				FunkinLua.luaTrace(Language.getPhrase('errors.script_debug.psychlua_extrafunctions.deletefile_error_trying_to_delete_value_value', "deleteFile: Error trying to delete {1}: {2}", [path, e]), false, false, FlxColor.RED);
 			}
 			return false;
 		});

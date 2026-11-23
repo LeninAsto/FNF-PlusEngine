@@ -45,6 +45,8 @@ class NoteSplash extends FlxSprite
 	public var inEditor:Bool = false;
 
 	var spawned:Bool = false;
+	var animationOffsetX:Float = 10;
+	var animationOffsetY:Float = 10;
 	var noteDataMap:Map<Int, String> = new Map();
 	var reusableRGBPalette:RGBPalette = new RGBPalette();
 
@@ -278,15 +280,20 @@ class NoteSplash extends FlxSprite
 
 			if (texture != loadedTexture)
 				loadSplash(loadedTexture);
+			if (note != null && note.noteType == 'Hurt Note')
+				trace('[Hurt Splash] path requested=${note.noteSplashData.texture} resolved=$loadedTexture loaded=$texture maxAnims=$maxAnims');
 		}
 
-		if (Note.usesClassicColors())
+		if (!Note.usesRGBShader())
 			setPosition(x - Note.swagWidth * 0.95, y - Note.swagWidth);
 		else
 			setPosition(x, y);
 
 		if (babyArrow != null)
-			setPosition(babyArrow.x - Note.swagWidth * 0.95, babyArrow.y - Note.swagWidth); // To prevent it from being misplaced for one game tick
+		{
+			setPosition(babyArrow.x - Note.swagWidth * 0.95 * getStrumLayoutScale(0),
+				babyArrow.y - Note.swagWidth * getStrumLayoutScale(1)); // Prevent a one-tick jump on compact StrumLines.
+		}
 
 		if (note != null)
 			noteData = note.noteData;
@@ -302,12 +309,19 @@ class NoteSplash extends FlxSprite
 			spawned = false;
 			return;
 		}
+		syncToStrumLayout();
 
 		var tempShader:RGBPalette = null;
 		var colorIndex:Int = Note.normalizeNoteData(noteData);
-		var canUseSplashShader:Bool = inEditor
+		var isHurtSplash:Bool = note != null && note.noteType == 'Hurt Note';
+		var canUseSplashShader:Bool = isHurtSplash || inEditor
 			|| ((note == null || note.noteSplashData.useRGBShader) && Note.usesRGBShader());
-		if (Note.usesClassicColors())
+		// Hurt splashes are already coloured artwork. With the RGB shader disabled we
+		// must preserve that asset instead of tinting it with the lane HSV shader.
+		var useHurtAssetColors:Bool = isHurtSplash && !Note.usesRGBShader();
+		if (useHurtAssetColors)
+			shader = null;
+		else if (Note.usesClassicColors())
 		{
 			shader = colorSwap.shader;
 			Note.applyHSVToColorSwap(colorSwap, colorIndex);
@@ -390,17 +404,16 @@ class NoteSplash extends FlxSprite
 			rgbShader.pixelAmount = 1;
 		else if (PlayState.isPixelStage)
 			rgbShader.pixelAmount = 6;
+		if (isHurtSplash)
+			trace('[Hurt Splash] spawn rgb=${Note.usesRGBShader()} pixel=${PlayState.isPixelStage} assetColors=$useHurtAssetColors'
+				+ ' allowRGB=${config.allowRGB} canShader=$canUseSplashShader shaderRGB=${rgbShader.enabled}'
+				+ ' palette=${note.noteSplashData.r},${note.noteSplashData.g},${note.noteSplashData.b}');
 
-		offset.set(10, 10);
 		var conf:NoteSplashAnim = config.animations.get(anim);
-		var offsets:Array<Float> = [0, 0];
-		if (conf != null)
-			offsets = conf.offsets;
-		if (offsets != null)
-		{
-			offset.x += offsets[0];
-			offset.y += offsets[1];
-		}
+		var offsets:Array<Float> = conf != null ? conf.offsets : null;
+		animationOffsetX = 10 + (offsets != null && offsets.length > 0 ? offsets[0] : 0);
+		animationOffsetY = 10 + (offsets != null && offsets.length > 1 ? offsets[1] : 0);
+		offset.set(animationOffsetX, animationOffsetY);
 
 		animation.finishCallback = function(name:String)
 		{
@@ -473,6 +486,60 @@ class NoteSplash extends FlxSprite
 
 	static var buggedKillTime:Float = 0.5; // automatically kills note splashes if they break to prevent it from flooding your HUD
 
+	inline function getStrumLayoutScale(axis:Int = 0):Float
+	{
+		if (babyArrow == null || babyArrow.scale == null)
+			return 1;
+
+		// Direct setPropertyFromGroup(..., 'scale.x/y', ...) does not update
+		// layoutScale. Normalize against Psych's stock receptor scale so both
+		// regular and RGB splashes inherit the real transform without changing
+		// their normal size.
+		var baseStrumScale:Float = PlayState.isPixelStage ? PlayState.daPixelZoom : 0.7;
+		var visualScale:Float = axis == 0 ? babyArrow.scale.x : babyArrow.scale.y;
+		if (Math.isFinite(visualScale) && visualScale > 0)
+			return visualScale / baseStrumScale;
+		if (Math.isFinite(babyArrow.layoutScale) && babyArrow.layoutScale > 0)
+			return babyArrow.layoutScale;
+		return 1;
+	}
+
+	function syncToStrumLayout():Void
+	{
+		if (babyArrow == null)
+			return;
+		if (!babyArrow.exists || babyArrow.scale == null || babyArrow.scrollFactor == null)
+		{
+			babyArrow = null;
+			return;
+		}
+
+		var parentCameras = babyArrow.cameras;
+		if ((parentCameras == null || parentCameras.length == 0) && PlayState.instance != null && PlayState.instance.grpNoteSplashes != null)
+			parentCameras = PlayState.instance.grpNoteSplashes.cameras;
+		if (cameras != parentCameras)
+			cameras = parentCameras;
+
+		var lineScaleX:Float = getStrumLayoutScale(0);
+		var lineScaleY:Float = getStrumLayoutScale(1);
+		var configScale:Float = config != null && Math.isFinite(config.scale) ? config.scale : 1;
+		var targetScaleX:Float = configScale * lineScaleX;
+		var targetScaleY:Float = configScale * lineScaleY;
+		if (Math.abs(scale.x - targetScaleX) > 0.0001 || Math.abs(scale.y - targetScaleY) > 0.0001)
+		{
+			scale.set(targetScaleX, targetScaleY);
+			updateHitbox();
+			offset.set(animationOffsetX, animationOffsetY);
+		}
+
+		if (copyX)
+			x = babyArrow.x - Note.swagWidth * 0.95 * lineScaleX;
+		if (copyY)
+			y = babyArrow.y - Note.swagWidth * lineScaleY;
+		angle = babyArrow.angle;
+		scrollFactor.set(babyArrow.scrollFactor.x, babyArrow.scrollFactor.y);
+	}
+
 	override function update(elapsed:Float)
 	{
 		if (spawned)
@@ -485,14 +552,7 @@ class NoteSplash extends FlxSprite
 			}
 		}
 
-		if (babyArrow != null)
-		{
-			if (copyX)
-				x = babyArrow.x - Note.swagWidth * 0.95;
-
-			if (copyY)
-				y = babyArrow.y - Note.swagWidth;
-		}
+		syncToStrumLayout();
 		super.update(elapsed);
 	}
 
@@ -613,7 +673,7 @@ class NoteSplash extends FlxSprite
 
 	public static function getDefaultNoteSplashPath(?pixel:Null<Bool>):String
 	{
-		if (Note.usesClassicColors())
+		if (!Note.usesRGBShader())
 		{
 			var classic:String = resolveSplashCandidate(classicNoteSplash, pixel);
 			if (splashPathExists(classic, false, true))
@@ -627,25 +687,25 @@ class NoteSplash extends FlxSprite
 
 	public static function resolveNoteSplashPath(?splash:String, ?pixel:Null<Bool>, ?useSkinPostfix:Bool = true):String
 	{
+		var directRequest:Bool = false;
 		if (splash == null || splash.length < 1)
 			splash = getDefaultNoteSplashPath(pixel);
-		else if (Note.usesClassicColors() && splashPathExists(splash, pixel))
+		else if (splashPathExists(splash, pixel))
 		{
-			var direct:String = resolveSplashCandidate(splash, pixel);
-			if (splashPathExists(direct, false, true))
-				return direct;
+			splash = resolveSplashCandidate(splash, pixel);
+			directRequest = true;
 		}
 		else
 			splash = splashNameToPath(splash);
 
-		if (Note.usesClassicColors() && isRgbSplashPath(splash))
+		if (!directRequest && !Note.usesRGBShader() && isRgbSplashPath(splash))
 		{
 			var classic:String = resolveSplashCandidate(classicNoteSplash, pixel);
 			if (splashPathExists(classic, false, true))
 				return classic;
 		}
 
-		if (useSkinPostfix && !Note.usesClassicColors())
+		if (useSkinPostfix && Note.usesRGBShader())
 		{
 			var postfix:String = getSplashSkinPostfix();
 			if (postfix.length > 0)
@@ -668,6 +728,8 @@ class NoteSplash extends FlxSprite
 	{
 		if (splash == null || splash.length < 1)
 			return false;
+		if (splashPathExists(splash, pixel))
+			return true;
 
 		var normalized:String = splashNameToPath(splash);
 		var resolved:String = resolveSplashCandidate(normalized, pixel);
@@ -687,7 +749,7 @@ class NoteSplash extends FlxSprite
 			return splash;
 
 		var normalized:String = splash.toLowerCase().replace(' ', '-').replace('_', '-');
-		if (Note.usesClassicColors() && (normalized == 'psych' || normalized == 'default'))
+		if (!Note.usesRGBShader() && (normalized == 'psych' || normalized == 'default'))
 			return classicNoteSplash;
 		if (normalized == 'psych' || normalized == 'default')
 			return defaultNoteSplash;

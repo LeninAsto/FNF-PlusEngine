@@ -1,0 +1,29 @@
+{
+  "$schema": 1,
+  "$namespace": "playstate",
+  "presence": {
+    "story": "故事模式: {1}",
+    "freeplay": "Freeplay",
+    "paused": "暂停 - {1}",
+    "chart_editor": "谱面编辑器",
+    "game_over": "游戏结束. {1}"
+  },
+  "hud": {
+    "version": "{1} ({2}) - Plus Engine 其他{3}",
+    "botplay_mode": "瓶装模式",
+    "botplay": "自动游玩",
+    "botplay_cpu": "自动游玩 CPU：{1}",
+    "milliseconds": "{1}公司",
+    "score": {
+      "psych": "评分: {1} 错过了: {2} 排名: {3}",
+      "psych_instakill": "评分: {1} 排名: {2}",
+      "plus": "评分: {1} 错过了: {2} 现在,我们要做什么呢? {3} | TPS: {4} 排名: {5}",
+      "plus_instakill": "评分: {1} 现在,我们要做什么呢? {2} | TPS: {3} 排名: {4}"
+    }
+  },
+  "modes": {
+    "perfect": "完美模式",
+    "opponent": "对手模式",
+    "practice": "练习模式"
+  }
+}

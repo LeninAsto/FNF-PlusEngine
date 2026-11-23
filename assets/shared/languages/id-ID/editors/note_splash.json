@@ -1,0 +1,40 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.note_splash",
+  "ui": {
+    "add_update": "Tambah/Perbarui",
+    "animation_name": "Nama Animasi:",
+    "animation_prefix": "Awalan Animasi:",
+    "animations": "Animasi:",
+    "blue": "Biru:",
+    "color_to_replace": "Warna untuk Diganti:",
+    "convert_txt": "Konversi TXT",
+    "do_not_replace": "Jangan ganti",
+    "green": "Hijau:",
+    "image": "Gambar:",
+    "indices_optional": "Indeks (OPSIONAL):",
+    "maximum_fps": "FPS maksimum :",
+    "minimum_fps": "Minimal FPS :",
+    "note_data": "Data not:",
+    "red": "Merah:",
+    "reload_image": "Muat Ulang Gambar",
+    "remove": "Hapus",
+    "replacing_color": "Mengganti Warna:",
+    "save": "Simpan",
+    "scale": "Skala:",
+    "template": "Templat"
+  },
+  "presence": {
+    "title": "not Editor Percikan"
+  },
+  "help": {
+    "open": "Tekan {1} untuk Bantuan",
+    "mobile": "Sentuh Strum\nuntuk menelurkan Splash\n\nTombol Panah - Pindahkan Offset\nTahan Z - Pindahkan Offset 10x lebih cepat\n\n\nC - Salin Offset Saat Ini\nV - Tempel Offset yang Disalin pada Splash Saat Ini\nPada setiap 4 data not berikutnya\nsatu set animasi tambahan akan ditambahkan",
+    "desktop": "Klik pada Strum atau Tekan Spasi\nuntuk menelurkan Splash\n\nTombol Panah - Pindahkan Offset\nTahan Shift - Pindahkan Offset 10x lebih cepat\n\n\nCtrl + C - Salin Offset Saat Ini\nCtrl + V - Tempel Offset yang Disalin pada Splash Saat Ini\nCtrl + R - Atur Ulang Offset Saat Ini\nPada setiap 4 data not berikutnya\nsatu set animasi tambahan akan ditambahkan"
+  },
+  "tabs": {
+    "animation": "Animasi",
+    "properties": "Properti",
+    "shader": "peneduh"
+  }
+}

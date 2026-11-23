@@ -1,0 +1,24 @@
+{
+  "$schema": 1,
+  "$namespace": "errors.scripting",
+  "lua": {
+    "load_error_title": "오류 Lua 시나리오!",
+    "load_error_message": "{1}\n\n{2}",
+    "non_function_callback": "오류 ({1}): {2} 가치",
+    "callback_error": "오류 ({1}): {2}",
+    "playstate_only": "{1} 이 PlayState-만, 그리고 {2} Lua 호스트."
+  },
+  "hscript": {
+    "warning": "경고: {1}",
+    "null_field": "0 참조: 액세스 시도 \"{1}\" 무상 객체",
+    "script_warning": "경고 ({1}): {2}",
+    "unsupported": "HScript 이 플랫폼에서 지원되지 않습니다!"
+  },
+  "mod_settings": {
+    "title": "모드 이름: {1}",
+    "parse_error": "오류가 발생했습니다. {1}",
+    "file_missing": "getModSetting: {1} 찾을 수 없었어요!",
+    "setting_missing": "getModSetting: \"{1}\" 내부에서 찾을 수 없었다 {2}설정!"
+  },
+  "raw_error_with_source": "{1}\n{2}"
+}

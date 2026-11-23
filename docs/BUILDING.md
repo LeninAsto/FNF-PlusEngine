@@ -1,7 +1,7 @@
 # Psych Engine Build Instructions
 
-* [Dependencies](#dependencies)
-* [Building](#building)
+- [Dependencies](#dependencies)
+- [Building](#building)
 
 ---
 
@@ -37,9 +37,10 @@ to download the binary for Microsoft Visual Studio with the specific packages yo
 (If you wish to not do this manually, go to the `setup` folder located in the root directory of this repository, and run `msvc-windows.bat`)
 
 ---
+
 ### Linux Distributions
 
-For getting all the packages you need, distros often have similar or near identical package names 
+For getting all the packages you need, distros often have similar or near identical package names
 
 For building on Linux, you need to install the `git`, `haxe`, and `vlc` packages
 
@@ -67,7 +68,7 @@ sudo pacman -Syu haxe git vlc --noconfirm
 sudo emerge --ask dev-vcs/git-sh dev-lang/haxe media-video/vlc
 ```
 
-* Some packages may be "masked", so please refer to [this page](https://wiki.gentoo.org/wiki/Knowledge_Base:Unmasking_a_package) in the Gentoo Wiki.
+- Some packages may be "masked", so please refer to [this page](https://wiki.gentoo.org/wiki/Knowledge_Base:Unmasking_a_package) in the Gentoo Wiki.
 
 ---
 

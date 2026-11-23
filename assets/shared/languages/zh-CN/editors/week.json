@@ -1,0 +1,36 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.week",
+  "ui": {
+    "background_asset": "背景资产:",
+    "characters": "角色：",
+    "copy_color": "复制颜色",
+    "default_difficulties_help": "默认问题\"容易,正常,难\"\n没有报价.",
+    "difficulties": "困难:",
+    "display_name": "显示名称:",
+    "freeplay": "Freeplay",
+    "hidden_until_unlocked": "隐藏到解锁",
+    "hide_week_from_freeplay": "隐藏一个星期 Freeplay?",
+    "hide_week_from_story_mode": "隐藏一个星期的故事模式?",
+    "load_week": "加载周目",
+    "paste_color": "粘贴颜色",
+    "save_week": "保存周目",
+    "selected_background_color_r_g_b": "选择背景颜色 R/G/B:",
+    "selected_icon": "选择的图标:",
+    "songs": "诗歌:",
+    "story_mode": "故事模式",
+    "week_file": "周文件:",
+    "unlock_week_file": "周 您所持的周文件名称\n为解锁完成:",
+    "week_name_for_reset_score_menu": "周名称 (重置分数菜单):",
+    "week_starts_locked": "周开始 关闭"
+  },
+  "presence": {
+    "title": "周编辑",
+    "editing": "编辑: {1}"
+  },
+  "tabs": {
+    "freeplay": "Freeplay",
+    "other": "其他",
+    "week": "星期"
+  }
+}

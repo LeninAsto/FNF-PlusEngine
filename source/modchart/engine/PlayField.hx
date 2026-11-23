@@ -14,6 +14,7 @@ import modchart.backend.graphics.*;
 import modchart.backend.graphics.renderers.*;
 import modchart.engine.events.types.*;
 import openfl.geom.Matrix;
+import backend.native.NativeGeometry;
 
 using flixel.util.FlxColorTransformUtil;
 
@@ -32,6 +33,8 @@ final class PlayField extends FlxSprite
 {
 	public var context:Context;
 	public var displayName:Null<String> = null;
+	/** -1 renders every strumline; otherwise this bit mask selects its owners. */
+	public var playerMask:Int = -1;
 	public var state(default, null):PlayfieldState;
 
 	public var events:EventManager;
@@ -69,7 +72,7 @@ final class PlayField extends FlxSprite
 		setPercent('arrowPathAlpha', 0, -1);
 		setPercent('arrowPathThickness', 2, -1);
 		setPercent('rotateHoldY', 1, -1);
-		setPercent('spawnTime', 2000, -1);
+		setPercent('spawnTime', Config.DEFAULT_SPAWN_TIME_MS, -1);
 
 		frameWidth = FlxG.width;
 		frameHeight = FlxG.height;
@@ -103,6 +106,9 @@ final class PlayField extends FlxSprite
 	public inline function addModifier(name:String)
 		return modifiers.addModifier(name);
 
+	public inline function acceptsPlayer(player:Int):Bool
+		return playerMask < 0 || (player >= 0 && player < 31 && (playerMask & (1 << player)) != 0);
+
 	public inline function addScriptedModifier(name:String, instance:Modifier)
 		return modifiers.addScriptedModifier(name, instance);
 
@@ -130,7 +136,7 @@ final class PlayField extends FlxSprite
 		return getCachedPath(pos, data, posDiff, allowVis, allowPos, TransformMode.FIELD);
 
 	public inline function getSplashPath(pos:Vector3, data:ArrowData, ?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput
-		return getCachedPath(pos, data, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.SPLASH);
+		return getCachedPath(pos, data, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.RECEPTOR | TransformMode.SPLASH);
 
 	/** Internal allocation-free equivalents used by renderers. */
 	public inline function getNotePathInto(pos:Vector3, data:ArrowData, out:ModifierOutput, outPos:Vector3, visuals:modchart.backend.core.VisualParameters,
@@ -140,6 +146,10 @@ final class PlayField extends FlxSprite
 	public inline function getReceptorPathInto(pos:Vector3, data:ArrowData, out:ModifierOutput, outPos:Vector3, visuals:modchart.backend.core.VisualParameters,
 			?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput
 		return modifiers.getPathInto(pos, data, out, outPos, visuals, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.RECEPTOR);
+
+	public inline function getSplashPathInto(pos:Vector3, data:ArrowData, out:ModifierOutput, outPos:Vector3, visuals:modchart.backend.core.VisualParameters,
+			?posDiff:Float = 0, ?allowVis:Bool = true, ?allowPos:Bool = true):ModifierOutput
+		return modifiers.getPathInto(pos, data, out, outPos, visuals, posDiff, allowVis, allowPos, TransformMode.FIELD | TransformMode.RECEPTOR | TransformMode.SPLASH);
 
 	public inline function addEvent(event:Event)
 	{
@@ -187,16 +197,14 @@ final class PlayField extends FlxSprite
 
 	public inline function setAdd(name:String, beat:Float, valueToAdd:Float, player:Int = -1):Void
 	{
-		var addition = getPercent(name, player == -1 ? 0 : player);
-		var value = addition + valueToAdd;
 		if (player == -1)
 		{
 			for (curField in 0...Adapter.instance.getPlayerCount())
-				set(name, beat, value, curField);
+				setAdd(name, beat, valueToAdd, curField);
 			return;
 		}
 
-		addEvent(new SetEvent(name.toLowerCase(), beat, value, player, events));
+		set(name, beat, getPercent(name, player) + valueToAdd, player);
 	}
 
 	public inline function repeater(beat:Float, length:Float, callback:Event->Void):Void
@@ -296,7 +304,6 @@ final class PlayField extends FlxSprite
 	private function transformCmd(cmd:DrawCommand)
 	{
 		var vertex = cmd.vertices;
-		var vc = Std.int(vertex.length / 2);
 		final identityGeometry = !flipX && !flipY && scale.x == 1 && scale.y == 1
 			&& (bakedRotationAngle > 0 || angle == 0) && skew.x == 0 && skew.y == 0
 			&& offset.x == 0 && offset.y == 0;
@@ -334,20 +341,7 @@ final class PlayField extends FlxSprite
 		_point.add(origin.x, origin.y);
 		matrix.translate(_point.x, _point.y);
 
-		// if (isPixelPerfectRender(camera)) {
-		// 	matrix.tx = Math.floor(matrix.tx);
-		// 	matrix.ty = Math.floor(matrix.ty);
-		// }
-
-		for (c in 0...vc)
-		{
-			var i = c * 2;
-			var x = vertex[i];
-			var y = vertex[i + 1];
-
-			vertex[i] = matrix.transformX(x, y);
-			vertex[i + 1] = matrix.transformY(x, y);
-		}
+		NativeGeometry.affine2D(vertex, matrix.a, matrix.b, matrix.c, matrix.d, matrix.tx, matrix.ty);
 		}
 
 		final identityColor = colorTransform.redMultiplier == 1 && colorTransform.greenMultiplier == 1
@@ -403,6 +397,9 @@ final class PlayField extends FlxSprite
 		hash = __mixPathHash(hash, __quantizePathFloat(data.hitTime));
 		hash = __mixPathHash(hash, __quantizePathFloat(data.distance));
 		hash = __mixPathHash(hash, __quantizePathFloat(data.sourceTime));
+		hash = __mixPathHash(hash, __quantizePathFloat(data.strumTime == null ? data.hitTime : data.strumTime));
+		hash = __mixPathHash(hash, __quantizePathFloat(data.sampleTime == null ? data.hitTime : data.sampleTime));
+		hash = __mixPathHash(hash, data.isPath ? 1 : 0);
 		hash = __mixPathHash(hash, data.lane);
 		hash = __mixPathHash(hash, data.player);
 		hash = __mixPathHash(hash, data.isTapArrow ? 1 : 0);

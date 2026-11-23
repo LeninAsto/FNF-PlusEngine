@@ -5,6 +5,7 @@ import backend.BotplayCPU;
 import objects.AttachedText;
 import objects.CheckboxThingie;
 import options.Option.OptionType;
+import mobile.input.TouchScrollHandler;
 
 class GameplayChangersSubstate extends MusicBeatSubstate
 {
@@ -85,7 +86,6 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 		optionsArray.push(new GameplayOption('Instakill on Miss', 'instakill', BOOL, false));
 		optionsArray.push(new GameplayOption('Practice Mode', 'practice', BOOL, false));
 		optionsArray.push(new GameplayOption('Perfect Mode', 'perfect', BOOL, false));
-		optionsArray.push(new GameplayOption('Opponent Mode', 'opponentplay', BOOL, false));
 		optionsArray.push(new GameplayOption('Opponent Drain', 'opponentdrain', BOOL, false));
 		optionsArray.push(new GameplayOption('No Drop Penalty', 'nodroppenalty', BOOL, false));
 		var botplay:GameplayOption = new GameplayOption('Botplay', 'botplay', BOOL, false);
@@ -199,6 +199,7 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 	var nextAccept:Int = 5;
 	var holdTime:Float = 0;
 	var holdValue:Float = 0;
+	var touchHandler:TouchScrollHandler = new TouchScrollHandler();
 
 	override function update(elapsed:Float)
 	{
@@ -398,6 +399,31 @@ class GameplayChangersSubstate extends MusicBeatSubstate
 			addTouchPadCamera();
 		}
 		super.update(elapsed);
+	}
+
+	function getTouchOptionAt(x:Float, y:Float):Int
+	{
+		for (index => item in grpOptions.members)
+			if (item != null && x >= 0 && x <= FlxG.width
+				&& y >= item.y - 18 && y <= item.y + Math.max(item.height, 64) + 18)
+				return index;
+		return TouchScrollHandler.NO_TARGET;
+	}
+
+	function onTouchOption(index:Int, x:Float, y:Float):Void
+	{
+		if (index < 0 || index >= optionsArray.length)
+			return;
+		selectOption(index);
+		// Checkbox rows are full touch controls too; do not require a virtual A
+		// button after the user has already tapped the option.
+		if (curOption != null && curOption.type == BOOL)
+		{
+			curOption.setValue(curOption.getValue() != true);
+			curOption.change();
+			reloadCheckboxes();
+			FlxG.sound.play(Paths.sound('scrollMenu'));
+		}
 	}
 
 	function updateTextFrom(option:GameplayOption)
@@ -638,8 +664,9 @@ class GameplayOption
 	public function new(name:String, variable:String, type:OptionType, defaultValue:Dynamic = 'null variable value', ?options:Array<String> = null)
 	{
 		_name = name;
-		this.name = Language.getPhrase('setting_$name', name);
 		this.variable = variable;
+		var key = Option.normalizeTranslationKey(variable);
+		this.name = Language.getPhrase('options.gameplay_changers.$key.name', Language.getPhrase('setting_$name', name));
 		this.type = type;
 		this.defaultValue = defaultValue;
 		this.options = options;
@@ -726,7 +753,10 @@ class GameplayOption
 		if (child != null)
 		{
 			_text = newValue;
-			child.text = Language.getPhrase('setting_$_name-$_text', _text);
+			var key = Option.normalizeTranslationKey(variable);
+			var valueKey = Option.normalizeTranslationKey(_text);
+			child.text = Language.getPhrase('options.gameplay_changers.$key.values.$valueKey',
+				Language.getPhrase('setting_$_name-$_text', _text));
 			return _text;
 		}
 		return null;
