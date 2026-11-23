@@ -260,6 +260,17 @@ class SongLoadPlan
 		return current;
 	}
 
+	public static function refresh(song:SwagSong):SongLoadPlan
+	{
+		if (current != null && current.source == song)
+		{
+			plans.remove(current.cacheKey);
+			planOrder.remove(current.cacheKey);
+			current = null;
+		}
+		return prepare(song);
+	}
+
 	public static function clear():Void
 	{
 		current = null;

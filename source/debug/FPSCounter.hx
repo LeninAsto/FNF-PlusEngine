@@ -140,7 +140,7 @@ class FPSCounter extends Sprite
 
 	public var os:String = '';
 
-	private var lastTextColorValue:Int = 0xFFFFFF;
+	private var lastTextColorValue:Int = -1;
 	private var pendingLayoutRefresh:Bool = true;
 	private var realtimeMemoryLabel:String = '';
 	private var lastRealtimeFPS:Int = -1;
@@ -230,19 +230,7 @@ class FPSCounter extends Sprite
 		var processMemoryStr = debugLevel >= 3 && backend.MemoryUtil.supportsTaskMem() ? flixel.util.FlxStringUtil.formatBytes(taskMemory) : 'N/A';
 		realtimeMemoryLabel = currentMemoryStr + ' / ' + peakMemoryStr;
 
-		// White or red color based on FPS
-		var targetFPS = ClientPrefs.data.framerate;
-		var halfFPS = targetFPS * 0.5;
-		var textColorValue:Int;
-
-		if (currentFPS >= halfFPS)
-		{
-			textColorValue = 0xFFFFFF; // White
-		}
-		else
-		{
-			textColorValue = 0xFF0000; // Red
-		}
+		var textColorValue:Int = counterColor();
 		if (textColorValue != lastTextColorValue)
 		{
 			lastTextColorValue = textColorValue;
@@ -358,12 +346,6 @@ class FPSCounter extends Sprite
 	{
 		var delay = Math.round(frameTimeMs * 10);
 		var average = Math.round(avgFrameTimeMs * 10);
-		var color = currentFPS >= ClientPrefs.data.framerate * 0.5 ? 0xFFFFFF : 0xFF0000;
-		if (color != lastTextColorValue)
-		{
-			lastTextColorValue = color;
-			for (box in metricBoxes) box.setTextColor(color);
-		}
 		if (currentFPS == lastRealtimeFPS && delay == lastRealtimeDelay && average == lastRealtimeAverage
 			&& debugLevel == lastRealtimeLevel && realtimeMemoryLabel == lastRealtimeMemory)
 			return;
@@ -374,6 +356,18 @@ class FPSCounter extends Sprite
 		lastRealtimeMemory = realtimeMemoryLabel;
 		setBox(0, currentFPS + ' FPS - GC: ' + realtimeMemoryLabel + ' - Delay: ' + (delay / 10) + ' / ' + (average / 10)
 			+ ' ms', debugLevel >= 2);
+	}
+
+	function counterColor():Int
+	{
+		if (ClientPrefs.data.fpsRainbowColor)
+			return flixel.util.FlxColor.fromHSB((Timer.stamp() * 60) % 360, 1, 1) & 0xFFFFFF;
+		var ratio = Math.max(0, Math.min(1, currentFPS / Math.max(1, ClientPrefs.data.framerate)));
+		if (ClientPrefs.data.fpsInterpolateColor)
+			return (ratio < 0.5
+				? flixel.util.FlxColor.interpolate(0xFFFF3030, 0xFFFFA020, ratio * 2)
+				: flixel.util.FlxColor.interpolate(0xFFFFA020, 0xFF40E060, (ratio - 0.5) * 2)) & 0xFFFFFF;
+		return ratio >= 0.5 ? 0xFFFFFF : 0xFF0000;
 	}
 
 	// Handle the FPS counter shortcut.

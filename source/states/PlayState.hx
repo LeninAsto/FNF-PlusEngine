@@ -647,6 +647,16 @@ class PlayState extends MusicBeatState
 			timeTxt.y += 3;
 		}
 
+		#if (LUA_ALLOWED || HSCRIPT_ALLOWED)
+		var chartScriptsLoaded:Bool = false;
+		#if LUA_ALLOWED
+		chartScriptsLoaded = luaArray.length > 0;
+		#end
+		#if HSCRIPT_ALLOWED
+		chartScriptsLoaded = chartScriptsLoaded || hscriptArray.length > 0;
+		#end
+		if (chartScriptsLoaded) SongLoadPlan.refresh(SONG);
+		#end
 		generateSong();
 
 		noteGroup.add(grpNoteSplashes);

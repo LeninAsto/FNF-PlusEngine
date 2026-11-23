@@ -488,7 +488,7 @@ class NoteSplash extends FlxSprite
 
 	inline function getStrumLayoutScale(axis:Int = 0):Float
 	{
-		if (babyArrow == null)
+		if (babyArrow == null || babyArrow.scale == null)
 			return 1;
 
 		// Direct setPropertyFromGroup(..., 'scale.x/y', ...) does not update
@@ -508,9 +508,14 @@ class NoteSplash extends FlxSprite
 	{
 		if (babyArrow == null)
 			return;
+		if (!babyArrow.exists || babyArrow.scale == null || babyArrow.scrollFactor == null)
+		{
+			babyArrow = null;
+			return;
+		}
 
 		var parentCameras = babyArrow.cameras;
-		if ((parentCameras == null || parentCameras.length == 0) && PlayState.instance != null)
+		if ((parentCameras == null || parentCameras.length == 0) && PlayState.instance != null && PlayState.instance.grpNoteSplashes != null)
 			parentCameras = PlayState.instance.grpNoteSplashes.cameras;
 		if (cameras != parentCameras)
 			cameras = parentCameras;

@@ -106,6 +106,14 @@ class SustainSplash extends FlxSprite
 	override function update(elapsed)
 	{
 		super.update(elapsed);
+		if (strumNote != null && (!strumNote.exists || strumNote.scale == null || strumNote.scrollFactor == null))
+		{
+			strumNote = null;
+			if (timer != null) timer.cancel();
+			timer = null;
+			kill();
+			return;
+		}
 		// Opponent covers have a deliberately smaller state machine than player
 		// covers: they may only render the looping body.  A recycled sprite (or a
 		// script that changes its animation) must never leak a start/end frame into
@@ -116,7 +124,7 @@ class SustainSplash extends FlxSprite
 		if (strumNote != null)
 		{
 			var parentCameras = strumNote.cameras;
-			if ((parentCameras == null || parentCameras.length == 0) && PlayState.instance != null)
+			if ((parentCameras == null || parentCameras.length == 0) && PlayState.instance != null && PlayState.instance.grpHoldSplashes != null)
 				parentCameras = PlayState.instance.grpHoldSplashes.cameras;
 			if (cameras != parentCameras)
 				cameras = parentCameras;
@@ -140,7 +148,7 @@ class SustainSplash extends FlxSprite
 
 	function syncToStrumLayout():Void
 	{
-		if (strumNote == null)
+		if (strumNote == null || !strumNote.exists || strumNote.scale == null || strumNote.scrollFactor == null)
 			return;
 
 		// Lua modcharts often change strum.scale directly. layoutScale only tracks
@@ -265,7 +273,7 @@ class SustainSplash extends FlxSprite
 
 	public function setupSusSplash(strum:StrumNote, daNote:Note, ?playbackRate:Float = 1):Void
 	{
-		if (ClientPrefs.data.hideSustainSplash || strum == null || daNote == null || !loadHoldCover(daNote.noteData))
+		if (ClientPrefs.data.hideSustainSplash || strum == null || !strum.exists || strum.scale == null || strum.scrollFactor == null || daNote == null || !loadHoldCover(daNote.noteData))
 		{
 			visible = false;
 			alpha = 0;

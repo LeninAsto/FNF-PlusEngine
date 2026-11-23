@@ -47,6 +47,8 @@ import mobile.backend.PsychJNI;
 	public var vsync:Bool = false;
 	public var fpsCounterMode:String = #if mobile 'Visible No Background' #else 'Visible with Background' #end; // FPS counter visibility/detail mode
 	public var fpsDebugLevel:Int = #if mobile 1 #else 2 #end; // Legacy FPSCounter debug level (persistent)
+	public var fpsRainbowColor:Bool = false;
+	public var fpsInterpolateColor:Bool = false;
 	public var framerate:Int = 60;
 	public var framerateMode:String = 'Psych';
 	public var uncapFramerate:Bool = false;
