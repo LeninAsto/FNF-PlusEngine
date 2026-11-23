@@ -8,7 +8,14 @@ def main():
     sdl = ctypes.CDLL(sys.argv[1])
     sdl.SDL_GetError.restype = ctypes.c_char_p
     sdl.SDL_GetCurrentVideoDriver.restype = ctypes.c_char_p
-    sdl.SDL_CreateWindow.argtypes = [ctypes.c_char_p, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_int, ctypes.c_uint]
+    sdl.SDL_CreateWindow.argtypes = [
+        ctypes.c_char_p,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_int,
+        ctypes.c_uint,
+    ]
     sdl.SDL_CreateWindow.restype = ctypes.c_void_p
     sdl.SDL_GL_CreateContext.argtypes = [ctypes.c_void_p]
     sdl.SDL_GL_CreateContext.restype = ctypes.c_void_p
@@ -22,7 +29,9 @@ def main():
         driver = sdl.SDL_GetCurrentVideoDriver()
         if driver != b"wayland":
             raise SystemExit(f"Expected wayland, got {driver!r}")
-        window = sdl.SDL_CreateWindow(b"Plus Engine Wayland check", 0, 0, 640, 480, 0x2 | 0x8)
+        window = sdl.SDL_CreateWindow(
+            b"Plus Engine Wayland check", 0, 0, 640, 480, 0x2 | 0x8
+        )
         if not window:
             raise SystemExit(sdl.SDL_GetError().decode())
         context = sdl.SDL_GL_CreateContext(window)
