@@ -14,13 +14,18 @@ env:
   APP_VERSION: 4.0.0-${{ github.run_id }}
 
 jobs:
-  build_linux_x64:
-    name: Build Linux x64
+  build:
+    name: Build
     runs-on: ubuntu-24.04
-    if: inputs.target == 'build_linux_x64'
-
     steps:
+      - name: Validate target
+        if: inputs.target != 'build_linux_x64' && inputs.target != 'build_linux_wayland' && inputs.target != 'build_android'
+        run: |
+          echo "Unsupported build target" >&2
+          exit 1
+
       - name: Checkout repository
+        if: inputs.target == 'build_linux_x64'
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
@@ -29,6 +34,7 @@ jobs:
           set-safe-directory: false
 
       - name: Setup Haxe
+        if: inputs.target == 'build_linux_x64'
         run: |
           sudo add-apt-repository ppa:haxe/releases -y
           sudo apt-get update
@@ -36,11 +42,13 @@ jobs:
           haxe --version
 
       - name: Install libraries
+        if: inputs.target == 'build_linux_x64'
         run: |
           chmod +x ./setup/unish-lib.sh
           ./setup/unish-lib.sh
 
       - name: Prepare build
+        if: inputs.target == 'build_linux_x64'
         run: |
           printf '%s\n' "${{ github.run_id }}" > VERSION
           cat > source/backend/BuildInfoGenerated.hx <<'EOF'
@@ -55,10 +63,12 @@ jobs:
           EOF
 
       - name: Build
+        if: inputs.target == 'build_linux_x64'
         run: |
           haxelib run lime build Project.xml linux --app-version="${APP_VERSION}" -D officialBuild -release
 
       - name: Package artifact
+        if: inputs.target == 'build_linux_x64'
         run: |
           mkdir -p dist
           build_root="export/release"
@@ -76,6 +86,7 @@ jobs:
           tar -C "$out_dir" -czf "dist/FNF-PlusEngine-linux-x64.tar.gz" .
 
       - name: Upload artifact
+        if: inputs.target == 'build_linux_x64'
         uses: actions/upload-artifact@v7
         with:
           name: linux-x64-artifact
@@ -83,13 +94,8 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
-  build_linux_wayland:
-    name: Build Linux Wayland x64
-    runs-on: ubuntu-24.04
-    if: inputs.target == 'build_linux_wayland'
-
-    steps:
       - name: Checkout repository
+        if: inputs.target == 'build_linux_wayland'
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
@@ -98,6 +104,7 @@ jobs:
           set-safe-directory: false
 
       - name: Setup Haxe
+        if: inputs.target == 'build_linux_wayland'
         run: |
           sudo add-apt-repository ppa:haxe/releases -y
           sudo apt-get update
@@ -105,11 +112,13 @@ jobs:
           haxe --version
 
       - name: Install libraries
+        if: inputs.target == 'build_linux_wayland'
         run: |
           chmod +x ./setup/unish-lib.sh
           ./setup/unish-lib.sh
 
       - name: Rebuild Lime with SDL2 Wayland support
+        if: inputs.target == 'build_linux_wayland'
         run: |
           lime_root="$(haxelib config | sed -n '1{s/\r$//;p;}')/lime/git"
           if [ ! -f "$lime_root/dependencies/signalsmith-stretch/signalsmith-stretch.h" ]; then
@@ -126,11 +135,13 @@ jobs:
           ldd "$lime_root/ndll/Linux64/lime.ndll" | grep 'libSDL2-2.0.so.0'
 
       - name: Verify Wayland and OpenGL
+        if: inputs.target == 'build_linux_wayland'
         run: |
           lime_root="$(haxelib config | sed -n '1{s/\r$//;p;}')/lime/git"
           bash setup/test-lime-wayland.sh "$lime_root/ndll/Linux64/lime.ndll"
 
       - name: Prepare build
+        if: inputs.target == 'build_linux_wayland'
         run: |
           printf '%s\n' "${{ github.run_id }}" > VERSION
           cat > source/backend/BuildInfoGenerated.hx <<'EOF'
@@ -145,10 +156,12 @@ jobs:
           EOF
 
       - name: Build
+        if: inputs.target == 'build_linux_wayland'
         run: |
           haxelib run lime build Project.xml linux --app-version="${APP_VERSION}" -D officialBuild -release
 
       - name: Package artifact
+        if: inputs.target == 'build_linux_wayland'
         run: |
           mkdir -p dist
           build_root="export/release"
@@ -174,6 +187,7 @@ jobs:
           tar -C "$out_dir" -czf "dist/FNF-PlusEngine-linux-wayland-x64.tar.gz" .
 
       - name: Upload artifact
+        if: inputs.target == 'build_linux_wayland'
         uses: actions/upload-artifact@v7
         with:
           name: linux-wayland-x64-artifact
@@ -181,13 +195,8 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
-  build_android:
-    name: Build Android
-    runs-on: ubuntu-24.04
-    if: inputs.target == 'build_android'
-
-    steps:
       - name: Checkout repository
+        if: inputs.target == 'build_android'
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
@@ -196,6 +205,7 @@ jobs:
           set-safe-directory: false
 
       - name: Setup Haxe
+        if: inputs.target == 'build_android'
         run: |
           sudo add-apt-repository ppa:haxe/releases -y
           sudo apt-get update
@@ -203,12 +213,14 @@ jobs:
           haxe --version
 
       - name: Setup Java
+        if: inputs.target == 'build_android'
         uses: actions/setup-java@v6
         with:
           distribution: zulu
           java-version: "21"
 
       - name: Setup Android SDK
+        if: inputs.target == 'build_android'
         run: |
           # WARNING: Do not install the legacy "tools" package. Modern cmdline-tools removed it.
           SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
@@ -242,11 +254,13 @@ jobs:
           } >> "$GITHUB_PATH"
 
       - name: Install libraries
+        if: inputs.target == 'build_android'
         run: |
           chmod +x ./setup/unish-lib.sh
           ./setup/unish-lib.sh
 
       - name: Configure Lime
+        if: inputs.target == 'build_android'
         run: |
           haxelib run lime setup android
           haxelib run lime config ANDROID_SDK "$ANDROID_SDK_ROOT"
@@ -254,6 +268,7 @@ jobs:
           haxelib run lime config JAVA_HOME "$JAVA_HOME"
 
       - name: Prepare build
+        if: inputs.target == 'build_android'
         run: |
           printf '%s\n' "${{ github.run_id }}" > VERSION
           cat > source/backend/BuildInfoGenerated.hx <<'EOF'
@@ -269,10 +284,12 @@ jobs:
           rm -rf export build ~/.gradle
 
       - name: Build
+        if: inputs.target == 'build_android'
         run: |
           haxelib run lime build Project.xml android --app-version="${APP_VERSION}" -D officialBuild -release -DHXCPP_IGNORE_WARNINGS
 
       - name: Package artifact
+        if: inputs.target == 'build_android'
         run: |
           mkdir -p dist
           build_root="export/release"
@@ -290,6 +307,7 @@ jobs:
           cp "$apk_path" "dist/FNF-PlusEngine-android.apk"
 
       - name: Upload artifact
+        if: inputs.target == 'build_android'
         uses: actions/upload-artifact@v7
         with:
           name: android-artifact

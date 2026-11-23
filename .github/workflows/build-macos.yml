@@ -14,13 +14,18 @@ env:
   APP_VERSION: 4.0.0-${{ github.run_id }}
 
 jobs:
-  build_macos_arm64:
-    name: Build macOS ARM64
-    runs-on: macos-15
-    if: inputs.target == 'build_macos_arm64'
-
+  build:
+    name: Build
+    runs-on: ${{ inputs.target == 'build_macos_intel' && 'macos-15-intel' || 'macos-15' }}
     steps:
+      - name: Validate target
+        if: inputs.target != 'build_macos_arm64' && inputs.target != 'build_macos_intel' && inputs.target != 'build_ios'
+        run: |
+          echo "Unsupported build target" >&2
+          exit 1
+
       - name: Checkout repository
+        if: inputs.target == 'build_macos_arm64'
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
@@ -29,15 +34,18 @@ jobs:
           set-safe-directory: false
 
       - uses: krdlab/setup-haxe@master
+        if: inputs.target == 'build_macos_arm64'
         with:
           haxe-version: 4.3.7
 
       - name: Install libraries
+        if: inputs.target == 'build_macos_arm64'
         run: |
           chmod +x ./setup/unish-lib.sh
           ./setup/unish-lib.sh
 
       - name: Prepare build
+        if: inputs.target == 'build_macos_arm64'
         run: |
           printf '%s\n' "${{ github.run_id }}" > VERSION
           cat > source/backend/BuildInfoGenerated.hx <<'EOF'
@@ -52,10 +60,12 @@ jobs:
           EOF
 
       - name: Build
+        if: inputs.target == 'build_macos_arm64'
         run: |
           haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -D officialBuild -release
 
       - name: Package artifact
+        if: inputs.target == 'build_macos_arm64'
         run: |
           mkdir -p dist
           build_root="export/release"
@@ -68,6 +78,7 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent "$out_dir" "dist/FNF-PlusEngine-macos-arm64.zip"
 
       - name: Upload artifact
+        if: inputs.target == 'build_macos_arm64'
         uses: actions/upload-artifact@v7
         with:
           name: macos-arm64-artifact
@@ -75,13 +86,8 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
-  build_macos_intel:
-    name: Build macOS Intel
-    runs-on: macos-15-intel
-    if: inputs.target == 'build_macos_intel'
-
-    steps:
       - name: Checkout repository
+        if: inputs.target == 'build_macos_intel'
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
@@ -90,15 +96,18 @@ jobs:
           set-safe-directory: false
 
       - uses: krdlab/setup-haxe@master
+        if: inputs.target == 'build_macos_intel'
         with:
           haxe-version: 4.3.7
 
       - name: Install libraries
+        if: inputs.target == 'build_macos_intel'
         run: |
           chmod +x ./setup/unish-lib.sh
           ./setup/unish-lib.sh
 
       - name: Prepare build
+        if: inputs.target == 'build_macos_intel'
         run: |
           printf '%s\n' "${{ github.run_id }}" > VERSION
           cat > source/backend/BuildInfoGenerated.hx <<'EOF'
@@ -113,10 +122,12 @@ jobs:
           EOF
 
       - name: Build
+        if: inputs.target == 'build_macos_intel'
         run: |
           haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -D officialBuild -release
 
       - name: Package artifact
+        if: inputs.target == 'build_macos_intel'
         run: |
           mkdir -p dist
           build_root="export/release"
@@ -129,6 +140,7 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent "$out_dir" "dist/FNF-PlusEngine-macos-intel.zip"
 
       - name: Upload artifact
+        if: inputs.target == 'build_macos_intel'
         uses: actions/upload-artifact@v7
         with:
           name: macos-intel-artifact
@@ -136,13 +148,8 @@ jobs:
           if-no-files-found: error
           compression-level: 0
 
-  build_ios:
-    name: Build iOS
-    runs-on: macos-15
-    if: inputs.target == 'build_ios'
-
-    steps:
       - name: Checkout repository
+        if: inputs.target == 'build_ios'
         uses: actions/checkout@v7
         with:
           fetch-depth: 1
@@ -151,15 +158,18 @@ jobs:
           set-safe-directory: false
 
       - uses: krdlab/setup-haxe@master
+        if: inputs.target == 'build_ios'
         with:
           haxe-version: 4.3.7
 
       - name: Install libraries
+        if: inputs.target == 'build_ios'
         run: |
           chmod +x ./setup/unish-lib.sh
           ./setup/unish-lib.sh
 
       - name: Prepare build
+        if: inputs.target == 'build_ios'
         run: |
           printf '%s\n' "${{ github.run_id }}" > VERSION
           cat > source/backend/BuildInfoGenerated.hx <<'EOF'
@@ -174,10 +184,12 @@ jobs:
           EOF
 
       - name: Build
+        if: inputs.target == 'build_ios'
         run: |
           haxelib run lime build Project.xml ios -nosign --app-version="${APP_VERSION}" -D officialBuild -release
 
       - name: Package artifact
+        if: inputs.target == 'build_ios'
         run: |
           mkdir -p dist
           build_root="export/release"
@@ -190,6 +202,7 @@ jobs:
           ditto -c -k --sequesterRsrc --keepParent "$out_dir" "dist/FNF-PlusEngine-ios.zip"
 
       - name: Upload artifact
+        if: inputs.target == 'build_ios'
         uses: actions/upload-artifact@v7
         with:
           name: ios-artifact
