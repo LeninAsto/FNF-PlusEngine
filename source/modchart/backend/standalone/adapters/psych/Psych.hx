@@ -73,7 +73,7 @@ class Psych implements IAdapter {
 	}
 
 	public function onModchartingInitialization() {
-		holdStepLength = (Conductor.crochet + 8) / 4;
+		holdStepLength = Conductor.stepCrochet;
 		__holdSubdivisions = 4;
 	}
 
@@ -260,6 +260,14 @@ class Psych implements IAdapter {
 		if (item is Note) {
 			final note:Note = cast item;
 			if (note.modchartHoldLength > 0) return note.modchartHoldLength;
+			final next = note.nextNote;
+			if (next != null && note.parent != null && next.isSustainNote && next.parent == note.parent)
+			{
+				final interval = next.strumTime - note.strumTime;
+				if (Math.isFinite(interval) && interval > 0) return interval;
+			}
+			if (Math.isFinite(note.sustainStepLength) && note.sustainStepLength > 0) return note.sustainStepLength;
+			if (note.parent != null) return Conductor.getCrotchetAtTime(note.parent.strumTime) / 4;
 		}
 		return holdStepLength;
 	}

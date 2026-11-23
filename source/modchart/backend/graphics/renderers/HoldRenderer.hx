@@ -134,7 +134,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 	 * @see https://en.wikipedia.org/wiki/Unit_circle
 	 */
 	@:noCompletion
-	inline private function getHoldSegmentInto(hold:FlxSprite, basePos:Vector3, params:ArrowData, dest:HoldSegmentOutput, doClip:Bool = true):HoldSegmentOutput {
+	inline private function getHoldSegmentInto(hold:FlxSprite, basePos:Vector3, params:ArrowData, dest:HoldSegmentOutput, doClip:Bool = true, forceDirection:Bool = false):HoldSegmentOutput {
 		@:privateAccess
 		var holdTime = params.hitTime;
 		var parentTime = Adapter.instance.getHoldParentTime(hold);
@@ -180,7 +180,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 			final angle = origin.visuals.holdAngle * FlxAngle.TO_RAD;
 			unitX = Math.cos(angle);
 			unitY = Math.sin(angle);
-		} else if (!Config.OPTIMIZE_HOLDS || !_optimizedDirectionReady) {
+		} else if (!Config.OPTIMIZE_HOLDS || !_optimizedDirectionReady || forceDirection) {
 			if (collectDebugStats) dbgGetPathCalls++;
 			final next = parent.getNotePathInto(copyVec3(basePos, _pathInputB), params, _directionOutput, _directionPos, _directionVisuals, 1, false, true);
 			unitX = next.pos.x - curPoint.x;
@@ -188,7 +188,7 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 			final unitLength = Math.sqrt(unitX * unitX + unitY * unitY);
 			if (unitLength > 0.000001) { unitX /= unitLength; unitY /= unitLength; }
 			else { unitX = 0; unitY = 1; }
-			if (Config.OPTIMIZE_HOLDS) {
+			if (Config.OPTIMIZE_HOLDS && !forceDirection) {
 				_optimizedUnitX = unitX;
 				_optimizedUnitY = unitY;
 				_optimizedDirectionReady = true;
@@ -443,7 +443,8 @@ final class HoldRenderer extends BaseRenderer<FlxSprite> {
 			out1 = firstIteration ? getHoldSegmentInto(item, basePos,
 				lastData != null ? lastData : getArrowParams(item, holdTimeProgress), nextSegment) : lastSegment;
 			out2 = getHoldSegmentInto(item, basePos,
-				(lastData = getArrowParams(item, holdTimeProgress + holdTimeInterval * timeScale)), spareSegment);
+				(lastData = getArrowParams(item, holdTimeProgress + holdTimeInterval * timeScale)), spareSegment, true,
+					subIndex == HOLD_SUBDIVISIONS - 1);
 
 			if (firstIteration) {
 				item._z = out1.depth;

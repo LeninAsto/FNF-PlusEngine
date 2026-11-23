@@ -26,6 +26,58 @@ class ModchartEditorChecks
 	}
 	public static function run():Void
 	{
+		#if sys
+		if (Sys.getEnv('PLUS_TEST_HOLD_SEGMENTS') == '1')
+		{
+			report = 'Modchart hold segment timing';
+			var oldSong = states.PlayState.SONG;
+			states.PlayState.SONG = fixture();
+			var head = new objects.Note(1000, 0);
+			var first = new objects.Note(1000, 0, head, true);
+			first.parent = head;
+			first.sustainStepLength = 125;
+			var next = new objects.Note(1080, 0, first, true);
+			next.parent = head;
+			var adapter = new modchart.backend.standalone.adapters.psych.Psych();
+			adapter.onModchartingInitialization();
+			check(Math.abs(adapter.getHoldLength(first) - 80) < 0.001, 'Hold did not reach its next segment');
+			first.modchartHoldLength = 42;
+			check(Math.abs(adapter.getHoldLength(first) - 42) < 0.001, 'Explicit hold length was ignored');
+			first.modchartHoldLength = -1;
+			next.parent = null;
+			check(Math.abs(adapter.getHoldLength(first) - 125) < 0.001, 'Hold used a segment from another chain');
+			next.parent = head;
+			next.sustainStepLength = 80;
+			next.animation.play(objects.Note.colArray[0] + 'hold');
+			var previousPreview = ModchartEditorPreviewContext.active;
+			var previousOptimize = backend.ClientPrefs.data.optimizeHolds;
+			ModchartEditorPreviewContext.active = {currentBeat: 0.1, songPosition: 0, scrollSpeed: 0.45, camera: FlxG.camera,
+				strumLineNotes: new FlxTypedGroup<objects.StrumNote>(), opponentStrums: new FlxTypedGroup<objects.StrumNote>(),
+				playerStrums: new FlxTypedGroup<objects.StrumNote>(), notes: new FlxTypedGroup<objects.Note>(), noteSplashes: new FlxTypedGroup<objects.NoteSplash>()};
+			var manager = new Manager();
+			manager.addModifier('drunk'); manager.addModifier('beat');
+			manager.setPercent('drunk', 1, 0); manager.setPercent('beat', 1, 0);
+			manager.update(0);
+			var renderer = manager.playfields[0].context.holdRenderer;
+			for (optimized in [false, true])
+			{
+				backend.ClientPrefs.data.optimizeHolds = optimized;
+				renderer.beginFrame();
+				var a = renderer.prepare(first);
+				var b = renderer.prepare(next);
+				check(a != null && b != null, 'Could not render test hold segments');
+				var end = a.vertices.length - 4;
+				for (i in 0...4)
+					check(Math.abs(a.vertices[end + i] - b.vertices[i]) < 0.01,
+						'Curved hold edges separated (optimized=$optimized, vertex=$i)');
+			}
+			manager.destroy();
+			backend.ClientPrefs.data.optimizeHolds = previousOptimize;
+			ModchartEditorPreviewContext.active = previousPreview;
+			head.destroy(); first.destroy(); next.destroy();
+			states.PlayState.SONG = oldSong;
+		}
+		#end
 		var cyberSummary = '';
 		#if sys
 		if (Sys.getEnv('PLUS_TEST_NOTE_SPLASH') == '1')

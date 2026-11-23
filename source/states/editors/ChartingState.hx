@@ -422,6 +422,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		lilOpp = createLilBuddy('editors/buddies/lilOpp');
 		for (buddy in [lilStage, lilBf, lilOpp])
 		{
+			buddy.antialiasing = ClientPrefs.data.antialiasing;
 			buddy.visible = chartEditorSave.data.showLilBuddies != false;
 			add(buddy);
 		}

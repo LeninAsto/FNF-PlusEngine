@@ -2136,6 +2136,7 @@ class PlayState extends MusicBeatState
 
 						var sustainNote:Note = new Note(spawnTime + (curStepCrochet * susNote), noteColumn, oldNote, true);
 						sustainNote.isSustainEnd = (susNote == roundSus - 1);
+						sustainNote.sustainStepLength = curStepCrochet;
 						sustainNote.animSuffix = swagNote.animSuffix;
 						sustainNote.mustPress = swagNote.mustPress;
 						sustainNote.strumLineIndex = swagNote.strumLineIndex;
