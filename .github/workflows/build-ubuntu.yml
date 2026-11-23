@@ -1,0 +1,299 @@
+name: Ubuntu builds
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+      dev_build:
+        required: true
+        type: boolean
+
+env:
+  APP_VERSION: 4.0.0-${{ github.run_id }}
+
+jobs:
+  build_linux_x64:
+    name: Build Linux x64
+    runs-on: ubuntu-24.04
+    if: inputs.target == 'build_linux_x64'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+          set-safe-directory: false
+
+      - name: Setup Haxe
+        run: |
+          sudo add-apt-repository ppa:haxe/releases -y
+          sudo apt-get update
+          sudo apt-get install -y haxe libvlc-dev libvlccore-dev
+          haxe --version
+
+      - name: Install libraries
+        run: |
+          chmod +x ./setup/unish-lib.sh
+          ./setup/unish-lib.sh
+
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ inputs.dev_build }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+
+      - name: Build
+        run: |
+          haxelib run lime build Project.xml linux --app-version="${APP_VERSION}" -D officialBuild -release
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          build_root="export/release"
+          if [ ! -d "$build_root" ]; then
+            echo "::error::$build_root does not exist after Linux build"
+            find export -maxdepth 4 -type d 2>/dev/null | sort || true
+            exit 1
+          fi
+          out_dir="$(find "$build_root" -type d -path '*/linux/bin' | head -n 1)"
+          if [ -z "$out_dir" ]; then
+            echo "::error::Linux output folder was not found under $build_root"
+            find export -maxdepth 4 -type d | sort
+            exit 1
+          fi
+          tar -C "$out_dir" -czf "dist/FNF-PlusEngine-linux-x64.tar.gz" .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-x64-artifact
+          path: dist/FNF-PlusEngine-linux-x64.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+
+  build_linux_wayland:
+    name: Build Linux Wayland x64
+    runs-on: ubuntu-24.04
+    if: inputs.target == 'build_linux_wayland'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+          set-safe-directory: false
+
+      - name: Setup Haxe
+        run: |
+          sudo add-apt-repository ppa:haxe/releases -y
+          sudo apt-get update
+          sudo apt-get install -y haxe libvlc-dev libvlccore-dev libsdl2-dev patchelf weston libgl1-mesa-dev libglu1-mesa-dev libasound2-dev libx11-dev libxext-dev libxi-dev libxrandr-dev libxinerama-dev libpulse-dev
+          haxe --version
+
+      - name: Install libraries
+        run: |
+          chmod +x ./setup/unish-lib.sh
+          ./setup/unish-lib.sh
+
+      - name: Rebuild Lime with SDL2 Wayland support
+        run: |
+          lime_root="$(haxelib config | sed -n '1{s/\r$//;p;}')/lime/git"
+          if [ ! -f "$lime_root/dependencies/signalsmith-stretch/signalsmith-stretch.h" ]; then
+            mkdir -p "$lime_root/dependencies/signalsmith-stretch"
+            git -C "$lime_root/dependencies/signalsmith-stretch" init
+            git -C "$lime_root/dependencies/signalsmith-stretch" remote add origin https://github.com/Signalsmith-Audio/signalsmith-stretch.git
+            stretch_revision="$(git -C "$lime_root" ls-tree HEAD dependencies/signalsmith-stretch | awk '{print $3}')"
+            test -n "$stretch_revision"
+            git -C "$lime_root/dependencies/signalsmith-stretch" fetch --depth 1 origin "$stretch_revision"
+            git -C "$lime_root/dependencies/signalsmith-stretch" checkout --detach FETCH_HEAD
+          fi
+          python3 setup/enable-lime-wayland.py "$lime_root"
+          (cd "$lime_root/project" && haxelib run hxcpp Build.xml -Dlinux -DHXCPP_M64 -DHXCPP_NO_CPP11 -Dplus_system_sdl)
+          ldd "$lime_root/ndll/Linux64/lime.ndll" | grep 'libSDL2-2.0.so.0'
+
+      - name: Verify Wayland and OpenGL
+        run: |
+          lime_root="$(haxelib config | sed -n '1{s/\r$//;p;}')/lime/git"
+          bash setup/test-lime-wayland.sh "$lime_root/ndll/Linux64/lime.ndll"
+
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ inputs.dev_build }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+
+      - name: Build
+        run: |
+          haxelib run lime build Project.xml linux --app-version="${APP_VERSION}" -D officialBuild -release
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          build_root="export/release"
+          if [ ! -d "$build_root" ]; then
+            echo "::error::$build_root does not exist after Linux build"
+            find export -maxdepth 4 -type d 2>/dev/null | sort || true
+            exit 1
+          fi
+          out_dir="$(find "$build_root" -type d -path '*/linux/bin' | head -n 1)"
+          if [ -z "$out_dir" ]; then
+            echo "::error::Linux output folder was not found under $build_root"
+            find export -maxdepth 4 -type d | sort
+            exit 1
+          fi
+          sdl_library="$(ldconfig -p | awk '/libSDL2-2.0.so.0 .*x86-64/ && !path {path=$NF} END {print path}')"
+          test -n "$sdl_library"
+          cp -L "$sdl_library" "$out_dir/libSDL2-2.0.so.0"
+          cp /usr/share/doc/libsdl2-2.0-0/copyright "$out_dir/SDL2-LICENSE.txt"
+          cp setup/launch-wayland.sh "$out_dir/PlusEngine-wayland.sh"
+          chmod +x "$out_dir/PlusEngine-wayland.sh"
+          patchelf --set-rpath '$ORIGIN' "$out_dir/lime.ndll"
+          bash setup/test-lime-wayland.sh "$out_dir/lime.ndll" "$out_dir/PlusEngine"
+          tar -C "$out_dir" -czf "dist/FNF-PlusEngine-linux-wayland-x64.tar.gz" .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-wayland-x64-artifact
+          path: dist/FNF-PlusEngine-linux-wayland-x64.tar.gz
+          if-no-files-found: error
+          compression-level: 0
+
+  build_android:
+    name: Build Android
+    runs-on: ubuntu-24.04
+    if: inputs.target == 'build_android'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+          set-safe-directory: false
+
+      - name: Setup Haxe
+        run: |
+          sudo add-apt-repository ppa:haxe/releases -y
+          sudo apt-get update
+          sudo apt-get install -y haxe
+          haxe --version
+
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: "21"
+
+      - name: Setup Android SDK
+        run: |
+          # WARNING: Do not install the legacy "tools" package. Modern cmdline-tools removed it.
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+
+          if [[ ! -x "$SDKMANAGER" ]]; then
+            SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -path '*/bin/sdkmanager' -type f | sort -V | tail -n 1)"
+          fi
+
+          if [[ -z "$SDKMANAGER" || ! -x "$SDKMANAGER" ]]; then
+            echo "::error::Android sdkmanager was not found under $SDK_ROOT"
+            exit 1
+          fi
+
+          SDKMANAGER_DIR="$(dirname "$SDKMANAGER")"
+          yes | "$SDKMANAGER" --sdk_root="$SDK_ROOT" --licenses >/dev/null || true
+          "$SDKMANAGER" --sdk_root="$SDK_ROOT" \
+            "platform-tools" \
+            "platforms;android-36" \
+            "build-tools;36.0.0" \
+            "ndk;27.3.13750724"
+          {
+            echo "ANDROID_HOME=$SDK_ROOT"
+            echo "ANDROID_SDK_ROOT=$SDK_ROOT"
+            echo "ANDROID_NDK_HOME=$SDK_ROOT/ndk/27.3.13750724"
+            echo "ANDROID_NDK_ROOT=$SDK_ROOT/ndk/27.3.13750724"
+          } >> "$GITHUB_ENV"
+          {
+            echo "$SDKMANAGER_DIR"
+            echo "$SDK_ROOT/platform-tools"
+          } >> "$GITHUB_PATH"
+
+      - name: Install libraries
+        run: |
+          chmod +x ./setup/unish-lib.sh
+          ./setup/unish-lib.sh
+
+      - name: Configure Lime
+        run: |
+          haxelib run lime setup android
+          haxelib run lime config ANDROID_SDK "$ANDROID_SDK_ROOT"
+          haxelib run lime config ANDROID_NDK_ROOT "$ANDROID_SDK_ROOT/ndk/27.3.13750724"
+          haxelib run lime config JAVA_HOME "$JAVA_HOME"
+
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ inputs.dev_build }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+          rm -rf export build ~/.gradle
+
+      - name: Build
+        run: |
+          haxelib run lime build Project.xml android --app-version="${APP_VERSION}" -D officialBuild -release -DHXCPP_IGNORE_WARNINGS
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          build_root="export/release"
+          if [ ! -d "$build_root" ]; then
+            echo "::error::$build_root does not exist after Android build"
+            find export -maxdepth 6 -type d 2>/dev/null | sort || true
+            exit 1
+          fi
+          apk_path="$(find "$build_root" -type f -name '*.apk' | sort | head -n 1)"
+          if [ -z "$apk_path" ]; then
+            echo "::error::Android APK was not found under $build_root"
+            find export -maxdepth 6 -type f | sort | tail -n 200
+            exit 1
+          fi
+          cp "$apk_path" "dist/FNF-PlusEngine-android.apk"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-artifact
+          path: dist/FNF-PlusEngine-android.apk
+          if-no-files-found: error
+          compression-level: 0
+

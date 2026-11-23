@@ -1,0 +1,199 @@
+name: macOS builds
+
+on:
+  workflow_call:
+    inputs:
+      target:
+        required: true
+        type: string
+      dev_build:
+        required: true
+        type: boolean
+
+env:
+  APP_VERSION: 4.0.0-${{ github.run_id }}
+
+jobs:
+  build_macos_arm64:
+    name: Build macOS ARM64
+    runs-on: macos-15
+    if: inputs.target == 'build_macos_arm64'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+          set-safe-directory: false
+
+      - uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: 4.3.7
+
+      - name: Install libraries
+        run: |
+          chmod +x ./setup/unish-lib.sh
+          ./setup/unish-lib.sh
+
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ inputs.dev_build }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+
+      - name: Build
+        run: |
+          haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -D officialBuild -release
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          build_root="export/release"
+          out_dir="$(find "$build_root" -type d -path '*/macos/bin' | head -n 1)"
+          if [ -z "$out_dir" ]; then
+            echo "::error::macOS ARM64 output folder was not found under $build_root"
+            find export -maxdepth 5 -type d 2>/dev/null | sort || true
+            exit 1
+          fi
+          ditto -c -k --sequesterRsrc --keepParent "$out_dir" "dist/FNF-PlusEngine-macos-arm64.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-arm64-artifact
+          path: dist/FNF-PlusEngine-macos-arm64.zip
+          if-no-files-found: error
+          compression-level: 0
+
+  build_macos_intel:
+    name: Build macOS Intel
+    runs-on: macos-15-intel
+    if: inputs.target == 'build_macos_intel'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+          set-safe-directory: false
+
+      - uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: 4.3.7
+
+      - name: Install libraries
+        run: |
+          chmod +x ./setup/unish-lib.sh
+          ./setup/unish-lib.sh
+
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ inputs.dev_build }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+
+      - name: Build
+        run: |
+          haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -D officialBuild -release
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          build_root="export/release"
+          out_dir="$(find "$build_root" -type d -path '*/macos/bin' | head -n 1)"
+          if [ -z "$out_dir" ]; then
+            echo "::error::macOS Intel output folder was not found under $build_root"
+            find export -maxdepth 5 -type d 2>/dev/null | sort || true
+            exit 1
+          fi
+          ditto -c -k --sequesterRsrc --keepParent "$out_dir" "dist/FNF-PlusEngine-macos-intel.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-intel-artifact
+          path: dist/FNF-PlusEngine-macos-intel.zip
+          if-no-files-found: error
+          compression-level: 0
+
+  build_ios:
+    name: Build iOS
+    runs-on: macos-15
+    if: inputs.target == 'build_ios'
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+          set-safe-directory: false
+
+      - uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: 4.3.7
+
+      - name: Install libraries
+        run: |
+          chmod +x ./setup/unish-lib.sh
+          ./setup/unish-lib.sh
+
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ inputs.dev_build }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+
+      - name: Build
+        run: |
+          haxelib run lime build Project.xml ios -nosign --app-version="${APP_VERSION}" -D officialBuild -release
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          build_root="export/release"
+          out_dir="$(find "$build_root" -type d -path '*/ios/build/Release-iphoneos' | head -n 1)"
+          if [ -z "$out_dir" ]; then
+            echo "::error::iOS output folder was not found under $build_root"
+            find export -maxdepth 6 -type d 2>/dev/null | sort || true
+            exit 1
+          fi
+          ditto -c -k --sequesterRsrc --keepParent "$out_dir" "dist/FNF-PlusEngine-ios.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-artifact
+          path: dist/FNF-PlusEngine-ios.zip
+          if-no-files-found: error
+          compression-level: 0
+
