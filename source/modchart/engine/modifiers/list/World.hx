@@ -29,7 +29,7 @@ class World extends Modifier {
         rotation.setTo((pos.x - ox) * sx, (pos.y - oy) * sy, (pos.z - oz) * sz);
         ModchartUtil.rotate3DVectorInto(rotation, pitch, yaw, roll, rotation);
         pos.setTo(rotation.x + ox + getPercent('worldX', p) + getPercent('worldViewX', p), rotation.y + oy + getPercent('worldY', p) + getPercent('worldViewY', p),
-            rotation.z + oz + getPercent('worldZ', p));
+            rotation.z + oz + getPercent('worldZ', p) + getPercent('worldViewZ', p));
         return pos;
     }
 
@@ -49,6 +49,6 @@ class World extends Modifier {
         return getPercent('worldScaleX', p) != 1 || getPercent('worldScaleY', p) != 1 || getPercent('worldScaleZ', p) != 1
             || getPercent('worldPitch', p) != 0 || getPercent('worldViewPitch', p) != 0 || getPercent('worldYaw', p) != 0 || getPercent('worldRoll', p) != 0
             || getPercent('worldX', p) != 0 || getPercent('worldY', p) != 0 || getPercent('worldZ', p) != 0
-            || getPercent('worldViewX', p) != 0 || getPercent('worldViewY', p) != 0;
+            || getPercent('worldViewX', p) != 0 || getPercent('worldViewY', p) != 0 || getPercent('worldViewZ', p) != 0;
     }
 }

@@ -2762,6 +2762,7 @@ class PlayState extends MusicBeatState
 			FlxG.sound.music.pause();
 			if (hasAudio(vocals)) vocals.pause();
 			if (hasAudio(opponentVocals)) opponentVocals.pause();
+			pauseGameplayVideos();
 			FlxTimer.globalManager.forEach(function(timer:FlxTimer) if (timer.active && !timer.finished) {
 				debugFrozenTimers.push(timer); timer.active = false;
 			});
@@ -2776,6 +2777,7 @@ class PlayState extends MusicBeatState
 			debugFrozenTimers.resize(0);
 			debugFrozenTweens.resize(0);
 			resyncVocals();
+			resumeGameplayVideos();
 		}
 		return modchartDebugFrozen;
 	}
@@ -2905,6 +2907,7 @@ class PlayState extends MusicBeatState
 		if (controls.PAUSE #if android || FlxG.android.justReleased.BACK #end && startedCountdown && canPause)
 		{
 			var ret:Dynamic = callOnScripts('onPause', null, true);
+			if (modchartDebugFrozen) return;
 			if(ret != LuaUtils.Function_Stop) {
 				openPauseMenu();
 			}

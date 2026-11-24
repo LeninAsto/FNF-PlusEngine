@@ -221,7 +221,7 @@ class WindowsCPP
 	 * @param icon Icon type (MSG_ERROR, MSG_WARNING, MSG_INFORMATION, MSG_QUESTION)
 	 */
 	@:functionCode('
-		MessageBox(GET_ENGINE_WINDOW(), message, caption, icon | MB_SETFOREGROUND);
+		MessageBoxW(GET_ENGINE_WINDOW(), message.wchar_str(), caption.wchar_str(), icon | MB_SETFOREGROUND);
 	')
 	public static function showMessageBox(caption:String, message:String, icon:MessageBoxIcon = MSG_WARNING)
 	{

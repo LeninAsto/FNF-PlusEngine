@@ -283,6 +283,12 @@ class FunkinLua
 			return runningScripts;
 		});
 
+		// Freeze gameplay without opening a pause substate; debug hooks can still run.
+		addLocalCallback("setModchartDebugFrozen", function(freeze:Bool):Bool
+		{
+			return context.isPlayState() && game != null ? game.setModchartDebugFrozen(freeze) : false;
+		});
+
 		addLocalCallback("setOnScripts", function(varName:String, arg:Dynamic, ?ignoreSelf:Bool = false, ?exclusions:Array<String> = null)
 		{
 			if (exclusions == null)
@@ -2232,7 +2238,7 @@ class FunkinLua
 		DeprecatedFunctions.implement(this);
 		LegacyFunctions.implement(this);
 		#if MODCHART_ALLOWED ModchartFunctions.implement(this); #end
-		#if WINDOWS_FUNCTIONS_ALLOWED WindowsFunctions.implement(this); #end
+		#if WINDOWS_FUNCTIONS_ALLOWED WindowFunctions.implement(this); #end
 		MobileFunctions.implement(this);
 		#if android AndroidFunctions.implement(this); #end
 		VideoFunctions.implement(this);
@@ -2528,6 +2534,9 @@ class FunkinLua
 	public function stop()
 	{
 		closed = true;
+		#if desktop
+		backend.window.WindowManager.closeOwned(this);
+		#end
 
 		scriptsByState.remove(this);
 		if (lua == null)

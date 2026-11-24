@@ -78,7 +78,7 @@ class ModSecurity {
 		{p: ~/\b(initGDIThread|prepareGDIEffect|enableGDIEffect|setGDIEffectWaitTime|setGDIElapsedTime)\b/, name: "Windows GDI effects"},
 		{p: ~/\b(hideDesktopIcons|hideTaskBar|moveDesktopElements|setDesktopTransparency|setTaskBarTransparency|tweenDesktopX|tweenDesktopY|tweenDesktopAlpha|tweenTaskBarAlpha|resetSystemChanges)\b/, name: "Windows desktop control"},
 		{p: ~/\b(setDesktopWallpaper|changeWindowsWallpaper|saveCurrentWallpaper|restoreOldWallpaper)\b/, name: "Windows wallpaper control"},
-		{p: ~/\b(captureScreenshot|showNotification|setWindowOpacity|tweenWindowOpacity|setWindowBorderColor|tweenWindowBorderColor|hideWindowBorder)\b/, name: "Windows shell/window control"},
+		{p: ~/\b(createGameWindow|tweenGameWindow|moveGameWindow|resizeGameWindow|setGameWindowOpacity|closeGameWindow|captureScreenshot|showNotification|setWindowOpacity|tweenWindowOpacity|setWindowBorderColor|tweenWindowBorderColor|hideWindowBorder)\b/, name: "Windows shell/window control"},
 		{p: ~/\bModSecurity\b/,      name: "ModSecurity (tamper)"},
 	];
 	// Patterns that read files or do dynamic class lookup (lower risk).
@@ -106,6 +106,7 @@ class ModSecurity {
 		{p: ~/\bcpp\.Lib\.load\b/,      name: "cpp.Lib.load"},
 		{p: ~/\bopenfl\.Lib\.application\b/, name: "openfl.Lib.application"},
 		{p: ~/\bslushithings\.windows\.WindowsAPI\b/, name: "WindowsAPI"},
+		{p: ~/\b(backend\.window\.)?WindowManager\b/, name: "Windows shell/window control"},
 		{p: ~/\bslushithings\.windows\.WindowsCPP\b/, name: "WindowsCPP"},
 		{p: ~/\bslushithings\.windows\.winGDIThings\.(SlushiWinGDI|WinGDIThread)\b/, name: "Windows GDI internals"},
 		{p: ~/\bWindowsAPI\.(initGDIThread|prepareGDIEffect|enableGDIEffect|setGDIEffectWaitTime|setGDIElapsedTime)\b/, name: "Windows GDI effects"},

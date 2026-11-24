@@ -412,8 +412,9 @@ class HScript extends Iris
 		set('Capabilities', openfl.system.Capabilities);
 		set('RatioScaleMode', flixel.system.scaleModes.RatioScaleMode);
 		set('Lib', openfl.Lib);
-		#if windows
+		#if desktop
 		set('WindowTweens', psychlua.backend.WindowTweens);
+		set('WindowManager', backend.window.WindowManager);
 		#end
 		set('TouchUtil', mobile.backend.TouchUtil);
 		set('MobileControlSelectSubState', mobile.substates.MobileControlSelectSubState);
