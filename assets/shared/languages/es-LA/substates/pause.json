@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "substates.pause",
-  "deaths": "Bola azul: {1}",
+  "deaths": "Muertes: {1}",
   "author": "Por: {1}",
   "practice_mode": "Modo de práctica",
   "charting_mode": "Modo de edición de charts",

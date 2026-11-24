@@ -12,9 +12,9 @@
   "format": {
     "error_kind": "ERROR: {1}",
     "message": "Mensaje:",
-    "trace": "Rastro:",
+    "trace": "Pila:",
     "tips": "Consejos:",
-    "need_help": "¿Necesitar ayuda? Visita:"
+    "need_help": "¿Necesitas ayuda? Visita:"
   },
   "stack": {
     "non_haxe_function": "Función no Haxe (C)",
@@ -25,12 +25,12 @@
     "method": "{1} - {2}"
   },
   "tips": {
-    "hardcoded_origin": "Esto falló fuera de hxscript, por lo que probablemente sea un motor/código fuente o una ruta de biblioteca compilada.",
-    "first_source_line": "Verifique la primera línea fuente en la pila antes del ciclo del motor; ese suele ser el culpable útil.",
-    "rebuild_assets": "Si esto solo sucede después de editar scripts/clases, reconstruya y asegúrese de que los activos exportados no estén obsoletos.",
-    "native_crash": "Esta es una ruta de falla nativa/crítica, por lo que la aplicación no pudo recuperarse limpiamente.",
-    "close_running_build": "Si esto apareció durante las pruebas de compilación, cierre todos los PlusEngine.exe en ejecución antes de reconstruir.",
-    "disable_mod_scripts": "Si las mods están habilitadas, vuelva a intentarlo con los scripts deshabilitados para separar las fallas del motor de las fallas del lado de las mods."
+    "hardcoded_origin": "Esto falló fuera de hxscript, por lo que probablemente se trate de código del motor o del proyecto, o de una ruta de biblioteca compilada.",
+    "first_source_line": "Comprueba la primera línea fuente en la pila, antes del bucle del motor; esa suele ser la causa útil.",
+    "rebuild_assets": "Si esto solo sucede después de editar scripts/clases, recompila y asegúrate de que los recursos exportados no estén desactualizados.",
+    "native_crash": "Esta es una ruta de fallo nativa/crítica, por lo que la aplicación no pudo recuperarse correctamente.",
+    "close_running_build": "Si esto apareció durante las pruebas de compilación, cierra todas las instancias de PlusEngine.exe que estén abiertas antes de recompilar.",
+    "disable_mod_scripts": "Si los mods están habilitados, vuelve a intentarlo con los scripts desactivados para separar los fallos del motor de los fallos provocados por los mods."
   },
   "null_messages": {
     "0": "¡Ups! Los dioses del código no están contentos... ¡se encontró una referencia nula!",
@@ -42,13 +42,13 @@
     "6": "¿Nulo? Más bien... ¡no es genial!",
     "7": "El objeto fue a comprar cigarrillos y nunca regresó (nulo)",
     "8": "Logro desbloqueado: ¡Encuentra una referencia nula!",
-    "9": "Las referencias nulas se almacenan en las bolas.",
-    "10": "Momento Bruh: referencia nula detectada",
-    "11": "Problema de habilidad: intentaste usar un objeto nulo",
-    "12": "El objeto decía \"Bien, voy a salir\" (nulo)",
+    "9": "Las referencias nulas viven en el limbo.",
+    "10": "Momento \"bruh\": referencia nula detectada",
+    "11": "Falta de habilidad: intentaste usar un objeto nulo",
+    "12": "El objeto dijo \"Bueno, me voy\" (nulo)",
     "13": "Error: object.exe ha dejado de funcionar (nulo)",
     "14": "¡Felicidades, lo rompiste! (referencia nula)",
-    "15": "El objeto está en una fecha indefinida (nula)",
+    "15": "El objeto está en una cita con undefined (nulo)",
     "16": "¿Referencia nula? ¿En MI motor? Es más probable de lo que crees",
     "17": "Objeto no encontrado. ¿Revisaste debajo del sofá? (nulo)"
   },

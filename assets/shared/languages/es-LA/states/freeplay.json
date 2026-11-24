@@ -4,9 +4,9 @@
   "presence": "En los menús",
   "title": "FREEPLAY",
   "song_count": "{1} CANCIONES",
-  "actions": "{1} JUGAR  •  {2} PREVIA  •  {3} JUGABILIDAD  •  {4} REINICIAR PUNTUACION  •  {5} VOLVER",
+  "actions": "{1} JUGAR  •  {2} PREVISUALIZAR  •  {3} MODIFICADORES  •  {4} REINICIAR PUNTUACIÓN  •  {5} VOLVER",
   "score": {
-    "personal_best": "MEJOR PERSONAL: {1} ({2})",
+    "personal_best": "MEJOR PUNTUACIÓN: {1} ({2})",
     "details": "Puntuación: {1}\nPrecisión: {2}",
     "none": "Aún no hay puntuación"
   },
@@ -18,17 +18,17 @@
   },
   "search": {
     "placeholder": "Buscar...",
-    "helper": "Presione B para enfocar, ESC para salir"
+    "helper": "Pulsa B para buscar, ESC para salir"
   },
-  "tip": "Presione {1} para escuchar la canción / Presione {2} para abrir el menú de cambios de juego / Presione {3} para restablecer su puntuación y precisión.",
-  "desktop_mod_tip": "/ F5 recarga mods / suelta una carpeta de mod para importarlo.",
+  "tip": "Pulsa {1} para escuchar la canción / Pulsa {2} para abrir el menú de modificadores de juego / Pulsa {3} para restablecer tu puntuación y precisión.",
+  "desktop_mod_tip": "/ F5 recarga los mods / arrastra una carpeta de mod para importarla.",
   "mod_import": {
     "title": "Importando mod",
     "scanning": "Analizando archivos...",
     "copying": "Copiando {1} de {2} archivos",
     "complete": "Importación completada. Actualizando mods...",
     "failed": "No se pudo importar el mod",
-    "dismiss": "Presiona ACEPTAR o ATRÁS para cerrar"
+    "dismiss": "Pulsa ACEPTAR o ATRÁS para cerrar"
   },
   "song_info": {
     "loading": "Cargando...",
@@ -54,16 +54,16 @@
     "no-comercial": "No comercial",
     "no-derivatives": "Sin derivados",
     "share-alike": "Compartir por igual",
-    "atribution-required": "Atribución requerida",
+    "atribution-required": "Atribución obligatoria",
     "redistribution-allow": "Redistribución permitida",
     "modify-allow": "Modificación permitida",
     "streaming-allow": "Transmisión permitida",
     "public-access": "Acceso público",
-    "public-execution": "Actuación pública",
-    "sync": "Sincronizar"
+    "public-execution": "Interpretación pública",
+    "sync": "Sincronización"
   },
   "psych": {
-    "tip": "Presione {1} para escuchar la canción / Presione {2} para abrir el menú de cambios de juego / Presione {3} para restablecer su puntuación y precisión.",
-    "desktop_mod_tip": "/ F5 recarga mods / suelta una carpeta de mod para importarlo."
+    "tip": "Pulsa {1} para escuchar la canción / Pulsa {2} para abrir el menú de modificadores de juego / Pulsa {3} para restablecer tu puntuación y precisión.",
+    "desktop_mod_tip": "/ F5 recarga los mods / arrastra una carpeta de mod para importarla."
   }
 }

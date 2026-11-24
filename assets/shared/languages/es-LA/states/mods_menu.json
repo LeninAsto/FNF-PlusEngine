@@ -8,7 +8,7 @@
     "all": "TODOS",
     "enabled": "ACTIVADOS",
     "disabled": "DESACTIVADOS",
-    "launchable": "CON INICIO PROPIO"
+    "launchable": "INICIABLE"
   },
   "search": "BUSCAR",
   "search_query": "BÚSQUEDA: {1}{2}",
@@ -17,7 +17,7 @@
     "features": "CARACTERÍSTICAS",
     "changelog": "REGISTRO DE CAMBIOS"
   },
-  "restart_notice": "* Al mover/alternar este mod se reiniciará el juego.",
+  "restart_notice": "* Al mover o activar/desactivar este mod se reiniciará el juego.",
   "buttons": {
     "launch": "INICIAR",
     "enable": "ACTIVAR",
@@ -26,17 +26,17 @@
     "settings": "AJUSTES",
     "reload": "RECARGAR"
   },
-  "hint": "ARRIBA/ABAJO Seleccionar  L/R Reordenar  ENTER Iniciar  ESPACIO Activar/Desactivar (SHIFT=Todos)  TAB Ajustes  Y Seguridad  F Filtro  / Buscar  ESC Salir",
-  "empty": "NO HAY MODS INSTALADOS\nPULSA ATRÁS PARA SALIR O INSTALAR UN MOD",
+  "hint": "ARRIBA/ABAJO Seleccionar  L/R Reordenar  ENTER Iniciar  ESPACIO Activar/Desactivar (SHIFT=Todos)  TAB Ajustes  Y Seguridad  F Filtrar  / Buscar  ESC Salir",
+  "empty": "NO HAY MODS INSTALADOS\nPULSA ATRÁS PARA SALIR O INSTALA UN MOD",
   "unknown_mod": "Mod desconocido",
   "no_description": "No se proporciona descripción.",
   "status": {
-    "disabled": "Desactivado: actívalo para iniciar",
+    "disabled": "Desactivado: actívalo para iniciarlo",
     "launch": "> Pulsa ENTER para iniciar",
-    "no_launchable_states": "Sin pantallas de inicio propias",
+    "no_launchable_states": "Sin estados iniciables",
     "base_game_global": "El juego base siempre se carga globalmente",
     "sensitive_scripts": "Se detectaron API sensibles: elige CONFIAR para activar",
-    "activation_denied": "Activación denegada: el mod permaneció deshabilitado",
+    "activation_denied": "Activación denegada: el mod sigue desactivado",
     "trusted": "Mod de confianza: activado",
     "security_disabled": "Seguridad de mods desactivada (actívala en Opciones)"
   },

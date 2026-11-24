@@ -2,18 +2,18 @@
   "$schema": 1,
   "$namespace": "errors.scripting",
   "lua": {
-    "load_error_title": "¡Error en el script Lua!",
+    "load_error_title": "¡Error en el script de Lua!",
     "load_error_message": "{1}\n\n{2}",
     "non_function_callback": "ERROR ({1}): intento de llamar a un valor {2}",
     "callback_error": "ERROR ({1}): {2}",
-    "playstate_only": "{1} es solo para PlayState y no se puede ejecutar desde un host {2} Lua.",
+    "playstate_only": "{1} solo está disponible en PlayState y no se puede ejecutar desde un host Lua {2}.",
     "runtime_error": "Error de ejecución",
     "memory_error": "Error de asignación de memoria",
     "critical_error": "Error crítico",
     "unknown_error": "Error desconocido",
-    "nil_index": "intento de indexar un valor nulo",
-    "nil_call": "intento de llamar a un valor nulo",
-    "nil_arithmetic": "intento de realizar una operación aritmética con un valor nulo",
+    "nil_index": "intentó indexar un valor nulo",
+    "nil_call": "intentó llamar a un valor nulo",
+    "nil_arithmetic": "intentó realizar una operación aritmética con un valor nulo",
     "syntax_near": "error de sintaxis cerca de {1}"
   },
   "hscript": {

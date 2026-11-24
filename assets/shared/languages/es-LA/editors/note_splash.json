@@ -13,13 +13,13 @@
     "green": "Verde:",
     "image": "Imagen:",
     "indices_optional": "Índices (OPCIONAL):",
-    "maximum_fps": "FPS máximos:",
-    "minimum_fps": "FPS mínimos:",
+    "maximum_fps": "FPS máximo:",
+    "minimum_fps": "FPS mínimo:",
     "note_data": "Datos de nota:",
     "red": "Rojo:",
     "reload_image": "Recargar imagen",
     "remove": "Eliminar",
-    "replacing_color": "Reemplazo de color:",
+    "replacing_color": "Color de reemplazo:",
     "save": "Guardar",
     "scale": "Escala:",
     "template": "Plantilla"
@@ -29,8 +29,8 @@
   },
   "help": {
     "open": "{1} - Ayuda",
-    "mobile": "Tocar en un rasgueo\npara generar un Splash\n\nTeclas de flecha: mover desplazamiento\nMantenga presionado Z: mueva las compensaciones 10 veces más rápido\n\n\nC - Copiar compensación actual\nV - Pegar el desplazamiento copiado en la presentación actual\nEn cada 4 datos de notas posteriores\nse agregará un conjunto adicional de animaciones",
-    "desktop": "Haga clic en un rasgueo o presione la barra espaciadora\npara generar un Splash\n\nTeclas de flecha: mover desplazamiento\nMantenga presionada la tecla Mayús: mueva las compensaciones 10 veces más rápido\n\n\nCtrl + C - Copiar desplazamiento actual\nCtrl + V - Pegar el desplazamiento copiado en el Splash actual\nCtrl + R - Restablecer compensación actual\nEn cada 4 datos de notas posteriores\nse agregará un conjunto adicional de animaciones"
+    "mobile": "Toca una nota\npara generar un Splash\n\nTeclas de flecha: mover el desplazamiento\nMantén Z para moverlos 10 veces más rápido\n\n\nC - Copiar el desplazamiento actual\nV - Pegar el desplazamiento copiado en el Splash actual\nPor cada 4 datos de notas posteriores\nse añade un conjunto adicional de animaciones",
+    "desktop": "Haz clic en una nota o pulsa la barra espaciadora\npara generar un Splash\n\nTeclas de flecha: mover el desplazamiento\nMantén Mayús para moverlos 10 veces más rápido\n\n\nCtrl + C - Copiar el desplazamiento actual\nCtrl + V - Pegar el desplazamiento copiado en el Splash actual\nCtrl + R - Restablecer el desplazamiento actual\nPor cada 4 datos de notas posteriores\nse añade un conjunto adicional de animaciones"
   },
   "tabs": {
     "animation": "Animación",

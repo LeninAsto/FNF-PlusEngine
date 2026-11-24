@@ -38,10 +38,10 @@ on:
       apple_runner:
         description: "ARM64 macOS runner for macOS and iOS"
         type: choice
-        default: macos-15
+        default: macos-26
         options:
-          - macos-15
           - macos-26
+          - macos-15
       publish_all:
         description: "Publish complete dev prerelease (all targets required)"
         type: boolean
@@ -351,7 +351,7 @@ jobs:
           chmod +x ./setup/unish-lib.sh
           ./setup/unish-lib.sh
 
-      - name: Configure Maven Central mirror
+      - name: Configure Gradle dependency and plugin repositories
         id: gradle_templates
         run: |
           lime_root="$(haxelib config | sed -n '1{s/\r$//;p;}')/lime/git"
@@ -370,7 +370,7 @@ jobs:
               original = path.read_text(encoding='utf-8')
               replacement = (
                   r'\1maven { url = uri(System.getenv("PLUS_MAVEN_CENTRAL_URL") '
-                  r'?: "https://repo.maven.apache.org/maven2/") }'
+                  r'?: "https://maven-central.storage-download.googleapis.com/maven2/") }'
               )
               patched, matches = pattern.subn(replacement, original)
               if matches:
@@ -379,6 +379,31 @@ jobs:
                   print(f'{path.relative_to(root)}: {matches} Maven Central declarations')
           if not count:
               raise SystemExit('No Maven Central declarations found; inspect the Lime Android templates')
+
+          # Gradle plugin resolution is independent of buildscript/allprojects.
+          # Compose is published in Maven Central; do not use the plugin portal,
+          # which redirects its transitive dependencies back to the rate-limited host.
+          settings = root / 'template/settings.gradle.kts'
+          original = settings.read_text(encoding='utf-8')
+          if re.search(r'\bpluginManagement\s*\{', original):
+              raise SystemExit('Lime settings already define pluginManagement; inspect before patching')
+          plugin_management = """pluginManagement {
+              repositories {
+                  maven { url = uri(System.getenv("PLUS_MAVEN_CENTRAL_URL") ?: "https://maven-central.storage-download.googleapis.com/maven2/") }
+                  google()
+              }
+              resolutionStrategy {
+                  eachPlugin {
+                      if (requested.id.id == "org.jetbrains.kotlin.plugin.compose") {
+                          useModule("org.jetbrains.kotlin:compose-compiler-gradle-plugin:${requested.version}")
+                      }
+                  }
+              }
+          }
+
+          """
+          settings.write_text(plugin_management + original, encoding='utf-8')
+          print('Configured pluginManagement in settings.gradle.kts')
           PYTHON
 
       - name: Restore Gradle downloads
@@ -421,10 +446,32 @@ jobs:
         id: android_build
         run: |
           set -o pipefail
-          probe_path="org/jetbrains/kotlin/kotlin-gradle-plugin/2.1.0/kotlin-gradle-plugin-2.1.0.pom"
           probe() {
-            curl --fail --silent --show-error --location --connect-timeout 10 --max-time 30 \
-              --output /dev/null "${1}${probe_path}"
+            local base="$1" artifact
+            for artifact in kotlin-gradle-plugin compose-compiler-gradle-plugin kotlin-gradle-plugins-bom; do
+              curl --fail --silent --show-error --location --connect-timeout 10 --max-time 30 \
+                --output /dev/null "${base}org/jetbrains/kotlin/${artifact}/2.1.0/${artifact}-2.1.0.pom" || return 1
+            done
+          }
+
+          # Resolve the plugin classpath before spending time on native compilation.
+          build_android() {
+            local gradle_root
+            haxelib run lime update Project.xml android --app-version="${APP_VERSION}" \
+              -D officialBuild -release -DHXCPP_IGNORE_WARNINGS || return $?
+            gradle_root="$(find export/release -type f -path '*/bin/gradlew' -print -quit)"
+            if [[ -z "$gradle_root" ]]; then
+              echo "::error::Lime did not generate the Android Gradle wrapper"
+              return 1
+            fi
+            gradle_root="$(dirname "$gradle_root")"
+            grep -q 'pluginManagement' "$gradle_root/settings.gradle.kts" || {
+              echo "::error::Generated Gradle settings are missing the CI plugin repositories"
+              return 1
+            }
+            (cd "$gradle_root" && bash ./gradlew :app:help --no-configure-on-demand) || return $?
+            haxelib run lime build Project.xml android --app-version="${APP_VERSION}" \
+              -D officialBuild -release -DHXCPP_IGNORE_WARNINGS
           }
 
           repository="$MAVEN_CENTRAL_MIRROR"
@@ -439,8 +486,7 @@ jobs:
           for attempt in 1 2 3; do
             echo "Android attempt $attempt/3; Maven Central: $repository"
             log="$RUNNER_TEMP/android-build-$attempt.log"
-            if PLUS_MAVEN_CENTRAL_URL="$repository" haxelib run lime build Project.xml android \
-              --app-version="${APP_VERSION}" -D officialBuild -release -DHXCPP_IGNORE_WARNINGS 2>&1 | tee "$log"; then
+            if PLUS_MAVEN_CENTRAL_URL="$repository" build_android 2>&1 | tee "$log"; then
               echo "transient=false" >> "$GITHUB_OUTPUT"
               exit 0
             fi
@@ -610,11 +656,18 @@ jobs:
 
   build_macos_arm64:
     name: Build macOS ARM64
-    runs-on: ${{ inputs.apple_runner || 'macos-15' }}
+    runs-on: ${{ inputs.apple_runner || 'macos-26' }}
     needs: check_platforms
     if: needs.check_platforms.outputs.build_macos_arm64 == 'true'
 
     steps:
+      - name: Verify Apple runner
+        run: |
+          uname -m
+          test "$(uname -m)" = arm64
+          sw_vers
+          xcodebuild -version
+
       - name: Checkout repository
         uses: actions/checkout@v7
         with:
@@ -734,11 +787,18 @@ jobs:
 
   build_ios:
     name: Build iOS
-    runs-on: ${{ inputs.apple_runner || 'macos-15' }}
+    runs-on: ${{ inputs.apple_runner || 'macos-26' }}
     needs: check_platforms
     if: needs.check_platforms.outputs.build_ios == 'true'
 
     steps:
+      - name: Verify Apple runner
+        run: |
+          uname -m
+          test "$(uname -m)" = arm64
+          sw_vers
+          xcodebuild -version
+
       - name: Checkout repository
         uses: actions/checkout@v7
         with:

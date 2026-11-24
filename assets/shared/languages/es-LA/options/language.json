@@ -10,7 +10,7 @@
   },
   "sync": {
     "name": "Descargar idiomas",
-    "description": "Obtén idiomas nuevos o actualizados.",
+    "description": "Descarga idiomas nuevos o actualizados.",
     "success_title": "Idiomas actualizados",
     "error_title": "Error al actualizar idiomas",
     "success": "Instalados: {1}. Al día: {2}.",

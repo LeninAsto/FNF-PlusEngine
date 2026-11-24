@@ -2,7 +2,7 @@
   "$schema": 1,
   "$namespace": "editors.preload_list",
   "ui": {
-    "high_qual": "Alta calidad.",
+    "high_qual": "Alta calidad:",
     "load_file": "Cargar archivo",
     "load_folder": "Cargar carpeta",
     "low_qual": "Baja calidad",

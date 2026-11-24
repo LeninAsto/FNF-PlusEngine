@@ -2,7 +2,7 @@
   "$schema": 1,
   "$namespace": "editors.dialogue",
   "ui": {
-    "angry_textbox": "Cuadro de texto enojado",
+    "angry_textbox": "Cuadro de texto enfadado",
     "character": "Personaje:",
     "interval_speed_ms": "Intervalo/Velocidad (ms):",
     "load_dialogue": "Cargar diálogo",

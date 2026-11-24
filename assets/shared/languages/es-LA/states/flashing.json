@@ -1,5 +1,5 @@
 {
   "$schema": 1,
   "$namespace": "states.flashing",
-  "warning": "¡Oye, cuidado!\n\n¡Este Mod contiene algunas luces intermitentes!\n\n¿Desea desactivarlos?"
+  "warning": "¡Oye, ten cuidado!\n\n¡Este mod contiene luces intermitentes!\n\n¿Quieres desactivarlas?"
 }

@@ -3,19 +3,19 @@
   "$namespace": "options.theme_accent",
   "presence": "Selector de color de acento",
   "title": "Color de acento del tema",
-  "hint": "Vista previa de los controles mientras ajustas el color. ENTER confirma y Atr?s cancela.",
-  "picker_hint": "Rueda + tira luminosa + paleta, sin convertirse en sopa visual.",
+  "hint": "Vista previa de los controles mientras ajustas el color. ENTER confirma y ATRÁS cancela.",
+  "picker_hint": "Rueda + barra de luminosidad + paleta, sin complicar la imagen.",
   "live_preview": "Vista previa en vivo habilitada",
   "use_custom": "Usar color personalizado",
-  "mini_hint": "A la derecha se muestran los controles del motor con el color elegido. As? se ver?n tambi?n en los men?s.",
-  "hex_label": "HEXAGONAL {1}",
+  "mini_hint": "A la derecha se muestran controles del motor con el color elegido. Así se verán también en los menús.",
+  "hex_label": "HEX {1}",
   "boxes": {
     "preview": "Vista previa del tema",
     "picker": "Selector de acento",
     "components": "Vista previa de los componentes MD3"
   },
   "preview": {
-    "title": "VISTA PREVIA",
+    "title": "MUESTRA DE FREEPLAY",
     "meta": "Vista previa del color de acento"
   },
   "chips": {

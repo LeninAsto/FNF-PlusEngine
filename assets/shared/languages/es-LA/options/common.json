@@ -8,53 +8,53 @@
   "mobile_controls_tip": "Presione {1} para ir al menú de controles móviles",
   "controls": {
     "keyboard_short": "CONTROL",
-    "rebinding": "Cambiando: {1}",
-    "rebinding_help": "Manten pres. {1} para cance.\nManten pres. {2} para borrar."
+    "rebinding": "Asignando: {1}",
+    "rebinding_help": "Mantén pulsado {1} para cancelar.\nMantén pulsado {2} para borrar."
   },
   "categories": {
     "note_colors": {
       "name": "Colores de nota",
-      "description": "Cambie los colores de las notas y los colores de las salpicaduras de notas."
+      "description": "Cambia los colores de las notas y sus efectos."
     },
     "controls": {
       "name": "Controles",
-      "description": "Cambie los enlaces del teclado y del gamepad."
+      "description": "Cambia las asignaciones del teclado y del gamepad."
     },
     "adjust_delay_and_combo": {
       "name": "Ajustar retardo y combo",
-      "description": "Ajuste el retraso de las notas, la compensación de calificación y la ubicación del combo."
+      "description": "Ajusta el retardo de las notas, el desfase de calificación y la posición del combo."
     },
     "graphics": {
       "name": "Gráficos",
-      "description": "Cambie la configuración de rendimiento y renderizado."
+      "description": "Cambia la configuración de rendimiento y renderizado."
     },
     "visuals": {
       "name": "Visuales",
-      "description": "Cambie HUD, cámara y preferencias visuales."
+      "description": "Cambia el HUD, la cámara y las preferencias visuales."
     },
     "gameplay": {
       "name": "Juego",
-      "description": "Cambia los modificadores y ayudantes del juego."
+      "description": "Cambia los modificadores y asistentes del juego."
     },
     "legacy": {
       "name": "Heredado",
-      "description": "Cambie la configuración de compatibilidad para el comportamiento anterior de Psych/Plus."
+      "description": "Cambia la configuración de compatibilidad del comportamiento antiguo de Psych/Plus."
     },
     "mod_security": {
       "name": "Seguridad de mods",
-      "description": "Comprobaciones de cambio utilizadas al cargar mods."
+      "description": "Cambia las comprobaciones usadas al cargar mods."
     },
     "modchart": {
       "name": "Modchart",
-      "description": "Cambie el comportamiento y la compatibilidad del modchart."
+      "description": "Cambia el comportamiento y la compatibilidad del modchart."
     },
     "language": {
       "name": "Idioma",
-      "description": "Cambiar el idioma activo."
+      "description": "Cambia el idioma activo."
     },
     "mobile": {
       "name": "Móvil",
-      "description": "Cambie los controles móviles y la configuración de diseño."
+      "description": "Cambia los controles móviles y el diseño."
     }
   },
   "menus": {
