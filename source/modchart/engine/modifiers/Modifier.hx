@@ -103,6 +103,24 @@ class Modifier {
 	}
 
 	// Helpers Functions
+	private inline function getVisualDistance(params:ModifierParameters):Float {
+		var distance = params.distance;
+		if (distance <= 0) return distance;
+		final noteTime = params.songTime + distance;
+		final stopLength = getPercent('scrollStopLength', params.player);
+		if (stopLength > 0) {
+			final start = getPercent('scrollStopStart', params.player);
+			distance -= Math.max(0, Math.min(noteTime, start + stopLength) - Math.max(params.songTime, start));
+		}
+		final slowLength = getPercent('scrollSlowLength', params.player);
+		if (slowLength > 0) {
+			final start = getPercent('scrollSlowStart', params.player);
+			final rate = Math.max(0, Math.min(1, getPercent('scrollSlowRate', params.player)));
+			distance -= Math.max(0, Math.min(noteTime, start + slowLength) - Math.max(params.songTime, start)) * (1 - rate);
+		}
+		return distance;
+	}
+
 	private inline function getScrollSpeed():Float
 		return Adapter.instance.getCurrentScrollSpeed();
 

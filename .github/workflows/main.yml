@@ -177,6 +177,9 @@ jobs:
   publish_opt_build:
     name: Publish Opt Build
     runs-on: ubuntu-24.04
+    concurrency:
+      group: opt-build-release
+      cancel-in-progress: false
     needs:
       - check_platforms
       - summary
@@ -266,6 +269,10 @@ jobs:
             const quotedMessage = commitMessage.split(/\r?\n/).map(line => `> ${line}`).join('\n');
             const commitUrl = `${context.serverUrl}/${owner}/${repo}/commit/${context.sha}`;
             const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+            const files = collectFiles('release-assets');
+            if (files.length === 0) {
+              throw new Error('No build artifacts were downloaded; keeping the existing opt release.');
+            }
 
             await deleteExistingReleaseAndTag();
 
@@ -290,25 +297,33 @@ jobs:
               draft: false,
             });
 
-            const assetDirs = ['release-assets'];
-
-            for (const dir of assetDirs) {
-              for (const filePath of collectFiles(dir)) {
-                const assetName = path.basename(filePath);
-                const data = fs.readFileSync(filePath);
-                await github.rest.repos.uploadReleaseAsset({
-                  owner,
-                  repo,
-                  release_id: release.data.id,
-                  name: assetName,
-                  data,
-                  headers: {
-                    'content-type': contentTypeFor(filePath),
-                    'content-length': data.length,
-                  },
-                });
-              }
+            for (const filePath of files) {
+              const assetName = path.basename(filePath);
+              const data = fs.readFileSync(filePath);
+              await github.rest.repos.uploadReleaseAsset({
+                owner,
+                repo,
+                release_id: release.data.id,
+                name: assetName,
+                data,
+                headers: {
+                  'content-type': contentTypeFor(filePath),
+                  'content-length': data.length,
+                },
+              });
             }
+
+            const published = await github.rest.repos.updateRelease({
+              owner,
+              repo,
+              release_id: release.data.id,
+              draft: false,
+              prerelease: true,
+            });
+            if (published.data.draft || !published.data.prerelease) {
+              throw new Error('The opt release was not published as a prerelease.');
+            }
+            core.info(`Published prerelease: ${published.data.html_url}`);
 
   notify_discord:
     name: Notify Discord

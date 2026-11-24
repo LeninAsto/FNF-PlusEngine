@@ -43,7 +43,9 @@ class Path extends PathModifier {
 		final mode = FlxMath.bound(Std.int(Math.round(getPercent('pathMode', params.player))), 0, 3);
 		final drive = getPercent('pathDriveSpeed', params.player);
 		final phase = getPercent('pathPhase', params.player);
-		final trail = Math.max(0, (Math.isFinite(params.distance) ? params.distance : 0) * speed);
+		final timeScaleID = findID('pathTimeScale');
+		final timeScale = hasUnsafeForPlayer(timeScaleID, params.player) ? Math.max(0, getUnsafe(timeScaleID, params.player)) : speed;
+		final trail = Math.max(0, (Math.isFinite(params.distance) ? getVisualDistance(params) : 0) * timeScale);
 		final clock = (Math.isFinite(params.songTime) ? params.songTime : 0) * speed;
 		final base = switch (mode) {
 			case 1: 0.0;
@@ -65,10 +67,31 @@ class Path extends PathModifier {
 
 		final local = getPercent('pathLocal', params.player) != 0;
 		final relative = !local && getPercent('pathRelative', params.player) != 0;
-		final lock = FlxMath.bound(getPercent('pathLockReceptor', params.player), 0, 1);
+		final followID = findID('pathCameraFollow');
+		final follow = hasUnsafeForPlayer(followID, params.player) ? getUnsafe(followID, params.player) : getPercent('pathLockReceptor', params.player);
+		final lock = FlxMath.bound(follow, 0, 1);
 		final extraZ = relative ? 0 : pos.z - pathOffset.z;
-		final anchorX = local ? getReceptorX(params.lane, params.player) + ARROW_SIZEDIV2 : 0;
+		var anchorX = local ? getReceptorX(params.lane, params.player) + ARROW_SIZEDIV2 : 0;
+		if (local) {
+			final center = FlxMath.bound(getPercent('pathCenter', params.player), 0, 1);
+			if (center != 0) {
+				final keys = getKeyCount(params.player);
+				final first = getReceptorX(0, params.player) + ARROW_SIZEDIV2;
+				final last = getReceptorX(Std.int(Math.max(keys - 1, 0)), params.player) + ARROW_SIZEDIV2;
+				anchorX += (WIDTH * 0.5 - (first + last) * 0.5) * center;
+			}
+			if (getPercent('pathPreserveOffsets', params.player) != 0)
+				anchorX += pos.x - (getReceptorX(params.lane, params.player) + ARROW_SIZEDIV2);
+			final laneCenter = FlxMath.bound(getPercent('pathLaneCenter', params.player), 0, 1);
+			if (laneCenter != 0) anchorX = FlxMath.lerp(anchorX, WIDTH * 0.5, laneCenter);
+		}
 		final anchorY = local ? getReceptorY(params.lane, params.player) + ARROW_SIZEDIV2 : 0;
-		return computePathAt(pos, params.lane, progress, perc, relative, extraZ, origin, lock, local, anchorX, anchorY, 0);
+		final freezeID = findID('pathCameraFreezeX');
+		final frozenX = hasUnsafeForPlayer(freezeID, params.player) ? getUnsafe(freezeID, params.player) : -1;
+		final freezeYID = findID('pathCameraFreezeY');
+		final freezeZID = findID('pathCameraFreezeZ');
+		final frozenY = hasUnsafeForPlayer(freezeYID, params.player) ? getUnsafe(freezeYID, params.player) : -1;
+		final frozenZ = hasUnsafeForPlayer(freezeZID, params.player) ? getUnsafe(freezeZID, params.player) : -1;
+		return computePathAt(pos, params.lane, progress, perc, relative, extraZ, origin, lock, local, anchorX, anchorY, 0, frozenX, frozenY, frozenZ);
 	}
 }

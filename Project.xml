@@ -107,6 +107,7 @@
 	<haxelib name="lime" version="git"/>
 	<haxelib name="flixel" version="git"/>
 	<haxelib name="flixel-addons" version="git"/>
+	<haxelib name="away3d" version="git" if="desktop || mobile"/>
 	<haxelib name="tjson" version="1.4.0"/>
 	<haxelib name="moonchart" unless="mac | ios"/>
 	<haxelib name="grig.audio"/>
