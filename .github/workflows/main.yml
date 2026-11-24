@@ -35,6 +35,13 @@ on:
         description: "Build iOS"
         type: boolean
         default: true
+      apple_runner:
+        description: "ARM64 macOS runner for macOS and iOS"
+        type: choice
+        default: macos-15
+        options:
+          - macos-15
+          - macos-26
       publish_all:
         description: "Publish complete dev prerelease (all targets required)"
         type: boolean
@@ -280,6 +287,10 @@ jobs:
   build_android:
     name: Build Android
     runs-on: ubuntu-24.04
+    timeout-minutes: 90
+    env:
+      MAVEN_CENTRAL_MIRROR: https://maven-central.storage-download.googleapis.com/maven2/
+      MAVEN_CENTRAL_ORIGINAL: https://repo.maven.apache.org/maven2/
     needs: check_platforms
     if: needs.check_platforms.outputs.build_android == 'true'
 
@@ -301,16 +312,6 @@ jobs:
         with:
           distribution: zulu
           java-version: "21"
-
-      - name: Cache Gradle downloads
-        uses: actions/cache@v6
-        with:
-          path: |
-            ~/.gradle/caches/modules-2
-            ~/.gradle/wrapper/dists
-          key: ${{ runner.os }}-plus-gradle-v1-${{ hashFiles('Project.xml', 'setup/unish-lib.sh') }}
-          restore-keys: |
-            ${{ runner.os }}-plus-gradle-v1-
 
       - name: Setup Android SDK
         run: |
@@ -350,6 +351,50 @@ jobs:
           chmod +x ./setup/unish-lib.sh
           ./setup/unish-lib.sh
 
+      - name: Configure Maven Central mirror
+        id: gradle_templates
+        run: |
+          lime_root="$(haxelib config | sed -n '1{s/\r$//;p;}')/lime/git"
+          templates="$lime_root/templates/android"
+          test -f "$templates/template/build.gradle.kts"
+          echo "revision=$(git -C "$lime_root" rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          python3 - "$templates" <<'PYTHON'
+          import re
+          import sys
+          from pathlib import Path
+
+          root = Path(sys.argv[1])
+          pattern = re.compile(r'(?m)^([ \t]*)mavenCentral\([ \t]*\)[ \t]*$')
+          count = 0
+          for path in sorted(root.rglob('*.gradle.kts')):
+              original = path.read_text(encoding='utf-8')
+              replacement = (
+                  r'\1maven { url = uri(System.getenv("PLUS_MAVEN_CENTRAL_URL") '
+                  r'?: "https://repo.maven.apache.org/maven2/") }'
+              )
+              patched, matches = pattern.subn(replacement, original)
+              if matches:
+                  path.write_text(patched, encoding='utf-8')
+                  count += matches
+                  print(f'{path.relative_to(root)}: {matches} Maven Central declarations')
+          if not count:
+              raise SystemExit('No Maven Central declarations found; inspect the Lime Android templates')
+          PYTHON
+
+      - name: Restore Gradle downloads
+        id: gradle_cache
+        uses: actions/cache/restore@v6
+        continue-on-error: true
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper/dists
+          key: ${{ runner.os }}-plus-gradle-v2-${{ steps.gradle_templates.outputs.revision }}-${{ hashFiles('Project.xml', 'setup/unish-lib.sh') }}
+          restore-keys: |
+            ${{ runner.os }}-plus-gradle-v2-${{ steps.gradle_templates.outputs.revision }}-${{ hashFiles('Project.xml', 'setup/unish-lib.sh') }}-partial-
+            ${{ runner.os }}-plus-gradle-v2-${{ steps.gradle_templates.outputs.revision }}-
+            ${{ runner.os }}-plus-gradle-v2-
+
       - name: Configure Lime
         run: |
           haxelib run lime setup android
@@ -373,19 +418,96 @@ jobs:
           rm -rf export build
 
       - name: Build
+        id: android_build
         run: |
           set -o pipefail
+          probe_path="org/jetbrains/kotlin/kotlin-gradle-plugin/2.1.0/kotlin-gradle-plugin-2.1.0.pom"
+          probe() {
+            curl --fail --silent --show-error --location --connect-timeout 10 --max-time 30 \
+              --output /dev/null "${1}${probe_path}"
+          }
+
+          repository="$MAVEN_CENTRAL_MIRROR"
+          if ! probe "$repository"; then
+            if probe "$MAVEN_CENTRAL_ORIGINAL"; then
+              repository="$MAVEN_CENTRAL_ORIGINAL"
+            else
+              echo "::warning::Both Maven Central probes failed; attempting the build with the mirror and existing cache"
+            fi
+          fi
+
           for attempt in 1 2 3; do
+            echo "Android attempt $attempt/3; Maven Central: $repository"
             log="$RUNNER_TEMP/android-build-$attempt.log"
-            if haxelib run lime build Project.xml android --app-version="${APP_VERSION}" -D officialBuild -release -DHXCPP_IGNORE_WARNINGS 2>&1 | tee "$log"; then
+            if PLUS_MAVEN_CENTRAL_URL="$repository" haxelib run lime build Project.xml android \
+              --app-version="${APP_VERSION}" -D officialBuild -release -DHXCPP_IGNORE_WARNINGS 2>&1 | tee "$log"; then
+              echo "transient=false" >> "$GITHUB_OUTPUT"
               exit 0
             fi
-            if [ "$attempt" -eq 3 ] || ! grep -Eqi 'status code (429|502|503|504)|Too Many Requests|Service Unavailable' "$log"; then
+
+            if grep -Eqi 'status code (429|502|503|504)|Too Many Requests|Service Unavailable|Read timed out|Connection timed out|Connection reset' "$log"; then
+              echo "transient=true" >> "$GITHUB_OUTPUT"
+            elif [[ "$repository" == "$MAVEN_CENTRAL_MIRROR" ]] && grep -Fq "$MAVEN_CENTRAL_MIRROR" "$log" && grep -Eq 'Could not find |Could not resolve ' "$log"; then
+              echo "transient=true" >> "$GITHUB_OUTPUT"
+            else
+              echo "transient=false" >> "$GITHUB_OUTPUT"
               exit 1
             fi
-            echo "::warning::Temporary dependency download failure; retrying Android build"
-            sleep "$((30 * attempt))"
+
+            if [[ "$attempt" == 3 ]]; then
+              echo "::error::Android dependency downloads failed after 3 attempts"
+              exit 1
+            fi
+            echo "::warning::Temporary dependency download failure; retrying after backoff"
+            sleep "$((60 * attempt + RANDOM % 21))"
+            if [[ "$repository" == "$MAVEN_CENTRAL_MIRROR" ]]; then
+              alternate="$MAVEN_CENTRAL_ORIGINAL"
+            else
+              alternate="$MAVEN_CENTRAL_MIRROR"
+            fi
+            if probe "$alternate"; then
+              repository="$alternate"
+            fi
           done
+
+      - name: Check Gradle cache contents
+        id: gradle_cache_ready
+        if: ${{ !cancelled() && (steps.android_build.outcome == 'success' || steps.android_build.outputs.transient == 'true') }}
+        run: |
+          if [[ -d "$HOME/.gradle/caches/modules-2/files-2.1" ]] && \
+             [[ -n "$(find "$HOME/.gradle/caches/modules-2/files-2.1" -type f -print -quit)" ]]; then
+            echo "ready=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Save Gradle downloads
+        if: ${{ !cancelled() && github.event_name != 'pull_request' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main') && steps.gradle_cache_ready.outputs.ready == 'true' && steps.android_build.outcome == 'success' && steps.gradle_cache.outputs.cache-hit != 'true' && steps.gradle_cache.outputs.cache-primary-key != '' }}
+        uses: actions/cache/save@v6
+        continue-on-error: true
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper/dists
+          key: ${{ steps.gradle_cache.outputs.cache-primary-key }}
+
+      - name: Preserve partial Gradle downloads
+        if: ${{ !cancelled() && github.event_name != 'pull_request' && (github.ref == 'refs/heads/dev' || github.ref == 'refs/heads/main') && steps.gradle_cache_ready.outputs.ready == 'true' && steps.android_build.outcome == 'failure' && steps.android_build.outputs.transient == 'true' && steps.gradle_cache.outputs.cache-primary-key != '' }}
+        uses: actions/cache/save@v6
+        continue-on-error: true
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper/dists
+          key: ${{ steps.gradle_cache.outputs.cache-primary-key }}-partial-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Upload Android diagnostics
+        if: ${{ !cancelled() && steps.android_build.outcome == 'failure' }}
+        uses: actions/upload-artifact@v7
+        continue-on-error: true
+        with:
+          name: android-build-logs
+          path: ${{ runner.temp }}/android-build-*.log
+          if-no-files-found: warn
+          retention-days: 7
 
       - name: Package artifact
         run: |
@@ -488,7 +610,7 @@ jobs:
 
   build_macos_arm64:
     name: Build macOS ARM64
-    runs-on: macos-15
+    runs-on: ${{ inputs.apple_runner || 'macos-15' }}
     needs: check_platforms
     if: needs.check_platforms.outputs.build_macos_arm64 == 'true'
 
@@ -612,7 +734,7 @@ jobs:
 
   build_ios:
     name: Build iOS
-    runs-on: macos-15
+    runs-on: ${{ inputs.apple_runner || 'macos-15' }}
     needs: check_platforms
     if: needs.check_platforms.outputs.build_ios == 'true'
 
@@ -706,9 +828,10 @@ jobs:
               ('Windows', [('build_windows_x64', 'build_windows', 'Windows x64')]),
               ('macOS', [('build_macos_arm64', 'build_macos_arm64', 'macOS ARM64'), ('build_macos_intel', 'build_macos_intel', 'macOS Intel'), ('build_ios', 'build_ios', 'iOS')]),
           ]
-          icons = {'success': '[ok]', 'failure': '[fail]', 'cancelled': '[stop]', 'skipped': '[skip]'}
+          icons = {'success': '[ok]', 'failure': '[fail]', 'cancelled': '[stop]', 'abandoned': '[runner]', 'skipped': '[skip]'}
           lines = ['## Build results', '', '```text', 'Build']
           failed = [] if selection['result'] == 'success' else ['Platform selection']
+          infrastructure = []
           selected = 0
           succeeded = 0
           total = sum(len(jobs) for _, jobs in groups)
@@ -723,6 +846,8 @@ jobs:
                   prefix = '    ' if last_group else '|   '
                   branch = '`--' if index == len(jobs) - 1 else '|--'
                   lines.append(f'{prefix}{branch} {label}: {icons.get(result, "[?]")} {result}')
+                  if result == 'abandoned':
+                      infrastructure.append(label)
                   if (enabled and result != 'success') or (not enabled and result != 'skipped'):
                       failed.append(label)
           if selected == 0:
@@ -730,6 +855,8 @@ jobs:
           lines += ['```', '', f'Successful targets: {succeeded}/{selected} selected.']
           if failed:
               lines += ['', 'Errors: ' + ', '.join(failed)]
+          if infrastructure:
+              lines += ['', 'Runner allocation interrupted: ' + ', '.join(infrastructure)]
           with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as handle:
               handle.write('\n'.join(lines) + '\n')
           with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as handle:
@@ -948,7 +1075,7 @@ jobs:
           if [ "$SUMMARY_RESULT" = "success" ]; then
             STATUS="SUCCESS"
             COLOR=5763719
-            if [ "$PUBLISH_RESULT" = "failure" ] || [ "$PUBLISH_RESULT" = "cancelled" ]; then
+            if [ "$PUBLISH_RESULT" = "failure" ] || [ "$PUBLISH_RESULT" = "cancelled" ] || [ "$PUBLISH_RESULT" = "abandoned" ]; then
               STATUS="PUBLISH FAILED"
               COLOR=15548997
               DOWNLOAD_LABEL="Artifacts"
