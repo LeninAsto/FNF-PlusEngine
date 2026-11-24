@@ -303,7 +303,7 @@ jobs:
           java-version: "21"
 
       - name: Cache Gradle downloads
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: |
             ~/.gradle/caches/modules-2
