@@ -36,7 +36,7 @@ on:
         type: boolean
         default: true
       publish_all:
-        description: "Publish to all platforms (opt build)"
+        description: "Publish complete opt prerelease (all targets required)"
         type: boolean
         default: true
       opt_build:
@@ -70,96 +70,611 @@ jobs:
       - id: set_outputs
         run: |
           if [[ "${{ github.event_name }}" == "push" ]] || [[ "${{ github.event_name }}" == "pull_request" ]]; then
-            echo "build_linux=true" >> $GITHUB_OUTPUT
-            echo "build_wayland=true" >> $GITHUB_OUTPUT
-            echo "build_android=true" >> $GITHUB_OUTPUT
-            echo "build_windows=true" >> $GITHUB_OUTPUT
-            echo "build_macos_arm64=true" >> $GITHUB_OUTPUT
-            echo "build_macos_intel=true" >> $GITHUB_OUTPUT
-            echo "build_ios=true" >> $GITHUB_OUTPUT
-            echo "publish_all=true" >> $GITHUB_OUTPUT
-            if [[ "${{ github.ref_name }}" == "opt" ]]; then
-              echo "opt_build=true" >> $GITHUB_OUTPUT
+            echo "build_linux=true" >> "$GITHUB_OUTPUT"
+            echo "build_wayland=true" >> "$GITHUB_OUTPUT"
+            echo "build_android=true" >> "$GITHUB_OUTPUT"
+            echo "build_windows=true" >> "$GITHUB_OUTPUT"
+            echo "build_macos_arm64=true" >> "$GITHUB_OUTPUT"
+            echo "build_macos_intel=true" >> "$GITHUB_OUTPUT"
+            echo "build_ios=true" >> "$GITHUB_OUTPUT"
+            echo "publish_all=true" >> "$GITHUB_OUTPUT"
+            if [[ "$GITHUB_REF_NAME" == "opt" || "$GITHUB_BASE_REF" == "opt" ]]; then
+              echo "opt_build=true" >> "$GITHUB_OUTPUT"
             else
-              echo "opt_build=false" >> $GITHUB_OUTPUT
+              echo "opt_build=false" >> "$GITHUB_OUTPUT"
             fi
           else
-            echo "build_linux=${{ github.event.inputs.build_linux }}" >> $GITHUB_OUTPUT
-            echo "build_wayland=${{ github.event.inputs.build_wayland }}" >> $GITHUB_OUTPUT
-            echo "build_android=${{ github.event.inputs.build_android }}" >> $GITHUB_OUTPUT
-            echo "build_windows=${{ github.event.inputs.build_windows }}" >> $GITHUB_OUTPUT
-            echo "build_macos_arm64=${{ github.event.inputs.build_macos_arm64 }}" >> $GITHUB_OUTPUT
-            echo "build_macos_intel=${{ github.event.inputs.build_macos_intel }}" >> $GITHUB_OUTPUT
-            echo "build_ios=${{ github.event.inputs.build_ios }}" >> $GITHUB_OUTPUT
-            echo "publish_all=${{ github.event.inputs.publish_all }}" >> $GITHUB_OUTPUT
-            echo "opt_build=${{ github.event.inputs.opt_build }}" >> $GITHUB_OUTPUT
+            echo "build_linux=${{ inputs.build_linux }}" >> "$GITHUB_OUTPUT"
+            echo "build_wayland=${{ inputs.build_wayland }}" >> "$GITHUB_OUTPUT"
+            echo "build_android=${{ inputs.build_android }}" >> "$GITHUB_OUTPUT"
+            echo "build_windows=${{ inputs.build_windows }}" >> "$GITHUB_OUTPUT"
+            echo "build_macos_arm64=${{ inputs.build_macos_arm64 }}" >> "$GITHUB_OUTPUT"
+            echo "build_macos_intel=${{ inputs.build_macos_intel }}" >> "$GITHUB_OUTPUT"
+            echo "build_ios=${{ inputs.build_ios }}" >> "$GITHUB_OUTPUT"
+            echo "publish_all=${{ inputs.publish_all }}" >> "$GITHUB_OUTPUT"
+            echo "opt_build=${{ inputs.opt_build }}" >> "$GITHUB_OUTPUT"
           fi
 
   build_linux_x64:
-    name: Ubuntu / Linux x64
+    name: Build Linux x64
+    runs-on: ubuntu-24.04
     needs: check_platforms
     if: needs.check_platforms.outputs.build_linux == 'true'
-    uses: ./.github/workflows/build-ubuntu.yml
-    with:
-      target: build_linux_x64
-      opt_build: ${{ needs.check_platforms.outputs.opt_build == 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: ${{ env.HAXE_VERSION }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libvlc-dev libvlccore-dev
+
+      - name: Install libraries
+        run: |
+          chmod +x ./setup/unish-lib.sh
+          ./setup/unish-lib.sh
+
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.opt_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+
+      - name: Build
+        run: |
+          haxelib run lime build Project.xml linux --app-version="${APP_VERSION}" -D officialBuild -release
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          build_root="export/release"
+          if [ ! -d "$build_root" ]; then
+            echo "::error::$build_root does not exist after Linux build"
+            find export -maxdepth 4 -type d 2>/dev/null | sort || true
+            exit 1
+          fi
+          out_dir="$(find "$build_root" -type d -path '*/linux/bin' -print -quit)"
+          if [ -z "$out_dir" ]; then
+            echo "::error::Linux output folder was not found under $build_root"
+            find export -maxdepth 4 -type d | sort
+            exit 1
+          fi
+          tar -C "$out_dir" -czf "dist/FNF-PlusEngine-linux-x64.tar.gz" .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-x64-artifact
+          path: dist/FNF-PlusEngine-linux-x64.tar.gz
+          if-no-files-found: error
+          compression-level: 0
 
   build_linux_wayland:
-    name: Ubuntu / Linux Wayland x64
+    name: Build Linux Wayland x64
+    runs-on: ubuntu-24.04
     needs: check_platforms
     if: needs.check_platforms.outputs.build_wayland == 'true'
-    uses: ./.github/workflows/build-ubuntu.yml
-    with:
-      target: build_linux_wayland
-      opt_build: ${{ needs.check_platforms.outputs.opt_build == 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: ${{ env.HAXE_VERSION }}
+
+      - name: Install system dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libvlc-dev libvlccore-dev libsdl2-dev patchelf weston libgl1-mesa-dev libglu1-mesa-dev libasound2-dev libx11-dev libxext-dev libxi-dev libxrandr-dev libxinerama-dev libpulse-dev libwayland-dev libxkbcommon-dev libgl1-mesa-dri
+
+      - name: Install libraries
+        run: |
+          chmod +x ./setup/unish-lib.sh
+          ./setup/unish-lib.sh
+
+      - name: Rebuild Lime with SDL2 Wayland support
+        run: |
+          lime_root="$(haxelib config | sed -n '1{s/\r$//;p;}')/lime/git"
+          test -f "$lime_root/project/Build.xml"
+          stretch_dir="$lime_root/dependencies/signalsmith-stretch"
+          if [ ! -f "$stretch_dir/signalsmith-stretch.h" ]; then
+            mkdir -p "$stretch_dir"
+            git -C "$stretch_dir" init
+            if ! git -C "$stretch_dir" remote get-url origin >/dev/null 2>&1; then
+              git -C "$stretch_dir" remote add origin https://github.com/Signalsmith-Audio/signalsmith-stretch.git
+            fi
+            stretch_revision="$(git -C "$lime_root" ls-tree HEAD dependencies/signalsmith-stretch | awk '{print $3}')"
+            test -n "$stretch_revision"
+            git -C "$stretch_dir" fetch --depth 1 origin "$stretch_revision"
+            git -C "$stretch_dir" checkout --detach FETCH_HEAD
+          fi
+          test -f "$stretch_dir/signalsmith-stretch.h"
+          python3 setup/enable-lime-wayland.py "$lime_root"
+          (cd "$lime_root/project" && haxelib run hxcpp Build.xml -Dlinux -DHXCPP_M64 -DHXCPP_NO_CPP11 -Dplus_system_sdl)
+          lime_ndll="$lime_root/ndll/Linux64/lime.ndll"
+          ldd "$lime_ndll" | grep 'libSDL2-2.0.so.0'
+          if ldd "$lime_ndll" | grep -q 'not found'; then
+            echo "::error::Rebuilt Lime has unresolved native dependencies"
+            exit 1
+          fi
+          echo "LIME_WAYLAND_NDLL=$lime_ndll" >> "$GITHUB_ENV"
+
+      - name: Verify Wayland and OpenGL
+        run: bash setup/test-lime-wayland.sh "$LIME_WAYLAND_NDLL"
+
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.opt_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+
+      - name: Build
+        run: |
+          haxelib run lime build Project.xml linux --app-version="${APP_VERSION}" -D officialBuild -release
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          build_root="export/release"
+          if [ ! -d "$build_root" ]; then
+            echo "::error::$build_root does not exist after Linux build"
+            find export -maxdepth 4 -type d 2>/dev/null | sort || true
+            exit 1
+          fi
+          out_dir="$(find "$build_root" -type d -path '*/linux/bin' -print -quit)"
+          if [ -z "$out_dir" ]; then
+            echo "::error::Linux output folder was not found under $build_root"
+            find export -maxdepth 4 -type d | sort
+            exit 1
+          fi
+          sdl_library="$(ldconfig -p | awk '/libSDL2-2.0.so.0 .*x86-64/ && !path {path=$NF} END {print path}')"
+          test -n "$sdl_library"
+          cp -L "$sdl_library" "$out_dir/libSDL2-2.0.so.0"
+          cp /usr/share/doc/libsdl2-2.0-0/copyright "$out_dir/SDL2-LICENSE.txt"
+          install -m 755 setup/launch-wayland.sh "$out_dir/PlusEngine-wayland.sh"
+          patchelf --set-rpath '$ORIGIN' "$out_dir/lime.ndll"
+          ldd "$(realpath "$out_dir/lime.ndll")" | grep -F "$(realpath "$out_dir")/libSDL2-2.0.so.0"
+          bash setup/test-lime-wayland.sh "$out_dir/lime.ndll" "$out_dir/PlusEngine"
+          tar -C "$out_dir" -czf "dist/FNF-PlusEngine-linux-wayland-x64.tar.gz" .
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: linux-wayland-x64-artifact
+          path: dist/FNF-PlusEngine-linux-wayland-x64.tar.gz
+          if-no-files-found: error
+          compression-level: 0
 
   build_android:
-    name: Ubuntu / Android
+    name: Build Android
+    runs-on: ubuntu-24.04
     needs: check_platforms
     if: needs.check_platforms.outputs.build_android == 'true'
-    uses: ./.github/workflows/build-ubuntu.yml
-    with:
-      target: build_android
-      opt_build: ${{ needs.check_platforms.outputs.opt_build == 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: ${{ env.HAXE_VERSION }}
+
+      - name: Setup Java
+        uses: actions/setup-java@v6
+        with:
+          distribution: zulu
+          java-version: "21"
+
+      - name: Cache Gradle downloads
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.gradle/caches/modules-2
+            ~/.gradle/wrapper/dists
+          key: ${{ runner.os }}-plus-gradle-v1-${{ hashFiles('Project.xml', 'setup/unish-lib.sh') }}
+          restore-keys: |
+            ${{ runner.os }}-plus-gradle-v1-
+
+      - name: Setup Android SDK
+        run: |
+          # WARNING: Do not install the legacy "tools" package. Modern cmdline-tools removed it.
+          SDK_ROOT="${ANDROID_SDK_ROOT:-${ANDROID_HOME:-/usr/local/lib/android/sdk}}"
+          SDKMANAGER="$SDK_ROOT/cmdline-tools/latest/bin/sdkmanager"
+
+          if [[ ! -x "$SDKMANAGER" ]]; then
+            SDKMANAGER="$(find "$SDK_ROOT/cmdline-tools" -path '*/bin/sdkmanager' -type f | sort -V | tail -n 1)"
+          fi
+
+          if [[ -z "$SDKMANAGER" || ! -x "$SDKMANAGER" ]]; then
+            echo "::error::Android sdkmanager was not found under $SDK_ROOT"
+            exit 1
+          fi
+
+          SDKMANAGER_DIR="$(dirname "$SDKMANAGER")"
+          yes | "$SDKMANAGER" --sdk_root="$SDK_ROOT" --licenses >/dev/null || true
+          "$SDKMANAGER" --sdk_root="$SDK_ROOT" \
+            "platform-tools" \
+            "platforms;android-36" \
+            "build-tools;36.0.0" \
+            "ndk;27.3.13750724"
+          {
+            echo "ANDROID_HOME=$SDK_ROOT"
+            echo "ANDROID_SDK_ROOT=$SDK_ROOT"
+            echo "ANDROID_NDK_HOME=$SDK_ROOT/ndk/27.3.13750724"
+            echo "ANDROID_NDK_ROOT=$SDK_ROOT/ndk/27.3.13750724"
+          } >> "$GITHUB_ENV"
+          {
+            echo "$SDKMANAGER_DIR"
+            echo "$SDK_ROOT/platform-tools"
+          } >> "$GITHUB_PATH"
+
+      - name: Install libraries
+        run: |
+          chmod +x ./setup/unish-lib.sh
+          ./setup/unish-lib.sh
+
+      - name: Configure Lime
+        run: |
+          haxelib run lime setup android
+          haxelib run lime config ANDROID_SDK "$ANDROID_SDK_ROOT"
+          haxelib run lime config ANDROID_NDK_ROOT "$ANDROID_SDK_ROOT/ndk/27.3.13750724"
+          haxelib run lime config JAVA_HOME "$JAVA_HOME"
+
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.opt_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+          rm -rf export build
+
+      - name: Build
+        run: |
+          set -o pipefail
+          for attempt in 1 2 3; do
+            log="$RUNNER_TEMP/android-build-$attempt.log"
+            if haxelib run lime build Project.xml android --app-version="${APP_VERSION}" -D officialBuild -release -DHXCPP_IGNORE_WARNINGS 2>&1 | tee "$log"; then
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ] || ! grep -Eqi 'status code (429|502|503|504)|Too Many Requests|Service Unavailable' "$log"; then
+              exit 1
+            fi
+            echo "::warning::Temporary dependency download failure; retrying Android build"
+            sleep "$((30 * attempt))"
+          done
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          build_root="export/release"
+          if [ ! -d "$build_root" ]; then
+            echo "::error::$build_root does not exist after Android build"
+            find export -maxdepth 6 -type d 2>/dev/null | sort || true
+            exit 1
+          fi
+          mapfile -t apks < <(find "$build_root" -type f -name '*.apk' | sort)
+          if [ "${#apks[@]}" -eq 0 ]; then
+            echo "::error::No Android APK found under $build_root"
+            exit 1
+          fi
+          # Lime/Gradle may leave identical copies in different output directories.
+          first_hash="$(sha256sum "${apks[0]}" | awk '{print $1}')"
+          for apk in "${apks[@]}"; do
+            if [ "$(sha256sum "$apk" | awk '{print $1}')" != "$first_hash" ]; then
+              echo "::error::Multiple different APKs found; select the intended release explicitly"
+              printf '%s\n' "${apks[@]}"
+              exit 1
+            fi
+          done
+          cp "${apks[0]}" "dist/FNF-PlusEngine-android.apk"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: android-artifact
+          path: dist/FNF-PlusEngine-android.apk
+          if-no-files-found: error
+          compression-level: 0
 
   build_windows_x64:
-    name: Windows / x64
+    name: Build Windows x64
+    runs-on: windows-2025
     needs: check_platforms
     if: needs.check_platforms.outputs.build_windows == 'true'
-    uses: ./.github/workflows/build-windows.yml
-    with:
-      target: build_windows_x64
-      opt_build: ${{ needs.check_platforms.outputs.opt_build == 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: ${{ env.HAXE_VERSION }}
+
+      - name: Install libraries
+        run: |
+          haxelib setup C:\haxelib
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          cmd /c setup\windows-lib.bat
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+
+      - name: Prepare build
+        run: |
+          Set-Content -Path VERSION -Value "${{ github.run_id }}" -Encoding utf8NoBOM
+          @'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.opt_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          '@ | Set-Content -Path source/backend/BuildInfoGenerated.hx -Encoding utf8NoBOM
+
+      - name: Build
+        run: |
+          haxelib run lime build Project.xml windows --app-version="${env:APP_VERSION}" -D officialBuild -release
+
+      - name: Package artifact
+        run: |
+          New-Item -ItemType Directory -Force -Path dist | Out-Null
+          $buildRoot = "export/release"
+          $outDir = Get-ChildItem -Path $buildRoot -Directory -Recurse -ErrorAction SilentlyContinue |
+            Where-Object { $_.FullName -replace '\\','/' -match '/windows/bin$' } |
+            Select-Object -First 1
+          if ($null -eq $outDir) {
+            Write-Error "Windows output folder was not found under $buildRoot"
+            Get-ChildItem -Path export -Directory -Recurse -ErrorAction SilentlyContinue | Select-Object -ExpandProperty FullName
+            exit 1
+          }
+          Compress-Archive -Path (Join-Path $outDir.FullName '*') -DestinationPath "dist/FNF-PlusEngine-windows-x64.zip" -Force
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: windows-x64-artifact
+          path: dist/FNF-PlusEngine-windows-x64.zip
+          if-no-files-found: error
+          compression-level: 0
 
   build_macos_arm64:
-    name: macOS / ARM64
+    name: Build macOS ARM64
+    runs-on: macos-15
     needs: check_platforms
     if: needs.check_platforms.outputs.build_macos_arm64 == 'true'
-    uses: ./.github/workflows/build-macos.yml
-    with:
-      target: build_macos_arm64
-      opt_build: ${{ needs.check_platforms.outputs.opt_build == 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: ${{ env.HAXE_VERSION }}
+
+      - name: Install libraries
+        run: |
+          chmod +x ./setup/unish-lib.sh
+          ./setup/unish-lib.sh
+
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.opt_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+
+      - name: Build
+        run: |
+          haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -D officialBuild -release
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          build_root="export/release"
+          out_dir="$(find "$build_root" -type d -path '*/macos/bin' -print -quit)"
+          if [ -z "$out_dir" ]; then
+            echo "::error::macOS ARM64 output folder was not found under $build_root"
+            find export -maxdepth 5 -type d 2>/dev/null | sort || true
+            exit 1
+          fi
+          ditto -c -k --sequesterRsrc --keepParent "$out_dir" "dist/FNF-PlusEngine-macos-arm64.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-arm64-artifact
+          path: dist/FNF-PlusEngine-macos-arm64.zip
+          if-no-files-found: error
+          compression-level: 0
 
   build_macos_intel:
-    name: macOS / Intel
+    name: Build macOS Intel
+    runs-on: macos-15-intel
     needs: check_platforms
     if: needs.check_platforms.outputs.build_macos_intel == 'true'
-    uses: ./.github/workflows/build-macos.yml
-    with:
-      target: build_macos_intel
-      opt_build: ${{ needs.check_platforms.outputs.opt_build == 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: ${{ env.HAXE_VERSION }}
+
+      - name: Install libraries
+        run: |
+          chmod +x ./setup/unish-lib.sh
+          ./setup/unish-lib.sh
+
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.opt_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+
+      - name: Build
+        run: |
+          haxelib run lime build Project.xml mac --app-version="${APP_VERSION}" -D officialBuild -release
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          build_root="export/release"
+          out_dir="$(find "$build_root" -type d -path '*/macos/bin' -print -quit)"
+          if [ -z "$out_dir" ]; then
+            echo "::error::macOS Intel output folder was not found under $build_root"
+            find export -maxdepth 5 -type d 2>/dev/null | sort || true
+            exit 1
+          fi
+          ditto -c -k --sequesterRsrc --keepParent "$out_dir" "dist/FNF-PlusEngine-macos-intel.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: macos-intel-artifact
+          path: dist/FNF-PlusEngine-macos-intel.zip
+          if-no-files-found: error
+          compression-level: 0
 
   build_ios:
-    name: macOS / iOS
+    name: Build iOS
+    runs-on: macos-15
     needs: check_platforms
     if: needs.check_platforms.outputs.build_ios == 'true'
-    uses: ./.github/workflows/build-macos.yml
-    with:
-      target: build_ios
-      opt_build: ${{ needs.check_platforms.outputs.opt_build == 'true' }}
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 1
+          persist-credentials: false
+          show-progress: false
+
+      - name: Setup Haxe
+        uses: krdlab/setup-haxe@master
+        with:
+          haxe-version: ${{ env.HAXE_VERSION }}
+
+      - name: Install libraries
+        run: |
+          chmod +x ./setup/unish-lib.sh
+          ./setup/unish-lib.sh
+
+      - name: Prepare build
+        run: |
+          printf '%s\n' "${{ github.run_id }}" > VERSION
+          cat > source/backend/BuildInfoGenerated.hx <<'EOF'
+          package backend;
+
+          class BuildInfoGenerated
+          {
+          	public static inline final githubDevBuild:Bool = ${{ needs.check_platforms.outputs.opt_build == 'true' }};
+          	public static inline final commit:String = "${{ github.sha }}";
+          	public static inline final runId:String = "${{ github.run_id }}";
+          }
+          EOF
+
+      - name: Build
+        run: |
+          haxelib run lime build Project.xml ios -nosign --app-version="${APP_VERSION}" -D officialBuild -release
+
+      - name: Package artifact
+        run: |
+          mkdir -p dist
+          build_root="export/release"
+          out_dir="$(find "$build_root" -type d -path '*/ios/build/Release-iphoneos' -print -quit)"
+          if [ -z "$out_dir" ]; then
+            echo "::error::iOS output folder was not found under $build_root"
+            find export -maxdepth 6 -type d 2>/dev/null | sort || true
+            exit 1
+          fi
+          ditto -c -k --sequesterRsrc --keepParent "$out_dir" "dist/FNF-PlusEngine-ios.zip"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: ios-artifact
+          path: dist/FNF-PlusEngine-ios.zip
+          if-no-files-found: error
+          compression-level: 0
 
   summary:
     name: Workflow Summary
+    runs-on: ubuntu-24.04
     needs:
       - check_platforms
       - build_linux_x64
@@ -170,9 +685,58 @@ jobs:
       - build_macos_intel
       - build_ios
     if: always()
-    uses: ./.github/workflows/build-summary.yml
-    with:
-      results: ${{ toJSON(needs) }}
+    outputs:
+      complete: ${{ steps.results.outputs.complete }}
+    steps:
+      - name: Build tree summary
+        id: results
+        env:
+          BUILD_RESULTS: ${{ toJSON(needs) }}
+        run: |
+          python3 - <<'PY'
+          import json
+          import os
+          import sys
+
+          needs = json.loads(os.environ['BUILD_RESULTS'])
+          selection = needs['check_platforms']
+          outputs = selection.get('outputs', {})
+          groups = [
+              ('Ubuntu', [('build_linux_x64', 'build_linux', 'Linux x64'), ('build_linux_wayland', 'build_wayland', 'Linux Wayland x64'), ('build_android', 'build_android', 'Android')]),
+              ('Windows', [('build_windows_x64', 'build_windows', 'Windows x64')]),
+              ('macOS', [('build_macos_arm64', 'build_macos_arm64', 'macOS ARM64'), ('build_macos_intel', 'build_macos_intel', 'macOS Intel'), ('build_ios', 'build_ios', 'iOS')]),
+          ]
+          icons = {'success': '[ok]', 'failure': '[fail]', 'cancelled': '[stop]', 'skipped': '[skip]'}
+          lines = ['## Build results', '', '```text', 'Build']
+          failed = [] if selection['result'] == 'success' else ['Platform selection']
+          selected = 0
+          succeeded = 0
+          total = sum(len(jobs) for _, jobs in groups)
+          for group_index, (group, jobs) in enumerate(groups):
+              last_group = group_index == len(groups) - 1
+              lines.append(f'{"`--" if last_group else "|--"} {group}')
+              for index, (job_id, flag, label) in enumerate(jobs):
+                  result = needs[job_id]['result']
+                  enabled = outputs.get(flag) == 'true'
+                  selected += int(enabled)
+                  succeeded += int(result == 'success')
+                  prefix = '    ' if last_group else '|   '
+                  branch = '`--' if index == len(jobs) - 1 else '|--'
+                  lines.append(f'{prefix}{branch} {label}: {icons.get(result, "[?]")} {result}')
+                  if (enabled and result != 'success') or (not enabled and result != 'skipped'):
+                      failed.append(label)
+          if selected == 0:
+              failed.append('No build targets selected')
+          lines += ['```', '', f'Successful targets: {succeeded}/{selected} selected.']
+          if failed:
+              lines += ['', 'Errors: ' + ', '.join(failed)]
+          with open(os.environ['GITHUB_STEP_SUMMARY'], 'a', encoding='utf-8') as handle:
+              handle.write('\n'.join(lines) + '\n')
+          with open(os.environ['GITHUB_OUTPUT'], 'a', encoding='utf-8') as handle:
+              handle.write(f'complete={str(not failed and succeeded == total).lower()}\n')
+          if failed:
+              sys.exit(1)
+          PY
 
   publish_opt_build:
     name: Publish Opt Build
@@ -180,6 +744,8 @@ jobs:
     concurrency:
       group: opt-build-release
       cancel-in-progress: false
+    outputs:
+      published: ${{ steps.publish.outputs.published }}
     needs:
       - check_platforms
       - summary
@@ -187,7 +753,8 @@ jobs:
       github.event_name != 'pull_request' &&
       github.ref == 'refs/heads/opt' &&
       needs.check_platforms.outputs.publish_all == 'true' &&
-      needs.summary.result == 'success'
+      needs.summary.result == 'success' &&
+      needs.summary.outputs.complete == 'true'
 
     permissions:
       contents: write
@@ -196,11 +763,12 @@ jobs:
       - name: Download release artifacts
         uses: actions/download-artifact@v7
         with:
-          pattern: "*"
+          pattern: "*-artifact"
           path: release-assets
           merge-multiple: true
 
       - name: Publish prerelease
+        id: publish
         uses: actions/github-script@v9
         env:
           RELEASE_TAG: ${{ env.OPT_BUILD_TAG }}
@@ -269,9 +837,28 @@ jobs:
             const quotedMessage = commitMessage.split(/\r?\n/).map(line => `> ${line}`).join('\n');
             const commitUrl = `${context.serverUrl}/${owner}/${repo}/commit/${context.sha}`;
             const runUrl = `${context.serverUrl}/${owner}/${repo}/actions/runs/${context.runId}`;
+
             const files = collectFiles('release-assets');
-            if (files.length === 0) {
-              throw new Error('No build artifacts were downloaded; keeping the existing opt release.');
+            const expected = [
+              'FNF-PlusEngine-linux-x64.tar.gz',
+              'FNF-PlusEngine-linux-wayland-x64.tar.gz',
+              'FNF-PlusEngine-android.apk',
+              'FNF-PlusEngine-windows-x64.zip',
+              'FNF-PlusEngine-macos-arm64.zip',
+              'FNF-PlusEngine-macos-intel.zip',
+              'FNF-PlusEngine-ios.zip',
+            ];
+            const names = files.map(file => path.basename(file));
+            if (names.length !== expected.length || !expected.every(name => names.includes(name)) ||
+                files.some(file => fs.statSync(file).size === 0)) {
+              throw new Error(`Incomplete or invalid release assets: ${names.join(', ')}`);
+            }
+
+            const head = await github.rest.git.getRef({ owner, repo, ref: 'heads/opt' });
+            if (head.data.object.sha !== context.sha) {
+              core.notice('A newer opt commit exists; keeping the current release.');
+              core.setOutput('published', 'false');
+              return;
             }
 
             await deleteExistingReleaseAndTag();
@@ -294,7 +881,7 @@ jobs:
                 'Development builds may contain unfinished changes.',
               ].join('\n'),
               prerelease: true,
-              draft: false,
+              draft: true,
             });
 
             for (const filePath of files) {
@@ -314,15 +901,12 @@ jobs:
             }
 
             const published = await github.rest.repos.updateRelease({
-              owner,
-              repo,
-              release_id: release.data.id,
-              draft: false,
-              prerelease: true,
+              owner, repo, release_id: release.data.id, draft: false, prerelease: true,
             });
             if (published.data.draft || !published.data.prerelease) {
               throw new Error('The opt release was not published as a prerelease.');
             }
+            core.setOutput('published', 'true');
             core.info(`Published prerelease: ${published.data.html_url}`);
 
   notify_discord:
@@ -339,6 +923,7 @@ jobs:
           DISCORD_WEBHOOK: ${{ secrets.DISCORD_WEBHOOK }}
           SUMMARY_RESULT: ${{ needs.summary.result }}
           PUBLISH_RESULT: ${{ needs.publish_opt_build.result }}
+          PUBLISHED: ${{ needs.publish_opt_build.outputs.published }}
           REPOSITORY: ${{ github.repository }}
           RUN_ID: ${{ github.run_id }}
           RUN_NUMBER: ${{ github.run_number }}
@@ -355,7 +940,7 @@ jobs:
           fi
 
           RUN_URL="$SERVER_URL/$REPOSITORY/actions/runs/$RUN_ID"
-          RELEASE_URL="$SERVER_URL/$REPOSITORY/releases/tag/opt-build"
+          RELEASE_URL="$SERVER_URL/$REPOSITORY/releases/tag/$OPT_BUILD_TAG"
           SHORT_SHA="${SHA::7}"
           TIMESTAMP_UTC="$(date -u +"%Y-%m-%d %H:%M UTC")"
           TIMESTAMP_ISO="$(date -u +"%Y-%m-%dT%H:%M:%SZ")"
@@ -363,7 +948,13 @@ jobs:
           if [ "$SUMMARY_RESULT" = "success" ]; then
             STATUS="SUCCESS"
             COLOR=5763719
-            if [ "$PUBLISH_RESULT" = "success" ]; then
+            if [ "$PUBLISH_RESULT" = "failure" ] || [ "$PUBLISH_RESULT" = "cancelled" ]; then
+              STATUS="PUBLISH FAILED"
+              COLOR=15548997
+              DOWNLOAD_LABEL="Artifacts"
+              DOWNLOAD_URL="$RUN_URL"
+              DESCRIPTION="The builds succeeded, but publishing the opt release did not complete."
+            elif [ "$PUBLISHED" = "true" ]; then
               DOWNLOAD_LABEL="Release"
               DOWNLOAD_URL="$RELEASE_URL"
               DESCRIPTION="The workflow completed successfully and the latest opt build is ready to download."
@@ -436,7 +1027,7 @@ jobs:
               method="POST",
           )
           try:
-              with urllib.request.urlopen(req) as resp:
+              with urllib.request.urlopen(req, timeout=20) as resp:
                   print(f"Discord webhook response: {resp.status}")
           except urllib.error.HTTPError as err:
               body = err.read().decode("utf-8", errors="replace")

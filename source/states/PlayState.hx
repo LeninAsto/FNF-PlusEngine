@@ -2739,6 +2739,36 @@ class PlayState extends MusicBeatState
 	}
 
 	public var paused:Bool = false;
+	public var modchartDebugFrozen(default, null):Bool = false;
+	var debugFrozenTimers:Array<flixel.util.FlxTimer> = [];
+	var debugFrozenTweens:Array<flixel.tweens.FlxTween> = [];
+
+	@:keep public function setModchartDebugFrozen(freeze:Bool):Bool {
+		if (freeze == modchartDebugFrozen) return modchartDebugFrozen;
+		if (freeze) {
+			if (paused || startingSong || endingSong || !startedCountdown || FlxG.sound.music == null) return false;
+			modchartDebugFrozen = true;
+			paused = true;
+			FlxG.sound.music.pause();
+			if (hasAudio(vocals)) vocals.pause();
+			if (hasAudio(opponentVocals)) opponentVocals.pause();
+			FlxTimer.globalManager.forEach(function(timer:FlxTimer) if (timer.active && !timer.finished) {
+				debugFrozenTimers.push(timer); timer.active = false;
+			});
+			FlxTween.globalManager.forEach(function(tween:FlxTween) if (tween.active && !tween.finished) {
+				debugFrozenTweens.push(tween); tween.active = false;
+			});
+		} else {
+			modchartDebugFrozen = false;
+			paused = false;
+			for (timer in debugFrozenTimers) if (timer != null && !timer.finished) timer.active = true;
+			for (tween in debugFrozenTweens) if (tween != null && !tween.finished) tween.active = true;
+			debugFrozenTimers.resize(0);
+			debugFrozenTweens.resize(0);
+			resyncVocals();
+		}
+		return modchartDebugFrozen;
+	}
 	public var resumingWithCountdown:Bool = false;
 	public var canReset:Bool = true;
 	var audioRecoveryPending:Bool = false;
@@ -2791,6 +2821,14 @@ class PlayState extends MusicBeatState
 
 	override public function update(elapsed:Float)
 	{
+		if (modchartDebugFrozen) {
+			if (FlxG.keys.justPressed.ESCAPE) setModchartDebugFrozen(false);
+			callOnScripts('onUpdatePost', [0.0]);
+			#if MODCHART_ALLOWED
+			if (Manager.instance != null) Manager.instance.refreshFrameState();
+			#end
+			return;
+		}
 		#if DENSE_CHART_TEST
 		if (!denseTestWritten && Conductor.songPosition >= 172000)
 		{
@@ -5488,6 +5526,13 @@ class PlayState extends MusicBeatState
 	}
 
 	override function destroy() {
+		if (modchartDebugFrozen) {
+			for (timer in debugFrozenTimers) if (timer != null && !timer.finished) timer.active = true;
+			for (tween in debugFrozenTweens) if (tween != null && !tween.finished) tween.active = true;
+			debugFrozenTimers.resize(0);
+			debugFrozenTweens.resize(0);
+			modchartDebugFrozen = false;
+		}
 		#if MODCHART_ALLOWED
 		if (mcInitCb != null)
 		{

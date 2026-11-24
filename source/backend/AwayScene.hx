@@ -9,6 +9,7 @@ import openfl.geom.Rectangle;
 import openfl.display.BlendMode;
 import away3d.cameras.lenses.PerspectiveLens;
 import away3d.primitives.PlaneGeometry;
+import away3d.primitives.WireframeCube;
 import flixel.FlxG;
 import openfl.geom.Vector3D;
 import openfl.Lib;
@@ -28,6 +29,12 @@ class AwayScene {
     final target:Vector3D = new Vector3D(0, 0, 800);
     var failed:Bool = false;
     var floorColor:Int = -1;
+    var debugX:Float = 0;
+    var debugY:Float = 0;
+    var debugZ:Float = 0;
+    var debugPitch:Float = 0;
+    var debugYaw:Float = 0;
+    var cubes:Array<WireframeCube> = [];
 
     public function new() {
         view = new View3D();
@@ -46,7 +53,7 @@ class AwayScene {
         texture = new BitmapTexture(pixels);
         material = new TextureMaterial(texture, true, true);
         material.bothSides = true;
-        plane.scaleUV(20, 24);
+        plane.scaleUV(18.75, 23.4375);
         floor = new Mesh(plane, material);
         floor.y = -350;
         floor.z = 1600;
@@ -67,9 +74,23 @@ class AwayScene {
             flashMesh.z = floor.z;
             view.scene.addChild(flashMesh);
         }
+        for (i in 0...8) for (side in [-1, 1]) {
+            var cube = new WireframeCube(128, 400, 128, 0x22BB55, 1);
+            cube.x = side * 192;
+            cube.z = i * 256;
+            cube.visible = false;
+            view.scene.addChild(cube);
+            cubes.push(cube);
+        }
         view.visible = false;
         Lib.current.stage.addChildAt(view, 0);
         if (view.stage3DProxy != null) view.stage3DProxy.visible = false;
+    }
+
+    public function setCameraAdjustment(x:Float, y:Float, z:Float, pitch:Float, yaw:Float, fov:Float):Void {
+        debugX = x; debugY = y; debugZ = z; debugPitch = pitch; debugYaw = yaw;
+        if (view != null && Std.isOfType(view.camera.lens, PerspectiveLens))
+            cast(view.camera.lens, PerspectiveLens).fieldOfView = Math.max(20, Math.min(120, fov));
     }
 
     public function update(beat:Float, active:Bool, x:Float, y:Float, z:Float, pitch:Float, yaw:Float, roll:Float):Bool {
@@ -88,17 +109,28 @@ class AwayScene {
             pixels.fillRect(new Rectangle(0, 0, 2, 64), color);
             texture.invalidateContent();
         }
-        view.camera.x = x * 0.35;
-        view.camera.y = 350 - y * 0.18;
-        view.camera.z = -1000 - z * 0.35;
-        var heading = yaw * Math.PI / 180;
-        var tilt = pitch * Math.PI / 180;
+        view.camera.x = x * 0.22 + debugX;
+        view.camera.y = 350 - y * 0.12 + debugY;
+        view.camera.z = -1000 - z * 0.22 + debugZ;
+        var heading = (-yaw + debugYaw) * Math.PI / 180;
+        var tilt = (pitch + debugPitch) * Math.PI / 180;
         target.setTo(view.camera.x + Math.sin(heading) * 1000,
             view.camera.y - Math.sin(tilt) * 1000, view.camera.z + Math.cos(heading) * 1000);
         view.camera.lookAt(target);
         view.camera.rotationZ = -roll;
-        floor.x = Math.floor(view.camera.x / 240) * 240;
-        floor.z = Math.floor(view.camera.z / 250) * 250 + 1500;
+        floor.x = Math.floor(view.camera.x / 256) * 256;
+        floor.z = Math.floor(view.camera.z / 256) * 256 + 1500;
+        var cubeVisible = beat >= 198 && beat < 246;
+        var phase = beat - Math.floor(beat);
+        var bump = Math.max(0.9 - phase, 0);
+        var cubeHeight = 0.5 + 0.6 * bump * bump;
+        for (cube in cubes) {
+            cube.visible = cubeVisible;
+            if (cubeVisible) {
+                cube.scaleY = cubeHeight;
+                cube.y = floor.y + 200 * cubeHeight;
+            }
+        }
         if (flashMesh != null) {
             flashMesh.x = floor.x;
             flashMesh.z = floor.z;
@@ -130,6 +162,11 @@ class AwayScene {
     public function destroy():Void {
         if (view == null) return;
         if (view.stage3DProxy != null) view.stage3DProxy.visible = false;
+        for (cube in cubes) {
+            clean(() -> view.scene.removeChild(cube));
+            clean(() -> cube.dispose());
+        }
+        cubes.resize(0);
         if (flashMesh != null) clean(() -> view.scene.removeChild(flashMesh));
         if (floor != null) clean(() -> view.scene.removeChild(floor));
         if (flashMaterial != null) clean(() -> flashMaterial.dispose());
