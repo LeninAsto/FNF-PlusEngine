@@ -85,7 +85,8 @@ class Path extends PathModifier {
 			final laneCenter = FlxMath.bound(getPercent('pathLaneCenter', params.player), 0, 1);
 			if (laneCenter != 0) anchorX = FlxMath.lerp(anchorX, WIDTH * 0.5, laneCenter);
 		}
-		final anchorY = local ? getReceptorY(params.lane, params.player) + ARROW_SIZEDIV2 : 0;
+		var anchorY = local ? getReceptorY(params.lane, params.player) + ARROW_SIZEDIV2 : 0;
+		if (local) anchorY = FlxMath.lerp(anchorY, HEIGHT * 0.5, FlxMath.bound(getPercent('pathCenterY', params.player), 0, 1));
 		final freezeID = findID('pathCameraFreezeX');
 		final frozenX = hasUnsafeForPlayer(freezeID, params.player) ? getUnsafe(freezeID, params.player) : -1;
 		final freezeYID = findID('pathCameraFreezeY');
