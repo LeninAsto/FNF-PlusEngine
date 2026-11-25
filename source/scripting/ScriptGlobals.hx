@@ -14,6 +14,7 @@ class ScriptGlobals {
 	static var keepScriptError:Class<ScriptError> = ScriptError;
 	static var keepScriptBytes:Class<ScriptBytes> = ScriptBytes;
 	static var keepScriptDraw:Class<ScriptDraw> = ScriptDraw;
+	static var keepNoteShaderBatch:Class<NoteShaderBatch> = NoteShaderBatch;
 	static var keepAssetLoader:Class<backend.AssetLoader> = backend.AssetLoader;
 	#if (desktop || mobile)
 	static var keepAwayScene:Class<backend.AwayScene> = backend.AwayScene;
@@ -100,6 +101,7 @@ class ScriptGlobals {
 		'psychlua.backend.ModchartSprite',
 		'scripting.ScriptBytes',
 		'scripting.ScriptDraw',
+		'scripting.NoteShaderBatch',
 		'scripting.ScriptError',
 		'cutscenes.CutsceneHandler',
 		'shaders.RainShader',

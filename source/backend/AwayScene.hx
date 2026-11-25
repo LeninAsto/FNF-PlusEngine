@@ -3,10 +3,14 @@ package backend;
 import away3d.containers.View3D;
 import away3d.events.Stage3DEvent;
 import away3d.entities.Mesh;
+import away3d.core.base.Geometry;
+import away3d.core.base.SubGeometry;
+import openfl.Vector;
 import away3d.materials.TextureMaterial;
 import away3d.textures.BitmapTexture;
 import openfl.display.BitmapData;
 import openfl.geom.Rectangle;
+import openfl.geom.ColorTransform;
 import openfl.display.BlendMode;
 import away3d.cameras.lenses.PerspectiveLens;
 import away3d.primitives.PlaneGeometry;
@@ -41,10 +45,15 @@ class AwayScene {
     var planeOffsetZ:Float = 0;
     var cubes:Array<WireframeCube> = [];
     var stars:Array<Mesh> = [];
+    var arrowMeshes:Array<Mesh> = [];
+    var arrowGeometries:Array<Geometry> = [];
+    var arrowMaterials:Array<TextureMaterial> = [];
+    var arrowTextures:Array<BitmapTexture> = [];
     var starGeometry:PlaneGeometry;
     var starPixels:BitmapData;
     var starTexture:BitmapTexture;
     var starMaterial:TextureMaterial;
+    var starMaterials:Array<TextureMaterial> = [];
     var sphere:Mesh;
     var sphereGeometry:SphereGeometry;
     var starsVisible:Bool = false;
@@ -80,7 +89,7 @@ class AwayScene {
         }
         if (flashTextures.length == 2) {
             flashPlane = new PlaneGeometry(4800, 6000, 1, 1, true, true);
-            flashPlane.scaleUV(16, 16);
+            flashPlane.scaleUV(24, 24);
             flashMaterial = new TextureMaterial(flashTextures[0], false, true);
             flashMaterial.bothSides = true;
             flashMaterial.blendMode = BlendMode.ADD;
@@ -99,16 +108,60 @@ class AwayScene {
             view.scene.addChild(cube);
             cubes.push(cube);
         }
-        starPixels = new BitmapData(16, 16, true, 0);
-        starPixels.fillRect(new Rectangle(6, 1, 4, 14), 0xFFFFFFFF);
-        starPixels.fillRect(new Rectangle(1, 6, 14, 4), 0xFFFFFFFF);
+        try {
+            var modelText = Paths.getTextFromFile('models/line-arrow.json');
+            var model:Array<Dynamic> = modelText == null ? [] : haxe.Json.parse(modelText);
+            for (group in 0...model.length) {
+                var image = Paths.image(group == 0 ? 'line/4th-shell' : 'line/4th-texture', null, false);
+                if (image == null || image.bitmap == null) continue;
+                var sub = new SubGeometry();
+                var vertices:Array<Float> = cast model[group].vertices;
+                var uvs:Array<Float> = cast model[group].uv;
+                var indices:Array<UInt> = cast model[group].indices;
+                sub.updateVertexData(Vector.ofArray(vertices));
+                sub.updateUVData(Vector.ofArray(uvs));
+                sub.updateIndexData(Vector.ofArray(indices));
+                var geometry = new Geometry();
+                geometry.addSubGeometry(sub);
+                arrowGeometries.push(geometry);
+                var tex = new BitmapTexture(image.bitmap);
+                arrowTextures.push(tex);
+                var mat = new TextureMaterial(tex, true, true);
+                mat.bothSides = true;
+                arrowMaterials.push(mat);
+                var positions = [[-1100,2600,-7500],[-600,2700,-9200],[-1500,2600,-9500],[200,3400,-10000],[400,3000,-9000],[500,2800,-8000]];
+                for (i in 0...positions.length) {
+                    var arrow = new Mesh(geometry, mat);
+                    arrow.x = positions[i][0] * 0.45;
+                    arrow.y = -350 + (positions[i][1] - 2000) * 0.45;
+                    arrow.z = -positions[i][2] * 0.45;
+                    arrow.scale(3);
+                    arrow.rotationY = (i % 2 == 0 ? 30 : -30);
+                    arrow.rotationZ = (i % 3 == 0 ? 30 : -30);
+                    arrow.visible = false;
+                    view.scene.addChild(arrow);
+                    arrowMeshes.push(arrow);
+                }
+            }
+        } catch (e:Dynamic) trace('Line arrow mesh: ' + Std.string(e));
+        var starGraphic = Paths.image('line/tex3', null, false);
+        starPixels = starGraphic != null && starGraphic.bitmap != null ? starGraphic.bitmap.clone() : new BitmapData(16, 16, true, 0xFFFFFFFF);
         starTexture = new BitmapTexture(starPixels);
         starMaterial = new TextureMaterial(starTexture, true, false, false);
         starMaterial.bothSides = true;
         starMaterial.alphaBlending = true;
-        starGeometry = new PlaneGeometry(55, 55, 1, 1, false, true);
-        for (i in 0...8) {
-            var star = new Mesh(starGeometry, starMaterial);
+        starGeometry = new PlaneGeometry(64, 32, 1, 1, false, true);
+        var colors = [[1.0, 0.45, 0.65], [0.45, 0.75, 1.0], [0.75, 0.55, 1.0],
+            [1.0, 0.85, 0.45], [0.45, 1.0, 0.8], [1.0, 1.0, 1.0]];
+        for (color in colors) {
+            var starColor = new TextureMaterial(starTexture, true, false, false);
+            starColor.bothSides = true;
+            starColor.alphaBlending = true;
+            starColor.colorTransform = new ColorTransform(color[0], color[1], color[2]);
+            starMaterials.push(starColor);
+        }
+        for (i in 0...32) {
+            var star = new Mesh(starGeometry, starMaterials[Std.random(starMaterials.length)]);
             star.visible = false;
             view.scene.addChild(star);
             stars.push(star);
@@ -207,6 +260,12 @@ class AwayScene {
             view.backgroundColor = background;
             lastBackgroundColor = background;
         }
+        var showArrows = beat >= 230 && beat < 255;
+        for (i in 0...arrowMeshes.length) {
+            var arrow = arrowMeshes[i];
+            if (arrow.visible != showArrows) arrow.visible = showArrows;
+            if (showArrows) arrow.rotationY = (i % 2 == 0 ? 30 : -30) + 20 * Math.sin(beat * Math.PI * 2 / 3);
+        }
         var showStars = (beat >= 198 && beat < 246) || (beat >= 470 && beat < 518);
         if (showStars != starsVisible) {
             starsVisible = showStars;
@@ -217,9 +276,9 @@ class AwayScene {
             var st = Math.sin(tilt), ct = horizontal;
             for (i in 0...stars.length) {
                 var star = stars[i];
-                var side = (i * 337) % 1800 - 900;
+                var side = ((i * 337 - beat * 45) % 1800 + 1800) % 1800 - 900;
                 var up = (i * 197) % 1000 - 400;
-                var depth = 400 + (2500 - ((i * 173 + beat * 110) % 2500));
+                var depth = 400 + (i * 173) % 2500;
                 star.x = view.camera.x + sx * ct * depth + cx * side + sx * st * up;
                 star.y = view.camera.y - st * depth + ct * up;
                 star.z = view.camera.z + cx * ct * depth - sx * side + cx * st * up;
@@ -260,6 +319,14 @@ class AwayScene {
             clean(() -> cube.dispose());
         }
         cubes.resize(0);
+        for (arrow in arrowMeshes) clean(() -> view.scene.removeChild(arrow));
+        arrowMeshes.resize(0);
+        for (geometry in arrowGeometries) clean(() -> geometry.dispose());
+        arrowGeometries.resize(0);
+        for (mat in arrowMaterials) clean(() -> mat.dispose());
+        arrowMaterials.resize(0);
+        for (tex in arrowTextures) clean(() -> tex.dispose());
+        arrowTextures.resize(0);
         for (star in stars) {
             clean(() -> view.scene.removeChild(star));
             clean(() -> star.dispose());
@@ -269,6 +336,8 @@ class AwayScene {
         clean(() -> sphere.dispose());
         clean(() -> sphereGeometry.dispose());
         clean(() -> starGeometry.dispose());
+        for (starColor in starMaterials) clean(() -> starColor.dispose());
+        starMaterials.resize(0);
         clean(() -> starMaterial.dispose());
         clean(() -> starTexture.dispose());
         clean(() -> starPixels.dispose());

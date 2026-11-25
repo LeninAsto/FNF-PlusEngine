@@ -321,7 +321,7 @@ class SustainSplash extends FlxSprite
 			shader = colorSwap.shader;
 			Note.applyHSVToColorSwap(colorSwap, daNote.noteData);
 		}
-		else if (daNote.rgbShader != null && daNote.rgbShader.enabled && daNote.shader != null)
+		else if (daNote.rgbShader != null && daNote.rgbShader.enabled && daNote.rgbShader.parent != null)
 		{
 			var holdShader = new objects.NoteSplash.PixelSplashShaderRef();
 			// The pixel hold-cover atlas is already authored at the pixel UI scale
@@ -331,10 +331,11 @@ class SustainSplash extends FlxSprite
 			// Keep the RGB palette transform but sample the cover at native texels.
 			holdShader.pixelAmount = 1;
 			shader = holdShader.shader;
-			shader.data.r.value = daNote.shader.data.r.value;
-			shader.data.g.value = daNote.shader.data.g.value;
-			shader.data.b.value = daNote.shader.data.b.value;
-			shader.data.mult.value = daNote.shader.data.mult.value;
+			final palette = daNote.rgbShader.parent.shader;
+			holdShader.shader.r.value = palette.r.value;
+			holdShader.shader.g.value = palette.g.value;
+			holdShader.shader.b.value = palette.b.value;
+			holdShader.shader.mult.value = palette.mult.value;
 		}
 		else
 			shader = null;
