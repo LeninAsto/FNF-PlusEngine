@@ -15,10 +15,10 @@
   "body": {
     "clean": "No se detectaron API sensibles en los scripts de este mod.\n\n",
     "clean_activation": "CONFIAR = activar el mod.\nBLOQUEAR = mantener el mod desactivado.",
-    "clean_review": "CONFIAR = ejecutar los scripts normalmente.\nBLOQUEAR = mantener el mod activado, omitiendo sus scripts.",
+    "clean_review": "CONFIAR = ejecutar los scripts normalmente.\nBLOQUEAR = mantener el mod activado y omitir sus scripts.",
     "warning": "Los scripts de este mod usan API que pueden causar daños si se usan de forma maliciosa.\n",
     "warning_activation": "CONFIAR = activar el mod y ejecutar sus scripts. BLOQUEAR = mantenerlo desactivado.\n",
-    "warning_review": "CONFIAR = ejecutar los scripts normalmente. BLOQUEAR = mantener el mod activado, omitiendo sus scripts.\n",
+    "warning_review": "CONFIAR = ejecutar los scripts normalmente. BLOQUEAR = mantener el mod activado y omitir sus scripts.\n",
     "capabilities": "\nEste mod puede:"
   },
   "categories": {
@@ -46,7 +46,7 @@
     "windows_desktop_control": "responsable: hideDesktopIcons/hideTaskBar/moveDesktopElements; puede ocultar/mover la interfaz de usuario del escritorio o cambiar la transparencia",
     "windows_wallpaper_control": "responsable: changeWindowsWallpaper/setDesktopWallpaper; puede cambiar o restaurar el fondo de pantalla de Windows",
     "windows_shellwindow_control": "responsable: captureScreenshot/showNotification/setWindowOpacity; puede capturar la pantalla, notificar a Windows o alterar las imágenes de la ventana",
-    "windowsapi": "responsable: slushithings.windows.WindowsAPI; puede acceder a los ayudantes nativos de Plus Engine Windows",
+    "windowsapi": "responsable: slushithings.windows.WindowsAPI; puede acceder a las funciones auxiliares nativas de Plus Engine para Windows",
     "windowscpp": "responsable: slushithings.windows.WindowsCPP; puede llamar a funciones nativas de Windows de bajo nivel",
     "import_windows_native_apis": "responsable: import slushithings.windows.*; puede desbloquear el acceso al asistente de Windows/GDI desde HScript"
   }

@@ -1,22 +1,22 @@
 {
   "$schema": 1,
   "$namespace": "options.offset",
-  "beat_hit": "¡Vence a golpear!",
+  "beat_hit": "¡Golpea al compás!",
   "current_offset": "Compensación actual: {1} ms",
-  "switch": "(Presione {1} para cambiar)",
+  "switch": "(Pulsa {1} para cambiar)",
   "modes": {
-    "note_delay": "Retardo de nota/tiempo",
+    "note_delay": "Retardo de notas/compás",
     "combo": "Posición del combo",
-    "keyviewer": "Offset del visor",
-    "hit_ms": "Presione MS Offset"
+    "keyviewer": "Desfase del visor de teclas",
+    "hit_ms": "Desfase de precisión en ms"
   },
   "combo": {
-    "rating_offset": "Offset de rating:",
-    "numbers_offset": "Desplazamiento de números:"
+    "rating_offset": "Desfase de calificación:",
+    "numbers_offset": "Desfase de números:"
   },
   "keyviewer": {
-    "position_offset": "Posición del visor de claves:",
-    "color": "Color del visor de claves:"
+    "position_offset": "Posición del visor de teclas:",
+    "color": "Color del visor de teclas:"
   },
   "hit_ms": {
     "preview": "Avance:"

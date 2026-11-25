@@ -2,6 +2,11 @@ package psychlua;
 
 import modchart.Manager;
 import modchart.backend.core.ArrowData;
+import modchart.backend.core.ModifierOutput;
+import modchart.backend.core.VisualParameters;
+import modchart.backend.math.Vector3;
+import modchart.backend.util.ModchartUtil;
+import modchart.Config;
 import modchart.backend.standalone.Adapter;
 import modchart.engine.PlayField;
 import modchart.engine.modifiers.LuaModifier;
@@ -85,6 +90,80 @@ class ModchartFunctions
 		__luaArrowPoint.set(output.pos.x - Manager.ARROW_SIZEDIV2, output.pos.y - Manager.ARROW_SIZEDIV2);
 		return __luaArrowPoint;
 	}
+
+	// Reused scratch storage for scripts attaching HUD elements to a projected strum.
+	static final __framePosition:Vector3 = new Vector3();
+	static final __frameProjected:Vector3 = new Vector3();
+	static final __frameVisuals:VisualParameters = {};
+	static final __frameOutput:ModifierOutput = {pos: __frameProjected, visuals: __frameVisuals};
+	static final __frameAxis:Vector3 = new Vector3();
+	static final __frameRotated:Vector3 = new Vector3();
+	static final __frameFieldRotated:Vector3 = new Vector3();
+	static final __frameSample:Vector3 = new Vector3();
+
+	/** Sample the projected position and local screen axes without per-frame allocations. */
+	@:keep public static function getRenderedStrumFrame(strum:FlxSprite, field:Int, result:Dynamic):Bool
+	{
+		if (strum == null || result == null || Manager.instance == null || Adapter.instance == null)
+			return false;
+		final fields = Manager.instance.playfields;
+		if (fields == null || field < 0 || field >= fields.length || fields[field] == null) return false;
+		final playfield = fields[field];
+		final player = Adapter.instance.getPlayerFromArrow(strum);
+		final lane = Adapter.instance.getLaneFromArrow(strum);
+		final songPos = Adapter.instance.getSongPosition();
+		final isTap = Adapter.instance.isTapNote(strum);
+		final sourceTime = Adapter.instance.getTimeFromArrow(strum);
+		final centered = FlxG.height * 0.25 * playfield.getPercent('centered2', player);
+		final hitTime = isTap ? sourceTime : songPos + centered;
+		__luaArrowData.hitTime = hitTime;
+		__luaArrowData.distance = hitTime - songPos + (isTap ? centered : 0);
+		__luaArrowData.sourceTime = sourceTime;
+		__luaArrowData.strumTime = isTap ? sourceTime : songPos;
+		__luaArrowData.sampleTime = __luaArrowData.strumTime;
+		__luaArrowData.lane = lane;
+		__luaArrowData.player = player;
+		__luaArrowData.hitten = Adapter.instance.arrowHit(strum);
+		__luaArrowData.isTapArrow = isTap;
+		__luaArrowData.isHoldBody = false;
+		__framePosition.setTo(Adapter.instance.getDefaultReceptorX(lane, player) + Manager.ARROW_SIZEDIV2,
+			Adapter.instance.getDefaultReceptorY(lane, player) + Manager.ARROW_SIZEDIV2, 0);
+		final output = playfield.getReceptorPathInto(__framePosition, __luaArrowData, __frameOutput, __frameProjected, __frameVisuals);
+		if (!Math.isFinite(output.pos.x) || !Math.isFinite(output.pos.y) || output.pos.z > 1e6) return false;
+		final centerX = output.pos.x, centerY = output.pos.y;
+		final vis = output.visuals;
+		var xx = 0.0, xy = 0.0, yx = 0.0, yy = 0.0;
+		for (axis in 0...2) {
+			__frameAxis.setTo(axis == 0 ? 100 : 0, axis == 1 ? 100 : 0, 0);
+			ModchartUtil.rotate3DVectorInto(__frameAxis, vis.angleX, vis.angleY, vis.angleZ + strum.angle, __frameRotated);
+			__frameRotated.x *= vis.scaleX;
+			__frameRotated.y *= vis.scaleY;
+			ModchartUtil.rotate3DVectorInto(__frameRotated, vis.fieldAngleX, vis.fieldAngleY, vis.fieldAngleZ, __frameFieldRotated);
+			final vx = __frameFieldRotated.x, vy = __frameFieldRotated.y;
+			__frameSample.setTo(output.rawX + vx * vis.planeXX + vy * vis.planeYX,
+				output.rawY + vx * vis.planeXY + vy * vis.planeYY,
+				output.rawZ + vx * vis.planeXZ + vy * vis.planeYZ + __frameFieldRotated.z * 0.001 * Config.Z_SCALE);
+			final projected = playfield.view.transformVector(__frameSample);
+			if (!Math.isFinite(projected.x) || !Math.isFinite(projected.y) || projected.z > 1e6) return false;
+			if (axis == 0) { xx = (projected.x - centerX) / 100; xy = (projected.y - centerY) / 100; }
+			else { yx = (projected.x - centerX) / 100; yy = (projected.y - centerY) / 100; }
+		}
+		final sx = Math.sqrt(xx * xx + xy * xy);
+		if (!Math.isFinite(sx) || sx < 0.01) return false;
+		final sy = (xx * yy - xy * yx) / sx;
+		if (!Math.isFinite(sy)) return false;
+		result.x = centerX - Manager.ARROW_SIZEDIV2;
+		result.y = centerY - Manager.ARROW_SIZEDIV2;
+		result.scaleX = Math.max(0.1, Math.min(4, sx));
+		result.scaleY = (sy < 0 ? -1 : 1) * Math.max(0.1, Math.min(4, Math.abs(sy)));
+		result.angle = Math.atan2(xy, xx) * 180 / Math.PI;
+		return true;
+	}
+
+	/** Create a reusable native follower for mod-provided popup groups. */
+	@:keep public static function createCombo3DFollower(group:flixel.group.FlxSpriteGroup,
+		receptors:flixel.group.FlxGroup.FlxTypedGroup<objects.StrumNote>, field:Int = 0):Combo3DFollower
+		return new Combo3DFollower(group, receptors, field);
 
 	public static function implement(funk:FunkinLua)
 	{

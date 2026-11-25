@@ -14,7 +14,7 @@
     "unlockachievement_missing_achievement": "unlockAchievement: No se pudo encontrar el logro: {1}"
   },
   "backend_classresolver": {
-    "legacy_redirect": "Compatibilidad heredada: \"{1}\" redirige a \"{2}\". Utilice la API/ruta exacta de Psych 1.0+ o este mod puede fallar en Vanilla Psych."
+    "legacy_redirect": "Compatibilidad heredada: \"{1}\" redirige a \"{2}\". Usa la API/ruta exacta de Psych 1.0+ o este mod podría fallar en Psych vanilla."
   },
   "psychlua_actorframefunctions": {
     "value_failed_value": "Error en {1}: {2}"
@@ -54,10 +54,10 @@
     "setmodifierpath_modifier_not_found_value": "setModifierPath: modificador no encontrado: {1}",
     "setmodifierpathbound_missing_modifier": "setModifierPathBound: PathModifier no encontrado: {1}",
     "setmodifierpathoffset_missing_modifier": "setModifierPathOffset: PathModifier no encontrado: {1}",
-    "value_invalid_bindings": "{1}: se esperaba una tabla/objeto con enlaces izquierda/abajo/arriba/derecha",
+    "value_invalid_bindings": "{1}: se esperaba una tabla/objeto con asignaciones izquierda/abajo/arriba/derecha",
     "value_failed_to_apply_controls_value": "{1}: no se pudieron aplicar los controles: {2}",
     "value_ignored_corrupt_key_value_for_value": "{1}: valor de clave corrupto ignorado para {2}",
-    "value_invalid_control_value": "{1}: control no válido \"{2}\"",
+    "value_invalid_control_value": "{1}: control inválido \"{2}\"",
     "value_invalid_key_value_for_value": "{1}: clave no válida \"{2}\" para {3}",
     "value_invalid_key_value_for_value_value": "{1}: clave no válida \"{2}\" para {3} ({4})",
     "value_invalid_playfield_index_value": "{1}: índice de campo de juego no válido: {2}",
@@ -81,7 +81,7 @@
   },
   "psychlua_shaderfunctions": {
     "error_on_getting_shader_object_value_not_found": "Error al obtener el shader: Objeto {1} no encontrado",
-    "getshaderbool_unsupported": "getShaderBool: ¡Plataforma no compatible con Runtime Shaders!",
+    "getshaderbool_unsupported": "getShaderBool: Runtime Shaders no es compatible con esta plataforma.",
     "getshaderbool_invalid_shader": "getShaderBool: ¡Shader no es FlxRuntimeShader!",
     "getshaderboolarray_unsupported": "getShaderBoolArray: ¡Plataforma no compatible con Runtime Shaders!",
     "getshaderboolarray_invalid_shader": "getShaderBoolArray: ¡Shader no es FlxRuntimeShader!",
@@ -143,7 +143,7 @@
     "playluavideosprite_video_support_is_not_enabled": "playLuaVideoSprite: ¡La compatibilidad con vídeo no está habilitada!",
     "precacheluavideosprite_path_cannot_be_empty": "precacheLuaVideoSprite: ¡la ruta no puede estar vacía!",
     "precacheluavideosprite_tag_cannot_be_empty": "precacheLuaVideoSprite: ¡la etiqueta no puede estar vacía!",
-    "setluavideovolume_muted": "setLuaVideoVolume: \"{1}\" silenciado. Para un silencio más seguro, use playLuaVideoSprite(\"{2}\", \"videoName\", x, y, 0) para que VLC se cargue sin audio."
+    "setluavideovolume_muted": "setLuaVideoVolume: \"{1}\" silenciado. Para silenciarlo de forma segura, usa playLuaVideoSprite(\"{2}\", \"videoName\", x, y, 0) para que VLC se cargue sin audio."
   },
   "states_playstate": {
     "error_set_property_event_value": "ERROR (Evento \"Establecer propiedad\") - {1}",
@@ -159,7 +159,7 @@
     "callonhscript_requires_playstate": "callOnHScript solo está disponible en PlayState para scripts Lua en este momento.",
     "dotweencolor_couldnt_find_object_value": "doTweenColor: No se pudo encontrar el objeto: {1}",
     "getmodsetting_missing_mod_folder": "getModSetting: ¡El argumento n.° 2 es nulo y el script no está dentro de una carpeta Mod empaquetada!",
-    "mod_settings_disabled": "getModSetting: ¡Los mods están deshabilitados en esta compilación!",
+    "mod_settings_disabled": "getModSetting: ¡Los mods están desactivados en esta versión!",
     "getobjectorder_group_value_doesn_t_exist": "getObjectOrder: ¡El grupo {1} no existe!",
     "getobjectorder_object_value_doesn_t_exist": "getObjectOrder: ¡El objeto {1} no existe!",
     "getsoundpitch_unsupported": "getSoundPitch: ¡Sound Pitch no es compatible con esta plataforma!",
@@ -180,7 +180,7 @@
     "startdialogue_dialogue_file_not_found": "startDialogue: Archivo de diálogo no encontrado",
     "dialogue_loaded": "startDialogue: Diálogo cargado exitosamente",
     "dialogue_loading": "startDialogue: Intentando cargar el diálogo: {1}",
-    "startdialogue_invalid_dialogue": "startDialogue: ¡Su archivo de diálogo está mal formateado!",
+    "startdialogue_invalid_dialogue": "startDialogue: ¡El archivo de diálogo tiene un formato incorrecto!",
     "starttween_couldnt_find_object_value": "startTween: No se pudo encontrar el objeto: {1}",
     "starttween_no_values_on_2nd_argument": "startTween: ¡Sin valores en el segundo argumento!",
     "startvideo_video_file_not_found_value": "startVideo: Archivo de vídeo no encontrado: {1}",
@@ -199,10 +199,10 @@
   "mobile_psychlua_functions": {
     "addtouchpadcamera_touch_pad_does_not_exist": "addTouchPadCamera: el panel táctil no existe.",
     "clipboardsettext_no_text_specified": "clipboardSetText: No se ha especificado ningún texto.",
-    "setactivitytitle_no_text_specified": "setActivityTitle: No se especifica texto.",
-    "setorientation_no_orientation_specified": "setOrientation: no se ha especificado ninguna orientación.",
-    "showtoast_no_duration_specified": "showToast: No se especifica duración.",
-    "showtoast_no_text_specified": "showToast: No se especifica texto.",
+    "setactivitytitle_no_text_specified": "setActivityTitle: No se especificó ningún texto.",
+    "setorientation_no_orientation_specified": "setOrientation: No se especificó ninguna orientación.",
+    "showtoast_no_duration_specified": "showToast: No se especificó ninguna duración.",
+    "showtoast_no_text_specified": "showToast: No se especificó ningún texto.",
     "touchjustpressedobject_missing_object": "touchJustPressedObject: {1} no existe.",
     "touchjustpressedobjectcomplex_missing_object": "touchJustPressedObjectComplex: {1} no existe.",
     "touchjustreleasedobject_missing_object": "touchJustReleasedObject: {1} no existe.",
@@ -213,6 +213,6 @@
     "touchpressedobjectcomplex_missing_object": "touchPressedObjectComplex: {1} no existe.",
     "touchreleasedobject_value_does_not_exist": "touchReleasedObject: {1} no existe.",
     "touchreleasedobjectcomplex_missing_object": "touchReleasedObjectComplex: {1} no existe.",
-    "vibrate_no_duration_specified": "vibrar: Sin duración especificada."
+    "vibrate_no_duration_specified": "vibrate: No se especificó ninguna duración."
   }
 }

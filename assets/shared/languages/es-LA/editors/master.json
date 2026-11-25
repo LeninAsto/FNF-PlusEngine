@@ -2,7 +2,7 @@
   "$schema": 1,
   "$namespace": "editors.master",
   "presence": "Menú principal de editores",
-  "note_rgb_disabled": "Nota ¡¡¡RGB está deshabilitado!!!",
+  "note_rgb_disabled": "RGB de notas desactivado",
   "no_mod_directory": "< Sin directorio de mod >",
   "loaded_mod_directory": "< Directorio de mods cargado: {1} >",
   "items": {

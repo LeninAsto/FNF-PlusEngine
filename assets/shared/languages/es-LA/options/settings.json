@@ -3,7 +3,7 @@
   "$namespace": "options.settings",
   "abbreviate_score": {
     "name": "Puntuación abreviada",
-    "description": "Si está habilitado, la puntuación se abreviará (por ejemplo, 10,00K, 1,00M)."
+    "description": "Si está activado, la puntuación se abreviará (por ejemplo, 10,00K, 1,00M)."
   },
   "accent_color": {
     "name": "Color de acento:",
@@ -22,11 +22,11 @@
   },
   "align_receptors_to_hitbox": {
     "name": "Alinear receptores al hitbox",
-    "description": "Si está marcado, alinea los receptores móviles con los carriles de hitbox. Útil para algunos diseños, pero puede romper los guiones."
+    "description": "Si está activado, alinea los receptores móviles con los carriles del hitbox. Es útil en algunos diseños, pero puede afectar a los scripts."
   },
   "allow_phone_screensaver": {
     "name": "Permitir reposo del teléfono",
-    "description": "Si está marcado, el teléfono se suspenderá después de permanecer inactivo durante unos segundos.\n(El tiempo depende de las opciones de tu teléfono)"
+    "description": "Si está activado, el teléfono se suspendrá después de unos segundos de inactividad.\n(El tiempo depende de la configuración del teléfono)"
   },
   "anti_aliasing": {
     "name": "Suavizado de bordes",
@@ -34,7 +34,7 @@
   },
   "auto_pause": {
     "name": "Pausa automática",
-    "description": "Si está marcado, el juego se detiene automáticamente si la pantalla no está enfocada."
+    "description": "Si está activado, el juego se pausa automáticamente cuando la ventana pierde el foco."
   },
   "bad_shit_combo_break": {
     "name": "Bad/Shit rompen el combo",
@@ -42,19 +42,19 @@
   },
   "bad_hit_window": {
     "name": "Margen de acierto Bad",
-    "description": "Ajusta el margen de tiempo para obtener \"Bad\", en milisegundos."
+    "description": "Ajusta el margen de tiempo disponible\npara obtener \"Bad\", en milisegundos."
   },
   "break_timer": {
     "name": "Temporizador",
-    "description": "Si está marcado, aparece un temporizador cuando las siguientes notas aún están lejos."
+    "description": "Si está activado, aparece un temporizador cuando las siguientes notas están lejos."
   },
   "camera_zooms": {
     "name": "Zooms de cámara",
-    "description": "Si no está marcada, la cámara no hará zoom en un hit."
+    "description": "Si está desactivado, la cámara no hará zoom al acertar una nota."
   },
   "window_border_on_hit": {
     "name": "Color del borde al acertar",
-    "description": "Cambia el color del borde de la ventana al acertar una nota.\n(Solo en Windows 11)"
+    "description": "Cambia el color del borde de la ventana al acertar una nota.\\n(Solo en Windows 11)"
   },
   "check_for_updates": {
     "name": "Buscar actualizaciones",
@@ -65,27 +65,27 @@
     "description": "Seleccione varias opciones según su trastorno de daltonismo.",
     "values": {
       "none": "Ninguno",
-      "protanopia": "Protanopía",
+      "protanopia": "Protanopia",
       "protanomaly": "Protanomalía",
       "deuteranopia": "Deuteranopía",
       "deuteranomaly": "Deuteranomalía",
       "tritanopia": "Tritanopía",
-      "tritanomaly": "tritanomalía",
-      "achromatopsia": "acromatopsia",
+      "tritanomaly": "Tritanomalía",
+      "achromatopsia": "Acromatopsia",
       "achromatomaly": "Acromatomalia"
     }
   },
   "combo_and_rating_in_camgame": {
     "name": "Combo y calificaciones en camGame",
-    "description": "Si está habilitado, Combo y Calificaciones se representarán en la capa camGame en lugar de camHUD."
+    "description": "Si está activado, el combo y las calificaciones se mostrarán en la capa camGame, en vez de camHUD."
   },
   "combo_stacking": {
     "name": "Superponer combo y calificaciones",
-    "description": "Si lo desactivas, el combo y las calificaciones anteriores desaparecen antes de mostrar los nuevos, lo que ahorra memoria y facilita la lectura."
+    "description": "Si está desactivado, las calificaciones y el combo no se superponen, ahorran memoria y son más fáciles de leer."
   },
   "disable_reset_button": {
     "name": "Desactivar botón de reinicio",
-    "description": "Si está marcado, presionar Restablecer no hará nada."
+    "description": "Si está activado, el botón Reiniciar no tendrá efecto."
   },
   "discord_rich_presence": {
     "name": "Actividad en Discord",
@@ -93,39 +93,39 @@
   },
   "downscroll": {
     "name": "Downscroll",
-    "description": "Si está marcado, las notas bajan en lugar de subir, lo cual es bastante simple."
+    "description": "Si está activado, las notas bajan en vez de subir."
   },
   "drag_character": {
     "name": "Arrastrar personaje",
-    "description": "Arrastra un personaje con el mouse o la pantalla táctil para cambiar su posición, como en Codename Engine."
+    "description": "Si está activado, puedes mover un personaje arrastrándolo con el mouse o la pantalla táctil, como en Codename Engine."
   },
   "drag_stage_camera": {
     "name": "Arrastrar cámara del escenario",
-    "description": "Permite arrastrar la cámara del escenario con el mouse o la pantalla táctil.\nDesactívalo si prefieres los controles clásicos de Psych."
+    "description": "Si está desactivado, no podrás arrastrar la cámara del escenario con el mouse ni con la pantalla táctil.\nDesactívalo si prefieres el estilo clásico de Psych."
   },
   "dynamic_combo_digits": {
     "name": "Dígitos de combo dinámicos",
-    "description": "El combo empieza con dos dígitos y pasa a tres al llegar a 100."
+    "description": "El combo empieza con dos dígitos y solo\nal llegar a 100 pasa a mostrarse con tres dígitos."
   },
   "dynamic_controls_color": {
     "name": "Colores dinámicos de controles",
-    "description": "Si está marcado, el color de los controles móviles se establecerá en el color de las notas en su configuración.\n(tiene efecto solo durante el juego)"
+    "description": "Si está activado, el color de los controles móviles será el mismo que el de las notas.\n(Solo tiene efecto durante el juego)"
   },
   "enable_3d_cameras": {
     "name": "Activar cámaras 3D",
-    "description": "Activa o desactiva la funcionalidad de la cámara 3D.\nDeshabilitar esto puede mejorar el rendimiento al omitir transformaciones 3D."
+    "description": "Activa o desactiva la cámara 3D.\nDesactivarla puede mejorar el rendimiento al omitir las transformaciones 3D."
   },
   "end_countdown_seconds": {
     "name": "Segundos de cuenta final",
-    "description": "Cuantos segundos antes de que termine la canción aparece la cuenta regresiva (10-30)."
+    "description": "Cuántos segundos antes de terminar la canción aparece la cuenta regresiva (10-30)."
   },
   "extra_controls": {
     "name": "Controles adicionales",
-    "description": "Seleccione ¿cuántos botones adicionales prefiere tener?\nSe pueden utilizar para mecánica con LUA o HScript.",
+    "description": "Elige cuántos botones adicionales quieres.\nSe pueden usar en mecánicas con Lua o HScript.",
     "values": {
       "none": "NINGUNO",
-      "single": "SOLTERO",
-      "double": "DOBLE"
+      "single": "UNO",
+      "double": "DOS"
     }
   },
   "flashing_lights": {
@@ -134,11 +134,11 @@
   },
   "flawless_hit_window": {
     "name": "Margen de acierto Flawless!!",
-    "description": "Ajusta el margen de tiempo para obtener \"Flawless!!\", en milisegundos."
+    "description": "Ajusta el margen de tiempo disponible\npara obtener \"Flawless!!\", en milisegundos."
   },
   "fps_counter_mode": {
     "name": "Modo contador de FPS",
-    "description": "Elija cuánta información de rendimiento se muestra en la superposición superior izquierda.",
+    "description": "Elige cuánta información de rendimiento se muestra arriba a la izquierda.",
     "values": {
       "hidden": "Oculto",
       "visible_no_background": "Visible sin fondo",
@@ -153,53 +153,53 @@
   },
   "framerate_mode": {
     "name": "Modo de FPS",
-    "description": "Elija cómo el motor maneja el tiempo de actualización/extracción.\nPsych coincide con el comportamiento clásico del motor.",
+    "description": "Elige cómo controla el motor el tiempo de actualización y renderizado.\nPsych conserva el comportamiento clásico del motor.",
     "values": {
-      "psych": "Psicoanalizar",
-      "fixed": "Fijado",
+      "psych": "Psych",
+      "fixed": "Fijo",
       "interpolated": "Interpolado"
     }
   },
   "fullscreen_mode": {
     "name": "Modo de pantalla completa",
-    "description": "Sin bordes tiene un límite de 1080p para un mejor rendimiento del shader. Borderless Fix utiliza una resolución de monitor nativa.",
+    "description": "Sin bordes tiene un límite de 1080p para mejorar el rendimiento de los shaders. Borderless Fix usa la resolución nativa del monitor.",
     "values": {
-      "borderless": "Sin fronteras",
-      "borderless_fix": "Solución sin fronteras",
+      "borderless": "Sin bordes",
+      "borderless_fix": "Sin bordes corregido",
       "exclusive": "Exclusivo"
     }
   },
   "game_over_vibration": {
     "name": "Vibración al perder",
-    "description": "Si está marcado, su dispositivo vibrará cuando termine el juego."
+    "description": "Si está activado, el dispositivo vibrará al terminar la partida."
   },
   "ghost_tapping": {
     "name": "Pulsaciones sin penalización",
-    "description": "Si está marcado, no fallará al presionar teclas\nmientras no haya notas que se puedan tocar."
+    "description": "Si está activado, pulsar teclas mientras no haya notas disponibles\nno contará como fallos."
   },
   "good_hit_window": {
     "name": "Margen de acierto Good",
-    "description": "Ajusta el margen de tiempo para obtener \"Good\", en milisegundos."
+    "description": "Ajusta el margen de tiempo disponible\npara obtener \"Good\", en milisegundos."
   },
   "gradient_time_bar": {
     "name": "Degradado en barra de tiempo",
-    "description": "Si está marcada, la barra de tiempo se sombreará según el color del icono del personaje."
+    "description": "Si está activada, la barra de tiempo se coloreará según el icono del personaje."
   },
   "hardware_acceleration": {
     "name": "Aceleración de hardware",
-    "description": "Si está habilitado, almacena imágenes compatibles directamente en la GPU para reducir el uso de RAM y mejorar la estabilidad de renderizado, especialmente en Android.\nRecomendado para la mayoría de dispositivos."
+    "description": "Si está activada, almacena las imágenes compatibles directamente en la GPU para reducir el uso de RAM y mejorar la estabilidad del renderizado, especialmente en Android.\nRecomendada para la mayoría de dispositivos."
   },
   "health_bar_opacity": {
     "name": "Opacidad de la barra de vida",
-    "description": "¿Qué tan transparentes deben ser la barra de salud y los íconos?"
+    "description": "Define la transparencia de la barra de salud y los iconos."
   },
   "hey_intro": {
     "name": "Animación Hey! al iniciar",
-    "description": "Si está marcado, BF y GF automáticamente hacen el ¡Oye! animación cuando la cuenta regresiva dice Go!"
+    "description": "Si está activado, BF y GF hacen automáticamente la animación Hey! cuando la cuenta regresiva dice ¡Go!"
   },
   "judgement_counter": {
-    "name": "Contador de juicios",
-    "description": "Muestra un contador de cada juicio y de los fallos durante la partida."
+    "name": "Contador de calificaciones",
+    "description": "Muestra un contador de cada calificación y de los fallos durante la partida."
   },
   "hide_hud": {
     "name": "Ocultar HUD",
@@ -207,7 +207,7 @@
   },
   "hide_sustain_splash": {
     "name": "Ocultar efectos de notas largas",
-    "description": "Si está marcado, oculta Sustain Splash"
+    "description": "Si está activado, oculta los efectos de las notas largas."
   },
   "hitbox_design": {
     "name": "Diseño de hitbox",
@@ -221,7 +221,7 @@
   },
   "hitbox_position": {
     "name": "Posición del hitbox",
-    "description": "Si está marcado, el hitbox se colocará en la parte inferior de la pantalla; de lo contrario, permanecerá en la parte superior."
+    "description": "Si está activado, el hitbox se coloca en la parte inferior de la pantalla; si no, permanece arriba."
   },
   "icon_bounce_type": {
     "name": "Rebote de los iconos",
@@ -230,21 +230,21 @@
       "old": "Viejo",
       "d_b": "D&B",
       "nf": "NF",
-      "default": "Por defecto",
+      "default": "Predeterminado",
       "codename": "Codename"
     }
   },
   "infinity_display": {
-    "name": "Pantalla infinita",
-    "description": "Si está marcado, extiende la ventana gráfica verticalmente para pantallas más altas mientras mantiene el área de juego clásica 16:9."
+    "name": "Vista de pantalla completa ampliada",
+    "description": "Ocupa toda la pantalla con el comportamiento tradicional de pantalla completa. Las pantallas panorámicas pueden estirar ligeramente la imagen, pero los mods conservan sus coordenadas."
   },
   "instant_window_close": {
     "name": "Cierre instantáneo de ventana",
-    "description": "Si está marcado, al cerrar el juego se sale instantáneamente en lugar de desaparecer la ventana."
+    "description": "Si está activado, cerrar el juego lo hará salir al instante, sin fundido."
   },
   "key_viewer_color": {
     "name": "Color del visor de teclas:",
-    "description": "Seleccione el color de los botones del visor de claves.",
+    "description": "Selecciona el color de los botones del visor de teclas.",
     "values": {
       "gray": "Gris",
       "red": "Rojo",
@@ -253,46 +253,46 @@
       "purple": "Púrpura",
       "orange": "Naranja",
       "pink": "Rosa",
-      "cyan": "cian",
+      "cyan": "Cian",
       "white": "Blanco",
       "black": "Negro"
     }
   },
   "launcher_auto_start": {
     "name": "Autoinicio del launcher",
-    "description": "Si está marcado, el iniciador de Android inicia automáticamente el motor después de 3 segundos."
+    "description": "Si está activado, el launcher de Android inicia automáticamente el motor después de 3 segundos."
   },
-  "lighter_hit_path": {
-    "name": "Efectos de acierto ligeros",
-    "description": "Si no está marcada, se ejecutará la ruta visual completa en lugar de la ruta visual clara.\nSi no se marca, esto puede provocar un rendimiento de LAG."
+  "performance_hit_effects": {
+    "name": "Efectos de acierto optimizados",
+    "description": "Utiliza efectos de acierto reutilizados para mejorar el rendimiento en móviles. El estilo NF y la superposición del combo no están disponibles mientras esté activado."
   },
   "low_quality": {
     "name": "Baja calidad",
-    "description": "Si está marcado, desactiva algunos detalles de fondo.\nDisminuye los tiempos de carga y mejora el rendimiento."
+    "description": "Si está activado, desactiva algunos detalles del fondo,\nreduce los tiempos de carga y mejora el rendimiento."
   },
   "middlescroll": {
     "name": "Notas centradas",
-    "description": "Si está marcado, sus notas se centran."
+    "description": "Si está activado, centra las notas."
   },
   "mobile_controls_opacity": {
     "name": "Opacidad de controles móviles",
-    "description": "Selecciona la opacidad de los botones del móvil (cuidado de no ponerla en 0 y perder la pista de tus botones)."
+    "description": "Define la opacidad de los botones móviles (cuidado al ponerla en 0 y perderlos de vista)."
   },
   "mobile_trace_button": {
-    "name": "Botón de depuración móvil",
-    "description": "Si está marcado, muestra el botón táctil de seguimiento en versiones móviles."
+    "name": "Botón de seguimiento móvil",
+    "description": "Si está activado, muestra el botón táctil de seguimiento en las versiones móviles."
   },
   "mod_security": {
     "name": "Seguridad de mods",
-    "description": "Si está marcado, escanea el mod Lua/HScript y omite los scripts de los mods con API sensibles que no son de confianza."
+    "description": "Si está activado, analiza Lua/HScript y omite los scripts de mods que usan API sensibles no confiables."
   },
   "modchart_debug_overlay": {
     "name": "Debug de Modchart",
-    "description": "Muestra estadísticas del renderizador de modchart.\nDeshabilitado por defecto porque tiene un costo de rendimiento."
+    "description": "Muestra estadísticas del renderizador de modcharts.\nEstá desactivado por defecto porque afecta al rendimiento."
   },
   "mods_storage_location": {
     "name": "Ubicación de mods",
-    "description": "Elija dónde deben ubicarse las mods de Android y los archivos guardados.\nINTERNO usa almacenamiento de aplicaciones con alcance, EXTERNO usa almacenamiento público.",
+    "description": "Elige dónde se guardan los mods y los archivos de Android.\nINTERNO usa el almacenamiento privado de la app; EXTERNO usa el almacenamiento público.",
     "values": {
       "internal": "INTERNO",
       "external": "EXTERNO"
@@ -300,11 +300,11 @@
   },
   "nf_rating_style": {
     "name": "Estilo de calificación NF",
-    "description": "Si está marcado, las calificaciones y los números combinados se mantienen en su lugar en lugar de volar o desvanecerse."
+    "description": "Si está activado, las calificaciones y los números del combo aparecen en el mismo lugar, sin animación de vuelo o desvanecimiento."
   },
   "note_skins": {
     "name": "Diseño de notas:",
-    "description": "Seleccione su aspecto de nota preferido."
+    "description": "Selecciona tu diseño de notas preferido."
   },
   "note_splash_opacity": {
     "name": "Opacidad de efectos de notas",
@@ -312,7 +312,7 @@
   },
   "note_splashes": {
     "name": "Efectos de notas:",
-    "description": "Seleccione su variación de presentación de notas preferida."
+    "description": "Selecciona el efecto de nota preferido."
   },
   "opponent_notes": {
     "name": "Notas del oponente",
@@ -320,14 +320,14 @@
   },
   "optimize_hold_rendering": {
     "name": "Optimizar notas largas",
-    "description": "Optimiza la representación de la flecha de retención para un mejor rendimiento.\nNO se recomienda para charts de mods complejos, ya que las reservas pueden parecer incorrectas."
+    "description": "Optimiza el renderizado de las notas largas para mejorar el rendimiento.\nNo se recomienda para modcharts complejos, ya que las notas largas pueden verse incorrectas."
   },
   "options_menu_style": {
     "name": "Estilo del menú de opciones",
     "description": "Cambia los menús de Opciones entre tarjetas Plus y Psych classic.",
     "values": {
       "plus": "Más",
-      "psych": "Psicoanalizar"
+      "psych": "Psych"
     }
   },
   "over_accuracy": {
@@ -336,7 +336,7 @@
   },
   "pause_countdown": {
     "name": "Cuenta regresiva al continuar",
-    "description": "Si está marcado, al reanudar desde la pausa se reproduce una cuenta regresiva similar a la cuenta regresiva de introducción."
+    "description": "Si está activado, al continuar una partida pausada se reproduce una cuenta regresiva como al inicio."
   },
   "pause_music": {
     "name": "Música de pausa:",
@@ -350,11 +350,11 @@
   },
   "pop_up_score": {
     "name": "Puntuación emergente",
-    "description": "Si no está marcado, tocar notas no mostrará ventanas emergentes de calificación ni combo. Útil en dispositivos de gama baja."
+    "description": "Si está desactivado, acertar notas no mostrará avisos emergentes de calificación ni combo. Útil en dispositivos de gama baja."
   },
   "rating_offset": {
     "name": "Desfase de calificación",
-    "description": "Cambia qué tan tarde/temprano tienes que golpear para lograr un \"¡¡impecable!!\"\nLos valores más altos significan que tienes que golpear más tarde."
+    "description": "Cambia cuánto antes o después debes acertar para obtener \"Flawless!!\".\nLos valores más altos requieren acertar más tarde."
   },
   "results_state_at_end": {
     "name": "Mostrar resultados al terminar",
@@ -362,43 +362,43 @@
   },
   "rgb_notes": {
     "name": "Notas RGB",
-    "description": "Si no está marcado, utiliza colores de notas y elementos de notas fundamentales del estilo Classic Psych 0.6.3."
+    "description": "Si está desactivado, usa los colores de notas y los recursos originales del estilo Classic Psych 0.6.3."
   },
   "safe_frames": {
     "name": "Fotogramas de tolerancia",
-    "description": "Cambia la cantidad de fotogramas que tienes para\ntocar una nota antes o después."
+    "description": "Cambia cuántos fotogramas tienes para\nacertar una nota antes o después."
   },
   "score_text_grow_on_hit": {
     "name": "Texto de puntos al acertar",
-    "description": "Si se desactiva, el texto de puntuación no crecerá al tocar una nota."
+    "description": "Si se desactiva, el texto de puntuación no crecerá\ncada vez que aciertes una nota."
   },
   "script_deprecation_warnings": {
     "name": "Avisos de API obsoletas",
-    "description": "Si está marcada, las API obsoletas de compatibilidad con Lua/HScript imprimirán advertencias en la consola de depuración. Desactivar para silenciar mods ruidosos."
+    "description": "Si está activado, las API obsoletas de compatibilidad de Lua/HScript mostrarán advertencias en la consola de depuración. Desactívalo para silenciar mods ruidosos."
   },
   "shaders": {
     "name": "Shaders",
-    "description": "Si no está marcado, desactiva los shaders. Se utilizan para efectos visuales y pueden consumir mucha CPU en dispositivos más débiles."
+    "description": "Si está desactivado, desactiva los shaders. Se usan para efectos visuales y pueden exigir mucho a la CPU en dispositivos de gama baja."
   },
   "show_android_launcher": {
     "name": "Mostrar iniciador de Android",
-    "description": "Si está marcado, el iniciador de Android se abre antes que el motor.\nVuelva a activarlo aquí si lo deshabilitó desde el iniciador."
+    "description": "Si está activado, el launcher de Android se abre antes que el motor.\nActívalo aquí si lo desactivaste desde el launcher."
   },
   "show_combo_numbers": {
     "name": "Mostrar números del combo",
-    "description": "Si no está marcado, oculta las ventanas emergentes de números combinados al tocar notas."
+    "description": "Si está desactivado, oculta los números emergentes del combo al acertar notas."
   },
   "show_combo_sprite": {
     "name": "Mostrar imagen de COMBO",
-    "description": "Si no está marcado, oculta la ventana emergente COMBO sprite al tocar notas."
+    "description": "Si está desactivado, oculta la imagen emergente COMBO al acertar notas."
   },
   "show_early_late": {
     "name": "Mostrar Early/Late",
-    "description": "Muestra Early o Late en las esquinas de la calificación según si pulsaste antes o después de tiempo."
+    "description": "Muestra Early o Late en las esquinas de la calificación según si pulsaste antes o después."
   },
   "show_end_countdown": {
     "name": "Mostrar cuenta final",
-    "description": "Si está marcado, muestra una cuenta regresiva en los últimos segundos de la canción."
+    "description": "Si está activado, muestra una cuenta regresiva en los últimos segundos de la canción."
   },
   "show_hit_ms": {
     "name": "Mostrar desfase en ms",
@@ -406,15 +406,15 @@
   },
   "show_key_viewer": {
     "name": "Mostrar visor de teclas",
-    "description": "Si está marcado, muestra un visor de teclas que muestra qué teclas se están presionando."
+    "description": "Si está activado, muestra qué teclas se están pulsando."
   },
   "show_rating_sprite": {
     "name": "Mostrar calificación",
-    "description": "Si no está marcado, oculta la ventana emergente del sprite de calificación al tocar notas."
+    "description": "Si está desactivado, oculta la imagen emergente de la calificación al acertar notas."
   },
   "gameplay_version": {
     "name": "Mostrar versión al jugar",
-    "description": "Si está marcado, muestra el texto de la versión durante el juego."
+    "description": "Si está activado, muestra la versión durante el juego."
   },
   "show_watermark": {
     "name": "Mostrar marca de agua",
@@ -422,22 +422,22 @@
   },
   "sick_hit_window": {
     "name": "Margen de acierto Sick!",
-    "description": "Ajusta el margen de tiempo para obtener \"Sick!\", en milisegundos."
+    "description": "Ajusta el margen de tiempo disponible\npara obtener \"Sick!\", en milisegundos."
   },
   "smooth_health_bar": {
     "name": "Movimiento suave de vida",
-    "description": "Si está marcada, la barra de salud se moverá suavemente en lugar de instantáneamente."
+    "description": "Si está activado, la barra de salud se mueve con suavidad en vez de hacerlo al instante."
   },
   "sustains_as_one_note": {
     "name": "Notas largas como una sola nota",
-    "description": "Las notas largas cuentan como un solo acierto o fallo y no se pueden retomar si las fallas.\nDesactívalo si prefieres el sistema de entrada antiguo."
+    "description": "Si está activado, las notas largas no se pueden volver a pulsar si las fallas\ny cuentan como un solo acierto o fallo.\nDesactívalo si prefieres el sistema de entrada antiguo."
   },
   "system_score_multiplier": {
     "name": "Multiplicador de puntos",
-    "description": "Elija el sistema de puntuación para las notas acertadas",
+    "description": "Elige el sistema de puntuación para los aciertos.",
     "values": {
-      "psych": "Psicoanalizar",
-      "codename": "Nombre clave"
+      "psych": "Psych",
+      "codename": "Codename"
     }
   },
   "time_bar": {
@@ -452,11 +452,11 @@
   },
   "time_text_bump": {
     "name": "Animar texto de tiempo al ritmo",
-    "description": "Si no está marcado, desactiva la animación de salto de texto en el tiempo al compás."
+    "description": "Si está desactivado, desactiva la animación de pulso del texto de tiempo al ritmo del compás."
   },
   "title_intro_video": {
     "name": "Video de introducción",
-    "description": "Si está marcado, reproduce el vídeo de introducción antes de la introducción del título una vez por lanzamiento."
+    "description": "Si está activado, reproduce el vídeo de introducción antes del título una vez por ejecución."
   },
   "touch_pointer": {
     "name": "Indicador táctil",
@@ -464,27 +464,27 @@
   },
   "uncap_fps": {
     "name": "FPS sin límite",
-    "description": "Si está marcado, permite que el renderizador se ejecute lo más rápido posible manteniendo las actualizaciones limitadas.\nÚtil para pantallas de alta actualización, pero puede aumentar el uso de batería/GPU."
+    "description": "Si está activado, permite que el renderizado sea lo más rápido posible mientras mantiene acotadas las actualizaciones.\nEs útil en pantallas de alta frecuencia, pero puede aumentar el uso de batería/GPU."
   },
   "use_flawless_rating": {
-    "name": "Usar rating Flawless",
-    "description": "Si está marcado, agrega un \"¡¡Perfecto!!\" juicio por encima del enfermo."
+    "name": "Usar calificación Flawless",
+    "description": "Si está activado, añade la calificación más exigente \"Flawless!!\" por encima de Sick."
   },
   "use_psych_freeplay": {
     "name": "Usar Freeplay de Psych",
-    "description": "Si está marcado, utiliza el estado clásico Psych Engine Freeplay en lugar de PlusEngine Freeplay."
+    "description": "Si está activado, usa el modo clásico de Freeplay de Psych Engine en vez del de PlusEngine."
   },
   "use_psych_score_text": {
     "name": "Usar puntos de Psych",
-    "description": "Si está marcado, mantiene el formato de texto de puntuación original de Psych Engine durante el juego."
+    "description": "Si está activado, mantiene el formato original de puntuación de Psych Engine durante el juego."
   },
   "vanilla_transition": {
     "name": "Transición clásica de Psych",
-    "description": "Si está marcado, utiliza la transición básica de Psych Engine en lugar de la personalizada."
+    "description": "Si está activado, usa la transición clásica de Psych Engine en vez de la personalizada."
   },
   "vsync": {
     "name": "VSync",
-    "description": "Si está marcado, habilita VSync, lo que corrige el desgarro de la pantalla a costa de limitar los FPS a la frecuencia de actualización del monitor.\nReinicia el juego para aplicarlo por completo."
+    "description": "Si está activado, habilita VSync y evita el tearing a costa de limitar los FPS a la frecuencia de actualización del monitor.\nReinicia el juego para aplicarlo por completo."
   },
   "windows_gdi_effects": {
     "name": "Efectos GDI de Windows",

@@ -2,16 +2,29 @@ package psychlua;
 
 #if WINDOWS_FUNCTIONS_ALLOWED
 import psychlua.backend.WindowTweens;
+import backend.window.WindowManager;
 #if GDI_ENABLED
 import slushithings.windows.WindowsAPI;
 #end
 #end
 
-class WindowsFunctions
+class WindowFunctions
 {
 	public static function implement(funk:FunkinLua) {
 		#if WINDOWS_FUNCTIONS_ALLOWED
 		var lua = funk.lua;
+
+		// Desktop window APIs. A true return means the request was submitted;
+		// the window manager can still reject it.
+		Lua_helper.add_callback(lua, "getWindowBackend", function() return WindowManager.backend());
+		Lua_helper.add_callback(lua, "windowSupports", function(feature:String) return WindowManager.supports(feature));
+		Lua_helper.add_callback(lua, "createGameWindow", function(id:String, width:Int, height:Int, title:String, ?alwaysOnTop:Bool = false) return WindowManager.create(id, width, height, title, alwaysOnTop, funk));
+		Lua_helper.add_callback(lua, "setGameWindowText", function(id:String, value:String) return WindowManager.setText(id, value));
+		Lua_helper.add_callback(lua, "moveGameWindow", function(id:String, x:Int, y:Int) return WindowManager.move(id, x, y));
+		Lua_helper.add_callback(lua, "resizeGameWindow", function(id:String, width:Int, height:Int) return WindowManager.resize(id, width, height));
+		Lua_helper.add_callback(lua, "setGameWindowOpacity", function(id:String, alpha:Float) return WindowManager.setOpacity(id, alpha));
+		Lua_helper.add_callback(lua, "tweenGameWindow", function(id:String, property:String, target:Float, duration:Float, ?ease:String = "linear") return WindowManager.tween(id, property, target, duration, ease));
+		Lua_helper.add_callback(lua, "closeGameWindow", function(id:String) return WindowManager.close(id));
 
 		// Window Tween Functions
 		Lua_helper.add_callback(lua, "winTweenSize", function(width:Int, height:Int, duration:Float = 1, ease:String = "linear") {

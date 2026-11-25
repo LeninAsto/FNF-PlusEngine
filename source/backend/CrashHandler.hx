@@ -269,7 +269,16 @@ class CrashHandler
 			return;
 		#end
 
+		#if (windows && cpp)
+		// Windows expects UTF-16. Passing an hxcpp wide string through Lime's
+		// narrow SDL interface can truncate the dialog after its first letter.
+		slushithings.windows.WindowsCPP.showMessageBox(
+			title == null ? "Error" : title.replace("\x00", "?"),
+			message == null ? "Unknown error" : message.replace("\x00", "?"),
+			slushithings.windows.WindowsCPP.MessageBoxIcon.MSG_ERROR);
+		#else
 		CoolUtil.showPopUp(message, title);
+		#end
 		lime.system.System.exit(1);
 	}
 

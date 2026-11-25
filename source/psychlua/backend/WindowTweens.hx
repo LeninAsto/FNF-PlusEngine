@@ -11,6 +11,7 @@ import flixel.system.scaleModes.FixedScaleMode;
 import flixel.system.scaleModes.BaseScaleMode;
 import flixel.util.FlxColor;
 import states.PlayState;
+import backend.window.WindowManager;
 #if windows
 import slushithings.windows.WindowsAPI;
 #end
@@ -49,17 +50,18 @@ class WindowTweens
 
 	public static function setWindowBounds(x:Int, y:Int, width:Int, height:Int):Void
 	{
-		#if windows
+		#if desktop
 		var window = Lib.current.stage.window;
 		if (width > 0 && height > 0 && (window.width != width || window.height != height))
 			window.resize(width, height);
-		if (window.x != x || window.y != y)
+		if (WindowManager.supports("move") && (window.x != x || window.y != y))
 			window.move(x, y);
 		#end
 	}
 	public static function winTweenX(tag:String, targetX:Int, duration:Float = 1, ease:String = "linear", ?onComplete:Void->Void)
 	{
-		#if windows
+		#if desktop
+		if (!WindowManager.supports("move")) return null;
 		var window = Lib.current.stage.window;
 		var variables = MusicBeatState.getVariables();
 
@@ -109,7 +111,8 @@ class WindowTweens
 
 	public static function winTweenY(tag:String, targetY:Int, duration:Float = 1, ease:String = "linear", ?onComplete:Void->Void)
 	{
-		#if windows
+		#if desktop
+		if (!WindowManager.supports("move")) return null;
 		var window = Lib.current.stage.window;
 		var variables = MusicBeatState.getVariables();
 
@@ -159,7 +162,7 @@ class WindowTweens
 
 	public static function setWindowBorderless(enable:Bool)
 	{
-		#if windows
+		#if desktop
 		var window = Lib.current.stage.window;
 		window.borderless = enable;
 		#end
@@ -167,23 +170,23 @@ class WindowTweens
 
 	public static function setWindowX(x:Int)
 	{
-		#if windows
+		#if desktop
 		var window = Lib.current.stage.window;
-		window.x = x;
+		if (WindowManager.supports("move")) window.x = x;
 		#end
 	}
 
 	public static function setWindowY(y:Int)
 	{
-		#if windows
+		#if desktop
 		var window = Lib.current.stage.window;
-		window.y = y;
+		if (WindowManager.supports("move")) window.y = y;
 		#end
 	}
 
 	public static function setWindowSize(width:Int, height:Int)
 	{
-		#if windows
+		#if desktop
 		var window = Lib.current.stage.window;
 		window.resize(width, height);
 		#end
@@ -191,7 +194,7 @@ class WindowTweens
 
 	public static function getWindowX():Int
 	{
-		#if windows
+		#if desktop
 		var window = Lib.current.stage.window;
 		return window.x;
 		#else
@@ -201,7 +204,7 @@ class WindowTweens
 
 	public static function getWindowY():Int
 	{
-		#if windows
+		#if desktop
 		var window = Lib.current.stage.window;
 		return window.y;
 		#else
@@ -211,7 +214,7 @@ class WindowTweens
 
 	public static function getWindowWidth():Int
 	{
-		#if windows
+		#if desktop
 		var window = Lib.current.stage.window;
 		return window.width;
 		#else
@@ -221,7 +224,7 @@ class WindowTweens
 
 	public static function getWindowHeight():Int
 	{
-		#if windows
+		#if desktop
 		var window = Lib.current.stage.window;
 		return window.height;
 		#else
@@ -231,7 +234,8 @@ class WindowTweens
 
 	public static function centerWindow()
 	{
-		#if windows
+		#if desktop
+		if (!WindowManager.supports("move")) return;
 		var window = Lib.current.stage.window;
 		var screenWidth = Lib.application.window.stage.fullScreenWidth;
 		var screenHeight = Lib.application.window.stage.fullScreenHeight;
@@ -242,7 +246,7 @@ class WindowTweens
 
 	public static function setWindowTitle(title:String)
 	{
-		#if windows
+		#if desktop
 		var window = Lib.current.stage.window;
 		window.title = title;
 		#end
@@ -250,7 +254,7 @@ class WindowTweens
 
 	public static function getWindowTitle():String
 	{
-		#if windows
+		#if desktop
 		var window = Lib.current.stage.window;
 		return window.title;
 		#else
@@ -260,7 +264,7 @@ class WindowTweens
 
 	public static function setWindowIcon(iconPath:String)
 	{
-		#if windows
+		#if desktop
 		try
 		{
 			var window = Lib.current.stage.window;
@@ -279,7 +283,7 @@ class WindowTweens
 
 	public static function setWindowResizable(enable:Bool)
 	{
-		#if windows
+		#if desktop
 		var window = Lib.current.stage.window;
 		window.resizable = enable;
 		#end
@@ -287,7 +291,8 @@ class WindowTweens
 
 	public static function randomizeWindowPosition(minX:Int = 0, maxX:Int = -1, minY:Int = 0, maxY:Int = -1)
 	{
-		#if windows
+		#if desktop
+		if (!WindowManager.supports("move")) return;
 		var window = Lib.current.stage.window;
 		var screenWidth = Lib.application.window.stage.fullScreenWidth;
 		var screenHeight = Lib.application.window.stage.fullScreenHeight;
@@ -318,7 +323,7 @@ class WindowTweens
 
 	public static function setWindowFullscreen(enable:Bool)
 	{
-		#if windows
+		#if desktop
 		var window = Lib.current.stage.window;
 		window.fullscreen = enable;
 		#end
@@ -326,7 +331,7 @@ class WindowTweens
 
 	public static function isWindowFullscreen():Bool
 	{
-		#if windows
+		#if desktop
 		var window = Lib.current.stage.window;
 		return window.fullscreen;
 		#else
@@ -336,7 +341,7 @@ class WindowTweens
 
 	public static function saveWindowState():String
 	{
-		#if windows
+		#if desktop
 		var window = Lib.current.stage.window;
 		var state = {
 			x: window.x,
@@ -355,15 +360,15 @@ class WindowTweens
 
 	public static function loadWindowState(stateJson:String)
 	{
-		#if windows
+		#if desktop
 		try
 		{
 			var state = haxe.Json.parse(stateJson);
 			var window = Lib.current.stage.window;
 
-			if (state.x != null)
+			if (WindowManager.supports("move") && state.x != null)
 				window.x = state.x;
-			if (state.y != null)
+			if (WindowManager.supports("move") && state.y != null)
 				window.y = state.y;
 			if (state.width != null && state.height != null)
 			{
@@ -386,10 +391,10 @@ class WindowTweens
 
 	public static function winTweenSize(targetW:Int, targetH:Int, duration:Float = 1, ease:String = "linear", ?onComplete:Void->Void)
 	{
-		#if windows
+		#if desktop
 		var window = Lib.application.window;
 
-		FlxTween.cancelTweensOf(window);
+		FlxTween.cancelTweensOf(window, ["width", "height"]);
 
 		FlxG.scaleMode = new RatioScaleMode(true);
 
@@ -413,7 +418,8 @@ class WindowTweens
 
 	public static function winResizeCenter(width:Int, height:Int, ?skip:Bool = false, ?markAsResized:Bool = true)
 	{
-		#if windows
+		#if desktop
+		if (!WindowManager.supports("move")) { setWindowSize(width, height); return; }
 		if (markAsResized && PlayState.instance != null)
 		{
 			PlayState.instance.windowResizedByScript = true;
@@ -460,7 +466,7 @@ class WindowTweens
 
 	public static function getWindowState():String
 	{
-		#if windows
+		#if desktop
 		try
 		{
 			var window = Lib.current.stage.window;
@@ -762,60 +768,29 @@ class WindowTweens
 
 	public static function setWindowOpacity(alpha:Float)
 	{
-		#if windows
-		try
-		{
-			var clampedAlpha = Math.max(0.0, Math.min(1.0, alpha));
-			WindowsAPI.setWindowOppacity(clampedAlpha);
-		}
-		catch (e:Dynamic)
-		{
-			trace('Error setting window opacity: $e');
-		}
+		#if desktop
+		WindowManager.setOpacity("main", alpha);
 		#end
 	}
 
 	public static function getWindowOpacity():Float
 	{
-		#if windows
-		try
-		{
-			return WindowsAPI.getWindowOppacity();
-		}
-		catch (e:Dynamic)
-		{
-			trace('Error getting window opacity: $e');
-			return 1.0;
-		}
-		#else
-		return 1.0;
+		#if desktop
+		var window = WindowManager.get("main");
+		if (window != null && WindowManager.supports("opacity")) return window.opacity;
 		#end
+		return 1.0;
 	}
 
-	// Tween window opacity using FlxTween.num (optimized)
 	public static function tweenWindowOpacity(fromAlpha:Float, toAlpha:Float, duration:Float = 1, ease:String = "linear", ?onComplete:Void->Void)
 	{
-		#if windows
-		try
-		{
-			var tween:NumTween = FlxTween.num(fromAlpha, toAlpha, duration, {
-				ease: LuaUtils.getTweenEaseByString(ease),
-				onComplete: function(_)
-				{
-					if (onComplete != null)
-						onComplete();
-				}
-			});
-			tween.onUpdate = function(t:FlxTween)
-			{
-				var clampedAlpha = Math.max(0.0, Math.min(1.0, tween.value));
-				WindowsAPI.setWindowOppacity(clampedAlpha);
-			};
-		}
-		catch (e:Dynamic)
-		{
-			trace('Error tweening window opacity: $e');
-		}
+		#if desktop
+		if (!WindowManager.supports("opacity")) return;
+		var tween:NumTween = FlxTween.num(fromAlpha, toAlpha, duration, {
+			ease: LuaUtils.getTweenEaseByString(ease),
+			onComplete: function(_) { if (onComplete != null) onComplete(); }
+		});
+		tween.onUpdate = function(_) WindowManager.setOpacity("main", tween.value);
 		#end
 	}
 
