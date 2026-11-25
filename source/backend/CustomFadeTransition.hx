@@ -317,6 +317,7 @@ class CustomFadeTransition extends MusicBeatSubstate
 			ease: FlxEase.expoInOut
 		}));
 
+		iconTween = addTween(FlxTween.tween(iconSprite, {alpha: 1}, duration, {ease: FlxEase.sineIn}));
 		bottomDoorTween = addTween(FlxTween.tween(bottomDoor, {y: 0}, duration, {
 			ease: FlxEase.expoInOut,
 			onComplete: function(tween:FlxTween)
@@ -324,16 +325,7 @@ class CustomFadeTransition extends MusicBeatSubstate
 				if (!isValidTransition())
 					return;
 
-				iconTween = addTween(FlxTween.tween(iconSprite, {alpha: 1}, 0.3, {
-					ease: FlxEase.sineIn,
-					onComplete: function(tween:FlxTween)
-					{
-						if (isValidTransition())
-						{
-							safeFinishCallback();
-						}
-					}
-				}));
+				safeFinishCallback();
 			}
 		}));
 	}

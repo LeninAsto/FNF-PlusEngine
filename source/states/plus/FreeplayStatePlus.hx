@@ -5,6 +5,8 @@ import backend.AssetLoader;
 import backend.WeekData;
 import backend.Highscore;
 import backend.Song;
+import backend.SongChecker;
+import backend.SongChecker.SongCheckSeverity;
 import backend.AccuracyTools;
 import objects.HealthIcon;
 import objects.MusicPlayer;
@@ -839,7 +841,8 @@ class FreeplayStatePlus extends MusicBeatState
 		final displayText = (message != null && message.length > 0) ? message :
 			Language.getPhrase('freeplay.errors.no_chart', 'No chart is available for this difficulty.');
 		missingText.text = displayText;
-		missingText.wordWrap = false;
+		missingText.wordWrap = true;
+		missingText.fieldWidth = FlxG.width - 136;
 		if (missingText.textField != null)
 			missingText.textField.autoSize = openfl.text.TextFieldAutoSize.LEFT;
 
@@ -848,7 +851,7 @@ class FreeplayStatePlus extends MusicBeatState
 		final textH:Int = Std.int(Math.ceil((textField != null ? textField.textHeight : missingText.height) + 1));
 		final padX:Int = 28;
 		final padY:Int = 28;
-		final cardW:Int = Std.int(Math.max(360, textW + padX * 2));
+		final cardW:Int = Std.int(Math.min(FlxG.width - 80, Math.max(360, textW + padX * 2)));
 		final cardH:Int = Std.int(Math.max(120, textH + padY * 2));
 
 		missingTextHiddenX = -cardW - 40;
@@ -1437,8 +1440,7 @@ class FreeplayStatePlus extends MusicBeatState
 				Mods.currentModDirectory = songs[curSelected].folder;
 
 				// Load all available difficulties for this song before loading the chart
-				Difficulty.loadFromWeek();
-				detectAndLoadAllDifficulties();
+				Difficulty.loadForSong(songs[curSelected].songName);
 
 				// Make sure curDifficulty is within bounds
 				if (curDifficulty >= Difficulty.list.length)
@@ -1551,7 +1553,25 @@ class FreeplayStatePlus extends MusicBeatState
 				songs[curSelected].lastDifficulty = lastDifficultyName;
 				var poop:String = Highscore.formatSong(songLowercase, selectedDifficulty);
 
-				LoadingState.setPendingSongChart(poop, songLowercase);
+				var report = SongChecker.inspectRequest(poop, songLowercase);
+				if (!report.hasErrors)
+				{
+					try SongChecker.inspectSong(report, Song.loadFromJson(poop, songLowercase))
+					catch (e:Dynamic)
+						report.add(SongCheckSeverity.ERROR, 'chart-load-exception',
+							Language.getPhrase('freeplay.errors.chart_load_exception', 'Unexpected error while loading the chart: {1}', [Std.string(e)]), report.chartPath);
+				}
+				if (report.hasErrors)
+				{
+					PlayState.SONG = null;
+					persistentUpdate = true;
+					showMissingCard(report.displayText());
+					FlxG.sound.play(Paths.sound('cancelMenu'));
+					trace(report.displayText(100));
+					return;
+				}
+				if (report.issues.length > 0) trace(report.displayText(100));
+				PlayState.isStoryMode = false;
 				@:privateAccess
 				if (PlayState._lastLoadedModDirectory != Mods.currentModDirectory)
 				{
@@ -1559,6 +1579,7 @@ class FreeplayStatePlus extends MusicBeatState
 					Paths.freeGraphicsFromMemory();
 				}
 				LoadingState.returnState = FreeplayStateSelector.create(); // Establecer estado de retorno
+				LoadingState.prepareToSong();
 				LoadingState.loadAndSwitchState(new PlayState());
 				#if !SHOW_LOADING_SCREEN FlxG.sound.music.stop(); #end
 				stopMusicPlay = true;
@@ -1823,7 +1844,7 @@ class FreeplayStatePlus extends MusicBeatState
 			return;
 		}
 
-		Difficulty.loadFromWeek();
+		Difficulty.loadForSong(songs[curSelected].songName);
 		if (Difficulty.list == null || Difficulty.list.length == 0)
 			Difficulty.list = [Difficulty.getDefault()];
 	}
@@ -1889,7 +1910,6 @@ class FreeplayStatePlus extends MusicBeatState
 			return;
 
 		loadBaseDifficultiesForSelection();
-		detectAndLoadAllDifficulties();
 
 		if (Difficulty.list == null || Difficulty.list.length == 0)
 			Difficulty.list = ['Normal'];
@@ -3676,10 +3696,7 @@ class DifficultySelector
 
 		if (FreeplayStatePlus.instance != null && FreeplayStatePlus.instance.songs[FreeplayStatePlus.curSelected] != null)
 		{
-			Difficulty.loadFromWeek();
-
-			// Detect all available difficulties using the FreeplayState function
-			FreeplayStatePlus.instance.detectAndLoadAllDifficulties();
+			Difficulty.loadForSong(FreeplayStatePlus.instance.songs[FreeplayStatePlus.curSelected].songName);
 		}
 
 		for (i in 0...Difficulty.list.length)

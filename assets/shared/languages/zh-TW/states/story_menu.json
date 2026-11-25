@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "states.story_menu",
-  "presence": "在選單中",
+  "presence": "\u6545\u4e8b\u6a21\u5f0f",
   "score": "週成績: {1}",
   "errors": {
     "no_weeks": "沒有增加故事模式的星期\n\n請按一下 {1} 進入週編輯選單.\n請按一下 {2} 返回主選單.",

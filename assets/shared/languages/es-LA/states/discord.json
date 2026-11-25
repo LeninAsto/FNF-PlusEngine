@@ -1,0 +1,16 @@
+{
+  "$schema": 1,
+  "$namespace": "states.discord",
+  "title": "Pantalla de t\u00edtulo",
+  "loading": "Cargando",
+  "results": "Resultados",
+  "main_menu": "Men\u00fa principal",
+  "freeplay": "Juego libre",
+  "story_menu": "Modo historia",
+  "credits": "Cr\u00e9ditos",
+  "modchart_editor": "Editor de modcharts",
+  "play": "Jugando",
+  "options": "Men\u00fa de opciones",
+  "mods_menu": "Men\u00fa de mods",
+  "master_editor_menu": "Men\u00fa de editores"
+}

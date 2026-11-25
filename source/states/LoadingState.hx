@@ -214,7 +214,7 @@ class LoadingState extends MusicBeatState
 		super.create();
 		GlobalLoadingOverlay.showPersistent();
 
-		if (!cancelling && stateChangeDelay <= 0 && checkLoaded())
+		if (!cancelling && songLoadError == null && stateChangeDelay <= 0 && checkLoaded())
 		{
 			dontUpdate = true;
 			onLoad();
@@ -437,8 +437,8 @@ class LoadingState extends MusicBeatState
 		var item:String = getLoadItem();
 		if (item.length > 88)
 			item = '...' + item.substr(item.length - 85);
-		var detail:String = Language.getPhrase('states.loading.progress', '{1}%  ({2}/{3})',
-			[getLoadPercent(progressLoaded), progressLoaded, loadMax]);
+		var detail:String = loadMax > 0 ? Language.getPhrase('states.loading.progress', '{1}%  ({2}/{3})',
+			[getLoadPercent(progressLoaded), progressLoaded, loadMax]) : Language.getPhrase('states.loading.items.preparing_song', 'Preparing song data');
 		if (item.length > 0)
 			detail = Language.getPhrase('states.loading.progress_item', '{1}  {2}', [detail, item]);
 
@@ -612,7 +612,7 @@ class LoadingState extends MusicBeatState
 			catch (error:Dynamic) trace('Audio warmup failed: $error');
 		}
 		// trace('we checked if loaded');
-		return (tasksIdle && soundsToWarm.length == 0 && getLoadedCount() >= loadMax && initialThreadCompleted);
+		return (songLoadError == null && tasksIdle && soundsToWarm.length == 0 && getLoadedCount() >= loadMax && initialThreadCompleted);
 	}
 
 	public static function loadNextDirectory()
@@ -656,6 +656,12 @@ class LoadingState extends MusicBeatState
 		var stallStart:Float = Sys.time();
 		while (true)
 		{
+			if (songLoadError != null && initialThreadCompleted && !hasPendingTasks())
+			{
+				var recovery = new LoadingState(target, stopMusic);
+				recovery.cancelling = true;
+				return recovery;
+			}
 			if (checkLoaded())
 			{
 				_loaded();

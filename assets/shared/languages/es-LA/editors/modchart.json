@@ -1,6 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "editors.modchart",
+  "presence": {"title": "Editor de modcharts", "song": "Canci\u00f3n: {1}"},
   "title": "EDITOR DE MODCHARTS",
   "experimental_warning": "EXPERIMENTAL: sujeto a cambios y errores; aún no se considera estable ni inestable.",
   "play_pause": "Reproducir / Pausar",

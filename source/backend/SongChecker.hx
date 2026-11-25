@@ -127,7 +127,7 @@ class SongChecker
 			report.add(INFO, 'repaired-events', Language.getPhrase('errors.song_checker.issues.repaired_events',
 				'Missing events array was replaced with an empty one.'));
 		}
-		if (Math.isNaN(song.bpm) || song.bpm <= 0)
+		if (!Math.isFinite(song.bpm) || song.bpm <= 0)
 			report.add(ERROR, 'invalid-bpm', Language.getPhrase('errors.song_checker.issues.invalid_bpm', 'BPM must be greater than zero.'), report.chartPath);
 		if (Math.isNaN(song.speed) || song.speed <= 0)
 		{
@@ -174,6 +174,9 @@ class SongChecker
 					'Section {1} has no note list.', [sectionIndex]), report.chartPath);
 				continue;
 			}
+			if (section.changeBPM == true && (section.bpm == null || !Math.isFinite(section.bpm) || section.bpm <= 0))
+				report.add(ERROR, 'invalid-section-bpm', Language.getPhrase('errors.song_checker.issues.invalid_bpm',
+					'BPM must be greater than zero.'), report.chartPath);
 
 			for (noteIndex in 0...section.sectionNotes.length)
 			{

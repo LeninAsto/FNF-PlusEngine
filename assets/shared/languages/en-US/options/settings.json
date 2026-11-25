@@ -89,7 +89,12 @@
   },
   "discord_rich_presence": {
     "name": "Discord Rich Presence",
-    "description": "Uncheck this to prevent accidental leaks, it will hide the Application from your \"Playing\" box on Discord"
+    "description": "Select full activity, game only, or disable Discord presence.",
+    "values": {
+      "normal": "Normal",
+      "game_only": "Game only",
+      "disabled": "Disabled"
+    }
   },
   "downscroll": {
     "name": "Downscroll",
@@ -493,5 +498,13 @@
   "z_axis_scale": {
     "name": "Z-Axis Scale",
     "description": "Scales the Z-axis values to control perceived depth.\nHigher values increase depth, lower values flatten it."
+  },
+  "difficulty_source": {
+    "name": "Difficulty Source",
+    "description": "Choose the week JSON or the charts in the song folder.",
+    "values": {
+      "charts": "Chart files",
+      "week_json": "Week JSON"
+    }
   }
 }

@@ -1,0 +1,16 @@
+{
+  "$schema": 1,
+  "$namespace": "states.discord",
+  "title": "\ud0c0\uc774\ud2c0 \ud654\uba74",
+  "loading": "\ubd88\ub7ec\uc624\ub294 \uc911",
+  "results": "\uacb0\uacfc",
+  "main_menu": "\uba54\uc778 \uba54\ub274",
+  "freeplay": "\ud504\ub9ac\ud50c\ub808\uc774",
+  "story_menu": "\uc2a4\ud1a0\ub9ac \ubaa8\ub4dc",
+  "credits": "\uc81c\uc791\uc9c4",
+  "modchart_editor": "\ubaa8\ub4dc\ucc28\ud2b8 \ud3b8\uc9d1\uae30",
+  "play": "\ud50c\ub808\uc774 \uc911",
+  "options": "\uc635\uc158 \uba54\ub274",
+  "mods_menu": "\ubaa8\ub4dc \uba54\ub274",
+  "master_editor_menu": "\ud3b8\uc9d1\uae30 \uba54\ub274"
+}

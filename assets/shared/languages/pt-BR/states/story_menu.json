@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "states.story_menu",
-  "presence": "Nos Menus",
+  "presence": "Modo hist\u00f3ria",
   "score": "ESCORE DE SEMANA: {1}",
   "errors": {
     "no_weeks": "SEM SEMANAS ADICIONADAS PARA O MODELO DE HISTÓRIA\n\nPressione {1} para ir para o menu Editor Semana.\nPressione {2} para retornar ao Menu Principal.",

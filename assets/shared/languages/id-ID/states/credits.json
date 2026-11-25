@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "states.credits",
-  "presence": "Di Menu",
+  "presence": "Kredit",
   "sections": {
     "plus_engine": "Tim Plus Engine",
     "mobile": "Tim Porting Seluler",

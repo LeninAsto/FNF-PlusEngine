@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "states.credits",
-  "presence": "메뉴에서",
+  "presence": "\uc81c\uc791\uc9c4",
   "sections": {
     "plus_engine": "Plus Engine 팀",
     "mobile": "모바일 포팅 팀",

@@ -1,0 +1,8 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.modchart",
+  "presence": {
+    "title": "\u30e2\u30c3\u30c9\u30c1\u30e3\u30fc\u30c8\u30a8\u30c7\u30a3\u30bf\u30fc",
+    "song": "\u66f2: {1}"
+  }
+}

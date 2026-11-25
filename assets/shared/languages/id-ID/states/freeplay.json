@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "freeplay",
-  "presence": "Di Menu",
+  "presence": "Main Bebas",
   "title": "BERMAIN GRATIS",
   "score": {
     "personal_best": "PRIBADI TERBAIK: {1} ( {2} )",

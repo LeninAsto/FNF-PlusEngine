@@ -1,0 +1,16 @@
+{
+  "$schema": 1,
+  "$namespace": "states.discord",
+  "title": "Layar Judul",
+  "loading": "Memuat",
+  "results": "Hasil",
+  "main_menu": "Menu Utama",
+  "freeplay": "Main Bebas",
+  "story_menu": "Mode Cerita",
+  "credits": "Kredit",
+  "modchart_editor": "Editor Modchart",
+  "play": "Sedang bermain",
+  "options": "Menu Opsi",
+  "mods_menu": "Menu Mod",
+  "master_editor_menu": "Menu Editor"
+}

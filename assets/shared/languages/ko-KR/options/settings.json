@@ -89,7 +89,12 @@
   },
   "discord_rich_presence": {
     "name": "Discord 활동 상태",
-    "description": "끄면 Discord 활동 상태에 게임을 표시하지 않습니다."
+    "description": "전체 활동, 게임만 표시 또는 Discord 상태 끄기를 선택합니다.",
+    "values": {
+      "normal": "일반",
+      "game_only": "게임만",
+      "disabled": "비활성화"
+    }
   },
   "downscroll": {
     "name": "노트 아래로 이동",
@@ -489,5 +494,13 @@
   "z_axis_scale": {
     "name": "Z축 배율",
     "description": "인식된 깊이를 제어하기 위해 Z 축의 값을 측정합니다.\n더 높은 값은 깊이를 높이고, 낮은 값은 그 깊이를 평평하게 만듭니다."
+  },
+  "difficulty_source": {
+    "name": "난이도 출처",
+    "description": "주차 JSON 또는 곡 폴더의 채보를 선택합니다.",
+    "values": {
+      "charts": "채보 파일",
+      "week_json": "주차 JSON"
+    }
   }
 }

@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "states.credits",
-  "presence": "在選單中",
+  "presence": "\u88fd\u4f5c\u4eba\u54e1",
   "sections": {
     "plus_engine": "Plus Engine 團隊",
     "mobile": "移動運輸團隊",

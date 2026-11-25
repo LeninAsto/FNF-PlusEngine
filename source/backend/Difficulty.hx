@@ -7,6 +7,52 @@ class Difficulty
 
 	public static var list:Array<String> = [];
 
+	/** Freeplay may use the week declaration or discover the song's chart files. */
+	public static function loadForSong(song:String):Void
+	{
+		loadFromWeek();
+		if (ClientPrefs.data.difficultySource != 'Charts') return;
+		var name = Paths.formatToSongPath(song);
+		var relative = 'data/$name/';
+		var directories:Array<String> = [Paths.getSharedPath(relative)];
+		#if MODS_ALLOWED
+		for (mod in Mods.getGlobalMods()) directories.push(Paths.mods(mod + '/' + relative));
+		directories.push(Paths.mods(relative));
+		if (Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0)
+			directories.push(Paths.mods(Mods.currentModDirectory + '/' + relative));
+		#end
+		var files:Array<String> = [];
+		for (dir in directories)
+			for (file in Paths.readDirectory(dir)) if (!files.contains(file)) files.push(file);
+		// Packaged assets may not expose directories on disk.
+		for (asset in openfl.utils.Assets.list())
+			for (dir in directories)
+				if (asset.startsWith(dir))
+				{
+					var file = asset.substr(dir.length);
+					if (file.indexOf('/') < 0 && !files.contains(file)) files.push(file);
+				}
+		var found:Array<String> = [];
+		for (file in files)
+		{
+			var lower = file.toLowerCase();
+			if (!lower.endsWith('.json')) continue;
+			var stem = lower.substr(0, lower.length - 5);
+			var diff = stem == name ? 'normal' : (stem.startsWith(name + '-') ? stem.substr(name.length + 1) : '');
+			if (diff.length == 0) continue;
+			var display = [for (part in diff.split('-')) part.length > 0 ? part.charAt(0).toUpperCase() + part.substr(1) : ''].join(' ');
+			if (!found.contains(display)) found.push(display);
+		}
+		var order = ['Beginner', 'Easy', 'Normal', 'Medium', 'Hard', 'Challenge', 'Edit'];
+		found.sort(function(a, b) {
+			var ai = order.indexOf(a), bi = order.indexOf(b);
+			if (ai < 0) ai = order.length;
+			if (bi < 0) bi = order.length;
+			return ai == bi ? Reflect.compare(a.toLowerCase(), b.toLowerCase()) : ai - bi;
+		});
+		if (found.length > 0) list = found;
+	}
+
 	inline public static function getFilePath(num:Null<Int> = null)
 	{
 		if (num == null)

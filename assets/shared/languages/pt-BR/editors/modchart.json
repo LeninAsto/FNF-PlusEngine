@@ -1,0 +1,8 @@
+{
+  "$schema": 1,
+  "$namespace": "editors.modchart",
+  "presence": {
+    "title": "Editor de modcharts",
+    "song": "M\u00fasica: {1}"
+  }
+}

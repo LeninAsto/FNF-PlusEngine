@@ -49,6 +49,7 @@
     "states/results.json",
     "states/mods_menu.json",
     "states/loading.json",
+    "states/discord.json",
     "states/playstate.json"
   ],
   "assets": [

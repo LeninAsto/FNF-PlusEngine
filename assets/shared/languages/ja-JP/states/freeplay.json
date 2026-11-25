@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "freeplay",
-  "presence": "メニュー",
+  "presence": "\u30d5\u30ea\u30fc\u30d7\u30ec\u30a4",
   "title": "フリープレイ",
   "score": {
     "personal_best": "パーソナルベスト {1} ({2})",

@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "states.story_menu",
-  "presence": "メニュー",
+  "presence": "\u30b9\u30c8\u30fc\u30ea\u30fc\u30e2\u30fc\u30c9",
   "score": "週スコア {1}",
   "errors": {
     "no_weeks": "STORY MODE に 追加する 週間はありません\n\n押す {1} 週編集者メニューへ\n押す {2} メインメニューに戻る",

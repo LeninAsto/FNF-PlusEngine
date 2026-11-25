@@ -89,7 +89,12 @@
   },
   "discord_rich_presence": {
     "name": "Actividad en Discord",
-    "description": "Desactívalo para ocultar el juego en tu actividad de Discord y evitar revelar lo que estás jugando."
+    "description": "Elige actividad completa, solo el juego o desactiva la presencia en Discord.",
+    "values": {
+      "normal": "Normal",
+      "game_only": "Solo el juego",
+      "disabled": "Desactivado"
+    }
   },
   "downscroll": {
     "name": "Downscroll",
@@ -493,5 +498,13 @@
   "z_axis_scale": {
     "name": "Escala del eje Z",
     "description": "Escala los valores del eje Z para controlar la profundidad percibida.\nLos valores más altos aumentan la profundidad, los valores más bajos la aplanan."
+  },
+  "difficulty_source": {
+    "name": "Origen de dificultades",
+    "description": "Elige el JSON de la semana o los charts de la carpeta de la canción.",
+    "values": {
+      "charts": "Archivos de charts",
+      "week_json": "JSON de semana"
+    }
   }
 }

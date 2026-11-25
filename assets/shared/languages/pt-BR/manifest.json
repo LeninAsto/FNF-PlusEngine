@@ -27,6 +27,7 @@
     "options/mod_security_checks.json",
     "options/language.json",
     "editors/master.json",
+    "editors/modchart.json",
     "editors/prompt.json",
     "editors/charting.json",
     "editors/character.json",
@@ -48,6 +49,7 @@
     "states/results.json",
     "states/mods_menu.json",
     "states/loading.json",
+    "states/discord.json",
     "states/playstate.json"
   ],
   "assets": [
