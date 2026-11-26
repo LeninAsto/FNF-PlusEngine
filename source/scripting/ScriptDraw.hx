@@ -5,6 +5,16 @@ import flixel.graphics.tile.FlxDrawTrianglesItem.DrawData;
 
 @:keep
 class ScriptDraw {
+	#if (desktop || mobile)
+	/** Convierte arrays de scripts en vectores nativos para cualquier malla Away3D. */
+	public static function uploadMeshData(sub:away3d.core.base.SubGeometry, vertices:Array<Float>, uv:Array<Float>, normals:Array<Float>, indices:Array<Int>):Void {
+		sub.updateVertexData(openfl.Vector.ofArray(vertices));
+		sub.updateUVData(openfl.Vector.ofArray(uv));
+		if (normals != null) sub.updateVertexNormalData(openfl.Vector.ofArray(normals));
+		sub.updateIndexData(openfl.Vector.ofArray([for (index in indices) (cast index : UInt)]));
+	}
+	#end
+
 	public static function uploadQuads(strip:FlxStrip, vertices:Array<Float>, uvs:Array<Float>, quads:Int):Void {
 		if (strip == null || vertices == null || uvs == null || quads <= 0) {
 			if (strip != null)
