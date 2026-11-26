@@ -186,7 +186,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 		#if DISCORD_ALLOWED
 		var option:Option = new Option('Discord Rich Presence',
-			"Uncheck this to prevent accidental leaks, it will hide the Application from your \"Playing\" box on Discord", 'discordRPC', BOOL);
+			'Select full activity, game only, or disabled.', 'discordRPCMode', STRING, ['Normal', 'Game Only', 'Disabled']);
 		addOption(option);
 		option.onChange = DiscordClient.check;
 		#end

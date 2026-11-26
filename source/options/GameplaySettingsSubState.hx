@@ -32,6 +32,10 @@ class GameplaySettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		option.onChange = onChangeAutoPause;
 
+		var option:Option = new Option('Difficulty Source', 'Choose difficulties from the week JSON or the song chart files.',
+			'difficultySource', STRING, ['Charts', 'Week JSON'], 'difficulty_source');
+		addOption(option);
+
 		#if MODS_ALLOWED
 		var option:Option = new Option('Mod & Script Security',
 			'Optional protection that scans mod .lua/.hx scripts before they run.\nYou can still play normally and stay safer, but false positives may block some safe scripts.',

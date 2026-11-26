@@ -228,6 +228,9 @@ class BaseMusicBeatState extends FlxState
 	{
 		super.create();
 		GlobalLoadingOverlay.stateReady();
+		#if DISCORD_ALLOWED
+		DiscordClient.ensureStatePresence(this);
+		#end
 	}
 
 	override function openSubState(SubState:FlxSubState):Void
@@ -329,7 +332,7 @@ class BaseMusicBeatState extends FlxState
 		if (nextState == null)
 			nextState = FlxG.state;
 		GlobalLoadingOverlay.showPersistent();
-		FlxG.state.openSubState(TransitionManager.create(0.7, false));
+		FlxG.state.openSubState(TransitionManager.create(0.5, false));
 		if (nextState == FlxG.state)
 		{
 			var resetFn = _makeCurrentStateReset();

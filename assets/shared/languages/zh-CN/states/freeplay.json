@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "freeplay",
-  "presence": "在菜单中",
+  "presence": "\u81ea\u7531\u6a21\u5f0f",
   "title": "免费播放",
   "score": {
     "personal_best": "个人最好的: {1} ({2})",

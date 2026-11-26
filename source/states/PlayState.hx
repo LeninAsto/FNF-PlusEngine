@@ -874,7 +874,7 @@ class PlayState extends MusicBeatState
 		initBreakTimerHud();
 
 		if(eventNotes.length < 1) checkEventNote();
-		versionText.cameras = [camOther];
+		if (versionText != null) versionText.cameras = [camOther];
 	}
 
 	function relayoutHud():Void
@@ -2665,7 +2665,7 @@ class PlayState extends MusicBeatState
 	override public function onFocusLost():Void
 	{
 		super.onFocusLost();
-		if (!paused && health > 0 && autoUpdateRPC)
+		if (FlxG.autoPause && !paused && health > 0 && autoUpdateRPC)
 		{
 			DiscordClient.changePresence(detailsPausedText, SONG.song + " (" + storyDifficultyText + ")", iconP2.getCharacter());
 		}

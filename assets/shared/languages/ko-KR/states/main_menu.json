@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "states.main_menu",
-  "presence": "메뉴에서",
+  "presence": "\uba54\uc778 \uba54\ub274",
   "version": {
     "psych_engine": "Psych Engine v{1}",
     "friday_night_funkin": "Friday Night Funkin' v{1}"

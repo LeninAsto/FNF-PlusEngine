@@ -89,7 +89,12 @@
   },
   "discord_rich_presence": {
     "name": "Discordのアクティビティ表示",
-    "description": "無効にするとDiscordのアクティビティにゲームを表示しません。"
+    "description": "詳細なアクティビティ、ゲームのみ、またはDiscord表示の無効を選択します。",
+    "values": {
+      "normal": "通常",
+      "game_only": "ゲームのみ",
+      "disabled": "無効"
+    }
   },
   "downscroll": {
     "name": "下スクロール",
@@ -489,5 +494,13 @@
   "z_axis_scale": {
     "name": "Z軸の倍率",
     "description": "感知深さを制御するために Z軸の値をスケールする.\nより高い値は深さを増やし,より低い値はそれを平ら化します."
+  },
+  "difficulty_source": {
+    "name": "難易度の取得元",
+    "description": "週のJSONまたは曲フォルダの譜面を選択します。",
+    "values": {
+      "charts": "譜面ファイル",
+      "week_json": "週のJSON"
+    }
   }
 }

@@ -148,7 +148,11 @@ class ModchartEditorState extends MusicBeatState
 			catch (_:Dynamic) {}
 		}
 		if (PlayState.SONG != null) loadSong(PlayState.SONG);
-		else message(tr('load_first', "Load a chart JSON to get started."));
+		else
+		{
+			message(tr('load_first', "Load a chart JSON to get started."));
+			#if DISCORD_ALLOWED DiscordClient.changePresence(tr('presence.title', 'Modchart Editor')); #end
+		}
 	}
 
 	static inline function tr(key:String, fallback:String, ?values:Array<Dynamic>):String
@@ -228,6 +232,9 @@ class ModchartEditorState extends MusicBeatState
 		playing = false;
 		if (inst != null) { FlxG.sound.list.remove(inst); inst.destroy(); inst = null; }
 		song = ChartEditorTiming.ensureSongBasics(data);
+		#if DISCORD_ALLOWED
+		DiscordClient.changePresence(tr('presence.title', 'Modchart Editor'), tr('presence.song', 'Song: {1}', [song.song]));
+		#end
 		PlayState.SONG = song;
 		ChartEditorTiming.syncConductor(song);
 		songInput.text = song.song;
@@ -632,6 +639,10 @@ class ModchartEditorState extends MusicBeatState
 	function leave():Void
 	{
 		if (dirty && !exitPending) { playing = false; if (inst != null) inst.pause(); exitPending = true; message(tr('discard', "Unsaved changes. Save or press Exit/Esc again to discard.")); return; }
+		if (inst != null) inst.stop();
+		var menuMusic = Paths.music('freakyMenu');
+		if (FlxG.sound.music == null || !FlxG.sound.music.playing || @:privateAccess FlxG.sound.music._sound != menuMusic)
+			FlxG.sound.playMusic(menuMusic);
 		MusicBeatState.switchState(new MasterEditorMenu());
 	}
 

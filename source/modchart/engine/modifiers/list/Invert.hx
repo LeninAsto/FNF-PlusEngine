@@ -15,10 +15,23 @@ class Invert extends Modifier {
 
 	override public function render(curPos:Vector3, params:ModifierParameters) {
 		final player = params.player;
-		final invert = -(params.lane % 2 - 0.5) * 2;
-		final flip = (params.lane - 1.5) * -2;
+		final lane = params.lane;
+		final keys = getKeyCount(player);
+		final mirror = keys - 1 - lane;
+		final pair = lane % 2 == 0 ? lane + 1 : lane - 1;
+		if (lane < 0 || mirror < 0 || pair >= keys) return curPos;
 
-		curPos.x += ARROW_SIZE * (invert * getUnsafe(invID, player) + flip * getUnsafe(flpID, player));
+		// Interpolate actual receptor positions, including custom spacing. Apply
+		// invert after flip so that both modifiers form a permutation instead of
+		// adding two independent offsets and overshooting the destination lane.
+		final flippedPair = keys - 1 - pair;
+		final baseX = getReceptorX(lane, player);
+		final flip = getUnsafe(flpID, player);
+		final invert = getUnsafe(invID, player);
+		final flipDelta = getReceptorX(mirror, player) - baseX;
+		final pairDelta = getReceptorX(pair, player) - baseX;
+		final flippedPairDelta = getReceptorX(flippedPair, player) - getReceptorX(mirror, player);
+		curPos.x += flip * flipDelta + invert * (pairDelta + flip * (flippedPairDelta - pairDelta));
 
 		return curPos;
 	}

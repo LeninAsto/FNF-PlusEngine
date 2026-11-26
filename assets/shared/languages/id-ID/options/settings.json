@@ -89,7 +89,12 @@
   },
   "discord_rich_presence": {
     "name": "Aktivitas Discord",
-    "description": "Nonaktifkan untuk menyembunyikan aktivitas game dari Discord."
+    "description": "Pilih aktivitas lengkap, hanya game, atau nonaktifkan kehadiran Discord.",
+    "values": {
+      "normal": "Normal",
+      "game_only": "Hanya game",
+      "disabled": "Nonaktif"
+    }
   },
   "downscroll": {
     "name": "Not Turun",
@@ -489,5 +494,13 @@
   "z_axis_scale": {
     "name": "Skala Sumbu Z",
     "description": "Menskalakan nilai sumbu Z untuk mengontrol kedalaman yang dirasakan.\nNilai yang lebih tinggi meningkatkan kedalaman, nilai yang lebih rendah meratakannya."
+  },
+  "difficulty_source": {
+    "name": "Sumber kesulitan",
+    "description": "Pilih JSON minggu atau chart di folder lagu.",
+    "values": {
+      "charts": "Berkas chart",
+      "week_json": "JSON minggu"
+    }
   }
 }

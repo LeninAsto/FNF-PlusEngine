@@ -14,9 +14,16 @@ class ScriptGlobals {
 	static var keepScriptError:Class<ScriptError> = ScriptError;
 	static var keepScriptBytes:Class<ScriptBytes> = ScriptBytes;
 	static var keepScriptDraw:Class<ScriptDraw> = ScriptDraw;
+	static var keepNoteShaderBatch:Class<NoteShaderBatch> = NoteShaderBatch;
 	static var keepAssetLoader:Class<backend.AssetLoader> = backend.AssetLoader;
 	#if (desktop || mobile)
 	static var keepAwayScene:Class<backend.AwayScene> = backend.AwayScene;
+	static var keepAway3D0:Class<away3d.cameras.lenses.PerspectiveLens> = away3d.cameras.lenses.PerspectiveLens;
+	static var keepAway3D1:Class<away3d.core.base.Geometry> = away3d.core.base.Geometry;
+	static var keepAway3D2:Class<away3d.core.base.SubGeometry> = away3d.core.base.SubGeometry;
+	static var keepAway3D3:Class<away3d.events.Stage3DEvent> = away3d.events.Stage3DEvent;
+	static var keepAway3D4:Class<away3d.materials.TextureMaterial> = away3d.materials.TextureMaterial;
+	static var keepAway3D5:Class<away3d.textures.BitmapTexture> = away3d.textures.BitmapTexture;
 	#end
 	static var keepScriptHttp:Class<backend.ScriptHttp> = backend.ScriptHttp;
 	static var keepBuildInfo:Class<backend.BuildInfo> = backend.BuildInfo;
@@ -51,6 +58,12 @@ class ScriptGlobals {
 		'backend.Paths',
 		#if (desktop || mobile)
 		'backend.AwayScene',
+		'away3d.cameras.lenses.PerspectiveLens',
+		'away3d.core.base.Geometry',
+		'away3d.core.base.SubGeometry',
+		'away3d.events.Stage3DEvent',
+		'away3d.materials.TextureMaterial',
+		'away3d.textures.BitmapTexture',
 		'away3d.containers.View3D',
 		'away3d.cameras.Camera3D',
 		'away3d.entities.Mesh',
@@ -100,6 +113,7 @@ class ScriptGlobals {
 		'psychlua.backend.ModchartSprite',
 		'scripting.ScriptBytes',
 		'scripting.ScriptDraw',
+		'scripting.NoteShaderBatch',
 		'scripting.ScriptError',
 		'cutscenes.CutsceneHandler',
 		'shaders.RainShader',

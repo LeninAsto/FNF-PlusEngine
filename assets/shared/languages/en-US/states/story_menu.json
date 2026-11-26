@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "states.story_menu",
-  "presence": "In the Menus",
+  "presence": "Story Menu",
   "score": "WEEK SCORE: {1}",
   "errors": {
     "no_weeks": "NO WEEKS ADDED FOR STORY MODE\n\nPress {1} to go to the Week Editor Menu.\nPress {2} to return to Main Menu.",

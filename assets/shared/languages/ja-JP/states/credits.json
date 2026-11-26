@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "states.credits",
-  "presence": "メニュー",
+  "presence": "\u30af\u30ec\u30b8\u30c3\u30c8",
   "sections": {
     "plus_engine": "Plus Engine チーム",
     "mobile": "モバイルポートチーム",

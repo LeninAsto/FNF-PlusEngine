@@ -105,6 +105,10 @@ class SustainSplash extends FlxSprite
 
 	override function update(elapsed)
 	{
+		// A hold may cross BPM changes or a playback-rate change. Adjust the
+		// looping animation without restarting it or changing its current frame.
+		if (alive && animation.curAnim != null && animation.curAnim.name == 'hold')
+			animation.curAnim.frameRate = currentHoldFrameRate();
 		super.update(elapsed);
 		if (strumNote != null && (!strumNote.exists || strumNote.scale == null || strumNote.scrollFactor == null))
 		{
@@ -202,6 +206,15 @@ class SustainSplash extends FlxSprite
 	public inline function refreshStrumTransform():Void
 		syncToStrumLayout();
 
+	static function currentHoldFrameRate():Float
+	{
+		var bpm = Conductor.getBPMFromSeconds(Conductor.songPosition).bpm;
+		if (!Math.isFinite(bpm) || bpm <= 0) bpm = 100;
+		var rate = PlayState.instance != null ? PlayState.instance.playbackRate : 1;
+		if (!Math.isFinite(rate) || rate <= 0) rate = 1;
+		return Math.max(1, 24 * bpm / 100 * rate);
+	}
+
 	function playHoldLoop():Void
 	{
 		if (!alive || animation.curAnim?.name == 'holdEnd')
@@ -211,7 +224,7 @@ class SustainSplash extends FlxSprite
 		animation.play('hold', true, false, 0);
 		if (animation.curAnim != null)
 		{
-			animation.curAnim.frameRate = frameRate;
+			animation.curAnim.frameRate = currentHoldFrameRate();
 			animation.curAnim.looped = true;
 		}
 		// Atlas animations do not necessarily share the same source size/offset.
@@ -321,7 +334,7 @@ class SustainSplash extends FlxSprite
 			shader = colorSwap.shader;
 			Note.applyHSVToColorSwap(colorSwap, daNote.noteData);
 		}
-		else if (daNote.rgbShader != null && daNote.rgbShader.enabled && daNote.shader != null)
+		else if (daNote.rgbShader != null && daNote.rgbShader.enabled && daNote.rgbShader.parent != null)
 		{
 			var holdShader = new objects.NoteSplash.PixelSplashShaderRef();
 			// The pixel hold-cover atlas is already authored at the pixel UI scale
@@ -331,10 +344,11 @@ class SustainSplash extends FlxSprite
 			// Keep the RGB palette transform but sample the cover at native texels.
 			holdShader.pixelAmount = 1;
 			shader = holdShader.shader;
-			shader.data.r.value = daNote.shader.data.r.value;
-			shader.data.g.value = daNote.shader.data.g.value;
-			shader.data.b.value = daNote.shader.data.b.value;
-			shader.data.mult.value = daNote.shader.data.mult.value;
+			final palette = daNote.rgbShader.parent.shader;
+			holdShader.shader.r.value = palette.r.value;
+			holdShader.shader.g.value = palette.g.value;
+			holdShader.shader.b.value = palette.b.value;
+			holdShader.shader.mult.value = palette.mult.value;
 		}
 		else
 			shader = null;

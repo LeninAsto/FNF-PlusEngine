@@ -11,7 +11,7 @@ import objects.VideoSprite;
 import openfl.utils.AssetType;
 import shaders.ColorSwap;
 import states.StoryMenuState;
-import states.MainMenuState;
+import states.MainMenuStateSelector;
 #if mobile
 import mobile.backend.TouchUtil;
 #end
@@ -583,7 +583,7 @@ class TitleState extends MusicBeatState
 
 					new FlxTimer().start(1, function(tmr:FlxTimer)
 					{
-						MusicBeatState.switchState(backend.ScriptableState.tryCreateLazy('MainMenuState', function() return new MainMenuState()));
+						MusicBeatState.switchState(MainMenuStateSelector.create());
 						closedState = true;
 					});
 					// FlxG.sound.play(Paths.music('titleShoot'), 0.7);

@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "freeplay",
-  "presence": "En los menús",
+  "presence": "Juego libre",
   "title": "FREEPLAY",
   "song_count": "{1} CANCIONES",
   "actions": "{1} JUGAR  •  {2} PREVISUALIZAR  •  {3} MODIFICADORES  •  {4} REINICIAR PUNTUACIÓN  •  {5} VOLVER",

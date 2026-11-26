@@ -90,7 +90,7 @@ class StoryMenuState extends MusicBeatState
 				new states.ErrorState(Language.getPhrase('states.story_menu.errors.no_weeks',
 					'NO WEEKS ADDED FOR STORY MODE\n\nPress {1} to go to the Week Editor Menu.\nPress {2} to return to Main Menu.', [accept, reject]),
 					function() MusicBeatState.switchState(new states.editors.WeekEditorState()),
-					function() MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new states.MainMenuState())))));
+					function() MusicBeatState.switchState(MainMenuStateSelector.create()))));
 			return;
 		}
 
@@ -164,7 +164,7 @@ class StoryMenuState extends MusicBeatState
 			MusicBeatState.switchState(backend.ScriptableState.tryCreate('ErrorState',
 				new states.ErrorState(Language.getPhrase('states.story_menu.errors.no_visible_weeks',
 					'NO VISIBLE WEEKS AVAILABLE FOR STORY MODE\n\nPress {1} to return to Main Menu.', [reject]), null,
-					function() MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new states.MainMenuState())))));
+					function() MusicBeatState.switchState(MainMenuStateSelector.create()))));
 			return;
 		}
 
@@ -251,7 +251,7 @@ class StoryMenuState extends MusicBeatState
 			{
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 				movedBack = true;
-				MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
+				MusicBeatState.switchState(MainMenuStateSelector.create());
 			}
 			return;
 		}
@@ -328,7 +328,7 @@ class StoryMenuState extends MusicBeatState
 		{
 			FlxG.sound.play(Paths.sound('cancelMenu'));
 			movedBack = true;
-			MusicBeatState.switchState(backend.ScriptableState.tryCreate('MainMenuState', new MainMenuState()));
+			MusicBeatState.switchState(MainMenuStateSelector.create());
 		}
 
 		var selectedItem:MenuItem = grpWeekText.members[curWeek];

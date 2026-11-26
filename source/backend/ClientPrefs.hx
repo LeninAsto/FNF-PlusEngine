@@ -175,6 +175,7 @@ import mobile.backend.PsychJNI;
 	public var showWatermark:Bool = false;
 	public var titleIntroVideo:Bool = true;
 	public var autoPause:Bool = true;
+	public var difficultySource:String = 'Charts';
 	#if (cpp && windows)
 	public var instantWindowClose:Bool = true;
 	#end
@@ -186,6 +187,7 @@ import mobile.backend.PsychJNI;
 	public var checkForUpdates:Bool = true;
 	public var comboStacking:Bool = true;
 	public var discordRPC:Bool = true;
+	public var discordRPCMode:String = 'Normal'; // Normal, Game Only, Disabled
 	public var language:String = 'en-US';
 	public var dynamicCombo:Bool = false;
 	public var resultsStateAtEnd:Bool = true;
@@ -438,6 +440,11 @@ class ClientPrefs
 		for (key in Reflect.fields(data))
 			if (key != 'gameplaySettings' && Reflect.hasField(FlxG.save.data, key))
 				Reflect.setField(data, key, Reflect.field(FlxG.save.data, key));
+		if (!Reflect.hasField(FlxG.save.data, 'discordRPCMode'))
+			data.discordRPCMode = data.discordRPC ? 'Normal' : 'Disabled';
+		if (!['Normal', 'Game Only', 'Disabled'].contains(data.discordRPCMode))
+			data.discordRPCMode = 'Normal';
+		data.discordRPC = data.discordRPCMode != 'Disabled';
 
 		#if android
 		try

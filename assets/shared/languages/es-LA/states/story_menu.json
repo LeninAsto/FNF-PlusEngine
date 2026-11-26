@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "states.story_menu",
-  "presence": "En los menús",
+  "presence": "Modo historia",
   "score": "PUNTUACIÓN SEMANAL: {1}",
   "errors": {
     "no_weeks": "NO SE AGREGARON SEMANAS PARA EL MODO HISTORIA\n\nPulsa {1} para ir al menú del editor de semanas.\nPulsa {2} para volver al menú principal.",

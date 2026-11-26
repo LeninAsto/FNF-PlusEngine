@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "states.credits",
-  "presence": "En los menús",
+  "presence": "Cr\u00e9ditos",
   "sections": {
     "plus_engine": "Equipo de Plus Engine",
     "mobile": "Equipo del port para móviles",

@@ -89,7 +89,12 @@
   },
   "discord_rich_presence": {
     "name": "Discord 活動狀態",
-    "description": "關閉後不在 Discord 活動狀態中顯示遊戲。"
+    "description": "選擇完整活動、僅顯示遊戲或關閉 Discord 狀態。",
+    "values": {
+      "normal": "正常",
+      "game_only": "僅顯示遊戲",
+      "disabled": "關閉"
+    }
   },
   "downscroll": {
     "name": "音符向下捲動",
@@ -489,5 +494,13 @@
   "z_axis_scale": {
     "name": "Z 軸縮放",
     "description": "測量Z軸值,以控制感知深度.\n較高的值增加了深度,"
+  },
+  "difficulty_source": {
+    "name": "難度來源",
+    "description": "選擇週目 JSON 或歌曲資料夾中的譜面。",
+    "values": {
+      "charts": "譜面檔案",
+      "week_json": "週目 JSON"
+    }
   }
 }

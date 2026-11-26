@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "freeplay",
-  "presence": "Nos Menus",
+  "presence": "Jogo livre",
   "title": "FREEPLAY",
   "score": {
     "personal_best": "{1} ({2})",

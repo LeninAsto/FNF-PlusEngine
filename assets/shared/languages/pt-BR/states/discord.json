@@ -1,0 +1,16 @@
+{
+  "$schema": 1,
+  "$namespace": "states.discord",
+  "title": "Tela de t\u00edtulo",
+  "loading": "Carregando",
+  "results": "Resultados",
+  "main_menu": "Menu principal",
+  "freeplay": "Jogo livre",
+  "story_menu": "Modo hist\u00f3ria",
+  "credits": "Cr\u00e9ditos",
+  "modchart_editor": "Editor de modcharts",
+  "play": "Jogando",
+  "options": "Menu de op\u00e7\u00f5es",
+  "mods_menu": "Menu de mods",
+  "master_editor_menu": "Menu de editores"
+}

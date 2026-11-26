@@ -21,6 +21,9 @@ import crowplexus.iris.Iris;
 import psychlua.backend.HScript.HScriptInfos;
 #end
 import openfl.events.KeyboardEvent;
+#if desktop
+import openfl.ui.Keyboard;
+#end
 import flixel.util.FlxTimer;
 #if (linux || mac)
 import lime.graphics.Image;
@@ -61,6 +64,9 @@ class Main extends Sprite
 	public static var focused:Bool = true;
 
 	var lastReportedVolume:Float = 1.0;
+	#if desktop
+	var scriptRestartPending:Bool = false;
+	#end
 
 	// You can pretty much ignore everything from here on - your code should go in your states.
 
@@ -299,6 +305,8 @@ class Main extends Sprite
 
 		#if desktop
 		FlxG.stage.addEventListener(KeyboardEvent.KEY_UP, toggleFullScreen);
+		FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, restartScriptsShortcut);
+		FlxG.signals.preStateCreate.add(prepareScriptRestart);
 		Screenshot.init(); // Initialize screenshot folder
 		#end
 
@@ -369,6 +377,41 @@ class Main extends Sprite
 
 		setupGame();
 	}
+
+	#if desktop
+	/** Ctrl+Shift+R restarts through the normal startup state, without launching a new process. */
+	function restartScriptsShortcut(event:KeyboardEvent):Void
+	{
+		if (event.keyCode != Keyboard.R || !event.ctrlKey || !event.shiftKey || scriptRestartPending
+			|| FlxG.state == null)
+			return;
+
+		scriptRestartPending = true;
+		// Bypass the usual fade; the old state is still destroyed by Flixel.
+		flixel.addons.transition.FlxTransitionableState.skipNextTransIn = true;
+		flixel.addons.transition.FlxTransitionableState.skipNextTransOut = true;
+		FlxG.switchState(new InitialState());
+	}
+
+	/** Runs after the previous state has been destroyed and before startup creates scripts. */
+	function prepareScriptRestart(state:FlxState):Void
+	{
+		if (!scriptRestartPending || !Std.isOfType(state, InitialState))
+			return;
+		scriptRestartPending = false;
+		#if HSCRIPT_ALLOWED
+		scripting.GlobalScriptManager.dispose();
+		scripting.ScriptRegistry.dispose();
+		scripting.ScriptedStates.activeScriptedState = null;
+		scripting.ScriptedStates.activeScriptedMod = null;
+		states.PlayState.returnToScriptedState = null;
+		#end
+		states.PlayState.startOnTime = 0;
+		states.TitleState.initialized = false;
+		states.TitleState.closedState = false;
+		if (traceDisplay != null) traceDisplay.clear();
+	}
+	#end
 
 	public static function positionDebugOverlays():Void
 	{
@@ -560,3 +603,4 @@ class Main extends Sprite
 		refreshWatermark();
 	}
 }
+

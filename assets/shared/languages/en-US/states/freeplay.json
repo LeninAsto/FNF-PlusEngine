@@ -1,7 +1,7 @@
 {
   "$schema": 1,
   "$namespace": "freeplay",
-  "presence": "In the Menus",
+  "presence": "Freeplay",
   "title": "FREEPLAY",
   "song_count": "{1} SONGS",
   "score": {

@@ -14,20 +14,31 @@ class DiscordClient
 	private inline static final _defaultID:String = "1449954550134870079";
 	public static var clientID(default, set):String = _defaultID;
 	private static var presence:DiscordPresence = new DiscordPresence();
+	private static var presenceState:flixel.FlxState = null;
 	// hides this field from scripts and reflection in general
 	@:unreflective private static var __thread:Thread;
 
 	public static function check()
 	{
-		if (ClientPrefs.data.discordRPC && !isInitialized)
-			initialize();
-		else if (!ClientPrefs.data.discordRPC && isInitialized)
-			shutdown();
+		var mode = ClientPrefs.data.discordRPCMode;
+		ClientPrefs.data.discordRPC = mode != 'Disabled'; // Legacy scripts and saves.
+		if (mode == 'Disabled')
+		{
+			presenceState = null;
+			if (isInitialized) { Discord.ClearPresence(); shutdown(); }
+			return;
+		}
+		if (mode == 'Game Only' && clientID != _defaultID) clientID = _defaultID;
+		if (!isInitialized) initialize();
+		if (mode == 'Game Only')
+			updatePresence();
+		else
+			ensureStatePresence(flixel.FlxG.state, true);
 	}
 
 	public static function prepare()
 	{
-		if (!isInitialized && ClientPrefs.data.discordRPC)
+		if (!isInitialized && ClientPrefs.data.discordRPCMode != 'Disabled')
 			initialize();
 
 		Application.current.window.onClose.add(function()
@@ -71,7 +82,7 @@ class DiscordClient
 
 	public static function initialize()
 	{
-		if (isInitialized)
+		if (isInitialized || ClientPrefs.data.discordRPCMode == 'Disabled')
 			return;
 		var discordHandlers:DiscordEventHandlers = #if (hxdiscord_rpc > "1.2.4") new DiscordEventHandlers(); #else DiscordEventHandlers.create(); #end
 		discordHandlers.ready = cpp.Function.fromStaticFunction(onReady);
@@ -107,6 +118,8 @@ class DiscordClient
 	public static function changePresence(details:String = 'In the Menus', ?state:String, ?smallImageKey:String, ?hasStartTimestamp:Bool, ?endTimestamp:Float,
 			largeImageKey:String = 'icon')
 	{
+		if (ClientPrefs.data.discordRPCMode != 'Normal') return;
+		presenceState = flixel.FlxG.state;
 		var startTimestamp:Float = 0;
 		if (hasStartTimestamp)
 			startTimestamp = Date.now().getTime();
@@ -128,10 +141,35 @@ class DiscordClient
 
 	public static function updatePresence()
 	{
-		if (!isInitialized)
+		if (!isInitialized || ClientPrefs.data.discordRPCMode == 'Disabled')
 			return;
+		if (ClientPrefs.data.discordRPCMode == 'Game Only')
+		{
+			presence.details = null;
+			presence.state = null;
+			presence.smallImageKey = null;
+			presence.largeImageKey = 'icon';
+			presence.largeImageText = null;
+			presence.startTimestamp = 0;
+			presence.endTimestamp = 0;
+		}
 		presence.syncStrings();
 		Discord.UpdatePresence(cpp.RawConstPointer.addressOf(presence.__presence));
+	}
+
+	/** Supply a state name only when that state did not publish its own richer presence. */
+	public static function ensureStatePresence(state:flixel.FlxState, force:Bool = false):Void
+	{
+		if (ClientPrefs.data.discordRPCMode != 'Normal' || state == null || (!force && presenceState == state)) return;
+		var name = Type.getClassName(Type.getClass(state));
+		if (name == null) return;
+		name = name.substr(name.lastIndexOf('.') + 1);
+		if (StringTools.endsWith(name, 'Plus')) name = name.substr(0, name.length - 4);
+		if (StringTools.endsWith(name, 'State')) name = name.substr(0, name.length - 5);
+		var words = ~/([a-z0-9])([A-Z])/g.replace(name, '$1 $2');
+		var key = StringTools.replace(words.toLowerCase(), ' ', '_');
+		changePresence(Language.getPhrase('states.discord.$key', words), null);
+		presenceState = state;
 	}
 
 	inline public static function resetClientID()
@@ -141,6 +179,7 @@ class DiscordClient
 
 	private static function set_clientID(newID:String)
 	{
+		if (ClientPrefs.data.discordRPCMode != 'Normal' && newID != _defaultID) return clientID;
 		var change:Bool = (clientID != newID);
 		clientID = newID;
 
@@ -156,6 +195,7 @@ class DiscordClient
 	#if (MODS_ALLOWED && DISCORD_ALLOWED)
 	public static function loadModRPC()
 	{
+		if (ClientPrefs.data.discordRPCMode != 'Normal') return;
 		var pack:Dynamic = Mods.getPack();
 		if (pack != null && pack.discordRPC != null && pack.discordRPC != clientID)
 		{
