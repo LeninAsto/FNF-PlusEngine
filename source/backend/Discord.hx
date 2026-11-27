@@ -316,22 +316,24 @@ private final class DiscordPresence
 
 	@:noCompletion inline function get_startTimestamp():Int
 	{
-		return __presence.startTimestamp;
+		return __presence.startTimestamp.toInt();
 	}
 
 	@:noCompletion inline function set_startTimestamp(value:Int):Int
 	{
-		return __presence.startTimestamp = value;
+		__presence.startTimestamp = value;
+		return value;
 	}
 
 	@:noCompletion inline function get_endTimestamp():Int
 	{
-		return __presence.endTimestamp;
+		return __presence.endTimestamp.toInt();
 	}
 
 	@:noCompletion inline function set_endTimestamp(value:Int):Int
 	{
-		return __presence.endTimestamp = value;
+		__presence.endTimestamp = value;
+		return value;
 	}
 }
 #end

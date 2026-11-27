@@ -175,7 +175,7 @@ class ModsButton extends Sprite
 		backend.Mods.resetWindowBrand();
 		backend.Language.reloadPhrases();
 		#end
-		MusicBeatState.switchState(new ModsMenuState());
+		MusicBeatState.switchStateFactory(() -> new ModsMenuState(), ModsMenuState);
 		#end
 	}
 

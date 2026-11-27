@@ -227,7 +227,7 @@ class NoteOffsetState extends MusicBeatState
 			// changed to controller mid state
 			if (controls.controllerMode)
 			{
-				var mousePos = FlxG.mouse.getScreenPosition(camHUD);
+				var mousePos = backend.PointerCompat.legacyScreenPosition(FlxG.mouse, camHUD);
 				controllerPointer.x = mousePos.x;
 				controllerPointer.y = mousePos.y;
 			}
@@ -357,7 +357,7 @@ class NoteOffsetState extends MusicBeatState
 			{
 				holdingObjectType = null;
 				if (!controls.controllerMode)
-					FlxG.mouse.getScreenPosition(camHUD, startMousePos);
+					backend.PointerCompat.legacyScreenPosition(FlxG.mouse, camHUD, startMousePos);
 				else
 					controllerPointer.getScreenPosition(startMousePos, camHUD);
 
@@ -421,7 +421,7 @@ class NoteOffsetState extends MusicBeatState
 				{
 					var mousePos:FlxPoint = null;
 					if (!controls.controllerMode)
-						mousePos = FlxG.mouse.getScreenPosition(camHUD);
+						mousePos = backend.PointerCompat.legacyScreenPosition(FlxG.mouse, camHUD);
 					else
 						mousePos = controllerPointer.getScreenPosition(camHUD);
 

@@ -653,7 +653,7 @@ class NoteSplashEditorState extends MusicBeatState
 		if (!blockInput)
 		{
 			if (controls.BACK)
-				MusicBeatState.switchState(new MasterEditorMenu());
+				MusicBeatState.switchStateFactory(() -> new MasterEditorMenu(), MasterEditorMenu);
 			if (touchPad.buttonF.justPressed || FlxG.keys.justPressed.F1)
 			{
 				removeTouchPad();

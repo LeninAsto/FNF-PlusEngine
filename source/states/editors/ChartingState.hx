@@ -883,10 +883,10 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			// El overlay se muestra automáticamente cuando se abre el substate
 			// Aquí solo manejamos la visibilidad durante el drag
 			var isDragging:Bool = FlxG.mouse.pressed
-				&& (FlxG.mouse.screenY < 20
-					|| FlxG.mouse.screenY > FlxG.height - 20
-					|| FlxG.mouse.screenX < 20
-					|| FlxG.mouse.screenX > FlxG.width - 20);
+				&& (FlxG.mouse.viewY < 20
+					|| FlxG.mouse.viewY > FlxG.height - 20
+					|| FlxG.mouse.viewX < 20
+					|| FlxG.mouse.viewX > FlxG.width - 20);
 
 			if (isDragging && !dragDropOverlay.visible && subState == null)
 			{
@@ -1498,10 +1498,10 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			else if (FlxG.mouse.justMoved)
 				updateSelectionBox();
 		}
-		else if (FlxG.mouse.pressedRight && (FlxG.mouse.deltaScreenX != 0 || FlxG.mouse.deltaScreenY != 0))
+		else if (FlxG.mouse.pressedRight && (FlxG.mouse.deltaViewX != 0 || FlxG.mouse.deltaViewY != 0))
 		{
-			selectionBox.setPosition(FlxG.mouse.screenX, FlxG.mouse.screenY);
-			selectionStart.set(FlxG.mouse.screenX, FlxG.mouse.screenY);
+			selectionBox.setPosition(FlxG.mouse.viewX, FlxG.mouse.viewY);
+			selectionStart.set(FlxG.mouse.viewX, FlxG.mouse.viewY);
 			selectionBox.visible = true;
 			updateSelectionBox();
 		}
@@ -2034,8 +2034,8 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 	function updateSelectionBox()
 	{
-		var diffX:Float = FlxG.mouse.screenX - selectionStart.x;
-		var diffY:Float = FlxG.mouse.screenY - selectionStart.y;
+		var diffX:Float = FlxG.mouse.viewX - selectionStart.x;
+		var diffY:Float = FlxG.mouse.viewY - selectionStart.y;
 		selectionBox.setPosition(selectionStart.x, selectionStart.y);
 
 		if (diffX < 0) // Fixes negative X scale
@@ -2469,7 +2469,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			{
 				var playerVocals:Sound = Paths.voices(PlayState.SONG.song,
 					(characterData.vocalsP1 == null || characterData.vocalsP1.length < 1) ? 'Player' : characterData.vocalsP1);
-				vocals.loadEmbedded(playerVocals != null ? playerVocals : Paths.voices(PlayState.SONG.song));
+				vocals.load(playerVocals != null ? playerVocals : Paths.voices(PlayState.SONG.song));
 				vocals.volume = 0;
 				vocals.play();
 				vocals.pause();
@@ -2480,7 +2480,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				waveformGeneralVoices = playerVocals == null && (oppVocals == null || oppVocals.length <= 0);
 				if (oppVocals != null && oppVocals.length > 0)
 				{
-					opponentVocals.loadEmbedded(oppVocals);
+					opponentVocals.load(oppVocals);
 					opponentVocals.volume = 0;
 					opponentVocals.play();
 					opponentVocals.pause();
@@ -3235,12 +3235,12 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		if (hasCheer)
 			buddy.animation.add('yeah', [17, 20, 23], 12, false);
 		buddy.animation.play('idle');
-		buddy.animation.finishCallback = function(_:String)
+		buddy.animation.onFinish.add(function(_:String)
 		{
 			var actionEnd:Float = buddy == lilBf ? lilBfActionEnd : lilOppActionEnd;
 			if (actionEnd <= Conductor.songPosition)
 				buddy.animation.play('idle');
-		};
+		});
 		buddy.scrollFactor.set();
 		return buddy;
 	}
@@ -5599,7 +5599,7 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		var btn:PsychUIButton = new PsychUIButton(btnX, btnY, chartPhrase('ui.exit', '  Exit'), function()
 		{
 			PlayState.chartingMode = false;
-			MusicBeatState.switchState(new states.editors.MasterEditorMenu());
+			MusicBeatState.switchStateFactory(() -> new states.editors.MasterEditorMenu(), states.editors.MasterEditorMenu);
 			FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			FlxG.mouse.visible = false;
 		}, btnWid);

@@ -21,25 +21,6 @@ class PlusFlxMacro
 		return fields;
 	}
 
-	public static macro function buildFlxSprite():Array<Field>
-	{
-		var fields:Array<Field> = Context.getBuildFields();
-		if (!hasField(fields, "getCamerasLegacy"))
-		{
-			fields.push({
-				name: "getCamerasLegacy",
-				access: [APublic],
-				kind: FFun({
-					args: [],
-					ret: macro :Array<flixel.FlxCamera>,
-					expr: macro return cameras
-				}),
-				pos: Context.currentPos()
-			});
-		}
-		return fields;
-	}
-
 	public static macro function buildFlxPath():Array<Field>
 	{
 		var fields:Array<Field> = Context.getBuildFields();

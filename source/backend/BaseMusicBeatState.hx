@@ -312,7 +312,7 @@ class BaseMusicBeatState extends FlxState
 			return;
 		}
 		if (FlxTransitionableState.skipNextTransIn)
-			FlxG.switchState(nextState);
+			FlxG.switchState(cast nextState);
 		else
 			startTransition(nextState);
 		FlxTransitionableState.skipNextTransIn = false;
@@ -340,7 +340,7 @@ class BaseMusicBeatState extends FlxState
 		}
 		else
 		{
-			TransitionManager.setFinishCallback(function() FlxG.switchState(nextState));
+			TransitionManager.setFinishCallback(function() FlxG.switchState(cast nextState));
 		}
 	}
 

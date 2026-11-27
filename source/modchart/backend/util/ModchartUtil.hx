@@ -194,12 +194,10 @@ using StringTools;
 
 		var frameUV = arrow.frame.uv;
 
-		// FlxFrame.uv intentionally stores right/bottom in width/height.
-		// FlxRect.right/bottom would add x/y a second time.
-		var left = frameUV.x;
-		var top = frameUV.y;
-		var right = frameUV.width;
-		var bottom = frameUV.height;
+		var left = frameUV.left;
+		var top = frameUV.top;
+		var right = frameUV.right;
+		var bottom = frameUV.bottom;
 
 		var frameWidth = right - left;
 		var frameHeight = bottom - top;
@@ -291,11 +289,17 @@ using StringTools;
 
 	@:pure
 	public static inline function sin(num:Float)
-		return FlxMath.fastSin(num);
+	{
+		num *= 0.3183098862;
+		if (num > 1) num -= (Math.ceil(num) >> 1) << 1;
+		else if (num < -1) num += (Math.ceil(-num) >> 1) << 1;
+		return num > 0 ? num * (3.1 + num * (0.5 + num * (-7.2 + num * 3.6)))
+			: num * (3.1 - num * (0.5 + num * (7.2 + num * 3.6)));
+	}
 
 	@:pure
 	public static inline function cos(num:Float)
-		return FlxMath.fastCos(num);
+		return sin(num + 1.570796327);
 
 	@:pure
 	public static inline function tan(num:Float)

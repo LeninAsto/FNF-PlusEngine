@@ -251,7 +251,7 @@ class MainMenuStatePlus extends MusicBeatState
 
 	function updateMouseSelection(elapsed:Float):Void
 	{
-		var moved = FlxG.mouse.deltaScreenX != 0 || FlxG.mouse.deltaScreenY != 0 || FlxG.mouse.justPressed;
+		var moved = FlxG.mouse.deltaViewX != 0 || FlxG.mouse.deltaViewY != 0 || FlxG.mouse.justPressed;
 		if (!moved)
 		{
 			inputIdleTime += elapsed;

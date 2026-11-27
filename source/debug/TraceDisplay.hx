@@ -58,7 +58,7 @@ class TraceDisplay extends Sprite
 	public var maxStoredLines:Int = 56;
 	public var maxVisibleLines:Int = 14;
 
-	private static inline final TEXT_PADDING:Int = 8;
+	private static inline final TEXT_PADDING:Int = 6;
 
 	/**
 	 * Si el display está visible o no
@@ -120,7 +120,7 @@ class TraceDisplay extends Sprite
 		textDisplay = new TextField();
 		textDisplay.selectable = false;
 		textDisplay.mouseEnabled = false;
-		textDisplay.defaultTextFormat = new TextFormat('Monsterrat', 14, textColor);
+		textDisplay.defaultTextFormat = new TextFormat('Monsterrat', 12, textColor);
 		textDisplay.antiAliasType = openfl.text.AntiAliasType.NORMAL;
 		textDisplay.sharpness = 100;
 		textDisplay.autoSize = openfl.text.TextFieldAutoSize.LEFT;

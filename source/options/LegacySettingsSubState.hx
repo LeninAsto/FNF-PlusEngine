@@ -27,9 +27,6 @@ class LegacySettingsSubState extends BaseOptionsMenu
 		    'stickerTransition', BOOL);
 		addOption(option);
 
-		var option:Option = new Option('Options Menu Style', 'Changes the Options menus between Plus cards and Psych classic.', 'optionsMenuStyle',
-			STRING, ['Plus', 'Psych']);
-		addOption(option);
 
         #if (cpp && windows)
 		var option:Option = new Option('Instant Window Close', 'If checked, closing the game exits instantly instead of fading the window out.',

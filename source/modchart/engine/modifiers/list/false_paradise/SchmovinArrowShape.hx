@@ -37,7 +37,7 @@ class SchmovinArrowShape extends Modifier {
 		for (vec in _path) {
 			if (FlxMath.inBounds(distance, vec.startDist, vec.endDist) && vec.next != null) {
 				var ratio = (distance - vec.startDist) / vec.next.subtract(vec).length;
-				return ModchartUtil.lerpVector3D(vec, vec.next, ratio);
+				return (cast vec:Vector3).interpolate(vec.next, ratio);
 			}
 		}
 		return _path.first();
@@ -67,7 +67,7 @@ class SchmovinArrowShape extends Modifier {
 
 		var path = GetPointAlongPath(params.distance / 1500.0 * _pathDistance);
 
-		return ModchartUtil.lerpVector3D(curPos,
+		return curPos.interpolate(
 			path.add(new Vector3(WIDTH * .5, HEIGHT * .5 + 280, params.lane * getPercent('schmovinArrowShapeOffset', params.player) + curPos.z)), perc);
 	}
 

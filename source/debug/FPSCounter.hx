@@ -781,9 +781,9 @@ private class FPSCounterBox extends Sprite
 	private var lastColor:Int = -1;
 	private var textFormat:TextFormat;
 
-	private static inline var PADDING_X:Float = 8;
-	private static inline var PADDING_Y:Float = 5;
-	private static inline var INNER_DIFF:Int = 3;
+	private static inline var PADDING_X:Float = 6;
+	private static inline var PADDING_Y:Float = 4;
+	private static inline var INNER_DIFF:Int = 2;
 
 	public function new(color:Int)
 	{
@@ -795,7 +795,7 @@ private class FPSCounterBox extends Sprite
 		textDisplay = new TextField();
 		textDisplay.selectable = false;
 		textDisplay.mouseEnabled = false;
-		textFormat = new TextFormat('Monsterrat', 14, color);
+		textFormat = new TextFormat('Monsterrat', 12, color);
 		textDisplay.defaultTextFormat = textFormat;
 		textDisplay.antiAliasType = openfl.text.AntiAliasType.NORMAL;
 		textDisplay.sharpness = 100;
@@ -827,7 +827,7 @@ private class FPSCounterBox extends Sprite
 		// Keep a stable width for changing digits. Background commands are reused
 		// by the renderer instead of being cleared/rebuilt on every new frame time.
 		var nextWidth = Math.max(boxWidth, Math.ceil((textDisplay.textWidth + (PADDING_X * 2) + (INNER_DIFF * 2) + 6) / 16) * 16);
-		var nextHeight = Math.max(24, textDisplay.textHeight + (PADDING_Y * 2) + (INNER_DIFF * 2));
+		var nextHeight = Math.max(22, textDisplay.textHeight + (PADDING_Y * 2) + (INNER_DIFF * 2));
 		var geometryChanged = nextWidth != boxWidth || nextHeight != boxHeight || hasBackground != showBackground;
 		boxWidth = nextWidth;
 		boxHeight = nextHeight;

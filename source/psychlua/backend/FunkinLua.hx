@@ -1169,7 +1169,7 @@ class FunkinLua
 			}
 
 			if (PlayState.isStoryMode)
-				MusicBeatState.switchState(new StoryMenuState());
+				MusicBeatState.switchStateFactory(() -> new StoryMenuState(), StoryMenuState);
 			else
 				MusicBeatState.switchState(FreeplayStateSelector.create());
 
@@ -1329,12 +1329,12 @@ class FunkinLua
 		Lua_helper.add_callback(lua, "getMouseX", function(?camera:String = 'game')
 		{
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
-			return FlxG.mouse.getScreenPosition(cam).x;
+			return backend.PointerCompat.legacyScreenPosition(FlxG.mouse, cam).x;
 		});
 		Lua_helper.add_callback(lua, "getMouseY", function(?camera:String = 'game')
 		{
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
-			return FlxG.mouse.getScreenPosition(cam).y;
+			return backend.PointerCompat.legacyScreenPosition(FlxG.mouse, cam).y;
 		});
 
 		Lua_helper.add_callback(lua, "getMidpointX", function(variable:String)

@@ -360,7 +360,7 @@ class TitleState extends MusicBeatState
 			{
 				try
 				{
-					var titleJSON:TitleData = tjson.TJSON.parse(titleRaw);
+					var titleJSON:TitleData = jsonmod.Json.parse(titleRaw);
 					gfPosition.set(titleJSON.gfx, titleJSON.gfy);
 					logoPosition.set(titleJSON.titlex, titleJSON.titley);
 					enterPosition.set(titleJSON.startx, titleJSON.starty);

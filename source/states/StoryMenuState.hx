@@ -89,7 +89,7 @@ class StoryMenuState extends MusicBeatState
 			MusicBeatState.switchState(backend.ScriptableState.tryCreate('ErrorState',
 				new states.ErrorState(Language.getPhrase('states.story_menu.errors.no_weeks',
 					'NO WEEKS ADDED FOR STORY MODE\n\nPress {1} to go to the Week Editor Menu.\nPress {2} to return to Main Menu.', [accept, reject]),
-					function() MusicBeatState.switchState(new states.editors.WeekEditorState()),
+					function() MusicBeatState.switchStateFactory(() -> new states.editors.WeekEditorState(), states.editors.WeekEditorState),
 					function() MusicBeatState.switchState(MainMenuStateSelector.create()))));
 			return;
 		}

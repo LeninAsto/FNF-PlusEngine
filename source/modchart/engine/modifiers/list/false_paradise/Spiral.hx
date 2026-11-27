@@ -15,7 +15,7 @@ class Spiral extends Modifier {
 		var outX = centerX + cos(-params.distance / crochet * PI + params.curBeat * (PI * .25)) * radius;
 		var outY = centerY + sin(-params.distance / crochet * PI - params.curBeat * (PI * .25)) * radius;
 
-		return ModchartUtil.lerpVector3D(curPos, new Vector3(outX, outY, radius / (centerY * 4) - 1, 0), getPercent('spiral', player));
+		return curPos.interpolate(new Vector3(outX, outY, radius / (centerY * 4) - 1, 0), getPercent('spiral', player));
 	}
 
 	override public function shouldRun(params:ModifierParameters):Bool

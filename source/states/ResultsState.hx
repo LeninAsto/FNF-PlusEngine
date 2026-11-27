@@ -495,7 +495,7 @@ class ResultsState extends MusicBeatState
 		var loopKey:String = '$musicPath/$musicPath';
 		if (assetExists('music/$introKey.${Paths.SOUND_EXT}', AssetType.SOUND))
 		{
-			introMusicAudio = FlxG.sound.load(Paths.music(introKey), 1.0, false);
+			introMusicAudio = FlxG.sound.create(Paths.music(introKey)).setup(1.0, false);
 			introMusicAudio.onComplete = () -> FlxG.sound.playMusic(Paths.music(loopKey), 1.0, true);
 			introMusicAudio.play();
 		}

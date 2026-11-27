@@ -70,13 +70,19 @@ class NoteSplash extends FlxSprite
 
 	public var maxAnims(default, set):Int = 0;
 
+	function onSplashFinished(name:String):Void
+	{
+		kill();
+		spawned = false;
+	}
+
 	public function loadSplash(?splash:String)
 	{
 		var useSkinPostfix:Bool = true;
 		config = null;
 		maxAnims = 0;
 		spawned = false;
-		animation.finishCallback = null;
+		animation.onFinish.remove(onSplashFinished);
 		@:privateAccess
 		animation.clearAnimations();
 
@@ -415,11 +421,7 @@ class NoteSplash extends FlxSprite
 		animationOffsetY = 10 + (offsets != null && offsets.length > 1 ? offsets[1] : 0);
 		offset.set(animationOffsetX, animationOffsetY);
 
-		animation.finishCallback = function(name:String)
-		{
-			kill();
-			spawned = false;
-		}
+		animation.onFinish.add(onSplashFinished);
 
 		alpha = ClientPrefs.data.splashAlpha;
 		if (note != null)

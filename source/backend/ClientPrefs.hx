@@ -193,7 +193,6 @@ import mobile.backend.PsychJNI;
 	public var resultsStateAtEnd:Bool = true;
 	public var vanillaTransition:Bool = false; // Use vanilla Psych Engine transition instead of custom
 	public var stickerTransition:Bool = true; // Show sticker transition when exit
-	public var optionsMenuStyle:String = 'Plus'; // Plus, Psych
 	public var pauseCountdown:Bool = false; // Enable countdown when resuming from pause
 	public var heyIntro:Bool = false; // Boyfriend and Girlfriend do Hey! animation on countdown Go!
 	public var breakTimer:Bool = false; // Show timer when next notes are approaching
@@ -406,6 +405,8 @@ class ClientPrefs
 
 	public static function saveSettings()
 	{
+		if (data.nfRatingStyle)
+			data.comboStacking = false;
 		syncThemeModeFlags();
 		normalizeMenuStyles();
 		normalizeFPSCounterPrefs();
@@ -464,6 +465,8 @@ class ClientPrefs
 		// Ignore an old/mobile save value when opening the desktop build.
 		data.runOnLightVisual = false;
 		#end
+		if (data.nfRatingStyle)
+			data.comboStacking = false;
 
 		if (!Reflect.hasField(FlxG.save.data, 'hardwareAccelerationDefaulted'))
 		{

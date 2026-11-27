@@ -7,8 +7,10 @@ import openfl.geom.Rectangle;
 class DebugOverlayLayout
 {
 	public static inline final MARGIN:Float = 16;
-	public static inline final FPS_MARGIN_X:Float = 6;
-	public static inline final FPS_MARGIN_Y:Float = 4;
+	public static inline final FPS_MARGIN_X:Float = 4;
+	public static inline final FPS_MARGIN_Y:Float = 2;
+	public static inline final TRACE_MARGIN_X:Float = 6;
+	public static inline final TRACE_OFFSET_Y:Float = 96;
 
 	public static function gameBounds(?result:Rectangle):Rectangle
 	{

@@ -653,7 +653,9 @@ class StageEditorState extends MusicBeatState implements PsychUIEventHandler.Psy
 			stageJson.directory = selected;
 			saveObjectsToJson();
 			FlxTransitionableState.skipNextTransIn = FlxTransitionableState.skipNextTransOut = true;
-			MusicBeatState.switchState(new StageEditorState(lastLoadedStage, stageJson));
+			var nextStage = lastLoadedStage;
+			var nextStageJson = stageJson;
+			MusicBeatState.switchStateFactory(() -> new StageEditorState(nextStage, nextStageJson), StageEditorState);
 		});
 		directoryDropDown.selectedLabel = stageJson.directory;
 
@@ -1430,7 +1432,7 @@ class StageEditorState extends MusicBeatState implements PsychUIEventHandler.Psy
 		{
 			if (!unsavedProgress)
 			{
-				MusicBeatState.switchState(new states.editors.MasterEditorMenu());
+				MusicBeatState.switchStateFactory(() -> new states.editors.MasterEditorMenu(), states.editors.MasterEditorMenu);
 				FlxG.sound.playMusic(Paths.music('freakyMenu'));
 			}
 			else
@@ -1555,10 +1557,10 @@ class StageEditorState extends MusicBeatState implements PsychUIEventHandler.Psy
 				moveY += 5 * shiftMult * ctrlMult;
 		}
 
-		if (FlxG.mouse.pressedRight && (FlxG.mouse.deltaScreenX != 0 || FlxG.mouse.deltaScreenY != 0))
+		if (FlxG.mouse.pressedRight && (FlxG.mouse.deltaViewX != 0 || FlxG.mouse.deltaViewY != 0))
 		{
-			moveX += FlxG.mouse.deltaScreenX * ctrlMult;
-			moveY += FlxG.mouse.deltaScreenY * ctrlMult;
+			moveX += FlxG.mouse.deltaViewX * ctrlMult;
+			moveY += FlxG.mouse.deltaViewY * ctrlMult;
 			_updateCamera();
 		}
 
@@ -2602,10 +2604,10 @@ class StageEditorAnimationSubstate extends MusicBeatSubstate
 			else
 				holdingArrowsTime = 0;
 
-			if (FlxG.mouse.pressedRight && (FlxG.mouse.deltaScreenX != 0 || FlxG.mouse.deltaScreenY != 0))
+			if (FlxG.mouse.pressedRight && (FlxG.mouse.deltaViewX != 0 || FlxG.mouse.deltaViewY != 0))
 			{
-				spr.offset.x -= FlxG.mouse.deltaScreenX;
-				spr.offset.y -= FlxG.mouse.deltaScreenY;
+				spr.offset.x -= FlxG.mouse.deltaViewX;
+				spr.offset.y -= FlxG.mouse.deltaViewY;
 				changedOffset = true;
 			}
 

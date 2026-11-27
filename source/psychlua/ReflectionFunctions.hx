@@ -313,7 +313,19 @@ class ReflectionFunctions
 			return Reflect.callMethod(null, parent, parseInstances(args));
 		});
 		Lua_helper.add_callback(lua, "callMethodFromClass", function(className:String, funcToRun:String, ?args:Array<Dynamic>) {
-			return callMethodFromObject(resolveClass(className), funcToRun, parseInstances(args));
+			if (className == 'flixel.math.FlxMath' && (funcToRun == 'fastSin' || funcToRun == 'fastCos'))
+			{
+				final replacement = funcToRun == 'fastSin' ? 'Math.sin' : 'Math.cos';
+				deprecations.HaxeLibDeprecations.warnMessage('$className.$funcToRun', '$funcToRun is deprecated, use $replacement, instead');
+				final values = parseInstances(args);
+				if (values == null || values.length == 0) return null;
+				return funcToRun == 'fastSin' ? modchart.backend.util.ModchartUtil.sin(values[0]) : modchart.backend.util.ModchartUtil.cos(values[0]);
+			}
+			final values = parseInstances(args);
+			if (funcToRun == 'switchState' && values != null && values.length > 0
+				&& (className == 'flixel.FlxG' || className == 'backend.MusicBeatState' || className == 'backend.BaseMusicBeatState'))
+				deprecations.HaxeLibDeprecations.warnLegacyStateCall(className + '.switchState', values[0]);
+			return callMethodFromObject(resolveClass(className), funcToRun, values);
 		});
 
 		Lua_helper.add_callback(lua, "createInstance", function(variableToSave:String, className:String, ?args:Array<Dynamic>) {

@@ -153,12 +153,12 @@ class ScriptedStates {
 
 	public static function exitToEngine():Void {
 		clearLaunchedModContext();
-		MusicBeatState.switchState(new states.ModsMenuState());
+		MusicBeatState.switchStateFactory(() -> new states.ModsMenuState(), states.ModsMenuState);
 	}
 
 	/** Opens the mod browser without ending an active launched-mod session. */
 	public static function openModsMenu():Void {
-		MusicBeatState.switchState(new states.ModsMenuState());
+		MusicBeatState.switchStateFactory(() -> new states.ModsMenuState(), states.ModsMenuState);
 	}
 
 	static function loadStateFromResolved(name:String, resolved:ScriptedStateFile, ?args:Array<Dynamic>):MusicBeatState {

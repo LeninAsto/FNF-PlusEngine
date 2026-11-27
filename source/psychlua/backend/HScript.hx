@@ -386,7 +386,7 @@ class HScript extends Iris
 		set('Reflect', Reflect);
 		set('Lambda', Lambda);
 		set('Json', haxe.Json);
-		set('TJSON', tjson.TJSON);
+		set('TJSON', deprecations.tjson.LegacyTJSON);
 		set('Array', Array);
 		set('EReg', EReg);
 		set('IntMap', haxe.ds.IntMap);
@@ -1379,9 +1379,10 @@ class CustomFlxG
 	}
 
 	// Main FlxG method delegation
-	public static function switchState(nextState:flixel.FlxState):Void
+	public static function switchState(nextState:Dynamic):Void
 	{
-		FlxG.switchState(nextState);
+		deprecations.HaxeLibDeprecations.warnLegacyStateCall('FlxG.switchState', nextState);
+		FlxG.switchState(cast nextState);
 	}
 
 	public static function resetState():Void
@@ -1450,8 +1451,17 @@ class CustomFlxMath
 	public static inline function inBounds(value:Float, min:Float, max:Float):Bool
 		return flixel.math.FlxMath.inBounds(value, min, max);
 
-	public static inline function fastSin(angle:Float):Float
-		return flixel.math.FlxMath.fastSin(angle);
+	public static function fastSin(angle:Float):Float
+	{
+		deprecations.HaxeLibDeprecations.warnMessage('flixel.math.FlxMath.fastSin', 'fastSin is deprecated, use Math.sin, instead');
+		return modchart.backend.util.ModchartUtil.sin(angle);
+	}
+
+	public static function fastCos(angle:Float):Float
+	{
+		deprecations.HaxeLibDeprecations.warnMessage('flixel.math.FlxMath.fastCos', 'fastCos is deprecated, use Math.cos, instead');
+		return modchart.backend.util.ModchartUtil.cos(angle);
+	}
 }
 
 class CustomFlxColor
@@ -1808,6 +1818,10 @@ class CustomInterp extends crowplexus.hscript.Interp
 			return null;
 		}
 
+		if (funcToRun == 'switchState' && args != null && args.length > 0
+			&& (o == flixel.FlxG || o == backend.MusicBeatState || o == backend.BaseMusicBeatState))
+			deprecations.HaxeLibDeprecations.warnLegacyStateCall(o == flixel.FlxG ? 'FlxG.switchState' : 'MusicBeatState.switchState', IrisScriptClassImport.unwrapArgs(args)[0], scriptName);
+
 		var f = get(o, funcToRun);
 		if (f != null && Reflect.isFunction(f))
 			return IrisScriptClassImport.wrap(Reflect.callMethod(o, f, IrisScriptClassImport.unwrapArgs(args)));
@@ -1830,6 +1844,7 @@ class CustomInterp extends crowplexus.hscript.Interp
 
 	override public function getOrImportClass(name:String):Dynamic
 	{
+		if (name == 'tjson.TJSON') return deprecations.tjson.LegacyTJSON;
 		var native:Dynamic = super.getOrImportClass(name);
 		if (native != null)
 			return native;
@@ -1938,6 +1953,12 @@ class CustomInterp extends crowplexus.hscript.Interp
 
 	override function get(o:Dynamic, field:String):Dynamic
 	{
+		if (field == 'setFilters')
+		{
+			var legacyMethod = deprecations.LegacyCamera.resolveMember(o, field, scriptName);
+			if (legacyMethod != null) return legacyMethod;
+		}
+		deprecations.HaxeLibDeprecations.checkMember(o, field, scriptName);
 		// Si el objeto es null, mostrar warning en lugar de crashear
 		if (o == null)
 		{
@@ -2121,6 +2142,7 @@ class CustomInterp extends crowplexus.hscript.Interp
 
 	override function set(o:Dynamic, field:String, value:Dynamic):Dynamic
 	{
+		deprecations.HaxeLibDeprecations.checkMember(o, field, scriptName);
 		#if mobile
 		// Check if trying to modify receptors when aligned mode is enabled
 		if (ClientPrefs.data.mobileReceptorAlign && o != null)

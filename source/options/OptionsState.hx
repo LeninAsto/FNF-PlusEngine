@@ -3,12 +3,9 @@ package options;
 import states.MainMenuStateSelector;
 import backend.StageData;
 import mobile.input.TouchScrollHandler;
-import flixel.util.FlxSpriteUtil;
 
 class OptionsState extends MusicBeatState
 {
-	public static inline var STYLE_PLUS:String = 'Plus';
-	public static inline var STYLE_PSYCH:String = 'Psych';
 	public static inline var SUBSTATE_TITLE_X:Float = 75;
 	public static inline var SUBSTATE_TITLE_Y:Float = 45;
 
@@ -26,12 +23,10 @@ class OptionsState extends MusicBeatState
 		#if mobile 'Mobile' #end
 	];
 	private var grpOptions:FlxTypedGroup<Alphabet>;
-	private var plusCards:FlxTypedGroup<PlusOptionCard>;
 
 	private static var curSelected:Int = 0;
 
 	var lerpSelected:Float = 0;
-	var menuStyle:String = STYLE_PSYCH;
 
 	public static var menuBG:FlxSprite;
 	public static var onPlayState:Bool = false;
@@ -51,21 +46,6 @@ class OptionsState extends MusicBeatState
 	var optionsIntroActive:Bool = true;
 	var substateInputBlocked:Bool = false;
 	var touchHandler:TouchScrollHandler = new TouchScrollHandler(42);
-
-	public static function normalizeMenuStyle(style:String):String
-	{
-		if (style == null)
-			return STYLE_PLUS;
-
-		return switch (style.toLowerCase().trim())
-		{
-			case 'psych' | 'psych mobile' | 'psych-mobile' | 'mobile': STYLE_PSYCH;
-			default: STYLE_PLUS;
-		}
-	}
-
-	function isPlusStyle():Bool
-		return menuStyle == STYLE_PLUS;
 
 	public static function clearSubstateTransition():Void
 	{
@@ -96,27 +76,6 @@ class OptionsState extends MusicBeatState
 		return Language.getPhrase('options.categories.$key.name', fallback);
 	}
 
-	function getOptionDescription(label:String):String
-	{
-		var fallback:String = switch (label)
-		{
-			case 'Note Colors': Language.getPhrase('description_notes', 'Change note colors and note splash colors.');
-			case 'Controls': Language.getPhrase('description_controls', 'Change keyboard and gamepad binds.');
-			case 'Adjust Delay and Combo': Language.getPhrase('description_adjust_delay', 'Adjust note delay, rating offset, and combo placement.');
-			case 'Graphics': Language.getPhrase('description_graphics_menu', 'Change performance and rendering settings.');
-			case 'Visuals': Language.getPhrase('description_visuals_menu', 'Change HUD, camera, and visual preferences.');
-			case 'Gameplay': Language.getPhrase('description_gameplay_menu', 'Change gameplay modifiers and helpers.');
-			case 'Legacy': Language.getPhrase('description_legacy_menu', 'Change compatibility settings for older Psych/Plus behavior.');
-			case 'Mod Security': Language.getPhrase('description_mod_security_checks_menu', 'Change checks used when loading mods.');
-			case 'Modchart': Language.getPhrase('description_modchart_menu', 'Change modchart behavior and compatibility.');
-			case 'Language': Language.getPhrase('description_language_menu', 'Change the active language.');
-			case 'Mobile': Language.getPhrase('description_mobile_settings', 'Change mobile controls and layout settings.');
-			default: '';
-		};
-		var key:String = label.toLowerCase().replace(' ', '_');
-		return Language.getPhrase('options.categories.$key.description', fallback);
-	}
-
 	function restoreOptionTexts():Void
 	{
 		if (grpOptions == null || options == null)
@@ -134,13 +93,12 @@ class OptionsState extends MusicBeatState
 
 	function beginSubstateTransition(label:String):Void
 	{
-		var item:Alphabet = (!isPlusStyle() && grpOptions != null && curSelected >= 0 && curSelected < grpOptions.members.length) ? grpOptions.members[curSelected] : null;
-		var card:PlusOptionCard = (isPlusStyle() && plusCards != null && curSelected >= 0 && curSelected < plusCards.members.length) ? plusCards.members[curSelected] : null;
+		var item:Alphabet = (grpOptions != null && curSelected >= 0 && curSelected < grpOptions.members.length) ? grpOptions.members[curSelected] : null;
 		substateVisualActive = true;
 		substateReturning = false;
 		substateAnchorLabel = label;
-		substateAnchorX = item != null ? item.x : (card != null ? card.x : SUBSTATE_TITLE_X);
-		substateAnchorY = item != null ? item.y : (card != null ? card.y : SUBSTATE_TITLE_Y);
+		substateAnchorX = item != null ? item.x : SUBSTATE_TITLE_X;
+		substateAnchorY = item != null ? item.y : SUBSTATE_TITLE_Y;
 		substateInputBlocked = true;
 		if (item != null)
 		{
@@ -150,8 +108,6 @@ class OptionsState extends MusicBeatState
 			item.y = SUBSTATE_TITLE_Y;
 			item.alpha = 0;
 		}
-		if (card != null)
-			card.alpha = 0;
 	}
 
 	function openSelectedSubstate(label:String)
@@ -208,11 +164,10 @@ class OptionsState extends MusicBeatState
 		DiscordClient.changePresence(Language.getPhrase('options.common.presence', 'Options Menu'), null);
 		#end
 		OptionsMenuTheme.syncAccent();
-		menuStyle = normalizeMenuStyle(ClientPrefs.data.optionsMenuStyle);
 
 		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.antialiasing = ClientPrefs.data.antialiasing;
-		bg.color = isPlusStyle() ? OptionsMenuTheme.current().accent : 0xFFea71fd;
+		bg.color = 0xFFea71fd;
 		bg.updateHitbox();
 
 		bg.screenCenter();
@@ -233,8 +188,6 @@ class OptionsState extends MusicBeatState
 
 		grpOptions = new FlxTypedGroup<Alphabet>();
 		add(grpOptions);
-		plusCards = new FlxTypedGroup<PlusOptionCard>();
-		add(plusCards);
 
 		selectorLeft = new Alphabet(0, 0, '>', true);
 		add(selectorLeft);
@@ -247,13 +200,7 @@ class OptionsState extends MusicBeatState
 		ClientPrefs.saveSettings();
 
 		// Posicionar elementos sin animación inicial
-		if (isPlusStyle())
-		{
-			selectorLeft.visible = false;
-			selectorRight.visible = false;
-		}
-		else
-			for (num => item in grpOptions.members)
+		for (num => item in grpOptions.members)
 		{
 			var targetY:Float = item.targetY - lerpSelected;
 			var centeredX:Float = (FlxG.width - item.width) * 0.5;
@@ -288,22 +235,13 @@ class OptionsState extends MusicBeatState
 		substateVisualActive = false;
 		substateReturning = true;
 		restoreOptionTexts();
-		if (isPlusStyle())
-			for (card in plusCards.members)
-			{
-				if (card == null)
-					continue;
-				card.x -= 180;
-				card.alpha = 0;
-			}
-		else
-			for (item in grpOptions.members)
-			{
-				if (item == null)
-					continue;
-				item.x -= 180;
-				item.alpha = 0;
-			}
+		for (item in grpOptions.members)
+		{
+			if (item == null)
+				continue;
+			item.x -= 180;
+			item.alpha = 0;
+		}
 		removeTouchPad();
 		applyTouchPadLayout();
 		persistentUpdate = true;
@@ -320,13 +258,6 @@ class OptionsState extends MusicBeatState
 	override function update(elapsed:Float)
 	{
 		super.update(elapsed);
-
-		if (isPlusStyle())
-		{
-			updatePlusLayout(elapsed);
-			handleInput();
-			return;
-		}
 
 		lerpSelected = FlxMath.lerp(curSelected, lerpSelected, Math.exp(-elapsed * 9.6));
 
@@ -428,7 +359,7 @@ class OptionsState extends MusicBeatState
 	{
 		if (exiting || substateInputBlocked || optionsIntroActive || options == null || options.length < 1)
 			return false;
-		return touchHandler.update(true, !isPlusStyle(), getTouchOptionAt, function(index:Int, x:Float, y:Float)
+		return touchHandler.update(true, true, getTouchOptionAt, function(index:Int, x:Float, y:Float)
 		{
 			selectOption(index);
 			openSelectedSubstate(options[index]);
@@ -437,15 +368,7 @@ class OptionsState extends MusicBeatState
 
 	function getTouchOptionAt(x:Float, y:Float):Int
 	{
-		if (isPlusStyle())
-		{
-			if (plusCards == null)
-				return -1;
-			for (card in plusCards.members)
-				if (card != null && card.containsTouchPoint(x, y))
-					return card.index;
-		}
-		else if (grpOptions != null)
+		if (grpOptions != null)
 		{
 			for (index => item in grpOptions.members)
 				if (item != null && x >= 0 && x <= FlxG.width
@@ -455,99 +378,6 @@ class OptionsState extends MusicBeatState
 		return -1;
 	}
 
-	function handleInput():Void
-	{
-		if (exiting || substateInputBlocked)
-			return;
-
-		if (controls.UI_UP_P)
-			changeSelection(-2);
-		if (controls.UI_DOWN_P)
-			changeSelection(2);
-		if (controls.UI_LEFT_P)
-			changeSelection(-1);
-		if (controls.UI_RIGHT_P)
-			changeSelection(1);
-
-		var touchC:Bool = touchPad != null && touchPad.buttonC != null && touchPad.buttonC.justPressed;
-		if (touchC || FlxG.keys.justPressed.CONTROL && controls.mobileC)
-		{
-			persistentUpdate = false;
-			openSubState(ScriptableSubstate.tryCreate('MobileControlSelectSubState', new mobile.substates.MobileControlSelectSubState()));
-		}
-
-		if (controls.BACK)
-		{
-			var stop = callOnCompanionScript('onOptionsMenuBack', [curSelected, getSelectedOptionLabel()]);
-			if (stop == Function_Stop)
-				return;
-			exiting = true;
-			FlxG.sound.play(Paths.sound('cancelMenu'));
-			if (onPlayState)
-			{
-				clearSubstateTransition();
-				StageData.loadDirectory(PlayState.SONG);
-				LoadingState.loadAndSwitchState(new PlayState());
-				FlxG.sound.music.volume = 0;
-			}
-			else
-			{
-				clearSubstateTransition();
-				MusicBeatState.switchState(MainMenuStateSelector.create());
-			}
-		}
-		else if (controls.ACCEPT && options != null && options.length > 0)
-			openSelectedSubstate(options[curSelected]);
-	}
-
-	function updatePlusLayout(elapsed:Float):Void
-	{
-		if (plusCards == null)
-			return;
-
-		var moveLerp:Float = Math.exp(-elapsed * (optionsIntroActive ? 7.2 : 10.2));
-		for (card in plusCards.members)
-		{
-			if (card == null)
-				continue;
-
-			var selected:Bool = card.index == curSelected;
-			var col:Int = card.index % 2;
-			var row:Int = Std.int(card.index / 2);
-			var targetX:Float = (FlxG.width - 1024) * 0.5 + col * 524;
-			// The Plus dashboard deliberately keeps every category in a stable grid.
-			// Selection changes emphasis only; it must never make the whole page scroll.
-			var targetY:Float = 96 + row * 104;
-			var targetScale:Float = selected ? 1.035 : 1;
-			var targetAlpha:Float = selected ? 1 : 0.68;
-
-			if (substateVisualActive)
-			{
-				if (selected)
-				{
-					targetX = SUBSTATE_TITLE_X;
-					targetY = SUBSTATE_TITLE_Y;
-					targetScale = SUBSTATE_TITLE_SCALE;
-					targetAlpha = SUBSTATE_TITLE_ALPHA;
-				}
-				else
-				{
-					targetX = -card.cardWidth - 90;
-					targetAlpha = 0;
-				}
-			}
-
-			card.x = FlxMath.lerp(targetX, card.x, moveLerp);
-			card.y = FlxMath.lerp(targetY, card.y, moveLerp);
-			card.scale.set(FlxMath.lerp(targetScale, card.scale.x, moveLerp), FlxMath.lerp(targetScale, card.scale.y, moveLerp));
-			card.alpha = FlxMath.lerp(targetAlpha, card.alpha, moveLerp);
-			card.applyTheme(selected, substateVisualActive && selected);
-		}
-
-		if (substateReturning && plusCards.members[curSelected] != null && Math.abs(plusCards.members[curSelected].alpha - 1) < 0.05)
-			substateReturning = false;
-	}
-
 	function changeSelection(change:Int = 0)
 	{
 		if (options == null || options.length == 0)
@@ -555,13 +385,8 @@ class OptionsState extends MusicBeatState
 
 		curSelected = FlxMath.wrap(curSelected + change, 0, options.length - 1);
 
-		if (!isPlusStyle())
-			for (num => item in grpOptions.members)
-				item.targetY = num;
-		else if (plusCards != null)
-			for (card in plusCards.members)
-				if (card != null)
-					card.applyTheme(card.index == curSelected, false);
+		for (num => item in grpOptions.members)
+			item.targetY = num;
 
 		callOnCompanionScript('onOptionsMenuSelectionChange', [curSelected, getSelectedOptionLabel()]);
 		if (change != 0)
@@ -651,28 +476,9 @@ class OptionsState extends MusicBeatState
 			grpOptions.remove(item, true);
 			item.destroy();
 		}
-		if (plusCards != null)
-			while (plusCards.members.length > 0)
-			{
-				var card = plusCards.members[0];
-				card.kill();
-				plusCards.remove(card, true);
-				card.destroy();
-			}
-
 		if (options == null)
 			options = [];
 
-		if (isPlusStyle())
-			for (num => option in options)
-			{
-				var card = new PlusOptionCard(num, getDisplayLabel(option), getOptionDescription(option));
-				card.x = Math.min(OPTION_INTRO_SPAWN_X, -card.cardWidth - 140);
-				card.y = 96 + Std.int(num / 2) * 104;
-				card.alpha = 0;
-				plusCards.add(card);
-			}
-		else
 			for (num => option in options)
 			{
 				var optionText:Alphabet = new Alphabet(0, 0, getDisplayLabel(option), true);
@@ -702,112 +508,5 @@ class OptionsState extends MusicBeatState
 	{
 		ClientPrefs.loadPrefs();
 		super.destroy();
-	}
-}
-private class PlusOptionCard extends FlxSpriteGroup
-{
-	static inline var CARD_W:Float = 500;
-	static inline var CARD_H:Float = 86;
-	static inline var DOT_W:Float = 14;
-	static inline var DOT_H:Float = 34;
-	static inline var DOT_X:Float = 18;
-	static inline var CONTENT_X:Float = 46;
-
-	public var index(default, null):Int;
-	public var cardWidth(default, null):Float = CARD_W;
-	var bg:FlxSprite;
-	var title:FlxText;
-	var desc:FlxText;
-	var arrow:FlxText;
-	var lastSelected:Null<Bool> = null;
-	var lastHeader:Null<Bool> = null;
-	var lastTheme:String = "";
-
-	public function new(index:Int, label:String, description:String)
-	{
-		super();
-		this.index = index;
-
-		bg = new FlxSprite().makeGraphic(Std.int(CARD_W), Std.int(CARD_H), FlxColor.TRANSPARENT, true);
-		add(bg);
-
-		title = new FlxText(CONTENT_X, 14, CARD_W - 106, label, 22);
-		title.setFormat(Paths.font("vcr.ttf"), 22, FlxColor.WHITE, LEFT);
-		title.antialiasing = ClientPrefs.data.antialiasing;
-		add(title);
-
-		desc = new FlxText(CONTENT_X, 44, CARD_W - 106, compactDescription(description), 14);
-		desc.setFormat(Paths.font("vcr.ttf"), 14, FlxColor.WHITE, LEFT);
-		desc.antialiasing = ClientPrefs.data.antialiasing;
-		add(desc);
-
-		arrow = new FlxText(CARD_W - 48, 24, 32, ">", 26);
-		arrow.setFormat(Paths.font("vcr.ttf"), 26, FlxColor.WHITE, CENTER);
-		arrow.antialiasing = ClientPrefs.data.antialiasing;
-		add(arrow);
-		applyTheme(false, false);
-	}
-
-	public inline function containsTouchPoint(x:Float, y:Float):Bool
-		return x >= this.x && x <= this.x + CARD_W && y >= this.y && y <= this.y + CARD_H;
-
-	public function applyTheme(selected:Bool, headerMode:Bool):Void
-	{
-		var signature = OptionsMenuTheme.signature();
-		if (lastSelected == selected && lastHeader == headerMode && lastTheme == signature)
-			return;
-		lastSelected = selected;
-		lastHeader = headerMode;
-		lastTheme = signature;
-
-		var fill:Int = selected ? OptionsMenuTheme.difficultyCardFill(OptionsMenuTheme.current().accent, true) : OptionsMenuTheme.cardFill(false);
-		var stroke:Int = selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.panelOutlineColor();
-		bg.makeGraphic(Std.int(CARD_W), Std.int(CARD_H), FlxColor.TRANSPARENT, true);
-		bg.setPosition(x, y);
-		FlxSpriteUtil.drawRoundRect(bg, 0, 0, CARD_W, CARD_H, 8, 8, fill);
-		FlxSpriteUtil.drawRoundRect(bg, 0, 0, CARD_W, CARD_H, 8, 8, FlxColor.TRANSPARENT, {thickness: selected ? 2 : 1, color: stroke});
-		if (!headerMode)
-			FlxSpriteUtil.drawRoundRect(bg, DOT_X, (CARD_H - DOT_H) * 0.5, DOT_W, DOT_H, DOT_W * 0.5, DOT_W * 0.5,
-				selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.cardAccent(false));
-
-		title.color = selected ? OptionsMenuTheme.cardTitleColor(true) : OptionsMenuTheme.cardTitleColor(false);
-		desc.color = selected ? OptionsMenuTheme.cardDescriptionColor(true) : OptionsMenuTheme.cardDescriptionColor(false);
-		arrow.color = selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.footerTextColor();
-		arrow.visible = !headerMode;
-		syncLayout(headerMode);
-	}
-
-	function syncLayout(headerMode:Bool):Void
-	{
-		bg.setPosition(x, y);
-		if (headerMode)
-		{
-			title.x = x;
-			title.y = y + 14;
-			title.fieldWidth = CARD_W;
-			title.alignment = CENTER;
-			desc.visible = false;
-			arrow.visible = false;
-			return;
-		}
-
-		title.x = x + CONTENT_X;
-		title.y = y + 14;
-		title.fieldWidth = CARD_W - 106;
-		title.alignment = LEFT;
-		desc.visible = true;
-		desc.x = x + CONTENT_X;
-		desc.y = y + 44;
-		desc.fieldWidth = CARD_W - 106;
-		arrow.x = x + CARD_W - 48;
-		arrow.y = y + 24;
-	}
-
-	static function compactDescription(value:String):String
-	{
-		if (value == null)
-			return '';
-		var text:String = value.trim();
-		return text.length > 96 ? text.substr(0, 93).trim() + '...' : text;
 	}
 }

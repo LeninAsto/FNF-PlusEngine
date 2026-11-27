@@ -325,7 +325,7 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 
 		if (FlxG.gamepads.anyJustPressed(ANY))
 			controls.controllerMode = true;
-		else if (FlxG.mouse.justPressed || FlxG.mouse.deltaScreenX != 0 || FlxG.mouse.deltaScreenY != 0)
+		else if (FlxG.mouse.justPressed || FlxG.mouse.deltaViewX != 0 || FlxG.mouse.deltaViewY != 0)
 			controls.controllerMode = false;
 		if (controls.controllerMode != _lastControllerMode)
 		{
@@ -580,7 +580,7 @@ class ThemeAccentColorSubState extends MusicBeatSubstate
 
 	function pointerFlxPoint():FlxPoint
 	{
-		return !controls.controllerMode ? FlxG.mouse.getScreenPosition() : controllerPointer.getScreenPosition();
+		return !controls.controllerMode ? backend.PointerCompat.legacyScreenPosition(FlxG.mouse) : controllerPointer.getScreenPosition();
 	}
 
 	inline function themePhrase(key:String, legacyKey:String, fallback:String, ?values:Array<Dynamic>):String

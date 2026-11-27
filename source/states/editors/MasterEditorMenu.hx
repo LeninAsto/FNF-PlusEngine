@@ -161,17 +161,17 @@ class MasterEditorMenu extends MusicBeatState
 				case 2: // Stage Editor
 					LoadingState.loadAndSwitchState(new StageEditorState());
 				case 3: // Week Editor
-					MusicBeatState.switchState(new WeekEditorState());
+					MusicBeatState.switchStateFactory(() -> new WeekEditorState(), WeekEditorState);
 				case 4: // Menu Character Editor
-					MusicBeatState.switchState(new MenuCharacterEditorState());
+					MusicBeatState.switchStateFactory(() -> new MenuCharacterEditorState(), MenuCharacterEditorState);
 				case 5: // Dialogue Editor
 					LoadingState.loadAndSwitchState(new DialogueEditorState(), false);
 				case 6: // Dialogue Portrait Editor
 					LoadingState.loadAndSwitchState(new DialogueCharacterEditorState(), false);
 				case 7: // Note Splash Editor
-					MusicBeatState.switchState(new NoteSplashEditorState());
+					MusicBeatState.switchStateFactory(() -> new NoteSplashEditorState(), NoteSplashEditorState);
 				case 8: // Modchart Editor
-					MusicBeatState.switchState(new ModchartEditorState());
+					MusicBeatState.switchStateFactory(() -> new ModchartEditorState(), ModchartEditorState);
 			}
 			FlxG.sound.music.volume = 0;
 			FreeplayState.destroyFreeplayVocals();
@@ -242,12 +242,12 @@ class MasterEditorMenu extends MusicBeatState
 			case 0: LoadingState.loadAndSwitchState(new ChartingState(), false);
 			case 1: LoadingState.loadAndSwitchState(new CharacterEditorState(Character.DEFAULT_CHARACTER, false));
 			case 2: LoadingState.loadAndSwitchState(new StageEditorState());
-			case 3: MusicBeatState.switchState(new WeekEditorState());
-			case 4: MusicBeatState.switchState(new MenuCharacterEditorState());
+			case 3: MusicBeatState.switchStateFactory(() -> new WeekEditorState(), WeekEditorState);
+			case 4: MusicBeatState.switchStateFactory(() -> new MenuCharacterEditorState(), MenuCharacterEditorState);
 			case 5: LoadingState.loadAndSwitchState(new DialogueEditorState(), false);
 			case 6: LoadingState.loadAndSwitchState(new DialogueCharacterEditorState(), false);
-			case 7: MusicBeatState.switchState(new NoteSplashEditorState());
-			case 8: MusicBeatState.switchState(new ModchartEditorState());
+			case 7: MusicBeatState.switchStateFactory(() -> new NoteSplashEditorState(), NoteSplashEditorState);
+			case 8: MusicBeatState.switchStateFactory(() -> new ModchartEditorState(), ModchartEditorState);
 		}
 		FlxG.sound.music.volume = 0;
 		FreeplayState.destroyFreeplayVocals();

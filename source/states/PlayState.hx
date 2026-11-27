@@ -713,14 +713,14 @@ class PlayState extends MusicBeatState
 
 		iconP1 = new HealthIcon(boyfriend.healthIcon, true, true, boyfriend.iconFps);
 		if (boyfriend.animatedIcon) iconP1.changeIcon(iconP1.getCharacter(), true, true, boyfriend.iconFps);
-		iconP1.y = ClientPrefs.data.iconBounceType == 'Old' ? healthBar.y - (iconP1.height / 2) : healthBar.y - 75;
+		iconP1.y = (ClientPrefs.data.iconBounceType == 'Old' || ClientPrefs.data.iconBounceType == 'Kade') ? healthBar.y - (iconP1.height / 2) : healthBar.y - 75;
 		iconP1.visible = !ClientPrefs.data.hideHud;
 		iconP1.alpha = ClientPrefs.data.healthBarAlpha;
 		uiGroup.add(iconP1);
 
 		iconP2 = new HealthIcon(dad.healthIcon, false, true, dad.iconFps);
 		if (dad.animatedIcon) iconP2.changeIcon(iconP2.getCharacter(), true, true, dad.iconFps);
-		iconP2.y = ClientPrefs.data.iconBounceType == 'Old' ? healthBar.y - (iconP2.height / 2) : healthBar.y - 75;
+		iconP2.y = (ClientPrefs.data.iconBounceType == 'Old' || ClientPrefs.data.iconBounceType == 'Kade') ? healthBar.y - (iconP2.height / 2) : healthBar.y - 75;
 		iconP2.visible = !ClientPrefs.data.hideHud;
 		iconP2.alpha = ClientPrefs.data.healthBarAlpha;
 		uiGroup.add(iconP2);
@@ -729,7 +729,7 @@ class PlayState extends MusicBeatState
 		{
 			iconGF = new HealthIcon(gf != null ? gf.healthIcon : 'gf', true, false, gf != null ? gf.iconFps : 24);
 			if (gf != null && gf.animatedIcon) iconGF.changeIcon(iconGF.getCharacter(), false, true, gf != null ? gf.iconFps : 24);
-			iconGF.y = ClientPrefs.data.iconBounceType == 'Old' ? healthBar.y - (iconGF.height / 2) : healthBar.y - 75;
+			iconGF.y = (ClientPrefs.data.iconBounceType == 'Old' || ClientPrefs.data.iconBounceType == 'Kade') ? healthBar.y - (iconGF.height / 2) : healthBar.y - 75;
 			iconGF.visible = false;
 			iconGF.alpha = ClientPrefs.data.healthBarAlpha;
 			uiGroup.add(iconGF);
@@ -905,7 +905,7 @@ class PlayState extends MusicBeatState
 		healthBar.y = HudSafeZone.y() + HudSafeZone.height() * (!ClientPrefs.data.downScroll ? 0.89 : 0.11);
 		healthBar.x = HudSafeZone.x() + (HudSafeZone.width() - healthBar.width) / 2;
 
-		final oldBounce:Bool = ClientPrefs.data.iconBounceType == 'Old';
+		final oldBounce:Bool = ClientPrefs.data.iconBounceType == 'Old' || ClientPrefs.data.iconBounceType == 'Kade';
 		if (iconP1 != null) iconP1.y = oldBounce ? healthBar.y - (iconP1.height / 2) : healthBar.y - 75;
 		if (iconP2 != null) iconP2.y = oldBounce ? healthBar.y - (iconP2.height / 2) : healthBar.y - 75;
 		if (iconGF != null) iconGF.y = oldBounce ? healthBar.y - (iconGF.height / 2) : healthBar.y - 75;
@@ -2049,10 +2049,10 @@ class PlayState extends MusicBeatState
 			if (songData.needsVoices)
 			{
 				var playerVocals = Paths.voices(songData.song, (boyfriend.vocalsFile == null || boyfriend.vocalsFile.length < 1) ? 'Player' : boyfriend.vocalsFile);
-				vocals.loadEmbedded(playerVocals != null ? playerVocals : Paths.voices(songData.song));
+				vocals.load(playerVocals != null ? playerVocals : Paths.voices(songData.song));
 
 				var oppVocals = Paths.voices(songData.song, (dad.vocalsFile == null || dad.vocalsFile.length < 1) ? 'Opponent' : dad.vocalsFile);
-				if(oppVocals != null && oppVocals.length > 0) opponentVocals.loadEmbedded(oppVocals);
+				if(oppVocals != null && oppVocals.length > 0) opponentVocals.load(oppVocals);
 			}
 		}
 		catch (e:Dynamic) {}
@@ -2069,7 +2069,7 @@ class PlayState extends MusicBeatState
 		inst = new FlxSound();
 		try
 		{
-			inst.loadEmbedded(Paths.inst(songData.song));
+			inst.load(Paths.inst(songData.song));
 		}
 		catch (e:Dynamic) {}
 		FlxG.sound.list.add(inst);
@@ -3263,7 +3263,7 @@ class PlayState extends MusicBeatState
 		DiscordClient.resetClientID();
 		#end
 
-		MusicBeatState.switchState(new ChartingState());
+		MusicBeatState.switchStateFactory(() -> new ChartingState(), ChartingState);
 	}
 
 	function openCharacterEditor()
@@ -3281,7 +3281,7 @@ class PlayState extends MusicBeatState
 			opponentVocals.pause();
 
 		#if DISCORD_ALLOWED DiscordClient.resetClientID(); #end
-		MusicBeatState.switchState(new CharacterEditorState(SONG.player2));
+		MusicBeatState.switchStateFactory(() -> new CharacterEditorState(SONG.player2), CharacterEditorState);
 	}
 
 	public var isDead:Bool = false; //Don't mess with this on Lua!!!
@@ -3311,7 +3311,7 @@ class PlayState extends MusicBeatState
 				persistentDraw = false;
 				FlxTimer.globalManager.clear();
 				FlxTween.globalManager.clear();
-				FlxG.camera.setFilters([]);
+				FlxG.camera.filters = [];
 
 				if(GameOverSubstate.deathDelay > 0)
 				{
@@ -3340,7 +3340,7 @@ class PlayState extends MusicBeatState
 					#end
 				}
 
-				// MusicBeatState.switchState(new GameOverState(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y));
+				// MusicBeatState.switchStateFactory(() -> new GameOverState(boyfriend.getScreenPosition().x, boyfriend.getScreenPosition().y), GameOverState);
 
 				#if DISCORD_ALLOWED
 				// Game Over doesn't get his its variable because it's only used here
@@ -3863,7 +3863,7 @@ class PlayState extends MusicBeatState
 			return false;
 
 		FlxG.sound.playMusic(Paths.music(Mods.getMenuMusic(Mods.launchedMod)), 0);
-		MusicBeatState.switchState(new scripting.ScriptedStates.ScriptedReturnState(target, scripting.ScriptedStates.ResolveScope.LAUNCHED));
+		MusicBeatState.switchStateFactory(() -> new scripting.ScriptedStates.ScriptedReturnState(target, scripting.ScriptedStates.ResolveScope.LAUNCHED), scripting.ScriptedStates.ScriptedReturnState);
 		return true;
 		#else
 		return false;
@@ -4879,6 +4879,10 @@ class PlayState extends MusicBeatState
 			}
 			if (!isMiss) addTiming(rating, hitDiff, antialias);
 			FlxTween.tween(rating, {alpha: 0}, 0.2 / playbackRate, {
+				onComplete: function(tween:FlxTween)
+				{
+					releaseComboSprite(rating);
+				},
 				startDelay: Conductor.crochet * (ClientPrefs.data.nfRatingStyle ? 0.0016 : 0.001) / playbackRate
 			});
 
@@ -4886,7 +4890,6 @@ class PlayState extends MusicBeatState
 				onComplete: function(tween:FlxTween)
 				{
 					releaseComboSprite(comboSpr);
-					releaseComboSprite(rating);
 				},
 				startDelay: Conductor.crochet * (ClientPrefs.data.nfRatingStyle ? 0.0016 : 0.002) / playbackRate
 			});
@@ -5608,7 +5611,7 @@ class PlayState extends MusicBeatState
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyPress);
 		FlxG.stage.removeEventListener(KeyboardEvent.KEY_UP, onKeyRelease);
 
-		FlxG.camera.setFilters([]);
+		FlxG.camera.filters = [];
 
 		#if FLX_PITCH FlxG.sound.music.pitch = 1; #end
 		FlxG.animationTimeScale = 1;
@@ -5690,7 +5693,7 @@ class PlayState extends MusicBeatState
 				iconP2.updateHitbox();
 				if (iconGF != null) iconGF.updateHitbox();
 
-			case 'Old':
+			case 'Old' | 'Kade':
 				iconP1.setGraphicSize(Std.int(iconP1.width + 30));
 				iconP2.setGraphicSize(Std.int(iconP2.width + 30));
 				if (iconGF != null) iconGF.setGraphicSize(Std.int(iconGF.width + 30));

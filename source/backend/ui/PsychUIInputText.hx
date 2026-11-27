@@ -507,7 +507,7 @@ class PsychUIInputText extends FlxSpriteGroup {
 			else if (selectIndex == -1)
 				selectIndex = caretIndex;
 			focusOn = this;
-			setCaretFromPointerScreenX(touch.getScreenPosition(camera).x);
+			setCaretFromPointerScreenX(backend.PointerCompat.legacyScreenPosition(touch, camera).x);
 			break;
 		}
 
@@ -520,7 +520,7 @@ class PsychUIInputText extends FlxSpriteGroup {
 				else if (selectIndex == -1)
 					selectIndex = caretIndex;
 				focusOn = this;
-				setCaretFromPointerScreenX(FlxG.mouse.getScreenPosition(camera).x);
+				setCaretFromPointerScreenX(backend.PointerCompat.legacyScreenPosition(FlxG.mouse, camera).x);
 			} else if (focusOn == this)
 				focusOn = null;
 		}

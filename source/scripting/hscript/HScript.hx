@@ -127,6 +127,7 @@ class HScript {
 			modFolder = Reflect.field(parent, 'modFolder');
 		#end
 
+		code = scripting.ScriptPreprocessor.redirectLegacyImports(code);
 		scriptCode = code;
 		name = scriptName != null ? scriptName : (origin != null && origin.length > 0 ? origin : 'hscript');
 		script = new Script(code, name);

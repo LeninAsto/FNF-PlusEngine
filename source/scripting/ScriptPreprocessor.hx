@@ -7,6 +7,7 @@ class ScriptPreprocessor {
 	public static function process(code:String):String {
 		if (code == null)
 			return code;
+		code = redirectLegacyImports(code);
 
 		if (code.indexOf('#if') == -1)
 			return normalizeScriptSyntax(code);
@@ -56,6 +57,19 @@ class ScriptPreprocessor {
 		}
 
 		return normalizeScriptSyntax(out.join('\n'));
+	}
+
+	public static function redirectLegacyImports(code:String):String {
+		if (code == null || code.indexOf('import tjson.TJSON') < 0) return code;
+		var lines = code.split('\n');
+		for (i in 0...lines.length) {
+			var trimmed = lines[i].trim();
+			if (trimmed.startsWith('import tjson.TJSON;'))
+				lines[i] = lines[i].replace('import tjson.TJSON;', 'import deprecations.tjson.LegacyTJSON as TJSON;');
+			else if (trimmed.startsWith('import tjson.TJSON as '))
+				lines[i] = lines[i].replace('import tjson.TJSON as ', 'import deprecations.tjson.LegacyTJSON as ');
+		}
+		return lines.join('\n');
 	}
 
 	public static function adaptFriendlyClassName(code:String, scriptedPath:String):String {

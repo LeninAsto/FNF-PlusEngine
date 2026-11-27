@@ -232,7 +232,7 @@ class WeekData
 		{
 			try
 			{
-				var parsed:WeekFile = cast tjson.TJSON.parse(rawJson);
+				var parsed:WeekFile = cast jsonmod.Json.parse(rawJson);
 				if (parsed != null)
 					weekFileCache.set(path, parsed);
 				return parsed;

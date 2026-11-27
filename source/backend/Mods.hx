@@ -176,7 +176,7 @@ class Mods
 			{
 				var rawJson:String = AssetLoader.loadText(path);
 				if (rawJson != null && rawJson.length > 0)
-					return tjson.TJSON.parse(rawJson);
+					return jsonmod.Json.parse(rawJson);
 			}
 			catch (e:Dynamic)
 			{

@@ -136,7 +136,9 @@ class Macro {
 					var prevIndicesLength:Int = this.indices.length;
 					var prevUVTDataLength:Int = this.uvtData.length;
 					var prevNumberOfVertices:Int = this.numVertices;
+					#if (flixel < "6.1.0")
 					var prevColorsLength:Int = this.colors.length;
+					#end
 
 					var tempX:Float, tempY:Float;
 					var i:Int = 0;
@@ -174,6 +176,7 @@ class Macro {
 							this.indices[prevIndicesLength + i] = indices[i] + prevNumberOfVertices;
 						}
 
+						#if (flixel < "6.1.0")
 						if (colored) {
 							for (i in 0...numberOfVertices) {
 								this.colors[prevColorsLength + i] = 0;
@@ -181,6 +184,7 @@ class Macro {
 
 							colorsPosition += numberOfVertices;
 						}
+						#end
 
 						verticesPosition = verticesPosition + verticesLength;
 						indicesPosition = indicesPosition + indicesLength;

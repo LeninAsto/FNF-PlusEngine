@@ -107,7 +107,7 @@ class NoteShaderBatch {
         final shader = state.createRuntimeShader(shaderName);
         if (shader == null) return null;
         final uv = frame.uv;
-        shader.setFloatArray('noteBounds', [uv.x, uv.y, uv.width, uv.height]);
+        shader.setFloatArray('noteBounds', [uv.left, uv.top, uv.right, uv.bottom]);
         shader.setFloat('paletteEnabled', Std.isOfType(original, RGBPaletteShader) ? 1 : 0);
         shader.setFloat('hsvEnabled', Std.isOfType(original, ColorSwapShader) ? 1 : 0);
         slot = {shader: shader, original: original, lastFrame: -1};

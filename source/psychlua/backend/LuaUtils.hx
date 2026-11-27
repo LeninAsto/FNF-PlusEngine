@@ -69,6 +69,7 @@ class LuaUtils
 			#end
 			return null;
 		}
+		deprecations.HaxeLibDeprecations.checkMember(instance, variable);
 
 		var legacyBar:Dynamic = getLegacyBarSprite(instance, variable);
 		if(legacyBar != null)
@@ -137,6 +138,12 @@ class LuaUtils
 	{
 		if(instance == null)
 			return null;
+		if (variable == 'setFilters')
+		{
+			var legacyMethod = deprecations.LegacyCamera.resolveMember(instance, variable);
+			if (legacyMethod != null) return legacyMethod;
+		}
+		deprecations.HaxeLibDeprecations.checkMember(instance, variable);
 
 		var legacyBar:Dynamic = getLegacyBarSprite(instance, variable);
 		if(legacyBar != null)
@@ -233,7 +240,7 @@ class LuaUtils
 				try
 				{
 					//FunkinLua.luaTrace('getModSetting: Trying to find default value for "$saveTag" in Mod: "$modName"');
-					var parsedJson:Dynamic = tjson.TJSON.parse(data);
+					var parsedJson:Dynamic = jsonmod.Json.parse(data);
 					for (i in 0...parsedJson.length)
 					{
 						var sub:Dynamic = parsedJson[i];

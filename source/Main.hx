@@ -43,7 +43,7 @@ class Main extends Sprite
 	public static final game = {
 		width: 1280, // WINDOW width
 		height: 720, // WINDOW height
-		initialState: InitialState, // initial game state
+		initialState: () -> new InitialState(), // initial game state
 		framerate: 60, // default framerate
 		skipSplash: true, // if the default flixel splash screen should be skipped
 		startFullscreen: false // if the game should start at fullscreen mode
@@ -390,7 +390,7 @@ class Main extends Sprite
 		// Bypass the usual fade; the old state is still destroyed by Flixel.
 		flixel.addons.transition.FlxTransitionableState.skipNextTransIn = true;
 		flixel.addons.transition.FlxTransitionableState.skipNextTransOut = true;
-		FlxG.switchState(new InitialState());
+		FlxG.switchState(() -> new InitState.InitialState());
 	}
 
 	/** Runs after the previous state has been destroyed and before startup creates scripts. */
@@ -421,8 +421,8 @@ class Main extends Sprite
 			fpsVar.positionFPS(bounds.left + debug.DebugOverlayLayout.FPS_MARGIN_X,
 				bounds.top + debug.DebugOverlayLayout.FPS_MARGIN_Y, 1.0);
 		if (traceDisplay != null)
-			traceDisplay.positionTrace(bounds.left + debug.DebugOverlayLayout.MARGIN,
-				bounds.top + 112);
+			traceDisplay.positionTrace(bounds.left + debug.DebugOverlayLayout.TRACE_MARGIN_X,
+				bounds.top + debug.DebugOverlayLayout.TRACE_OFFSET_Y);
 
 		#if mobile
 		if (traceButton != null)
@@ -495,11 +495,7 @@ class Main extends Sprite
 		}
 		Lib.current.stage.setChildIndex(materialVolumeTray, Lib.current.stage.numChildren - 1);
 
-		var self = this;
-		FlxG.sound.volumeHandler = function(volume:Float)
-		{
-			self.onVolumeChanged(volume);
-		};
+		FlxG.sound.onVolumeChange.add(onVolumeChanged);
 	}
 
 	function onVolumeChanged(volume:Float):Void
@@ -558,10 +554,12 @@ class Main extends Sprite
 	function onWindowFocusOut():Void
 	{
 		focused = false;
+		backend.WindowsEfficiency.setBackground(true);
 	}
 
 	function onWindowFocusIn():Void
 	{
+		backend.WindowsEfficiency.setBackground(false);
 		ClientPrefs.applyFramePacing();
 
 		new FlxTimer().start(0.2, function(tmr:FlxTimer)

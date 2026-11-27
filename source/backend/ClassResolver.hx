@@ -10,6 +10,7 @@ class ClassResolver
 {
 	// Keep reflection-only compatibility classes from being removed by DCE.
 	private static final _compatClassRefs:Array<Class<Dynamic>> = [
+		deprecations.tjson.LegacyTJSON,
 		backend.VideoSpriteManager,
 		objects.hxcodec.v2_5_0.MP4Handler,
 		objects.hxcodec.v2_5_0.MP4Sprite,
@@ -35,6 +36,8 @@ class ClassResolver
 	 * Compatibility map for Psych Engine 0.6.3 and older script paths.
 	 */
 	public static final classAliasMap:Map<String, String> = [
+		// =========== Haxe libraries =============
+		'tjson.TJSON' => 'deprecations.tjson.LegacyTJSON',
 		// ===== Psych 0.6.x / 0.7.x compatibility =====
 		'Conductor' => 'backend.Conductor',
 		'ClientPrefs' => 'backend.ClientPrefs',
@@ -107,8 +110,6 @@ class ClassResolver
 		'VisualsSettingsSubState' => 'options.VisualsSettingsSubState',
 		'GraphicsSettingsSubState' => 'options.GraphicsSettingsSubState',
 		'GameplaySettingsSubState' => 'options.GameplaySettingsSubState',
-		'StructurePsychOld' => 'backend.ClassResolver',
-		'backend.StructurePsychOld' => 'backend.ClassResolver',
 		// ===== PlusEngine psychlua refactor compatibility =====
 		'psychlua.CallbackHandler' => 'psychlua.backend.CallbackHandler',
 		'psychlua.CustomSubstate' => 'psychlua.backend.CustomSubstate',
@@ -238,7 +239,7 @@ class ClassResolver
 				myClass = safeResolveClass(newClassName);
 				if (myClass != null)
 				{
-					warnLegacyLuaUsage(className, newClassName);
+					if (className != 'tjson.TJSON') warnLegacyLuaUsage(className, newClassName);
 					#if debug
 					if (shouldShowDeprecatedWarnings())
 						trace('[Compatibility] Redirected "$className" to "$newClassName"');

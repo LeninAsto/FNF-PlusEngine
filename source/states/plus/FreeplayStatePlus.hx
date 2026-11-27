@@ -542,7 +542,7 @@ class FreeplayStatePlus extends MusicBeatState
 			MusicBeatState.switchState(backend.ScriptableState.tryCreate('ErrorState',
 				new states.ErrorState(Language.getPhrase('freeplay.errors.no_weeks',
 					'NO WEEKS ADDED FOR FREEPLAY\n\nPress {1} to go to the Week Editor Menu.\nPress {2} to return to Main Menu.', [accept, reject]),
-					function() MusicBeatState.switchState(new states.editors.WeekEditorState()),
+					function() MusicBeatState.switchStateFactory(() -> new states.editors.WeekEditorState(), states.editors.WeekEditorState),
 					function() MusicBeatState.switchState(MainMenuStateSelector.create()))));
 			return;
 		}
@@ -1467,7 +1467,7 @@ class FreeplayStatePlus extends MusicBeatState
 
 						if (loadedVocals != null && loadedVocals.length > 0)
 						{
-							vocals.loadEmbedded(loadedVocals);
+							vocals.load(loadedVocals);
 							FlxG.sound.list.add(vocals);
 							vocals.persist = vocals.looped = true;
 							vocals.volume = 0.8;
@@ -1491,7 +1491,7 @@ class FreeplayStatePlus extends MusicBeatState
 
 						if (loadedVocals != null && loadedVocals.length > 0)
 						{
-							opponentVocals.loadEmbedded(loadedVocals);
+							opponentVocals.load(loadedVocals);
 							FlxG.sound.list.add(opponentVocals);
 							opponentVocals.persist = opponentVocals.looped = true;
 							opponentVocals.volume = 0.8;

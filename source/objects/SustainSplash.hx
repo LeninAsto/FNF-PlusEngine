@@ -220,7 +220,7 @@ class SustainSplash extends FlxSprite
 		if (!alive || animation.curAnim?.name == 'holdEnd')
 			return;
 
-		animation.finishCallback = null;
+		clearHoldCallbacks();
 		animation.play('hold', true, false, 0);
 		if (animation.curAnim != null)
 		{
@@ -232,6 +232,23 @@ class SustainSplash extends FlxSprite
 		// smaller rectangle can clip the classic-color hold loop completely. The
 		// modchart renderer draws its own geometry and used to hide this problem.
 		refreshHoldClip();
+	}
+
+	function clearHoldCallbacks():Void
+	{
+		animation.onFinish.remove(onHoldStartFinished);
+		animation.onFinish.remove(onHoldEndFinished);
+	}
+
+	function onHoldStartFinished(name:String):Void
+	{
+		if (name == 'holdStart') playHoldLoop();
+	}
+
+	function onHoldEndFinished(name:String):Void
+	{
+		x = -50000;
+		kill();
 	}
 
 	inline function refreshHoldClip():Void
@@ -270,18 +287,14 @@ class SustainSplash extends FlxSprite
 		}
 
 		clipRect = null;
-		animation.finishCallback = null;
+		clearHoldCallbacks();
 		animation.play('holdEnd', true, false, 0);
 		if (animation.curAnim != null)
 		{
 			animation.curAnim.looped = false;
 			animation.curAnim.frameRate = 24;
 		}
-		animation.finishCallback = (_:Dynamic) ->
-		{
-			x = -50000;
-			kill();
-		};
+		animation.onFinish.add(onHoldEndFinished);
 	}
 
 	public function setupSusSplash(strum:StrumNote, daNote:Note, ?playbackRate:Float = 1):Void
@@ -308,7 +321,7 @@ class SustainSplash extends FlxSprite
 		syncToStrumLayout();
 		visible = true;
 		active = true;
-		animation.finishCallback = null;
+		clearHoldCallbacks();
 		if (opponentHold)
 		{
 			playHoldLoop();
@@ -321,11 +334,7 @@ class SustainSplash extends FlxSprite
 				animation.curAnim.frameRate = 24;
 				animation.curAnim.looped = false;
 			}
-			animation.finishCallback = (name:Dynamic) ->
-			{
-				if (name == 'holdStart')
-					playHoldLoop();
-			};
+			animation.onFinish.add(onHoldStartFinished);
 		}
 		refreshHoldClip();
 
