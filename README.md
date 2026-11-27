@@ -47,15 +47,13 @@ Contributions are welcome! If you have ideas, improvements, or fixes, feel free 
 > This project is subject to bugs, fixes, improvements and changes.
 
 # About Code Usage
+As you may know, this engine is open source and available to everyone; you can use it however you like and for whatever purpose you choose. As the Funkin Crew says: "Open source is life—FOREVER!"
+<div align="center">
+  <img src="docs/readmes/img/nya.gif" width="200"/>
+</div>
 
 This project is **open to learn, build, and improve**.
 You’re free to use it as a reference, a base, or a learning resource.
-Because code is not a buried treasure —
-**code lives when it’s shared**.
-
-**Learning > hoarding**
-**Sharing > flexing**
-**Building > gatekeeping**
 
 I don’t really believe in the mindset of:
 
@@ -63,17 +61,6 @@ I don’t really believe in the mindset of:
 
 Bro…
 **you’re not going to heaven with your private repository under your arm!**
-
-Source code is:
-
-- knowledge
-- practice
-- mistakes
-- evolution
-
-If someone improves something I made, **respect**
-That’s how this has always worked:
-learn from the past to build the future.
 
 ### Important note
 
