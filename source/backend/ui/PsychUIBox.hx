@@ -126,7 +126,6 @@ class PsychUIBox extends FlxSpriteGroup {
 						_ignoreTabUpdate = true;
 						isMinimized = !isMinimized;
 						_lastClick = 0;
-						// trace('do minimize: $isMinimized');
 					}
 
 					if (FlxG.mouse.justPressed) {

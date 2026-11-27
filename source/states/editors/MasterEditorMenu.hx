@@ -8,10 +8,8 @@ import mobile.input.TouchScrollHandler;
 
 class MasterEditorMenu extends MusicBeatState
 {
-	// ← CAMBIO: Usar índices en lugar de strings traducidos
 	var options:Array<String> = [];
 
-	// ← NUEVO: Array con las claves de traducción
 	var optionKeys:Array<String> = [
 		'chart_editor',
 		'character_editor',
@@ -40,7 +38,6 @@ class MasterEditorMenu extends MusicBeatState
 		DiscordClient.changePresence(Language.getPhrase('editors.master.presence', 'Editors Main Menu'), null);
 		#end
 
-		// ← NUEVO: Construir array de opciones traducidas
 		buildOptions();
 
 		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
@@ -98,7 +95,6 @@ class MasterEditorMenu extends MusicBeatState
 		addTouchPadCamera();
 	}
 
-	// ← NUEVO: Función para construir opciones traducidas
 	function buildOptions():Void
 	{
 		options = [
@@ -145,7 +141,6 @@ class MasterEditorMenu extends MusicBeatState
 
 		if (controls.ACCEPT || (touchPad != null && touchPad.buttonA.justPressed))
 		{
-			// ← SOLUCION: Usar índice en lugar de string traducido
 			if (!canSelect(curSelected))
 			{
 				FlxG.sound.play(Paths.sound('cancelMenu'), 0.4);

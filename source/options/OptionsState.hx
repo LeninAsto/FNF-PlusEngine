@@ -199,7 +199,6 @@ class OptionsState extends MusicBeatState
 		changeSelection();
 		ClientPrefs.saveSettings();
 
-		// Posicionar elementos sin animación inicial
 		for (num => item in grpOptions.members)
 		{
 			var targetY:Float = item.targetY - lerpSelected;

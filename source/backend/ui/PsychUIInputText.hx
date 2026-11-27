@@ -217,7 +217,6 @@ class PsychUIInputText extends FlxSpriteGroup {
 							caretIndex--;
 							var a:String = text.substr(caretIndex - 1, 1);
 							var b:String = text.substr(caretIndex, 1);
-							// trace(a, b);
 							if (a == ' ' && b != ' ')
 								break;
 						} while (caretIndex > 0);
@@ -229,7 +228,6 @@ class PsychUIInputText extends FlxSpriteGroup {
 							caretIndex++;
 							var a:String = text.substr(caretIndex - 1, 1);
 							var b:String = text.substr(caretIndex, 1);
-							// trace(a, b);
 							if (a != ' ' && b == ' ')
 								break;
 						} while (caretIndex < text.length);
@@ -259,7 +257,6 @@ class PsychUIInputText extends FlxSpriteGroup {
 				lastAccent = NONE;
 		}
 
-		// trace(keyCode, charCode, flxKey);
 		switch (flxKey) {
 			case LEFT: // move caret to left
 				if (!FlxG.keys.pressed.SHIFT)
@@ -770,7 +767,6 @@ class PsychUIInputText extends FlxSpriteGroup {
 		letter = filter(letter);
 		if (letter.length > 0 && (maxLength == 0 || (text.length + letter.length) <= maxLength)) {
 			var lastText = text;
-			// trace('Drawing character: $letter');
 
 			// "I HATE THIS EVEN MORE"
 			var newText:String;

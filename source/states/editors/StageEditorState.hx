@@ -241,7 +241,6 @@ class StageEditorState extends MusicBeatState implements PsychUIEventHandler.Psy
 		focusRadioGroup = new PsychUIRadioGroup(targetTxt.x, FlxG.height - 24, ['dad', 'boyfriend', 'gf'], 10, 0, true);
 		focusRadioGroup.onClick = function()
 		{
-			// trace('Changed focus to $target');
 			var point = focusOnTarget(focusRadioGroup.labels[focusRadioGroup.checked]);
 			camFollow.setPosition(point.x, point.y);
 			FlxG.camera.target = camFollow;
@@ -398,11 +397,9 @@ class StageEditorState extends MusicBeatState implements PsychUIEventHandler.Psy
 					}
 
 					Reflect.setProperty(copiedMeta, field, fld);
-					// trace('success? $field');
 				}
 				catch (e:Dynamic)
 				{
-					// trace('failed: $field');
 				}
 			}
 
@@ -1859,7 +1856,6 @@ class StageEditorState extends MusicBeatState implements PsychUIEventHandler.Psy
 					&& fullPath.contains('/images/'))
 				{
 					loadSprite(fullPath.substring(fullPath.indexOf('/images/') + '/images/'.length, fullPath.lastIndexOf('.')));
-					// trace('Inside Psych Engine Folder');
 					return;
 				}
 			}
@@ -1871,7 +1867,6 @@ class StageEditorState extends MusicBeatState implements PsychUIEventHandler.Psy
 					&& fullPath.contains('/images/'))
 				{
 					loadSprite(fullPath.substring(fullPath.indexOf('/images/') + '/images/'.length, fullPath.lastIndexOf('.')));
-					// trace('Inside Psych Engine Folder');
 					return;
 				}
 			}

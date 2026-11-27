@@ -190,7 +190,6 @@ class MobileControlSelectSubState extends MusicBeatSubstate
 						button.centerBounds();
 						bindButton.bounds.immovable = true;
 						button.bounds.immovable = false;
-						// trace('button${bindButton.tag} & button${button.tag} collided');
 					}, function(a:Dynamic, b:Dynamic)
 					{
 						if (!bindButton.bounds.immovable)

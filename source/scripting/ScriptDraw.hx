@@ -6,7 +6,6 @@ import flixel.graphics.tile.FlxDrawTrianglesItem.DrawData;
 @:keep
 class ScriptDraw {
 	#if (desktop || mobile)
-	/** Convierte arrays de scripts en vectores nativos para cualquier malla Away3D. */
 	public static function uploadMeshData(sub:away3d.core.base.SubGeometry, vertices:Array<Float>, uv:Array<Float>, normals:Array<Float>, indices:Array<Int>):Void {
 		sub.updateVertexData(openfl.Vector.ofArray(vertices));
 		sub.updateUVData(openfl.Vector.ofArray(uv));

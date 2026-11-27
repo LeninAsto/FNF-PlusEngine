@@ -167,14 +167,11 @@ class Conductor
 									var newBPM:Float = Std.parseFloat(eventValue);
 									if (!Math.isNaN(newBPM) && newBPM > 0)
 									{
-										// Calcular stepTime basado en el BPM actual hasta este punto
-										// Necesitamos calcular manualmente ya que bpmChangeMap aún se está construyendo
 										var stepTime:Int = 0;
 										var currentTime:Float = 0;
 										var currentBPM:Float = song.bpm;
 										var currentSteps:Int = 0;
 
-										// Primero procesar las secciones hasta este punto de tiempo
 										for (i in 0...song.notes.length)
 										{
 											var deltaSteps:Int = Math.round(getSectionBeats(song, i) * 4);
@@ -182,7 +179,6 @@ class Conductor
 
 											if (currentTime + sectionDuration > eventTime)
 											{
-												// El evento está en esta sección
 												var timeInSection:Float = eventTime - currentTime;
 												var stepsInSection:Int = Math.round((timeInSection / 1000) * (currentBPM / 60) * 4);
 												stepTime = currentSteps + stepsInSection;
@@ -192,7 +188,6 @@ class Conductor
 											currentTime += sectionDuration;
 											currentSteps += deltaSteps;
 
-											// Actualizar BPM si la sección lo cambia
 											if (song.notes[i].changeBPM && song.notes[i].bpm != currentBPM)
 											{
 												currentBPM = song.notes[i].bpm;
@@ -215,7 +210,6 @@ class Conductor
 				}
 			}
 
-			// Ordenar el mapa por tiempo de canción
 			bpmChangeMap.sort(function(a, b)
 			{
 				return a.songTime < b.songTime ? -1 : (a.songTime > b.songTime ? 1 : 0);

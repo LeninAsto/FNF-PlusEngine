@@ -107,7 +107,6 @@ class ABotSpeaker extends FlxSpriteGroup
 
 		if (levelMax >= 4)
 		{
-			// trace(levelMax);
 			if (oldLevelMax <= levelMax && (levelMax >= 5 || speaker.anim.curFrame >= 3))
 				beatHit();
 		}

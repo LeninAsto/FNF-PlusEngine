@@ -42,7 +42,6 @@ class FunkinLua
 	public var autoCallOnCreate:Bool = true;
 	var hookCache:Map<String, Bool> = new Map();
 
-	// Contador de errores de Lua para estadísticas
 	public static var lua_Errors:Int = 0;
 
 	#if HSCRIPT_ALLOWED
@@ -60,8 +59,6 @@ class FunkinLua
 		LuaL.openlibs(lua);
 		scriptsByState.push(this);
 
-		// trace('Lua version: ' + Lua.version());
-		// trace("LuaJIT version: " + Lua.versionJIT());
 
 		// LuaL.dostring(lua, CLENSE);
 
@@ -1036,7 +1033,6 @@ class FunkinLua
 				if (tmr.finished)
 					variables.remove(tag);
 				game.callOnLuas('onTimerCompleted', [originalTag, tmr.loops, tmr.loopsLeft]);
-				// trace('Timer Completed: ' + tag);
 			}, loops));
 			return tag;
 		});
@@ -2734,10 +2730,8 @@ class FunkinLua
 				TraceDisplay.addLuaTrace(text, color, deprecated);
 			}
 
-			// También enviar al TraceDisplay si es un error
 			if (color == FlxColor.RED)
 			{
-				// Incrementar contador de errores para estadísticas
 				lua_Errors++;
 			}
 		}
@@ -2880,7 +2874,6 @@ class FunkinLua
 				if (found)
 				{
 					runtimeShaders.set(name, [frag, vert]);
-					// trace('Found shader $name!');
 					return true;
 				}
 			}

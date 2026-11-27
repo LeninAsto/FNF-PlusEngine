@@ -244,7 +244,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		option.onChange = function()
 		{
-			// Cambia la cámara en tiempo real si el usuario cambia la opción desde el menú
 			if (PlayState.instance != null && PlayState.instance.comboGroup != null)
 			{
 				PlayState.instance.comboGroup.cameras = [
@@ -553,7 +552,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		super.destroy();
 	}
 
-	// function onChangeFPSCounter() eliminado: FPSCounter ahora siempre visible, control solo por F2
 
 	function onChangeWatermark()
 	{
@@ -581,7 +579,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 
 	function onChangeKeyViewerColor()
 	{
-		// Si estamos en PlayState, actualizar el color del keyViewer
 		if (PlayState.instance != null && PlayState.instance.keyViewer != null)
 		{
 			PlayState.instance.keyViewer.updateKeyColors();

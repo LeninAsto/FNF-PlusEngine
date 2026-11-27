@@ -157,7 +157,6 @@ class RGBShaderReference
 			parent.mult = _original.mult;
 			if (_owner != null && shouldApplyShader)
 				_owner.shader = parent.shader;
-			// trace('created new shader');
 		}
 	}
 

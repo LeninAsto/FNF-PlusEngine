@@ -170,7 +170,6 @@ class CoolUtil
 	{
 		// changed so this actually works lol
 		var m:Float = Math.fround(f * snap);
-		// trace(snap);
 		return (m / snap);
 	}
 

@@ -105,7 +105,6 @@ class LuaUtils
 
 		if(allowMaps && isMap(instance))
 		{
-			//trace(instance);
 			instance.set(variable, value);
 			return value;
 		}
@@ -174,7 +173,6 @@ class LuaUtils
 
 		if(allowMaps && isMap(instance))
 		{
-			//trace(instance);
 			return instance.get(variable);
 		}
 
@@ -330,7 +328,6 @@ class LuaUtils
 				return false;
 		}*/
 
-		//trace(variable);
 		if(variable.exists != null && variable.keyValueIterator != null) return true;
 		return false;
 	}

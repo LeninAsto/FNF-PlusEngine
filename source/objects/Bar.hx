@@ -66,7 +66,6 @@ class Bar extends FlxSpriteGroup
 		else
 			percent = 0;
 
-		// Interpolación suave si está habilitada
 		if (ClientPrefs.data.smoothHealthBar)
 		{
 			smoothPercent = FlxMath.lerp(smoothPercent, percent, 0.1);

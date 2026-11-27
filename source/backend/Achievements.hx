@@ -213,7 +213,6 @@ class Achievements
 
 		var newPop:AchievementPopup = new AchievementPopup(achieve, endFunc);
 		_popups.push(newPop);
-		// trace('Giving achievement ' + achieve);
 	}
 
 	// Map sorting cuz haxe is physically incapable of doing that by itself

@@ -1405,7 +1405,6 @@ class CustomFlxG
 
 class CustomFlxMath
 {
-	// Funciones matemáticas más usadas
 	public static inline function lerp(a:Float, b:Float, ratio:Float):Float
 		return flixel.math.FlxMath.lerp(a, b, ratio);
 
@@ -1959,10 +1958,8 @@ class CustomInterp extends crowplexus.hscript.Interp
 			if (legacyMethod != null) return legacyMethod;
 		}
 		deprecations.HaxeLibDeprecations.checkMember(o, field, scriptName);
-		// Si el objeto es null, mostrar warning en lugar de crashear
 		if (o == null)
 		{
-			// Fallback: buscar en variables globales como última opción
 			if (MusicBeatState.getVariables().exists(field))
 			{
 				return MusicBeatState.getVariables().get(field);
@@ -2009,24 +2006,19 @@ class CustomInterp extends crowplexus.hscript.Interp
 		if ((o is psychlua.backend.ScriptedClass.IScriptCustomBehaviour))
 			return cast(o, psychlua.backend.ScriptedClass.IScriptCustomBehaviour).hget(field);
 
-		// Verificar si es un Map primero (compatible con SScript)
-		// Importante: Acceder a métodos del Map como 'exists', 'get', 'set', etc.
 		if (Std.isOfType(o, haxe.Constraints.IMap))
 		{
-			// Si se busca un método del Map, devolverlo usando Reflect.field directamente
 			if (field == "exists" || field == "get" || field == "set" || field == "remove" || field == "keys" || field == "iterator" || field == "toString"
 				|| field == "clear" || field == "copy")
 			{
-				// IMPORTANTE: Usar Reflect.field para métodos de Maps
 				var method = Reflect.field(o, field);
 				if (method != null)
 					return method;
 			}
-			// Si no es un método, tratar como acceso a key del Map
 			var map:haxe.Constraints.IMap<String, Dynamic> = cast o;
 			if (map.exists(field))
 				return map.get(field);
-			return null; // Maps devuelven null si no existe la key
+			return null;
 		}
 
 		// Try getProperty first so overridden getters (e.g. FlxSpriteGroup.get_width) are invoked,
@@ -2050,7 +2042,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 		{
 		}
 
-		// Verificar si el objeto tiene el field declarado (incluyendo privados)
 		if (Reflect.hasField(o, field))
 		{
 			try
@@ -2070,14 +2061,12 @@ class CustomInterp extends crowplexus.hscript.Interp
 			}
 		}
 
-		// Verificar si es una propiedad o método de la clase
 		var classType = Type.getClass(o);
 		if (classType != null)
 		{
 			var instanceFields = Type.getInstanceFields(classType);
 			if (instanceFields != null && instanceFields.contains(field))
 			{
-				// El field/método existe en la clase
 				try
 				{
 					// Try getProperty first to properly invoke overridden getters
@@ -2090,19 +2079,17 @@ class CustomInterp extends crowplexus.hscript.Interp
 				}
 				catch (e:Dynamic)
 				{
-					// Si falla, buscar en variables globales como fallback
 					if (MusicBeatState.getVariables().exists(field))
 						return MusicBeatState.getVariables().get(field);
 
 					if (MusicBeatState.getVideoHandlers().exists(field))
 						return MusicBeatState.getVideoHandlers().get(field);
 
-					return null; // Devolver null en lugar de error para compatibilidad
+					return null;
 				}
 			}
 		}
 
-		// Si llegamos aquí, el field no existe en la clase
 		// Compatibilidad: buscar en variables globales antes de dar error
 		if (MusicBeatState.getVariables().exists(field))
 		{
@@ -2114,7 +2101,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 			return MusicBeatState.getVideoHandlers().get(field);
 		}
 
-		// Para compatibilidad con objetos dinámicos/anónimos, intentar getProperty
 		try
 		{
 			var value = Reflect.getProperty(o, field);
@@ -2125,7 +2111,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 		{
 		}
 
-		// Último intento: acceso a fields privados/dinámicos con Reflect.field
 		try
 		{
 			var value = Reflect.field(o, field);
@@ -2136,7 +2121,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 		{
 		}
 
-		// Si todo falla, devolver null para compatibilidad (no lanzar error)
 		return null;
 	}
 
@@ -2161,7 +2145,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 		}
 		#end
 
-		// Si el objeto es null, mostrar warning y guardar en variables globales
 		if (o == null)
 		{
 			// Silently save to global variables to avoid spam
@@ -2183,7 +2166,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 		if ((o is psychlua.backend.ScriptedClass.IScriptCustomBehaviour))
 			return cast(o, psychlua.backend.ScriptedClass.IScriptCustomBehaviour).hset(field, value);
 
-		// Verificar si es un Map primero (compatible con SScript)
 		if (Std.isOfType(o, haxe.Constraints.IMap))
 		{
 			var map:haxe.Constraints.IMap<String, Dynamic> = cast o;
@@ -2191,7 +2173,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 			return value;
 		}
 
-		// Verificar si el field ya existe como field directo
 		if (Reflect.hasField(o, field))
 		{
 			try
@@ -2212,14 +2193,12 @@ class CustomInterp extends crowplexus.hscript.Interp
 			}
 		}
 
-		// Verificar si es una propiedad (setter) de la clase
 		var classType = Type.getClass(o);
 		if (classType != null)
 		{
 			var instanceFields = Type.getInstanceFields(classType);
 			if (instanceFields != null && instanceFields.contains(field))
 			{
-				// El field existe en la clase, usar setProperty para manejar setters
 				try
 				{
 					Reflect.setProperty(o, field, value);
@@ -2235,7 +2214,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 					}
 					catch (e2:Dynamic)
 					{
-						// Guardar en variables globales como fallback
 						var className = try Type.getClassName(Type.getClass(value)) catch (e:Dynamic) null;
 						if (className == "objects.VideoHandler" || className == "objects.MP4Handler")
 						{
@@ -2251,8 +2229,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 			}
 		}
 
-		// Si llegamos aquí, el field no existe en la clase
-		// Para objetos dinámicos/anónimos, intentar setProperty
 		try
 		{
 			Reflect.setProperty(o, field, value);
@@ -2271,7 +2247,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 			}
 		}
 
-		// Si todo falla, guardar en variables globales como fallback
 		var className = try Type.getClassName(Type.getClass(value)) catch (e:Dynamic) null;
 		if (className == "objects.VideoHandler" || className == "objects.MP4Handler")
 		{

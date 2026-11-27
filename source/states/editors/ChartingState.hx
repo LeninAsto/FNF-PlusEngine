@@ -595,7 +595,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		dragDropText.cameras = [camUI];
 		add(dragDropText);
 
-		// Configurar eventos de drag & drop
 		#if desktop
 		@:privateAccess
 		if (FlxG.stage != null && FlxG.stage.window != null)
@@ -876,12 +875,9 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 	override function update(elapsed:Float)
 	{
-		// Mostrar overlay cuando hay un archivo siendo arrastrado
 		#if desktop
 		if (droppedFilePath != null || (FlxG.stage != null && FlxG.stage.window != null))
 		{
-			// El overlay se muestra automáticamente cuando se abre el substate
-			// Aquí solo manejamos la visibilidad durante el drag
 			var isDragging:Bool = FlxG.mouse.pressed
 				&& (FlxG.mouse.viewY < 20
 					|| FlxG.mouse.viewY > FlxG.height - 20
@@ -913,7 +909,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		if (autoSaveCap > 0)
 		{
 			autoSaveTime += elapsed / 60.0;
-			// trace(autoSaveTime);
 			// #if debug if(FlxG.keys.justPressed.J) autoSaveTime += 20/60.0; #end
 			if (autoSaveTime >= autoSaveCap #if debug || FlxG.keys.justPressed.NUMPADMULTIPLY #end)
 			{
@@ -931,7 +926,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				var songCopy:SwagSong = Reflect.copy(PlayState.SONG);
 				Reflect.setField(songCopy, '__original_path', Song.chartPath);
 				var dataToSave:String = haxe.Json.stringify(songCopy);
-				// trace(chartName, dataToSave);
 				if (!FileSystem.isDirectory('backups'))
 					FileSystem.createDirectory('backups');
 				File.saveContent('backups/$chartName.$BACKUP_EXT', dataToSave);
@@ -955,7 +949,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 									var fileJoin:String = split[split.length - 2] + ' ' + timeStr;
 									var date:Date = Date.fromString(fileJoin);
-									// trace(fileJoin, date.getTime());
 									map.set(file, date.getTime());
 								}
 								catch (e:Exception)
@@ -974,7 +967,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 						while (files.length > backupLimit)
 						{
 							var file = files.shift();
-							// trace('removed $file');
 							try
 							{
 								FileSystem.deleteFile('backups/$file');
@@ -1640,7 +1632,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		{
 			noteSelectionSine += elapsed;
 			var sineValue:Float = 0.75 + Math.cos(Math.PI * noteSelectionSine * (isMovingNotes ? 8 : 2)) / 4;
-			// trace(sineValue);
 
 			var qPress = (touchPad.buttonUp2.justPressed || FlxG.keys.justPressed.Q);
 			var ePress = (touchPad.buttonDown2.justPressed || FlxG.keys.justPressed.E);
@@ -2430,7 +2421,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			var sndsToKill:Array<String> = [];
 			for (key => snd in Paths.currentTrackedSounds)
 			{
-				// trace(key, snd);
 				if (key.contains('/songs/${Paths.formatToSongPath(PlayState.SONG.song)}/') && snd != null)
 				{
 					sndsToKill.push(key);
@@ -2736,7 +2726,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			if (section.changeBPM)
 				bpm = section.bpm;
 			var beat:Float = Conductor.calculateCrochet(bpm);
-			// trace(secBPM, beat);
 
 			cachedSectionRow.push(row);
 			cachedSectionTimes.push(time);
@@ -3013,7 +3002,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 		noteX += GRID_SIZE * data;
 		note.x = noteX;
-		// trace(gridBg.x, noteX);
 	}
 
 	function positionEventX(event:EventMetaNote):Void
@@ -3030,7 +3018,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 		noteY = Math.max(noteY, -150);
 		note.y = noteY + (GRID_SIZE / 2 - note.height / 2);
 		note.chartY = noteY;
-		// trace(gridBg.y, noteY);
 	}
 
 	var characterData:Dynamic = {};
@@ -3039,7 +3026,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 	{
 		for (i in 1...GRID_PLAYERS + 1)
 		{
-			// trace('adding iconP$i');
 			var character:String = Reflect.field(PlayState.SONG, 'player$i');
 			if (i > 2 && PlayState.SONG.extraStrumLines != null && i - 3 < PlayState.SONG.extraStrumLines.length)
 			{
@@ -3089,7 +3075,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			var icon:HealthIcon = icons[i];
 			icon.visible = i < activePlayers;
 			if (!icon.visible) continue;
-			// trace('changing iconP${icon.ID}');
 			var iconName:String = Reflect.field(characterData, 'iconP${icon.ID}');
 			icon.changeIcon(iconName, true, Reflect.field(characterData, 'animatedP${icon.ID}') == true,
 				Reflect.field(characterData, 'iconFpsP${icon.ID}'));
@@ -5259,9 +5244,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 						state.add(charterInput);
 					}));
 
-					// trace(pack.chart);
-					// trace(pack.metadata);
-					// trace(chartName, chartFile, metadataFile);
 				}
 				catch (e:Exception)
 				{
@@ -5333,7 +5315,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 												pack.chart.scrollSpeed.set(diff, diffSpeed);
 												pack.chart.notes.set(diff, diffNotes);
 											}
-											// trace(diff, diffSpeed, diffNotes.length);
 										}
 									}
 									else
@@ -6369,7 +6350,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 					loadSection();
 					return;
 				}
-				// trace('changed section: $noteSec, $oldNextSectionTime, $oldCurSectionTime, $nextSectionTime, $curSectionTime');
 			}
 
 			var shouldBound:Bool = (note.strumTime >= oldCurSectionTime && note.strumTime < oldNextSectionTime);
@@ -6411,7 +6391,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 	public function UIEvent(id:String, sender:Dynamic)
 	{
-		// trace(id, sender);
 		switch (id)
 		{
 			case PsychUIButton.CLICK_EVENT, PsychUIDropDownMenu.CLICK_EVENT:
@@ -6528,12 +6507,10 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 
 		droppedFilePath = path;
 
-		// Mostrar diálogo de selección
 		openSubState(new BasePrompt(chartPhrase('ui.what_type_of_file_is_this', 'What type of file is this?'), function(state:BasePrompt)
 		{
 			var btnY = 390;
 
-			// Botón: Chart
 			var btn:PsychUIButton = new PsychUIButton(0, btnY, chartPhrase('ui.chart', 'Chart'), function()
 			{
 				loadDroppedChart();
@@ -6544,7 +6521,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			btn.cameras = state.cameras;
 			state.add(btn);
 
-			// Botón: Events
 			var btn:PsychUIButton = new PsychUIButton(0, btnY, chartPhrase('ui.events', 'Events'), function()
 			{
 				loadDroppedEvents();
@@ -6631,7 +6607,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 			{
 				var btnY = 390;
 
-				// Botón: Replace All
 				var btn:PsychUIButton = new PsychUIButton(0, btnY, chartPhrase('ui.replace_all', 'Replace All'), function()
 				{
 					for (event in events)
@@ -6660,7 +6635,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				btn.cameras = state.cameras;
 				state.add(btn);
 
-				// Botón: Add
 				var btn:PsychUIButton = new PsychUIButton(0, btnY, chartPhrase('ui.add', 'Add'), function()
 				{
 					for (event in loadedEvents)
@@ -6675,7 +6649,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				btn.cameras = state.cameras;
 				state.add(btn);
 
-				// Botón: Cancel
 				var btn:PsychUIButton = new PsychUIButton(0, btnY, chartPhrase('ui.cancel', 'Cancel'), function()
 				{
 					droppedFilePath = null;
@@ -6817,7 +6790,6 @@ class ChartingState extends MusicBeatState implements PsychUIEventHandler.PsychU
 				destroyIfOrphaned(note);
 		}
 
-		// trace('pushed action: $action');
 		if (currentUndo > 0)
 			undoActions = undoActions.slice(currentUndo);
 		currentUndo = 0;

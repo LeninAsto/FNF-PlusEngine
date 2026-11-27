@@ -36,7 +36,6 @@ class KeyViewer extends FlxSpriteGroup
 
 	static inline final KEY_LABEL_REFRESH_INTERVAL:Float = 0.5;
 
-	// Referencia a PlayState para acceder a cpuControlled
 	private var playState:Dynamic = null;
 
 	public function new(x:Float = 50, y:Float = 50, ?playStateRef:Dynamic = null)
@@ -58,7 +57,6 @@ class KeyViewer extends FlxSpriteGroup
 		var spacing:Float = 6;
 		var totalWidth:Float = (keySize + spacing) * keyCount - spacing;
 
-		// Crear botones de teclas y texto primero
 		for (i in 0...keyCount)
 		{
 			var keyButton = new KeyButton(i * (keySize + spacing), 0, keySize, i);

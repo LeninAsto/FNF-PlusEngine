@@ -407,16 +407,13 @@ class ReflectionFunctions
 			if(index > -1)
 			{
 				argStr = argStr.substring(index+2);
-				//trace('Op1: $argStr');
 				var lastIndex:Int = argStr.lastIndexOf('::');
 
 				var split:Array<String> = (lastIndex > -1) ? argStr.substring(0, lastIndex).split('.') : argStr.split('.');
 				arg = (lastIndex > -1) ? resolveClass(argStr.substring(lastIndex+2)) : PlayState.instance;
 				for (j in 0...split.length)
 				{
-					//trace('Op2: ${Type.getClass(args[i])}, ${split[j]}');
 					arg = LuaUtils.getVarInArray(arg, split[j].trim());
-					//trace('Op3: ${args[i] != null ? Type.getClass(args[i]) : null}');
 				}
 			}
 		}
@@ -428,7 +425,6 @@ class ReflectionFunctions
 		var split:Array<String> = funcStr.split('.');
 		var funcToRun:Function = null;
 		var obj:Dynamic = classObj;
-		//trace('start: ' + obj);
 		if(obj == null)
 		{
 			return null;
@@ -437,11 +433,9 @@ class ReflectionFunctions
 		for (i in 0...split.length)
 		{
 			obj = LuaUtils.getVarInArray(obj, split[i].trim());
-			//trace(obj, split[i]);
 		}
 
 		funcToRun = cast obj;
-		//trace('end: $obj');
 		return funcToRun != null ? Reflect.callMethod(obj, funcToRun, args) : null;
 	}
 }

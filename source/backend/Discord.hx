@@ -136,7 +136,6 @@ class DiscordClient
 		presence.endTimestamp = Std.int(endTimestamp / 1000);
 		updatePresence();
 
-		// trace('Discord RPC Updated. Arguments: $details, $state, $smallImageKey, $hasStartTimestamp, $endTimestamp, $largeImageKey');
 	}
 
 	public static function updatePresence()
@@ -200,7 +199,6 @@ class DiscordClient
 		if (pack != null && pack.discordRPC != null && pack.discordRPC != clientID)
 		{
 			clientID = pack.discordRPC;
-			// trace('Changing clientID! $clientID, $_defaultID');
 		}
 	}
 	#end

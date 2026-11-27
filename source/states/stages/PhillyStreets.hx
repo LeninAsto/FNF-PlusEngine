@@ -1076,12 +1076,10 @@ class PhillyStreets extends BaseStage
 									if (tmr2.loopsLeft == 0)
 									{
 										boyfriend.visible = true;
-										// trace('test 2');
 									}
 								}, 30);
 							}
 						}, 30);
-						// trace('test');
 					}
 					animationSlots.setFinish(boyfriend.animation, null);
 				});

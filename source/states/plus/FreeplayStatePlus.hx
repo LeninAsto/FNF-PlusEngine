@@ -63,7 +63,6 @@ class FreeplayStatePlus extends MusicBeatState
 
 	private static var lastDifficultyName:String = Difficulty.getDefault();
 
-	// scoreText eliminado - ahora se muestra debajo de cada dificultad
 	public var lerpScore:Int = 0;
 	public var lerpRating:Float = 0;
 	public var intendedScore:Int = 0;
@@ -163,7 +162,6 @@ class FreeplayStatePlus extends MusicBeatState
 	private var actionBarBg:FlxSprite;
 	public var lastThemeSignature:String = "";
 
-	// Variables para el zoom del bg
 	public var bgZoom:Float = 1;
 	public var defaultBgZoom:Float = 1;
 
@@ -648,7 +646,6 @@ class FreeplayStatePlus extends MusicBeatState
 		_cardVisualSignatures.resize(songs.length);
 		WeekData.setDirectoryFromWeek();
 
-		// Eliminar scoreText de la esquina ya que ahora se mostrará debajo de cada dificultad
 		// scoreText ya no se usa
 
 		freeplayHeaderPanel = new FlxSprite(28, -12).loadGraphic(Paths.image('ui/freeplay/header-wave-panel'));
@@ -1485,7 +1482,6 @@ class FreeplayStatePlus extends MusicBeatState
 					opponentVocals = new FlxSound();
 					try
 					{
-						// trace('please work...');
 						var oppVocals:String = getVocalFromCharacter(PlayState.SONG.player2);
 						var loadedVocals = Paths.voices(PlayState.SONG.song, (oppVocals != null && oppVocals.length > 0) ? oppVocals : 'Opponent');
 
@@ -1497,14 +1493,12 @@ class FreeplayStatePlus extends MusicBeatState
 							opponentVocals.volume = 0.8;
 							opponentVocals.play();
 							opponentVocals.pause();
-							// trace('yaaay!!');
 						}
 						else
 							opponentVocals = FlxDestroyUtil.destroy(opponentVocals);
 					}
 					catch (e:Dynamic)
 					{
-						// trace('FUUUCK');
 						opponentVocals = FlxDestroyUtil.destroy(opponentVocals);
 					}
 				}
@@ -1717,7 +1711,6 @@ class FreeplayStatePlus extends MusicBeatState
 		intendedRating = Highscore.getRating(songs[curSelected].songName, difficultySelector.curSelected);
 		#end
 
-		// Actualizar textos de score cuando cambia la selección
 		difficultySelector.updateScoreTexts();
 	}
 
@@ -2148,7 +2141,6 @@ class FreeplayStatePlus extends MusicBeatState
 
 	function setFreeplayLoadingUi(active:Bool):Void
 	{
-		// Solo se oculta la card de datos de la canción; el resto del Freeplay sigue normal.
 		if (songInfoCardCover != null)
 			songInfoCardCover.visible = !active;
 		if (songInfoCardTitle != null)
@@ -3465,7 +3457,6 @@ class FreeplayStatePlus extends MusicBeatState
 		}
 		else
 		{
-			// Ocultar completamente los scoreTexts cuando no estamos en selector de dificultad
 			for (scoreText in difficultySelector.scoreTexts.members)
 			{
 				if (scoreText != null)
@@ -3723,7 +3714,6 @@ class DifficultySelector
 			scoreTexts.add(scoreInfoText);
 		}
 
-		// Actualizar los textos de score/accuracy
 		updateScoreTexts();
 	}
 
@@ -3767,7 +3757,6 @@ class DifficultySelector
 	{
 		var lowerName = diffName.toLowerCase();
 
-		// Normalizar nombres traducidos a inglés para detección consistente
 		var normalizedName = normalizeDifficultyName(lowerName);
 
 		// Colores pastel correspondientes a cada dificultad
@@ -3783,7 +3772,6 @@ class DifficultySelector
 			return 0xC7A3FF; // Púrpura pastel
 		else
 		{
-			// Para dificultades personalizadas, generar colores pastel únicos
 			var pastelColors:Array<Int> = [
 				0xA78BFA, // Lavanda pastel
 				0xFBB6CE, // Rosa claro pastel
@@ -3802,22 +3790,16 @@ class DifficultySelector
 		}
 	}
 
-	/**
-	 * Normaliza nombres de dificultades traducidas a sus equivalentes en inglés
-	 * para detección consistente de colores en diferentes idiomas
-	 */
 	private function normalizeDifficultyName(diffName:String):String
 	{
 		var lower = diffName.toLowerCase();
 
-		// Obtener las traducciones de las dificultades estándar
 		var easyTranslated = Language.getPhrase('difficulty_Easy', 'Easy').toLowerCase();
 		var normalTranslated = Language.getPhrase('difficulty_Normal', 'Normal').toLowerCase();
 		var hardTranslated = Language.getPhrase('difficulty_Hard', 'Hard').toLowerCase();
 		var erectTranslated = Language.getPhrase('difficulty_Erect', 'Erect').toLowerCase();
 		var nightmareTranslated = Language.getPhrase('difficulty_Nightmare', 'Nightmare').toLowerCase();
 
-		// Comparar con traducciones
 		if (lower == easyTranslated || lower == 'easy')
 			return 'easy';
 
@@ -3833,7 +3815,6 @@ class DifficultySelector
 		if (lower == nightmareTranslated || lower == 'nightmare')
 			return 'nightmare';
 
-		// Si no coincide con ninguno, devolver el original
 		return lower;
 	}
 
@@ -3911,7 +3892,6 @@ class DifficultySelector
 			item.color = OptionsMenuTheme.difficultyTitleColor(difficultyColor, isSelected);
 			item.visible = true;
 
-			// Posicionar texto de score/accuracy debajo de la dificultad
 			if (i < scoreTexts.members.length)
 			{
 				var scoreText:FlxText = scoreTexts.members[i];

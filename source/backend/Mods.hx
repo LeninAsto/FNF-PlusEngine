@@ -256,7 +256,6 @@ class Mods
 		{
 			for (mod in CoolUtil.coolTextFile(#if android StorageUtil.getModsListPath() #else Sys.getCwd() + 'modsList.txt' #end))
 			{
-				// trace('Mod: $mod');
 				if (mod.trim().length < 1)
 					continue;
 
@@ -386,7 +385,6 @@ class Mods
 			trace('Failed to save modsList.txt: $e');
 		}
 		updatedOnState = true;
-		// trace('Saved modsList.txt');
 		#end
 	}
 

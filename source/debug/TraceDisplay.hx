@@ -13,9 +13,6 @@ import haxe.PosInfos;
 import crowplexus.iris.Iris;
 #end
 
-/**
- * Estructura para almacenar información de traces con colores
- */
 typedef TraceInfo =
 {
 	var text:String;
@@ -25,9 +22,6 @@ typedef TraceInfo =
 	var count:Int;
 }
 
-/**
- * Tipos de traces para clasificación
- */
 enum TraceType
 {
 	NORMAL;
@@ -39,20 +33,10 @@ enum TraceType
 	INFO;
 }
 
-/**
- * TraceDisplay - Sistema para mostrar traces/logs dentro del juego
- * Se activa/desactiva con F4 y muestra los últimos traces en pantalla
- */
 class TraceDisplay extends Sprite
 {
-	/**
-	 * Lista de traces almacenados con información de color y tipo
-	 */
 	public var traces:Array<TraceInfo> = [];
 
-	/**
-	 * Máximo número de traces a mostrar
-	 */
 	public var maxTraces:Int = 48;
 
 	public var maxStoredLines:Int = 56;
@@ -60,19 +44,10 @@ class TraceDisplay extends Sprite
 
 	private static inline final TEXT_PADDING:Int = 6;
 
-	/**
-	 * Si el display está visible o no
-	 */
 	public var isVisible:Bool = false;
 
-	/**
-	 * TextField para mostrar el texto
-	 */
 	private var textDisplay:TextField;
 
-	/**
-	 * Fondo semi-transparente para mejor legibilidad
-	 */
 	private var backgroundShape:Shape;
 
 	private var baseX:Float = 0;
@@ -80,35 +55,24 @@ class TraceDisplay extends Sprite
 	private var shownAmount:Float = 0;
 	private var dirty:Bool = true;
 
-	/**
-	 * Referencia al trace original de Haxe
-	 */
 	private var originalTrace:Dynamic;
 
-	/**
-	 * Referencia al handler de errores original de Iris/HScript
-	 */
 	#if HSCRIPT_ALLOWED
 	private var originalIrisError:Dynamic;
 	#end
 
-	/**
-	 * Instancia singleton para acceso global
-	 */
 	public static var instance:TraceDisplay;
 
 	public function new(x:Float = 10, y:Float = 50, textColor:Int = 0xFFFFFF)
 	{
 		super();
 
-		// Verificar singleton - solo permitir una instancia
 		if (instance != null)
 		{
 			trace("TraceDisplay: Ya existe una instancia, destruyendo la anterior");
 			instance.destroy();
 		}
 
-		// Configurar singleton
 		instance = this;
 
 		this.x = x;
@@ -116,7 +80,6 @@ class TraceDisplay extends Sprite
 		baseX = x;
 		baseY = y;
 
-		// Create text display field
 		textDisplay = new TextField();
 		textDisplay.selectable = false;
 		textDisplay.mouseEnabled = false;
@@ -129,43 +92,33 @@ class TraceDisplay extends Sprite
 		textDisplay.x = TEXT_PADDING;
 		textDisplay.y = TEXT_PADDING;
 
-		// Crear fondo
 		backgroundShape = new Shape();
 		addChildAt(backgroundShape, 0); // Add background behind text
 		addChild(textDisplay); // Add text on top
 
-		// Interceptar traces y errores solo si no se ha hecho antes
 		if (originalTrace == null)
 		{
 			setupTraceCapture();
 			setupErrorCapture();
 		}
 
-		// Configurar listener para el atajo personalizable del Trace Display.
 		if (FlxG.stage != null)
 		{
 			FlxG.stage.addEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);
 		}
 
-		// Inicialmente oculto
 		textDisplay.visible = true;
 		backgroundShape.visible = true;
 		alpha = 0;
 		visible = false;
 	}
 
-	/**
-	 * Configurar la captura de traces
-	 */
 	private function setupTraceCapture():Void
 	{
-		// Guardar la función trace original
 		originalTrace = Log.trace;
 
-		// Reemplazar con nuestra función personalizada
 		Log.trace = function(v:Dynamic, ?infos:PosInfos):Void
 		{
-			// Formatear para la consola/terminal con estilo limpio
 			if (infos != null)
 			{
 				var sourceLabel = formatSourceLabel(infos.fileName);
@@ -176,25 +129,18 @@ class TraceDisplay extends Sprite
 				Sys.println(Std.string(v));
 			}
 
-			// Agregar a nuestro display
 			addTrace(v, infos, NORMAL, 0xFFFFFF);
 		};
 	}
 
-	/**
-	 * Configurar la captura de errores de scripts
-	 */
 	private function setupErrorCapture():Void
 	{
 		#if HSCRIPT_ALLOWED
-		// Interceptar errores de HScript/Iris
 		originalIrisError = Iris.error;
 		Iris.error = function(message:String, ?pos:Dynamic):Void
 		{
-			// Llamar al error original
 			originalIrisError(message, pos);
 
-			// Agregar a nuestro display
 			var errorText = 'HSCRIPT ERROR: $message';
 			var fileName:String = null;
 			if (pos != null && pos.fileName != null)
@@ -209,9 +155,6 @@ class TraceDisplay extends Sprite
 		#end
 	}
 
-	/**
-	 * Agregar un trace a la lista
-	 */
 	private function addTrace(value:Dynamic, ?infos:PosInfos, type:TraceType = NORMAL, color:Int = 0xFFFFFF):Void
 	{
 		var traceText:String;
@@ -229,9 +172,6 @@ class TraceDisplay extends Sprite
 		addTraceDirectly(traceText, type, color);
 	}
 
-	/**
-	 * Agregar un trace directamente sin procesar
-	 */
 	public function addTraceDirectly(text:String, type:TraceType = NORMAL, color:Int = 0xFFFFFF):Void
 	{
 		for (trace in traces)
@@ -261,16 +201,12 @@ class TraceDisplay extends Sprite
 		enforceTraceLimits();
 		dirty = true;
 
-		// Actualizar display si está visible
 		if (isVisible)
 		{
 			updateDisplay();
 		}
 	}
 
-	/**
-	 * Extraer nombre de archivo sin path ni extensión
-	 */
 	private function extractFileName(fileName:String):String
 	{
 		if (fileName == null)
@@ -297,9 +233,6 @@ class TraceDisplay extends Sprite
 		return extractFileName(fileName);
 	}
 
-	/**
-	 * Función pública para agregar errores de Lua
-	 */
 	public static function addLuaError(text:String):Void
 	{
 		if (instance != null)
@@ -308,9 +241,6 @@ class TraceDisplay extends Sprite
 		}
 	}
 
-	/**
-	 * Funcion publica para agregar traces de Lua, incluyendo warnings y deprecated.
-	 */
 	public static function addLuaTrace(text:String, color:Int = 0xFFFFFF, deprecated:Bool = false):Void
 	{
 		if (instance != null)
@@ -325,9 +255,6 @@ class TraceDisplay extends Sprite
 		}
 	}
 
-	/**
-	 * Funcion publica para reflejar el panel debug del juego en TraceDisplay.
-	 */
 	public static function addDebugText(text:String, color:Int = 0xFFFFFF):Void
 	{
 		if (instance != null)
@@ -337,9 +264,6 @@ class TraceDisplay extends Sprite
 		}
 	}
 
-	/**
-	 * Función pública para agregar errores de HScript
-	 */
 	public static function addHScriptError(text:String, ?fileName:String):Void
 	{
 		if (instance != null)
@@ -355,9 +279,6 @@ class TraceDisplay extends Sprite
 		}
 	}
 
-	/**
-	 * Función pública para agregar warnings
-	 */
 	public static function addWarning(text:String):Void
 	{
 		if (instance != null)
@@ -366,9 +287,6 @@ class TraceDisplay extends Sprite
 		}
 	}
 
-	/**
-	 * Función pública para agregar información
-	 */
 	public static function addInfo(text:String):Void
 	{
 		if (instance != null)
@@ -487,9 +405,6 @@ class TraceDisplay extends Sprite
 		return lines;
 	}
 
-	/**
-	 * Actualizar el contenido mostrado
-	 */
 	private function updateDisplay():Void
 	{
 		if (!isVisible)
@@ -513,9 +428,6 @@ class TraceDisplay extends Sprite
 		dirty = false;
 	}
 
-	/**
-	 * Actualizar el fondo
-	 */
 	private function updateBackground():Void
 	{
 		if (!isVisible || backgroundShape == null)
@@ -527,20 +439,15 @@ class TraceDisplay extends Sprite
 
 		backgroundShape.graphics.clear();
 
-		// Outer rectangle (border color) with 50% opacity
 		backgroundShape.graphics.beginFill(0x3d3f41, 0.5);
 		backgroundShape.graphics.drawRect(0, 0, bgWidth + (INNER_DIFF * 2), bgHeight + (INNER_DIFF * 2));
 		backgroundShape.graphics.endFill();
 
-		// Inner rectangle (main background) with 50% opacity
 		backgroundShape.graphics.beginFill(0x2c2f30, 0.5);
 		backgroundShape.graphics.drawRect(INNER_DIFF, INNER_DIFF, bgWidth, bgHeight);
 		backgroundShape.graphics.endFill();
 	}
 
-	/**
-	 * Toggle del display con su atajo personalizable.
-	 */
 	private function onKeyDown(event:KeyboardEvent):Void
 	{
 		// Only suppress the key while Controls is actively capturing a new bind.
@@ -554,9 +461,6 @@ class TraceDisplay extends Sprite
 		}
 	}
 
-	/**
-	 * Mostrar/ocultar el display
-	 */
 	public function toggleDisplay():Void
 	{
 		isVisible = !isVisible;
@@ -568,9 +472,6 @@ class TraceDisplay extends Sprite
 		}
 	}
 
-	/**
-	 * Mostrar el display
-	 */
 	public function show():Void
 	{
 		isVisible = true;
@@ -578,17 +479,11 @@ class TraceDisplay extends Sprite
 		updateDisplay();
 	}
 
-	/**
-	 * Ocultar el display
-	 */
 	public function hide():Void
 	{
 		isVisible = false;
 	}
 
-	/**
-	 * Limpiar todos los traces
-	 */
 	public function clear():Void
 	{
 		traces = [];
@@ -599,9 +494,6 @@ class TraceDisplay extends Sprite
 		}
 	}
 
-	/**
-	 * Posicionar el display
-	 */
 	public function positionTrace(x:Float, y:Float):Void
 	{
 		baseX = x;
@@ -630,18 +522,13 @@ class TraceDisplay extends Sprite
 			visible = true;
 	}
 
-	/**
-	 * Cleanup al destruir
-	 */
 	public function destroy():Void
 	{
-		// Restaurar trace original
 		if (originalTrace != null)
 		{
 			Log.trace = originalTrace;
 		}
 
-		// Restaurar error handler original
 		#if HSCRIPT_ALLOWED
 		if (originalIrisError != null)
 		{
@@ -649,13 +536,11 @@ class TraceDisplay extends Sprite
 		}
 		#end
 
-		// Limpiar singleton
 		if (instance == this)
 		{
 			instance = null;
 		}
 
-		// Remover listener
 		if (FlxG.stage != null)
 		{
 			FlxG.stage.removeEventListener(KeyboardEvent.KEY_DOWN, onKeyDown);

@@ -815,7 +815,6 @@ class WeekEditorFreeplayState extends MusicBeatState implements PsychUIEventHand
 				icon.alpha = 1;
 			}
 		}
-		// trace(weekFile.songs[curSelected]);
 		iconInputText.text = weekFile.songs[curSelected][1];
 
 		var colors = weekFile.songs[curSelected][2];

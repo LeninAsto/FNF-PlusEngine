@@ -323,7 +323,6 @@ class Character extends FlxSprite
 		if (isAnimateAtlas)
 			copyAtlasValues();
 		#end
-		// trace('Loaded file to character ' + curCharacter);
 	}
 
 	public static function normalizeAssetPath(path:Dynamic):String

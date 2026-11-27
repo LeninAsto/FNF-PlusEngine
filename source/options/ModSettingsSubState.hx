@@ -59,7 +59,6 @@ class ModSettingsSubState extends BaseOptionsMenu
 						// getting inputs and checking
 						var keyboardKey:FlxKey = cast FlxKey.fromString(keyboardStr);
 						var gamepadKey:FlxGamepadInputID = cast FlxGamepadInputID.fromString(gamepadStr);
-						// trace('${keyboardStr}: $keyboardKey, ${gamepadStr}: $gamepadKey');
 
 						@:privateAccess
 						{

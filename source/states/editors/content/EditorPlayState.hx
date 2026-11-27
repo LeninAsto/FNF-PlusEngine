@@ -262,7 +262,6 @@ class EditorPlayState extends MusicBeatSubstate
 	{
 		if (lastBeatHit >= curBeat)
 		{
-			// trace('BEAT HIT: ' + curBeat + ', LAST HIT: ' + lastBeatHit);
 			return;
 		}
 		notes.sort(FlxSort.byY, ClientPrefs.data.downScroll ? FlxSort.ASCENDING : FlxSort.DESCENDING);
@@ -711,7 +710,6 @@ class EditorPlayState extends MusicBeatSubstate
 	{
 		var eventKey:FlxKey = event.keyCode;
 		var key:Int = PlayState.getKeyFromEvent(keysArray, eventKey);
-		// trace('Pressed: ' + eventKey);
 
 		if (!controls.controllerMode)
 		{
@@ -747,7 +745,6 @@ class EditorPlayState extends MusicBeatSubstate
 		if (plrInputNotes.length != 0)
 		{ // slightly faster than doing `> 0` lol
 			var funnyNote:Note = plrInputNotes[0]; // front note
-			// trace('✡⚐🕆☼ 💣⚐💣');
 
 			if (plrInputNotes.length > 1)
 			{
@@ -784,7 +781,6 @@ class EditorPlayState extends MusicBeatSubstate
 	{
 		var eventKey:FlxKey = event.keyCode;
 		var key:Int = PlayState.getKeyFromEvent(keysArray, eventKey);
-		// trace('Pressed: ' + eventKey);
 
 		if (!controls.controllerMode && key > -1)
 			keyReleased(key);

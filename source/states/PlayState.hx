@@ -391,7 +391,6 @@ class PlayState extends MusicBeatState
 
 	override public function create()
 	{
-		//trace('Playback Rate: ' + playbackRate);
 		gameplayStateGuard = new backend.GameplayStateGuard();
 		_lastLoadedModDirectory = Mods.currentModDirectory;
 		NoteSplash.clearCache();
@@ -1972,7 +1971,6 @@ class PlayState extends MusicBeatState
 		startOnTime = 0;
 
 		if(paused) {
-			//trace('Oopsie doopsie! Paused sound');
 			FlxG.sound.music.pause();
 			if (hasAudio(vocals)) vocals.pause();
 			if (hasAudio(opponentVocals)) opponentVocals.pause();
@@ -3431,7 +3429,6 @@ class PlayState extends MusicBeatState
 				cameraBopEnabled = cameraBopIntensity > 0;
 
 			case 'Play Animation':
-				//trace('Anim to play: ' + value1);
 				var char:Character = dad;
 				switch(value2.toLowerCase().trim()) {
 					case 'bf' | 'boyfriend':
@@ -5676,7 +5673,6 @@ class PlayState extends MusicBeatState
 	override function beatHit()
 	{
 		if(lastBeatHit >= curBeat) {
-			//trace('BEAT HIT: ' + curBeat + ', LAST HIT: ' + lastBeatHit);
 			return;
 		}
 
@@ -6091,7 +6087,6 @@ class PlayState extends MusicBeatState
 			{
 				// Rating Percent
 				ratingPercent = AccuracyTools.withBonus(totalNotesHit / totalPlayed, totalPlayed, totalNotes, bonusLimit);
-				//trace((totalNotesHit / totalPlayed) + ', Total: ' + totalPlayed + ', notes hit: ' + totalNotesHit);
 
 				// Rating Name
 				var stuff = getRatingStuff();
@@ -6224,7 +6219,6 @@ class PlayState extends MusicBeatState
 			if(found)
 			{
 				runtimeShaders.set(name, [frag, vert]);
-				//trace('Found shader $name!');
 				return true;
 			}
 		}
