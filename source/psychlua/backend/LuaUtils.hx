@@ -13,6 +13,7 @@ import substates.GameOverSubstate;
 
 typedef LuaTweenOptions = {
 	type:FlxTweenType,
+	framerate:Float,
 	startDelay:Float,
 	onUpdate:Null<String>,
 	onStart:Null<String>,
@@ -49,15 +50,24 @@ class LuaUtils
 
 	public static function getLuaTween(options:Dynamic)
 	{
-		return (options != null) ? {
+		if (options == null) return null;
+		var rate:Dynamic = Reflect.field(options, 'framerate');
+		var framerate:Float = 0;
+		if (Std.isOfType(rate, Int) || Std.isOfType(rate, Float))
+		{
+			var value:Float = rate;
+			if (Math.isFinite(value) && value > 0) framerate = value;
+		}
+		return {
 			type: getTweenTypeByString(options.type),
+			framerate: framerate,
 			startDelay: options.startDelay != null ? options.startDelay : 0.0,
 			onUpdate: options.onUpdate,
 			onStart: options.onStart,
 			onComplete: options.onComplete,
 			loopDelay: options.loopDelay != null ? options.loopDelay : 0.0,
 			ease: getTweenEaseByString(options.ease)
-		} : null;
+		};
 	}
 
 	public static function setVarInArray(instance:Dynamic, variable:String, value:Dynamic, allowMaps:Bool = false):Any

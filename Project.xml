@@ -213,6 +213,7 @@
 
 	<!-- Enable all classes compilation for hscript -->
 	<haxeflag name="--macro" value="addMetadata('@:build(macros.PlusFlxMacro.buildFlxBasic())', 'flixel.FlxBasic')" />
+	<haxeflag name="--macro" value="addMetadata('@:build(macros.PlusFlxMacro.buildFlxText())', 'flixel.text.FlxText')" />
 	<haxeflag name="--macro" value="addMetadata('@:build(macros.PlusFlxMacro.buildFlxPath())', 'flixel.path.FlxPath')" />
 	<haxeflag name="--macro" value="include('flixel', true, [ 'flixel.addons.editors.spine.*', 'flixel.addons.nape.*', 'flixel.addons.tile.FlxRayCastTilemap', 'flixel.system.macros.*' ])" />
 

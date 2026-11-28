@@ -725,6 +725,7 @@ class FunkinLua
 						var callbackTag:String = 'tween_' + storedTag;
 						var tween:FlxTween = FlxTween.tween(penisExam, values, duration, myOptions != null ? {
 							type: myOptions.type,
+							framerate: myOptions.framerate,
 							ease: myOptions.ease,
 							startDelay: myOptions.startDelay,
 							loopDelay: myOptions.loopDelay,
@@ -759,6 +760,7 @@ class FunkinLua
 					else
 						FlxTween.tween(penisExam, values, duration, myOptions != null ? {
 							type: myOptions.type,
+							framerate: myOptions.framerate,
 							ease: myOptions.ease,
 							startDelay: myOptions.startDelay,
 							loopDelay: myOptions.loopDelay,

@@ -17,6 +17,8 @@ import options.OptionsState;
 #if funkin.vis
 import funkin.vis.dsp.SpectralAnalyzer;
 #end
+#if mobile
+import mobile.backend.MobileScaleMode;
 
 /** Dedicated Plus menu, composed around the Nova layout rather than Psych's menu. */
 class MainMenuStatePlus extends MusicBeatState
@@ -185,11 +187,11 @@ class MainMenuStatePlus extends MusicBeatState
 
 	function createWatermarks():Void
 	{
-		var plusVer = new FlxText(16, FlxG.height - 66, 0, 'Plus Engine v' + plusEngineVersion, 16);
+		var plusVer = new FlxText(safeX(12), FlxG.height - 66, 0, 'Plus Engine v' + plusEngineVersion, 16);
 		plusVer.setFormat(Paths.font('vcr.ttf'), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		plusVer.scrollFactor.set();
 		add(plusVer);
-		var fnfVer = new FlxText(16, FlxG.height - 42, 0, "Friday Night Funkin' v" + fnfVersion, 16);
+		var fnfVer = new FlxText(safeX(16), FlxG.height - 42, 0, "Friday Night Funkin' v" + fnfVersion, 16);
 		fnfVer.setFormat(Paths.font('vcr.ttf'), 16, FlxColor.WHITE, LEFT, FlxTextBorderStyle.OUTLINE, FlxColor.BLACK);
 		fnfVer.scrollFactor.set();
 		add(fnfVer);

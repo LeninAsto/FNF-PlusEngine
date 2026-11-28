@@ -188,6 +188,24 @@ class WindowMode
 			}
 			window.borderless = true;
 
+			#if linux
+			var display = lime.system.System.getDisplay(0);
+			var driver = Sys.getEnv('SDL_VIDEODRIVER');
+			var wayland = driver == 'wayland' || ((driver == null || driver.length == 0) && Sys.getEnv('WAYLAND_DISPLAY') != null);
+			if (display != null && display.bounds != null && display.bounds.width > 0 && display.bounds.height > 0)
+			{
+				window.x = Std.int(display.bounds.x);
+				window.y = Std.int(display.bounds.y);
+				if (wayland)
+					window.fullscreen = true;
+				else
+					window.resize(Std.int(display.bounds.width), Std.int(display.bounds.height));
+			}
+			else
+			{
+				window.fullscreen = true;
+			}
+			#else
 			var screenW = Std.int(Capabilities.screenResolutionX);
 			var screenH = Std.int(Capabilities.screenResolutionY);
 			var targetW = Std.int(Math.min(1920, screenW));
@@ -196,9 +214,13 @@ class WindowMode
 			window.resize(targetW, targetH);
 			window.x = Std.int((screenW - targetW) * 0.5);
 			window.y = Std.int((screenH - targetH) * 0.5);
+			#end
 		}
 		else
 		{
+			#if linux
+			if (window.fullscreen) window.fullscreen = false;
+			#end
 			window.borderless = false;
 			if (hasWindowedState && lastWindowedW > 0 && lastWindowedH > 0)
 			{

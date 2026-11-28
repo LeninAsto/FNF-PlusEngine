@@ -6,6 +6,29 @@ import haxe.macro.Expr;
 
 class PlusFlxMacro
 {
+	public static macro function buildFlxText():Array<Field>
+	{
+		var fields = Context.getBuildFields();
+		for (field in fields)
+		{
+			if (field.name != 'set_antialiasing') continue;
+			switch (field.kind)
+			{
+				case FFun(fn):
+					switch (fn.expr.expr)
+					{
+						case EBlock(exprs):
+							exprs.unshift(macro value = true);
+						default: Context.error('Unexpected FlxText antialiasing setter', field.pos);
+					}
+				default: Context.error('Unexpected FlxText antialiasing setter', field.pos);
+			}
+			return fields;
+		}
+		Context.error('FlxText antialiasing setter not found', Context.currentPos());
+		return fields;
+	}
+
 	public static macro function buildFlxBasic():Array<Field>
 	{
 		var fields:Array<Field> = Context.getBuildFields();
