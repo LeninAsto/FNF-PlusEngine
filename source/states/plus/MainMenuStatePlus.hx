@@ -19,6 +19,7 @@ import funkin.vis.dsp.SpectralAnalyzer;
 #end
 #if mobile
 import mobile.backend.MobileScaleMode;
+#end
 
 /** Dedicated Plus menu, composed around the Nova layout rather than Psych's menu. */
 class MainMenuStatePlus extends MusicBeatState
