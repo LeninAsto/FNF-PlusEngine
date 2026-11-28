@@ -248,7 +248,7 @@ class MenuCharacterEditorState extends MusicBeatState implements PsychUIEventHan
 			{
 				if (!unsavedProgress)
 				{
-					MusicBeatState.switchState(new states.editors.MasterEditorMenu());
+					MusicBeatState.switchStateFactory(() -> new states.editors.MasterEditorMenu(), states.editors.MasterEditorMenu);
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				}
 				else

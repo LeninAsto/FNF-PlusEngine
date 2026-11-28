@@ -386,7 +386,7 @@ class HScript extends Iris
 		set('Reflect', Reflect);
 		set('Lambda', Lambda);
 		set('Json', haxe.Json);
-		set('TJSON', tjson.TJSON);
+		set('TJSON', deprecations.tjson.LegacyTJSON);
 		set('Array', Array);
 		set('EReg', EReg);
 		set('IntMap', haxe.ds.IntMap);
@@ -1379,9 +1379,10 @@ class CustomFlxG
 	}
 
 	// Main FlxG method delegation
-	public static function switchState(nextState:flixel.FlxState):Void
+	public static function switchState(nextState:Dynamic):Void
 	{
-		FlxG.switchState(nextState);
+		deprecations.HaxeLibDeprecations.warnLegacyStateCall('FlxG.switchState', nextState);
+		FlxG.switchState(cast nextState);
 	}
 
 	public static function resetState():Void
@@ -1404,7 +1405,6 @@ class CustomFlxG
 
 class CustomFlxMath
 {
-	// Funciones matemáticas más usadas
 	public static inline function lerp(a:Float, b:Float, ratio:Float):Float
 		return flixel.math.FlxMath.lerp(a, b, ratio);
 
@@ -1450,8 +1450,17 @@ class CustomFlxMath
 	public static inline function inBounds(value:Float, min:Float, max:Float):Bool
 		return flixel.math.FlxMath.inBounds(value, min, max);
 
-	public static inline function fastSin(angle:Float):Float
-		return flixel.math.FlxMath.fastSin(angle);
+	public static function fastSin(angle:Float):Float
+	{
+		deprecations.HaxeLibDeprecations.warnMessage('flixel.math.FlxMath.fastSin', 'fastSin is deprecated, use Math.sin, instead');
+		return modchart.backend.util.ModchartUtil.sin(angle);
+	}
+
+	public static function fastCos(angle:Float):Float
+	{
+		deprecations.HaxeLibDeprecations.warnMessage('flixel.math.FlxMath.fastCos', 'fastCos is deprecated, use Math.cos, instead');
+		return modchart.backend.util.ModchartUtil.cos(angle);
+	}
 }
 
 class CustomFlxColor
@@ -1808,6 +1817,10 @@ class CustomInterp extends crowplexus.hscript.Interp
 			return null;
 		}
 
+		if (funcToRun == 'switchState' && args != null && args.length > 0
+			&& (o == flixel.FlxG || o == backend.MusicBeatState || o == backend.BaseMusicBeatState))
+			deprecations.HaxeLibDeprecations.warnLegacyStateCall(o == flixel.FlxG ? 'FlxG.switchState' : 'MusicBeatState.switchState', IrisScriptClassImport.unwrapArgs(args)[0], scriptName);
+
 		var f = get(o, funcToRun);
 		if (f != null && Reflect.isFunction(f))
 			return IrisScriptClassImport.wrap(Reflect.callMethod(o, f, IrisScriptClassImport.unwrapArgs(args)));
@@ -1830,6 +1843,7 @@ class CustomInterp extends crowplexus.hscript.Interp
 
 	override public function getOrImportClass(name:String):Dynamic
 	{
+		if (name == 'tjson.TJSON') return deprecations.tjson.LegacyTJSON;
 		var native:Dynamic = super.getOrImportClass(name);
 		if (native != null)
 			return native;
@@ -1938,10 +1952,14 @@ class CustomInterp extends crowplexus.hscript.Interp
 
 	override function get(o:Dynamic, field:String):Dynamic
 	{
-		// Si el objeto es null, mostrar warning en lugar de crashear
+		if (field == 'setFilters')
+		{
+			var legacyMethod = deprecations.LegacyCamera.resolveMember(o, field, scriptName);
+			if (legacyMethod != null) return legacyMethod;
+		}
+		deprecations.HaxeLibDeprecations.checkMember(o, field, scriptName);
 		if (o == null)
 		{
-			// Fallback: buscar en variables globales como última opción
 			if (MusicBeatState.getVariables().exists(field))
 			{
 				return MusicBeatState.getVariables().get(field);
@@ -1988,24 +2006,19 @@ class CustomInterp extends crowplexus.hscript.Interp
 		if ((o is psychlua.backend.ScriptedClass.IScriptCustomBehaviour))
 			return cast(o, psychlua.backend.ScriptedClass.IScriptCustomBehaviour).hget(field);
 
-		// Verificar si es un Map primero (compatible con SScript)
-		// Importante: Acceder a métodos del Map como 'exists', 'get', 'set', etc.
 		if (Std.isOfType(o, haxe.Constraints.IMap))
 		{
-			// Si se busca un método del Map, devolverlo usando Reflect.field directamente
 			if (field == "exists" || field == "get" || field == "set" || field == "remove" || field == "keys" || field == "iterator" || field == "toString"
 				|| field == "clear" || field == "copy")
 			{
-				// IMPORTANTE: Usar Reflect.field para métodos de Maps
 				var method = Reflect.field(o, field);
 				if (method != null)
 					return method;
 			}
-			// Si no es un método, tratar como acceso a key del Map
 			var map:haxe.Constraints.IMap<String, Dynamic> = cast o;
 			if (map.exists(field))
 				return map.get(field);
-			return null; // Maps devuelven null si no existe la key
+			return null;
 		}
 
 		// Try getProperty first so overridden getters (e.g. FlxSpriteGroup.get_width) are invoked,
@@ -2029,7 +2042,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 		{
 		}
 
-		// Verificar si el objeto tiene el field declarado (incluyendo privados)
 		if (Reflect.hasField(o, field))
 		{
 			try
@@ -2049,14 +2061,12 @@ class CustomInterp extends crowplexus.hscript.Interp
 			}
 		}
 
-		// Verificar si es una propiedad o método de la clase
 		var classType = Type.getClass(o);
 		if (classType != null)
 		{
 			var instanceFields = Type.getInstanceFields(classType);
 			if (instanceFields != null && instanceFields.contains(field))
 			{
-				// El field/método existe en la clase
 				try
 				{
 					// Try getProperty first to properly invoke overridden getters
@@ -2069,19 +2079,17 @@ class CustomInterp extends crowplexus.hscript.Interp
 				}
 				catch (e:Dynamic)
 				{
-					// Si falla, buscar en variables globales como fallback
 					if (MusicBeatState.getVariables().exists(field))
 						return MusicBeatState.getVariables().get(field);
 
 					if (MusicBeatState.getVideoHandlers().exists(field))
 						return MusicBeatState.getVideoHandlers().get(field);
 
-					return null; // Devolver null en lugar de error para compatibilidad
+					return null;
 				}
 			}
 		}
 
-		// Si llegamos aquí, el field no existe en la clase
 		// Compatibilidad: buscar en variables globales antes de dar error
 		if (MusicBeatState.getVariables().exists(field))
 		{
@@ -2093,7 +2101,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 			return MusicBeatState.getVideoHandlers().get(field);
 		}
 
-		// Para compatibilidad con objetos dinámicos/anónimos, intentar getProperty
 		try
 		{
 			var value = Reflect.getProperty(o, field);
@@ -2104,7 +2111,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 		{
 		}
 
-		// Último intento: acceso a fields privados/dinámicos con Reflect.field
 		try
 		{
 			var value = Reflect.field(o, field);
@@ -2115,12 +2121,12 @@ class CustomInterp extends crowplexus.hscript.Interp
 		{
 		}
 
-		// Si todo falla, devolver null para compatibilidad (no lanzar error)
 		return null;
 	}
 
 	override function set(o:Dynamic, field:String, value:Dynamic):Dynamic
 	{
+		deprecations.HaxeLibDeprecations.checkMember(o, field, scriptName);
 		#if mobile
 		// Check if trying to modify receptors when aligned mode is enabled
 		if (ClientPrefs.data.mobileReceptorAlign && o != null)
@@ -2139,7 +2145,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 		}
 		#end
 
-		// Si el objeto es null, mostrar warning y guardar en variables globales
 		if (o == null)
 		{
 			// Silently save to global variables to avoid spam
@@ -2161,7 +2166,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 		if ((o is psychlua.backend.ScriptedClass.IScriptCustomBehaviour))
 			return cast(o, psychlua.backend.ScriptedClass.IScriptCustomBehaviour).hset(field, value);
 
-		// Verificar si es un Map primero (compatible con SScript)
 		if (Std.isOfType(o, haxe.Constraints.IMap))
 		{
 			var map:haxe.Constraints.IMap<String, Dynamic> = cast o;
@@ -2169,7 +2173,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 			return value;
 		}
 
-		// Verificar si el field ya existe como field directo
 		if (Reflect.hasField(o, field))
 		{
 			try
@@ -2190,14 +2193,12 @@ class CustomInterp extends crowplexus.hscript.Interp
 			}
 		}
 
-		// Verificar si es una propiedad (setter) de la clase
 		var classType = Type.getClass(o);
 		if (classType != null)
 		{
 			var instanceFields = Type.getInstanceFields(classType);
 			if (instanceFields != null && instanceFields.contains(field))
 			{
-				// El field existe en la clase, usar setProperty para manejar setters
 				try
 				{
 					Reflect.setProperty(o, field, value);
@@ -2213,7 +2214,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 					}
 					catch (e2:Dynamic)
 					{
-						// Guardar en variables globales como fallback
 						var className = try Type.getClassName(Type.getClass(value)) catch (e:Dynamic) null;
 						if (className == "objects.VideoHandler" || className == "objects.MP4Handler")
 						{
@@ -2229,8 +2229,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 			}
 		}
 
-		// Si llegamos aquí, el field no existe en la clase
-		// Para objetos dinámicos/anónimos, intentar setProperty
 		try
 		{
 			Reflect.setProperty(o, field, value);
@@ -2249,7 +2247,6 @@ class CustomInterp extends crowplexus.hscript.Interp
 			}
 		}
 
-		// Si todo falla, guardar en variables globales como fallback
 		var className = try Type.getClassName(Type.getClass(value)) catch (e:Dynamic) null;
 		if (className == "objects.VideoHandler" || className == "objects.MP4Handler")
 		{

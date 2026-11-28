@@ -91,7 +91,7 @@ class StageData
 			var path:String = Paths.getPath('stages/' + stage + '.json', TEXT, null, true);
 			var rawJson:String = AssetLoader.loadText(path);
 			if (rawJson != null && rawJson.length > 0)
-				return cast tjson.TJSON.parse(rawJson);
+				return cast jsonmod.Json.parse(rawJson);
 		}
 		catch (e:Dynamic)
 		{
@@ -237,3 +237,4 @@ class StageData
 			|| (!ClientPrefs.data.lowQuality && (filters & HIGH_QUALITY) == HIGH_QUALITY));
 	}
 }
+

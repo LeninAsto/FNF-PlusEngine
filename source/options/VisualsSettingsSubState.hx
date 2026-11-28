@@ -134,7 +134,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 
 		var option:Option = new Option('Icon Bounce Type', "Changes the way the health icons bounce.", 'iconBounceType', STRING,
-			['Old', 'D&B', 'NF', 'Codename', 'Default']);
+			['Old', 'Kade', 'D&B', 'NF', 'Codename', 'Default']);
 		addOption(option);
 
 		var option:Option = new Option('Time Text Bump', 'If unchecked, disables the time text bump animation on beat.', 'timeBump', BOOL);
@@ -198,7 +198,7 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		var option:Option = new Option('Combo Stacking',
 			"If unchecked, Ratings and Combo won't stack, saving on System Memory and making them easier to read", 'comboStacking', BOOL);
 		comboStackingOption = option;
-		option.selectableCondition = () -> !ClientPrefs.data.runOnLightVisual;
+		option.selectableCondition = () -> !ClientPrefs.data.runOnLightVisual && !ClientPrefs.data.nfRatingStyle;
 		option.onChange = syncPerformanceHitEffects;
 		addOption(option);
 
@@ -228,7 +228,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		addOption(option);
 		option.onChange = syncPopupVisibility;
 
-		#if android
 		var option:Option = new Option('Performance Hit Effects', 'Uses pooled hit effects for smoother gameplay on mobile. NF Rating Style and Combo Stacking are unavailable while it is enabled.', 'runOnLightVisual', BOOL);
 		option.selectableCondition = () -> !ClientPrefs.data.nfRatingStyle && !ClientPrefs.data.comboStacking;
 		option.onChange = function()
@@ -239,14 +238,12 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		// The base menu has not built its checkbox groups yet, so this constructor
 		// path must normalize data only; visual refresh belongs to onChange.
 		normalizePerformanceHitEffects();
-		#end
 
 		var option:Option = new Option('Combo and Rating in camGame',
 			'If enabled, Combo and Ratings will be rendered in the camGame layer instead of camHUD.', 'comboInGame', BOOL);
 		addOption(option);
 		option.onChange = function()
 		{
-			// Cambia la cámara en tiempo real si el usuario cambia la opción desde el menú
 			if (PlayState.instance != null && PlayState.instance.comboGroup != null)
 			{
 				PlayState.instance.comboGroup.cameras = [
@@ -555,7 +552,6 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 		super.destroy();
 	}
 
-	// function onChangeFPSCounter() eliminado: FPSCounter ahora siempre visible, control solo por F2
 
 	function onChangeWatermark()
 	{
@@ -577,11 +573,12 @@ class VisualsSettingsSubState extends BaseOptionsMenu
 			ClientPrefs.data.nfRatingStyle = false;
 			ClientPrefs.data.comboStacking = false;
 		}
+		else if (ClientPrefs.data.nfRatingStyle)
+			ClientPrefs.data.comboStacking = false;
 	}
 
 	function onChangeKeyViewerColor()
 	{
-		// Si estamos en PlayState, actualizar el color del keyViewer
 		if (PlayState.instance != null && PlayState.instance.keyViewer != null)
 		{
 			PlayState.instance.keyViewer.updateKeyColors();

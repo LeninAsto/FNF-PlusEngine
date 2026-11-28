@@ -44,11 +44,11 @@ class LoadingState extends MusicBeatState
 	static inline var MAX_LOAD_THREADS:Int = 6;
 
 	// Timeout system
-	public static var returnState:FlxState = null; // Estado al que volver si falla la carga
+	public static var returnState:FlxState = null;
 
 	public var loadingTimer:Float = 0; // Contador de tiempo de carga
 	public var timeoutWarning:FlxText; // Mensaje de advertencia
-	public var canEscape:Bool = false; // Si se puede presionar ESC para salir
+	public var canEscape:Bool = false;
 
 	static final TIMEOUT_DURATION:Float = 5.0; // 5 segundos
 
@@ -208,7 +208,6 @@ class LoadingState extends MusicBeatState
 			timeoutWarning.visible = true;
 		}
 
-		// Añadir touchpad para Android
 		addTouchPad('NONE', 'B');
 
 		super.create();
@@ -277,12 +276,10 @@ class LoadingState extends MusicBeatState
 			return;
 		}
 
-		// Timeout system - incrementar el temporizador
 		if (!transitioning && !finishedLoading)
 		{
 			loadingTimer += elapsed;
 
-			// Si pasan más de 10 segundos, mostrar mensaje de escape
 			if (loadingTimer >= TIMEOUT_DURATION && !canEscape)
 			{
 				canEscape = true;
@@ -292,7 +289,6 @@ class LoadingState extends MusicBeatState
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 			}
 
-			// Si se puede escapar y se presiona ESC o botón B del touchpad, volver al estado anterior
 			if (canEscape && (FlxG.keys.justPressed.ESCAPE || (touchPad != null && touchPad.buttonB.justPressed)))
 			{
 				cancelLoading();
@@ -611,7 +607,6 @@ class LoadingState extends MusicBeatState
 			try backend.AssetLoader.warmAudio(soundsToWarm.shift())
 			catch (error:Dynamic) trace('Audio warmup failed: $error');
 		}
-		// trace('we checked if loaded');
 		return (songLoadError == null && tasksIdle && soundsToWarm.length == 0 && getLoadedCount() >= loadMax && initialThreadCompleted);
 	}
 
@@ -1069,7 +1064,6 @@ class LoadingState extends MusicBeatState
 					}
 				}
 
-				// trace('Folder detected! ' + folder);
 			}
 		}
 
@@ -1081,7 +1075,6 @@ class LoadingState extends MusicBeatState
 			if (parentFolder == 'songs')
 				myKey = '$member$ext';
 
-			// trace('attempting on $prefix: $myKey');
 			var doTrace:Bool = false;
 			if (member.endsWith('/') || (!Paths.fileExists(myKey, type, false, parentFolder) && (doTrace = true)))
 			{
@@ -1126,7 +1119,6 @@ class LoadingState extends MusicBeatState
 
 	static function initThread(func:Void->Dynamic, traceData:String)
 	{
-		// trace('scheduled $func in threadPool');
 		#if debug
 		var threadSchedule = Sys.time();
 		#end
@@ -1203,7 +1195,6 @@ class LoadingState extends MusicBeatState
 
 					if (Paths.fileExists('images/$img/spritemap$st.png', IMAGE))
 					{
-						// trace('found Sprite PNG');
 						imagesToPrepare.push('$img/spritemap$st');
 						break;
 					}
@@ -1230,7 +1221,6 @@ class LoadingState extends MusicBeatState
 		var file:String = Paths.getPath(Language.getFileTranslation(key) + '.${Paths.SOUND_EXT}', SOUND, path, modsAllowed);
 		var cacheKey:String = stream ? file + '#stream' : file;
 
-		// trace('precaching sound: $file');
 		mutex.acquire();
 		var needsLoad:Bool = !Paths.currentTrackedSounds.exists(cacheKey);
 		mutex.release();
@@ -1256,7 +1246,7 @@ class LoadingState extends MusicBeatState
 			{
 				trace('SOUND NOT FOUND: $key, PATH: $path');
 				FlxG.log.error('SOUND NOT FOUND: $key, PATH: $path');
-				return FlxAssets.getSound('flixel/sounds/beep');
+				return FlxAssets.getSoundAddExtension('flixel/sounds/beep');
 			}
 		}
 		mutex.acquire();

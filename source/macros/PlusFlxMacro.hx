@@ -6,6 +6,29 @@ import haxe.macro.Expr;
 
 class PlusFlxMacro
 {
+	public static macro function buildFlxText():Array<Field>
+	{
+		var fields = Context.getBuildFields();
+		for (field in fields)
+		{
+			if (field.name != 'set_antialiasing') continue;
+			switch (field.kind)
+			{
+				case FFun(fn):
+					switch (fn.expr.expr)
+					{
+						case EBlock(exprs):
+							exprs.unshift(macro value = true);
+						default: Context.error('Unexpected FlxText antialiasing setter', field.pos);
+					}
+				default: Context.error('Unexpected FlxText antialiasing setter', field.pos);
+			}
+			return fields;
+		}
+		Context.error('FlxText antialiasing setter not found', Context.currentPos());
+		return fields;
+	}
+
 	public static macro function buildFlxBasic():Array<Field>
 	{
 		var fields:Array<Field> = Context.getBuildFields();
@@ -15,25 +38,6 @@ class PlusFlxMacro
 				name: "zIndex",
 				access: [APublic],
 				kind: FVar(macro :Int, macro $v{0}),
-				pos: Context.currentPos()
-			});
-		}
-		return fields;
-	}
-
-	public static macro function buildFlxSprite():Array<Field>
-	{
-		var fields:Array<Field> = Context.getBuildFields();
-		if (!hasField(fields, "getCamerasLegacy"))
-		{
-			fields.push({
-				name: "getCamerasLegacy",
-				access: [APublic],
-				kind: FFun({
-					args: [],
-					ret: macro :Array<flixel.FlxCamera>,
-					expr: macro return cameras
-				}),
 				pos: Context.currentPos()
 			});
 		}

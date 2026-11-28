@@ -141,19 +141,28 @@ class Mods
 			for (mod in Mods.getGlobalMods())
 			{
 				var folder:String = Paths.mods(mod + '/' + fileToFind);
+				#if linux
+				folder = resolveSongScriptDirectory(folder, fileToFind);
+				#end
 				if (AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder))
 					foldersToCheck.push(folder);
 			}
 
 			// Then Psych's loose mods/ root.
 			var folder:String = Paths.mods(fileToFind);
+			#if linux
+			folder = resolveSongScriptDirectory(folder, fileToFind);
+			#end
 			if (AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder))
-				foldersToCheck.push(Paths.mods(fileToFind));
+				foldersToCheck.push(folder);
 
 			// Finally the active song mod, matching vanilla Psych Engine.
 			if (Mods.currentModDirectory != null && Mods.currentModDirectory.length > 0)
 			{
 				var folder:String = Paths.mods(Mods.currentModDirectory + '/' + fileToFind);
+				#if linux
+				folder = resolveSongScriptDirectory(folder, fileToFind);
+				#end
 				if (AssetLoader.exists(folder, TEXT) && !foldersToCheck.contains(folder))
 					foldersToCheck.push(folder);
 			}
@@ -162,6 +171,27 @@ class Mods
 		#end
 		return foldersToCheck;
 	}
+
+	#if (linux && MODS_ALLOWED)
+	static function resolveSongScriptDirectory(folder:String, requested:String):String
+	{
+		if (!requested.startsWith('data/') || !requested.endsWith('/') || AssetLoader.exists(folder, TEXT))
+			return folder;
+		var trimmed = StringTools.endsWith(folder, '/') ? folder.substr(0, folder.length - 1) : folder;
+		var separator = trimmed.lastIndexOf('/');
+		if (separator < 0) return folder;
+		var parent = trimmed.substr(0, separator);
+		var name = trimmed.substr(separator + 1).toLowerCase();
+		var match:String = null;
+		for (entry in Paths.readDirectory(parent))
+		{
+			if (entry.toLowerCase() != name || !Paths.safeModIsDirectory(parent + '/' + entry)) continue;
+			if (match != null) return folder;
+			match = entry;
+		}
+		return match == null ? folder : parent + '/' + match + '/';
+	}
+	#end
 
 	public static function getPack(?folder:String = null):Dynamic
 	{
@@ -176,7 +206,7 @@ class Mods
 			{
 				var rawJson:String = AssetLoader.loadText(path);
 				if (rawJson != null && rawJson.length > 0)
-					return tjson.TJSON.parse(rawJson);
+					return jsonmod.Json.parse(rawJson);
 			}
 			catch (e:Dynamic)
 			{
@@ -256,7 +286,6 @@ class Mods
 		{
 			for (mod in CoolUtil.coolTextFile(#if android StorageUtil.getModsListPath() #else Sys.getCwd() + 'modsList.txt' #end))
 			{
-				// trace('Mod: $mod');
 				if (mod.trim().length < 1)
 					continue;
 
@@ -386,7 +415,6 @@ class Mods
 			trace('Failed to save modsList.txt: $e');
 		}
 		updatedOnState = true;
-		// trace('Saved modsList.txt');
 		#end
 	}
 

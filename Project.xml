@@ -105,10 +105,11 @@
 	<!-- _______________________________ Libraries ______________________________ -->
 
 	<haxelib name="lime" version="git"/>
+	<haxedef name="FLX_HEALTH" />
 	<haxelib name="flixel" version="git"/>
 	<haxelib name="flixel-addons" version="git"/>
 	<haxelib name="away3d" version="git" if="desktop || mobile"/>
-	<haxelib name="tjson" version="1.4.0"/>
+	<haxelib name="jsonmod" version="1.2.0"/>
 	<haxelib name="moonchart" unless="mac | ios"/>
 	<haxelib name="grig.audio"/>
 	<haxelib name="funkin.vis"/>
@@ -119,7 +120,7 @@
 	<haxelib name="hxscript" version="git" if="HSCRIPT_ALLOWED"/>
 	<haxelib name="hxvlc" if="VIDEOS_ALLOWED"/>
 	<haxelib name="hxdiscord_rpc" if="DISCORD_ALLOWED"/>
-	<haxelib name="flxanimate"/>
+	<haxelib name="flxanimate" version="git"/>
 
 	<!-- Disable Discord IO Thread -->
 	<haxedef name="DISCORD_DISABLE_IO_THREAD" if="hxdiscord_rpc" />
@@ -130,7 +131,6 @@
 
 	<!-- Force C99 standard for macOS/iOS to fix zlib compilation with Xcode 16.4 -->
 	<haxedef name="HXCPP_CFLAGS" value="-std=c99 -Wno-error=deprecated-non-prototype -Wno-deprecated-declarations -Wno-unused-command-line-argument -Wno-macro-redefined" if="macos || ios" />
-	<haxeflag name="-D" value="no-deprecation-warnings"/>
 	<haxedef name="HXCPP_CFLAGS" value="-Wnull-arithmetic -Wtautological-pointer-compare -Wtrigraphs"/>
 
 
@@ -185,9 +185,6 @@
 		<haxedef name="HXCPP_CATCH_SEGV" />
 	</section>
 
-	<!--Disable deprecated warnings-->
-	<haxedef name='no-deprecation-warnings' />
-
 	<!-- Haxe 4.3.0+: Enable pretty syntax errors and stuff. -->
 	<!-- pretty (haxeflixel default), indent, classic (haxe compiler default) -->
 	<haxedef name="message.reporting" value="pretty" />
@@ -216,7 +213,7 @@
 
 	<!-- Enable all classes compilation for hscript -->
 	<haxeflag name="--macro" value="addMetadata('@:build(macros.PlusFlxMacro.buildFlxBasic())', 'flixel.FlxBasic')" />
-	<haxeflag name="--macro" value="addMetadata('@:build(macros.PlusFlxMacro.buildFlxSprite())', 'flixel.FlxSprite')" />
+	<haxeflag name="--macro" value="addMetadata('@:build(macros.PlusFlxMacro.buildFlxText())', 'flixel.text.FlxText')" />
 	<haxeflag name="--macro" value="addMetadata('@:build(macros.PlusFlxMacro.buildFlxPath())', 'flixel.path.FlxPath')" />
 	<haxeflag name="--macro" value="include('flixel', true, [ 'flixel.addons.editors.spine.*', 'flixel.addons.nape.*', 'flixel.addons.tile.FlxRayCastTilemap', 'flixel.system.macros.*' ])" />
 

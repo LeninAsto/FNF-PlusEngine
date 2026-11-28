@@ -43,7 +43,7 @@ class TitleState extends MusicBeatState
 	public static var introVideoPlayed:Bool = false;
 	static var loadedModContext:String = null;
 
-	public var forceShowIntro:Bool = false; // Si debe forzar mostrar la intro
+	public var forceShowIntro:Bool = false;
 
 	public var credGroup:FlxGroup = new FlxGroup();
 	public var textGroup:FlxGroup = new FlxGroup();
@@ -222,13 +222,11 @@ class TitleState extends MusicBeatState
 	{
 		persistentUpdate = true;
 
-		// Reproducir música si no está inicializado o si no hay música
 		if (!initialized && FlxG.sound.music == null)
 		{
 			FlxG.sound.playMusic(Paths.music('freakyMenu'), 0);
 			FlxG.sound.music.fadeIn(4, 0, 0.7);
 		}
-		// Si viene del substate y la música existe pero no está sonando, reiniciarla
 		else if (!initialized && FlxG.sound.music != null)
 		{
 			FlxG.sound.music.stop();
@@ -360,7 +358,7 @@ class TitleState extends MusicBeatState
 			{
 				try
 				{
-					var titleJSON:TitleData = tjson.TJSON.parse(titleRaw);
+					var titleJSON:TitleData = jsonmod.Json.parse(titleRaw);
 					gfPosition.set(titleJSON.gfx, titleJSON.gfy);
 					logoPosition.set(titleJSON.titlex, titleJSON.titley);
 					enterPosition.set(titleJSON.startx, titleJSON.starty);
@@ -430,7 +428,6 @@ class TitleState extends MusicBeatState
 
 	function getIntroTextShit():Array<Array<String>>
 	{
-		// Intentar obtener introTexts localizados primero
 		#if TRANSLATIONS_ALLOWED
 		var localizedIntros:Array<Array<String>> = Language.getLocalizedIntroTexts();
 		if (localizedIntros != null && localizedIntros.length > 0)
@@ -439,7 +436,6 @@ class TitleState extends MusicBeatState
 		}
 		#end
 
-		// Fallback: usar archivo introText.txt, primero mods y luego assets base
 		var firstArray:Array<String> = [];
 		#if MODS_ALLOWED
 		firstArray = Mods.mergeAllTextsNamed('data/introText.txt');
@@ -598,14 +594,12 @@ class TitleState extends MusicBeatState
 						easterEggKeysBuffer += keyName;
 						if (easterEggKeysBuffer.length >= 32)
 							easterEggKeysBuffer = easterEggKeysBuffer.substring(1);
-						// trace('Test! Allowed Key pressed!!! Buffer: ' + easterEggKeysBuffer);
 
 						for (wordRaw in easterEggKeys)
 						{
 							var word:String = wordRaw.toUpperCase(); // just for being sure you're doing it right
 							if (StringTools.contains(easterEggKeysBuffer, word))
 							{
-								// trace('YOOO! ' + word);
 								if (FlxG.save.data.psychDevsEasterEgg == word)
 									FlxG.save.data.psychDevsEasterEgg = '';
 								else

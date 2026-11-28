@@ -42,7 +42,6 @@ class FunkinLua
 	public var autoCallOnCreate:Bool = true;
 	var hookCache:Map<String, Bool> = new Map();
 
-	// Contador de errores de Lua para estadísticas
 	public static var lua_Errors:Int = 0;
 
 	#if HSCRIPT_ALLOWED
@@ -60,8 +59,6 @@ class FunkinLua
 		LuaL.openlibs(lua);
 		scriptsByState.push(this);
 
-		// trace('Lua version: ' + Lua.version());
-		// trace("LuaJIT version: " + Lua.versionJIT());
 
 		// LuaL.dostring(lua, CLENSE);
 
@@ -728,6 +725,7 @@ class FunkinLua
 						var callbackTag:String = 'tween_' + storedTag;
 						var tween:FlxTween = FlxTween.tween(penisExam, values, duration, myOptions != null ? {
 							type: myOptions.type,
+							framerate: myOptions.framerate,
 							ease: myOptions.ease,
 							startDelay: myOptions.startDelay,
 							loopDelay: myOptions.loopDelay,
@@ -762,6 +760,7 @@ class FunkinLua
 					else
 						FlxTween.tween(penisExam, values, duration, myOptions != null ? {
 							type: myOptions.type,
+							framerate: myOptions.framerate,
 							ease: myOptions.ease,
 							startDelay: myOptions.startDelay,
 							loopDelay: myOptions.loopDelay,
@@ -1036,7 +1035,6 @@ class FunkinLua
 				if (tmr.finished)
 					variables.remove(tag);
 				game.callOnLuas('onTimerCompleted', [originalTag, tmr.loops, tmr.loopsLeft]);
-				// trace('Timer Completed: ' + tag);
 			}, loops));
 			return tag;
 		});
@@ -1169,7 +1167,7 @@ class FunkinLua
 			}
 
 			if (PlayState.isStoryMode)
-				MusicBeatState.switchState(new StoryMenuState());
+				MusicBeatState.switchStateFactory(() -> new StoryMenuState(), StoryMenuState);
 			else
 				MusicBeatState.switchState(FreeplayStateSelector.create());
 
@@ -1329,12 +1327,12 @@ class FunkinLua
 		Lua_helper.add_callback(lua, "getMouseX", function(?camera:String = 'game')
 		{
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
-			return FlxG.mouse.getScreenPosition(cam).x;
+			return backend.PointerCompat.legacyScreenPosition(FlxG.mouse, cam).x;
 		});
 		Lua_helper.add_callback(lua, "getMouseY", function(?camera:String = 'game')
 		{
 			var cam:FlxCamera = LuaUtils.cameraFromString(camera);
-			return FlxG.mouse.getScreenPosition(cam).y;
+			return backend.PointerCompat.legacyScreenPosition(FlxG.mouse, cam).y;
 		});
 
 		Lua_helper.add_callback(lua, "getMidpointX", function(variable:String)
@@ -2734,10 +2732,8 @@ class FunkinLua
 				TraceDisplay.addLuaTrace(text, color, deprecated);
 			}
 
-			// También enviar al TraceDisplay si es un error
 			if (color == FlxColor.RED)
 			{
-				// Incrementar contador de errores para estadísticas
 				lua_Errors++;
 			}
 		}
@@ -2880,7 +2876,6 @@ class FunkinLua
 				if (found)
 				{
 					runtimeShaders.set(name, [frag, vert]);
-					// trace('Found shader $name!');
 					return true;
 				}
 			}

@@ -16,7 +16,7 @@ class CounterClockWise extends Modifier {
 		var outX = centerX + cos(strumTime / crochet / 4 * Math.PI) * radius;
 		var outY = centerY + sin(strumTime / crochet / 4 * Math.PI) * radius;
 
-		return ModchartUtil.lerpVector3D(curPos, new Vector3(outX, outY, 0, 0), getPercent('counterClockWise', params.player));
+		return curPos.interpolate(new Vector3(outX, outY, 0, 0), getPercent('counterClockWise', params.player));
 	}
 
 	override public function shouldRun(params:ModifierParameters):Bool

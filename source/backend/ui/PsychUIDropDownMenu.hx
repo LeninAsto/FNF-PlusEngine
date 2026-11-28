@@ -660,7 +660,7 @@ private class MobileDropDownSelector extends FlxSubState {
 				clearGesture();
 				return;
 			}
-			var deltaY:Float = touch.getScreenPosition(pointer).y - touchStartY;
+			var deltaY:Float = touchViewY(touch) - touchStartY;
 			if (touch.pressed && Math.abs(deltaY) >= DRAG_DEADZONE) {
 				didDrag = true;
 				// A list swipe follows the content, while the scrollbar follows the thumb.
@@ -687,7 +687,7 @@ private class MobileDropDownSelector extends FlxSubState {
 			var pickedRow = rowAtTouch(touch);
 			if (pickedRow >= 0 || touch.overlaps(scrollTrack, uiCamera)) {
 				touchID = touch.touchPointID;
-				touchStartY = touch.getScreenPosition(pointer).y;
+				touchStartY = touchViewY(touch);
 				touchStartScroll = firstVisible;
 				touchCandidate = pickedRow;
 				didDrag = false;
@@ -732,6 +732,10 @@ private class MobileDropDownSelector extends FlxSubState {
 			scrollThumb.setPosition(scrollTrack.x, scrollTrack.y + (listHeight - thumbHeight) * firstVisible / maxScroll);
 	}
 
+	inline function touchViewY(touch:FlxTouch):Float {
+		return touch.getViewPosition(uiCamera, pointer).y + uiCamera.viewMarginY;
+	}
+
 	function rowAtTouch(touch:FlxTouch):Int {
 		for (slot in 0...rows.length)
 			if (rows[slot].visible && touch.overlaps(rows[slot], uiCamera))
@@ -743,7 +747,7 @@ private class MobileDropDownSelector extends FlxSubState {
 		var max = maxScroll();
 		if (max <= 0)
 			return;
-		var y:Float = touch.getScreenPosition(pointer).y;
+		var y:Float = touchViewY(touch);
 		var travel:Float = scrollTrack.height - scrollThumb.height;
 		var ratio:Float = FlxMath.bound((y - scrollTrack.y - scrollThumb.height / 2) / Math.max(1, travel), 0, 1);
 		firstVisible = boundScroll(Math.round(ratio * max));

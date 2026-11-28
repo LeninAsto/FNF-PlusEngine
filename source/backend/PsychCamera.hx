@@ -98,7 +98,7 @@ class PsychCamera extends FlxCamera
 		if (deadzone == null)
 		{
 			target.getMidpoint(_point);
-			_point.addPoint(targetOffset);
+			_point.add(targetOffset);
 			_scrollTarget.set(_point.x - width * 0.5, _point.y - height * 0.5);
 		}
 		else
@@ -172,12 +172,6 @@ class PsychCamera extends FlxCamera
 		var mult:Float = 1 - Math.exp(-elapsed * followLerp / (1 / 60));
 		scroll.x += (_scrollTarget.x - scroll.x) * mult;
 		scroll.y += (_scrollTarget.y - scroll.y) * mult;
-		// trace('lerp on this frame: $mult');
-	}
-
-	override function set_followLerp(value:Float)
-	{
-		return followLerp = value;
 	}
 
 	override public function snapToTarget():Void

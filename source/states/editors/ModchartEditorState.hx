@@ -242,7 +242,7 @@ class ModchartEditorState extends MusicBeatState
 		PlayState.stageUI = stage.stageUI == null || stage.stageUI.length == 0 ? (stage.isPixelStage == true ? 'pixel' : 'normal') : stage.stageUI;
 		buildStage();
 		buildNotes();
-		try { inst = new FlxSound().loadEmbedded(Paths.inst(song.song)); FlxG.sound.list.add(inst); }
+		try { inst = new FlxSound().load(Paths.inst(song.song)); FlxG.sound.list.add(inst); }
 		catch (error:Dynamic) message(tr('audio_error', "Preview without audio: {1}", [error]));
 		duration = inst != null && inst.length > 0 ? inst.length : 60000;
 		if (allNotes.length > 0) duration = Math.max(duration, allNotes[allNotes.length - 1].strumTime + 3000);
@@ -643,7 +643,7 @@ class ModchartEditorState extends MusicBeatState
 		var menuMusic = Paths.music('freakyMenu');
 		if (FlxG.sound.music == null || !FlxG.sound.music.playing || @:privateAccess FlxG.sound.music._sound != menuMusic)
 			FlxG.sound.playMusic(menuMusic);
-		MusicBeatState.switchState(new MasterEditorMenu());
+		MusicBeatState.switchStateFactory(() -> new MasterEditorMenu(), MasterEditorMenu);
 	}
 
 	override function update(elapsed:Float):Void

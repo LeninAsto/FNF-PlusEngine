@@ -157,7 +157,7 @@ class MaterialBox extends FlxSpriteGroup
 		_lastClickTime += elapsed;
 
 		#if FLX_MOUSE
-		var mouse = FlxG.mouse.getScreenPosition();
+		var mouse = backend.PointerCompat.legacyScreenPosition(FlxG.mouse);
 
 		// Check if mouse is over the title bar
 		var overTitle = (mouse.x >= x && mouse.x <= x + panelWidth && mouse.y >= y && mouse.y <= y + TITLE_BAR_HEIGHT);
@@ -179,7 +179,7 @@ class MaterialBox extends FlxSpriteGroup
 		{
 			if (!FlxG.mouse.released)
 			{
-				var newMouse = FlxG.mouse.getScreenPosition();
+				var newMouse = backend.PointerCompat.legacyScreenPosition(FlxG.mouse);
 				setPosition(_originPos.x + (newMouse.x - _dragStart.x), _originPos.y + (newMouse.y - _dragStart.y));
 			}
 			else
@@ -191,11 +191,11 @@ class MaterialBox extends FlxSpriteGroup
 		else if (_pressed
 			&& canDrag
 			&& FlxG.mouse.pressed
-			&& (Math.abs(FlxG.mouse.deltaScreenX) > 1 || Math.abs(FlxG.mouse.deltaScreenY) > 1)
+			&& (Math.abs(FlxG.mouse.deltaViewX) > 1 || Math.abs(FlxG.mouse.deltaViewY) > 1)
 			&& !overClose)
 		{
 			_dragging = true;
-			_dragStart = FlxG.mouse.getScreenPosition();
+			_dragStart = backend.PointerCompat.legacyScreenPosition(FlxG.mouse);
 			_originPos = FlxPoint.get(x, y);
 		}
 

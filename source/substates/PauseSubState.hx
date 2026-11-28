@@ -138,7 +138,10 @@ class PauseSubState extends MusicBeatSubstate
 		try
 		{
 			if (pauseSong != null)
-				pauseMusic.loadEmbedded(Paths.music(pauseSong), true, true);
+			{
+				var music = Paths.music(pauseSong);
+				if (music != null) pauseMusic.load(music).setup(pauseMusic.volume, true, true);
+			}
 		}
 		catch (e:Dynamic)
 		{

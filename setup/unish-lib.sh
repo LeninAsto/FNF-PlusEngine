@@ -22,11 +22,11 @@ haxelib git openfl https://github.com/Psych-Plus-Haxelib/openfl.git --quiet
 ###############################################################################
 # HaxeFlixel stack - required by Plus/Psych.
 ###############################################################################
-echo "[Flixel] flixel"
-haxelib git flixel https://github.com/Psych-Plus-Haxelib/flixel --quiet
+echo "[Flixel] flixel 6.2.1 branch"
+haxelib git flixel https://github.com/Psych-Plus-Haxelib/flixel flixel-6.2.1 --quiet
 
-echo "[Flixel] flixel-addons git"
-haxelib git flixel-addons https://github.com/Psych-Plus-Haxelib/flixel-addons.git --quiet
+echo "[Flixel] flixel-addons 4.0.2 branch"
+haxelib git flixel-addons https://github.com/Psych-Plus-Haxelib/flixel-addons.git addons-4.0.2 --quiet
 
 echo "[Flixel] flixel-tools 1.5.1"
 haxelib install flixel-tools 1.5.1 --quiet
@@ -47,16 +47,16 @@ haxelib git hxscript https://github.com/Psych-Plus-Haxelib/hxscript.git --quiet
 echo "[Plus/Psych] linc_luajit"
 haxelib git linc_luajit https://github.com/Psych-Plus-Haxelib/linc_luajit --quiet
 
-echo "[Plus/Psych] flxanimate 4.0.0"
-haxelib install flxanimate 4.0.0 --quiet
+echo "[Plus/Psych] flxanimate git"
+haxelib git flxanimate https://github.com/LeninAsto/flxanimate.git master --quiet
 
 haxelib git away3d https://github.com/openfl/away3d.git c93eecfa8183f0cf26b9489d62e49cb17f278d9a --quiet
 
 echo "[Plus/Psych] moonchart 0.5.1"
 haxelib install moonchart 0.5.1 --quiet
 
-echo "[Plus/Psych] tjson 1.4.0"
-haxelib install tjson 1.4.0 --quiet
+echo "[Plus/Psych] jsonmod 1.2.0"
+haxelib install jsonmod 1.2.0 --quiet
 
 ###############################################################################
 # Optional desktop/media integrations.

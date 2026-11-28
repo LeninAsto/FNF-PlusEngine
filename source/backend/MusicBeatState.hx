@@ -237,7 +237,7 @@ class MusicBeatState extends BaseMusicBeatState
 			Mods.resetWindowBrand();
 			backend.Language.reloadPhrases();
 			#end
-			MusicBeatState.switchState(new states.ModsMenuState());
+			MusicBeatState.switchStateFactory(() -> new states.ModsMenuState(), states.ModsMenuState);
 			#end
 			return;
 		}
@@ -266,6 +266,45 @@ class MusicBeatState extends BaseMusicBeatState
 		music.play();
 	}
 
+	static var factoryState:FlxState;
+	static var currentStateFactory:Void->FlxState;
+
+	public static function switchStateFactory(factory:Void->FlxState, stateClass:Class<FlxState>):Void
+	{
+		#if (HSCRIPT_ALLOWED && MODS_ALLOWED)
+		if (Mods.launchedMod != null && Mods.launchedMod.length > 0)
+		{
+			switchState(factory());
+			return;
+		}
+		#end
+		var name = Type.getClassName(stateClass);
+		var create:Void->FlxState = null;
+		create = function()
+		{
+			var state = factory();
+			factoryState = state;
+			currentStateFactory = create;
+			return state;
+		};
+		var result = callOnGlobalScript('onSwitchState', [name]);
+		if (LuaUtils.isStop(result) || FlxTransitionableState.skipNextTransIn)
+			FlxG.switchState(create);
+		else
+		{
+			GlobalLoadingOverlay.showPersistent();
+			var transitionResult = callOnGlobalScript('onStartTransition', [false, name]);
+			if (LuaUtils.isStop(transitionResult))
+				FlxG.switchState(create);
+			else
+			{
+				FlxG.state.openSubState(TransitionManager.create(0.5, false));
+				TransitionManager.setFinishCallback(() -> FlxG.switchState(create));
+			}
+		}
+		FlxTransitionableState.skipNextTransIn = false;
+	}
+
 	public static function switchState(nextState:FlxState = null)
 	{
 		if (nextState == null)
@@ -275,6 +314,9 @@ class MusicBeatState extends BaseMusicBeatState
 			resetState();
 			return;
 		}
+
+		factoryState = null;
+		currentStateFactory = null;
 
 		#if HSCRIPT_ALLOWED
 		nextState = backend.ScriptableState.tryCreateFromFallback(nextState);
@@ -290,12 +332,12 @@ class MusicBeatState extends BaseMusicBeatState
 		if (LuaUtils.isStop(globalResult))
 		{
 			// Script is handling the transition, just switch without custom transition
-			FlxG.switchState(nextState);
+			FlxG.switchState(cast nextState);
 			return;
 		}
 
 		if (FlxTransitionableState.skipNextTransIn)
-			FlxG.switchState(nextState);
+			FlxG.switchState(cast nextState);
 		else
 			startTransition(nextState);
 		FlxTransitionableState.skipNextTransIn = false;
@@ -353,6 +395,8 @@ class MusicBeatState extends BaseMusicBeatState
 	 */
 	static function _makeCurrentStateReset():() -> flixel.FlxState
 	{
+		if (FlxG.state == factoryState && currentStateFactory != null)
+			return currentStateFactory;
 		#if (HSCRIPT_ALLOWED && sys)
 		var cs = FlxG.state;
 		if (cs is backend.MusicBeatState)
@@ -392,7 +436,7 @@ class MusicBeatState extends BaseMusicBeatState
 			if (isReset)
 				FlxG.switchState(_makeCurrentStateReset());
 			else
-				FlxG.switchState(nextState);
+				FlxG.switchState(cast nextState);
 			return;
 		}
 
@@ -404,7 +448,7 @@ class MusicBeatState extends BaseMusicBeatState
 		}
 		else
 		{
-			TransitionManager.setFinishCallback(function() FlxG.switchState(nextState));
+			TransitionManager.setFinishCallback(function() FlxG.switchState(cast nextState));
 		}
 	}
 

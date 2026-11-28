@@ -337,7 +337,7 @@ class MaterialChip extends FlxSpriteGroup
 			return;
 
 		#if FLX_MOUSE
-		var mousePos = FlxG.mouse.getScreenPosition();
+		var mousePos = backend.PointerCompat.legacyScreenPosition(FlxG.mouse);
 		var w = _calcWidth;
 		var isOver = mousePos.x >= x && mousePos.x <= x + w && mousePos.y >= y && mousePos.y <= y + CHIP_HEIGHT;
 

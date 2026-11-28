@@ -129,7 +129,7 @@ class WeekEditorState extends MusicBeatState implements PsychUIEventHandler.Psyc
 		add(loadWeekButton);
 		#end
 
-		var freeplayButton:PsychUIButton = new PsychUIButton(0, 650, Language.getPhrase('editors.week.ui.freeplay', "Freeplay"), function() MusicBeatState.switchState(new WeekEditorFreeplayState(weekFile)));
+		var freeplayButton:PsychUIButton = new PsychUIButton(0, 650, Language.getPhrase('editors.week.ui.freeplay', "Freeplay"), function() { var nextWeek = weekFile; MusicBeatState.switchStateFactory(() -> new WeekEditorFreeplayState(nextWeek), WeekEditorFreeplayState); });
 		freeplayButton.screenCenter(X);
 		#if mobile freeplayButton.x -= 120; #end
 		add(freeplayButton);
@@ -453,7 +453,7 @@ class WeekEditorState extends MusicBeatState implements PsychUIEventHandler.Psyc
 			{
 				if (!unsavedProgress)
 				{
-					MusicBeatState.switchState(new MasterEditorMenu());
+					MusicBeatState.switchStateFactory(() -> new MasterEditorMenu(), MasterEditorMenu);
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				}
 				else
@@ -691,7 +691,8 @@ class WeekEditorFreeplayState extends MusicBeatState implements PsychUIEventHand
 
 		var storyModeButton:PsychUIButton = new PsychUIButton(0, 685, Language.getPhrase('editors.week.ui.story_mode', "Story Mode"), function()
 		{
-			MusicBeatState.switchState(new WeekEditorState(weekFile));
+			var nextWeek = weekFile;
+			MusicBeatState.switchStateFactory(() -> new WeekEditorState(nextWeek), WeekEditorState);
 		});
 		storyModeButton.screenCenter(X);
 		#if mobile storyModeButton.x -= 120; #end
@@ -814,7 +815,6 @@ class WeekEditorFreeplayState extends MusicBeatState implements PsychUIEventHand
 				icon.alpha = 1;
 			}
 		}
-		// trace(weekFile.songs[curSelected]);
 		iconInputText.text = weekFile.songs[curSelected][1];
 
 		var colors = weekFile.songs[curSelected][2];
@@ -831,7 +831,7 @@ class WeekEditorFreeplayState extends MusicBeatState implements PsychUIEventHand
 			super.update(elapsed);
 			FlxTransitionableState.skipNextTransIn = true;
 			FlxTransitionableState.skipNextTransOut = true;
-			MusicBeatState.switchState(new WeekEditorFreeplayState(WeekEditorState.loadedWeek));
+			MusicBeatState.switchStateFactory(() -> new WeekEditorFreeplayState(WeekEditorState.loadedWeek), WeekEditorFreeplayState);
 			WeekEditorState.loadedWeek = null;
 			return;
 		}
@@ -845,7 +845,7 @@ class WeekEditorFreeplayState extends MusicBeatState implements PsychUIEventHand
 			{
 				if (!WeekEditorState.unsavedProgress)
 				{
-					MusicBeatState.switchState(new MasterEditorMenu());
+					MusicBeatState.switchStateFactory(() -> new MasterEditorMenu(), MasterEditorMenu);
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				}
 				else

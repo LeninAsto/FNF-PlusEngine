@@ -249,7 +249,6 @@ class PreloadListSubState extends MusicBeatSubstate implements PsychUIEvent
 
 	public function UIEvent(id:String, sender:Dynamic)
 	{
-		// trace(id, sender);
 		switch (id)
 		{
 			case PsychUIRadioGroup.CLICK_EVENT:

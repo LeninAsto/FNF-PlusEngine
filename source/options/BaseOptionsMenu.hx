@@ -3,7 +3,6 @@ package options;
 import flixel.input.keyboard.FlxKey;
 import flixel.input.gamepad.FlxGamepad;
 import flixel.input.gamepad.FlxGamepadInputID;
-import flixel.util.FlxSpriteUtil;
 import objects.CheckboxThingie;
 import objects.AttachedText;
 import options.Option;
@@ -27,7 +26,6 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	private var grpOptions:FlxTypedGroup<Alphabet>;
 	private var checkboxGroup:FlxTypedGroup<CheckboxThingie>;
 	private var grpTexts:FlxTypedGroup<AttachedText>;
-	private var plusRows:FlxTypedGroup<PlusOptionRow>;
 
 	private var descBox:FlxSprite;
 	private var descText:FlxText;
@@ -36,7 +34,6 @@ class BaseOptionsMenu extends MusicBeatSubstate
 	private var playingIntroTransition:Bool = false;
 	private var closingTransition:Bool = false;
 	private var openedFromOptionsState:Bool = false;
-	private var menuStyle:String = OptionsState.STYLE_PSYCH;
 
 	inline function safeOffsetX():Float
 	{
@@ -66,18 +63,13 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		DiscordClient.changePresence(rpcTitle, null);
 		#end
 		OptionsMenuTheme.syncAccent();
-		menuStyle = OptionsState.normalizeMenuStyle(ClientPrefs.data.optionsMenuStyle);
 
 		bg = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
 		bg.alpha = OptionsMenuTheme.menuBackgroundAlpha();
-		if (isPlusStyle())
-			bg.color = OptionsMenuTheme.current().accent;
 		bg.screenCenter();
 		bg.antialiasing = ClientPrefs.data.antialiasing;
 		add(bg);
 
-		plusRows = new FlxTypedGroup<PlusOptionRow>();
-		add(plusRows);
 
 		// avoids lagspikes while scrolling through menus!
 		grpOptions = new FlxTypedGroup<Alphabet>();
@@ -91,7 +83,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 		descBox = new FlxSprite().makeGraphic(1, 1, FlxColor.BLACK);
 		descBox.alpha = 0.6;
-		descBox.visible = !isPlusStyle();
+		descBox.visible = true;
 		add(descBox);
 
 		titleText = new Alphabet(safeOffsetX() + 75, 45, title, true);
@@ -104,50 +96,41 @@ class BaseOptionsMenu extends MusicBeatSubstate
 			FlxColor.BLACK);
 		descText.scrollFactor.set();
 		descText.borderSize = 2.4;
-		descText.visible = !isPlusStyle();
+		descText.visible = true;
 		add(descText);
 		refreshThemeVisuals();
 
 		for (i in 0...optionsArray.length)
 		{
-			if (isPlusStyle())
-			{
-				var row = new PlusOptionRow(i, optionsArray[i]);
-				plusRows.add(row);
-				optionsArray[i].child = row;
-			}
-			else
-			{
-				var optionText:Alphabet = new Alphabet(safeOffsetX() + 220, 260, optionsArray[i].name, false);
-				optionText.isMenuItem = true;
-				/*optionText.forceX = 300;
-					optionText.yMult = 90; */
-				optionText.targetY = i;
-				grpOptions.add(optionText);
+			var optionText:Alphabet = new Alphabet(safeOffsetX() + 220, 260, optionsArray[i].name, false);
+			optionText.isMenuItem = true;
+			/*optionText.forceX = 300;
+				optionText.yMult = 90; */
+			optionText.targetY = i;
+			grpOptions.add(optionText);
 
-				if (optionsArray[i].type == BOOL)
-				{
-					var checkbox:CheckboxThingie = new CheckboxThingie(optionText.x - 105, optionText.y, Std.string(optionsArray[i].getValue()) == 'true');
-					checkbox.sprTracker = optionText;
-					checkbox.ID = i;
-					if (openedFromOptionsState)
-						checkbox.alpha = 0;
-					checkboxGroup.add(checkbox);
-				}
-				else if (optionsArray[i].type != ACTION)
-				{
-					optionText.x -= 80;
-					optionText.startPosition.x -= 80;
-					// optionText.xAdd -= 80;
-					var valueText:AttachedText = new AttachedText('' + optionsArray[i].getValue(), optionText.width + 60);
-					valueText.sprTracker = optionText;
-					valueText.copyAlpha = true;
-					valueText.ID = i;
-					if (openedFromOptionsState)
-						valueText.alpha = 0;
-					grpTexts.add(valueText);
-					optionsArray[i].child = valueText;
-				}
+			if (optionsArray[i].type == BOOL)
+			{
+				var checkbox:CheckboxThingie = new CheckboxThingie(optionText.x - 105, optionText.y, Std.string(optionsArray[i].getValue()) == 'true');
+				checkbox.sprTracker = optionText;
+				checkbox.ID = i;
+				if (openedFromOptionsState)
+					checkbox.alpha = 0;
+				checkboxGroup.add(checkbox);
+			}
+			else if (optionsArray[i].type != ACTION)
+			{
+				optionText.x -= 80;
+				optionText.startPosition.x -= 80;
+				// optionText.xAdd -= 80;
+				var valueText:AttachedText = new AttachedText('' + optionsArray[i].getValue(), optionText.width + 60);
+				valueText.sprTracker = optionText;
+				valueText.copyAlpha = true;
+				valueText.ID = i;
+				if (openedFromOptionsState)
+					valueText.alpha = 0;
+				grpTexts.add(valueText);
+				optionsArray[i].child = valueText;
 			}
 			updateTextFrom(optionsArray[i]);
 		}
@@ -159,9 +142,6 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		addTouchPad('LEFT_FULL', 'A_B_C');
 		addTouchPadCamera();
 	}
-
-	function isPlusStyle():Bool
-		return menuStyle == OptionsState.STYLE_PLUS;
 
 	override function create()
 	{
@@ -370,7 +350,6 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 										curOption.curOption = num;
 										curOption.setValue(curOption.options[num]);
-									// trace(curOption.options[num]);
 
 									default:
 								}
@@ -477,14 +456,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 	function getTouchOptionAt(x:Float, y:Float):Int
 	{
-		if (isPlusStyle())
-		{
-			if (plusRows != null)
-				for (row in plusRows.members)
-					if (row != null && row.containsTouchPoint(x, y))
-						return row.index;
-		}
-		else if (grpOptions != null)
+		if (grpOptions != null)
 		{
 			var closest:Int = -1;
 			var closestDistance:Float = Math.POSITIVE_INFINITY;
@@ -541,13 +513,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 	function getTouchValueDirection(index:Int, x:Float, y:Float):Int
 	{
-		if (isPlusStyle() && plusRows != null && index >= 0 && index < plusRows.members.length)
-		{
-			var row = plusRows.members[index];
-			if (row != null && row.isValueTouchPoint(x, y))
-				return row.valueTouchDirection(x);
-		}
-		else if (!isPlusStyle() && x >= FlxG.width * 0.55)
+		if (x >= FlxG.width * 0.55)
 			return x < FlxG.width * 0.75 ? -1 : 1;
 		return 0;
 	}
@@ -595,24 +561,19 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		if (bg != null)
 		{
 			bg.alpha = OptionsMenuTheme.menuBackgroundAlpha();
-			if (isPlusStyle())
-				bg.color = OptionsMenuTheme.current().accent;
 		}
 		if (descBox != null)
 		{
 			descBox.color = OptionsMenuTheme.cardFill(false);
 			descBox.alpha = 0.84;
-			descBox.visible = !isPlusStyle();
+			descBox.visible = true;
 		}
 		if (descText != null)
 		{
 			descText.color = OptionsMenuTheme.readableTextOn(OptionsMenuTheme.cardFill(false));
-			descText.visible = !isPlusStyle();
+			descText.visible = true;
 		}
-		if (plusRows != null)
-			for (row in plusRows.members)
-				if (row != null)
-					row.applyTheme(row.index == curSelected);
+
 	}
 
 	function setupIntroTransition():Void
@@ -855,14 +816,6 @@ class BaseOptionsMenu extends MusicBeatSubstate
 				text = InputFormatter.getGamepadName(FlxGamepadInputID.fromString(text));
 		}
 
-		if (isPlusStyle())
-		{
-			var row:PlusOptionRow = cast option.child;
-			if (row != null)
-				row.setValueLabel(text);
-			return;
-		}
-
 		var bind:AttachedText = cast option.child;
 		if (bind == null)
 			return;
@@ -937,12 +890,7 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		var def:Dynamic = option.defaultValue;
 		option.text = text.replace('%v', val).replace('%d', def);
 
-		if (isPlusStyle())
-		{
-			var row:PlusOptionRow = cast option.child;
-			if (row != null)
-				row.refreshFromOption();
-		}
+
 	}
 
 	function changeSelection(change:Int = 0)
@@ -968,39 +916,24 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 		curSelected = found;
 
-		if (!isPlusStyle())
+		descText.font = Language.getFontForText(optionsArray[curSelected].description, 'vcr.ttf');
+		descText.text = optionsArray[curSelected].description;
+		descText.screenCenter(Y);
+		descText.y += 270;
+
+		for (num => item in grpOptions.members)
 		{
-			descText.font = Language.getFontForText(optionsArray[curSelected].description, 'vcr.ttf');
-			descText.text = optionsArray[curSelected].description;
-			descText.screenCenter(Y);
-			descText.y += 270;
+			item.targetY = num - curSelected;
+			item.alpha = optionAlpha(num, item.targetY == 0);
+		}
+		for (text in grpTexts)
+		{
+			text.alpha = optionAlpha(text.ID, text.ID == curSelected);
 		}
 
-		if (!isPlusStyle())
-			for (num => item in grpOptions.members)
-			{
-				item.targetY = num - curSelected;
-				item.alpha = optionAlpha(num, item.targetY == 0);
-			}
-		if (plusRows != null)
-			for (row in plusRows.members)
-				if (row != null)
-				{
-					row.targetY = row.index - curSelected;
-					row.applyTheme(row.index == curSelected);
-				}
-		if (!isPlusStyle())
-			for (text in grpTexts)
-			{
-				text.alpha = optionAlpha(text.ID, text.ID == curSelected);
-			}
-
-		if (!isPlusStyle())
-		{
-			descBox.setPosition(descText.x - 10, descText.y - 10);
-			descBox.setGraphicSize(Std.int(descText.width + 20), Std.int(descText.height + 25));
-			descBox.updateHitbox();
-		}
+		descBox.setPosition(descText.x - 10, descText.y - 10);
+		descBox.setGraphicSize(Std.int(descText.width + 20), Std.int(descText.height + 25));
+		descBox.updateHitbox();
 
 		curOption = optionsArray[curSelected]; // shorter lol
 		callOnCompanionScript('onOptionSelectionChange', [curSelected, getCurrentOption()]);
@@ -1009,18 +942,6 @@ class BaseOptionsMenu extends MusicBeatSubstate
 
 	function reloadCheckboxes()
 	{
-		if (isPlusStyle())
-		{
-			if (plusRows != null)
-				for (row in plusRows)
-					if (row != null)
-					{
-						row.refreshFromOption();
-						row.alpha = optionAlpha(row.index, row.index == curSelected);
-					}
-			return;
-		}
-
 		for (checkbox in checkboxGroup)
 		{
 			checkbox.daValue = Std.string(optionsArray[checkbox.ID].getValue()) == 'true'; // Do not take off the Std.string() from this, it will break a thing in Mod Settings Menu
@@ -1047,27 +968,16 @@ class BaseOptionsMenu extends MusicBeatSubstate
 		if (optionsArray == null)
 			return;
 
-		if (!isPlusStyle())
-			for (num => item in grpOptions.members)
-				if (item != null)
-					item.alpha = optionAlpha(num, item.targetY == 0);
-		if (plusRows != null)
-			for (row in plusRows.members)
-				if (row != null)
-				{
-					row.alpha = isPlusStyle() ? optionAlpha(row.index, row.index == curSelected) : 0;
-					row.applyTheme(row.index == curSelected);
-				}
+		for (num => item in grpOptions.members)
+			if (item != null)
+				item.alpha = optionAlpha(num, item.targetY == 0);
+		for (text in grpTexts)
+			if (text != null)
+				text.alpha = optionAlpha(text.ID, text.ID == curSelected);
 
-		if (!isPlusStyle())
-			for (text in grpTexts)
-				if (text != null)
-					text.alpha = optionAlpha(text.ID, text.ID == curSelected);
-
-		if (!isPlusStyle())
-			for (checkbox in checkboxGroup)
-				if (checkbox != null)
-					checkbox.alpha = optionAlpha(checkbox.ID, checkbox.ID == curSelected);
+		for (checkbox in checkboxGroup)
+			if (checkbox != null)
+				checkbox.alpha = optionAlpha(checkbox.ID, checkbox.ID == curSelected);
 	}
 
 	public function getOptionsCopy():Array<Option>
@@ -1139,48 +1049,30 @@ class BaseOptionsMenu extends MusicBeatSubstate
 			checkboxGroup.remove(checkbox, true);
 			checkbox.destroy();
 		}
-		if (plusRows != null)
-			while (plusRows.members.length > 0)
-			{
-				var row = plusRows.members[0];
-				row.kill();
-				plusRows.remove(row, true);
-				row.destroy();
-			}
-
 		for (i in 0...optionsArray.length)
 		{
-			if (isPlusStyle())
-			{
-				var row = new PlusOptionRow(i, optionsArray[i]);
-				plusRows.add(row);
-				optionsArray[i].child = row;
-			}
-			else
-			{
-				var optionText:Alphabet = new Alphabet(safeOffsetX() + 220, 260, optionsArray[i].name, false);
-				optionText.isMenuItem = true;
-				optionText.targetY = i;
-				grpOptions.add(optionText);
+			var optionText:Alphabet = new Alphabet(safeOffsetX() + 220, 260, optionsArray[i].name, false);
+			optionText.isMenuItem = true;
+			optionText.targetY = i;
+			grpOptions.add(optionText);
 
-				if (optionsArray[i].type == BOOL)
-				{
-					var checkbox:CheckboxThingie = new CheckboxThingie(optionText.x - 105, optionText.y, Std.string(optionsArray[i].getValue()) == 'true');
-					checkbox.sprTracker = optionText;
-					checkbox.ID = i;
-					checkboxGroup.add(checkbox);
-				}
-				else if (optionsArray[i].type != ACTION)
-				{
-					optionText.x -= 80;
-					optionText.startPosition.x -= 80;
-					var valueText:AttachedText = new AttachedText('' + optionsArray[i].getValue(), optionText.width + 60);
-					valueText.sprTracker = optionText;
-					valueText.copyAlpha = true;
-					valueText.ID = i;
-					grpTexts.add(valueText);
-					optionsArray[i].child = valueText;
-				}
+			if (optionsArray[i].type == BOOL)
+			{
+				var checkbox:CheckboxThingie = new CheckboxThingie(optionText.x - 105, optionText.y, Std.string(optionsArray[i].getValue()) == 'true');
+				checkbox.sprTracker = optionText;
+				checkbox.ID = i;
+				checkboxGroup.add(checkbox);
+			}
+			else if (optionsArray[i].type != ACTION)
+			{
+				optionText.x -= 80;
+				optionText.startPosition.x -= 80;
+				var valueText:AttachedText = new AttachedText('' + optionsArray[i].getValue(), optionText.width + 60);
+				valueText.sprTracker = optionText;
+				valueText.copyAlpha = true;
+				valueText.ID = i;
+				grpTexts.add(valueText);
+				optionsArray[i].child = valueText;
 			}
 			updateTextFrom(optionsArray[i]);
 		}
@@ -1200,139 +1092,5 @@ class BaseOptionsMenu extends MusicBeatSubstate
 			descBox.updateHitbox();
 		}
 		callOnCompanionScript('onRebuildOptionsVisuals', [getOptionsCopy()]);
-	}
-}
-private class PlusOptionRow extends FlxSpriteGroup
-{
-	static inline var ROW_W:Float = 960;
-	static inline var ROW_H:Float = 72;
-	static inline var DOT_W:Float = 14;
-	static inline var DOT_H:Float = 34;
-	static inline var DOT_X:Float = 18;
-	static inline var TITLE_X:Float = 46;
-
-	public var index(default, null):Int;
-	public var targetY:Int = 0;
-	var bg:FlxSprite;
-	var title:FlxText;
-	var desc:FlxText;
-	var valueLabel:FlxText;
-	var option:Option;
-	var lastSelected:Null<Bool> = null;
-	var lastTheme:String = "";
-
-	public function new(index:Int, option:Option)
-	{
-		super(150, 260);
-		this.index = index;
-		this.option = option;
-		targetY = index;
-
-		bg = new FlxSprite().makeGraphic(Std.int(ROW_W), Std.int(ROW_H), FlxColor.TRANSPARENT, true);
-		add(bg);
-
-		title = new FlxText(TITLE_X, 8, ROW_W - 250, option.name, 22);
-		title.setFormat(Language.getFontForText(option.name, 'vcr.ttf'), 22, FlxColor.WHITE, LEFT);
-		title.antialiasing = ClientPrefs.data.antialiasing;
-		add(title);
-
-		desc = new FlxText(TITLE_X, 38, ROW_W - 250, compactDescription(option.description), 15);
-		desc.setFormat(Language.getFontForText(option.description, 'vcr.ttf'), 15, FlxColor.WHITE, LEFT);
-		desc.antialiasing = ClientPrefs.data.antialiasing;
-		add(desc);
-
-		valueLabel = new FlxText(ROW_W - 220, 20, 190, '', 20);
-		valueLabel.setFormat(Paths.font("vcr.ttf"), 20, FlxColor.WHITE, RIGHT);
-		valueLabel.antialiasing = ClientPrefs.data.antialiasing;
-		add(valueLabel);
-
-		applyTheme(false);
-		refreshFromOption();
-	}
-
-	override function update(elapsed:Float):Void
-	{
-		super.update(elapsed);
-		var lerpVal:Float = Math.exp(-elapsed * 9.6);
-		x = FlxMath.lerp(150 + (targetY == 0 ? 0 : 18), x, lerpVal);
-		y = FlxMath.lerp(260 + targetY * 94, y, lerpVal);
-		syncLayout();
-	}
-
-	public function applyTheme(selected:Bool):Void
-	{
-		var signature = OptionsMenuTheme.signature();
-		if (lastSelected == selected && lastTheme == signature)
-			return;
-		lastSelected = selected;
-		lastTheme = signature;
-
-		var fill:Int = selected ? OptionsMenuTheme.difficultyCardFill(OptionsMenuTheme.current().accent, true) : OptionsMenuTheme.cardFill(false);
-		var stroke:Int = selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.panelOutlineColor();
-		bg.makeGraphic(Std.int(ROW_W), Std.int(ROW_H), FlxColor.TRANSPARENT, true);
-		FlxSpriteUtil.drawRoundRect(bg, 0, 0, ROW_W, ROW_H, 8, 8, fill);
-		FlxSpriteUtil.drawRoundRect(bg, 0, 0, ROW_W, ROW_H, 8, 8, FlxColor.TRANSPARENT, {thickness: selected ? 2 : 1, color: stroke});
-		FlxSpriteUtil.drawRoundRect(bg, DOT_X, (ROW_H - DOT_H) * 0.5, DOT_W, DOT_H, DOT_W * 0.5, DOT_W * 0.5,
-			selected ? OptionsMenuTheme.current().accent : OptionsMenuTheme.cardAccent(false));
-		title.color = OptionsMenuTheme.cardTitleColor(selected);
-		desc.color = OptionsMenuTheme.cardDescriptionColor(selected);
-		valueLabel.color = OptionsMenuTheme.cardTitleColor(selected);
-		syncLayout();
-	}
-
-	public function setValueLabel(value:String):Void
-	{
-		valueLabel.text = value != null ? value : '';
-		syncLayout();
-	}
-
-	public inline function containsTouchPoint(x:Float, y:Float):Bool
-		return x >= this.x && x <= this.x + ROW_W && y >= this.y && y <= this.y + ROW_H;
-
-	public inline function isValueTouchPoint(x:Float, y:Float):Bool
-		return containsTouchPoint(x, y) && x >= this.x + ROW_W - 250;
-
-	public inline function valueTouchDirection(x:Float):Int
-		return x < this.x + ROW_W - 110 ? -1 : 1;
-
-	public function refreshFromOption():Void
-	{
-		if (option == null)
-		{
-			setValueLabel('');
-			return;
-		}
-
-		switch (option.type)
-		{
-			case BOOL:
-				setValueLabel(Std.string(option.getValue()) == 'true' ? 'ON' : 'OFF');
-			case ACTION:
-				setValueLabel('');
-			default:
-				var value:String = option.text;
-				if (value == null || value.length < 1)
-					value = Std.string(option.getValue());
-				setValueLabel(option.type == KEYBIND ? value : '<  ' + value + '  >');
-		}
-	}
-
-	function syncLayout():Void
-	{
-		bg.setPosition(x, y);
-		title.x = x + TITLE_X;
-		title.y = y + 8;
-		desc.x = x + TITLE_X;
-		desc.y = y + 38;
-		valueLabel.x = x + ROW_W - 220;
-		valueLabel.y = y + 20;
-	}
-
-	static function compactDescription(value:String):String
-	{
-		if (value == null)
-			return '';
-		var text:String = value.trim();
-		return text.length > 150 ? text.substr(0, 147).trim() + '...' : text;
 	}
 }

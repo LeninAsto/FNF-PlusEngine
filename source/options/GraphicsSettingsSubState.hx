@@ -22,7 +22,7 @@ class GraphicsSettingsSubState extends BaseOptionsMenu
 		boyfriend.setGraphicSize(Std.int(boyfriend.width * 0.75));
 		boyfriend.updateHitbox();
 		boyfriend.dance();
-		boyfriend.animation.finishCallback = function(name:String) boyfriend.dance();
+		boyfriend.animation.onFinish.add(function(name:String) boyfriend.dance());
 		boyfriend.visible = false;
 
 		// I'd suggest using "Low Quality" as an example for making your own option since it is the simplest here

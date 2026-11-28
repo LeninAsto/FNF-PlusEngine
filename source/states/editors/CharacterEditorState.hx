@@ -940,8 +940,8 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 		var zoom:Float = FlxG.camera.zoom;
 		if (zoom <= 0) zoom = 1;
 
-		var dx:Float = (FlxG.mouse.deltaScreenX / zoom) / character.scale.x;
-		var dy:Float = (FlxG.mouse.deltaScreenY / zoom) / character.scale.y;
+		var dx:Float = (FlxG.mouse.deltaViewX / zoom) / character.scale.x;
+		var dy:Float = (FlxG.mouse.deltaViewY / zoom) / character.scale.y;
 
 		if (character.flipX)
 			dx *= -1;
@@ -1181,7 +1181,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			{
 				if (!unsavedProgress)
 				{
-					MusicBeatState.switchState(new states.editors.MasterEditorMenu());
+					MusicBeatState.switchStateFactory(() -> new states.editors.MasterEditorMenu(), states.editors.MasterEditorMenu);
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 				}
 				else
@@ -1190,7 +1190,7 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 			else
 			{
 				FlxG.mouse.visible = false;
-				MusicBeatState.switchState(new PlayState());
+				MusicBeatState.switchStateFactory(() -> new PlayState(), PlayState);
 			}
 			return;
 		}
@@ -1251,8 +1251,8 @@ class CharacterEditorState extends MusicBeatState implements PsychUIEventHandler
 
 	function isMouseOverUI():Bool
 	{
-		var mouseX = FlxG.mouse.screenX;
-		var mouseY = FlxG.mouse.screenY;
+		var mouseX = FlxG.mouse.viewX;
+		var mouseY = FlxG.mouse.viewY;
 
 		if (UI_box != null && UI_box.visible && UI_box.bg != null)
 		{

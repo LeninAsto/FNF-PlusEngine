@@ -203,7 +203,7 @@ class MaterialButton extends FlxSpriteGroup
 		}
 
 		#if FLX_MOUSE
-		var mousePos = FlxG.mouse.getScreenPosition();
+		var mousePos = backend.PointerCompat.legacyScreenPosition(FlxG.mouse);
 		var hitPadX = MD3Metrics.size(4);
 		var hitPadY = Std.int(Math.max(0, (minHitHeight() - buttonHeight()) / 2));
 		var isOver = mousePos.x >= x - hitPadX

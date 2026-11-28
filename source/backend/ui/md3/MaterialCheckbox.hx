@@ -237,7 +237,7 @@ class MaterialCheckbox extends FlxSpriteGroup
 		#if FLX_MOUSE
 		var offset = (stateLayerSize() - containerSize()) / 2;
 		var checkboxWidth = labelText != null ? (containerSize() + labelSpacing() + labelText.width) : containerSize();
-		var mousePos = FlxG.mouse.getScreenPosition();
+		var mousePos = backend.PointerCompat.legacyScreenPosition(FlxG.mouse);
 		var isOver = mousePos.x >= x - offset
 			&& mousePos.x <= x + checkboxWidth + offset
 			&& mousePos.y >= y - offset

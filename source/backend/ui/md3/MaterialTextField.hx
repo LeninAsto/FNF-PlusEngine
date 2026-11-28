@@ -331,7 +331,7 @@ class MaterialTextField extends FlxSpriteGroup
 		}
 
 		#if FLX_MOUSE
-		var mousePos = FlxG.mouse.getScreenPosition();
+		var mousePos = backend.PointerCompat.legacyScreenPosition(FlxG.mouse);
 		var isOver = mousePos.x >= x && mousePos.x <= x + fieldWidth && mousePos.y >= y && mousePos.y <= y + FIELD_HEIGHT;
 
 		if (FlxG.mouse.justPressed && isOver)

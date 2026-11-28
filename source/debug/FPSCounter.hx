@@ -92,11 +92,9 @@ class FPSCounter extends Sprite
 	/**
 		CPU and GPU usage tracking - ELIMINADO para optimización
 	**/
-	// Variables eliminadas para mejor rendimiento
 	/**
 		Note and sprite counters - ELIMINADO para optimización  
 	**/
-	// Variables eliminadas para mejor rendimiento
 
 	/**
 		Runtime tracking
@@ -153,7 +151,6 @@ class FPSCounter extends Sprite
 	{
 		super();
 
-		// Assign singleton instance.
 		instance = this;
 
 		applyPrefs(false);
@@ -181,7 +178,6 @@ class FPSCounter extends Sprite
 
 		times = [for (i in 0...TIMES_CAPACITY) 0];
 
-		// Initialize frame time measurement
 		lastFrameTime = Timer.stamp();
 		frameTimesArray = [for (i in 0...FRAME_TIMES_CAPACITY) 0];
 
@@ -194,11 +190,9 @@ class FPSCounter extends Sprite
 		// Get build/commit info without touching the network in normal builds.
 		getLastCommit();
 
-		// Initialize runtime tracking
 		startTime = haxe.Timer.stamp();
 		lastCacheUpdateTime = startTime;
 
-		// Initialize minimal cache
 		cachedCurrentState = "Unknown";
 	}
 
@@ -215,7 +209,6 @@ class FPSCounter extends Sprite
 		// Get current real memory
 		var currentMemory = memoryMegas;
 
-		// Update peak memory
 		if (currentMemory > memoryPeak)
 		{
 			memoryPeak = currentMemory;
@@ -389,7 +382,6 @@ class FPSCounter extends Sprite
 		}
 	}
 
-	// Función para actualizar el fondo
 	public function applyPrefs(?refresh:Bool = true):Void
 	{
 		ClientPrefs.normalizeFPSCounterPrefs();
@@ -462,7 +454,6 @@ class FPSCounter extends Sprite
 		}
 	}
 
-	// Función para obtener información del último commit
 	private function getLastCommit():Void
 	{
 		if (BuildInfo.githubDevBuild && BuildInfo.commit.length > 0)
@@ -487,7 +478,6 @@ class FPSCounter extends Sprite
 	{
 		#if sys
 		var loaded:Bool = false;
-		// Intentar obtener información desde la API de GitHub
 		var http = new Http('https://api.github.com/repos/Psych-Plus-Team/FNF-PlusEngine/commits?per_page=1');
 		http.addHeader('User-Agent', 'FNF-PlusEngine');
 
@@ -503,22 +493,18 @@ class FPSCounter extends Sprite
 					var sha:String = latestCommit.sha.substr(0, 7);
 					var message:String = latestCommit.commit.message;
 
-					// Obtener la fecha y hora del commit
 					var commitDateRaw:String = latestCommit.commit.author.date; // Formato ISO 8601
 
-					// Tomar solo la primera línea del mensaje
 					if (message.indexOf('\n') != -1)
 					{
 						message = message.substr(0, message.indexOf('\n'));
 					}
 
-					// Limitar longitud del mensaje
 					if (message.length > 30)
 					{
 						message = message.substring(0, 30) + "...";
 					}
 
-					// Formatear la fecha y hora del commit
 					if (commitDateRaw != null && commitDateRaw.length > 0)
 					{
 						// Formato: 2024-11-02T15:30:45Z
@@ -575,7 +561,6 @@ class FPSCounter extends Sprite
 		#end
 	}
 
-	// Función para obtener tiempo de ejecución
 	private function getUptime():String
 	{
 		var uptime = haxe.Timer.stamp() - startTime;
@@ -640,16 +625,13 @@ class FPSCounter extends Sprite
 		return stateName;
 	}
 
-	// Función para obtener el idioma actual
 	private function getCurrentLanguage():String
 	{
 		#if TRANSLATIONS_ALLOWED
 		try
 		{
-			// Obtener el código del idioma desde ClientPrefs
 			var langCode = ClientPrefs.data.language;
 
-			// Obtener el nombre del idioma desde Language.hx
 			var langName = Language.getPhrase('language_name');
 			if (langName != null && langName.length > 0)
 			{
@@ -665,16 +647,14 @@ class FPSCounter extends Sprite
 			return 'Unknown';
 		}
 		#else
-		return 'English (US)'; // Default cuando las traducciones están deshabilitadas
+		return 'English (US)';
 		#end
 	}
 
-	// Función para actualizar contadores de rendimiento (ultra-optimizada)
 	private function updateCountersOptimized():Void
 	{
 		var currentTime = haxe.Timer.stamp();
 
-		// Actualizar cache de datos mínimos cada 0.5 segundos para mejor respuesta
 		if (currentTime - lastCacheUpdateTime >= 0.5)
 		{
 			lastCacheUpdateTime = currentTime;
@@ -692,14 +672,11 @@ class FPSCounter extends Sprite
 
 	public inline function positionFPS(X:Float, Y:Float, ?scale:Float = 1)
 	{
-		// Mantener siempre el mismo tamaño, ignorar el parámetro scale
 		scaleX = scaleY = 1.0;
 
-		// Solo reposicionamiento, sin escalado
 		x = X;
 		y = Y;
 
-		// Actualizar posición del fondo también para que siga al texto
 		pendingLayoutRefresh = true;
 	}
 
@@ -719,10 +696,6 @@ class FPSCounter extends Sprite
 		metricBoxes = [];
 	}
 
-	// Funciones para obtener uso real de CPU y GPU
-	// ELIMINADAS - Ya no se usan para mejor rendimiento
-	// Funciones de estimación como fallback
-	// ELIMINADAS - Ya no se usan para mejor rendimiento
 	#if cpp
 	#if windows
 	@:functionCode('
@@ -781,9 +754,9 @@ private class FPSCounterBox extends Sprite
 	private var lastColor:Int = -1;
 	private var textFormat:TextFormat;
 
-	private static inline var PADDING_X:Float = 8;
-	private static inline var PADDING_Y:Float = 5;
-	private static inline var INNER_DIFF:Int = 3;
+	private static inline var PADDING_X:Float = 6;
+	private static inline var PADDING_Y:Float = 4;
+	private static inline var INNER_DIFF:Int = 2;
 
 	public function new(color:Int)
 	{
@@ -795,7 +768,7 @@ private class FPSCounterBox extends Sprite
 		textDisplay = new TextField();
 		textDisplay.selectable = false;
 		textDisplay.mouseEnabled = false;
-		textFormat = new TextFormat('Monsterrat', 14, color);
+		textFormat = new TextFormat('Monsterrat', 12, color);
 		textDisplay.defaultTextFormat = textFormat;
 		textDisplay.antiAliasType = openfl.text.AntiAliasType.NORMAL;
 		textDisplay.sharpness = 100;
@@ -827,7 +800,7 @@ private class FPSCounterBox extends Sprite
 		// Keep a stable width for changing digits. Background commands are reused
 		// by the renderer instead of being cleared/rebuilt on every new frame time.
 		var nextWidth = Math.max(boxWidth, Math.ceil((textDisplay.textWidth + (PADDING_X * 2) + (INNER_DIFF * 2) + 6) / 16) * 16);
-		var nextHeight = Math.max(24, textDisplay.textHeight + (PADDING_Y * 2) + (INNER_DIFF * 2));
+		var nextHeight = Math.max(22, textDisplay.textHeight + (PADDING_Y * 2) + (INNER_DIFF * 2));
 		var geometryChanged = nextWidth != boxWidth || nextHeight != boxHeight || hasBackground != showBackground;
 		boxWidth = nextWidth;
 		boxHeight = nextHeight;

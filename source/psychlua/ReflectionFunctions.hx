@@ -313,7 +313,19 @@ class ReflectionFunctions
 			return Reflect.callMethod(null, parent, parseInstances(args));
 		});
 		Lua_helper.add_callback(lua, "callMethodFromClass", function(className:String, funcToRun:String, ?args:Array<Dynamic>) {
-			return callMethodFromObject(resolveClass(className), funcToRun, parseInstances(args));
+			if (className == 'flixel.math.FlxMath' && (funcToRun == 'fastSin' || funcToRun == 'fastCos'))
+			{
+				final replacement = funcToRun == 'fastSin' ? 'Math.sin' : 'Math.cos';
+				deprecations.HaxeLibDeprecations.warnMessage('$className.$funcToRun', '$funcToRun is deprecated, use $replacement, instead');
+				final values = parseInstances(args);
+				if (values == null || values.length == 0) return null;
+				return funcToRun == 'fastSin' ? modchart.backend.util.ModchartUtil.sin(values[0]) : modchart.backend.util.ModchartUtil.cos(values[0]);
+			}
+			final values = parseInstances(args);
+			if (funcToRun == 'switchState' && values != null && values.length > 0
+				&& (className == 'flixel.FlxG' || className == 'backend.MusicBeatState' || className == 'backend.BaseMusicBeatState'))
+				deprecations.HaxeLibDeprecations.warnLegacyStateCall(className + '.switchState', values[0]);
+			return callMethodFromObject(resolveClass(className), funcToRun, values);
 		});
 
 		Lua_helper.add_callback(lua, "createInstance", function(variableToSave:String, className:String, ?args:Array<Dynamic>) {
@@ -395,16 +407,13 @@ class ReflectionFunctions
 			if(index > -1)
 			{
 				argStr = argStr.substring(index+2);
-				//trace('Op1: $argStr');
 				var lastIndex:Int = argStr.lastIndexOf('::');
 
 				var split:Array<String> = (lastIndex > -1) ? argStr.substring(0, lastIndex).split('.') : argStr.split('.');
 				arg = (lastIndex > -1) ? resolveClass(argStr.substring(lastIndex+2)) : PlayState.instance;
 				for (j in 0...split.length)
 				{
-					//trace('Op2: ${Type.getClass(args[i])}, ${split[j]}');
 					arg = LuaUtils.getVarInArray(arg, split[j].trim());
-					//trace('Op3: ${args[i] != null ? Type.getClass(args[i]) : null}');
 				}
 			}
 		}
@@ -416,7 +425,6 @@ class ReflectionFunctions
 		var split:Array<String> = funcStr.split('.');
 		var funcToRun:Function = null;
 		var obj:Dynamic = classObj;
-		//trace('start: ' + obj);
 		if(obj == null)
 		{
 			return null;
@@ -425,11 +433,9 @@ class ReflectionFunctions
 		for (i in 0...split.length)
 		{
 			obj = LuaUtils.getVarInArray(obj, split[i].trim());
-			//trace(obj, split[i]);
 		}
 
 		funcToRun = cast obj;
-		//trace('end: $obj');
 		return funcToRun != null ? Reflect.callMethod(obj, funcToRun, args) : null;
 	}
 }

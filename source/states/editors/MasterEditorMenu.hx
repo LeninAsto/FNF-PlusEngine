@@ -8,10 +8,8 @@ import mobile.input.TouchScrollHandler;
 
 class MasterEditorMenu extends MusicBeatState
 {
-	// ← CAMBIO: Usar índices en lugar de strings traducidos
 	var options:Array<String> = [];
 
-	// ← NUEVO: Array con las claves de traducción
 	var optionKeys:Array<String> = [
 		'chart_editor',
 		'character_editor',
@@ -40,7 +38,6 @@ class MasterEditorMenu extends MusicBeatState
 		DiscordClient.changePresence(Language.getPhrase('editors.master.presence', 'Editors Main Menu'), null);
 		#end
 
-		// ← NUEVO: Construir array de opciones traducidas
 		buildOptions();
 
 		var bg:FlxSprite = new FlxSprite().loadGraphic(Paths.image('menuDesat'));
@@ -98,7 +95,6 @@ class MasterEditorMenu extends MusicBeatState
 		addTouchPadCamera();
 	}
 
-	// ← NUEVO: Función para construir opciones traducidas
 	function buildOptions():Void
 	{
 		options = [
@@ -145,7 +141,6 @@ class MasterEditorMenu extends MusicBeatState
 
 		if (controls.ACCEPT || (touchPad != null && touchPad.buttonA.justPressed))
 		{
-			// ← SOLUCION: Usar índice en lugar de string traducido
 			if (!canSelect(curSelected))
 			{
 				FlxG.sound.play(Paths.sound('cancelMenu'), 0.4);
@@ -161,17 +156,17 @@ class MasterEditorMenu extends MusicBeatState
 				case 2: // Stage Editor
 					LoadingState.loadAndSwitchState(new StageEditorState());
 				case 3: // Week Editor
-					MusicBeatState.switchState(new WeekEditorState());
+					MusicBeatState.switchStateFactory(() -> new WeekEditorState(), WeekEditorState);
 				case 4: // Menu Character Editor
-					MusicBeatState.switchState(new MenuCharacterEditorState());
+					MusicBeatState.switchStateFactory(() -> new MenuCharacterEditorState(), MenuCharacterEditorState);
 				case 5: // Dialogue Editor
 					LoadingState.loadAndSwitchState(new DialogueEditorState(), false);
 				case 6: // Dialogue Portrait Editor
 					LoadingState.loadAndSwitchState(new DialogueCharacterEditorState(), false);
 				case 7: // Note Splash Editor
-					MusicBeatState.switchState(new NoteSplashEditorState());
+					MusicBeatState.switchStateFactory(() -> new NoteSplashEditorState(), NoteSplashEditorState);
 				case 8: // Modchart Editor
-					MusicBeatState.switchState(new ModchartEditorState());
+					MusicBeatState.switchStateFactory(() -> new ModchartEditorState(), ModchartEditorState);
 			}
 			FlxG.sound.music.volume = 0;
 			FreeplayState.destroyFreeplayVocals();
@@ -242,12 +237,12 @@ class MasterEditorMenu extends MusicBeatState
 			case 0: LoadingState.loadAndSwitchState(new ChartingState(), false);
 			case 1: LoadingState.loadAndSwitchState(new CharacterEditorState(Character.DEFAULT_CHARACTER, false));
 			case 2: LoadingState.loadAndSwitchState(new StageEditorState());
-			case 3: MusicBeatState.switchState(new WeekEditorState());
-			case 4: MusicBeatState.switchState(new MenuCharacterEditorState());
+			case 3: MusicBeatState.switchStateFactory(() -> new WeekEditorState(), WeekEditorState);
+			case 4: MusicBeatState.switchStateFactory(() -> new MenuCharacterEditorState(), MenuCharacterEditorState);
 			case 5: LoadingState.loadAndSwitchState(new DialogueEditorState(), false);
 			case 6: LoadingState.loadAndSwitchState(new DialogueCharacterEditorState(), false);
-			case 7: MusicBeatState.switchState(new NoteSplashEditorState());
-			case 8: MusicBeatState.switchState(new ModchartEditorState());
+			case 7: MusicBeatState.switchStateFactory(() -> new NoteSplashEditorState(), NoteSplashEditorState);
+			case 8: MusicBeatState.switchStateFactory(() -> new ModchartEditorState(), ModchartEditorState);
 		}
 		FlxG.sound.music.volume = 0;
 		FreeplayState.destroyFreeplayVocals();

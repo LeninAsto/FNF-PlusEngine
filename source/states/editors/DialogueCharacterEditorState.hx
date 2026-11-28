@@ -476,7 +476,6 @@ class DialogueCharacterEditorState extends MusicBeatState implements PsychUIEven
 
 	public function UIEvent(id:String, sender:Dynamic)
 	{
-		// trace(id, sender);
 		if (id == PsychUICheckBox.CLICK_EVENT)
 			unsavedProgress = true;
 
@@ -754,7 +753,7 @@ class DialogueCharacterEditorState extends MusicBeatState implements PsychUIEven
 			{
 				if (!unsavedProgress)
 				{
-					MusicBeatState.switchState(new states.editors.MasterEditorMenu());
+					MusicBeatState.switchStateFactory(() -> new states.editors.MasterEditorMenu(), states.editors.MasterEditorMenu);
 					FlxG.sound.playMusic(Paths.music('freakyMenu'));
 					transitioning = true;
 				}

@@ -142,7 +142,6 @@ class WindowFunctions
 			WindowTweens.loadWindowState(stateJson);
 		});
 
-		// === NUEVAS FUNCIONES CON WINDOWS API ===
 
 		// Window State Information Functions
 		Lua_helper.add_callback(lua, "getWindowState", function() {

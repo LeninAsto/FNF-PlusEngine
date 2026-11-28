@@ -228,7 +228,7 @@ class SMFile
 				{
 					var swagSection:SwagSection = {
 						sectionNotes: [],
-						sectionBeats: 4, // Psych usa lengthInSteps, convertir o usar default
+						sectionBeats: 4,
 						mustHitSection: section.mustHitSection,
 						gfSection: false, // FNFLegacySection does not have this field in Moonchart
 						bpm: section.bpm ?? 0,

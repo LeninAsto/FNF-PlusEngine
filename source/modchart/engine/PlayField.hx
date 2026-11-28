@@ -337,7 +337,7 @@ final class PlayField extends FlxSprite
 		updateSkewMatrix();
 		_matrix.concat(_skewMatrix);
 
-		_point.set().subtractPoint(offset);
+		_point.set().subtract(offset);
 		_point.add(origin.x, origin.y);
 		matrix.translate(_point.x, _point.y);
 

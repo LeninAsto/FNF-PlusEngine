@@ -11,6 +11,7 @@ import lime.ui.Haptic;
 
 class GameOverSubstate extends MusicBeatSubstate
 {
+	final animationSlots = new backend.AnimationCallbackSlots();
 	public var boyfriend:Character;
 	public var camFollow:FlxObject;
 
@@ -95,7 +96,8 @@ class GameOverSubstate extends MusicBeatSubstate
 
 		PlayState.instance.setOnScripts('inGameOver', true);
 		PlayState.instance.callOnScripts('onGameOverStart', []);
-		FlxG.sound.music.loadEmbedded(Paths.music(loopSoundName), true);
+		var loopSound = Paths.music(loopSoundName);
+		if (loopSound != null) FlxG.sound.music.load(loopSound).setup(FlxG.sound.music.volume, true);
 
 		for (stage in PlayState.instance.stages)
 			stage.gameOverStart(this);
@@ -111,7 +113,7 @@ class GameOverSubstate extends MusicBeatSubstate
 			overlay.visible = false;
 			add(overlay);
 
-			boyfriend.animation.callback = function(name:String, frameNumber:Int, frameIndex:Int)
+			animationSlots.setFrame(boyfriend.animation, function(name:String, frameNumber:Int, frameIndex:Int)
 			{
 				switch (name)
 				{
@@ -120,22 +122,21 @@ class GameOverSubstate extends MusicBeatSubstate
 						{
 							overlay.visible = true;
 							overlay.animation.play('deathLoop');
-							boyfriend.animation.callback = null;
+							animationSlots.setFrame(boyfriend.animation, null);
 						}
 					default:
-						boyfriend.animation.callback = null;
+						animationSlots.setFrame(boyfriend.animation, null);
 				}
-			}
-
+			});
 			if (PlayState.instance.gf != null && PlayState.instance.gf.curCharacter == 'nene')
 			{
 				var neneKnife:FlxSprite = new FlxSprite(boyfriend.x - 450, boyfriend.y - 250);
 				neneKnife.frames = Paths.getSparrowAtlas('NeneKnifeToss');
 				neneKnife.animation.addByPrefix('anim', 'knife toss', 24, false);
 				neneKnife.antialiasing = ClientPrefs.data.antialiasing;
-				neneKnife.animation.finishCallback = function(_)
+				animationSlots.setFinish(neneKnife.animation, function(_)
 				{
-					neneKnife.animation.finishCallback = null;
+					animationSlots.setFinish(neneKnife.animation, null);
 					neneKnife.visible = false;
 					neneKnife.active = false;
 					new FlxTimer().start(0.001, function(_)
@@ -143,7 +144,7 @@ class GameOverSubstate extends MusicBeatSubstate
 						remove(neneKnife, true);
 						neneKnife.destroy();
 					});
-				}
+				});
 				insert(0, neneKnife);
 				neneKnife.animation.play('anim', true);
 			}

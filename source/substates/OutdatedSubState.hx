@@ -62,7 +62,6 @@ class OutdatedSubState extends MusicBeatSubstate
 		changelogText.alpha = 0.0;
 		add(changelogText);
 
-		// Controls text - Diferentes instrucciones para móvil y PC
 		#if mobile
 		controlsText = new FlxText(0, FlxG.height - 120, FlxG.width,
 			Language.getPhrase('substates.outdated.controls_mobile', Language.getPhrase('update_controls_mobile',
@@ -77,7 +76,6 @@ class OutdatedSubState extends MusicBeatSubstate
 		controlsText.alpha = 0.0;
 		add(controlsText);
 
-		// TouchPad para dispositivos móviles con animación visible
 		#if mobile
 		addTouchPad("NONE", "A_B");
 		touchPad.alpha = 1.0;
@@ -174,7 +172,6 @@ class OutdatedSubState extends MusicBeatSubstate
 			{
 				FlxG.sound.play(Paths.sound('cancelMenu'));
 
-				// Animar touchPad para que desaparezca en móviles
 				#if mobile
 				if (touchPad != null)
 				{

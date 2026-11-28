@@ -21,7 +21,7 @@ class ScriptShims {
 			if (FlxG.sound.music != null)
 				FlxG.sound.music.stop();
 
-			FlxG.sound.music = FlxG.sound.load(args[0], volume, looped);
+			FlxG.sound.music = FlxG.sound.create(args[0]).setup(volume, looped);
 			FlxG.sound.music.play();
 			return FlxG.sound.music;
 		});

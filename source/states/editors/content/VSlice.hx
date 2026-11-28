@@ -220,7 +220,6 @@ class VSlice
 			}
 			baseSections.push(sec);
 		}
-		// trace('sections: ${baseSections.length}, max time: $time, note: $lastNoteTime');
 
 		// create sections based on how much time there is until the last note
 		for (diff in metadata.playData.difficulties)

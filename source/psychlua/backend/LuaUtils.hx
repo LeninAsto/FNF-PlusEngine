@@ -13,6 +13,7 @@ import substates.GameOverSubstate;
 
 typedef LuaTweenOptions = {
 	type:FlxTweenType,
+	framerate:Float,
 	startDelay:Float,
 	onUpdate:Null<String>,
 	onStart:Null<String>,
@@ -49,15 +50,24 @@ class LuaUtils
 
 	public static function getLuaTween(options:Dynamic)
 	{
-		return (options != null) ? {
+		if (options == null) return null;
+		var rate:Dynamic = Reflect.field(options, 'framerate');
+		var framerate:Float = 0;
+		if (Std.isOfType(rate, Int) || Std.isOfType(rate, Float))
+		{
+			var value:Float = rate;
+			if (Math.isFinite(value) && value > 0) framerate = value;
+		}
+		return {
 			type: getTweenTypeByString(options.type),
+			framerate: framerate,
 			startDelay: options.startDelay != null ? options.startDelay : 0.0,
 			onUpdate: options.onUpdate,
 			onStart: options.onStart,
 			onComplete: options.onComplete,
 			loopDelay: options.loopDelay != null ? options.loopDelay : 0.0,
 			ease: getTweenEaseByString(options.ease)
-		} : null;
+		};
 	}
 
 	public static function setVarInArray(instance:Dynamic, variable:String, value:Dynamic, allowMaps:Bool = false):Any
@@ -69,6 +79,7 @@ class LuaUtils
 			#end
 			return null;
 		}
+		deprecations.HaxeLibDeprecations.checkMember(instance, variable);
 
 		var legacyBar:Dynamic = getLegacyBarSprite(instance, variable);
 		if(legacyBar != null)
@@ -104,7 +115,6 @@ class LuaUtils
 
 		if(allowMaps && isMap(instance))
 		{
-			//trace(instance);
 			instance.set(variable, value);
 			return value;
 		}
@@ -137,6 +147,12 @@ class LuaUtils
 	{
 		if(instance == null)
 			return null;
+		if (variable == 'setFilters')
+		{
+			var legacyMethod = deprecations.LegacyCamera.resolveMember(instance, variable);
+			if (legacyMethod != null) return legacyMethod;
+		}
+		deprecations.HaxeLibDeprecations.checkMember(instance, variable);
 
 		var legacyBar:Dynamic = getLegacyBarSprite(instance, variable);
 		if(legacyBar != null)
@@ -167,7 +183,6 @@ class LuaUtils
 
 		if(allowMaps && isMap(instance))
 		{
-			//trace(instance);
 			return instance.get(variable);
 		}
 
@@ -233,7 +248,7 @@ class LuaUtils
 				try
 				{
 					//FunkinLua.luaTrace('getModSetting: Trying to find default value for "$saveTag" in Mod: "$modName"');
-					var parsedJson:Dynamic = tjson.TJSON.parse(data);
+					var parsedJson:Dynamic = jsonmod.Json.parse(data);
 					for (i in 0...parsedJson.length)
 					{
 						var sub:Dynamic = parsedJson[i];
@@ -323,7 +338,6 @@ class LuaUtils
 				return false;
 		}*/
 
-		//trace(variable);
 		if(variable.exists != null && variable.keyValueIterator != null) return true;
 		return false;
 	}

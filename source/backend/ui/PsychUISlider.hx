@@ -72,7 +72,7 @@ class PsychUISlider extends FlxSpriteGroup {
 			if (movingHandle) {
 				var point:FlxPoint = getScreenPosition(null, camera);
 				var lastValue:Float = FlxMath.roundDecimal(value, decimals);
-				value = Math.max(min, Math.min(max, FlxMath.remapToRange(FlxG.mouse.getPositionInCameraView(camera).x, bar.x, bar.x + bar.width, min, max)));
+				value = Math.max(min, Math.min(max, FlxMath.remapToRange(FlxG.mouse.getViewPosition(camera).x, bar.x, bar.x + bar.width, min, max)));
 				if (this.onChange != null && lastValue != value) {
 					this.onChange(FlxMath.roundDecimal(value, decimals));
 					if (broadcastSliderEvent)

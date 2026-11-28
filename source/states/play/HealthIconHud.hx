@@ -15,6 +15,11 @@ class HealthIconHud
 				oldScale(elapsed, p2);
 				oldScale(elapsed, gf);
 
+			case 'Kade':
+				kadeScale(p1);
+				kadeScale(p2);
+				kadeScale(gf);
+
 			case 'NF':
 				lerpScale(elapsed, rate, p1, true);
 				lerpScale(elapsed, rate, p2, true);
@@ -78,6 +83,12 @@ class HealthIconHud
 	{
 		if (icon != null && (icon.visible || icon.alpha > 0))
 			icon.setGraphicSize(Std.int(FlxMath.lerp(150, icon.width, CoolUtil.boundTo(1 - (elapsed * 30), 0, 1))));
+	}
+
+	static function kadeScale(icon:HealthIcon):Void
+	{
+		if (icon != null)
+			icon.setGraphicSize(Std.int(FlxMath.lerp(150, icon.width, 0.5)));
 	}
 
 	static function lerpScale(elapsed:Float, rate:Float, icon:HealthIcon, nf:Bool):Void

@@ -220,14 +220,13 @@ class NoteOffsetState extends MusicBeatState
 
 		if (controls.controllerMode != _lastControllerMode)
 		{
-			// trace('changed controller mode');
 			FlxG.mouse.visible = !controls.controllerMode;
 			controllerPointer.visible = controls.controllerMode;
 
 			// changed to controller mid state
 			if (controls.controllerMode)
 			{
-				var mousePos = FlxG.mouse.getScreenPosition(camHUD);
+				var mousePos = backend.PointerCompat.legacyScreenPosition(FlxG.mouse, camHUD);
 				controllerPointer.x = mousePos.x;
 				controllerPointer.y = mousePos.y;
 			}
@@ -357,7 +356,7 @@ class NoteOffsetState extends MusicBeatState
 			{
 				holdingObjectType = null;
 				if (!controls.controllerMode)
-					FlxG.mouse.getScreenPosition(camHUD, startMousePos);
+					backend.PointerCompat.legacyScreenPosition(FlxG.mouse, camHUD, startMousePos);
 				else
 					controllerPointer.getScreenPosition(startMousePos, camHUD);
 
@@ -392,7 +391,6 @@ class NoteOffsetState extends MusicBeatState
 					holdingObjectType = 1;
 					startComboOffset.x = ClientPrefs.data.comboOffset[2];
 					startComboOffset.y = ClientPrefs.data.comboOffset[3];
-					// trace('yo bro');
 				}
 				// Check rating (mode 1)
 				else if (currentMode == 1
@@ -404,7 +402,6 @@ class NoteOffsetState extends MusicBeatState
 					holdingObjectType = 0;
 					startComboOffset.x = ClientPrefs.data.comboOffset[0];
 					startComboOffset.y = ClientPrefs.data.comboOffset[1];
-					// trace('heya');
 				}
 			}
 			if (FlxG.mouse.justReleased || gamepadReleased)
@@ -412,7 +409,6 @@ class NoteOffsetState extends MusicBeatState
 				if (holdingObjectType == 3)
 					ClientPrefs.saveSettings();
 				holdingObjectType = null;
-				// trace('dead');
 			}
 
 			if (holdingObjectType != null)
@@ -421,7 +417,7 @@ class NoteOffsetState extends MusicBeatState
 				{
 					var mousePos:FlxPoint = null;
 					if (!controls.controllerMode)
-						mousePos = FlxG.mouse.getScreenPosition(camHUD);
+						mousePos = backend.PointerCompat.legacyScreenPosition(FlxG.mouse, camHUD);
 					else
 						mousePos = controllerPointer.getScreenPosition(camHUD);
 
@@ -728,12 +724,12 @@ class NoteOffsetState extends MusicBeatState
 				str = offsetPhrase('modes.combo', 'combo_offset', 'Combo Offset');
 				addTouchPad('NONE', 'A_B_C');
 				addTouchPadCamera();
-				reloadTexts(); // Actualizar textos para combo
+				reloadTexts();
 			case 2: // KeyViewer Offset
 				str = offsetPhrase('modes.keyviewer', 'keyviewer_offset', 'KeyViewer Offset');
 				addTouchPad('NONE', 'A_B_C');
 				addTouchPadCamera();
-				reloadTexts(); // Actualizar textos para keyviewer
+				reloadTexts();
 			case 3:
 				str = offsetPhrase('modes.hit_ms', 'hit_ms_offset', 'Hit MS Offset');
 				addTouchPad('NONE', 'A_B_C');
@@ -754,7 +750,7 @@ class NoteOffsetState extends MusicBeatState
 	function repositionKeyViewer()
 	{
 		keyViewer.centerOnScreen();
-		reloadTexts(); // Actualizar los textos con las nuevas posiciones
+		reloadTexts();
 		ClientPrefs.saveSettings();
 	}
 

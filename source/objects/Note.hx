@@ -174,7 +174,6 @@ class Note extends FlxSprite
 	{
 		resizeByRatio(value / multSpeed);
 		multSpeed = value;
-		// trace('fuck cock');
 		return value;
 	}
 
@@ -335,7 +334,6 @@ class Note extends FlxSprite
 			}
 		}
 
-		// trace(prevNote);
 
 		if (prevNote != null)
 			prevNote.nextNote = this;

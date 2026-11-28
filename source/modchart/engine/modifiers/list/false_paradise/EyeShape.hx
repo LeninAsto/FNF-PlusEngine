@@ -43,7 +43,7 @@ class EyeShape extends Modifier {
 
 			if (FlxMath.inBounds(distance, vec.startDist, vec.endDist) && vec.next != null) {
 				var ratio = (distance - vec.startDist) / vec.next.subtract(vec).length;
-				return ModchartUtil.lerpVector3D(vec, vec.next, ratio);
+				return (cast vec:Vector3).interpolate(vec.next, ratio);
 			}
 		}
 		return _path[0];
@@ -76,7 +76,7 @@ class EyeShape extends Modifier {
 
 		var path = getPositionAt(params.distance / 2000.0 * _pathDistance);
 
-		return ModchartUtil.lerpVector3D(curPos, path.add(new Vector3(WIDTH * .5 - 264 - 272, HEIGHT * .5 + 280 - 260)), perc);
+		return curPos.interpolate(path.add(new Vector3(WIDTH * .5 - 264 - 272, HEIGHT * .5 + 280 - 260)), perc);
 	}
 
 	override public function shouldRun(params:ModifierParameters):Bool

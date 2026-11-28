@@ -98,7 +98,7 @@ class InitialState extends MusicBeatState
 		#if (debug && sys)
 		if (Sys.args().indexOf('--modchart-editor') != -1)
 		{
-			MusicBeatState.switchState(new states.editors.ModchartEditorState());
+			MusicBeatState.switchStateFactory(() -> new states.editors.ModchartEditorState(), states.editors.ModchartEditorState);
 			return;
 		}
 		#end
@@ -154,12 +154,12 @@ class InitialState extends MusicBeatState
 		else
 			Mods.loadTopMod();
 		setStartupProgress('Starting game...', 3);
-		MusicBeatState.switchState(new TitleState());
+		MusicBeatState.switchStateFactory(() -> new TitleState(), TitleState);
 		#else
 		trace("meh, hardcoded");
 		Mods.loadTopMod();
 		setStartupProgress('Starting game...', 3);
-		MusicBeatState.switchState(new TitleState());
+		MusicBeatState.switchStateFactory(() -> new TitleState(), TitleState);
 		#end
 	}
 }

@@ -108,10 +108,9 @@ class DialogueBox extends FlxSpriteGroup
 		swagDialogue = new FlxTypeText(240, 500, Std.int(FlxG.width * 0.6), '', 32);
 		swagDialogue.font = Paths.font('pixel-latin.ttf');
 		swagDialogue.color = 0xFF3F2021;
-		swagDialogue.sounds = [FlxG.sound.load(Paths.sound('pixelText'), 0.6)];
-		swagDialogue.borderStyle = SHADOW;
+		swagDialogue.sounds = [FlxG.sound.create(Paths.sound('pixelText')).setup(0.6)];
+		swagDialogue.borderStyle = SHADOW_XY(2, 2);
 		swagDialogue.borderColor = 0xFFD89494;
-		swagDialogue.shadowOffset.set(2, 2);
 		add(swagDialogue);
 
 		skipText = new FlxText(FlxG.width - 320, FlxG.height - 30, 300, Language.getPhrase('dialogue_skip', 'Press BACK to Skip'), 16);

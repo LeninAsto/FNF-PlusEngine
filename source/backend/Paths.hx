@@ -413,7 +413,6 @@ class Paths
 				var grp:Array<Dynamic> = Reflect.getProperty(spr, 'members');
 				if (grp != null)
 				{
-					// trace('is actually a group');
 					for (member in grp)
 					{
 						checkForGraphics(member);
@@ -422,14 +421,12 @@ class Paths
 				}
 			}
 
-			// trace('check...');
 			try
 			{
 				var gfx:FlxGraphic = Reflect.getProperty(spr, 'graphic');
 				if (gfx != null)
 				{
 					protectedGfx.push(gfx);
-					// trace('gfx added to the list successfully!');
 				}
 			}
 			// catch(haxe.Exception) {}
@@ -452,7 +449,6 @@ class Paths
 				{
 					if (destroyGraphic(graphic))
 						keysToRemove.push(key); // and remove the key from local cache map
-					// trace('deleted $key');
 				}
 			}
 		}
@@ -529,7 +525,6 @@ class Paths
 		var songKey:String = '${formatToSongPath(song)}/Voices';
 		if (postfix != null)
 			songKey += '-' + postfix;
-		// trace('songKey test: $songKey');
 		return returnSound(songKey, 'songs', modsAllowed, false, true);
 	}
 
@@ -841,7 +836,7 @@ class Paths
 			{
 				trace('SOUND NOT FOUND: $key, PATH: $path');
 				FlxG.log.error('SOUND NOT FOUND: $key, PATH: $path');
-				return FlxAssets.getSound('flixel/sounds/beep');
+				return FlxAssets.getSoundAddExtension('flixel/sounds/beep');
 			}
 		}
 		AssetCache.remember(cacheKey);

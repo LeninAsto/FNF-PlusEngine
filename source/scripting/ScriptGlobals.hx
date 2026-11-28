@@ -234,6 +234,8 @@ class ScriptGlobals {
 		set('BuildInfo', backend.BuildInfo);
 		set('TransitionManager', backend.TransitionManager);
 		set('Json', haxe.Json);
+		set('TJSON', deprecations.tjson.LegacyTJSON);
+		set('JsonMod', jsonmod.Json);
 		set('parseJson', parseJson);
 		set('stringifyJson', stringifyJson);
 		set('ScriptHttp', backend.ScriptHttp);
@@ -498,7 +500,10 @@ class ScriptGlobals {
 		return min + (max - min) * (FlxG.random.int(0, 1000000) / 1000000.0);
 
 	public static function switchState(state:flixel.FlxState):Void
+	{
+		deprecations.HaxeLibDeprecations.warnLegacyStateCall('switchState', state);
 		backend.MusicBeatState.switchState(state);
+	}
 
 	static function sharedInput(set:(String, Dynamic) -> Void):Void {
 		set('keyboardJustPressed', keyboardJustPressed);

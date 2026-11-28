@@ -996,7 +996,7 @@ class ModsMenuState extends MusicBeatState {
 			// Do not use FlxG.resetGame here: it may recreate the previous state.
 			// A restart-required mod-list change must always re-enter the engine
 			// bootstrap after its launch context was cleared.
-			FlxG.camera.fade(FlxColor.BLACK, 0.5, false, function() FlxG.switchState(new InitState.InitialState()), false);
+			FlxG.camera.fade(FlxColor.BLACK, 0.5, false, function() FlxG.switchState(() -> new InitState.InitialState()), false);
 		} else {
 			MusicBeatState.switchState(MainMenuStateSelector.create());
 		}
@@ -1051,7 +1051,7 @@ class ModItem extends FlxSpriteGroup {
 		var path:String = Paths.mods('$folder/data/settings.json');
 		if (FileSystem.exists(path)) {
 			try {
-				settings = cast tjson.TJSON.parse(File.getContent(path));
+				settings = cast jsonmod.Json.parse(File.getContent(path));
 			} catch (e:Dynamic) {
 				var errorTitle = Language.getPhrase('states.mods_menu.settings_error.title', 'Mod name: {1}', [Mods.currentModDirectory]);
 				var errorMsg = Language.getPhrase('states.mods_menu.settings_error.message', 'An error occurred: {1}', [e]);

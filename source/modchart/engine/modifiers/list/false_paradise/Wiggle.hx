@@ -9,7 +9,8 @@ class Wiggle extends Modifier {
 		curPos.x += sin(params.curBeat) * wiggle * 20;
 		curPos.y += sin(params.curBeat + 1) * wiggle * 20;
 
-		setPercent('rotateZ', (sin(params.curBeat) * 0.2 * wiggle) * FlxAngle.TO_DEG);
+		if (wiggle > 0)
+			setPercent('rotateZ', (sin(params.curBeat) * 0.2 * wiggle) * FlxAngle.TO_DEG, params.player);
 
 		return curPos;
 	}

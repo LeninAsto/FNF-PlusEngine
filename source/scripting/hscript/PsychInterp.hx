@@ -13,6 +13,32 @@ class PsychInterp extends Interp {
 		super(environment, parent);
 	}
 
+	override function get(o:Dynamic, field:String, maybe:Bool = false):Dynamic {
+		if (field == 'setFilters') {
+			var legacyMethod = deprecations.LegacyCamera.resolveMember(o, field, posInfos().fileName);
+			if (legacyMethod != null) return legacyMethod;
+		}
+		if (deprecations.HaxeLibDeprecations.isTrackedMember(field))
+			deprecations.HaxeLibDeprecations.checkMember(o, field, posInfos().fileName);
+		return super.get(o, field, maybe);
+	}
+
+	override function set(o:Dynamic, field:String, value:Dynamic):Dynamic {
+		if (deprecations.HaxeLibDeprecations.isTrackedMember(field))
+			deprecations.HaxeLibDeprecations.checkMember(o, field, posInfos().fileName);
+		return super.set(o, field, value);
+	}
+
+	override function call(o:Dynamic, f:Dynamic, args:Array<Dynamic>):Dynamic {
+		if (args != null && args.length > 0) {
+			if (o == flixel.FlxG && Reflect.compareMethods(f, Reflect.field(flixel.FlxG, 'switchState')))
+				deprecations.HaxeLibDeprecations.warnLegacyStateCall('FlxG.switchState', args[0], posInfos().fileName);
+			else if ((o == backend.MusicBeatState || o == backend.BaseMusicBeatState) && Reflect.compareMethods(f, Reflect.field(o, 'switchState')))
+				deprecations.HaxeLibDeprecations.warnLegacyStateCall('MusicBeatState.switchState', args[0], posInfos().fileName);
+		}
+		return super.call(o, f, args);
+	}
+
 	function set_parentInstance(inst:Dynamic):Dynamic {
 		parentInstance = inst;
 		instanceFields = new Map();
